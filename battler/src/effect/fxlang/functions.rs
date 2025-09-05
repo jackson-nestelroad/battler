@@ -2086,6 +2086,7 @@ fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>> {
     Ok(context
         .evaluation_context()
         .mon(mon_handle)?
+        .volatile_state
         .move_slots
         .get(index)
         .cloned()
@@ -2626,6 +2627,7 @@ fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>
     let context = context.mon_context(mon_handle)?;
     Ok(context
         .mon()
+        .volatile_state
         .move_slots
         .get(index)
         .map(|move_slot| Value::Effect(EffectHandle::InactiveMove(move_slot.id.clone()))))
@@ -3219,6 +3221,7 @@ fn received_attack(mut context: FunctionContext) -> Result<Value> {
         context
             .evaluation_context()
             .mon(target)?
+            .volatile_state
             .received_attacks
             .iter()
             .any(|entry| {
@@ -3236,6 +3239,7 @@ fn last_attack(mut context: FunctionContext) -> Result<Option<Value>> {
     let target = context.evaluation_context().mon(target)?;
     let side = target.side;
     target
+        .volatile_state
         .received_attacks
         .iter()
         .filter(|attack| !has_damage || attack.damage > 0)

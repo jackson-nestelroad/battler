@@ -194,15 +194,8 @@ impl MoveSlot {
 }
 
 /// A single ability slot for a Mon.
-#[derive(Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct AbilitySlot {
-    pub id: Id,
-    pub effect_state: fxlang::EffectState,
-}
-
-/// A single item slot for a Mon.
-#[derive(Clone)]
-pub struct ItemSlot {
     pub id: Id,
     pub effect_state: fxlang::EffectState,
 }
@@ -372,17 +365,6 @@ pub enum MonExitType {
     Caught,
 }
 
-/// State for the Mon going into the next turn.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct MonNextTurnState {
-    pub locked_move: Option<String>,
-    pub trapped: bool,
-    pub cannot_receive_items: bool,
-    pub can_mega_evolve: bool,
-    pub can_dynamax: bool,
-    pub can_terastallize: bool,
-}
-
 /// Policy for a Mon's HP should be updated when recalculating base stats.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum RecalculateBaseStatsHpPolicy {
@@ -417,6 +399,93 @@ pub enum MonSpecialFormeChangeType {
     Gigantamax,
 }
 
+/// State for the Mon going into the next turn.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct MonNextTurnState {
+    pub locked_move: Option<String>,
+    pub trapped: bool,
+    pub cannot_receive_items: bool,
+    pub can_mega_evolve: bool,
+    pub can_dynamax: bool,
+    pub can_terastallize: bool,
+}
+
+/// Switch data for a Mon.
+#[derive(Debug, Default, Clone)]
+pub struct MonSwitchState {
+    /// The Mon needs to switch out at the end of the turn.
+    pub needs_switch: Option<SwitchType>,
+    /// The Mon is forced to switch out immediately.
+    pub force_switch: Option<SwitchType>,
+    /// The `BeforeSwitchOut` event already ran so it should be skipped.
+    pub skip_before_switch_out: bool,
+}
+
+/// Volatile state for a Mon.
+#[derive(Debug, Default, Clone)]
+pub struct MonVolatileState {
+    /// The current species.
+    pub species: Id,
+    /// The weight of the Mon.
+    pub weight: u32,
+
+    /// Current stats.
+    pub stats: StatTable,
+    /// Current stat boosts.
+    pub boosts: BoostTable,
+    /// Current speed.
+    pub speed: u32,
+
+    /// Current moves.
+    pub move_slots: Vec<MoveSlot>,
+    /// Current types.
+    pub types: Vec<Type>,
+    /// The current ability.
+    pub ability: AbilitySlot,
+    /// Effect state for the item.
+    pub item_state: fxlang::EffectState,
+    /// The last item used.
+    pub last_item: Option<Id>,
+    /// Effect state for the non-volatile status.
+    pub status_state: fxlang::EffectState,
+    /// Volatile statuses.
+    pub volatiles: HashMap<Id, fxlang::EffectState>,
+
+    /// Is the Mon transformed into another?
+    pub transformed: bool,
+    /// The Mon's physical appearance.
+    pub illusion: Option<PhysicalMonDetails>,
+
+    /// The last move selected.
+    pub last_move_selected: Option<Id>,
+    /// The last move used for the Mon.
+    pub last_move: Option<MoveHandle>,
+    /// The last move used by the Mon, which can be different from `last_move` if that
+    /// move executed a different move (like Metronome).
+    pub last_move_used: Option<MoveHandle>,
+
+    /// The outcome of a move used this turn.
+    pub move_this_turn_outcome: Option<MoveOutcome>,
+    /// The outcome of a move used last turn.
+    pub move_last_turn_outcome: Option<MoveOutcome>,
+    /// The last position targeted by a move.
+    pub last_move_target_location: Option<isize>,
+
+    /// Was the Mon damaged this turn?
+    pub damaged_this_turn: bool,
+    /// Were the Mon's stats raised this turn?
+    pub stats_raised_this_turn: bool,
+    /// Were the Mon's stats lowered this turn?
+    pub stats_lowered_this_turn: bool,
+    /// Did the Mon used an item this turn?
+    pub item_used_this_turn: bool,
+
+    /// Set of foes that appeared while this Mon was active.
+    pub foes_fought_while_active: HashSet<MonHandle>,
+    /// Attacks received by the Mon.
+    pub received_attacks: Vec<ReceivedAttackEntry>,
+}
+
 /// A Mon in a battle, which battles against other Mons.
 pub struct Mon {
     pub player: usize,
@@ -431,9 +500,6 @@ pub struct Mon {
     ///
     /// NOTE: Not the same as [`battler_data::SpeciesData::base_species`].
     pub base_species: Id,
-    /// The current species of the Mon. May have changed via some forme change or move (e.g.,
-    /// Transform).
-    pub species: Id,
 
     /// `true` if the Mon is in an active position.
     ///
@@ -451,10 +517,9 @@ pub struct Mon {
     pub effective_team_position: usize,
 
     pub base_stored_stats: StatTable,
-    pub stats: StatTable,
-    pub boosts: BoostTable,
     pub ivs: StatTable,
     pub evs: StatTable,
+
     pub level: u8,
     pub experience: u32,
     pub friendship: u8,
@@ -463,61 +528,29 @@ pub struct Mon {
     pub gender: Gender,
     pub shiny: bool,
     pub ball: Id,
+    pub hidden_power_type: Type,
     pub different_original_trainer: bool,
 
     pub base_move_slots: Vec<MoveSlot>,
-    pub move_slots: Vec<MoveSlot>,
-
     pub original_base_ability: Id,
-    pub base_ability: AbilitySlot,
-    pub ability: AbilitySlot,
-
-    pub types: Vec<Type>,
-    pub hidden_power_type: Type,
-
-    pub item: Option<ItemSlot>,
-    pub last_item: Option<Id>,
+    pub base_ability: Id,
+    pub item: Option<Id>,
+    pub status: Option<Id>,
 
     pub initial_hp: Option<u16>,
     pub hp: u16,
     pub base_max_hp: u16,
     pub max_hp: u16,
-    pub speed: u16,
-    pub weight: u32,
     pub exited: Option<MonExitType>,
     pub newly_switched: bool,
-    pub needs_switch: Option<SwitchType>,
-    pub force_switch: Option<SwitchType>,
-    pub skip_before_switch_out: bool,
     pub being_called_back: bool,
-    pub transformed: bool,
-    pub illusion: Option<PhysicalMonDetails>,
 
     pub next_turn_state: MonNextTurnState,
+    pub switch_state: MonSwitchState,
+    pub volatile_state: MonVolatileState,
 
     /// The move the Mon is actively performing.
     pub active_move: Option<MoveHandle>,
-    /// The last move selected.
-    pub last_move_selected: Option<Id>,
-    /// The last move used for the Mon.
-    pub last_move: Option<MoveHandle>,
-    /// The last move used by the Mon, which can be different from `last_move` if that
-    /// move executed a different move (like Metronome).
-    pub last_move_used: Option<MoveHandle>,
-
-    pub move_this_turn_outcome: Option<MoveOutcome>,
-    pub move_last_turn_outcome: Option<MoveOutcome>,
-    pub last_move_target_location: Option<isize>,
-    pub damaged_this_turn: bool,
-    pub stats_raised_this_turn: bool,
-    pub stats_lowered_this_turn: bool,
-    pub item_used_this_turn: bool,
-    pub foes_fought_while_active: HashSet<MonHandle>,
-    pub received_attacks: Vec<ReceivedAttackEntry>,
-
-    pub status: Option<Id>,
-    pub status_state: fxlang::EffectState,
-    pub volatiles: HashMap<Id, fxlang::EffectState>,
 
     pub learnable_moves: Vec<Id>,
 
@@ -530,19 +563,8 @@ pub struct Mon {
 impl Mon {
     /// Creates a new Mon.
     pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self> {
-        let name = data.name;
         let species = Id::from(data.species);
-        let ivs = data.ivs;
-        let evs = data.evs;
-        let level = data.level;
-        let experience = data.experience;
-        let friendship = data.friendship;
-        let nature = data.nature;
-        let true_nature = data.true_nature.unwrap_or(data.nature);
-        let gender = data.gender;
-        let shiny = data.shiny;
-        let ball = Id::from(data.ball);
-        let different_original_trainer = data.different_original_trainer;
+        let ability = Id::from(data.ability);
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
         for (i, move_name) in data.moves.iter().enumerate() {
@@ -569,40 +591,16 @@ impl Mon {
             ));
         }
 
-        let move_slots = base_move_slots.clone();
-
-        let ability = AbilitySlot {
-            id: Id::from(data.ability),
-            effect_state: fxlang::EffectState::default(),
-        };
-
-        let item = match data.item {
-            Some(item) => Some(ItemSlot {
-                id: Id::from(item),
-                effect_state: fxlang::EffectState::default(),
-            }),
-            None => None,
-        };
-
         let hidden_power_type = data
             .hidden_power_type
-            .unwrap_or(calculate_hidden_power_type(&ivs));
-
-        let initial_hp = data.persistent_battle_data.hp;
-        let status = data
-            .persistent_battle_data
-            .status
-            .map(|status| Id::from(status));
+            .unwrap_or(calculate_hidden_power_type(&data.ivs));
 
         Ok(Self {
             player: usize::MAX,
             side: usize::MAX,
-
-            name,
+            name: data.name,
             original_base_species: species.clone(),
-            base_species: species.clone(),
-            species,
-
+            base_species: species,
             active: false,
             active_turns: 0,
             active_move_actions: 0,
@@ -610,73 +608,39 @@ impl Mon {
             old_active_position: None,
             team_position,
             effective_team_position: team_position,
-
             base_stored_stats: StatTable::default(),
-            stats: StatTable::default(),
-            boosts: BoostTable::default(),
-            ivs,
-            evs,
-            level,
-            experience,
-            friendship,
-            nature,
-            true_nature,
-            gender,
-            shiny,
-            ball,
-            different_original_trainer,
-
-            base_move_slots,
-            move_slots,
-
-            original_base_ability: ability.id.clone(),
-            base_ability: ability.clone(),
-            ability,
-
-            types: Vec::new(),
+            ivs: data.ivs,
+            evs: data.evs,
+            level: data.level,
+            experience: data.experience,
+            friendship: data.friendship,
+            nature: data.nature,
+            true_nature: data.true_nature.unwrap_or(data.nature),
+            gender: data.gender,
+            shiny: data.shiny,
+            ball: Id::from(data.ball),
             hidden_power_type,
-
-            item,
-            last_item: None,
-
-            initial_hp,
+            different_original_trainer: data.different_original_trainer,
+            base_move_slots,
+            original_base_ability: ability.clone(),
+            base_ability: ability,
+            item: data.item.map(|item| Id::from(item)),
+            status: data
+                .persistent_battle_data
+                .status
+                .map(|status| Id::from(status)),
+            initial_hp: data.persistent_battle_data.hp,
             hp: 0,
             base_max_hp: 0,
             max_hp: 0,
-            speed: 0,
-            weight: 1,
             exited: None,
             newly_switched: false,
-            needs_switch: None,
-            force_switch: None,
-            skip_before_switch_out: false,
             being_called_back: false,
-            transformed: false,
-            illusion: None,
-
             next_turn_state: MonNextTurnState::default(),
-
+            switch_state: MonSwitchState::default(),
+            volatile_state: MonVolatileState::default(),
             active_move: None,
-            last_move_selected: None,
-            last_move: None,
-            last_move_used: None,
-
-            move_this_turn_outcome: None,
-            move_last_turn_outcome: None,
-            last_move_target_location: None,
-            damaged_this_turn: false,
-            stats_raised_this_turn: false,
-            stats_lowered_this_turn: false,
-            item_used_this_turn: false,
-            foes_fought_while_active: HashSet::default(),
-            received_attacks: Vec::new(),
-
-            status,
-            status_state: fxlang::EffectState::default(),
-            volatiles: HashMap::default(),
-
-            learnable_moves: Vec::new(),
-
+            learnable_moves: Vec::default(),
             special_forme_change_type: None,
             dynamaxed: false,
             terastallized: false,
@@ -701,7 +665,7 @@ impl Mon {
                 .battle()
                 .dex
                 .species
-                .get_by_id(&context.mon().species)?;
+                .get_by_id(&context.mon().base_species)?;
             context.mon_mut().level = species
                 .data
                 .leveling_rate
@@ -711,7 +675,7 @@ impl Mon {
                 .battle()
                 .dex
                 .species
-                .get_by_id(&context.mon().species)?;
+                .get_by_id(&context.mon().base_species)?;
             context.mon_mut().experience =
                 species.data.leveling_rate.exp_at_level(context.mon().level);
         }
@@ -724,23 +688,6 @@ impl Mon {
         context.mon_mut().hp = hp;
         if context.mon().hp == 0 {
             context.mon_mut().exited = Some(MonExitType::Fainted);
-        }
-
-        context.mon_mut().ability.effect_state = context.mon().base_ability.effect_state.clone();
-
-        let mon_handle = context.mon_handle();
-
-        if let Some(item) = &context.mon().item {
-            let item = context.battle().dex.items.get_by_id(&item.id)?;
-            context.mon_mut().item = Some(ItemSlot {
-                id: item.id().clone(),
-                effect_state: fxlang::EffectState::initial_effect_state(
-                    context.as_battle_context_mut(),
-                    None,
-                    Some(mon_handle),
-                    None,
-                )?,
-            })
         }
 
         Ok(())
@@ -777,7 +724,7 @@ impl Mon {
 
     /// The physical details for the Mon.
     pub fn physical_details(context: &MonContext) -> Result<PhysicalMonDetails> {
-        if let Some(illusion) = context.mon().illusion.clone() {
+        if let Some(illusion) = context.mon().volatile_state.illusion.clone() {
             return Ok(illusion);
         }
 
@@ -785,7 +732,7 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get_by_id(&context.mon().species)?
+            .get_by_id(&context.mon().volatile_state.species)?
             .data
             .name
             .clone();
@@ -838,7 +785,7 @@ impl Mon {
     }
 
     fn public_name(&self) -> &str {
-        match &self.illusion {
+        match &self.volatile_state.illusion {
             Some(illusion) => &illusion.name,
             None => &self.name,
         }
@@ -1124,9 +1071,9 @@ impl Mon {
             ));
         }
 
-        let mut value = context.mon().stats.get(stat);
+        let mut value = context.mon().volatile_state.stats.get(stat);
         if !unboosted {
-            let mut boosts = context.mon().boosts.clone();
+            let mut boosts = context.mon().volatile_state.boosts.clone();
 
             if let Some(boost) = boost {
                 boosts.set(stat.try_into()?, boost);
@@ -1257,12 +1204,13 @@ impl Mon {
 
     /// Updates the speed of the Mon, called at the end of each turn.
     pub fn update_speed(context: &mut MonContext) -> Result<()> {
-        context.mon_mut().speed = Self::action_speed(context)?;
+        context.mon_mut().volatile_state.speed = Self::action_speed(context)? as u32;
         Ok(())
     }
 
     fn indexed_move_slot(&self, move_id: &Id) -> Option<(usize, &MoveSlot)> {
-        self.move_slots
+        self.volatile_state
+            .move_slots
             .iter()
             .enumerate()
             .find(|(_, move_slot)| &move_slot.id == move_id)
@@ -1279,7 +1227,8 @@ impl Mon {
     }
 
     fn indexed_move_slot_mut(&mut self, move_id: &Id) -> Option<(usize, &mut MoveSlot)> {
-        self.move_slots
+        self.volatile_state
+            .move_slots
             .iter_mut()
             .enumerate()
             .find(|(_, move_slot)| &move_slot.id == move_id)
@@ -1305,14 +1254,14 @@ impl Mon {
     /// Calculates the Mon's weight.
     pub fn get_weight(context: &mut MonContext) -> u32 {
         // TODO: ModifyWeight event.
-        context.mon().weight
+        context.mon().volatile_state.weight
     }
 
     /// Creates a speed-orderable object for the Mon.
     pub fn speed_orderable(context: &MonContext) -> SpeedOrderableMon {
         SpeedOrderableMon {
             mon_handle: context.mon_handle(),
-            speed: context.mon().speed as u32,
+            speed: context.mon().volatile_state.speed,
         }
     }
 }
@@ -1326,7 +1275,7 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get_by_id(&context.mon().species)?
+            .get_by_id(&context.mon().volatile_state.species)?
             .data
             .name
             .clone();
@@ -1334,17 +1283,17 @@ impl Mon {
             .battle()
             .dex
             .abilities
-            .get_by_id(&context.mon().ability.id)?
+            .get_by_id(&context.mon().volatile_state.ability.id)?
             .data
             .name
             .clone();
-        let item = if let Some(item) = context.mon().item.as_ref() {
+        let item = if let Some(item) = &context.mon().item {
             Some(
                 context
                     .battle()
                     .dex
                     .items
-                    .get_by_id(&item.id)?
+                    .get_by_id(item)?
                     .data
                     .name
                     .clone(),
@@ -1358,16 +1307,17 @@ impl Mon {
             hp: context.mon().hp,
             max_hp: context.mon().max_hp,
             health: context.mon().actual_health(),
-            types: context.mon().types.clone(),
+            types: context.mon().volatile_state.types.clone(),
             active: context.mon().active,
             player_team_position: context.mon().team_position,
             player_effective_team_position: context.mon().effective_team_position,
             player_active_position: context.mon().active_position,
             side_position,
-            stats: context.mon().stats.without_hp(),
-            boosts: context.mon().boosts.clone(),
+            stats: context.mon().volatile_state.stats.without_hp(),
+            boosts: context.mon().volatile_state.boosts.clone(),
             moves: context
                 .mon()
+                .volatile_state
                 .move_slots
                 .clone()
                 .into_iter()
@@ -1407,7 +1357,7 @@ impl Mon {
                     .battle()
                     .dex
                     .items
-                    .get_by_id(&item.id)?
+                    .get_by_id(item)?
                     .data
                     .name
                     .clone(),
@@ -1540,31 +1490,86 @@ impl Mon {
 }
 
 impl Mon {
+    fn new_volatile_state(context: &mut MonContext) -> Result<MonVolatileState> {
+        let mon_handle = context.mon_handle();
+        Ok(MonVolatileState {
+            species: context.mon().base_species.clone(),
+            weight: 0, // Updated by set_species.
+            stats: context.mon().base_stored_stats.clone(),
+            boosts: BoostTable::default(),
+            speed: 0, // Updated by set_species.
+            move_slots: context.mon().base_move_slots.clone(),
+            types: Vec::default(), // Updated by set_species.
+            ability: AbilitySlot {
+                id: context.mon().base_ability.clone(),
+                effect_state: fxlang::EffectState::initial_effect_state(
+                    context.as_battle_context_mut(),
+                    None,
+                    Some(mon_handle),
+                    None,
+                )?,
+            },
+            item_state: context
+                .mon()
+                .item
+                .clone()
+                .map(|_| {
+                    Ok::<_, anyhow::Error>(fxlang::EffectState::initial_effect_state(
+                        context.as_battle_context_mut(),
+                        None,
+                        Some(mon_handle),
+                        None,
+                    )?)
+                })
+                .transpose()?
+                .unwrap_or_default(),
+            last_item: None,
+            status_state: context
+                .mon()
+                .status
+                .clone()
+                .map(|_| {
+                    Ok::<_, anyhow::Error>(fxlang::EffectState::initial_effect_state(
+                        context.as_battle_context_mut(),
+                        None,
+                        Some(mon_handle),
+                        None,
+                    )?)
+                })
+                .transpose()?
+                .unwrap_or_default(),
+            volatiles: HashMap::default(),
+            transformed: false,
+            illusion: None,
+            last_move_selected: None,
+            last_move: None,
+            last_move_used: None,
+            move_this_turn_outcome: None,
+            move_last_turn_outcome: None,
+            last_move_target_location: None,
+            damaged_this_turn: false,
+            stats_raised_this_turn: false,
+            stats_lowered_this_turn: false,
+            item_used_this_turn: false,
+            foes_fought_while_active: HashSet::default(),
+            received_attacks: Vec::default(),
+        })
+    }
     /// Clears all volatile effects.
     pub fn clear_volatile(context: &mut MonContext, clear_switch_flags: bool) -> Result<()> {
         if clear_switch_flags {
-            context.mon_mut().being_called_back = false;
-            context.mon_mut().needs_switch = None;
-            context.mon_mut().force_switch = None;
+            context.mon_mut().switch_state = MonSwitchState::default();
         }
-
-        context.mon_mut().move_this_turn_outcome = None;
-        context.mon_mut().move_last_turn_outcome = None;
-        context.mon_mut().last_move = None;
-        context.mon_mut().last_move_target_location = None;
-        context.mon_mut().last_move_used = None;
-        context.mon_mut().foes_fought_while_active.clear();
-        context.mon_mut().received_attacks.clear();
-
-        context.mon_mut().clear_boosts();
-
-        context.mon_mut().ability = context.mon_mut().base_ability.clone();
-
-        context.mon_mut().move_slots = context.mon().base_move_slots.clone();
 
         {
             let mon_handle = context.mon_handle();
-            let volatiles = context.mon().volatiles.keys().cloned().collect::<Vec<_>>();
+            let volatiles = context
+                .mon()
+                .volatile_state
+                .volatiles
+                .keys()
+                .cloned()
+                .collect::<Vec<_>>();
             let mut context = context
                 .as_battle_context_mut()
                 .effect_context(EffectHandle::Condition(Id::from_known("switchout")), None)?;
@@ -1577,12 +1582,10 @@ impl Mon {
             }
         }
 
-        context.mon_mut().volatiles.clear();
-
-        context.mon_mut().illusion = None;
+        context.mon_mut().volatile_state = Self::new_volatile_state(context)?;
 
         let species = context.mon().base_species.clone();
-        Self::set_species(context, &Id::from(species))?;
+        Self::set_species(context, &species)?;
         Ok(())
     }
 
@@ -1678,7 +1681,7 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get_by_id(&context.mon().species)?;
+            .get_by_id(&context.mon().volatile_state.species)?;
 
         let mut stats = calculate_mon_stats(
             &species.data.base_stats,
@@ -1692,13 +1695,8 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        context.mon_mut().stats = context
-            .mon()
-            .stats
-            .entries()
-            .map(|(stat, _)| (stat, stats.get(stat)))
-            .collect();
-        context.mon_mut().speed = context.mon().stats.spe;
+        context.mon_mut().volatile_state.speed = stats.spe as u32;
+        context.mon_mut().volatile_state.stats = stats;
 
         Ok(())
     }
@@ -1713,17 +1711,8 @@ impl Mon {
 
         context.mon_mut().base_species = species.id().clone();
 
-        let mon_handle = context.mon_handle();
         let ability = context.battle().dex.abilities.get_by_id(&base_ability)?;
-        context.mon_mut().base_ability = AbilitySlot {
-            id: ability.id().clone(),
-            effect_state: fxlang::EffectState::initial_effect_state(
-                context.as_battle_context_mut(),
-                None,
-                Some(mon_handle),
-                None,
-            )?,
-        };
+        context.mon_mut().base_ability = ability.id().clone();
 
         Ok(())
     }
@@ -1735,19 +1724,23 @@ impl Mon {
         // SAFETY: Nothing we do below will invalidate any data.
         let species: ElementRef<Species> = unsafe { mem::transmute(species) };
 
-        let previous_species = context.mon().species.clone();
+        let previous_species = context.mon().volatile_state.species.clone();
 
-        context.mon_mut().species = species.id().clone();
-        context.mon_mut().types = Vec::with_capacity(4);
-        context.mon_mut().types.push(species.data.primary_type);
+        context.mon_mut().volatile_state.species = species.id().clone();
+        context.mon_mut().volatile_state.types = Vec::with_capacity(4);
+        context
+            .mon_mut()
+            .volatile_state
+            .types
+            .push(species.data.primary_type);
         if let Some(secondary_type) = species.data.secondary_type {
-            context.mon_mut().types.push(secondary_type);
+            context.mon_mut().volatile_state.types.push(secondary_type);
         }
 
         Self::recalculate_stats(context)?;
-        context.mon_mut().weight = species.data.weight;
+        context.mon_mut().volatile_state.weight = species.data.weight;
 
-        Ok(context.mon().species != previous_species)
+        Ok(context.mon().volatile_state.species != previous_species)
     }
 
     /// Looks up the base species of this Mon's base species.
@@ -1779,6 +1772,7 @@ impl Mon {
                 new_move_slot.clone();
         }
         *self
+            .volatile_state
             .move_slots
             .get_mut(index)
             .wrap_not_found_error_with_format(format_args!("move slot in index {index}"))? =
@@ -1788,7 +1782,7 @@ impl Mon {
 
     /// Clears all stat boosts.
     pub fn clear_boosts(&mut self) {
-        self.boosts = BoostTable::new();
+        self.volatile_state.boosts = BoostTable::new();
     }
 
     fn moves_with_locked_move(
@@ -1813,6 +1807,7 @@ impl Mon {
             // Look for the locked move in the Mon's moveset.
             if let Some(locked_move) = context
                 .mon()
+                .volatile_state
                 .move_slots
                 .iter()
                 .find(|move_slot| move_slot.id == locked_move_id)
@@ -1832,7 +1827,7 @@ impl Mon {
         }
 
         // Else, generate move details for each move.
-        let move_slots = context.mon().move_slots.clone();
+        let move_slots = context.mon().volatile_state.move_slots.clone();
         move_slots
             .into_iter()
             .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
@@ -1853,13 +1848,14 @@ impl Mon {
             .player_mut()
             .set_active_position(position, Some(mon_handle))?;
 
-        for move_slot in &mut context.mon_mut().move_slots {
+        for move_slot in &mut context.mon_mut().volatile_state.move_slots {
             move_slot.used = false;
         }
 
         let ability_order = context.battle_mut().next_effect_order();
         context
             .mon_mut()
+            .volatile_state
             .ability
             .effect_state
             .set_effect_order(ability_order);
@@ -1868,10 +1864,8 @@ impl Mon {
             let item_order = context.battle_mut().next_effect_order();
             context
                 .mon_mut()
-                .item
-                .as_mut()
-                .wrap_expectation("expected item")?
-                .effect_state
+                .volatile_state
+                .item_state
                 .set_effect_order(item_order);
         }
         Ok(())
@@ -2085,7 +2079,7 @@ impl Mon {
             return Ok(());
         }
         context.mon_mut().hp = 0;
-        context.mon_mut().needs_switch = None;
+        context.mon_mut().switch_state.needs_switch = None;
         let mon_handle = context.mon_handle();
         context.battle_mut().faint_queue.push_back(FaintEntry {
             target: mon_handle,
@@ -2106,7 +2100,7 @@ impl Mon {
         if !context.mon().active {
             return Ok(());
         }
-        context.mon_mut().needs_switch = None;
+        context.mon_mut().switch_state.needs_switch = None;
         let mon_handle = context.mon_handle();
         context.battle_mut().catch_queue.push_back(CatchEntry {
             target: mon_handle,
@@ -2176,7 +2170,7 @@ impl Mon {
     /// Caps the given boosts based on the Mon's existing boosts.
     pub fn cap_boosts(context: &MonContext, boosts: BoostTable) -> BoostTable {
         BoostTable::from_iter(boosts.non_zero_iter().map(|(boost, value)| {
-            let current_value = context.mon().boosts.get(boost);
+            let current_value = context.mon().volatile_state.boosts.get(boost);
             (
                 boost,
                 (current_value + value).max(-6).min(6) - current_value,
@@ -2186,24 +2180,28 @@ impl Mon {
 
     /// Applies the given stat boost.
     pub fn boost_stat(context: &mut MonContext, boost: Boost, value: i8) -> i8 {
-        let current_value = context.mon().boosts.get(boost);
+        let current_value = context.mon().volatile_state.boosts.get(boost);
         let new_value = current_value + value;
         let new_value = new_value.max(-6).min(6);
-        context.mon_mut().boosts.set(boost, new_value);
+        context
+            .mon_mut()
+            .volatile_state
+            .boosts
+            .set(boost, new_value);
         new_value - current_value
     }
 
     /// Sets the Mon's boosted stats directly.
     pub fn set_boosts(context: &mut MonContext, boosts: &BoostTable) {
         for (boost, val) in boosts.non_zero_iter() {
-            context.mon_mut().boosts.set(boost, val);
+            context.mon_mut().volatile_state.boosts.set(boost, val);
         }
     }
 
     /// Counts the positive boosts applied to the Mon.
     pub fn positive_boosts(context: &MonContext) -> u8 {
         let mut boosts = 0;
-        for (_, val) in context.mon().boosts.non_zero_iter() {
+        for (_, val) in context.mon().volatile_state.boosts.non_zero_iter() {
             if val > 0 {
                 boosts += val as u8;
             }
@@ -2228,23 +2226,25 @@ impl Mon {
 
     /// Checks if the Mon has a volatile effect.
     pub fn has_volatile(context: &mut MonContext, id: &Id) -> bool {
-        context.mon().volatiles.contains_key(id)
+        context.mon().volatile_state.volatiles.contains_key(id)
     }
 
     /// Resets the Mon's state for the next turn.
     pub fn reset_state_for_next_turn(context: &mut MonContext) -> Result<()> {
         context.mon_mut().active_turns += 1;
 
-        context.mon_mut().old_active_position = None;
-        context.mon_mut().move_last_turn_outcome = context.mon().move_this_turn_outcome;
-        context.mon_mut().move_this_turn_outcome = None;
-        context.mon_mut().damaged_this_turn = false;
-        context.mon_mut().stats_raised_this_turn = false;
-        context.mon_mut().stats_lowered_this_turn = false;
-        context.mon_mut().item_used_this_turn = false;
         context.mon_mut().newly_switched = false;
+        context.mon_mut().old_active_position = None;
 
-        for move_slot in &mut context.mon_mut().move_slots {
+        context.mon_mut().volatile_state.move_last_turn_outcome =
+            context.mon().volatile_state.move_this_turn_outcome;
+        context.mon_mut().volatile_state.move_this_turn_outcome = None;
+        context.mon_mut().volatile_state.damaged_this_turn = false;
+        context.mon_mut().volatile_state.stats_raised_this_turn = false;
+        context.mon_mut().volatile_state.stats_lowered_this_turn = false;
+        context.mon_mut().volatile_state.item_used_this_turn = false;
+
+        for move_slot in &mut context.mon_mut().volatile_state.move_slots {
             move_slot.disabled = false;
         }
 
@@ -2371,13 +2371,22 @@ impl Mon {
         *forget_move_slot = new_move_slot.clone();
 
         // We also need to overwrite the Mon's move for the battle.
-        if !context.mon().transformed {
-            match context.mon_mut().move_slots.get_mut(forget_move_slot_index) {
+        if !context.mon().volatile_state.transformed {
+            match context
+                .mon_mut()
+                .volatile_state
+                .move_slots
+                .get_mut(forget_move_slot_index)
+            {
                 Some(move_slot) => {
                     *move_slot = new_move_slot;
                 }
                 None => {
-                    context.mon_mut().move_slots.push(new_move_slot);
+                    context
+                        .mon_mut()
+                        .volatile_state
+                        .move_slots
+                        .push(new_move_slot);
                 }
             }
         }

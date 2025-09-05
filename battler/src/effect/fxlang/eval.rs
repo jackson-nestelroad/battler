@@ -788,7 +788,12 @@ where
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
                             "ability" => ValueRef::TempString(
-                                context.mon(mon_handle)?.ability.id.to_string(),
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .ability
+                                    .id
+                                    .to_string(),
                             ),
                             "active" => ValueRef::Boolean(context.mon(mon_handle)?.active),
                             "active_move" => context
@@ -820,7 +825,9 @@ where
                                 )
                                 .into(),
                             ),
-                            "boosts" => ValueRef::BoostTable(&context.mon(mon_handle)?.boosts),
+                            "boosts" => ValueRef::BoostTable(
+                                &context.mon(mon_handle)?.volatile_state.boosts,
+                            ),
                             "can_heal" => ValueRef::Boolean(mon_states::can_heal(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -877,9 +884,9 @@ where
                             "foe_side" => {
                                 ValueRef::Side(context.mon_context(mon_handle)?.foe_side().index)
                             }
-                            "force_switch" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.force_switch.is_some())
-                            }
+                            "force_switch" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.switch_state.force_switch.is_some(),
+                            ),
                             "friendship" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.friendship.into())
                             }
@@ -888,12 +895,12 @@ where
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
-                            "damaged_this_turn" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.damaged_this_turn)
-                            }
-                            "illusion" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.illusion.is_some())
-                            }
+                            "damaged_this_turn" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.volatile_state.damaged_this_turn,
+                            ),
+                            "illusion" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.volatile_state.illusion.is_some(),
+                            ),
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -919,26 +926,36 @@ where
                                 ))
                             }
                             "item" => match context.mon(mon_handle)?.item.as_ref() {
-                                Some(item) => ValueRef::TempString(item.id.to_string()),
-                                None => ValueRef::Undefined,
-                            },
-                            "item_used_this_turn" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.item_used_this_turn)
-                            }
-                            "last_item" => match context.mon(mon_handle)?.last_item.as_ref() {
                                 Some(item) => ValueRef::TempString(item.to_string()),
                                 None => ValueRef::Undefined,
                             },
-                            "last_move" => match context.mon(mon_handle)?.last_move {
-                                Some(last_move) => ValueRef::ActiveMove(last_move),
-                                _ => ValueRef::Undefined,
-                            },
-                            "last_move_used" => match context.mon(mon_handle)?.last_move_used {
-                                Some(last_move_used) => ValueRef::ActiveMove(last_move_used),
-                                _ => ValueRef::Undefined,
-                            },
+                            "item_used_this_turn" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.volatile_state.item_used_this_turn,
+                            ),
+                            "last_item" => {
+                                match context.mon(mon_handle)?.volatile_state.last_item.as_ref() {
+                                    Some(item) => ValueRef::TempString(item.to_string()),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
+                            "last_move" => {
+                                match context.mon(mon_handle)?.volatile_state.last_move {
+                                    Some(last_move) => ValueRef::ActiveMove(last_move),
+                                    _ => ValueRef::Undefined,
+                                }
+                            }
+                            "last_move_used" => {
+                                match context.mon(mon_handle)?.volatile_state.last_move_used {
+                                    Some(last_move_used) => ValueRef::ActiveMove(last_move_used),
+                                    _ => ValueRef::Undefined,
+                                }
+                            }
                             "last_target_location" => {
-                                match context.mon(mon_handle)?.last_move_target_location {
+                                match context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .last_move_target_location
+                                {
                                     Some(last_target_location) => ValueRef::Fraction(
                                         TryInto::<i32>::try_into(last_target_location)
                                             .map_err(integer_overflow_error)?
@@ -952,6 +969,7 @@ where
                             "move_last_turn_succeeded" => ValueRef::Boolean(
                                 context
                                     .mon(mon_handle)?
+                                    .volatile_state
                                     .move_last_turn_outcome
                                     .map(|outcome| outcome.success())
                                     .unwrap_or(false),
@@ -959,6 +977,7 @@ where
                             "move_slots" => ValueRef::TempList(
                                 context
                                     .mon(mon_handle)?
+                                    .volatile_state
                                     .move_slots
                                     .iter()
                                     .map(|move_slot| {
@@ -972,18 +991,23 @@ where
                             "move_this_turn_failed" => ValueRef::Boolean(
                                 context
                                     .mon(mon_handle)?
+                                    .volatile_state
                                     .move_this_turn_outcome
                                     .map(|outcome| !outcome.success())
                                     .unwrap_or(false),
                             ),
                             "moved_this_turn" => ValueRef::Boolean(
-                                context.mon(mon_handle)?.move_this_turn_outcome.is_some(),
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .move_this_turn_outcome
+                                    .is_some(),
                             ),
                             "name" => ValueRef::String(&context.mon(mon_handle)?.name),
                             "nature" => ValueRef::Nature(context.mon(mon_handle)?.nature),
-                            "needs_switch" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.needs_switch.is_some())
-                            }
+                            "needs_switch" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.switch_state.needs_switch.is_some(),
+                            ),
                             "newly_switched" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.newly_switched)
                             }
@@ -1006,19 +1030,24 @@ where
                                 Mon::positive_boosts(&context.mon_context(mon_handle)?).into(),
                             ),
                             "side" => ValueRef::Side(context.mon(mon_handle)?.side),
-                            "species" => ValueRef::Str(&context.mon(mon_handle)?.species.as_ref()),
-                            "stats" => ValueRef::StatTable(&context.mon(mon_handle)?.stats),
+                            "species" => ValueRef::Str(
+                                &context.mon(mon_handle)?.volatile_state.species.as_ref(),
+                            ),
+                            "stats" => {
+                                ValueRef::StatTable(&context.mon(mon_handle)?.volatile_state.stats)
+                            }
                             "status" => match context.mon(mon_handle)?.status.as_ref() {
                                 Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
                                 None => ValueRef::Undefined,
                             },
-                            "transformed" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.transformed)
-                            }
+                            "transformed" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.volatile_state.transformed,
+                            ),
                             "true_nature" => ValueRef::Nature(context.mon(mon_handle)?.true_nature),
                             "types" => ValueRef::TempList(
                                 context
                                     .mon(mon_handle)?
+                                    .volatile_state
                                     .types
                                     .iter()
                                     .map(|val| {
@@ -1353,21 +1382,27 @@ where
                 ValueRefMut::Mon(ref mon_handle) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
-                        "boosts" => {
-                            ValueRefMut::BoostTable(&mut context.mon_mut(**mon_handle)?.boosts)
-                        }
-                        "last_item" => {
-                            ValueRefMut::OptionalId(&mut context.mon_mut(**mon_handle)?.last_item)
-                        }
+                        "boosts" => ValueRefMut::BoostTable(
+                            &mut context.mon_mut(**mon_handle)?.volatile_state.boosts,
+                        ),
+                        "last_item" => ValueRefMut::OptionalId(
+                            &mut context.mon_mut(**mon_handle)?.volatile_state.last_item,
+                        ),
                         "last_target_location" => ValueRefMut::OptionalISize(
-                            &mut context.mon_mut(**mon_handle)?.last_move_target_location,
+                            &mut context
+                                .mon_mut(**mon_handle)?
+                                .volatile_state
+                                .last_move_target_location,
                         ),
                         "skip_before_switch_out" => ValueRefMut::Boolean(
-                            &mut context.mon_mut(**mon_handle)?.skip_before_switch_out,
+                            &mut context
+                                .mon_mut(**mon_handle)?
+                                .switch_state
+                                .skip_before_switch_out,
                         ),
-                        "stats" => {
-                            ValueRefMut::StatTable(&mut context.mon_mut(**mon_handle)?.stats)
-                        }
+                        "stats" => ValueRefMut::StatTable(
+                            &mut context.mon_mut(**mon_handle)?.volatile_state.stats,
+                        ),
                         "status_state" => ValueRefMut::TempEffectState(
                             MonStatusEffectStateConnector::new(**mon_handle).make_dynamic(),
                         ),

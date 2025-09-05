@@ -802,7 +802,7 @@ impl Player {
             .filter(|mon_handle| {
                 context
                     .mon(**mon_handle)
-                    .is_ok_and(|mon| mon.needs_switch.is_some())
+                    .is_ok_and(|mon| mon.switch_state.needs_switch.is_some())
             })
             .count()
     }
@@ -1111,7 +1111,7 @@ impl Player {
                                 || mon.is_some_and(|mon| {
                                     context
                                         .mon(mon)
-                                        .is_ok_and(|mon| !mon.needs_switch.is_some())
+                                        .is_ok_and(|mon| !mon.switch_state.needs_switch.is_some())
                                 })
                         })
                     {
@@ -1141,7 +1141,7 @@ impl Player {
             Some(RequestType::Switch) => {
                 if let Some(mon) = context.player().active_mon_handle(position) {
                     let mut context = context.mon_context(mon)?;
-                    if context.mon().needs_switch.is_some() {
+                    if context.mon().switch_state.needs_switch.is_some() {
                         if context.player().choice.forced_passes_left == 0 {
                             return Err(general_error(format!(
                                 "you must select a mon to replace {}",
@@ -1212,7 +1212,7 @@ impl Player {
         let mut move_id = move_slot.id.clone();
 
         if let Some(locked_move) = context.mon().next_turn_state.locked_move.clone() {
-            let locked_move_target = context.mon().last_move_target_location;
+            let locked_move_target = context.mon().volatile_state.last_move_target_location;
             context
                 .player_mut()
                 .choice
@@ -1570,7 +1570,7 @@ impl Player {
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool> {
         for mon in context.player().active_or_exited_mon_handles() {
-            if context.mon(*mon)?.needs_switch.is_some() {
+            if context.mon(*mon)?.switch_state.needs_switch.is_some() {
                 return Ok(true);
             }
         }

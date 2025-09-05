@@ -44,7 +44,6 @@ use crate::{
         EffectContext,
         ExperienceAction,
         FieldEffectContext,
-        ItemSlot,
         LevelUpAction,
         Mon,
         MonContext,
@@ -116,14 +115,14 @@ fn switch_out_internal(
             context.mon_mut().being_called_back = true;
 
             if run_switch_out_events {
-                if !context.mon().skip_before_switch_out {
+                if !context.mon().switch_state.skip_before_switch_out {
                     core_battle_effects::run_event_for_mon(
                         context,
                         fxlang::BattleEvent::BeforeSwitchOut,
                         fxlang::VariableInput::default(),
                     );
                 }
-                context.mon_mut().skip_before_switch_out = true;
+                context.mon_mut().switch_state.skip_before_switch_out = true;
 
                 // The Mon could faint here, which cancels the switch (Pursuit).
                 if context.mon().hp == 0 {
@@ -169,8 +168,8 @@ fn switch_out_internal(
 
 /// Switches a Mon out of the given position.
 pub fn switch_out(context: &mut MonContext) -> Result<bool> {
-    if context.mon().needs_switch.is_none() {
-        context.mon_mut().needs_switch = Some(SwitchType::Normal);
+    if context.mon().switch_state.needs_switch.is_none() {
+        context.mon_mut().switch_state.needs_switch = Some(SwitchType::Normal);
     }
     switch_out_internal(context, false, true, true)
 }
@@ -199,7 +198,7 @@ pub fn switch_in(
     if let Some(previous_mon) = context.player().active_or_exited_mon_handle(position) {
         let mut context = context.as_battle_context_mut().mon_context(previous_mon)?;
         if context.mon().hp > 0 {
-            if let Some(previous_mon_switch_type) = context.mon().needs_switch {
+            if let Some(previous_mon_switch_type) = context.mon().switch_state.needs_switch {
                 switch_type = Some(previous_mon_switch_type);
             }
 
@@ -295,9 +294,9 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
     Mon::clear_volatile(&mut context.target_context()?, true)?;
 
     let mut source_context = context.as_battle_context_mut().mon_context(source)?;
-    let boosts = source_context.mon().boosts.clone();
+    let boosts = source_context.mon().volatile_state.boosts.clone();
     let mut volatiles = HashMap::default();
-    for (volatile, state) in source_context.mon().volatiles.clone() {
+    for (volatile, state) in source_context.mon().volatile_state.volatiles.clone() {
         if CoreBattle::get_parsed_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
             .is_some_and(|condition| condition.condition().no_copy)
         {
@@ -307,11 +306,12 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
     }
     Mon::clear_volatile(&mut source_context, true)?;
 
-    context.target_mut().boosts = boosts;
-    context.target_mut().volatiles = volatiles;
+    context.target_mut().volatile_state.boosts = boosts;
+    context.target_mut().volatile_state.volatiles = volatiles;
 
     let copied = context
         .target()
+        .volatile_state
         .volatiles
         .keys()
         .cloned()
@@ -324,7 +324,11 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
         )
         .unwrap_or(true)
         {
-            context.target_mut().volatiles.remove(&volatile);
+            context
+                .target_mut()
+                .volatile_state
+                .volatiles
+                .remove(&volatile);
         }
     }
 
@@ -431,8 +435,8 @@ fn do_move_internal(
     // The move is going to be used, so remember the choices made here. This is important for
     // locking moves.
     if locked_move_before.is_none() {
-        context.mon_mut().last_move_selected = Some(move_id.clone());
-        context.mon_mut().last_move_target_location = target_location;
+        context.mon_mut().volatile_state.last_move_selected = Some(move_id.clone());
+        context.mon_mut().volatile_state.last_move_target_location = target_location;
     }
 
     // Use the move.
@@ -447,6 +451,7 @@ fn do_move_internal(
 
     let this_move_is_the_last_selected = context
         .mon()
+        .volatile_state
         .last_move_selected
         .as_ref()
         .is_some_and(|move_id| move_id == context.active_move().id());
@@ -470,7 +475,7 @@ fn do_move_internal(
             fxlang::VariableInput::default(),
         );
         if set_last_move {
-            context.mon_mut().last_move = Some(active_move_handle);
+            context.mon_mut().volatile_state.last_move = Some(active_move_handle);
         }
     }
 
@@ -529,7 +534,7 @@ pub fn use_active_move(
     directly_used: bool,
 ) -> Result<bool> {
     if directly_used {
-        context.mon_mut().move_this_turn_outcome = None;
+        context.mon_mut().volatile_state.move_this_turn_outcome = None;
         context.mon_mut().set_active_move(active_move_handle);
     }
 
@@ -562,12 +567,12 @@ pub fn use_active_move(
             fxlang::BattleEvent::MoveAborted,
             fxlang::VariableInput::default(),
         );
-        context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
+        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(false);
     }
 
     if directly_used {
-        context.mon_mut().last_move_used = Some(context.active_move_handle());
+        context.mon_mut().volatile_state.last_move_used = Some(context.active_move_handle());
     }
 
     let target = core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
@@ -581,14 +586,16 @@ pub fn use_active_move(
     let outcome = use_active_move_internal(&mut context, target, directly_used)?;
 
     if directly_used {
-        context.mon_mut().move_this_turn_outcome =
-            match (context.mon_mut().move_this_turn_outcome, outcome) {
-                (
-                    left @ Some(MoveOutcome::Success | MoveOutcome::Skipped),
-                    MoveOutcome::Skipped | MoveOutcome::Failed,
-                ) => left,
-                _ => Some(outcome),
-            };
+        context.mon_mut().volatile_state.move_this_turn_outcome = match (
+            context.mon_mut().volatile_state.move_this_turn_outcome,
+            outcome,
+        ) {
+            (
+                left @ Some(MoveOutcome::Success | MoveOutcome::Skipped),
+                MoveOutcome::Skipped | MoveOutcome::Failed,
+            ) => left,
+            _ => Some(outcome),
+        };
     }
 
     core_battle_effects::run_active_move_event_expecting_void(
@@ -1204,6 +1211,7 @@ fn move_hit_loop(
             context
                 .target_mon_context(target)?
                 .mon_mut()
+                .volatile_state
                 .received_attacks
                 .push(ReceivedAttackEntry {
                     source,
@@ -1531,11 +1539,13 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     let mut attack_boosts = context
         .attacker_context()?
         .mon()
+        .volatile_state
         .boosts
         .get(attack_stat.try_into()?);
     let mut defense_boosts = context
         .defender_context()?
         .mon()
+        .volatile_state
         .boosts
         .get(defense_stat.try_into()?);
 
@@ -1951,7 +1961,7 @@ mod direct_move_step {
                 );
                 let mut boost = 0;
                 if !context.active_move().data.ignore_accuracy {
-                    let boosts = context.mon().boosts.clone();
+                    let boosts = context.mon().volatile_state.boosts.clone();
                     let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
                         context.as_mon_context_mut(),
                         fxlang::BattleEvent::ModifyBoosts,
@@ -1960,7 +1970,7 @@ mod direct_move_step {
                     boost = boosts.acc.max(-6).min(6);
                 }
                 if !context.active_move().data.ignore_evasion {
-                    let boosts = context.target_mon().boosts.clone();
+                    let boosts = context.target_mon().volatile_state.boosts.clone();
                     let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
                         &mut context.target_mon_context()?,
                         fxlang::BattleEvent::ModifyBoosts,
@@ -2088,7 +2098,7 @@ fn apply_spread_damage(
             source_handle,
             Some(&effect_handle),
         )?;
-        context.target_mut().damaged_this_turn = true;
+        context.target_mut().volatile_state.damaged_this_turn = true;
 
         core_battle_logs::damage(
             &mut context.target_context()?,
@@ -2193,7 +2203,7 @@ pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool> {
     if context.mon().active {
         return Ok(false);
     }
-    let switch_type = context.mon().force_switch.unwrap_or_default();
+    let switch_type = context.mon().switch_state.force_switch.unwrap_or_default();
     switch_in(&mut context, position, Some(switch_type), true)?;
     Ok(true)
 }
@@ -2468,7 +2478,7 @@ fn apply_move_effects(
             }
         }
     } else if context.active_move().data.user_switch.is_some() && context.mon().hp > 0 {
-        context.mon_mut().needs_switch = context.active_move().data.user_switch;
+        context.mon_mut().switch_state.needs_switch = context.active_move().data.user_switch;
     }
 
     Ok(())
@@ -2538,10 +2548,10 @@ pub fn boost(
     // TODO: AfterBoost event.
     if success {
         if boosts.values().any(|val| val > 0) {
-            context.target_mut().stats_raised_this_turn = true;
+            context.target_mut().volatile_state.stats_raised_this_turn = true;
         }
         if boosts.values().any(|val| val < 0) {
-            context.target_mut().stats_lowered_this_turn = true;
+            context.target_mut().volatile_state.stats_lowered_this_turn = true;
         }
         Ok(true)
     } else {
@@ -2564,12 +2574,13 @@ pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Res
         Box::new(boosts.into_iter().cloned())
     };
     for boost in iter {
-        target_boosts.set(boost, context.target().boosts.get(boost));
+        target_boosts.set(boost, context.target().volatile_state.boosts.get(boost));
         source_boosts.set(
             boost,
             context
                 .source()
                 .wrap_expectation("expected source")?
+                .volatile_state
                 .boosts
                 .get(boost),
         );
@@ -2726,7 +2737,7 @@ fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState])
             continue;
         }
 
-        context.target_mon_mut().force_switch = Some(SwitchType::Normal);
+        context.target_mon_mut().switch_state.force_switch = Some(SwitchType::Normal);
     }
 
     Ok(())
@@ -2785,7 +2796,7 @@ pub fn try_set_status(
 
     // Save the previous status in case an effect callback cancels the status.
     let previous_status = context.target().status.clone();
-    let previous_status_state = context.target().status_state.clone();
+    let previous_status_state = context.target().volatile_state.status_state.clone();
 
     if !core_battle_effects::run_event_for_applying_effect(
         context,
@@ -2801,7 +2812,7 @@ pub fn try_set_status(
     let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    context.target_mut().status_state = fxlang::EffectState::initial_effect_state(
+    context.target_mut().volatile_state.status_state = fxlang::EffectState::initial_effect_state(
         context.as_battle_context_mut(),
         Some(&effect_handle),
         Some(target_handle),
@@ -2813,7 +2824,11 @@ pub fn try_set_status(
         &status_effect_handle,
     )? {
         if let Some(duration) = condition.condition().duration {
-            context.target_mut().status_state.set_duration(duration);
+            context
+                .target_mut()
+                .volatile_state
+                .status_state
+                .set_duration(duration);
         }
     }
 
@@ -2821,7 +2836,11 @@ pub fn try_set_status(
         context,
         fxlang::BattleEvent::Duration,
     ) {
-        context.target_mut().status_state.set_duration(duration);
+        context
+            .target_mut()
+            .volatile_state
+            .status_state
+            .set_duration(duration);
     }
 
     if !core_battle_effects::run_mon_status_event_expecting_bool(
@@ -2831,7 +2850,7 @@ pub fn try_set_status(
     .unwrap_or(true)
     {
         context.target_mut().status = previous_status;
-        context.target_mut().status_state = previous_status_state;
+        context.target_mut().volatile_state.status_state = previous_status_state;
         return Ok(ApplyMoveEffectResult::Failed);
     }
 
@@ -2920,7 +2939,7 @@ pub fn cure_status(
     )?;
 
     context.target_mut().status = None;
-    context.target_mut().status_state = fxlang::EffectState::default();
+    context.target_mut().volatile_state.status_state = fxlang::EffectState::default();
 
     core_battle_effects::run_event_for_applying_effect(
         context,
@@ -2951,7 +2970,12 @@ pub fn add_volatile(
         .wrap_expectation("volatile must have an id")?
         .clone();
 
-    if context.target().volatiles.contains_key(&volatile) {
+    if context
+        .target()
+        .volatile_state
+        .volatiles
+        .contains_key(&volatile)
+    {
         return Ok(core_battle_effects::run_mon_volatile_event_expecting_bool(
             context,
             fxlang::BattleEvent::Restart,
@@ -2987,6 +3011,7 @@ pub fn add_volatile(
     )?;
     context
         .target_mut()
+        .volatile_state
         .volatiles
         .insert(volatile.clone(), effect_state);
 
@@ -2997,6 +3022,7 @@ pub fn add_volatile(
         if let Some(duration) = condition.condition().duration {
             context
                 .target_mut()
+                .volatile_state
                 .volatiles
                 .get_mut(&volatile)
                 .wrap_expectation("expected volatile state to exist")?
@@ -3011,6 +3037,7 @@ pub fn add_volatile(
     ) {
         context
             .target_mut()
+            .volatile_state
             .volatiles
             .get_mut(&volatile)
             .wrap_expectation("expected volatile state to exist")?
@@ -3024,7 +3051,11 @@ pub fn add_volatile(
     )
     .unwrap_or(true)
     {
-        context.target_mut().volatiles.remove(&volatile);
+        context
+            .target_mut()
+            .volatile_state
+            .volatiles
+            .remove(&volatile);
         return Ok(false);
     }
 
@@ -3070,12 +3101,21 @@ pub fn remove_volatile(
         .wrap_expectation("volatile must have an id")?
         .clone();
 
-    if !context.target().volatiles.contains_key(&volatile) {
+    if !context
+        .target()
+        .volatile_state
+        .volatiles
+        .contains_key(&volatile)
+    {
         return Ok(false);
     }
 
     if no_events {
-        context.target_mut().volatiles.remove(&volatile);
+        context
+            .target_mut()
+            .volatile_state
+            .volatiles
+            .remove(&volatile);
         return Ok(true);
     }
 
@@ -3092,7 +3132,11 @@ pub fn remove_volatile(
         AppliedEffectLocation::MonVolatile(mon_handle),
     )?;
 
-    context.target_mut().volatiles.remove(&volatile);
+    context
+        .target_mut()
+        .volatile_state
+        .volatiles
+        .remove(&volatile);
 
     core_battle_logs::remove_volatile(context, &volatile)?;
 
@@ -3119,8 +3163,16 @@ pub fn trap_mon(context: &mut MonContext) -> Result<()> {
 pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> Result<u16> {
     let attack_stat = Stat::Atk;
     let defense_stat = Stat::Def;
-    let attack_boosts = context.mon().boosts.get(attack_stat.try_into()?);
-    let defense_boosts = context.mon().boosts.get(defense_stat.try_into()?);
+    let attack_boosts = context
+        .mon()
+        .volatile_state
+        .boosts
+        .get(attack_stat.try_into()?);
+    let defense_boosts = context
+        .mon()
+        .volatile_state
+        .boosts
+        .get(defense_stat.try_into()?);
     let attack = Mon::calculate_stat(
         context,
         attack_stat,
@@ -3282,11 +3334,11 @@ pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Resul
     if types.is_empty() {
         return Ok(false);
     }
-    context.target_mut().types = types;
+    context.target_mut().volatile_state.types = types;
     let source = context.source_handle();
     let source_effect = context.source_effect_handle().cloned();
     let mut context = context.target_context()?;
-    let types = context.mon().types.clone();
+    let types = context.mon().volatile_state.types.clone();
     core_battle_logs::type_change(&mut context, &types, source_effect, source)?;
     Ok(true)
 }
@@ -3299,7 +3351,10 @@ fn calculate_exp_gain(context: &mut MonContext, fainted_mon_handle: MonHandle) -
     let fainted_mon = context.as_battle_context_mut().mon(fainted_mon_handle)?;
     let species = fainted_mon.base_species.clone();
     let target_level = fainted_mon.level as u32;
-    let participated = fainted_mon.foes_fought_while_active.contains(&mon_handle);
+    let participated = fainted_mon
+        .volatile_state
+        .foes_fought_while_active
+        .contains(&mon_handle);
     let base_exp_yield = context
         .battle()
         .dex
@@ -3359,7 +3414,7 @@ fn learn_moves_at_level(context: &mut MonContext, level: u8) -> Result<()> {
         .battle()
         .dex
         .species
-        .get_by_id(&context.mon().species)?
+        .get_by_id(&context.mon().volatile_state.species)?
         .data
         .learnset
         .iter()
@@ -3409,7 +3464,7 @@ pub fn gain_experience(context: &mut MonContext, exp: u32) -> Result<()> {
         .battle()
         .dex
         .species
-        .get_by_id(&context.mon().species)?
+        .get_by_id(&context.mon().volatile_state.species)?
         .data
         .leveling_rate;
     let new_level = leveling_rate.level_from_exp(context.mon().experience);
@@ -3457,6 +3512,7 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
         let participated = context
             .as_battle_context()
             .mon(fainted_mon_handle)?
+            .volatile_state
             .foes_fought_while_active
             .contains(&foe_handle);
 
@@ -3566,7 +3622,7 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool> {
             fxlang::VariableInput::default(),
         );
     if escaped && !context.player().player_type.wild() && !force {
-        let speed = context.mon().speed;
+        let speed = context.mon().volatile_state.speed;
 
         // Take the average of the speed of all foes.
         let mut foe_speed = 0;
@@ -3575,14 +3631,14 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool> {
             .battle()
             .active_mon_handles_on_side(context.foe_side().index)
         {
-            foe_speed += context.as_battle_context().mon(foe)?.speed;
+            foe_speed += context.as_battle_context().mon(foe)?.volatile_state.speed;
             foe_count += 1;
         }
         let foe_speed = foe_speed / foe_count;
 
         let odds = Fraction::from(speed * 32);
         let odds = odds / Fraction::new(foe_speed, 4);
-        let odds = odds.floor() + 30 * context.player().escape_attempts;
+        let odds = odds.floor() + 30 * context.player().escape_attempts as u32;
         escaped = rand_util::chance(context.battle_mut().prng.as_mut(), odds as u64, 256);
     }
 
@@ -4010,7 +4066,13 @@ pub fn end_ability_even_if_exiting(
     context: &mut ApplyingEffectContext,
     silent: bool,
 ) -> Result<()> {
-    if !context.target().ability.effect_state.started() {
+    if !context
+        .target()
+        .volatile_state
+        .ability
+        .effect_state
+        .started()
+    {
         return Ok(());
     }
 
@@ -4025,7 +4087,14 @@ pub fn end_ability_even_if_exiting(
 
 /// Starts the target Mon's ability, if it is not already started.
 pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
-    if context.target().hp == 0 || context.target().ability.effect_state.started() {
+    if context.target().hp == 0
+        || context
+            .target()
+            .volatile_state
+            .ability
+            .effect_state
+            .started()
+    {
         return Ok(());
     }
 
@@ -4053,7 +4122,7 @@ pub fn set_ability(
         return Ok(false);
     }
 
-    if &context.target().ability.id == ability {
+    if &context.target().volatile_state.ability.id == ability {
         return Ok(false);
     }
 
@@ -4089,7 +4158,7 @@ pub fn set_ability(
     let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    context.target_mut().ability = AbilitySlot {
+    context.target_mut().volatile_state.ability = AbilitySlot {
         id: ability.id().clone(),
         effect_state: fxlang::EffectState::initial_effect_state(
             context.as_battle_context_mut(),
@@ -4307,7 +4376,7 @@ fn end_item_internal(
         .target()
         .item
         .as_ref()
-        .is_none_or(|item| !item.effect_state.started())
+        .is_none_or(|_| !context.target().volatile_state.item_state.started())
     {
         return Ok(());
     }
@@ -4350,7 +4419,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
             .target()
             .item
             .as_ref()
-            .is_none_or(|item| item.effect_state.started())
+            .is_none_or(|_| context.target().volatile_state.item_state.started())
     {
         return Ok(());
     }
@@ -4411,15 +4480,13 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
     let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    context.target_mut().item = Some(ItemSlot {
-        id: item_id,
-        effect_state: fxlang::EffectState::initial_effect_state(
-            context.as_battle_context_mut(),
-            Some(&effect_handle),
-            Some(target_handle),
-            source_handle,
-        )?,
-    });
+    context.target_mut().item = Some(item_id.clone());
+    context.target_mut().volatile_state.item_state = fxlang::EffectState::initial_effect_state(
+        context.as_battle_context_mut(),
+        Some(&effect_handle),
+        Some(target_handle),
+        source_handle,
+    )?;
 
     start_item(context, false)?;
 
@@ -4441,8 +4508,8 @@ pub fn take_item(
     if !context.target().active {
         return Ok(None);
     }
-    let item_id = match &context.target().item {
-        Some(item) => item.id.clone(),
+    let item_id = match context.target().item.clone() {
+        Some(item) => item,
         None => return Ok(None),
     };
     let item_handle = context
@@ -4481,6 +4548,7 @@ pub fn take_item(
     )?;
 
     context.target_mut().item = None;
+    context.target_mut().volatile_state.item_state = fxlang::EffectState::default();
 
     core_battle_effects::run_event_for_applying_effect(
         context,
@@ -4499,9 +4567,10 @@ fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool>
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
 
-    context.target_mut().item_used_this_turn = true;
-    context.target_mut().last_item = Some(item);
+    context.target_mut().volatile_state.item_used_this_turn = true;
+    context.target_mut().volatile_state.last_item = Some(item);
     context.target_mut().item = None;
+    context.target_mut().volatile_state.item_state = fxlang::EffectState::default();
 
     core_battle_effects::run_event_for_applying_effect(
         context,
@@ -4518,8 +4587,8 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         return Ok(false);
     }
 
-    let item_id = match &context.target().item {
-        Some(item) => item.id.clone(),
+    let item_id = match context.target().item.clone() {
+        Some(item) => item,
         None => return Ok(false),
     };
 
@@ -4591,8 +4660,8 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         return Ok(false);
     }
 
-    let item_id = match &context.target().item {
-        Some(item) => item.id.clone(),
+    let item_id = match context.target().item.clone() {
+        Some(item) => item,
         None => return Ok(false),
     };
 
@@ -4637,8 +4706,8 @@ pub fn discard_item(context: &mut ApplyingEffectContext, silent: bool) -> Result
         return Ok(false);
     }
 
-    let item_id = match &context.target().item {
-        Some(item) => item.id.clone(),
+    let item_id = match context.target().item.clone() {
+        Some(item) => item,
         None => return Ok(false),
     };
 
@@ -4813,8 +4882,9 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
 
 /// Clears all negative boosts on the target Mon.
 pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
-    context.target_mut().boosts = context
+    context.target_mut().volatile_state.boosts = context
         .target()
+        .volatile_state
         .boosts
         .non_zero_iter()
         .filter(|(_, val)| *val > 0)
@@ -5046,7 +5116,7 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
     }
 
     // Next, check if the item triggers Mega Evolution.
-    let item = match context.mon().item.as_ref().map(|item| item.id.clone()) {
+    let item = match context.mon().item.clone() {
         Some(item) => item,
         None => return Ok(None),
     };
@@ -5075,26 +5145,28 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
 ///
 /// Used to implement the move "Transform."
 pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
-    if context.target().transformed || context.target().illusion.is_some() {
+    if context.target().volatile_state.transformed
+        || context.target().volatile_state.illusion.is_some()
+    {
         return Ok(false);
     }
 
     let target_context = context.as_battle_context_mut().mon_context(target)?;
     if !target_context.mon().active
-        || target_context.mon().transformed
-        || target_context.mon().illusion.is_some()
+        || target_context.mon().volatile_state.transformed
+        || target_context.mon().volatile_state.illusion.is_some()
     {
         return Ok(false);
     }
 
     // Collect all data specific to the target Mon that should be set after changing the
     // species.
-    let weight = target_context.mon().weight;
-    let types = target_context.mon().types.clone();
-    let stats = target_context.mon().stats.clone();
-    let boosts = target_context.mon().boosts.clone();
-    let ability_id = target_context.mon().ability.id.clone();
-    let mut move_slots = target_context.mon().move_slots.clone();
+    let weight = target_context.mon().volatile_state.weight;
+    let types = target_context.mon().volatile_state.types.clone();
+    let stats = target_context.mon().volatile_state.stats.clone();
+    let boosts = target_context.mon().volatile_state.boosts.clone();
+    let ability_id = target_context.mon().volatile_state.ability.id.clone();
+    let mut move_slots = target_context.mon().volatile_state.move_slots.clone();
     for move_slot in &mut move_slots {
         move_slot.pp = move_slot.max_pp.min(5);
         move_slot.max_pp = move_slot.max_pp.min(5);
@@ -5104,17 +5176,17 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     }
 
     // Set the species first, for the baseline transformation.
-    let species = target_context.mon().species.clone();
-    context.target_mut().transformed = true;
+    let species = target_context.mon().volatile_state.species.clone();
+    context.target_mut().volatile_state.transformed = true;
     Mon::set_species(&mut context.target_context()?, &Id::from(species))?;
 
     // Then, manually set everything else.
-    context.target_mut().weight = weight;
-    context.target_mut().types = types;
-    context.target_mut().stats = stats;
-    context.target_mut().boosts = boosts;
+    context.target_mut().volatile_state.weight = weight;
+    context.target_mut().volatile_state.types = types;
+    context.target_mut().volatile_state.stats = stats;
+    context.target_mut().volatile_state.boosts = boosts;
     set_ability(context, &ability_id, false, true, true)?;
-    context.target_mut().move_slots = move_slots;
+    context.target_mut().volatile_state.move_slots = move_slots;
 
     core_battle_logs::transform(context, target)?;
 
@@ -5123,11 +5195,11 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
 
 /// Sets the illusion of the target of the effect to the given target.
 pub fn set_illusion(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
-    if context.target_handle() == target || context.target().illusion.is_some() {
+    if context.target_handle() == target || context.target().volatile_state.illusion.is_some() {
         return Ok(false);
     }
     let illusion = Mon::physical_details(&context.as_battle_context_mut().mon_context(target)?)?;
-    context.target_mut().illusion = Some(illusion);
+    context.target_mut().volatile_state.illusion = Some(illusion);
 
     // We should not announce that we are starting an illusion. It is assumed that illusions only
     // start before switching in.
@@ -5137,10 +5209,10 @@ pub fn set_illusion(context: &mut ApplyingEffectContext, target: MonHandle) -> R
 
 /// Ends the target's illusion.
 pub fn end_illusion(context: &mut ApplyingEffectContext) -> Result<bool> {
-    if context.target().illusion.is_none() {
+    if context.target().volatile_state.illusion.is_none() {
         return Ok(false);
     }
-    context.target_mut().illusion = None;
+    context.target_mut().volatile_state.illusion = None;
     core_battle_logs::replace(&mut context.target_context()?)?;
     Ok(true)
 }
@@ -5205,7 +5277,7 @@ pub fn forme_change(
 
     // Change the ability after logs, since battle effects start triggering.
     if forme_change_type.permanent() && context.target().hp != 0 {
-        let new_ability = context.target().base_ability.id.clone();
+        let new_ability = context.target().base_ability.clone();
         set_ability(context, &new_ability, false, true, true)?;
     }
 
@@ -5276,12 +5348,12 @@ pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
         &mega_evolution.species,
         FormeChangeType::MegaEvolution,
     )? {
-        context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Failed);
+        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(false);
     }
 
     context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::MegaEvolution);
-    context.mon_mut().move_this_turn_outcome = Some(MoveOutcome::Success);
+    context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Success);
     context.player_mut().can_mega_evolve = false;
     Ok(true)
 }

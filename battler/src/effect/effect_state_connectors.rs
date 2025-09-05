@@ -64,7 +64,13 @@ impl fxlang::EffectStateConnector for MonAbilityEffectStateConnector {
     }
 
     fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
-        Ok(Some(&mut context.mon_mut(self.mon)?.ability.effect_state))
+        Ok(Some(
+            &mut context
+                .mon_mut(self.mon)?
+                .volatile_state
+                .ability
+                .effect_state,
+        ))
     }
 
     fn applied_effect_location(&self) -> AppliedEffectLocation {
@@ -95,11 +101,12 @@ impl fxlang::EffectStateConnector for MonItemEffectStateConnector {
     }
 
     fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
-        Ok(context
-            .mon_mut(self.mon)?
+        context
+            .mon(self.mon)?
             .item
-            .as_mut()
-            .map(|item| &mut item.effect_state))
+            .clone()
+            .map(|_| Ok(&mut context.mon_mut(self.mon)?.volatile_state.item_state))
+            .transpose()
     }
 
     fn applied_effect_location(&self) -> AppliedEffectLocation {
@@ -130,7 +137,9 @@ impl fxlang::EffectStateConnector for MonStatusEffectStateConnector {
     }
 
     fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
-        Ok(Some(&mut context.mon_mut(self.mon)?.status_state))
+        Ok(Some(
+            &mut context.mon_mut(self.mon)?.volatile_state.status_state,
+        ))
     }
 
     fn applied_effect_location(&self) -> AppliedEffectLocation {
@@ -160,12 +169,17 @@ impl fxlang::EffectStateConnector for MonVolatileStatusEffectStateConnector {
     fn exists(&self, context: &mut Context) -> Result<bool> {
         Ok(context
             .mon(self.mon)?
+            .volatile_state
             .volatiles
             .contains_key(&self.volatile))
     }
 
     fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
-        Ok(context.mon_mut(self.mon)?.volatiles.get_mut(&self.volatile))
+        Ok(context
+            .mon_mut(self.mon)?
+            .volatile_state
+            .volatiles
+            .get_mut(&self.volatile))
     }
 
     fn applied_effect_location(&self) -> AppliedEffectLocation {

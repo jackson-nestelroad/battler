@@ -25,7 +25,7 @@ use crate::{
 /// The persisted state of an individual [`Effect`][`crate::effect::Effect`].
 ///
 /// Allows fxlang variables to be persisted across multiple callbacks.
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct EffectState {
     initialized: bool,
     values: HashMap<String, Value>,

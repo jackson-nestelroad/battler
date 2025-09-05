@@ -21,7 +21,7 @@ pub fn effective_types(context: &mut MonContext) -> Vec<Type> {
     let types = core_battle_effects::run_event_for_mon_expecting_types(
         context,
         fxlang::BattleEvent::Types,
-        context.mon().types.clone(),
+        context.mon().volatile_state.types.clone(),
     );
     if !types.is_empty() {
         return types;
@@ -171,7 +171,7 @@ pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
     ) {
         return None;
     }
-    Some(context.mon().ability.id.clone())
+    Some(context.mon().volatile_state.ability.id.clone())
 }
 
 /// The effective item of the [`Mon`][`crate::battle::Mon`].
@@ -185,7 +185,7 @@ pub fn effective_item(context: &mut MonContext) -> Option<Id> {
     ) {
         return None;
     }
-    context.mon().item.as_ref().map(|item| item.id.clone())
+    context.mon().item.clone()
 }
 
 /// Checks if the [`Move`][`crate::moves::Move`] makes contact with its targets.

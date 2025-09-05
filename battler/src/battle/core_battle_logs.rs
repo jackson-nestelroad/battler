@@ -202,7 +202,7 @@ fn forme_change_internal(context: &mut ApplyingEffectContext, header: String) ->
         .battle()
         .dex
         .species
-        .get_by_id(&context.target().species)?
+        .get_by_id(&context.target().volatile_state.species)?
         .data
         .name
         .clone();
@@ -663,7 +663,7 @@ pub fn transform(context: &mut ApplyingEffectContext, target: MonHandle) -> Resu
         .battle()
         .dex
         .species
-        .get_by_id(&context.target().species)?
+        .get_by_id(&context.target().volatile_state.species)?
         .data
         .name
         .clone();
@@ -688,7 +688,7 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
         .battle()
         .dex
         .abilities
-        .get_by_id(&context.target().ability.id)?
+        .get_by_id(&context.target().volatile_state.ability.id)?
         .data
         .name
         .clone();
@@ -711,7 +711,7 @@ pub fn ability_end(context: &mut ApplyingEffectContext) -> Result<()> {
         .battle()
         .dex
         .abilities
-        .get_by_id(&context.target().ability.id)?
+        .get_by_id(&context.target().volatile_state.ability.id)?
         .data
         .name
         .clone();
@@ -730,8 +730,8 @@ pub fn ability_end(context: &mut ApplyingEffectContext) -> Result<()> {
 }
 
 pub fn item(context: &mut ApplyingEffectContext) -> Result<()> {
-    let item = match &context.target().item {
-        Some(item) => item.id.clone(),
+    let item = match context.target().item.clone() {
+        Some(item) => item,
         None => return Err(general_error("target has no item")),
     };
     let item = context
@@ -763,8 +763,8 @@ pub fn item_end(
     silent: bool,
     eat: bool,
 ) -> Result<()> {
-    let item = match &context.target().item {
-        Some(item) => item.id.clone(),
+    let item = match context.target().item.clone() {
+        Some(item) => item,
         None => return Err(general_error("target has no item")),
     };
     let item = context
@@ -961,11 +961,11 @@ pub fn level_up(context: &mut MonContext) -> Result<()> {
         ("mon", Mon::position_details(context)?),
         ("level", context.mon().level),
         ("hp", context.mon().base_max_hp),
-        ("atk", context.mon().stats.get(Stat::Atk)),
-        ("def", context.mon().stats.get(Stat::Def)),
-        ("spa", context.mon().stats.get(Stat::SpAtk)),
-        ("spd", context.mon().stats.get(Stat::SpDef)),
-        ("spe", context.mon().stats.get(Stat::Spe)),
+        ("atk", context.mon().volatile_state.stats.get(Stat::Atk)),
+        ("def", context.mon().volatile_state.stats.get(Stat::Def)),
+        ("spa", context.mon().volatile_state.stats.get(Stat::SpAtk)),
+        ("spd", context.mon().volatile_state.stats.get(Stat::SpDef)),
+        ("spe", context.mon().volatile_state.stats.get(Stat::Spe)),
     );
     context.battle_mut().log(event);
     Ok(())

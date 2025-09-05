@@ -440,7 +440,7 @@ impl CallbackHandle {
     /// The speed of the callback.
     pub fn speed(&self, context: &mut Context) -> Result<u32> {
         if let Some(mon_handle) = self.applied_effect_handle.location.mon_handle() {
-            return Ok(context.mon(mon_handle)?.speed as u32);
+            return Ok(context.mon(mon_handle)?.volatile_state.speed as u32);
         }
         Ok(0)
     }
@@ -874,7 +874,7 @@ fn find_callbacks_on_mon(
             AppliedEffectLocation::MonStatus(mon),
         ));
     }
-    for volatile in context.mon().volatiles.clone().keys() {
+    for volatile in context.mon().volatile_state.volatiles.clone().keys() {
         let volatile_status_handle = context.battle_mut().get_effect_handle_by_id(&volatile)?;
         callbacks.push(CallbackHandle::new(
             volatile_status_handle.clone(),
@@ -887,7 +887,7 @@ fn find_callbacks_on_mon(
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressMonAbility.callback_lookup_layer()
     {
-        let ability = context.mon().ability.id.clone();
+        let ability = context.mon().volatile_state.ability.id.clone();
         let effective_ability = mon_states::effective_ability(&mut context);
         let suppressed = effective_ability.is_none();
         if event.force_default_callback() || !suppressed {
@@ -904,7 +904,7 @@ fn find_callbacks_on_mon(
     }
 
     if event.callback_lookup_layer() > fxlang::BattleEvent::SuppressMonItem.callback_lookup_layer()
-        && let Some(item) = context.mon().item.as_ref().map(|item| item.id.clone())
+        && let Some(item) = context.mon().item.clone()
     {
         let effective_item = mon_states::effective_item(&mut context);
         let suppressed = effective_item.is_none();
@@ -922,9 +922,9 @@ fn find_callbacks_on_mon(
     }
 
     // Species only activates if we are truly that species.
-    if context.mon().species == context.mon().base_species {
+    if context.mon().volatile_state.species == context.mon().base_species {
         callbacks.push(CallbackHandle::new(
-            EffectHandle::Species(context.mon().species.clone()),
+            EffectHandle::Species(context.mon().volatile_state.species.clone()),
             event,
             modifier,
             AppliedEffectLocation::Mon(context.mon_handle()),
