@@ -20273,6 +20273,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Venusaur",
+    "gigantamax_move": "G-Max Vine Lash",
     "flags": [],
     "learnset": {}
   },
@@ -20306,6 +20307,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Charizard",
+    "gigantamax_move": "G-Max Wildfire",
     "flags": [],
     "learnset": {}
   },
@@ -20338,6 +20340,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Blastoise",
+    "gigantamax_move": "G-Max Cannonade",
     "flags": [],
     "learnset": {}
   },
@@ -20371,6 +20374,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Butterfree",
+    "gigantamax_move": "G-Max Befuddle",
     "flags": [],
     "learnset": {}
   },
@@ -20403,6 +20407,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Pikachu",
+    "gigantamax_move": "G-Max Volt Crash",
     "flags": [],
     "learnset": {}
   },
@@ -20435,6 +20440,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Meowth",
+    "gigantamax_move": "G-Max Gold Rush",
     "flags": [],
     "learnset": {}
   },
@@ -20467,6 +20473,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Machamp",
+    "gigantamax_move": "G-Max Chi Strike",
     "flags": [],
     "learnset": {}
   },
@@ -20499,6 +20506,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Gengar",
+    "gigantamax_move": "G-Max Terror",
     "flags": [],
     "learnset": {}
   },
@@ -20531,6 +20539,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Kingler",
+    "gigantamax_move": "G-Max Foam Burst",
     "flags": [],
     "learnset": {}
   },
@@ -20564,6 +20573,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Lapras",
+    "gigantamax_move": "G-Max Resonance",
     "flags": [],
     "learnset": {}
   },
@@ -20596,6 +20606,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Eevee",
+    "gigantamax_move": "G-Max Cuddle",
     "flags": [],
     "learnset": {}
   },
@@ -20628,6 +20639,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Snorlax",
+    "gigantamax_move": "G-Max Replenish",
     "flags": [],
     "learnset": {}
   },

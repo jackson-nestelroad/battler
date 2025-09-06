@@ -5534,41 +5534,57 @@ pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
 }
 
 /// Looks up the Max Move for the given move ID.
-pub fn max_move_by_id(context: &mut MonContext, move_id: &Id) -> Result<Option<Id>> {
+pub fn max_move_by_id(context: &MonContext, move_id: &Id) -> Result<Option<Id>> {
     let mov = context.battle().dex.moves.get_by_id(&move_id)?;
-    max_move(context.as_battle_context(), &mov.data)
+    max_move(context, &mov.data)
 }
 
 /// Looks up the Max Move for the given move data.
-pub fn max_move(context: &Context, move_data: &MoveData) -> Result<Option<Id>> {
-    // TODO: Gigantamax moves.
-    if move_data.category != MoveCategory::Status && move_data.max_move.is_none() {
+pub fn max_move(context: &MonContext, move_data: &MoveData) -> Result<Option<Id>> {
+    if move_data.category == MoveCategory::Status {
+        return Ok(Some(Id::from_known("maxguard")));
+    }
+
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.mon().volatile_state.species)?;
+    if let Some(gigantamax_move) = &species.data.gigantamax_move {
+        if let Ok(gigantamax_move) = context
+            .battle()
+            .dex
+            .moves
+            .get_by_id(&Id::from(gigantamax_move.as_str()))
+            && gigantamax_move.data.primary_type == move_data.primary_type
+        {
+            return Ok(Some(gigantamax_move.id().clone()));
+        }
+    }
+
+    if move_data.max_move.is_none() {
         return Ok(None);
     }
 
-    let id = if move_data.category == MoveCategory::Status {
-        "maxguard"
-    } else {
-        match move_data.primary_type {
-            Type::Flying => "maxairstream",
-            Type::Dark => "maxdarkness",
-            Type::Fire => "maxflare",
-            Type::Bug => "maxflutterby",
-            Type::Water => "maxgeyser",
-            Type::Ice => "maxhailstorm",
-            Type::Fighting => "maxknuckle",
-            Type::Electric => "maxlightning",
-            Type::Psychic => "maxmindstorm",
-            Type::Poison => "maxooze",
-            Type::Grass => "maxovergrowth",
-            Type::Ghost => "maxphantasm",
-            Type::Ground => "maxquake",
-            Type::Rock => "maxrockfall",
-            Type::Fairy => "maxstarfall",
-            Type::Steel => "maxsteelspike",
-            Type::Normal | Type::None => "maxstrike",
-            Type::Dragon => "maxwyrmwind",
-        }
+    let id = match move_data.primary_type {
+        Type::Flying => "maxairstream",
+        Type::Dark => "maxdarkness",
+        Type::Fire => "maxflare",
+        Type::Bug => "maxflutterby",
+        Type::Water => "maxgeyser",
+        Type::Ice => "maxhailstorm",
+        Type::Fighting => "maxknuckle",
+        Type::Electric => "maxlightning",
+        Type::Psychic => "maxmindstorm",
+        Type::Poison => "maxooze",
+        Type::Grass => "maxovergrowth",
+        Type::Ghost => "maxphantasm",
+        Type::Ground => "maxquake",
+        Type::Rock => "maxrockfall",
+        Type::Fairy => "maxstarfall",
+        Type::Steel => "maxsteelspike",
+        Type::Normal | Type::None => "maxstrike",
+        Type::Dragon => "maxwyrmwind",
     };
 
     match context.battle().dex.moves.get_by_id(&Id::from_known(id)) {

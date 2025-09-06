@@ -11224,6 +11224,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Melmetal",
+    "gigantamax_move": "G-Max Meltdown",
     "flags": ["Mythical"],
     "learnset": {}
   },

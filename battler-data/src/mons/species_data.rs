@@ -133,6 +133,8 @@ pub struct SpeciesData {
     pub required_items: HashSet<String>,
     /// The species and forme name this forme transforms from.
     pub changes_from: Option<String>,
+    /// The Gigantamax move, if any.
+    pub gigantamax_move: Option<String>,
 
     /// Flags.
     #[serde(default)]
@@ -196,7 +198,7 @@ impl SpeciesData {
     /// Is the species a Gigantamax?
     pub fn gigantamax(&self) -> bool {
         match self.forme.as_ref().map(|s| s.as_str()) {
-            Some("Gmax") => true,
+            Some("Gmax" | "Eternamax") => true,
             _ => false,
         }
     }

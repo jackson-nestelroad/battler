@@ -1061,7 +1061,7 @@
         ],
         "on_power_up_move": [
           "modify_move_type: $move",
-          "$max_move_id = func_call(max_move: $move)",
+          "$max_move_id = func_call(max_move: $user $move)",
           "if !$max_move_id:",
           ["return"],
           "$max_move = func_call(new_active_move: $max_move_id $user)",

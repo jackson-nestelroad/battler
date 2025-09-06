@@ -2988,13 +2988,15 @@ fn modify_move_type(mut context: FunctionContext) -> Result<()> {
 }
 
 fn max_move(mut context: FunctionContext) -> Result<Option<Value>> {
+    let target = context.target_handle_positional()?;
     let move_handle = context
         .pop_front()
         .wrap_expectation("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
-    let move_data = &context.evaluation_context().active_move(move_handle)?.data;
-    core_battle_actions::max_move(context.evaluation_context().battle_context(), move_data)
+    let context = context.mon_context(target)?;
+    let move_data = &context.as_battle_context().active_move(move_handle)?.data;
+    core_battle_actions::max_move(&context, move_data)
         .map(|move_id| move_id.map(|val| Value::String(val.to_string())))
 }
 
