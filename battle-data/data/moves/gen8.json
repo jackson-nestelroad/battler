@@ -7,7 +7,30 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["NoMetronome", "Stalling"]
+    "flags": ["Max", "NoMetronome", "Stalling"],
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": [
+          "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
+        ],
+        "on_hit": ["add_volatile: $target stall"]
+      },
+      "condition": {
+        "duration": 1,
+        "callbacks": {
+          "on_start": ["log_single_turn: with_target"],
+          "on_try_hit": {
+            "priority": 1,
+            "program": [
+              "if func_call(move_has_flag: $move bypassmaxguard):",
+              ["return"],
+              "log_activate: with_target",
+              "return stop"
+            ]
+          }
+        }
+      }
+    }
   },
   "dynamaxcannon": {
     "name": "Dynamax Cannon",
@@ -96,7 +119,8 @@
     "target": "Normal",
     "flags": ["Mirror", "NoParentalBond", "Protect"],
     "multihit": 2,
-    "smart_target": true
+    "smart_target": true,
+    "max_move": { "base_power": 130 }
   },
   "teatime": {
     "name": "Teatime",
@@ -153,7 +177,17 @@
     "accuracy": "exempt",
     "base_power": 100,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_weather: harshsunlight"
+        ]
+      }
+    }
   },
   "maxflutterby": {
     "name": "Max Flutterby",
@@ -163,7 +197,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'spa:-1'"]
+        ]
+      }
+    }
   },
   "maxlightning": {
     "name": "Max Lightning",
@@ -173,7 +218,17 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: electricterrain"
+        ]
+      }
+    }
   },
   "maxstrike": {
     "name": "Max Strike",
@@ -183,7 +238,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'spe:-1'"]
+        ]
+      }
+    }
   },
   "maxknuckle": {
     "name": "Max Knuckle",
@@ -193,7 +259,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'atk:1'"]
+        ]
+      }
+    }
   },
   "maxphantasm": {
     "name": "Max Phantasm",
@@ -203,7 +280,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'def:-1'"]
+        ]
+      }
+    }
   },
   "maxhailstorm": {
     "name": "Max Hailstorm",
@@ -213,7 +301,17 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_weather: hailweather"
+        ]
+      }
+    }
   },
   "maxooze": {
     "name": "Max Ooze",
@@ -223,7 +321,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'spa:1'"]
+        ]
+      }
+    }
   },
   "maxgeyser": {
     "name": "Max Geyser",
@@ -233,7 +342,17 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_weather: rainweather"
+        ]
+      }
+    }
   },
   "maxairstream": {
     "name": "Max Airstream",
@@ -243,7 +362,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'spe:1'"]
+        ]
+      }
+    }
   },
   "maxstarfall": {
     "name": "Max Starfall",
@@ -253,7 +383,17 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: mistyterrain"
+        ]
+      }
+    }
   },
   "maxwyrmwind": {
     "name": "Max Wyrmwind",
@@ -263,7 +403,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'atk:-1'"]
+        ]
+      }
+    }
   },
   "maxmindstorm": {
     "name": "Max Mindstorm",
@@ -273,7 +424,17 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: psychicterrain"
+        ]
+      }
+    }
   },
   "maxrockfall": {
     "name": "Max Rockfall",
@@ -283,7 +444,17 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_weather: sandstorm"
+        ]
+      }
+    }
   },
   "maxquake": {
     "name": "Max Quake",
@@ -293,7 +464,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'spd:1'"]
+        ]
+      }
+    }
   },
   "maxdarkness": {
     "name": "Max Darkness",
@@ -303,7 +485,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'spd:-1'"]
+        ]
+      }
+    }
   },
   "maxovergrowth": {
     "name": "Max Overgrowth",
@@ -313,7 +506,17 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: grassyterrain"
+        ]
+      }
+    }
   },
   "maxsteelspike": {
     "name": "Max Steelspike",
@@ -323,7 +526,18 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": ["Max", "NoMetronome"],
+    "user_hit_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'def:1'"]
+        ]
+      }
+    }
   },
   "clangoroussoul": {
     "name": "Clangorous Soul",
@@ -588,7 +802,8 @@
     "base_power": 25,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 130 }
   },
   "meteorbeam": {
     "name": "Meteor Beam",
@@ -639,7 +854,8 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "max_move": { "base_power": 140 }
   },
   "terrainpulse": {
     "name": "Terrain Pulse",
@@ -649,7 +865,8 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Pulse"]
+    "flags": ["Mirror", "Protect", "Pulse"],
+    "max_move": { "base_power": 130 }
   },
   "skittersmack": {
     "name": "Skitter Smack",
@@ -729,7 +946,8 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "multiaccuracy": true,
-    "multihit": 3
+    "multihit": 3,
+    "max_move": { "base_power": 140 }
   },
   "dualwingbeat": {
     "name": "Dual Wingbeat",
@@ -740,7 +958,8 @@
     "base_power": 40,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 130 }
   },
   "scorchingsands": {
     "name": "Scorching Sands",
@@ -782,7 +1001,8 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "multihit": 3,
-    "will_crit": true
+    "will_crit": true,
+    "max_move": { "base_power": 130 }
   },
   "thundercage": {
     "name": "Thunder Cage",

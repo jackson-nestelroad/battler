@@ -160,7 +160,8 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 130 }
   },
   "synchronoise": {
     "name": "Synchronoise",
@@ -179,7 +180,8 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"]
+    "flags": ["Bullet", "Mirror", "Protect"],
+    "max_move": { "base_power": 130 }
   },
   "soak": {
     "name": "Soak",
@@ -317,7 +319,8 @@
     "accuracy": 100,
     "base_power": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "max_move": { "base_power": 130 }
   },
   "quickguard": {
     "name": "Quick Guard",
@@ -672,7 +675,8 @@
     "base_power": 40,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 130 }
   },
   "heartstamp": {
     "name": "Heart Stamp",
@@ -724,7 +728,8 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 130 }
   },
   "leaftornado": {
     "name": "Leaf Tornado",
@@ -785,7 +790,8 @@
     "base_power": 25,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 130 }
   },
   "hurricane": {
     "name": "Hurricane",
@@ -817,7 +823,8 @@
     "base_power": 50,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 130 }
   },
   "searingshot": {
     "name": "Searing Shot",

@@ -298,6 +298,8 @@ pub struct MonMoveRequest {
     pub team_position: usize,
     pub moves: Vec<MonMoveSlotData>,
     #[serde(default)]
+    pub max_moves: Vec<MonMoveSlotData>,
+    #[serde(default)]
     pub trapped: bool,
     #[serde(default)]
     pub can_mega_evolve: bool,
@@ -865,6 +867,22 @@ impl Mon {
     /// viewed as the Mon's available move options.
     pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>> {
         Self::moves_and_locked_move(context).map(|(moves, _)| moves)
+    }
+
+    /// Looks up all Max Move slot data.
+    ///
+    /// Does not account for locked moves.
+    fn max_moves(context: &mut MonContext) -> Result<Vec<MoveSlot>> {
+        let mut max_moves = context.mon().volatile_state.move_slots.clone();
+        for move_slot in &mut max_moves {
+            if let Some(max_move) = core_battle_actions::max_move_by_id(context, &move_slot.id)? {
+                let mov = context.battle().dex.moves.get_by_id(&max_move)?;
+                move_slot.id = mov.id().clone();
+                move_slot.name = mov.data.name.clone();
+                move_slot.target = mov.data.target;
+            }
+        }
+        Ok(max_moves)
     }
 
     fn position_on_side_by_active_position(context: &MonContext, active_position: usize) -> usize {
@@ -1452,6 +1470,7 @@ impl Mon {
         let mut request = MonMoveRequest {
             team_position: context.mon().team_position,
             moves,
+            max_moves: Vec::default(),
             trapped: false,
             can_mega_evolve: false,
             can_dynamax: false,
@@ -1468,6 +1487,13 @@ impl Mon {
                 context.player().can_mega_evolve && context.mon().next_turn_state.can_mega_evolve;
             request.can_dynamax =
                 context.player().can_dynamax && context.mon().next_turn_state.can_dynamax;
+
+            if request.can_dynamax {
+                request.max_moves = Self::max_moves(context)?
+                    .into_iter()
+                    .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
+                    .collect::<Result<_>>()?;
+            }
         } else {
             request.locked_into_move = true;
         }

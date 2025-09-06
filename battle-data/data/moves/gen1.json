@@ -40,7 +40,8 @@
     "base_power": 18,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 100 }
   },
   "megapunch": {
     "name": "Mega Punch",
@@ -123,7 +124,8 @@
     "accuracy": 30,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "OHKO", "Protect"],
-    "ohko_type": true
+    "ohko_type": true,
+    "max_move": { "base_power": 130 }
   },
   "razorwind": {
     "name": "Razor Wind",
@@ -135,9 +137,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Charge", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "crit_ratio": 2,
-    "effect": {
-      "delegates": ["condition:chargemovebase"]
-    }
+    "effect": { "delegates": ["condition:chargemovebase"] }
   },
   "swordsdance": {
     "name": "Swords Dance",
@@ -216,9 +216,7 @@
       "NoSleepTalk",
       "Protect"
     ],
-    "effect": {
-      "delegates": ["condition:chargemovebase"]
-    },
+    "effect": { "delegates": ["condition:chargemovebase"] },
     "condition": {
       "duration": 2,
       "callbacks": {
@@ -301,7 +299,8 @@
     "base_power": 30,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 80 }
   },
   "megakick": {
     "name": "Mega Kick",
@@ -395,7 +394,8 @@
     "accuracy": 30,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "OHKO", "Protect"],
-    "ohko_type": true
+    "ohko_type": true,
+    "max_move": { "base_power": 130 }
   },
   "tackle": {
     "name": "Tackle",
@@ -493,6 +493,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "multihit": 2,
+    "max_move": { "base_power": 100 },
     "secondary_effects": [{ "chance": "20%", "target": { "status": "psn" } }]
   },
   "pinmissile": {
@@ -504,7 +505,8 @@
     "base_power": 25,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 130 }
   },
   "leer": {
     "name": "Leer",
@@ -908,6 +910,7 @@
       "NoMetronome",
       "Protect"
     ],
+    "max_move": { "base_power": 75 },
     "effect": {
       "callbacks": {
         "on_before_turn": ["add_volatile: $mon $this.id"],
@@ -955,6 +958,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 75 },
     "effect": { "callbacks": { "on_move_damage": ["return $source.level"] } }
   },
   "strength": {
@@ -1177,11 +1181,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": { "status": "par" },
-    "effect": {
-      "callbacks": {
-        "on_ignore_immunity": ["return false"]
-      }
-    }
+    "effect": { "callbacks": { "on_ignore_immunity": ["return false"] } }
   },
   "thunder": {
     "name": "Thunder",
@@ -1235,7 +1235,8 @@
     "accuracy": 30,
     "target": "Normal",
     "flags": ["Mirror", "OHKO", "Protect"],
-    "ohko_type": true
+    "ohko_type": true,
+    "max_move": { "base_power": 130 }
   },
   "dig": {
     "name": "Dig",
@@ -1254,9 +1255,7 @@
       "NoSleepTalk",
       "Protect"
     ],
-    "effect": {
-      "delegates": ["condition:chargemovebase"]
-    },
+    "effect": { "delegates": ["condition:chargemovebase"] },
     "condition": {
       "duration": 2,
       "callbacks": {
@@ -1548,9 +1547,7 @@
     "hit_effect": { "boosts": { "def": 1 }, "volatile_status": "defensecurl" },
     "condition": {
       "no_copy": true,
-      "callbacks": {
-        "on_restart": ["return true"]
-      }
+      "callbacks": { "on_restart": ["return true"] }
     }
   },
   "barrier": {
@@ -1910,9 +1907,7 @@
     ],
     "effect": {
       "delegates": ["condition:chargemovebase"],
-      "callbacks": {
-        "on_charge_move": ["boost: $user 'def:1'"]
-      }
+      "callbacks": { "on_charge_move": ["boost: $user 'def:1'"] }
     }
   },
   "spikecannon": {
@@ -1924,7 +1919,8 @@
     "base_power": 20,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 120 }
   },
   "constrict": {
     "name": "Constrict",
@@ -2007,9 +2003,7 @@
     "flags": ["Heal", "Mirror", "Protect"],
     "drain_percent": "1/2",
     "effect": {
-      "callbacks": {
-        "on_try_immunity": ["return $target.is_asleep"]
-      }
+      "callbacks": { "on_try_immunity": ["return $target.is_asleep"] }
     }
   },
   "poisongas": {
@@ -2074,9 +2068,7 @@
     "secondary_effects": [
       { "chance": "30%", "target": { "volatile_status": "flinch" } }
     ],
-    "effect": {
-      "delegates": ["condition:chargemovebase"]
-    }
+    "effect": { "delegates": ["condition:chargemovebase"] }
   },
   "transform": {
     "name": "Transform",
@@ -2212,7 +2204,8 @@
     "base_power": 18,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 100 }
   },
   "bonemerang": {
     "name": "Bonemerang",
@@ -2223,7 +2216,8 @@
     "base_power": 50,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 130 }
   },
   "rest": {
     "name": "Rest",

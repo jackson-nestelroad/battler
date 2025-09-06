@@ -481,6 +481,8 @@ mod battler_service_test {
             ball: "Poké Ball".to_owned(),
             hidden_power_type: None,
             different_original_trainer: false,
+            dynamax_level: 0,
+            gigantamax_factor: false,
             persistent_battle_data: MonPersistentBattleData::default(),
         }
     }

@@ -834,6 +834,7 @@ where
                             "damaged_this_turn" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.damaged_this_turn,
                             ),
+                            "dynamaxed" => ValueRef::Boolean(context.mon(mon_handle)?.dynamaxed),
                             "effective_ability" => {
                                 match mon_states::effective_ability(
                                     &mut context.mon_context(mon_handle)?,

@@ -34,6 +34,7 @@ pub mod CallbackFlag {
     pub const TakesOptionalEffect: u32 = 1 << 10;
     pub const TakesPlayer: u32 = 1 << 11;
 
+    pub const ReturnsActiveMove: u32 = 1 << 18;
     pub const ReturnsType: u32 = 1 << 19;
     pub const ReturnsStatTable: u32 = 1 << 20;
     pub const ReturnsMoveTarget: u32 = 1 << 21;
@@ -141,6 +142,10 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsType
         | CallbackFlag::ReturnsVoid,
+    SourceMoveActiveMove = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsActiveMove,
 
     MoveModifier = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
@@ -737,7 +742,7 @@ pub enum BattleEvent {
     ModifyFriendshipIncrease,
     /// Runs when modifying the type of a move.
     ///
-    /// Runs on the active move.
+    /// Runs on the active move and in the context of a move user.
     #[string = "ModifyMoveType"]
     ModifyMoveType,
     /// Runs when determining the priority of a move.
@@ -828,6 +833,11 @@ pub enum BattleEvent {
     /// Runs on the item.
     #[string = "PlayerUse"]
     PlayerUse,
+    /// Runs when a Mon uses a move, to power up the chosen move.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "PowerUpMove"]
+    PowerUpMove,
     /// Runs when a Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
@@ -1263,6 +1273,7 @@ impl BattleEvent {
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
             Self::PlayerUse => CommonCallbackType::MonVoid as u32,
+            Self::PowerUpMove => CommonCallbackType::SourceMoveActiveMove as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::PreventUsedItems => CommonCallbackType::MonResult as u32,
             Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
@@ -1417,6 +1428,7 @@ impl BattleEvent {
                     | CallbackFlag::ReturnsMoveTarget,
             ),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
+            Some(ValueType::ActiveMove) => self.has_flag(CallbackFlag::ReturnsActiveMove),
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
             Some(ValueType::MoveTarget) => self.has_flag(CallbackFlag::ReturnsMoveTarget),
             Some(ValueType::StatTable) => self.has_flag(CallbackFlag::ReturnsStatTable),

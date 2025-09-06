@@ -22,6 +22,7 @@ pub use mon_override::MonOverride;
 pub use move_category::MoveCategory;
 pub use move_data::{
     HitEffect,
+    MaxMoveData,
     MoveData,
     SecondaryEffectData,
 };

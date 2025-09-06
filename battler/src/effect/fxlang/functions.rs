@@ -110,6 +110,7 @@ pub fn run_function(
         "all_mons_in_party" => all_mons_in_party(context).map(|val| Some(val)),
         "all_mons_on_side" => all_mons_on_side(context).map(|val| Some(val)),
         "all_types" => all_types(context).map(|val| Some(val)),
+        "allies_and_self" => allies_and_self(context).map(|val| Some(val)),
         "any_mon_will_move_this_turn" => any_mon_will_move_this_turn(context).map(|val| Some(val)),
         "append" => append(context).map(|val| Some(val)),
         "apply_drain" => apply_drain(context).map(|()| None),
@@ -267,6 +268,7 @@ pub fn run_function(
         "set_pp" => set_pp(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
+        "set_terrain" => set_terrain(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
@@ -2309,6 +2311,15 @@ fn all_foes(mut context: FunctionContext) -> Result<Value> {
     ))
 }
 
+fn allies_and_self(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    Ok(Value::List(
+        Mon::active_allies_and_self(&mut context.mon_context(mon_handle)?)
+            .map(|mon| Value::Mon(mon))
+            .collect(),
+    ))
+}
+
 fn clear_boosts(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
     context.mon_context(mon_handle)?.mon_mut().clear_boosts();
@@ -2654,6 +2665,17 @@ fn set_weather(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid weather")?;
     let weather = Id::from(weather);
     core_battle_actions::set_weather(&mut context.forward_to_field_effect()?, &weather)
+        .map(Value::Boolean)
+}
+
+fn set_terrain(mut context: FunctionContext) -> Result<Value> {
+    let terrain = context
+        .pop_front()
+        .wrap_expectation("missing terrain")?
+        .string()
+        .wrap_error_with_message("invalid terrain")?;
+    let terrain = Id::from(terrain);
+    core_battle_actions::set_terrain(&mut context.forward_to_field_effect()?, &terrain)
         .map(Value::Boolean)
 }
 

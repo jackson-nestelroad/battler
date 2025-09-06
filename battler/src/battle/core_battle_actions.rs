@@ -19,6 +19,7 @@ use battler_data::{
     Identifiable,
     ItemFlag,
     MoveCategory,
+    MoveData,
     MoveFlag,
     MoveSource,
     MoveTarget,
@@ -454,7 +455,7 @@ fn do_move_internal(
         .volatile_state
         .last_move_selected
         .as_ref()
-        .is_some_and(|move_id| move_id == context.active_move().id());
+        .is_some_and(|last_move| last_move == &move_id);
 
     // Set the last move of the user only if they selected it for use.
     //
@@ -494,7 +495,6 @@ fn do_move_internal(
             1,
         );
         if deduction > 0 {
-            let move_id = context.active_move().id().clone();
             context.mon_mut().deduct_pp(&move_id, deduction);
         }
     }
@@ -527,12 +527,22 @@ pub fn use_move(
 /// This code is shared between chosen and external moves.
 pub fn use_active_move(
     context: &mut MonContext,
-    active_move_handle: MoveHandle,
+    mut active_move_handle: MoveHandle,
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     external: bool,
     directly_used: bool,
 ) -> Result<bool> {
+    // Power up the move if applicable (e.g., Max Moves).
+    if let Some(powered_up_move_handle) =
+        core_battle_effects::run_event_for_mon_expecting_move_quick_return(
+            context,
+            fxlang::BattleEvent::PowerUpMove,
+        )
+    {
+        active_move_handle = powered_up_move_handle;
+    }
+
     if directly_used {
         context.mon_mut().volatile_state.move_this_turn_outcome = None;
         context.mon_mut().set_active_move(active_move_handle);
@@ -628,6 +638,11 @@ fn use_active_move_internal(
         move_type,
     )
     .unwrap_or(move_type);
+    let move_type = core_battle_effects::run_event_for_applying_effect_expecting_type(
+        &mut context.user_applying_effect_context(target)?,
+        fxlang::BattleEvent::ModifyMoveType,
+        move_type,
+    );
     context.active_move_mut().data.primary_type = move_type;
 
     let use_move_input = fxlang::VariableInput::from_iter([target
@@ -5490,4 +5505,48 @@ pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
         RecalculateBaseStatsHpPolicy::KeepHealthRatioCeiling,
     )?;
     Ok(())
+}
+
+/// Looks up the Max Move for the given move ID.
+pub fn max_move_by_id(context: &mut MonContext, move_id: &Id) -> Result<Option<Id>> {
+    let mov = context.battle().dex.moves.get_by_id(&move_id)?;
+    max_move(context.as_battle_context(), &mov.data)
+}
+
+/// Looks up the Max Move for the given move data.
+pub fn max_move(context: &Context, move_data: &MoveData) -> Result<Option<Id>> {
+    // TODO: Gigantamax moves.
+    if move_data.max_move.is_none() {
+        return Ok(None);
+    }
+
+    let id = if move_data.category == MoveCategory::Status {
+        "maxguard"
+    } else {
+        match move_data.primary_type {
+            Type::Flying => "maxairstream",
+            Type::Dark => "maxdarkness",
+            Type::Fire => "maxflare",
+            Type::Bug => "maxflutterby",
+            Type::Water => "maxgeyser",
+            Type::Ice => "maxhailstorm",
+            Type::Fighting => "maxknuckle",
+            Type::Electric => "maxlightning",
+            Type::Psychic => "maxmindstorm",
+            Type::Poison => "maxooze",
+            Type::Grass => "maxovergrowth",
+            Type::Ghost => "maxphantasm",
+            Type::Ground => "maxquake",
+            Type::Rock => "maxrockfall",
+            Type::Fairy => "maxstarfall",
+            Type::Steel => "maxsteelspike",
+            Type::Normal | Type::None => "maxstrike",
+            Type::Dragon => "maxwyrmwind",
+        }
+    };
+
+    match context.battle().dex.moves.get_by_id(&Id::from_known(id)) {
+        Ok(max_move) => Ok(Some(max_move.id().clone())),
+        Err(_) => Ok(None),
+    }
 }
