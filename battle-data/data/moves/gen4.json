@@ -199,14 +199,14 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_use_move": [
+        "on_modify_move_type": [
           "$item = $user.effective_item",
           "if !$item:",
           ["return"],
           "$data = func_call(special_item_data: $item)",
           "if !$data or !$data.natural_gift:",
           ["return"],
-          "$move.type = $data.natural_gift.type"
+          "return $data.natural_gift.type"
         ],
         "on_prepare_hit": [
           "$item = $user.effective_item",
@@ -1880,14 +1880,14 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_use_move": [
+        "on_modify_move_type": [
           "$item = $user.effective_item",
           "if !$item:",
           ["return"],
           "$data = func_call(special_item_data: $item)",
           "if !$data or !$data.judgment:",
           ["return"],
-          "$move.type = $data.judgment.type"
+          "return $data.judgment.type"
         ]
       }
     }

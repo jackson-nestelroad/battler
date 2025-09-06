@@ -1493,18 +1493,18 @@
     "flags": ["Bullet", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_use_move": [
+        "on_modify_move_type": [
           "$weather = $user.effective_weather",
           "if !$weather:",
           ["return"],
           "if $weather.is_sunny:",
-          ["$move.type = fire"],
+          ["return fire"],
           "else if $weather.is_raining:",
-          ["$move.type = water"],
+          ["return water"],
           "else if $weather.is_snowing:",
-          ["$move.type = ice"],
+          ["return ice"],
           "else if $weather.id == sandstormweather:",
-          ["$move.type = rock"]
+          ["return rock"]
         ],
         "on_move_base_power": [
           "if $move.type != normal:",

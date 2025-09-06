@@ -2378,6 +2378,25 @@ pub fn run_active_move_event_expecting_move_event_result(
     }
 }
 
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+///
+/// Expects a [`Type`].
+pub fn run_active_move_event_expecting_type(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+    target: MoveTargetForEvent,
+    typ: Type,
+) -> Option<Type> {
+    run_active_move_event(
+        context,
+        event,
+        target,
+        fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+    )?
+    .mon_type()
+    .ok()
+}
+
 /// Runs an event on the target [`Mon`]'s current status.
 ///
 /// Expects an integer that can fit in a [`u8`].

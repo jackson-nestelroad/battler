@@ -1590,7 +1590,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_use_move": ["$move.type = $user.hidden_power_type"]
+        "on_modify_move_type": ["return $user.hidden_power_type"]
       }
     }
   },

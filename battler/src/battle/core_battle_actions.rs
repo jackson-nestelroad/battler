@@ -620,9 +620,20 @@ fn use_active_move_internal(
     mut target: Option<MonHandle>,
     directly_used: bool,
 ) -> Result<MoveOutcome> {
+    let move_type = context.active_move().data.primary_type;
+    let move_type = core_battle_effects::run_active_move_event_expecting_type(
+        context,
+        fxlang::BattleEvent::ModifyMoveType,
+        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
+        move_type,
+    )
+    .unwrap_or(move_type);
+    context.active_move_mut().data.primary_type = move_type;
+
     let use_move_input = fxlang::VariableInput::from_iter([target
         .map(fxlang::Value::Mon)
         .unwrap_or(fxlang::Value::Undefined)]);
+
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::UseMove,

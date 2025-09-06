@@ -34,6 +34,7 @@ pub mod CallbackFlag {
     pub const TakesOptionalEffect: u32 = 1 << 10;
     pub const TakesPlayer: u32 = 1 << 11;
 
+    pub const ReturnsType: u32 = 1 << 19;
     pub const ReturnsStatTable: u32 = 1 << 20;
     pub const ReturnsMoveTarget: u32 = 1 << 21;
     pub const ReturnsStrings: u32 = 1 << 22;
@@ -134,6 +135,11 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMon
+        | CallbackFlag::ReturnsVoid,
+    SourceMoveType = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsType
         | CallbackFlag::ReturnsVoid,
 
     MoveModifier = CallbackFlag::TakesTargetMon
@@ -729,6 +735,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ModifyFriendshipIncrease"]
     ModifyFriendshipIncrease,
+    /// Runs when modifying the type of a move.
+    ///
+    /// Runs on the active move.
+    #[string = "ModifyMoveType"]
+    ModifyMoveType,
     /// Runs when determining the priority of a move.
     ///
     /// Runs in the context of a move user.
@@ -1234,6 +1245,7 @@ impl BattleEvent {
             Self::ModifyEvYield => CommonCallbackType::MonStatTableModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
             Self::ModifyFriendshipIncrease => CommonCallbackType::MonModifier as u32,
+            Self::ModifyMoveType => CommonCallbackType::SourceMoveType as u32,
             Self::ModifyPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1354,6 +1366,7 @@ impl BattleEvent {
             Self::ModifyEvYield => &[("evs", ValueType::StatTable, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],
+            Self::ModifyMoveType => &[("type", ValueType::Type, true)],
             Self::ModifyPriority => &[("priority", ValueType::Fraction, true)],
             Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
@@ -1403,15 +1416,16 @@ impl BattleEvent {
                     | CallbackFlag::ReturnsMoveResult
                     | CallbackFlag::ReturnsMoveTarget,
             ),
-            Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
-            Some(ValueType::StatTable) => self.has_flag(CallbackFlag::ReturnsStatTable),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
+            Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
+            Some(ValueType::MoveTarget) => self.has_flag(CallbackFlag::ReturnsMoveTarget),
+            Some(ValueType::StatTable) => self.has_flag(CallbackFlag::ReturnsStatTable),
+            Some(ValueType::Type) => self.has_flag(CallbackFlag::ReturnsType),
             Some(ValueType::List) => self.has_flag(
                 CallbackFlag::ReturnsTypes
                     | CallbackFlag::ReturnsSecondaryEffects
                     | CallbackFlag::ReturnsStrings,
             ),
-            Some(ValueType::MoveTarget) => self.has_flag(CallbackFlag::ReturnsMoveTarget),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }
