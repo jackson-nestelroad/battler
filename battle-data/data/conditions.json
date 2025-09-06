@@ -1046,5 +1046,28 @@
         }
       }
     }
+  },
+  "dynamax": {
+    "name": "Dynamax",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 3,
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "remove_volatile: $target minimize",
+          "remove_volatile: $target substitute",
+          "remove_volatile: $target torment"
+        ],
+        "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]],
+        "on_before_switch_out": ["remove_volatile: $mon $this.id"],
+        "on_drag_out": ["log_block: with_target", "return false"],
+        "on_residual": {
+          "priority": -100,
+          "program": []
+        },
+        "on_end": ["end_dynamax: $target"]
+      }
+    }
   }
 }

@@ -197,6 +197,7 @@ impl TestBattleBuilder {
                 has_strict_bag: true,
                 mons_caught: 151,
                 cannot_mega_evolve: false,
+                cannot_dynamax: false,
             },
             team: TeamData::default(),
             dex: PlayerDex::default(),

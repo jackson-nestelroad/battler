@@ -241,6 +241,10 @@ pub struct PlayerOptions {
     /// If the player cannot Mega Evolve, assuming Mega Evolution is allowed.
     #[serde(default)]
     pub cannot_mega_evolve: bool,
+
+    /// If the player cannot Dynamax, assuming Mega Evolution is allowed.
+    #[serde(default)]
+    pub cannot_dynamax: bool,
 }
 
 /// A player's dex, noting what has previously been caught by the player.
@@ -302,6 +306,8 @@ pub struct ChoiceState {
     pub switch_ins: HashSet<usize>,
     /// Did the Player choose to Mega Evolve?
     pub mega: bool,
+    /// Did the Player choose to Dynamax?
+    pub dyna: bool,
 }
 
 impl ChoiceState {
@@ -315,6 +321,7 @@ impl ChoiceState {
             forced_passes_left: 0,
             switch_ins: HashSet::default(),
             mega: false,
+            dyna: false,
         }
     }
 }
@@ -325,6 +332,7 @@ struct MoveChoice {
     pub move_slot: usize,
     pub target: Option<isize>,
     pub mega: bool,
+    pub dyna: bool,
 }
 
 impl MoveChoice {
@@ -347,6 +355,7 @@ impl MoveChoice {
             move_slot,
             target: None,
             mega: false,
+            dyna: false,
         };
 
         if let Some(target) = args
@@ -361,6 +370,9 @@ impl MoveChoice {
         match args.front().cloned() {
             Some("mega") => {
                 choice.mega = true;
+            }
+            Some("dyna") => {
+                choice.dyna = true;
             }
             Some(str) => {
                 return Err(general_error(format!(
@@ -464,6 +476,7 @@ pub struct Player {
     active_or_exited: Vec<Option<MonHandle>>,
 
     pub can_mega_evolve: bool,
+    pub can_dynamax: bool,
 
     pub escape_attempts: u16,
     pub escaped: bool,
@@ -495,6 +508,8 @@ impl Player {
         };
         let can_mega_evolve = !data.player_options.cannot_mega_evolve
             && format.rules.has_rule(&Id::from_known("megaevolution"));
+        let can_dynamax = !data.player_options.cannot_dynamax
+            && format.rules.has_rule(&Id::from_known("dynamax"));
         let mut player = Self {
             id: data.id,
             name: data.name,
@@ -510,6 +525,7 @@ impl Player {
             active_or_exited: active,
             request: None,
             can_mega_evolve,
+            can_dynamax,
             escape_attempts: 0,
             escaped: false,
             bag: HashMap::default(),
@@ -1222,6 +1238,7 @@ impl Player {
                     mon: mon_handle,
                     target: locked_move_target,
                     mega: false,
+                    dyna: false,
                 })));
             // Locked move, the Mon cannot do anything else.
             return Ok(());
@@ -1286,7 +1303,6 @@ impl Player {
             _ => (),
         }
 
-        // Mega evolution.
         if choice.mega && !context.mon().next_turn_state.can_mega_evolve {
             return Err(general_error(format!(
                 "{} cannot mega evolve",
@@ -1295,6 +1311,16 @@ impl Player {
         }
         if choice.mega && context.player().choice.mega {
             return Err(general_error("you can only mega evolve once per battle"));
+        }
+
+        if choice.dyna && !context.mon().next_turn_state.can_dynamax {
+            return Err(general_error(format!(
+                "{} cannot dynamax",
+                context.mon().name
+            )));
+        }
+        if choice.dyna && context.player().choice.dyna {
+            return Err(general_error("you can only dynamax once per battle"));
         }
 
         context
@@ -1306,10 +1332,14 @@ impl Player {
                 mon: mon_handle,
                 target: choice.target,
                 mega: choice.mega,
+                dyna: choice.dyna,
             })));
 
         if choice.mega {
             context.player_mut().choice.mega = true;
+        }
+        if choice.dyna {
+            context.player_mut().choice.dyna = true;
         }
 
         Ok(())
@@ -1658,7 +1688,8 @@ mod move_choice_test {
             Ok(MoveChoice {
                 move_slot: 0,
                 target: Some(0),
-                mega: false
+                mega: false,
+                dyna: false,
             })
         );
     }
@@ -1671,6 +1702,7 @@ mod move_choice_test {
                 move_slot: 1,
                 target: Some(0),
                 mega: true,
+                dyna: false,
             })
         );
     }
@@ -1683,6 +1715,7 @@ mod move_choice_test {
                 move_slot: 2,
                 target: None,
                 mega: false,
+                dyna: false,
             })
         );
     }
@@ -1695,6 +1728,20 @@ mod move_choice_test {
                 move_slot: 3,
                 target: None,
                 mega: true,
+                dyna: false,
+            })
+        );
+    }
+
+    #[test]
+    fn parses_move_dyna() {
+        assert_matches::assert_matches!(
+            MoveChoice::new("3, dyna"),
+            Ok(MoveChoice {
+                move_slot: 3,
+                target: None,
+                mega: false,
+                dyna: true,
             })
         );
     }

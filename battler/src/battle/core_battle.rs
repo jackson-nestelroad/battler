@@ -1315,6 +1315,10 @@ impl<'d> CoreBattle<'d> {
                 let mut context = context.mon_context(action.mon)?;
                 core_battle_actions::mega_evolve(&mut context)?;
             }
+            Action::Dynamax(action) => {
+                let mut context = context.mon_context(action.mon)?;
+                core_battle_actions::dynamax(&mut context)?;
+            }
             Action::Pass => (),
             Action::BeforeTurn => {
                 for mon_handle in context

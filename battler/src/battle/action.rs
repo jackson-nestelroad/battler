@@ -83,6 +83,7 @@ pub struct MoveActionInput {
     pub mon: MonHandle,
     pub target: Option<isize>,
     pub mega: bool,
+    pub dyna: bool,
 }
 
 /// A move action.
@@ -93,6 +94,7 @@ pub struct MoveAction {
     pub target: Option<isize>,
     pub original_target: Option<MonHandle>,
     pub mega: bool,
+    pub dyna: bool,
     pub priority: i32,
     pub sub_priority: i32,
 
@@ -111,6 +113,7 @@ impl MoveAction {
             target: input.target,
             original_target: None,
             mega: input.mega,
+            dyna: input.dyna,
             priority: 0,
             sub_priority: 0,
             active_move_handle: None,
@@ -265,6 +268,7 @@ pub enum Action {
     BeforeTurnMove(BeforeMoveAction),
     PriorityChargeMove(BeforeMoveAction),
     MegaEvo(MonAction),
+    Dynamax(MonAction),
     Experience(ExperienceAction),
     LevelUp(LevelUpAction),
     LearnMove(LearnMoveAction),
@@ -283,6 +287,7 @@ impl Action {
             Self::BeforeTurnMove(action) => Some(&mut action.mon_action),
             Self::PriorityChargeMove(action) => Some(&mut action.mon_action),
             Self::MegaEvo(action) => Some(action),
+            Self::Dynamax(action) => Some(action),
             Self::Escape(action) => Some(&mut action.mon_action),
             Self::Item(action) => Some(&mut action.mon_action),
             _ => None,
@@ -314,7 +319,8 @@ impl SpeedOrderable for Action {
             Self::Escape(_) => 101,
             Self::SwitchEvents(_) => 103,
             Self::MegaEvo(_) => 104,
-            Self::PriorityChargeMove(_) => 105,
+            Self::Dynamax(_) => 105,
+            Self::PriorityChargeMove(_) => 106,
             Self::Move(_) => 200,
             Self::Pass => 200,
             Self::Residual => 300,
@@ -350,6 +356,7 @@ impl SpeedOrderable for Action {
             Self::BeforeTurnMove(action) => action.mon_action.speed,
             Self::PriorityChargeMove(action) => action.mon_action.speed,
             Self::MegaEvo(action) => action.speed,
+            Self::Dynamax(action) => action.speed,
             Self::Escape(action) => action.mon_action.speed,
             Self::Item(action) => action.mon_action.speed,
             _ => 1,

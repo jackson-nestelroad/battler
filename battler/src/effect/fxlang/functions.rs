@@ -147,6 +147,7 @@ pub fn run_function(
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "end_ability" => end_ability(context).map(|()| None),
+        "end_dynamax" => end_dynamax(context).map(|()| None),
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
         "end_item" => end_item(context).map(|()| None),
         "escape" => escape(context).map(|val| Some(val)),
@@ -3392,6 +3393,13 @@ fn primal_reversion(mut context: FunctionContext) -> Result<Value> {
         &forme,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn end_dynamax(mut context: FunctionContext) -> Result<()> {
+    let target = context.target_handle_positional()?;
+    core_battle_actions::end_dynamax(
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
+    )
 }
 
 fn increase_friendship(mut context: FunctionContext) -> Result<()> {

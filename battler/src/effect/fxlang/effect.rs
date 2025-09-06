@@ -379,6 +379,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "BasePower"]
     BasePower,
+    /// Runs before a Mon Dynamaxes.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "BeforeDynamax"]
+    BeforeDynamax,
     /// Runs before a Mon uses a move.
     ///
     /// Can prevent the move from being used.
@@ -1164,6 +1169,7 @@ impl BattleEvent {
             Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
+            Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,

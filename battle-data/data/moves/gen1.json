@@ -2349,7 +2349,9 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_damage": ["return func_call(max: expr($target.hp / 2) 1)"]
+        "on_move_damage": [
+          "return func_call(max: expr($target.undynamaxed_hp / 2) 1)"
+        ]
       }
     }
   },

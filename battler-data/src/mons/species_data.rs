@@ -193,6 +193,14 @@ impl SpeciesData {
         }
     }
 
+    /// Is the species a Gigantamax?
+    pub fn gigantamax(&self) -> bool {
+        match self.forme.as_ref().map(|s| s.as_str()) {
+            Some("Gmax") => true,
+            _ => false,
+        }
+    }
+
     /// Creates cosmetic forme data by moving and modifying this instance of [`SpeciesData`].
     pub fn create_cosmetic_forme_data(mut self, forme: String) -> Self {
         self.forme = Some(

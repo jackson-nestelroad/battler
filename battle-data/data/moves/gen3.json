@@ -881,8 +881,8 @@
     "flags": ["Contact", "Mirror", "NoParentalBond", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return $source.hp < $target.hp"],
-        "on_move_damage": ["return $target.hp - $source.hp"]
+        "on_try_hit": ["return $source.hp < $target.undynamaxed_hp"],
+        "on_move_damage": ["return $target.undynamaxed_hp - $source.hp"]
       }
     }
   },

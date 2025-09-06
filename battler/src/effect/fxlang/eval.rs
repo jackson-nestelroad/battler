@@ -831,6 +831,9 @@ where
                             "can_heal" => ValueRef::Boolean(mon_states::can_heal(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "damaged_this_turn" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.volatile_state.damaged_this_turn,
+                            ),
                             "effective_ability" => {
                                 match mon_states::effective_ability(
                                     &mut context.mon_context(mon_handle)?,
@@ -895,9 +898,6 @@ where
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
-                            "damaged_this_turn" => ValueRef::Boolean(
-                                context.mon(mon_handle)?.volatile_state.damaged_this_turn,
-                            ),
                             "illusion" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.illusion.is_some(),
                             ),
@@ -1054,6 +1054,9 @@ where
                                         ValueRefToStoredValue::new(None, ValueRef::Type(*val))
                                     })
                                     .collect(),
+                            ),
+                            "undynamaxed_hp" => ValueRef::UFraction(
+                                context.mon(mon_handle)?.undynamaxed_hp().into(),
                             ),
                             "weight" => ValueRef::UFraction(
                                 Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),

@@ -1203,7 +1203,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "$target_hp = $target.hp",
+          "$target_hp = $target.undynamaxed_hp",
           "$average_hp = func_call(max: 1 expr(($target.hp + $source.hp) / 2))",
           "$target_diff = $target_hp - $average_hp",
           "set_hp: $target $average_hp",

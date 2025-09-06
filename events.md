@@ -106,7 +106,17 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ## Mega Evolution
 
-1. Not implemented.
+1. Mon changes forme.
+
+## Primal Reversion
+
+1. Mon changes forme.
+
+## Dynamax
+
+1. Mon changes to Gigantamax forme, if applicable.
+1. `BeforeDynamax`.
+1. Add `Dynamax` volatile status.
 
 ## Priority Charge (per move)
 

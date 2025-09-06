@@ -3093,11 +3093,12 @@ pub fn remove_volatile(
         .wrap_expectation("volatile must have an id")?
         .clone();
 
-    if !context
+    if context
         .target()
         .volatile_state
         .volatiles
-        .contains_key(&volatile)
+        .get(&volatile)
+        .is_none_or(|effect_state| effect_state.ending())
     {
         return Ok(false);
     }
@@ -3287,7 +3288,12 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
         .wrap_expectation("side condition must have an id")?
         .clone();
 
-    if !context.side().conditions.contains_key(&condition) {
+    if context
+        .side()
+        .conditions
+        .get(&condition)
+        .is_none_or(|effect_state| effect_state.ending())
+    {
         return Ok(false);
     }
 
@@ -4011,11 +4017,12 @@ pub fn remove_pseudo_weather(
         .wrap_expectation("pseudo weather must have an id")?
         .clone();
 
-    if !context
+    if context
         .battle()
         .field
         .pseudo_weathers
-        .contains_key(&pseudo_weather)
+        .get(&pseudo_weather)
+        .is_none_or(|effect_state| effect_state.ending())
     {
         return Ok(false);
     }
@@ -4287,11 +4294,15 @@ pub fn remove_slot_condition(
         .wrap_expectation("slot condition must have an id")?
         .clone();
 
-    if !context
+    if context
         .side()
         .slot_conditions
         .get(&slot)
-        .is_some_and(|conditions| conditions.contains_key(&condition))
+        .is_some_and(|conditions| {
+            conditions
+                .get(&condition)
+                .is_none_or(|effect_state| effect_state.ending())
+        })
     {
         return Ok(false);
     }
@@ -5216,12 +5227,13 @@ pub enum FormeChangeType {
     Permanent,
     MegaEvolution,
     PrimalReversion,
+    Gigantamax,
 }
 
 impl FormeChangeType {
     pub fn permanent(&self) -> bool {
         match self {
-            Self::Temporary => false,
+            Self::Temporary | Self::Gigantamax => false,
             Self::Permanent | Self::MegaEvolution | Self::PrimalReversion => true,
         }
     }
@@ -5265,6 +5277,9 @@ pub fn forme_change(
         FormeChangeType::PrimalReversion => {
             core_battle_logs::primal_reversion(context)?;
         }
+        FormeChangeType::Gigantamax => {
+            core_battle_logs::gigantamax(context)?;
+        }
     }
 
     // Change the ability after logs, since battle effects start triggering.
@@ -5298,10 +5313,9 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
         let species = context.target().original_base_species.clone();
         let ability = context.target().original_base_ability.clone();
 
-        Mon::set_species(&mut context.target_context()?, &species)?;
-
         {
             let mut context = context.target_context()?;
+            Mon::set_species(&mut context, &species)?;
             core_battle_logs::species_change(&mut context)?;
             Mon::set_base_species(&mut context, &species, &ability)?;
         }
@@ -5367,4 +5381,102 @@ pub fn primal_reversion(context: &mut ApplyingEffectContext, species: &Id) -> Re
     context.target_mut().special_forme_change_type =
         Some(MonSpecialFormeChangeType::PrimalReversion);
     Ok(true)
+}
+
+/// Checks if the Mon can Dynamax.
+pub fn can_dynamax(context: &mut MonContext) -> Result<Option<Id>> {
+    if !context.player().can_dynamax {
+        return Ok(None);
+    }
+
+    if context.mon().gigantamax_factor {
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&context.mon().base_species)?;
+
+        let forme = species
+            .data
+            .formes
+            .iter()
+            .map(|forme| Id::from(forme.as_ref()))
+            .find(|forme| {
+                context
+                    .battle()
+                    .dex
+                    .species
+                    .get_by_id(&forme)
+                    .is_ok_and(|forme| forme.data.gigantamax())
+            });
+        if let Some(forme) = forme {
+            return Ok(Some(forme));
+        }
+    }
+
+    Ok(Some(context.mon().volatile_state.species.clone()))
+}
+
+/// Dynamaxes the Mon if it is able to do so.
+pub fn dynamax(context: &mut MonContext) -> Result<bool> {
+    let forme = match can_dynamax(context)? {
+        Some(forme) => forme,
+        None => return Ok(false),
+    };
+
+    let target = context.mon_handle();
+    let mut context = context.as_battle_context_mut().applying_effect_context(
+        EffectHandle::Condition(Id::from_known("dynamax")),
+        None,
+        target,
+        None,
+    )?;
+
+    if !core_battle_effects::run_event_for_mon(
+        &mut context.target_context()?,
+        fxlang::BattleEvent::BeforeDynamax,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
+
+    if forme != context.target().volatile_state.species {
+        if forme_change(&mut context, &forme, FormeChangeType::Gigantamax)? {
+            context.target_mut().special_forme_change_type =
+                Some(MonSpecialFormeChangeType::Gigantamax);
+        }
+    }
+
+    if !add_volatile(&mut context, &Id::from_known("dynamax"), false, None)? {
+        return Ok(false);
+    }
+
+    core_battle_logs::dynamax(&mut context)?;
+
+    context.target_mut().dynamaxed = true;
+    Mon::update_max_hp(
+        &mut context.target_context()?,
+        RecalculateBaseStatsHpPolicy::KeepHealthRatio,
+    )?;
+
+    context.target_context()?.player_mut().can_dynamax = false;
+    Ok(true)
+}
+
+/// Ends the Mon's Dynamax, if applicable.
+pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    if !context.target().dynamaxed {
+        return Ok(());
+    }
+    if context.target().special_forme_change_type == Some(MonSpecialFormeChangeType::Gigantamax) {
+        revert(context)?;
+    }
+    core_battle_logs::revert_dynamax(context)?;
+    context.target_mut().dynamaxed = false;
+    remove_volatile(context, &Id::from_known("dynamax"), false)?;
+    Mon::update_max_hp(
+        &mut context.target_context()?,
+        RecalculateBaseStatsHpPolicy::KeepHealthRatioCeiling,
+    )?;
+    Ok(())
 }

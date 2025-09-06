@@ -236,6 +236,18 @@ pub fn revert_primal_reversion(context: &mut ApplyingEffectContext) -> Result<()
     forme_change_internal(context, "revertprimal".to_owned())
 }
 
+pub fn dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "dynamax".to_owned())
+}
+
+pub fn revert_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "revertdynamax".to_owned())
+}
+
+pub fn gigantamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "gigantamax".to_owned())
+}
+
 pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,
