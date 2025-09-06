@@ -5355,6 +5355,10 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
 }
 
 fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
+    if context.target().dynamaxed {
+        end_dynamax(context)?;
+    }
+
     if let Some(special_forme_change_type) = context.target().special_forme_change_type {
         let species = context.target().original_base_species.clone();
         let ability = context.target().original_base_ability.clone();

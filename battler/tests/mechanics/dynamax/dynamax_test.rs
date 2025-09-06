@@ -212,3 +212,89 @@ fn one_mon_can_dynamax_and_use_max_moves() {
         ]));
     });
 }
+
+#[test]
+fn dynamax_ends_on_switch() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:210/210",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:99/140",
+            "damage|mon:Venusaur,player-2,1|health:71/100",
+            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "revertdynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:140/140",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "split|side:0",
+            ["switch", "player-1"],
+            ["switch", "player-1"],
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn dynamax_ends_on_faint() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(1, 0)]);
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:1",
+            ["switch", "player-2"],
+            ["switch", "player-2"],
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:210/210",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Charizard,player-2,1",
+            "split|side:1",
+            "damage|mon:Charizard,player-2,1|health:95/138",
+            "damage|mon:Charizard,player-2,1|health:69/100",
+            "unboost|mon:Charizard,player-2,1|stat:spe|by:1",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Charizard,player-2,1|name:Guillotine|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:0",
+            "damage|mon:Venusaur,player-1,1|health:0",
+            "ohko|mon:Venusaur,player-1,1",
+            "faint|mon:Venusaur,player-1,1",
+            "revertdynamax|mon:Venusaur,player-1,1",
+            "residual"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
