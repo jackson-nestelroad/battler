@@ -1488,7 +1488,7 @@ impl Mon {
             request.can_dynamax =
                 context.player().can_dynamax && context.mon().next_turn_state.can_dynamax;
 
-            if request.can_dynamax {
+            if request.can_dynamax || context.mon().dynamaxed {
                 request.max_moves = Self::max_moves(context)?
                     .into_iter()
                     .map(|move_slot| MonMoveSlotData::from(context, &move_slot))

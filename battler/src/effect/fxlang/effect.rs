@@ -835,7 +835,7 @@ pub enum BattleEvent {
     PlayerUse,
     /// Runs when a Mon uses a move, to power up the chosen move.
     ///
-    /// Runs in the context of a Mon.
+    /// Runs in the context of a move user.
     #[string = "PowerUpMove"]
     PowerUpMove,
     /// Runs when a Mon is preparing to hit all of its targets with a move.

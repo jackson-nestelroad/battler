@@ -3058,6 +3058,25 @@ pub fn run_event_for_applying_effect_expecting_type(
     .unwrap_or(typ)
 }
 
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects a [`MoveHandle`].
+pub fn run_event_for_applying_effect_expecting_move_quick_return(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<MoveHandle> {
+    run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
+    )?
+    .active_move()
+    .ok()
+}
+
 /// Runs an event targeted on the given [`Mon`].
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
@@ -3259,25 +3278,6 @@ pub fn run_event_for_mon_expecting_string_list(
     .map(|value| value.strings_list().ok())
     .flatten()
     .unwrap_or_default()
-}
-
-/// Runs an event targeted on the given [`Mon`].
-///
-/// Expects a [`MoveHandle`].
-pub fn run_event_for_mon_expecting_move_quick_return(
-    context: &mut MonContext,
-    event: fxlang::BattleEvent,
-) -> Option<MoveHandle> {
-    run_event_for_mon_internal(
-        context,
-        event,
-        fxlang::VariableInput::default(),
-        &RunCallbacksOptions {
-            return_first_value: true,
-        },
-    )?
-    .active_move()
-    .ok()
 }
 
 /// Runs an event on the [`CoreBattle`] for the residual effect, which

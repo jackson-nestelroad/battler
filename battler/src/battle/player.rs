@@ -1216,6 +1216,7 @@ impl Player {
             ))?;
 
         let request = Mon::move_request(&mut context)?;
+
         let move_slot = request
             .moves
             .get(choice.move_slot)
@@ -1226,6 +1227,16 @@ impl Player {
             ))?;
 
         let mut move_id = move_slot.id.clone();
+        let mut move_target = move_slot.target;
+
+        let powered_up_move_id = if (choice.dyna || context.mon().dynamaxed)
+            && let Some(move_slot) = request.max_moves.get(choice.move_slot)
+        {
+            move_target = move_slot.target;
+            Some(move_slot.id.clone())
+        } else {
+            None
+        };
 
         if let Some(locked_move) = context.mon().next_turn_state.locked_move.clone() {
             let locked_move_target = context.mon().volatile_state.last_move_target_location;
@@ -1235,6 +1246,7 @@ impl Player {
                 .actions
                 .push(Action::Move(MoveAction::new(MoveActionInput {
                     id: Id::from(locked_move),
+                    powered_up_id: None,
                     mon: mon_handle,
                     target: locked_move_target,
                     mega: false,
@@ -1252,11 +1264,7 @@ impl Player {
             .moves
             .get_by_id(&move_id)
             .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
-        // Clone these to avoid borrow errors.
-        //
-        // We could find a way around this if we're clever, but this keeps things simple for now.
         let move_name = mov.data.name.clone();
-        let move_target = move_slot.target;
 
         if moves.is_empty() {
             // No moves, the Mon must use Struggle.
@@ -1329,6 +1337,7 @@ impl Player {
             .actions
             .push(Action::Move(MoveAction::new(MoveActionInput {
                 id: move_id,
+                powered_up_id: powered_up_move_id,
                 mon: mon_handle,
                 target: choice.target,
                 mega: choice.mega,

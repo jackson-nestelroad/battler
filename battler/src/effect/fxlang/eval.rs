@@ -703,6 +703,14 @@ where
                                 .as_ref()
                                 .map(ValueRef::HitEffect)
                                 .unwrap_or(ValueRef::Undefined),
+                            "max_move_base_power" => context
+                                .active_move(active_move_handle)?
+                                .data
+                                .max_move
+                                .as_ref()
+                                .map(|max_move| max_move.base_power)
+                                .map(|val| ValueRef::UFraction(val.into()))
+                                .unwrap_or(ValueRef::Undefined),
                             "multiaccuracy" => ValueRef::Boolean(
                                 context.active_move(active_move_handle)?.data.multiaccuracy,
                             ),
@@ -1425,6 +1433,9 @@ where
                                 .data
                                 .base_power,
                         ),
+                        "category" => ValueRefMut::MoveCategory(
+                            &mut context.active_move_mut(**active_move_handle)?.data.category,
+                        ),
                         "damage" => ValueRefMut::OptionalU16(
                             &mut context.active_move_mut(**active_move_handle)?.data.damage,
                         ),
@@ -1446,6 +1457,17 @@ where
                         ),
                         "multihit" => ValueRefMut::OptionalMultihitType(
                             &mut context.active_move_mut(**active_move_handle)?.data.multihit,
+                        ),
+                        "powered_up_base_move" => ValueRefMut::OptionalId(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .powered_up_base_move,
+                        ),
+                        "powered_up" => ValueRefMut::Boolean(
+                            &mut context.active_move_mut(**active_move_handle)?.powered_up,
+                        ),
+                        "priority" => ValueRefMut::I8(
+                            &mut context.active_move_mut(**active_move_handle)?.data.priority,
                         ),
                         "secondary_effects" => ValueRefMut::SecondaryHitEffectList(
                             &mut context

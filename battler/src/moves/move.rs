@@ -148,7 +148,7 @@ pub struct Move {
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
     /// The base move of a powered-up move.
-    pub base_move_of_power_up: Option<Id>,
+    pub powered_up_base_move: Option<Id>,
     /// Is the move powered up?
     pub powered_up: bool,
 
@@ -195,7 +195,7 @@ impl Move {
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
-            base_move_of_power_up: None,
+            powered_up_base_move: None,
             powered_up: false,
             effect_state: fxlang::EffectState::default(),
             unlinked: false,
@@ -221,7 +221,7 @@ impl Move {
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
-            base_move_of_power_up: None,
+            powered_up_base_move: None,
             powered_up: false,
             effect_state: fxlang::EffectState::default(),
             unlinked: true,

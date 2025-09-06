@@ -196,6 +196,10 @@ mod items {
 }
 
 mod mechanics {
+    mod dynamax {
+        mod dynamax_test;
+    }
+
     mod mega {
         mod mega_charizard_test;
         mod mega_evolution_test;

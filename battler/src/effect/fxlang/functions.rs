@@ -205,7 +205,9 @@ pub fn run_function(
         "log_status" => log_status(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
         "max" => max(context).map(|val| Some(val)),
+        "max_move" => max_move(context),
         "min" => min(context).map(|val| Some(val)),
+        "modify_move_type" => modify_move_type(context).map(|_| None),
         "mon_ability_suppressed_by_this_effect" => {
             mon_ability_suppressed_by_this_effect(context).map(|val| Some(val))
         }
@@ -2357,8 +2359,13 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value> {
         .evaluation_context()
         .active_move(active_move)?
         .clone_for_battle();
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
     let active_move_handle =
-        CoreBattle::register_active_move(context.battle_context_mut(), active_move)?;
+        CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
     Ok(Value::ActiveMove(active_move_handle))
 }
 
@@ -2366,11 +2373,15 @@ fn new_active_move(mut context: FunctionContext) -> Result<Value> {
     let move_id = context
         .pop_front()
         .wrap_expectation("missing move")?
-        .string()
+        .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid move")?;
-    let move_id = Id::from(move_id);
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
     let active_move_handle =
-        CoreBattle::register_active_move_by_id(context.battle_context_mut(), &move_id)?;
+        CoreBattle::register_active_move_by_id(context.battle_context_mut(), &move_id, mon_handle)?;
     Ok(Value::ActiveMove(active_move_handle))
 }
 
@@ -2400,8 +2411,13 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
     ))?
     .clone();
     let active_move = Move::new_unlinked(move_id, move_data);
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
     let active_move_handle =
-        CoreBattle::register_active_move(context.battle_context_mut(), active_move)?;
+        CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
     Ok(Value::ActiveMove(active_move_handle))
 }
 
@@ -2960,6 +2976,26 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value> {
             .forward_to_applying_effect_context_with_effect_and_target(effect_handle, mon_handle)?,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn modify_move_type(mut context: FunctionContext) -> Result<()> {
+    let target = context.source_handle();
+    let mut context = context
+        .source_active_move_context()?
+        .wrap_expectation("context is not an active move")?;
+    core_battle_actions::modify_move_type(&mut context, target)?;
+    Ok(())
+}
+
+fn max_move(mut context: FunctionContext) -> Result<Option<Value>> {
+    let move_handle = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let move_data = &context.evaluation_context().active_move(move_handle)?.data;
+    core_battle_actions::max_move(context.evaluation_context().battle_context(), move_data)
+        .map(|move_id| move_id.map(|val| Value::String(val.to_string())))
 }
 
 fn set_hp(mut context: FunctionContext) -> Result<Value> {

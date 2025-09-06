@@ -658,7 +658,7 @@
           "$action = func_call(pending_move_action_this_turn: $target)",
           "if !$action:",
           ["return false"],
-          "$move = func_call(new_active_move: $action.id)",
+          "$move = func_call(new_active_move: $action.id $source)",
           "if $move.category == status or func_call(move_has_flag: $move failmefirst):",
           ["return false"],
           "add_volatile: $source $this.id",

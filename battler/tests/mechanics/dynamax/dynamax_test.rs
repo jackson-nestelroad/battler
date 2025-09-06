@@ -1,0 +1,214 @@
+use anyhow::Result;
+use battler::{
+    BattleType,
+    CoreBattleEngineRandomizeBaseDamage,
+    CoreBattleEngineSpeedSortTieResolution,
+    DataStore,
+    Id,
+    LocalDataStore,
+    MonMoveSlotData,
+    MoveTarget,
+    PublicCoreBattle,
+    Request,
+    TeamData,
+    WrapResultError,
+};
+use battler_test_utils::{
+    LogMatch,
+    TestBattleBuilder,
+    assert_logs_since_turn_eq,
+    get_controlled_rng_for_battle,
+};
+
+fn team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Venusaur",
+                    "species": "Venusaur",
+                    "ability": "Chlorophyll",
+                    "moves": [
+                        "Tackle",
+                        "Toxic"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                },
+                {
+                    "name": "Charizard",
+                    "species": "Charizard",
+                    "ability": "Blaze",
+                    "moves": [
+                        "Ember",
+                        "Guillotine"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                },
+                {
+                    "name": "Blastoise",
+                    "species": "Blastoise",
+                    "ability": "Torrent",
+                    "moves": [
+                        "Tackle"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn make_battle(
+    data: &dyn DataStore,
+    seed: u64,
+    team_1: TeamData,
+    team_2: TeamData,
+) -> Result<PublicCoreBattle<'_>> {
+    TestBattleBuilder::new()
+        .with_battle_type(BattleType::Singles)
+        .with_seed(seed)
+        .with_team_validation(false)
+        .with_pass_allowed(true)
+        .with_bag_items(true)
+        .with_infinite_bags(true)
+        .with_dynamax(true)
+        .with_controlled_rng(true)
+        .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
+        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
+        .add_player_to_side_1("player-1", "Player 1")
+        .add_player_to_side_2("player-2", "Player 2")
+        .with_team("player-1", team_1)
+        .with_team("player-2", team_2)
+        .build(data)
+}
+
+#[test]
+fn one_mon_can_dynamax_and_use_max_moves() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert!(request.active[0].can_dynamax);
+        pretty_assertions::assert_eq!(request.active[0].moves, Vec::from_iter([
+            MonMoveSlotData {
+                id: Id::from("tackle"),
+                name: "Tackle".to_owned(),
+                pp: 35,
+                max_pp: 35,
+                target: MoveTarget::Normal,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("toxic"),
+                name: "Toxic".to_owned(),
+                pp: 10,
+                max_pp: 10,
+                target: MoveTarget::Normal,
+                disabled: false,
+            },
+        ]));
+        pretty_assertions::assert_eq!(request.active[0].max_moves, Vec::from_iter([
+            MonMoveSlotData {
+                id: Id::from("maxstrike"),
+                name: "Max Strike".to_owned(),
+                pp: 35,
+                max_pp: 35,
+                target: MoveTarget::AdjacentFoe,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("maxguard"),
+                name: "Max Guard".to_owned(),
+                pp: 10,
+                max_pp: 10,
+                target: MoveTarget::User,
+                disabled: false,
+            },
+        ]));
+    });
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1,dyna"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Err(err) => {
+        assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Venusaur cannot dynamax");
+    });
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,-1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:210/210",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:99/140",
+            "damage|mon:Venusaur,player-2,1|health:71/100",
+            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+            "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:191/210",
+            "damage|mon:Venusaur,player-1,1|health:91/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Venusaur,player-1,1|name:Max Guard|target:Venusaur,player-1,1",
+            "singleturn|mon:Venusaur,player-1,1|move:Max Guard",
+            "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
+            "activate|mon:Venusaur,player-1,1|move:Max Guard",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert!(!request.active[0].can_dynamax);
+        pretty_assertions::assert_eq!(request.active[0].moves, Vec::from_iter([
+            MonMoveSlotData {
+                id: Id::from("tackle"),
+                name: "Tackle".to_owned(),
+                pp: 34,
+                max_pp: 35,
+                target: MoveTarget::Normal,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("toxic"),
+                name: "Toxic".to_owned(),
+                pp: 9,
+                max_pp: 10,
+                target: MoveTarget::Normal,
+                disabled: false,
+            },
+        ]));
+        pretty_assertions::assert_eq!(request.active[0].max_moves, Vec::from_iter([
+            MonMoveSlotData {
+                id: Id::from("maxstrike"),
+                name: "Max Strike".to_owned(),
+                pp: 34,
+                max_pp: 35,
+                target: MoveTarget::AdjacentFoe,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("maxguard"),
+                name: "Max Guard".to_owned(),
+                pp: 9,
+                max_pp: 10,
+                target: MoveTarget::User,
+                disabled: false,
+            },
+        ]));
+    });
+}

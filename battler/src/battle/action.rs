@@ -80,6 +80,7 @@ impl SwitchAction {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MoveActionInput {
     pub id: Id,
+    pub powered_up_id: Option<Id>,
     pub mon: MonHandle,
     pub target: Option<isize>,
     pub mega: bool,
@@ -90,6 +91,7 @@ pub struct MoveActionInput {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MoveAction {
     pub id: Id,
+    pub powered_up_id: Option<Id>,
     pub mon_action: MonAction,
     pub target: Option<isize>,
     pub original_target: Option<MonHandle>,
@@ -109,6 +111,7 @@ impl MoveAction {
     pub fn new(input: MoveActionInput) -> Self {
         Self {
             id: input.id,
+            powered_up_id: input.powered_up_id,
             mon_action: MonAction::new(input.mon),
             target: input.target,
             original_target: None,

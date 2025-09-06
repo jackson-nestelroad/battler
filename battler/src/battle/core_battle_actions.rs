@@ -343,13 +343,18 @@ pub fn do_move_by_id(
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
-    let active_move_handle =
-        CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    let mon_handle = context.mon_handle();
+    let active_move_handle = CoreBattle::register_active_move_by_id(
+        context.as_battle_context_mut(),
+        move_id,
+        mon_handle,
+    )?;
     do_move(
         context,
         active_move_handle,
         target_location,
         original_target,
+        None,
     )
 }
 
@@ -359,6 +364,7 @@ pub fn do_move(
     active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
+    powered_up_move_id: Option<&Id>,
 ) -> Result<()> {
     context.mon_mut().active_move_actions += 1;
 
@@ -367,6 +373,7 @@ pub fn do_move(
         active_move_handle,
         target_location,
         original_target,
+        powered_up_move_id,
     )?;
 
     context.mon_mut().clear_active_move();
@@ -379,6 +386,7 @@ fn do_move_internal(
     mut active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
+    powered_up_move_id: Option<&Id>,
 ) -> Result<()> {
     let move_id = context
         .as_battle_context()
@@ -389,7 +397,7 @@ fn do_move_internal(
     let mut target = CoreBattle::get_target(
         context.as_battle_context_mut(),
         mon_handle,
-        &move_id,
+        powered_up_move_id.unwrap_or(&move_id),
         target_location,
         original_target,
     )?;
@@ -402,6 +410,7 @@ fn do_move_internal(
         active_move_handle = CoreBattle::register_active_move_by_id(
             context.as_battle_context_mut(),
             &Id::from(change_move),
+            mon_handle,
         )?;
         let mon_handle = context.mon_handle();
         let move_target = context
@@ -419,7 +428,6 @@ fn do_move_internal(
     let locked_move_before = context.mon().next_turn_state.locked_move.clone();
 
     // Check that move has enough PP to be used.
-    let move_id = context.active_move().id().clone();
     if locked_move_before.is_none()
         && !context.mon_mut().check_pp(&move_id, 1)
         && !move_id.eq("struggle")
@@ -510,8 +518,12 @@ pub fn use_move(
     source_effect: Option<&EffectHandle>,
     external: bool,
 ) -> Result<bool> {
-    let active_move_handle =
-        CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    let mon_handle = context.mon_handle();
+    let active_move_handle = CoreBattle::register_active_move_by_id(
+        context.as_battle_context_mut(),
+        move_id,
+        mon_handle,
+    )?;
     use_active_move(
         context,
         active_move_handle,
@@ -533,14 +545,17 @@ pub fn use_active_move(
     external: bool,
     directly_used: bool,
 ) -> Result<bool> {
-    // Power up the move if applicable (e.g., Max Moves).
-    if let Some(powered_up_move_handle) =
-        core_battle_effects::run_event_for_mon_expecting_move_quick_return(
-            context,
-            fxlang::BattleEvent::PowerUpMove,
-        )
     {
-        active_move_handle = powered_up_move_handle;
+        let mut context = context.active_move_context(active_move_handle)?;
+        // Power up the move if applicable (e.g., Max Moves).
+        if let Some(powered_up_move_handle) =
+            core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
+                &mut context.user_applying_effect_context(target)?,
+                fxlang::BattleEvent::PowerUpMove,
+            )
+        {
+            active_move_handle = powered_up_move_handle;
+        }
     }
 
     if directly_used {
@@ -555,7 +570,6 @@ pub fn use_active_move(
     effect_state.initialize(context.as_battle_context_mut(), source_effect, target, None)?;
     context.active_move_mut().effect_state = effect_state;
 
-    context.active_move_mut().used_by = Some(context.mon_handle());
     context.active_move_mut().external = external;
 
     // BeforeMove event handlers can prevent the move from being used.
@@ -625,11 +639,8 @@ pub fn use_active_move(
     Ok(outcome.success())
 }
 
-fn use_active_move_internal(
-    context: &mut ActiveMoveContext,
-    mut target: Option<MonHandle>,
-    directly_used: bool,
-) -> Result<MoveOutcome> {
+/// Modifies the active move's type.
+pub fn modify_move_type(context: &mut ActiveMoveContext, target: Option<MonHandle>) -> Result<()> {
     let move_type = context.active_move().data.primary_type;
     let move_type = core_battle_effects::run_active_move_event_expecting_type(
         context,
@@ -644,6 +655,15 @@ fn use_active_move_internal(
         move_type,
     );
     context.active_move_mut().data.primary_type = move_type;
+    Ok(())
+}
+
+fn use_active_move_internal(
+    context: &mut ActiveMoveContext,
+    mut target: Option<MonHandle>,
+    directly_used: bool,
+) -> Result<MoveOutcome> {
+    modify_move_type(context, target)?;
 
     let use_move_input = fxlang::VariableInput::from_iter([target
         .map(fxlang::Value::Mon)
@@ -5353,7 +5373,9 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
             MonSpecialFormeChangeType::PrimalReversion => {
                 core_battle_logs::revert_primal_reversion(context)?;
             }
-            _ => todo!("revert log not implemented"),
+            MonSpecialFormeChangeType::Gigantamax => {
+                core_battle_logs::revert_gigantamax(context)?;
+            }
         }
 
         context.target_mut().special_forme_change_type = None;
@@ -5516,7 +5538,7 @@ pub fn max_move_by_id(context: &mut MonContext, move_id: &Id) -> Result<Option<I
 /// Looks up the Max Move for the given move data.
 pub fn max_move(context: &Context, move_data: &MoveData) -> Result<Option<Id>> {
     // TODO: Gigantamax moves.
-    if move_data.max_move.is_none() {
+    if move_data.category != MoveCategory::Status && move_data.max_move.is_none() {
         return Ok(None);
     }
 

@@ -590,7 +590,7 @@
           "log_start: use_effect_state_source_effect with_source"
         ],
         "on_slot_end": [
-          "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id)",
+          "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id $effect_state.source)",
           "$target = func_call(mon_in_position: $side $slot)",
           "if !$target or !$target.active or $target == $effect_state.source:",
           ["return"],
@@ -1060,22 +1060,17 @@
           "remove_volatile: $target torment"
         ],
         "on_power_up_move": [
-          "$type = func_call(run_event_on_move: ModifyMoveType $move.type)",
-          "if $type.is_defined:",
-          ["$move.type = $type"],
-          "$type = func_call(run_event: ModifyMoveType $move.type)",
-          "if $type.is_defined:",
-          ["$move.type = $type"],
+          "modify_move_type: $move",
           "$max_move_id = func_call(max_move: $move)",
           "if !$max_move_id:",
           ["return"],
-          "$max_move = func_call(new_active_move: $max_move_id)",
+          "$max_move = func_call(new_active_move: $max_move_id $user)",
           "if $move.max_move_base_power.is_defined:",
           ["$max_move.base_power = $move.max_move_base_power"],
           "$max_move.category = $move.category",
           "$max_move.priority = $move.priority",
-          "$max_move.base_move_of_power_up = $move.id",
           "$max_move.powered_up = true",
+          "$max_move.powered_up_base_move = $move.id",
           "return $max_move"
         ],
         "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]],

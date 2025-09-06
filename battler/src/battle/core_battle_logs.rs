@@ -237,15 +237,37 @@ pub fn revert_primal_reversion(context: &mut ApplyingEffectContext) -> Result<()
 }
 
 pub fn dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
-    forme_change_internal(context, "dynamax".to_owned())
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "dynamax".to_owned(),
+        activation,
+    )
 }
 
 pub fn revert_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
-    forme_change_internal(context, "revertdynamax".to_owned())
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "revertdynamax".to_owned(),
+        activation,
+    )
 }
 
 pub fn gigantamax(context: &mut ApplyingEffectContext) -> Result<()> {
     forme_change_internal(context, "gigantamax".to_owned())
+}
+
+pub fn revert_gigantamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "revertgigantamax".to_owned())
 }
 
 pub fn cant(
