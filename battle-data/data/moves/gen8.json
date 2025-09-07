@@ -567,7 +567,7 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome"]
+    "flags": ["BypassMaxGuard", "NoMetronome"]
   },
   "drumbeating": {
     "name": "Drum Beating",
@@ -721,7 +721,13 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Allies",
-    "flags": ["BypassSubstitute", "Heal", "NoMetronome", "Snatch"],
+    "flags": [
+      "BypassMaxGuard",
+      "BypassSubstitute",
+      "Heal",
+      "NoMetronome",
+      "Snatch"
+    ],
     "hit_effect": { "heal_percent": "25%" }
   },
   "obstruct": {
@@ -925,7 +931,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute"]
   },
   "flipturn": {
     "name": "Flip Turn",
@@ -979,7 +985,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Allies",
-    "flags": ["BypassSubstitute", "Heal", "NoMetronome"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Heal", "NoMetronome"]
   },
   "wickedblow": {
     "name": "Wicked Blow",

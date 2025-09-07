@@ -566,7 +566,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute"],
+    "flags": ["BypassMaxGuard", "BypassSubstitute"],
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -1393,7 +1393,7 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AllyTeam",
-    "flags": ["Distance", "Snatch"],
+    "flags": ["BypassMaxGuard", "Distance", "Snatch"],
     "effect": {
       "callbacks": {
         "on_hit_side": [
@@ -1692,7 +1692,7 @@
     "pp": 40,
     "accuracy": "exempt",
     "target": "Allies",
-    "flags": ["Snatch", "Sound"],
+    "flags": ["BypassMaxGuard", "Snatch", "Sound"],
     "hit_effect": { "boosts": { "atk": 1 } }
   },
   "dragonclaw": {
@@ -1917,7 +1917,7 @@
     "accuracy": 100,
     "base_power": 140,
     "target": "Normal",
-    "flags": ["Future"],
+    "flags": ["BypassMaxGuard", "Future"],
     "effect": {
       "callbacks": {
         "on_try_move": [

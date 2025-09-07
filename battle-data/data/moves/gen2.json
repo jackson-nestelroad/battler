@@ -164,7 +164,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute"],
+    "flags": ["BypassMaxGuard", "BypassSubstitute"],
     "hit_effect": { "volatile_status": "curse" },
     "effect": {
       "callbacks": {
@@ -577,7 +577,7 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["BypassSubstitute", "Distance", "Sound"],
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Distance", "Sound"],
     "effect": {
       "callbacks": {
         "on_hit_field": [
@@ -889,7 +889,7 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Reflectable"],
+    "flags": ["BypassMaxGuard", "Mirror", "Reflectable"],
     "hit_effect": { "volatile_status": "trapped" }
   },
   "attract": {
@@ -972,7 +972,13 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AllyTeam",
-    "flags": ["BypassSubstitute", "Distance", "Snatch", "Sound"],
+    "flags": [
+      "BypassMaxGuard",
+      "BypassSubstitute",
+      "Distance",
+      "Snatch",
+      "Sound"
+    ],
     "effect": {
       "callbacks": {
         "on_hit_side": [
@@ -1627,7 +1633,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Future"],
+    "flags": ["BypassMaxGuard", "Future"],
     "effect": {
       "callbacks": {
         "on_ignore_immunity": ["return true"],

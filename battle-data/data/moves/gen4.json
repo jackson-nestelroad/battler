@@ -273,7 +273,7 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "AdjacentAllyOrUser",
-    "flags": [],
+    "flags": ["BypassMaxGuard"],
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -562,7 +562,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"],
+    "flags": ["BypassMaxGuard", "Snatch"],
     "hit_effect": { "volatile_status": "powertrick" },
     "condition": {
       "callbacks": {
@@ -686,6 +686,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": [
+      "BypassMaxGuard",
       "CallsMove",
       "FailCopycat",
       "FailEncore",

@@ -371,7 +371,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Reflectable"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Mirror", "Reflectable"]
   },
   "confide": {
     "name": "Confide",
@@ -380,7 +380,13 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Reflectable", "Sound"]
+    "flags": [
+      "BypassMaxGuard",
+      "BypassSubstitute",
+      "Mirror",
+      "Reflectable",
+      "Sound"
+    ]
   },
   "diamondstorm": {
     "name": "Diamond Storm",
@@ -452,7 +458,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute"],
+    "flags": ["BypassMaxGuard", "BypassSubstitute"],
     "hit_effect": { "boosts": { "spd": 1 } }
   },
   "eerieimpulse": {
@@ -588,6 +594,7 @@
     "accuracy": "exempt",
     "target": "AdjacentAlly",
     "flags": [
+      "BypassMaxGuard",
       "BypassSubstitute",
       "FailCopycat",
       "FailInstruct",

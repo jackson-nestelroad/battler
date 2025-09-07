@@ -959,7 +959,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Reflectable"]
+    "flags": ["BypassMaxGuard", "Mirror", "Reflectable"]
   },
   "zingzap": {
     "name": "Zing Zap",

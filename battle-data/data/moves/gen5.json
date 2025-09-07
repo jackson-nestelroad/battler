@@ -267,7 +267,7 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "NoMetronome"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "NoMetronome"]
   },
   "round": {
     "name": "Round",
@@ -340,7 +340,7 @@
     "accuracy": "exempt",
     "priority": 2,
     "target": "User",
-    "flags": []
+    "flags": ["BypassMaxGuard"]
   },
   "scald": {
     "name": "Scald",
