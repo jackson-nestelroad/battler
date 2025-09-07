@@ -425,6 +425,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "BerryEatingHealth"]
     BerryEatingHealth,
+    /// Runs when determining if a Mon can Dynamax.
+    ///
+    /// Runs in the context of a Mon..
+    #[string = "CanDynamax"]
+    CanDynamax,
     /// Runs when a Mon is attempting to escape from battle.
     ///
     /// Runs in the context of a Mon.
@@ -834,11 +839,6 @@ pub enum BattleEvent {
     /// Runs on the item.
     #[string = "PlayerUse"]
     PlayerUse,
-    /// Runs when a Mon uses a move, to power up the chosen move.
-    ///
-    /// Runs in the context of a move user.
-    #[string = "PowerUpMove"]
-    PowerUpMove,
     /// Runs when a Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
@@ -1127,6 +1127,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "Update"]
     Update,
+    /// Runs when a Mon uses a move, to upgrade the chosen move.
+    ///
+    /// Runs in the context of a move user.
+    #[string = "UpgradeMove"]
+    UpgradeMove,
     /// Runs when an item is used.
     ///
     /// Runs on the item.
@@ -1197,6 +1202,7 @@ impl BattleEvent {
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
+            Self::CanDynamax => CommonCallbackType::MonResult as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
             Self::Catch => CommonCallbackType::MonVoid as u32,
@@ -1274,7 +1280,6 @@ impl BattleEvent {
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
             Self::PlayerUse => CommonCallbackType::MonVoid as u32,
-            Self::PowerUpMove => CommonCallbackType::SourceMoveActiveMove as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::PreventUsedItems => CommonCallbackType::MonResult as u32,
             Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
@@ -1325,6 +1330,7 @@ impl BattleEvent {
             Self::TypeImmunity => CommonCallbackType::MonResult as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::Update => CommonCallbackType::MonVoid as u32,
+            Self::UpgradeMove => CommonCallbackType::SourceMoveActiveMove as u32,
             Self::Use => CommonCallbackType::MonVoid as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,

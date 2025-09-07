@@ -37,7 +37,8 @@ fn team() -> Result<TeamData> {
                         "Water Gun",
                         "Air Slash",
                         "Psychic",
-                        "Earthquake"
+                        "Earthquake",
+                        "Me First"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -50,7 +51,11 @@ fn team() -> Result<TeamData> {
                     "moves": [
                         "Protect",
                         "Feint",
-                        "Flamethrower"
+                        "Flamethrower",
+                        "Disable",
+                        "Mimic",
+                        "Sketch",
+                        "Spite"
                     ],
                     "nature": "Hardy",
                     "level": 50,
@@ -121,8 +126,8 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxgeyser"),
                 name: "Max Geyser".to_owned(),
-                pp: 15,
-                max_pp: 15,
+                pp: 5,
+                max_pp: 5,
                 target: MoveTarget::AdjacentFoe,
                 disabled: false,
             },
@@ -156,6 +161,14 @@ fn max_move_changes_based_on_type() {
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::AdjacentFoe,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("maxguard"),
+                name: "Max Guard".to_owned(),
+                pp: 20,
+                max_pp: 20,
+                target: MoveTarget::User,
                 disabled: false,
             },
         ]));
@@ -351,7 +364,6 @@ fn max_move_varies_power_based_on_base_move() {
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:101/142",
             "damage|mon:Pikachu,player-1,1|health:72/100",
-            "weather|weather:Rain|residual",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -414,7 +426,7 @@ fn feint_hits_through_max_guard() {
             "dynamax|mon:Pikachu,player-1,1",
             "split|side:0",
             "sethp|mon:Pikachu,player-1,1|health:142/142",
-            "sethp|mon:Pikachu,player-1,1|health:100/100"
+            "sethp|mon:Pikachu,player-1,1|health:100/100",
             "move|mon:Pikachu,player-1,1|name:Max Guard|target:Pikachu,player-1,1",
             "singleturn|mon:Pikachu,player-1,1|move:Max Guard",
             "move|mon:Eevee,player-2,2|name:Feint|target:Pikachu,player-1,1",
@@ -436,7 +448,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
-        pretty_assertions::assert_eq!(request.active[1].max_moves, Vec::from_iter([
+        pretty_assertions::assert_eq!(request.active[1].max_moves[0..=2], Vec::from_iter([
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
@@ -472,7 +484,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "gigantamax|mon:Eevee,player-1,2|species:Eevee-Gmax|from:Dynamax",
+            "gigantamax|mon:Eevee,player-1,2|species:Eevee-Gmax",
             "dynamax|mon:Eevee,player-1,2",
             "split|side:0",
             "sethp|mon:Eevee,player-1,2|health:172/172",
@@ -482,6 +494,191 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
             "damage|mon:Pikachu,player-2,1|health:14/95",
             "damage|mon:Pikachu,player-2,1|health:15/100",
             "start|mon:Pikachu,player-2,1|move:Attract",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn disable_fails_after_max_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1,dyna;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "pass;move 3,1"),
+        Ok(())
+    );
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Pikachu,player-1,1",
+            "split|side:0",
+            "sethp|mon:Pikachu,player-1,1|health:142/142",
+            "sethp|mon:Pikachu,player-1,1|health:100/100",
+            "move|mon:Pikachu,player-1,1|name:Max Strike|target:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:41/95",
+            "damage|mon:Pikachu,player-2,1|health:44/100",
+            "unboost|mon:Pikachu,player-2,1|stat:spe|by:1",
+            "unboost|mon:Eevee,player-2,2|stat:spe|by:1",
+            "move|mon:Eevee,player-2,2|name:Disable|noanim",
+            "fail|mon:Eevee,player-2,2",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn mimic_fails_after_max_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1,dyna;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "pass;move 4,1"),
+        Ok(())
+    );
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Pikachu,player-1,1",
+            "split|side:0",
+            "sethp|mon:Pikachu,player-1,1|health:142/142",
+            "sethp|mon:Pikachu,player-1,1|health:100/100",
+            "move|mon:Pikachu,player-1,1|name:Max Strike|target:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:41/95",
+            "damage|mon:Pikachu,player-2,1|health:44/100",
+            "unboost|mon:Pikachu,player-2,1|stat:spe|by:1",
+            "unboost|mon:Eevee,player-2,2|stat:spe|by:1",
+            "move|mon:Eevee,player-2,2|name:Mimic|noanim",
+            "fail|mon:Eevee,player-2,2",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn sketch_fails_after_max_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1,dyna;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "pass;move 5,1"),
+        Ok(())
+    );
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Pikachu,player-1,1",
+            "split|side:0",
+            "sethp|mon:Pikachu,player-1,1|health:142/142",
+            "sethp|mon:Pikachu,player-1,1|health:100/100",
+            "move|mon:Pikachu,player-1,1|name:Max Strike|target:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:41/95",
+            "damage|mon:Pikachu,player-2,1|health:44/100",
+            "unboost|mon:Pikachu,player-2,1|stat:spe|by:1",
+            "unboost|mon:Eevee,player-2,2|stat:spe|by:1",
+            "move|mon:Eevee,player-2,2|name:Sketch|noanim",
+            "fail|mon:Eevee,player-2,2",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn spite_deducts_pp_of_base_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1,dyna;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "pass;move 6,1"),
+        Ok(())
+    );
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Pikachu,player-1,1",
+            "split|side:0",
+            "sethp|mon:Pikachu,player-1,1|health:142/142",
+            "sethp|mon:Pikachu,player-1,1|health:100/100",
+            "move|mon:Pikachu,player-1,1|name:Max Strike|target:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:41/95",
+            "damage|mon:Pikachu,player-2,1|health:44/100",
+            "unboost|mon:Pikachu,player-2,1|stat:spe|by:1",
+            "unboost|mon:Eevee,player-2,2|stat:spe|by:1",
+            "move|mon:Eevee,player-2,2|name:Spite|target:Pikachu,player-1,1",
+            "deductpp|mon:Pikachu,player-1,1|move:Quick Attack|by:4",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn me_first_fails_for_max_move() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 8,1;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 0,1,dyna;pass"),
+        Ok(())
+    );
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Pikachu,player-2,1",
+            "split|side:1",
+            "sethp|mon:Pikachu,player-2,1|health:142/142",
+            "sethp|mon:Pikachu,player-2,1|health:100/100",
+            "move|mon:Pikachu,player-1,1|name:Me First|noanim",
+            "fail|mon:Pikachu,player-1,1",
+            "move|mon:Pikachu,player-2,1|name:Max Strike|target:Pikachu,player-1,1",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,1|health:41/95",
+            "damage|mon:Pikachu,player-1,1|health:44/100",
+            "unboost|mon:Pikachu,player-1,1|stat:spe|by:1",
+            "unboost|mon:Eevee,player-1,2|stat:spe|by:1",
             "residual",
             "turn|turn:2"
         ]"#,

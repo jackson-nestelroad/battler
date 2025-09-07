@@ -76,6 +76,21 @@ impl SecondaryEffect {
     }
 }
 
+/// The source of an upgraded move.
+#[derive(Debug, Clone)]
+pub enum UpgradedMoveSource {
+    MaxMove { base_move: Id },
+}
+
+impl UpgradedMoveSource {
+    /// The base move of the upgraded move.
+    pub fn base_move(&self) -> Option<Id> {
+        match self {
+            Self::MaxMove { base_move, .. } => Some(base_move.clone()),
+        }
+    }
+}
+
 fn default_max_move(
     id: &Id,
     category: MoveCategory,
@@ -147,10 +162,8 @@ pub struct Move {
     pub total_damage: u64,
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
-    /// The base move of a powered-up move.
-    pub powered_up_base_move: Option<Id>,
-    /// Is the move powered up?
-    pub powered_up: bool,
+    /// Is the move upgraded?
+    pub upgraded: Option<UpgradedMoveSource>,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -195,8 +208,7 @@ impl Move {
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
-            powered_up_base_move: None,
-            powered_up: false,
+            upgraded: None,
             effect_state: fxlang::EffectState::default(),
             unlinked: false,
             secondary_effects: HashMap::default(),
@@ -221,8 +233,7 @@ impl Move {
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
-            powered_up_base_move: None,
-            powered_up: false,
+            upgraded: None,
             effect_state: fxlang::EffectState::default(),
             unlinked: true,
             secondary_effects: HashMap::default(),
@@ -365,6 +376,11 @@ impl Move {
             ),
             None => Box::new(std::iter::empty::<(usize, Option<Fraction<u16>>)>()),
         }
+    }
+
+    /// This move is callable from other moves.
+    pub fn callable(&self) -> bool {
+        !self.data.flags.contains(&MoveFlag::Max)
     }
 }
 

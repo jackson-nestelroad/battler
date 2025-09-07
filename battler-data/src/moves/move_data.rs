@@ -199,10 +199,3 @@ pub struct MoveData {
     #[serde(default)]
     pub condition: serde_json::Value,
 }
-
-impl MoveData {
-    /// This move is callable from other moves.
-    pub fn callable(&self) -> bool {
-        !self.flags.contains(&MoveFlag::Max)
-    }
-}

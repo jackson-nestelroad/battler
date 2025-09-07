@@ -198,7 +198,7 @@ impl SpeciesData {
     /// Is the species a Gigantamax?
     pub fn gigantamax(&self) -> bool {
         match self.forme.as_ref().map(|s| s.as_str()) {
-            Some("Gmax" | "Eternamax") => true,
+            Some("Gmax") => true,
             _ => false,
         }
     }

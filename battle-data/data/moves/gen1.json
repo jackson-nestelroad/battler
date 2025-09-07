@@ -609,7 +609,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if !$target.last_move or $target.last_move.id == struggle:",
+          "if !$target.last_move or $target.last_move.id == struggle or $target.last_move.upgraded:",
           ["return false"]
         ]
       }
@@ -1430,7 +1430,7 @@
       "callbacks": {
         "on_hit": [
           "$last_move = $target.last_move",
-          "if !$last_move or func_call(move_has_flag: $last_move failmimic) or func_call(has_move: $source $last_move.id):",
+          "if !$last_move or func_call(move_has_flag: $last_move failmimic) or func_call(has_move: $source $last_move.id) or $last_move.upgraded:",
           ["return false"],
           "$mimic_index = func_call(move_slot_index: $source $this.id)",
           "if !$mimic_index:",
@@ -1770,7 +1770,7 @@
       "callbacks": {
         "on_try_hit": [
           "$last_move = $target.last_move",
-          "if !$last_move or !func_call(move_has_flag: $last_move mirror):",
+          "if !$last_move or !func_call(move_has_flag: $last_move mirror) or !$last_move.callable:",
           ["return false"],
           "use_move: $source $last_move.id $target",
           "return stop"

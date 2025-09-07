@@ -1059,24 +1059,27 @@
           "remove_volatile: $target substitute",
           "remove_volatile: $target torment"
         ],
-        "on_power_up_move": [
+        "on_upgrade_move": [
           "modify_move_type: $move",
           "$max_move_id = func_call(max_move: $user $move)",
           "if !$max_move_id:",
           ["return"],
           "$max_move = func_call(new_active_move: $max_move_id $user)",
+          "set_upgraded_to_max_move: $max_move $move.id",
           "if $move.max_move_base_power.is_defined:",
           ["$max_move.base_power = $move.max_move_base_power"],
           "$max_move.category = $move.category",
           "# Move is already being used, but priority can affect other things as the move runs.",
           "$max_move.priority = $move.priority",
-          "$max_move.powered_up = true",
-          "$max_move.powered_up_base_move = $move.id",
           "return $max_move"
         ],
         "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]],
         "on_before_switch_out": ["remove_volatile: $mon $this.id"],
         "on_drag_out": ["log_block: with_target", "return false"],
+        "suppress_mon_item": [
+          "if $mon.item.is_defined and func_call(item_has_flag: $mon.item choicelocking):",
+          ["return true"]
+        ],
         "on_residual": {
           "priority": -100,
           "program": []

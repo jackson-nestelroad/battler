@@ -55,6 +55,26 @@ fn team() -> Result<TeamData> {
                     ],
                     "nature": "Hardy",
                     "level": 50
+                },
+                {
+                    "name": "Zacian",
+                    "species": "Zacian",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Tackle"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                },
+                {
+                    "name": "Ditto",
+                    "species": "Ditto",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Transform"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
                 }
             ]
         }"#,
@@ -484,4 +504,68 @@ fn hp_ratio_stays_the_same_before_and_after_dynamax() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn dynamax_immune_to_choice_item() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team_1 = team().unwrap();
+    team_1.members[0].item = Some("Choice Band".to_owned());
+    let mut battle = make_battle(&data, 100, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:210/210",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "dynamax|mon:Venusaur,player-2,1",
+            "split|side:1",
+            "sethp|mon:Venusaur,player-2,1|health:210/210",
+            "sethp|mon:Venusaur,player-2,1|health:100/100",
+            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:169/210",
+            "damage|mon:Venusaur,player-2,1|health:81/100",
+            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+            "move|mon:Venusaur,player-2,1|name:Max Strike|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:169/210",
+            "damage|mon:Venusaur,player-1,1|health:81/100",
+            "unboost|mon:Venusaur,player-1,1|stat:spe|by:1",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "move|mon:Venusaur,player-1,1|name:Max Guard|noanim",
+            "fail|mon:Venusaur,player-1,1",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn zacian_cannot_dynamax_even_if_transformed() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Err(err) => {
+        assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Zacian cannot dynamax");
+    });
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,dyna"), Err(err) => {
+        assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Ditto cannot dynamax");
+    });
 }

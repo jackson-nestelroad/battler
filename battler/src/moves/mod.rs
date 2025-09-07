@@ -5,4 +5,5 @@ pub use r#move::{
     MoveHitData,
     MoveHitEffectType,
     SecondaryEffect,
+    UpgradedMoveSource,
 };

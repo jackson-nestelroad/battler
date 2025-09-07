@@ -24,7 +24,7 @@
           "$last_move = $target.last_move",
           "if !$last_move or $source.transformed or func_call(has_move: $source $last_move.id):",
           ["return false"],
-          "if func_call(move_has_flag: $last_move nosketch):",
+          "if func_call(move_has_flag: $last_move nosketch) or $last_move.upgraded:",
           ["return false"],
           "$sketch_index = func_call(move_slot_index: $source $this.id)",
           "overwrite_move_slot: $source $sketch_index func_call(move_slot: $last_move) override_base_slot",
@@ -320,10 +320,12 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "$last_move = $target.last_move",
-          "if !$last_move:",
+          "if !$target.last_move:",
           ["return false"],
-          "$pp = func_call(deduct_pp: $target $last_move.id 4)",
+          "$last_move_id = $target.last_move.id",
+          "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $target.last_move.upgraded_base_move"],
+          "$pp = func_call(deduct_pp: $target $last_move_id 4)",
           "if $pp == 0:",
           ["return false"]
         ]
@@ -954,7 +956,7 @@
           "foreach $move_slot in $target.move_slots:",
           [
             "$potential_move = func_call(get_move: $move_slot.id)",
-            "if $move_slot.is_defined and !func_call(move_has_flag: $potential_move nosleeptalk):",
+            "if $move_slot.is_defined and !func_call(move_has_flag: $potential_move nosleeptalk) and $potential_move.callable:",
             ["$moves = func_call(append: $moves $potential_move.id)"]
           ],
           "$random_move = func_call(sample: $moves)",
@@ -1233,7 +1235,12 @@
       "no_copy": true,
       "callbacks": {
         "on_start": [
-          "$last_move = $target.last_move",
+          "if !$target.last_move:",
+          ["return false"],
+          "$last_move_id = $target.last_move.id",
+          "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $last_move.upgraded_base_move"],
+          "$last_move = func_call(get_move: $last_move_id)",
           "if !$last_move or func_call(move_has_flag: $last_move failencore):",
           ["return false"],
           "$index = func_call(move_slot_index: $target $last_move.id)",

@@ -354,7 +354,6 @@ pub fn do_move_by_id(
         active_move_handle,
         target_location,
         original_target,
-        None,
     )
 }
 
@@ -364,7 +363,6 @@ pub fn do_move(
     active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
-    powered_up_move_id: Option<&Id>,
 ) -> Result<()> {
     context.mon_mut().active_move_actions += 1;
 
@@ -373,7 +371,6 @@ pub fn do_move(
         active_move_handle,
         target_location,
         original_target,
-        powered_up_move_id,
     )?;
 
     context.mon_mut().clear_active_move();
@@ -386,8 +383,25 @@ fn do_move_internal(
     mut active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
-    powered_up_move_id: Option<&Id>,
 ) -> Result<()> {
+    let selected_move_id = context
+        .as_battle_context()
+        .active_move(active_move_handle)?
+        .id()
+        .clone();
+
+    // Upgrade the move if applicable (e.g., Max Moves).
+    if let Some(upgraded_move_handle) =
+        core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
+            &mut context
+                .active_move_context(active_move_handle)?
+                .user_applying_effect_context(None)?,
+            fxlang::BattleEvent::UpgradeMove,
+        )
+    {
+        active_move_handle = upgraded_move_handle;
+    }
+
     let move_id = context
         .as_battle_context()
         .active_move(active_move_handle)?
@@ -397,7 +411,7 @@ fn do_move_internal(
     let mut target = CoreBattle::get_target(
         context.as_battle_context_mut(),
         mon_handle,
-        powered_up_move_id.unwrap_or(&move_id),
+        &move_id,
         target_location,
         original_target,
     )?;
@@ -429,8 +443,8 @@ fn do_move_internal(
 
     // Check that move has enough PP to be used.
     if locked_move_before.is_none()
-        && !context.mon_mut().check_pp(&move_id, 1)
-        && !move_id.eq("struggle")
+        && !context.mon_mut().check_pp(&selected_move_id, 1)
+        && !selected_move_id.eq("struggle")
     {
         // No PP, so this move action cannot be carried through.
         core_battle_logs::cant(
@@ -444,26 +458,21 @@ fn do_move_internal(
     // The move is going to be used, so remember the choices made here. This is important for
     // locking moves.
     if locked_move_before.is_none() {
-        context.mon_mut().volatile_state.last_move_selected = Some(move_id.clone());
+        context.mon_mut().volatile_state.last_move_selected = Some(selected_move_id.clone());
         context.mon_mut().volatile_state.last_move_target_location = target_location;
     }
 
+    let context = context.as_mon_context_mut();
+
     // Use the move.
-    use_active_move(
-        context.as_mon_context_mut(),
-        active_move_handle,
-        target,
-        None,
-        false,
-        true,
-    )?;
+    use_active_move(context, active_move_handle, target, None, false, true)?;
 
     let this_move_is_the_last_selected = context
         .mon()
         .volatile_state
         .last_move_selected
         .as_ref()
-        .is_some_and(|last_move| last_move == &move_id);
+        .is_some_and(|last_move| last_move == &selected_move_id);
 
     // Set the last move of the user only if they selected it for use.
     //
@@ -479,7 +488,7 @@ fn do_move_internal(
     if this_move_is_the_last_selected {
         // Some moves, like charging moves, do not count as the last move until the last turn.
         let set_last_move = core_battle_effects::run_event_for_mon(
-            context.as_mon_context_mut(),
+            context,
             fxlang::BattleEvent::SetLastMove,
             fxlang::VariableInput::default(),
         );
@@ -495,15 +504,20 @@ fn do_move_internal(
     // first (default). The effect of such a move should hook into this event to ensure PP is not
     // continually deducted every turn.
     if this_move_is_the_last_selected && locked_move_before.is_none()
-        || context.active_move().data.flags.contains(&MoveFlag::Charge)
+        || context
+            .as_battle_context()
+            .active_move(active_move_handle)?
+            .data
+            .flags
+            .contains(&MoveFlag::Charge)
     {
         let deduction = core_battle_effects::run_event_for_mon_expecting_u8(
-            context.as_mon_context_mut(),
+            context,
             fxlang::BattleEvent::DeductPp,
             1,
         );
         if deduction > 0 {
-            context.mon_mut().deduct_pp(&move_id, deduction);
+            context.mon_mut().deduct_pp(&selected_move_id, deduction);
         }
     }
 
@@ -539,25 +553,12 @@ pub fn use_move(
 /// This code is shared between chosen and external moves.
 pub fn use_active_move(
     context: &mut MonContext,
-    mut active_move_handle: MoveHandle,
+    active_move_handle: MoveHandle,
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     external: bool,
     directly_used: bool,
 ) -> Result<bool> {
-    {
-        let mut context = context.active_move_context(active_move_handle)?;
-        // Power up the move if applicable (e.g., Max Moves).
-        if let Some(powered_up_move_handle) =
-            core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
-                &mut context.user_applying_effect_context(target)?,
-                fxlang::BattleEvent::PowerUpMove,
-            )
-        {
-            active_move_handle = powered_up_move_handle;
-        }
-    }
-
     if directly_used {
         context.mon_mut().volatile_state.move_this_turn_outcome = None;
         context.mon_mut().set_active_move(active_move_handle);
@@ -5446,6 +5447,9 @@ pub fn primal_reversion(context: &mut ApplyingEffectContext, species: &Id) -> Re
 /// Checks if the Mon can Dynamax.
 pub fn can_dynamax(context: &mut MonContext) -> Result<Option<Id>> {
     if !context.player().can_dynamax {
+        return Ok(None);
+    }
+    if !Mon::can_dynamax(context)? {
         return Ok(None);
     }
 

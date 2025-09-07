@@ -528,7 +528,7 @@
         "on_before_move": {
           "priority": 6,
           "program": [
-            "if func_call(move_has_flag: $move.id heal):",
+            "if func_call(move_has_flag: $move.id heal) and !$move.upgraded:",
             ["log_cant", "return false"]
           ]
         },
@@ -664,8 +664,8 @@
           "$action = func_call(pending_move_action_this_turn: $target)",
           "if !$action:",
           ["return false"],
-          "$move = func_call(new_active_move: $action.id $source)",
-          "if $move.category == status or func_call(move_has_flag: $move failmefirst):",
+          "$move = func_call(new_active_move: $action.effective_id $source)",
+          "if $move.category == status or func_call(move_has_flag: $move failmefirst) or !$move.callable:",
           ["return false"],
           "add_volatile: $source $this.id",
           "use_move: $source $move $target",
@@ -699,10 +699,13 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "$last_move = $battle.last_move",
-          "if !$last_move:",
+          "if !$battle.last_move:",
           ["return false"],
-          "if func_call(move_has_flag: $last_move failcopycat):",
+          "$last_move_id = $battle.last_move.id",
+          "if $battle.last_move.upgraded and $battle.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $battle.last_move.upgraded_base_move"],
+          "$last_move = func_call(get_move: $last_move_id)",
+          "if !$last_move or !$last_move.callable or func_call(move_has_flag: $last_move failcopycat):",
           ["return false"],
           "use_move: $target $last_move.id"
         ]

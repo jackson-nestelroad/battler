@@ -631,7 +631,7 @@
             "foreach $move_slot in $mon.move_slots:",
             [
               "$usable_move = func_call(get_move: $move_slot.id)",
-              "if !$usable_move or func_call(move_has_flag: $usable_move noassist):",
+              "if !$usable_move or func_call(move_has_flag: $usable_move noassist) or !$usable_move.callable:",
               ["continue"],
               "$moves = func_call(append: $moves $usable_move.id)"
             ]
@@ -917,7 +917,7 @@
           ]
         ],
         "on_foe_before_move": [
-          "if $move.id != struggle and func_call(has_move: $effect_state.source $move.id):",
+          "if $move.id != struggle and func_call(has_move: $effect_state.source $move.id) and !$move.upgraded:",
           ["log_cant", "return false"]
         ]
       }
@@ -956,10 +956,12 @@
         "on_faint": [
           "if !$source or $source.exited or !$effect:",
           ["return"],
-          "if !$effect.is_move or func_call(move_has_flag: $effect future) or !$source.last_move.is_defined:",
+          "if !$effect.is_move or func_call(move_has_flag: $effect future) or !$source.last_move:",
           ["return"],
-          "$last_move = $source.last_move",
-          "set_pp: $source $last_move.id 0 use_effect_state_source_as_source"
+          "$last_move_id = $source.last_move.id",
+          "if $source.last_move.upgraded and $source.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $source.last_move.upgraded_base_move"],
+          "set_pp: $source $last_move_id 0 use_effect_state_source_as_source"
         ],
         "on_before_move": ["remove_volatile: $user $this.id"]
       }
@@ -986,7 +988,7 @@
       "callbacks": {
         "on_start": ["log_single_turn: with_target"],
         "on_any_prepare_hit": [
-          "if !func_call(move_has_flag: $move snatch) or ($move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id == $this.id):",
+          "if !func_call(move_has_flag: $move snatch) or $move.upgraded or ($move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id == $this.id):",
           ["return"],
           "$snatch_user = $effect_state.source",
           "log_activate: with_target use_effect_state_source",

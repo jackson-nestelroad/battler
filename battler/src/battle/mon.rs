@@ -1488,6 +1488,9 @@ impl Mon {
             request.can_dynamax =
                 context.player().can_dynamax && context.mon().next_turn_state.can_dynamax;
 
+            // Communicate Max Moves, mostly for the player's convenience.
+            //
+            // The actual Max Move is decided immediately when the move is used.
             if request.can_dynamax || context.mon().dynamaxed {
                 request.max_moves = Self::max_moves(context)?
                     .into_iter()
@@ -2491,6 +2494,17 @@ impl Mon {
             can_escape,
         );
         Ok(can_escape)
+    }
+
+    /// Checks if the Mon can Dynamax, based on its own effects.
+    pub fn can_dynamax(context: &mut MonContext) -> Result<bool> {
+        let can_dynamax = true;
+        let can_dynamax = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+            context,
+            fxlang::BattleEvent::CanDynamax,
+            can_dynamax,
+        );
+        Ok(can_dynamax)
     }
 
     /// Sets the HP on the Mon directly, returning the delta.

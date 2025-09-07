@@ -1279,7 +1279,6 @@ impl<'d> CoreBattle<'d> {
                         .wrap_expectation("expected move action to have an active move")?,
                     action.target,
                     action.original_target,
-                    action.powered_up_id.as_ref(),
                 )?;
             }
             Action::BeforeTurnMove(action) => {
@@ -1609,14 +1608,15 @@ impl<'d> CoreBattle<'d> {
                 "expected active move to exist on action for priority calculation",
             )?;
 
-            // Resolve priority using Max Move.
-            if let Some(max_move_id) = &action.powered_up_id {
+            // Resolve priority using upgraded move (e.g., Max Move).
+            if action.effective_move_id() != &action.id {
                 active_move_handle = Self::register_active_move_by_id(
                     context.as_battle_context_mut(),
-                    max_move_id,
+                    action.effective_move_id(),
                     action.mon_action.mon,
                 )?;
             }
+
             let mut context = context.active_move_context(active_move_handle)?;
             let priority = context.active_move().data.priority as i32;
             let mut context = context.user_applying_effect_context(None)?;

@@ -77,7 +77,10 @@ use crate::{
         general_error,
     },
     log::UncommittedBattleLogEntry,
-    moves::Move,
+    moves::{
+        Move,
+        UpgradedMoveSource,
+    },
 };
 
 /// Runs an fxlang function.
@@ -267,6 +270,7 @@ pub fn run_function(
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_illusion" => set_illusion(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
+        "set_upgraded_to_max_move" => set_upgraded_to_max_move(context).map(|_| None),
         "set_pp" => set_pp(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
@@ -2908,10 +2912,13 @@ fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<
         .queue
         .pending_move_this_turn(mon_handle)
         .map(|move_action| {
-            Value::Object(HashMap::from_iter([(
-                "id".to_owned(),
-                Value::String(move_action.id.to_string()),
-            )]))
+            Value::Object(HashMap::from_iter([
+                ("id".to_owned(), Value::String(move_action.id.to_string())),
+                (
+                    "effective_id".to_owned(),
+                    Value::String(move_action.effective_move_id().to_string()),
+                ),
+            ]))
         }))
 }
 
@@ -3879,4 +3886,22 @@ fn has_species_registered(mut context: FunctionContext) -> Result<Value> {
 fn force_fully_heal(mut context: FunctionContext) -> Result<()> {
     let target = context.target_handle_positional()?;
     Mon::force_fully_heal(&mut context.mon_context(target)?)
+}
+
+fn set_upgraded_to_max_move(mut context: FunctionContext) -> Result<()> {
+    let active_move = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let base_move = context
+        .pop_front()
+        .wrap_expectation("missing base move")?
+        .move_id(context.evaluation_context_mut())
+        .wrap_error_with_message("invalid base move")?;
+    context
+        .battle_context_mut()
+        .active_move_mut(active_move)?
+        .upgraded = Some(UpgradedMoveSource::MaxMove { base_move });
+    Ok(())
 }

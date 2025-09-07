@@ -10186,6 +10186,8 @@
     "effect": {
       "callbacks": {
         "on_update": [
+          "if $mon.base_species != $this.id:",
+          ["return"],
           "if $mon.item == griseousorb or $mon.item == griseouscore:",
           ["forme_change: $mon giratinaorigin"]
         ]
@@ -13867,10 +13869,14 @@
     "effect": {
       "callbacks": {
         "on_update": [
+          "if $mon.base_species != $this.id:",
+          ["return"],
           "if $mon.status == frz or $field.time == night:",
           ["forme_change: $target shaymin permanent"]
         ],
         "on_after_set_status": [
+          "if $target.base_species != $this.id:",
+          ["return"],
           "if $status.id == frz:",
           ["forme_change: $target shaymin permanent"]
         ]
@@ -13911,6 +13917,8 @@
     "effect": {
       "callbacks": {
         "on_update": [
+          "if $mon.base_species != $this.id:",
+          ["return"],
           "if !$mon.item or ($mon.item != griseousorb and $mon.item != griseouscore):",
           ["forme_change: $mon giratina"]
         ]

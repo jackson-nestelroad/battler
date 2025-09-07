@@ -1227,17 +1227,18 @@ impl Player {
             ))?;
 
         let mut move_id = move_slot.id.clone();
-        let mut move_name = move_slot.name.clone();
-        let mut move_target = move_slot.target;
 
-        let powered_up_move_id = if (choice.dyna || context.mon().dynamaxed)
+        // Use the upgraded move for some validation checks (e.g., the move target).
+        let (move_name, move_target, upgraded_move_id) = if (choice.dyna || context.mon().dynamaxed)
             && let Some(move_slot) = request.max_moves.get(choice.move_slot)
         {
-            move_target = move_slot.target;
-            move_name = move_slot.name.clone();
-            Some(move_slot.id.clone())
+            (
+                move_slot.name.clone(),
+                move_slot.target,
+                Some(move_slot.id.clone()),
+            )
         } else {
-            None
+            (move_slot.name.clone(), move_slot.target, None)
         };
 
         if let Some(locked_move) = context.mon().next_turn_state.locked_move.clone() {
@@ -1248,7 +1249,7 @@ impl Player {
                 .actions
                 .push(Action::Move(MoveAction::new(MoveActionInput {
                     id: Id::from(locked_move),
-                    powered_up_id: None,
+                    upgraded_id: None,
                     mon: mon_handle,
                     target: locked_move_target,
                     mega: false,
@@ -1331,7 +1332,7 @@ impl Player {
             .actions
             .push(Action::Move(MoveAction::new(MoveActionInput {
                 id: move_id,
-                powered_up_id: powered_up_move_id,
+                upgraded_id: upgraded_move_id,
                 mon: mon_handle,
                 target: choice.target,
                 mega: choice.mega,

@@ -306,7 +306,7 @@ mod queue_test {
     fn move_action(id: Id, priority: i32, speed: u32, sub_priority: i32) -> Action {
         Action::Move(MoveAction {
             id,
-            powered_up_id: None,
+            upgraded_id: None,
             mon_action: MonAction {
                 mon: MonHandle::from(0),
                 speed,
