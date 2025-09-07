@@ -1533,7 +1533,17 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AdjacentFoe",
-    "flags": ["Max"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
     "user_effect": {},
     "effect": {
       "callbacks": {
@@ -1562,7 +1572,17 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "AdjacentFoe",
-    "flags": ["Max"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
     "user_effect": {},
     "effect": {
       "callbacks": {
@@ -1592,7 +1612,17 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AdjacentFoe",
-    "flags": ["Max"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
     "user_effect": {},
     "effect": {
       "callbacks": {
@@ -1612,7 +1642,17 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AdjacentFoe",
-    "flags": ["Max"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
     "user_effect": {},
     "effect": {
       "callbacks": {
@@ -1649,7 +1689,17 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AdjacentFoe",
-    "flags": ["Max"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
     "user_effect": {},
     "effect": {
       "callbacks": {

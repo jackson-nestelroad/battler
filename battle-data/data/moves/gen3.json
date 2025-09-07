@@ -703,7 +703,7 @@
           ["return"],
           "log_activate: with_target use_effect_state_source",
           "do_not_animate_last_move",
-          "$reflected_move = func_call(clone_active_move: $move $target)",
+          "$reflected_move = func_call(clone_active_move: $move $effect_state.target)",
           "$reflected_move.effect_state.reflected = true",
           "use_active_move: $effect_state.source $reflected_move $source use_effect_as_source_effect",
           "return stop"
