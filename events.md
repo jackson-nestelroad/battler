@@ -114,6 +114,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ## Dynamax
 
+1. `CanDynamax`.
 1. Mon changes to Gigantamax forme, if applicable.
 1. `BeforeDynamax`.
 1. Add `Dynamax` volatile status.
@@ -124,6 +125,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ## Move
 
+1. `UpgradeMove`.
 1. `OverrideMove`.
 1. Use active move:
 
@@ -133,6 +135,7 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. `ModifyTarget`.
    1. Use active move:
 
+      1. `ModifyMoveType`.
       1. `UseMove`.
       1. `RedirectTarget`.
       1. `TryMove`.
