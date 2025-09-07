@@ -1073,7 +1073,10 @@
           "$max_move.priority = $move.priority",
           "return $max_move"
         ],
-        "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]],
+        "on_add_volatile": [
+          "if [encore, flinch, torment] has $volatile.id:",
+          ["return false"]
+        ],
         "on_before_switch_out": ["remove_volatile: $mon $this.id"],
         "on_drag_out": ["log_block: with_target", "return false"],
         "suppress_mon_item": [

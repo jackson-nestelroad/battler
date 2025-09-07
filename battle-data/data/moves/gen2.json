@@ -560,7 +560,7 @@
       "callbacks": {
         "on_start": ["log_single_move: with_target"],
         "on_faint": [
-          "if !$source or !$effect or func_call(is_ally: $target $source):",
+          "if !$source or !$effect or func_call(is_ally: $target $source) or $source.dynamaxed:",
           ["return"],
           "if $effect.is_move and !func_call(move_has_flag: $effect future):",
           ["log_activate: with_target", "faint: $source"]

@@ -878,6 +878,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
+        "on_try_hit": ["if $target.dynamaxed:", ["return false"]],
         "on_move_base_power": [
           "$weight = $target.weight",
           "if $weight >= 2000:",

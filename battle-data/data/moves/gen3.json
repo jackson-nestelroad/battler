@@ -870,7 +870,7 @@
         "on_try_hit": [
           "$target_ability = $target.ability",
           "$source_ability = $source.ability",
-          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap):",
+          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap) or $target.dynamaxed:",
           ["return false"],
           "if !func_call(set_ability: $source $target_ability use_target_as_source dry_run):",
           ["return false"],
