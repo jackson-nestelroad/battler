@@ -1068,6 +1068,7 @@
           "if $move.max_move_base_power.is_defined:",
           ["$max_move.base_power = $move.max_move_base_power"],
           "$max_move.category = $move.category",
+          "# Move is already being used, but priority can affect other things as the move runs.",
           "$max_move.priority = $move.priority",
           "$max_move.powered_up = true",
           "$max_move.powered_up_base_move = $move.id",
@@ -1081,21 +1082,6 @@
           "program": []
         },
         "on_end": ["end_dynamax: $target"]
-      }
-    }
-  },
-  "poweredupmovebrokeprotection": {
-    "name": "Powered-Up Move Broke Protection",
-    "condition_type": "Built-in",
-    "condition": {
-      "callbacks": {
-        "on_source_modify_damage": {
-          "priority": -999,
-          "program": [
-            "log_custom_effect: powerbroke no_effect with_target use_source_as_target",
-            "return $damage / 4"
-          ]
-        }
       }
     }
   }

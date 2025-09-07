@@ -47,11 +47,11 @@ fn team() -> Result<TeamData> {
                     "level": 50
                 },
                 {
-                    "name": "Blastoise",
-                    "species": "Blastoise",
-                    "ability": "Torrent",
+                    "name": "Chansey",
+                    "species": "Chansey",
+                    "ability": "No Ability",
                     "moves": [
-                        "Tackle"
+                        "Soft-Boiled"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -140,7 +140,10 @@ fn one_mon_can_dynamax_and_use_max_moves() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Err(err) => {
         assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Venusaur cannot dynamax");
     });
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,-1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,-1"), Err(err) => {
+        assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: you cannot choose a target for Max Guard");
+    });
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -293,6 +296,190 @@ fn dynamax_ends_on_faint() {
             "faint|mon:Venusaur,player-1,1",
             "revertdynamax|mon:Venusaur,player-1,1",
             "residual"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn dynamax_ends_after_three_turns() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:210/210",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:99/140",
+            "damage|mon:Venusaur,player-2,1|health:71/100",
+            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "revertdynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:140/140",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "residual",
+            "turn|turn:4"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn dynamax_can_still_struggle() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Chansey,player-1,1",
+            "split|side:0",
+            "sethp|mon:Chansey,player-1,1|health:465/465",
+            "sethp|mon:Chansey,player-1,1|health:100/100",
+            "move|mon:Venusaur,player-2,1|name:Tackle|target:Chansey,player-1,1",
+            "split|side:0",
+            "damage|mon:Chansey,player-1,1|health:310/465",
+            "damage|mon:Chansey,player-1,1|health:67/100",
+            "move|mon:Chansey,player-1,1|name:Struggle|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:136/140",
+            "damage|mon:Venusaur,player-2,1|health:98/100",
+            "split|side:0",
+            "damage|mon:Chansey,player-1,1|from:Struggle Recoil|health:232/465",
+            "damage|mon:Chansey,player-1,1|from:Struggle Recoil|health:50/100",
+            "residual",
+            "turn|turn:8"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 7, &expected_logs);
+}
+
+#[test]
+fn dynamax_level_increases_hp() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut team_1 = team().unwrap();
+    team_1.members[0].dynamax_level = 5;
+    let mut team_2 = team().unwrap();
+    team_2.members[0].dynamax_level = 10;
+    let mut battle = make_battle(&data, 100, team_1, team_2).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,dyna"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:245/245",
+            "sethp|mon:Venusaur,player-1,1|health:100/100",
+            "dynamax|mon:Venusaur,player-2,1",
+            "split|side:1",
+            "sethp|mon:Venusaur,player-2,1|health:280/280",
+            "sethp|mon:Venusaur,player-2,1|health:100/100",
+            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:239/280",
+            "damage|mon:Venusaur,player-2,1|health:86/100",
+            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+            "move|mon:Venusaur,player-2,1|name:Max Strike|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:204/245",
+            "damage|mon:Venusaur,player-1,1|health:84/100",
+            "unboost|mon:Venusaur,player-1,1|stat:spe|by:1",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn hp_ratio_stays_the_same_before_and_after_dynamax() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:121/140",
+            "damage|mon:Venusaur,player-1,1|health:87/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:181/210",
+            "sethp|mon:Venusaur,player-1,1|health:87/100",
+            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:99/140",
+            "damage|mon:Venusaur,player-2,1|health:71/100",
+            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+            "residual",
+            "turn|turn:3",
+            ["time"],
+            "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:162/210",
+            "damage|mon:Venusaur,player-1,1|health:78/100",
+            "residual",
+            "turn|turn:4",
+            ["time"],
+            "revertdynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:108/140",
+            "sethp|mon:Venusaur,player-1,1|health:78/100",
+            "residual",
+            "turn|turn:5"
         ]"#,
     )
     .unwrap();

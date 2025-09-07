@@ -361,6 +361,7 @@
     },
     "condition": {
       "duration": 1,
+      "delegates": ["weakenthroughprotectionmovebase"],
       "callbacks": {
         "on_start": ["log_single_turn: with_target"],
         "on_try_hit": {

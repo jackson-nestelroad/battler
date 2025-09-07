@@ -1227,12 +1227,14 @@ impl Player {
             ))?;
 
         let mut move_id = move_slot.id.clone();
+        let mut move_name = move_slot.name.clone();
         let mut move_target = move_slot.target;
 
         let powered_up_move_id = if (choice.dyna || context.mon().dynamaxed)
             && let Some(move_slot) = request.max_moves.get(choice.move_slot)
         {
             move_target = move_slot.target;
+            move_name = move_slot.name.clone();
             Some(move_slot.id.clone())
         } else {
             None
@@ -1257,14 +1259,6 @@ impl Player {
         }
 
         let moves = Mon::moves(&mut context)?;
-
-        let mov = context
-            .battle()
-            .dex
-            .moves
-            .get_by_id(&move_id)
-            .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
-        let move_name = mov.data.name.clone();
 
         if moves.is_empty() {
             // No moves, the Mon must use Struggle.
@@ -1292,7 +1286,7 @@ impl Player {
         }
 
         let target_required = context.battle().format.battle_type.active_per_player() > 1;
-        match (mov.data.target.choosable(), choice.target) {
+        match (move_target.choosable(), choice.target) {
             (true, None) => {
                 if target_required {
                     return Err(general_error(format!("{move_name} requires a target")));

@@ -216,7 +216,13 @@
     "base_power": 30,
     "priority": 2,
     "target": "Normal",
-    "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome"],
+    "flags": [
+      "BypassMaxGuard",
+      "FailCopycat",
+      "Mirror",
+      "NoAssist",
+      "NoMetronome"
+    ],
     "effect": { "delegates": ["condition:breakprotectmovebase"] }
   },
   "pluck": {

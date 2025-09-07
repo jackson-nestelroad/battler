@@ -727,6 +727,15 @@ where
                                     .ohko_type
                                     .is_some(),
                             ),
+                            "powered_up" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.powered_up,
+                            ),
+                            "powered_up_base_move" => context
+                                .active_move(active_move_handle)?
+                                .powered_up_base_move
+                                .as_ref()
+                                .map(|val| ValueRef::TempString(val.to_string()))
+                                .unwrap_or(ValueRef::Undefined),
                             "priority" => ValueRef::Fraction(
                                 context
                                     .active_move(active_move_handle)?
@@ -1458,13 +1467,13 @@ where
                         "multihit" => ValueRefMut::OptionalMultihitType(
                             &mut context.active_move_mut(**active_move_handle)?.data.multihit,
                         ),
+                        "powered_up" => ValueRefMut::Boolean(
+                            &mut context.active_move_mut(**active_move_handle)?.powered_up,
+                        ),
                         "powered_up_base_move" => ValueRefMut::OptionalId(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
                                 .powered_up_base_move,
-                        ),
-                        "powered_up" => ValueRefMut::Boolean(
-                            &mut context.active_move_mut(**active_move_handle)?.powered_up,
                         ),
                         "priority" => ValueRefMut::I8(
                             &mut context.active_move_mut(**active_move_handle)?.data.priority,

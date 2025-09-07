@@ -178,7 +178,7 @@
     "accuracy": "exempt",
     "base_power": 100,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -198,7 +198,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -219,7 +219,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -239,7 +239,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -260,7 +260,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -281,7 +281,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -302,7 +302,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -322,7 +322,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -343,7 +343,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -363,7 +363,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -384,7 +384,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -404,7 +404,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -425,7 +425,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -445,7 +445,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -465,7 +465,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -486,7 +486,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -507,7 +507,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {
@@ -527,7 +527,7 @@
     "accuracy": "exempt",
     "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["Max", "NoMetronome"],
+    "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
     "user_hit_effect": {},
     "effect": {
       "callbacks": {

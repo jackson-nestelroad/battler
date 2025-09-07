@@ -141,6 +141,9 @@ pub enum MoveFlag {
     /// Thaws the target when hit.
     #[string = "ThawsTarget"]
     ThawsTarget,
+    /// Move is weakened when hitting through protection.
+    #[string = "WeakenThroughProtection"]
+    WeakenThroughProtection,
     /// A wind move.
     #[string = "Wind"]
     Wind,

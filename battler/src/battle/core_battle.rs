@@ -1603,9 +1603,6 @@ impl<'d> CoreBattle<'d> {
 
     fn calculate_action_priority(context: &mut Context, action: &mut Action) -> Result<()> {
         if let Action::Move(action) = action {
-            let mov = context.battle().dex.moves.get_by_id(&action.id)?;
-            let priority = mov.data.priority as i32;
-
             let mut context = context.mon_context(action.mon_action.mon)?;
 
             let mut active_move_handle = action.active_move_handle.wrap_expectation(
@@ -1621,6 +1618,7 @@ impl<'d> CoreBattle<'d> {
                 )?;
             }
             let mut context = context.active_move_context(active_move_handle)?;
+            let priority = context.active_move().data.priority as i32;
             let mut context = context.user_applying_effect_context(None)?;
 
             let priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
@@ -1628,6 +1626,7 @@ impl<'d> CoreBattle<'d> {
                 fxlang::BattleEvent::ModifyPriority,
                 priority,
             );
+
             action.priority = priority;
 
             action.sub_priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(

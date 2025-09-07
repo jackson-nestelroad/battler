@@ -1816,7 +1816,7 @@ pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -
     }
 
     if context.active_move().data.struggle_recoil {
-        let recoil_damage = Fraction::new(context.mon().max_hp, 4).round();
+        let recoil_damage = Fraction::new(context.mon().base_max_hp, 4).round();
         let mon_handle = context.mon_handle();
         direct_damage(
             &mut context.as_mon_context_mut(),

@@ -145,7 +145,8 @@ enum CommonCallbackType {
     SourceMoveActiveMove = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsActiveMove,
+        | CallbackFlag::ReturnsActiveMove
+        | CallbackFlag::ReturnsVoid,
 
     MoveModifier = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon

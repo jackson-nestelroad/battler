@@ -35,5 +35,20 @@
         ]
       }
     }
+  },
+  "weakenthroughprotectionmovebase": {
+    "name": "Weaken Through Protection Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if func_call(move_has_flag: $move weakenthroughprotection):",
+          [
+            "log_custom_effect: protectweaken no_effect with_target use_source",
+            "return $damage / 4"
+          ]
+        ]
+      }
+    }
   }
 }
