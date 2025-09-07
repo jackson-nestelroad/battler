@@ -2994,9 +2994,13 @@ fn max_move(mut context: FunctionContext) -> Result<Option<Value>> {
         .wrap_expectation("missing move")?
         .active_move()
         .wrap_error_with_message("invalid move")?;
-    let context = context.mon_context(target)?;
-    let move_data = &context.as_battle_context().active_move(move_handle)?.data;
-    core_battle_actions::max_move(&context, move_data)
+    let mut context = context.mon_context(target)?;
+    let move_data = context
+        .as_battle_context()
+        .active_move(move_handle)?
+        .data
+        .clone();
+    core_battle_actions::max_move(&mut context, &move_data)
         .map(|move_id| move_id.map(|val| Value::String(val.to_string())))
 }
 

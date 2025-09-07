@@ -198,6 +198,7 @@ mod items {
 mod mechanics {
     mod dynamax {
         mod dynamax_test;
+        mod gigantamax_test;
         mod max_move_test;
     }
 

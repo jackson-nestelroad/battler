@@ -179,7 +179,7 @@
     "base_power": 100,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -199,7 +199,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -220,7 +220,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -240,7 +240,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -261,7 +261,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -282,7 +282,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -303,7 +303,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -323,7 +323,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -344,7 +344,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -364,7 +364,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -385,7 +385,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -405,7 +405,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -426,7 +426,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -446,7 +446,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -466,7 +466,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -487,7 +487,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -508,7 +508,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -528,7 +528,7 @@
     "base_power": 10,
     "target": "AdjacentFoe",
     "flags": ["Max", "NoMetronome", "WeakenThroughProtection"],
-    "user_hit_effect": {},
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -1335,5 +1335,141 @@
     "base_power": 0,
     "target": "User",
     "flags": ["Snatch"]
+  },
+  "gmaxbefuddle": {
+    "name": "G-Max Befuddle",
+    "category": "Physical",
+    "primary_type": "Bug",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": ["Max"],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          [
+            "$rand = func_call(random: 3)",
+            "if $rand == 0:",
+            ["$status = slp"],
+            "else if $rand == 1:",
+            ["$status = par"],
+            "else:",
+            ["$status = psn"],
+            "set_status: $mon $status"
+          ]
+        ]
+      }
+    }
+  },
+  "gmaxcannonade": {
+    "name": "G-Max Cannonade",
+    "category": "Physical",
+    "primary_type": "Water",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": ["Max"],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.foe_side $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_residual": [
+          "if !func_call(has_type: $target water):",
+          ["damage: $target expr($target.base_max_hp / 6)"]
+        ],
+        "on_side_end": ["log_side_end"]
+      }
+    }
+  },
+  "gmaxcentiferno": {
+    "name": "G-Max Centiferno",
+    "category": "Physical",
+    "primary_type": "Fire",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": ["Max"],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon partiallytrapped"]
+        ]
+      }
+    }
+  },
+  "gmaxchistrike": {
+    "name": "G-Max Chi Strike",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": ["Max"],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["add_volatile: $mon $this.id"]
+        ]
+      }
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.layers = 1",
+          "log_start: str('count:{}', $effect_state.layers)"
+        ],
+        "on_restart": [
+          "if $effect_state.layers >= 3:",
+          ["return false"],
+          "$effect_state.layers = $effect_state.layers + 1",
+          "log_start: str('count:{}', $effect_state.layers)",
+          "return true"
+        ],
+        "on_modify_crit_ratio": ["return $crit_ratio + $effect_state.layers"]
+      }
+    }
+  },
+  "gmaxcuddle": {
+    "name": "G-Max Cuddle",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": ["Max"],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target == $source and !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon attract"]
+        ]
+      }
+    }
   }
 }

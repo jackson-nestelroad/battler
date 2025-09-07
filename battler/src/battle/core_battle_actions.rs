@@ -5355,19 +5355,23 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
 }
 
 fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
-    if context.target().dynamaxed {
-        end_dynamax(context)?;
-    }
-
     if let Some(special_forme_change_type) = context.target().special_forme_change_type {
+        let base_species_update = match special_forme_change_type {
+            MonSpecialFormeChangeType::MegaEvolution
+            | MonSpecialFormeChangeType::PrimalReversion => true,
+            MonSpecialFormeChangeType::Gigantamax => false,
+        };
+
         let species = context.target().original_base_species.clone();
         let ability = context.target().original_base_ability.clone();
 
         {
             let mut context = context.target_context()?;
             Mon::set_species(&mut context, &species)?;
-            core_battle_logs::species_change(&mut context)?;
-            Mon::set_base_species(&mut context, &species, &ability)?;
+            if base_species_update {
+                core_battle_logs::species_change(&mut context)?;
+                Mon::set_base_species(&mut context, &species, &ability)?;
+            }
         }
 
         match special_forme_change_type {
@@ -5383,6 +5387,10 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
         }
 
         context.target_mut().special_forme_change_type = None;
+    }
+
+    if context.target().dynamaxed {
+        end_dynamax(context)?;
     }
 
     Ok(())
@@ -5520,11 +5528,13 @@ pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
     if !context.target().dynamaxed {
         return Ok(());
     }
+
+    context.target_mut().dynamaxed = false;
+
     if context.target().special_forme_change_type == Some(MonSpecialFormeChangeType::Gigantamax) {
         revert(context)?;
     }
     core_battle_logs::revert_dynamax(context)?;
-    context.target_mut().dynamaxed = false;
     remove_volatile(context, &Id::from_known("dynamax"), false)?;
     Mon::update_max_hp(
         &mut context.target_context()?,
@@ -5534,22 +5544,27 @@ pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
 }
 
 /// Looks up the Max Move for the given move ID.
-pub fn max_move_by_id(context: &MonContext, move_id: &Id) -> Result<Option<Id>> {
+pub fn max_move_by_id(context: &mut MonContext, move_id: &Id) -> Result<Option<Id>> {
     let mov = context.battle().dex.moves.get_by_id(&move_id)?;
-    max_move(context, &mov.data)
+    let move_data = mov.data.clone();
+    max_move(context, &move_data)
 }
 
 /// Looks up the Max Move for the given move data.
-pub fn max_move(context: &MonContext, move_data: &MoveData) -> Result<Option<Id>> {
+pub fn max_move(context: &mut MonContext, move_data: &MoveData) -> Result<Option<Id>> {
     if move_data.category == MoveCategory::Status {
         return Ok(Some(Id::from_known("maxguard")));
     }
 
-    let species = context
-        .battle()
-        .dex
-        .species
-        .get_by_id(&context.mon().volatile_state.species)?;
+    let mut species = context.mon().volatile_state.species.clone();
+
+    if !context.mon().dynamaxed
+        && let Some(dynamax_forme) = can_dynamax(context)?
+    {
+        species = dynamax_forme.clone();
+    }
+
+    let species = context.battle().dex.species.get_by_id(&species)?;
     if let Some(gigantamax_move) = &species.data.gigantamax_move {
         if let Ok(gigantamax_move) = context
             .battle()

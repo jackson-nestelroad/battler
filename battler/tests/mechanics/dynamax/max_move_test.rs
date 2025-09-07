@@ -27,6 +27,7 @@ fn team() -> Result<TeamData> {
                 {
                     "name": "Pikachu",
                     "species": "Pikachu",
+                    "gender": "M",
                     "ability": "No Ability",
                     "moves": [
                         "Quick Attack",
@@ -44,13 +45,16 @@ fn team() -> Result<TeamData> {
                 {
                     "name": "Eevee",
                     "species": "Eevee",
+                    "gender": "F",
                     "ability": "Cloud Nine",
                     "moves": [
                         "Protect",
-                        "Feint"
+                        "Feint",
+                        "Flamethrower"
                     ],
                     "nature": "Hardy",
-                    "level": 50
+                    "level": 50,
+                    "gigantamax_factor": true
                 }
             ]
         }"#,
@@ -417,6 +421,67 @@ fn feint_hits_through_max_guard() {
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:114/142",
             "damage|mon:Pikachu,player-1,1|health:81/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn gigantamax_gets_gmax_move_for_certain_type() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        pretty_assertions::assert_eq!(request.active[1].max_moves, Vec::from_iter([
+            MonMoveSlotData {
+                id: Id::from("maxguard"),
+                name: "Max Guard".to_owned(),
+                pp: 10,
+                max_pp: 10,
+                target: MoveTarget::User,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("gmaxcuddle"),
+                name: "G-Max Cuddle".to_owned(),
+                pp: 10,
+                max_pp: 10,
+                target: MoveTarget::AdjacentFoe,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("maxflare"),
+                name: "Max Flare".to_owned(),
+                pp: 15,
+                max_pp: 15,
+                target: MoveTarget::AdjacentFoe,
+                disabled: false,
+            },
+        ]));
+    });
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "pass;move 1,1,dyna"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "gigantamax|mon:Eevee,player-1,2|species:Eevee-Gmax|from:Dynamax",
+            "dynamax|mon:Eevee,player-1,2",
+            "split|side:0",
+            "sethp|mon:Eevee,player-1,2|health:172/172",
+            "sethp|mon:Eevee,player-1,2|health:100/100",
+            "move|mon:Eevee,player-1,2|name:G-Max Cuddle|target:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:14/95",
+            "damage|mon:Pikachu,player-2,1|health:15/100",
+            "start|mon:Pikachu,player-2,1|move:Attract",
             "residual",
             "turn|turn:2"
         ]"#,
