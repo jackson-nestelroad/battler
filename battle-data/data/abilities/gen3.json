@@ -698,7 +698,11 @@
     "effect": {
       "callbacks": {
         "on_start": ["log_ability"],
-        "on_foe_deduct_pp": ["return $pp + 1"]
+        "on_foe_deduct_pp": [
+          "$targets = func_call(get_move_targets: $move $user $target)",
+          "if $targets hasany [$effect_state.target, $user]:",
+          ["return $pp + 1"]
+        ]
       }
     }
   },

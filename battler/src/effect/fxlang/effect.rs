@@ -499,7 +499,7 @@ pub enum BattleEvent {
     DamagingHit,
     /// Runs after a move is used that should have PP deducted.
     ///
-    /// Runs in the context a Mon.
+    /// Runs in the context a move user.
     #[string = "DeductPp"]
     DeductPp,
     /// Runs when determining which moves are disabled.
@@ -1225,7 +1225,7 @@ impl BattleEvent {
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
-            Self::DeductPp => CommonCallbackType::MonModifier as u32,
+            Self::DeductPp => CommonCallbackType::SourceMoveModifier as u32,
             Self::DragOut => CommonCallbackType::MonResult as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,

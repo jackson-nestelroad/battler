@@ -511,8 +511,10 @@ fn do_move_internal(
             .flags
             .contains(&MoveFlag::Charge)
     {
-        let deduction = core_battle_effects::run_event_for_mon_expecting_u8(
-            context,
+        let deduction = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+            &mut context
+                .active_move_context(active_move_handle)?
+                .user_applying_effect_context(target)?,
             fxlang::BattleEvent::DeductPp,
             1,
         );
@@ -792,7 +794,7 @@ pub fn faint(
 }
 
 /// Gets all of the targets of a move.
-fn get_move_targets(
+pub fn get_move_targets(
     context: &mut ActiveMoveContext,
     selected_target: Option<MonHandle>,
 ) -> Result<Vec<MonHandle>> {

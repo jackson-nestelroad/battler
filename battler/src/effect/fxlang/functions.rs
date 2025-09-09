@@ -164,6 +164,7 @@ pub fn run_function(
         "get_boost" => get_boost(context).map(|val| Some(val)),
         "get_item" => get_item(context),
         "get_move" => get_move(context),
+        "get_move_targets" => get_move_targets(context).map(|val| Some(val)),
         "get_species" => get_species(context),
         "get_stat" => get_stat(context).map(|val| Some(val)),
         "has_ability" => has_ability(context).map(|val| Some(val)),
@@ -3904,4 +3905,35 @@ fn set_upgraded_to_max_move(mut context: FunctionContext) -> Result<()> {
         .active_move_mut(active_move)?
         .upgraded = Some(UpgradedMoveSource::MaxMove { base_move });
     Ok(())
+}
+
+fn get_move_targets(mut context: FunctionContext) -> Result<Value> {
+    let active_move = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
+    let target = context
+        .pop_front()
+        .map(|val| val.mon_handle().wrap_error_with_message("invalid target"))
+        .transpose()?;
+    core_battle_actions::get_move_targets(
+        &mut context
+            .mon_context(mon_handle)?
+            .active_move_context(active_move)?,
+        target,
+    )
+    .map(|targets| {
+        Value::List(
+            targets
+                .into_iter()
+                .map(|target| Value::Mon(target))
+                .collect(),
+        )
+    })
 }
