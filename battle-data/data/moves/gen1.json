@@ -2419,7 +2419,7 @@
           "return 0"
         ],
         "on_try_boost": [
-          "if $target == $source:",
+          "if $target == $source or $effect != intimidate:",
           ["return"],
           "log_fail_unboost: $target from_effect",
           "return func_call(boost_table)"

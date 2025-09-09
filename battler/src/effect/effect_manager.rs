@@ -3,14 +3,21 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::Result;
+use anyhow::{
+    Error,
+    Result,
+};
 
 use crate::{
+    WrapResultError,
     battle::{
         Context,
         CoreBattle,
     },
-    common::LruCache,
+    common::{
+        LruCache,
+        split_once_optional,
+    },
     effect::{
         Effect,
         EffectHandle,
@@ -31,6 +38,25 @@ use crate::{
         general_error,
     },
 };
+
+enum EventCallbackMapping<'s> {
+    Move(&'s str, &'s str),
+    Swap(&'s str, &'s str),
+}
+
+impl<'s> TryFrom<&'s str> for EventCallbackMapping<'s> {
+    type Error = Error;
+    fn try_from(s: &'s str) -> Result<Self> {
+        if let Some((from, to)) = s.split_once("<=>") {
+            Ok(EventCallbackMapping::Swap(from, to))
+        } else if let Some((from, to)) = s.split_once("=>") {
+            Ok(EventCallbackMapping::Move(from, to))
+        } else {
+            Err(Error::msg("invalid event callback mapping"))
+        }
+    }
+}
+
 /// Module for managing fxlang effect programs and their evaluation.
 pub struct EffectManager {
     effects: LruCache<String, Arc<ParsedEffect>>,
@@ -135,12 +161,46 @@ impl EffectManager {
                 // If we are delegating to other effects, look them up and merge our callbacks in at
                 // the end.
                 for delegate in &fxlang_effect.attributes.delegates {
-                    let delegate_effect_handle = EffectHandle::from_fxlang_id(delegate);
+                    let (fxlang_id, mappings) = split_once_optional(delegate, ';');
+                    let delegate_effect_handle = EffectHandle::from_fxlang_id(fxlang_id);
 
                     // NOTE: We don't protect against circular dependencies here.
-                    let delegate_effect = Self::parsed_effect(context, &delegate_effect_handle)?
-                        .map(|effect| effect.as_ref().clone())
-                        .unwrap_or_default();
+                    let mut delegate_effect =
+                        Self::parsed_effect(context, &delegate_effect_handle)?
+                            .map(|effect| effect.as_ref().clone())
+                            .unwrap_or_default();
+
+                    for mapping in mappings.unwrap_or_default().split(';') {
+                        if let Ok(mapping) = EventCallbackMapping::try_from(mapping) {
+                            match mapping {
+                                EventCallbackMapping::Move(from, to) => {
+                                    let from = ParsedEffect::callback_name_to_event_key(from)
+                                        .wrap_error_with_message("invalid from event")?;
+                                    let to = ParsedEffect::callback_name_to_event_key(to)
+                                        .wrap_error_with_message("invalid to event")?;
+                                    if let Some(callback) =
+                                        delegate_effect.take_event(from.0, from.1)
+                                    {
+                                        delegate_effect.set_event(to.0, to.1, callback);
+                                    }
+                                }
+                                EventCallbackMapping::Swap(from, to) => {
+                                    let from = ParsedEffect::callback_name_to_event_key(from)
+                                        .wrap_error_with_message("invalid from event")?;
+                                    let to = ParsedEffect::callback_name_to_event_key(to)
+                                        .wrap_error_with_message("invalid to event")?;
+                                    let from_callback = delegate_effect.take_event(from.0, from.1);
+                                    let to_callback = delegate_effect.take_event(to.0, to.1);
+                                    if let Some(from) = from_callback {
+                                        delegate_effect.set_event(to.0, to.1, from);
+                                    }
+                                    if let Some(to) = to_callback {
+                                        delegate_effect.set_event(from.0, from.1, to);
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     combined_effect.extend(delegate_effect);
                 }

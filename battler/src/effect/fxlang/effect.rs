@@ -608,6 +608,14 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of an applying effect on a side.
     #[string = "HitSide"]
     HitSide,
+    /// Runs when a Mon uses a move that defines a user hit effect.
+    ///
+    /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
+    /// the applying hit effect.
+    ///
+    /// Runs on the active move.
+    #[string = "HitUser"]
+    HitUser,
     /// Runs when determining if a move should ignore type immunity.
     ///
     /// Runs on the active move and in the context of a move target.
@@ -1236,6 +1244,7 @@ impl BattleEvent {
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
+            Self::HitUser => CommonCallbackType::MoveResult as u32,
             Self::IgnoreImmunity => CommonCallbackType::MoveResult as u32,
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,

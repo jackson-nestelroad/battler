@@ -1390,28 +1390,7 @@
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
     "hit_effect": { "boosts": { "eva": -1 } },
     "effect": {
-      "callbacks": {
-        "on_hit": [
-          "$remove_from_target_side = [reflect, lightscreen, auroraveil, safeguard, mist]",
-          "$remove_from_both_sides = [spikes, toxicspikes, stealthrock, stickyweb]",
-          "$success = false",
-          "foreach $condition in $remove_from_target_side:",
-          [
-            "if func_call(remove_side_condition: $target.side $condition):",
-            ["$success = true"]
-          ],
-          "foreach $condition in $remove_from_both_sides:",
-          [
-            "foreach $side in $field.sides:",
-            [
-              "if func_call(remove_side_condition: $side $condition):",
-              ["$success = true"]
-            ]
-          ],
-          "clear_terrain",
-          "return $success"
-        ]
-      }
+      "delegates": ["condition:defogmovebase"]
     }
   },
   "trickroom": {

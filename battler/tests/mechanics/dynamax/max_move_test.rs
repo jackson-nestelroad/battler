@@ -55,7 +55,8 @@ fn team() -> Result<TeamData> {
                         "Disable",
                         "Mimic",
                         "Sketch",
-                        "Spite"
+                        "Spite",
+                        "Substitute"
                     ],
                     "nature": "Hardy",
                     "level": 50,
@@ -681,6 +682,48 @@ fn me_first_fails_for_max_move() {
             "unboost|mon:Eevee,player-1,2|stat:spe|by:1",
             "residual",
             "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn max_move_stat_drop_hits_through_substitute() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;move 7"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1,dyna;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Eevee,player-2,2|name:Substitute|target:Eevee,player-2,2",
+            "start|mon:Eevee,player-2,2|move:Substitute",
+            "split|side:1",
+            "damage|mon:Eevee,player-2,2|health:87/115",
+            "damage|mon:Eevee,player-2,2|health:76/100",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "dynamax|mon:Pikachu,player-1,1",
+            "split|side:0",
+            "sethp|mon:Pikachu,player-1,1|health:142/142",
+            "sethp|mon:Pikachu,player-1,1|health:100/100",
+            "move|mon:Pikachu,player-1,1|name:Max Strike|target:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:41/95",
+            "damage|mon:Pikachu,player-2,1|health:44/100",
+            "unboost|mon:Pikachu,player-2,1|stat:spe|by:1",
+            "unboost|mon:Eevee,player-2,2|stat:spe|by:1",
+            "residual",
+            "turn|turn:3"
         ]"#,
     )
     .unwrap();

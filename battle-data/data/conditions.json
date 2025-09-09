@@ -1066,7 +1066,7 @@
           ["return"],
           "$max_move = func_call(new_active_move: $max_move_id $user)",
           "set_upgraded_to_max_move: $max_move $move.id",
-          "if $move.max_move_base_power.is_defined:",
+          "if $move.max_move_base_power.is_defined and !$max_move.base_power:",
           ["$max_move.base_power = $move.max_move_base_power"],
           "$max_move.category = $move.category",
           "# Move is already being used, but priority can affect other things as the move runs.",

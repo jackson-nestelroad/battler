@@ -2104,6 +2104,10 @@ fn apply_spread_damage(
     targets: &mut [HitTargetState],
 ) -> Result<()> {
     for target in targets {
+        if !target.outcome.hit_target() {
+            continue;
+        }
+
         let mut context = context.applying_effect_context(source, target.handle)?;
         let damage = match &mut target.outcome {
             MoveOutcomeOnTarget::Damage(damage) => damage,
@@ -2277,7 +2281,7 @@ fn apply_move_effects(
         .unwrap_or(MoveOutcomeOnTarget::Unknown);
 
     for target in targets.iter_mut() {
-        if target.outcome.failed() {
+        if !target.outcome.hit_target() {
             continue;
         }
 
@@ -2416,10 +2420,20 @@ fn apply_move_effects(
             }
         }
 
-        if !target_context.is_self() {
+        let move_target = target_context.active_move().data.target;
+        let target_handle = target_context.target_mon_handle();
+
+        if target_context.is_self() {
+            if let Some(hit_result) = core_battle_effects::run_active_move_event_expecting_bool(
+                target_context.as_active_move_context_mut(),
+                fxlang::BattleEvent::HitUser,
+                core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+            ) {
+                let outcome = MoveOutcomeOnTarget::from(hit_result);
+                hit_effect_outcome = hit_effect_outcome.combine(outcome);
+            }
+        } else {
             // These event callbacks run regardless of if there is a hit effect defined.
-            let move_target = target_context.active_move().data.target;
-            let target_handle = target_context.target_mon_handle();
             match move_target {
                 MoveTarget::All => {
                     if let Some(hit_result) =
@@ -2713,7 +2727,7 @@ fn apply_secondary_effects(
     }
 
     for target in targets {
-        if target.outcome.failed() {
+        if !target.outcome.hit_target() {
             continue;
         }
 
@@ -2768,7 +2782,7 @@ fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState])
 
     for target in targets {
         let mut context = context.target_context(target.handle)?;
-        if target.outcome.failed()
+        if !target.outcome.hit_target()
             || context.target_mon().hp == 0
             || context.mon().hp == 0
             || !Player::can_switch(context.target_mon_context()?.as_player_context())

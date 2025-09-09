@@ -199,6 +199,14 @@ mod mechanics {
     mod dynamax {
         mod dynamax_test;
         mod gigantamax_test;
+        mod gmax_cannonade_test;
+        mod gmax_chi_strike_test;
+        mod gmax_drum_solo_test;
+        mod gmax_one_blow_test;
+        mod gmax_replenish_test;
+        mod gmax_snooze_test;
+        mod gmax_steel_surge_test;
+        mod gmax_wind_rage_test;
         mod max_move_test;
     }
 

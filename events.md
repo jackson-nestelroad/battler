@@ -239,7 +239,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. Terrain `FieldStart`.
                         1. `AfterAddPseudoWeather`.
                      1. Apply force switch if possible.
-                     1. `HitField`, `HitSide`, or `Hit`.
+                     1. `HitField`, `HitSide`, `Hit`, or, `HitUser`.
                      1. Mon self-destructs conditionally.
                   1. Hit user for user effect once.
                   1. Apply secondary effects:
