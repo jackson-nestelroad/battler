@@ -197,7 +197,11 @@ pub fn replace(context: &mut MonContext) -> Result<()> {
     full_mon_details(context, "replace")
 }
 
-fn forme_change_internal(context: &mut ApplyingEffectContext, header: String) -> Result<()> {
+fn forme_change_internal(
+    context: &mut ApplyingEffectContext,
+    header: String,
+    with_effect: bool,
+) -> Result<()> {
     let species = context
         .battle()
         .dex
@@ -208,7 +212,7 @@ fn forme_change_internal(context: &mut ApplyingEffectContext, header: String) ->
         .clone();
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
-        source_effect: Some(context.effect_handle().clone()),
+        source_effect: with_effect.then(|| context.effect_handle().clone()),
         source: context.source_handle(),
         additional: vec![format!("species:{species}")],
         ..Default::default()
@@ -217,23 +221,57 @@ fn forme_change_internal(context: &mut ApplyingEffectContext, header: String) ->
 }
 
 pub fn forme_change(context: &mut ApplyingEffectContext) -> Result<()> {
-    forme_change_internal(context, "formechange".to_owned())
+    forme_change_internal(context, "formechange".to_owned(), true)
 }
 
 pub fn mega_evolution(context: &mut ApplyingEffectContext) -> Result<()> {
-    forme_change_internal(context, "mega".to_owned())
+    forme_change_internal(context, "mega".to_owned(), true)
 }
 
 pub fn revert_mega_evolution(context: &mut ApplyingEffectContext) -> Result<()> {
-    forme_change_internal(context, "revertmega".to_owned())
+    forme_change_internal(context, "revertmega".to_owned(), true)
 }
 
 pub fn primal_reversion(context: &mut ApplyingEffectContext) -> Result<()> {
-    forme_change_internal(context, "primal".to_owned())
+    forme_change_internal(context, "primal".to_owned(), true)
 }
 
 pub fn revert_primal_reversion(context: &mut ApplyingEffectContext) -> Result<()> {
-    forme_change_internal(context, "revertprimal".to_owned())
+    forme_change_internal(context, "revertprimal".to_owned(), true)
+}
+
+pub fn dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "dynamax".to_owned(),
+        activation,
+    )
+}
+
+pub fn revert_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "revertdynamax".to_owned(),
+        activation,
+    )
+}
+
+pub fn gigantamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "gigantamax".to_owned(), false)
+}
+
+pub fn revert_gigantamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "revertgigantamax".to_owned(), false)
 }
 
 pub fn cant(

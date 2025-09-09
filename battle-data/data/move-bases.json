@@ -35,5 +35,51 @@
         ]
       }
     }
+  },
+  "weakenthroughprotectionmovebase": {
+    "name": "Weaken Through Protection Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if func_call(move_has_flag: $move weakenthroughprotection):",
+          [
+            "log_custom_effect: protectweaken no_effect with_target use_source",
+            "return $damage / 4"
+          ]
+        ]
+      }
+    }
+  },
+  "defogmovebase": {
+    "name": "Defog Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_hit": [
+          "$remove_from_target_side = [reflect, lightscreen, auroraveil, safeguard, mist]",
+          "$remove_from_both_sides = [spikes, toxicspikes, stealthrock, stickyweb, gmaxsteelsurge]",
+          "$success = false",
+          "$target_side = $target.side",
+          "if func_call(value_from_local_data: use_source_foe_side) == 'true':",
+          ["$target_side = $source.foe_side"],
+          "foreach $condition in $remove_from_target_side:",
+          [
+            "if func_call(remove_side_condition: $target_side $condition):",
+            ["$success = true"]
+          ],
+          "foreach $condition in $remove_from_both_sides:",
+          [
+            "foreach $side in $field.sides:",
+            [
+              "if func_call(remove_side_condition: $side $condition):",
+              ["$success = true"]
+            ]
+          ],
+          "clear_terrain",
+          "return $success"
+        ]
+      }
+    }
   }
 }

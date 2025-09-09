@@ -571,12 +571,26 @@ where
                         effect_matched = true;
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "accuracy" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::Accuracy(mov.data.accuracy))
+                            .unwrap_or(ValueRef::Undefined),
                             "base_power" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
                             )?
                             .move_effect()
                             .map(|mov| ValueRef::UFraction(mov.data.base_power.into()))
+                            .unwrap_or(ValueRef::Undefined),
+                            "callable" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::Boolean(mov.callable()))
                             .unwrap_or(ValueRef::Undefined),
                             "category" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -590,6 +604,30 @@ where
                                     .condition_handle(context.battle_context())?
                                     .wrap_expectation("effect has no associated condition")?,
                             ),
+                            "damage" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| match mov.data.damage {
+                                Some(damage) => ValueRef::UFraction(damage.into()),
+                                None => ValueRef::Undefined,
+                            })
+                            .unwrap_or(ValueRef::Undefined),
+                            "drain_percent" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                ValueRef::UFraction(
+                                    mov.data
+                                        .drain_percent
+                                        .unwrap_or(Fraction::from(0u16))
+                                        .convert(),
+                                )
+                            })
+                            .unwrap_or(ValueRef::Undefined),
                             "id" => ValueRef::TempString(
                                 CoreBattle::get_effect_by_handle(
                                     context.battle_context(),
@@ -614,12 +652,45 @@ where
                             "is_sunny" => ValueRef::Boolean(weather_states::is_sunny(
                                 context.effect_context_for_handle(&effect_handle)?.as_mut(),
                             )),
+                            "max_move_base_power" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                mov.data
+                                    .max_move
+                                    .as_ref()
+                                    .map(|max_move| max_move.base_power)
+                                    .map(|val| ValueRef::UFraction(val.into()))
+                                    .unwrap_or(ValueRef::Undefined)
+                            })
+                            .unwrap_or(ValueRef::Undefined),
                             "move_target" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
                             )?
                             .move_effect()
                             .map(|mov| ValueRef::MoveTarget(mov.data.target))
+                            .unwrap_or(ValueRef::Undefined),
+                            "multiaccuracy" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::Boolean(mov.data.multiaccuracy))
+                            .unwrap_or(ValueRef::Undefined),
+                            "multihit" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                mov.data
+                                    .multihit
+                                    .map(|val| ValueRef::MultihitType(val))
+                                    .unwrap_or(ValueRef::Undefined)
+                            })
                             .unwrap_or(ValueRef::Undefined),
                             "name" => ValueRef::TempString(
                                 CoreBattle::get_effect_by_handle(
@@ -636,12 +707,47 @@ where
                             .move_effect()
                             .map(|mov| ValueRef::Boolean(mov.data.ohko_type.is_some()))
                             .unwrap_or(ValueRef::Undefined),
+                            "priority" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::Fraction(mov.data.priority.into()))
+                            .unwrap_or(ValueRef::Undefined),
+                            "recoil_percent" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                ValueRef::UFraction(
+                                    mov.data
+                                        .recoil_percent
+                                        .unwrap_or(Fraction::from(0u16))
+                                        .convert(),
+                                )
+                            })
+                            .unwrap_or(ValueRef::Undefined),
+                            "target" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::MoveTarget(mov.data.target))
+                            .unwrap_or(ValueRef::Undefined),
                             "type" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
                             )?
                             .move_effect()
                             .map(|mov| ValueRef::Type(mov.data.primary_type))
+                            .unwrap_or(ValueRef::Undefined),
+                            "typeless" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| ValueRef::Boolean(mov.data.typeless))
                             .unwrap_or(ValueRef::Undefined),
                             _ => {
                                 if effect_handle.is_active_move() {
@@ -662,33 +768,6 @@ where
                     if let Some(active_move_handle) = value.active_move_handle() {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
-                            "accuracy" => ValueRef::Accuracy(
-                                context.active_move(active_move_handle)?.data.accuracy,
-                            ),
-                            "base_power" => ValueRef::UFraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .base_power
-                                    .into(),
-                            ),
-                            "category" => ValueRef::MoveCategory(
-                                context.active_move(active_move_handle)?.data.category,
-                            ),
-                            "damage" => {
-                                match context.active_move(active_move_handle)?.data.damage {
-                                    Some(damage) => ValueRef::UFraction(damage.into()),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
-                            "drain_percent" => ValueRef::UFraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .drain_percent
-                                    .unwrap_or(Fraction::from(0u16))
-                                    .convert(),
-                            ),
                             "effect_state" => ValueRef::EffectState(
                                 ActiveMoveEffectStateConnector::new(active_move_handle)
                                     .make_dynamic(),
@@ -703,37 +782,6 @@ where
                                 .as_ref()
                                 .map(ValueRef::HitEffect)
                                 .unwrap_or(ValueRef::Undefined),
-                            "multiaccuracy" => ValueRef::Boolean(
-                                context.active_move(active_move_handle)?.data.multiaccuracy,
-                            ),
-                            "multihit" => context
-                                .active_move(active_move_handle)?
-                                .data
-                                .multihit
-                                .map(|val| ValueRef::MultihitType(val))
-                                .unwrap_or(ValueRef::Undefined),
-                            "ohko" => ValueRef::Boolean(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .ohko_type
-                                    .is_some(),
-                            ),
-                            "priority" => ValueRef::Fraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .priority
-                                    .into(),
-                            ),
-                            "recoil_percent" => ValueRef::UFraction(
-                                context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .recoil_percent
-                                    .unwrap_or(Fraction::from(0u16))
-                                    .convert(),
-                            ),
                             "secondary_effects" => ValueRef::TempList(
                                 context
                                     .active_move(active_move_handle)?
@@ -757,18 +805,20 @@ where
                             "spread_hit" => ValueRef::Boolean(
                                 context.active_move(active_move_handle)?.spread_hit,
                             ),
-                            "target" => ValueRef::MoveTarget(
-                                context.active_move(active_move_handle)?.data.target,
-                            ),
                             "total_damage" => ValueRef::UFraction(
                                 context.active_move(active_move_handle)?.total_damage.into(),
                             ),
-                            "type" => ValueRef::Type(
-                                context.active_move(active_move_handle)?.data.primary_type,
+                            "upgraded" => ValueRef::Boolean(
+                                context.active_move(active_move_handle)?.upgraded.is_some(),
                             ),
-                            "typeless" => ValueRef::Boolean(
-                                context.active_move(active_move_handle)?.data.typeless,
-                            ),
+                            "upgraded_base_move" => context
+                                .active_move(active_move_handle)?
+                                .upgraded
+                                .as_ref()
+                                .map(|upgraded| upgraded.base_move())
+                                .flatten()
+                                .map(|val| ValueRef::TempString(val.to_string()))
+                                .unwrap_or(ValueRef::Undefined),
                             "user_effect" => context
                                 .active_move(active_move_handle)?
                                 .data
@@ -813,6 +863,9 @@ where
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                             }
+                            "base_species" => {
+                                ValueRef::Str(&context.mon(mon_handle)?.base_species.as_ref())
+                            }
                             "base_stats" => {
                                 ValueRef::StatTable(&context.mon(mon_handle)?.base_stored_stats)
                             }
@@ -831,6 +884,10 @@ where
                             "can_heal" => ValueRef::Boolean(mon_states::can_heal(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "damaged_this_turn" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.volatile_state.damaged_this_turn,
+                            ),
+                            "dynamaxed" => ValueRef::Boolean(context.mon(mon_handle)?.dynamaxed),
                             "effective_ability" => {
                                 match mon_states::effective_ability(
                                     &mut context.mon_context(mon_handle)?,
@@ -895,9 +952,6 @@ where
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
-                            "damaged_this_turn" => ValueRef::Boolean(
-                                context.mon(mon_handle)?.volatile_state.damaged_this_turn,
-                            ),
                             "illusion" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.illusion.is_some(),
                             ),
@@ -1054,6 +1108,9 @@ where
                                         ValueRefToStoredValue::new(None, ValueRef::Type(*val))
                                     })
                                     .collect(),
+                            ),
+                            "undynamaxed_hp" => ValueRef::UFraction(
+                                context.mon(mon_handle)?.undynamaxed_hp().into(),
                             ),
                             "weight" => ValueRef::UFraction(
                                 Mon::get_weight(&mut context.mon_context(mon_handle)?).into(),
@@ -1421,6 +1478,9 @@ where
                                 .data
                                 .base_power,
                         ),
+                        "category" => ValueRefMut::MoveCategory(
+                            &mut context.active_move_mut(**active_move_handle)?.data.category,
+                        ),
                         "damage" => ValueRefMut::OptionalU16(
                             &mut context.active_move_mut(**active_move_handle)?.data.damage,
                         ),
@@ -1442,6 +1502,9 @@ where
                         ),
                         "multihit" => ValueRefMut::OptionalMultihitType(
                             &mut context.active_move_mut(**active_move_handle)?.data.multihit,
+                        ),
+                        "priority" => ValueRefMut::I8(
+                            &mut context.active_move_mut(**active_move_handle)?.data.priority,
                         ),
                         "secondary_effects" => ValueRefMut::SecondaryHitEffectList(
                             &mut context

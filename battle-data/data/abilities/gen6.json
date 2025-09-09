@@ -25,7 +25,7 @@
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
-          "if $move.category == status or $move.multihit.is_defined or func_call(move_has_flag: $move noparentalbond) or func_call(move_has_flag: $move charge) or func_call(move_has_flag: $move future) or $move.spread_hit:",
+          "if $move.category == status or $move.multihit.is_defined or func_call(move_has_flag: $move noparentalbond) or func_call(move_has_flag: $move charge) or func_call(move_has_flag: $move future) or $move.spread_hit or $move.upgraded:",
           ["return"],
           "$move.multihit = 2",
           "$effect_state.parental_bond = true"

@@ -34,6 +34,8 @@ pub mod CallbackFlag {
     pub const TakesOptionalEffect: u32 = 1 << 10;
     pub const TakesPlayer: u32 = 1 << 11;
 
+    pub const ReturnsActiveMove: u32 = 1 << 18;
+    pub const ReturnsType: u32 = 1 << 19;
     pub const ReturnsStatTable: u32 = 1 << 20;
     pub const ReturnsMoveTarget: u32 = 1 << 21;
     pub const ReturnsStrings: u32 = 1 << 22;
@@ -134,6 +136,17 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMon
+        | CallbackFlag::ReturnsVoid,
+    SourceMoveType = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsType
+        | CallbackFlag::ReturnsString
+        | CallbackFlag::ReturnsVoid,
+    SourceMoveActiveMove = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsActiveMove
         | CallbackFlag::ReturnsVoid,
 
     MoveModifier = CallbackFlag::TakesTargetMon
@@ -379,6 +392,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "BasePower"]
     BasePower,
+    /// Runs before a Mon Dynamaxes.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "BeforeDynamax"]
+    BeforeDynamax,
     /// Runs before a Mon uses a move.
     ///
     /// Can prevent the move from being used.
@@ -408,6 +426,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "BerryEatingHealth"]
     BerryEatingHealth,
+    /// Runs when determining if a Mon can Dynamax.
+    ///
+    /// Runs in the context of a Mon..
+    #[string = "CanDynamax"]
+    CanDynamax,
     /// Runs when a Mon is attempting to escape from battle.
     ///
     /// Runs in the context of a Mon.
@@ -476,7 +499,7 @@ pub enum BattleEvent {
     DamagingHit,
     /// Runs after a move is used that should have PP deducted.
     ///
-    /// Runs in the context a Mon.
+    /// Runs in the context a move user.
     #[string = "DeductPp"]
     DeductPp,
     /// Runs when determining which moves are disabled.
@@ -585,6 +608,14 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of an applying effect on a side.
     #[string = "HitSide"]
     HitSide,
+    /// Runs when a Mon uses a move that defines a user hit effect.
+    ///
+    /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
+    /// the applying hit effect.
+    ///
+    /// Runs on the active move.
+    #[string = "HitUser"]
+    HitUser,
     /// Runs when determining if a move should ignore type immunity.
     ///
     /// Runs on the active move and in the context of a move target.
@@ -724,6 +755,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ModifyFriendshipIncrease"]
     ModifyFriendshipIncrease,
+    /// Runs when modifying the type of a move.
+    ///
+    /// Runs on the active move and in the context of a move user.
+    #[string = "ModifyMoveType"]
+    ModifyMoveType,
     /// Runs when determining the priority of a move.
     ///
     /// Runs in the context of a move user.
@@ -1100,6 +1136,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "Update"]
     Update,
+    /// Runs when a Mon uses a move, to upgrade the chosen move.
+    ///
+    /// Runs in the context of a move user.
+    #[string = "UpgradeMove"]
+    UpgradeMove,
     /// Runs when an item is used.
     ///
     /// Runs on the item.
@@ -1164,11 +1205,13 @@ impl BattleEvent {
             Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
+            Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
+            Self::CanDynamax => CommonCallbackType::MonResult as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
             Self::Catch => CommonCallbackType::MonVoid as u32,
@@ -1182,7 +1225,7 @@ impl BattleEvent {
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
             Self::DisableMove => CommonCallbackType::MonVoid as u32,
-            Self::DeductPp => CommonCallbackType::MonModifier as u32,
+            Self::DeductPp => CommonCallbackType::SourceMoveModifier as u32,
             Self::DragOut => CommonCallbackType::MonResult as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
@@ -1201,6 +1244,7 @@ impl BattleEvent {
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
+            Self::HitUser => CommonCallbackType::MoveResult as u32,
             Self::IgnoreImmunity => CommonCallbackType::MoveResult as u32,
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
@@ -1228,6 +1272,7 @@ impl BattleEvent {
             Self::ModifyEvYield => CommonCallbackType::MonStatTableModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
             Self::ModifyFriendshipIncrease => CommonCallbackType::MonModifier as u32,
+            Self::ModifyMoveType => CommonCallbackType::SourceMoveType as u32,
             Self::ModifyPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1295,6 +1340,7 @@ impl BattleEvent {
             Self::TypeImmunity => CommonCallbackType::MonResult as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::Update => CommonCallbackType::MonVoid as u32,
+            Self::UpgradeMove => CommonCallbackType::SourceMoveActiveMove as u32,
             Self::Use => CommonCallbackType::MonVoid as u32,
             Self::UseMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
@@ -1348,6 +1394,7 @@ impl BattleEvent {
             Self::ModifyEvYield => &[("evs", ValueType::StatTable, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],
+            Self::ModifyMoveType => &[("type", ValueType::Type, true)],
             Self::ModifyPriority => &[("priority", ValueType::Fraction, true)],
             Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
@@ -1397,15 +1444,17 @@ impl BattleEvent {
                     | CallbackFlag::ReturnsMoveResult
                     | CallbackFlag::ReturnsMoveTarget,
             ),
-            Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
-            Some(ValueType::StatTable) => self.has_flag(CallbackFlag::ReturnsStatTable),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
+            Some(ValueType::ActiveMove) => self.has_flag(CallbackFlag::ReturnsActiveMove),
+            Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
+            Some(ValueType::MoveTarget) => self.has_flag(CallbackFlag::ReturnsMoveTarget),
+            Some(ValueType::StatTable) => self.has_flag(CallbackFlag::ReturnsStatTable),
+            Some(ValueType::Type) => self.has_flag(CallbackFlag::ReturnsType),
             Some(ValueType::List) => self.has_flag(
                 CallbackFlag::ReturnsTypes
                     | CallbackFlag::ReturnsSecondaryEffects
                     | CallbackFlag::ReturnsStrings,
             ),
-            Some(ValueType::MoveTarget) => self.has_flag(CallbackFlag::ReturnsMoveTarget),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }

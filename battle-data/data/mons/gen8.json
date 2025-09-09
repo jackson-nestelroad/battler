@@ -2464,7 +2464,12 @@
     },
     "formes": ["Zacian-Crowned"],
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_can_dynamax": ["return false"]
+      }
+    }
   },
   "zamazenta": {
     "name": "Zamazenta",
@@ -2493,7 +2498,12 @@
     },
     "formes": ["Zamazenta-Crowned"],
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_can_dynamax": ["return false"]
+      }
+    }
   },
   "eternatus": {
     "name": "Eternatus",
@@ -2523,7 +2533,12 @@
     },
     "formes": ["Eternatus-Eternamax"],
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_can_dynamax": ["return false"]
+      }
+    }
   },
   "kubfu": {
     "name": "Kubfu",
@@ -2582,11 +2597,7 @@
     },
     "prevo": "Kubfu",
     "evolution_data": { "method": "C", "condition": "" },
-    "formes": [
-      "Urshifu-Rapid-Strike",
-      "Urshifu-Single-Strike-Gmax",
-      "Urshifu-Rapid-Strike-Gmax"
-    ],
+    "formes": ["Urshifu-Rapid-Strike", "Urshifu-Single-Strike-Gmax"],
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -3314,6 +3325,7 @@
     },
     "prevo": "Kubfu",
     "evolution_data": { "method": "C", "condition": "" },
+    "formes": ["Urshifu-Rapid-Strike-Gmax"],
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -3438,6 +3450,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Rillaboom",
+    "gigantamax_move": "G-Max Drum Solo",
     "flags": [],
     "learnset": {}
   },
@@ -3470,6 +3483,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Cinderace",
+    "gigantamax_move": "G-Max Fireball",
     "flags": [],
     "learnset": {}
   },
@@ -3502,6 +3516,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Inteleon",
+    "gigantamax_move": "G-Max Hydrosnipe",
     "flags": [],
     "learnset": {}
   },
@@ -3535,6 +3550,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Corviknight",
+    "gigantamax_move": "G-Max Wind Rage",
     "flags": [],
     "learnset": {}
   },
@@ -3568,6 +3584,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Orbeetle",
+    "gigantamax_move": "G-Max Gravitas",
     "flags": [],
     "learnset": {}
   },
@@ -3601,6 +3618,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Drednaw",
+    "gigantamax_move": "G-Max Stonesurge",
     "flags": [],
     "learnset": {}
   },
@@ -3634,6 +3652,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Coalossal",
+    "gigantamax_move": "G-Max Volcalith",
     "flags": [],
     "learnset": {}
   },
@@ -3667,6 +3686,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Flapple",
+    "gigantamax_move": "G-Max Tartness",
     "flags": [],
     "learnset": {}
   },
@@ -3700,6 +3720,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Appletun",
+    "gigantamax_move": "G-Max Sweetness",
     "flags": [],
     "learnset": {}
   },
@@ -3732,6 +3753,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Sandaconda",
+    "gigantamax_move": "G-Max Sandblast",
     "flags": [],
     "learnset": {}
   },
@@ -3764,6 +3786,7 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "gigantamax_move": "G-Max Stun Shock",
     "flags": [],
     "learnset": {}
   },
@@ -3797,6 +3820,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Centiskorch",
+    "gigantamax_move": "G-Max Centiferno",
     "flags": [],
     "learnset": {}
   },
@@ -3830,6 +3854,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Hatterene",
+    "gigantamax_move": "G-Max Smite",
     "flags": [],
     "learnset": {}
   },
@@ -3863,6 +3888,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Grimmsnarl",
+    "gigantamax_move": "G-Max Snooze",
     "flags": [],
     "learnset": {}
   },
@@ -3895,6 +3921,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Alcremie",
+    "gigantamax_move": "G-Max Finale",
     "flags": [],
     "learnset": {}
   },
@@ -3927,6 +3954,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Copperajah",
+    "gigantamax_move": "G-Max Steelsurge",
     "flags": [],
     "learnset": {}
   },
@@ -3960,6 +3988,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Duraludon",
+    "gigantamax_move": "G-Max Depletion",
     "flags": [],
     "learnset": {}
   },
@@ -3991,6 +4020,7 @@
       "spe": 97
     },
     "battle_only_forme": true,
+    "gigantamax_move": "G-Max One Blow",
     "flags": [],
     "learnset": {}
   },
@@ -4023,6 +4053,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Urshifu-Rapid-Strike",
+    "gigantamax_move": "G-Max One Blow",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -4056,6 +4087,7 @@
     },
     "battle_only_forme": true,
     "changes_from": "Toxtricity-Low-Key",
+    "gigantamax_move": "G-Max Stun Shock",
     "flags": [],
     "learnset": {}
   },

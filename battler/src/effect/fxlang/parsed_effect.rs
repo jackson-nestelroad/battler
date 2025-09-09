@@ -150,6 +150,25 @@ impl ParsedEffect {
         self.callbacks.get(&(event, modifier))
     }
 
+    /// Sets the [`ParsedCallback`] for the given event and modifier.
+    pub(in crate::effect) fn set_event(
+        &mut self,
+        event: BattleEvent,
+        modifier: BattleEventModifier,
+        callback: ParsedCallback,
+    ) {
+        self.callbacks.insert((event, modifier), callback);
+    }
+
+    /// Takes the [`ParsedCallback`] for the given event and modifier.
+    pub(in crate::effect) fn take_event(
+        &mut self,
+        event: BattleEvent,
+        modifier: BattleEventModifier,
+    ) -> Option<ParsedCallback> {
+        self.callbacks.remove(&(event, modifier))
+    }
+
     pub fn condition(&self) -> &ConditionAttributes {
         &self.condition
     }

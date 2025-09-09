@@ -142,7 +142,7 @@ fn occa_berry_does_not_activate_on_substitute() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = snivy().unwrap();
     team.members[0].item = Some("Occa Berry".to_owned());
-    let mut battle = make_battle(&data, 0, team, tepig().unwrap()).unwrap();
+    let mut battle = make_battle(&data, 100, team, tepig().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

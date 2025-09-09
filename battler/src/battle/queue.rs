@@ -72,6 +72,9 @@ impl BattleQueue {
                 if action.mega {
                     actions.push(Action::MegaEvo(action.mon_action.clone()));
                 }
+                if action.dyna {
+                    actions.push(Action::Dynamax(action.mon_action.clone()));
+                }
                 actions
             }
             Action::SwitchEvents(action) => {
@@ -303,6 +306,7 @@ mod queue_test {
     fn move_action(id: Id, priority: i32, speed: u32, sub_priority: i32) -> Action {
         Action::Move(MoveAction {
             id,
+            upgraded_id: None,
             mon_action: MonAction {
                 mon: MonHandle::from(0),
                 speed,
@@ -310,6 +314,7 @@ mod queue_test {
             target: None,
             original_target: None,
             mega: false,
+            dyna: false,
             priority,
             sub_priority,
             active_move_handle: None,
@@ -373,6 +378,7 @@ mod queue_test {
                     format!("prioritychargemove {}", action.mon_action.mon)
                 }
                 Action::MegaEvo(action) => format!("megaevo {}", action.mon),
+                Action::Dynamax(action) => format!("dynamax {}", action.mon),
                 Action::Experience(action) => format!("experience {}", action.mon),
                 Action::LevelUp(action) => format!("levelup {}", action.mon),
                 Action::LearnMove(action) => format!("learnmove {}", action.mon),

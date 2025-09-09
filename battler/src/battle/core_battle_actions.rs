@@ -19,6 +19,7 @@ use battler_data::{
     Identifiable,
     ItemFlag,
     MoveCategory,
+    MoveData,
     MoveFlag,
     MoveSource,
     MoveTarget,
@@ -342,8 +343,12 @@ pub fn do_move_by_id(
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
-    let active_move_handle =
-        CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    let mon_handle = context.mon_handle();
+    let active_move_handle = CoreBattle::register_active_move_by_id(
+        context.as_battle_context_mut(),
+        move_id,
+        mon_handle,
+    )?;
     do_move(
         context,
         active_move_handle,
@@ -379,6 +384,24 @@ fn do_move_internal(
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
+    let selected_move_id = context
+        .as_battle_context()
+        .active_move(active_move_handle)?
+        .id()
+        .clone();
+
+    // Upgrade the move if applicable (e.g., Max Moves).
+    if let Some(upgraded_move_handle) =
+        core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
+            &mut context
+                .active_move_context(active_move_handle)?
+                .user_applying_effect_context(None)?,
+            fxlang::BattleEvent::UpgradeMove,
+        )
+    {
+        active_move_handle = upgraded_move_handle;
+    }
+
     let move_id = context
         .as_battle_context()
         .active_move(active_move_handle)?
@@ -401,6 +424,7 @@ fn do_move_internal(
         active_move_handle = CoreBattle::register_active_move_by_id(
             context.as_battle_context_mut(),
             &Id::from(change_move),
+            mon_handle,
         )?;
         let mon_handle = context.mon_handle();
         let move_target = context
@@ -418,10 +442,9 @@ fn do_move_internal(
     let locked_move_before = context.mon().next_turn_state.locked_move.clone();
 
     // Check that move has enough PP to be used.
-    let move_id = context.active_move().id().clone();
     if locked_move_before.is_none()
-        && !context.mon_mut().check_pp(&move_id, 1)
-        && !move_id.eq("struggle")
+        && !context.mon_mut().check_pp(&selected_move_id, 1)
+        && !selected_move_id.eq("struggle")
     {
         // No PP, so this move action cannot be carried through.
         core_battle_logs::cant(
@@ -435,26 +458,21 @@ fn do_move_internal(
     // The move is going to be used, so remember the choices made here. This is important for
     // locking moves.
     if locked_move_before.is_none() {
-        context.mon_mut().volatile_state.last_move_selected = Some(move_id.clone());
+        context.mon_mut().volatile_state.last_move_selected = Some(selected_move_id.clone());
         context.mon_mut().volatile_state.last_move_target_location = target_location;
     }
 
+    let context = context.as_mon_context_mut();
+
     // Use the move.
-    use_active_move(
-        context.as_mon_context_mut(),
-        active_move_handle,
-        target,
-        None,
-        false,
-        true,
-    )?;
+    use_active_move(context, active_move_handle, target, None, false, true)?;
 
     let this_move_is_the_last_selected = context
         .mon()
         .volatile_state
         .last_move_selected
         .as_ref()
-        .is_some_and(|move_id| move_id == context.active_move().id());
+        .is_some_and(|last_move| last_move == &selected_move_id);
 
     // Set the last move of the user only if they selected it for use.
     //
@@ -470,7 +488,7 @@ fn do_move_internal(
     if this_move_is_the_last_selected {
         // Some moves, like charging moves, do not count as the last move until the last turn.
         let set_last_move = core_battle_effects::run_event_for_mon(
-            context.as_mon_context_mut(),
+            context,
             fxlang::BattleEvent::SetLastMove,
             fxlang::VariableInput::default(),
         );
@@ -486,16 +504,22 @@ fn do_move_internal(
     // first (default). The effect of such a move should hook into this event to ensure PP is not
     // continually deducted every turn.
     if this_move_is_the_last_selected && locked_move_before.is_none()
-        || context.active_move().data.flags.contains(&MoveFlag::Charge)
+        || context
+            .as_battle_context()
+            .active_move(active_move_handle)?
+            .data
+            .flags
+            .contains(&MoveFlag::Charge)
     {
-        let deduction = core_battle_effects::run_event_for_mon_expecting_u8(
-            context.as_mon_context_mut(),
+        let deduction = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+            &mut context
+                .active_move_context(active_move_handle)?
+                .user_applying_effect_context(target)?,
             fxlang::BattleEvent::DeductPp,
             1,
         );
         if deduction > 0 {
-            let move_id = context.active_move().id().clone();
-            context.mon_mut().deduct_pp(&move_id, deduction);
+            context.mon_mut().deduct_pp(&selected_move_id, deduction);
         }
     }
 
@@ -510,8 +534,12 @@ pub fn use_move(
     source_effect: Option<&EffectHandle>,
     external: bool,
 ) -> Result<bool> {
-    let active_move_handle =
-        CoreBattle::register_active_move_by_id(context.as_battle_context_mut(), move_id)?;
+    let mon_handle = context.mon_handle();
+    let active_move_handle = CoreBattle::register_active_move_by_id(
+        context.as_battle_context_mut(),
+        move_id,
+        mon_handle,
+    )?;
     use_active_move(
         context,
         active_move_handle,
@@ -545,7 +573,6 @@ pub fn use_active_move(
     effect_state.initialize(context.as_battle_context_mut(), source_effect, target, None)?;
     context.active_move_mut().effect_state = effect_state;
 
-    context.active_move_mut().used_by = Some(context.mon_handle());
     context.active_move_mut().external = external;
 
     // BeforeMove event handlers can prevent the move from being used.
@@ -615,14 +642,36 @@ pub fn use_active_move(
     Ok(outcome.success())
 }
 
+/// Modifies the active move's type.
+pub fn modify_move_type(context: &mut ActiveMoveContext, target: Option<MonHandle>) -> Result<()> {
+    let move_type = context.active_move().data.primary_type;
+    let move_type = core_battle_effects::run_active_move_event_expecting_type(
+        context,
+        fxlang::BattleEvent::ModifyMoveType,
+        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
+        move_type,
+    )
+    .unwrap_or(move_type);
+    let move_type = core_battle_effects::run_event_for_applying_effect_expecting_type(
+        &mut context.user_applying_effect_context(target)?,
+        fxlang::BattleEvent::ModifyMoveType,
+        move_type,
+    );
+    context.active_move_mut().data.primary_type = move_type;
+    Ok(())
+}
+
 fn use_active_move_internal(
     context: &mut ActiveMoveContext,
     mut target: Option<MonHandle>,
     directly_used: bool,
 ) -> Result<MoveOutcome> {
+    modify_move_type(context, target)?;
+
     let use_move_input = fxlang::VariableInput::from_iter([target
         .map(fxlang::Value::Mon)
         .unwrap_or(fxlang::Value::Undefined)]);
+
     core_battle_effects::run_active_move_event_expecting_void(
         context,
         fxlang::BattleEvent::UseMove,
@@ -745,7 +794,7 @@ pub fn faint(
 }
 
 /// Gets all of the targets of a move.
-fn get_move_targets(
+pub fn get_move_targets(
     context: &mut ActiveMoveContext,
     selected_target: Option<MonHandle>,
 ) -> Result<Vec<MonHandle>> {
@@ -1770,7 +1819,7 @@ pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -
     }
 
     if context.active_move().data.struggle_recoil {
-        let recoil_damage = Fraction::new(context.mon().max_hp, 4).round();
+        let recoil_damage = Fraction::new(context.mon().base_max_hp, 4).round();
         let mon_handle = context.mon_handle();
         direct_damage(
             &mut context.as_mon_context_mut(),
@@ -2057,6 +2106,10 @@ fn apply_spread_damage(
     targets: &mut [HitTargetState],
 ) -> Result<()> {
     for target in targets {
+        if !target.outcome.hit_target() {
+            continue;
+        }
+
         let mut context = context.applying_effect_context(source, target.handle)?;
         let damage = match &mut target.outcome {
             MoveOutcomeOnTarget::Damage(damage) => damage,
@@ -2230,7 +2283,7 @@ fn apply_move_effects(
         .unwrap_or(MoveOutcomeOnTarget::Unknown);
 
     for target in targets.iter_mut() {
-        if target.outcome.failed() {
+        if !target.outcome.hit_target() {
             continue;
         }
 
@@ -2369,10 +2422,20 @@ fn apply_move_effects(
             }
         }
 
-        if !target_context.is_self() {
+        let move_target = target_context.active_move().data.target;
+        let target_handle = target_context.target_mon_handle();
+
+        if target_context.is_self() {
+            if let Some(hit_result) = core_battle_effects::run_active_move_event_expecting_bool(
+                target_context.as_active_move_context_mut(),
+                fxlang::BattleEvent::HitUser,
+                core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+            ) {
+                let outcome = MoveOutcomeOnTarget::from(hit_result);
+                hit_effect_outcome = hit_effect_outcome.combine(outcome);
+            }
+        } else {
             // These event callbacks run regardless of if there is a hit effect defined.
-            let move_target = target_context.active_move().data.target;
-            let target_handle = target_context.target_mon_handle();
             match move_target {
                 MoveTarget::All => {
                     if let Some(hit_result) =
@@ -2666,7 +2729,7 @@ fn apply_secondary_effects(
     }
 
     for target in targets {
-        if target.outcome.failed() {
+        if !target.outcome.hit_target() {
             continue;
         }
 
@@ -2721,7 +2784,7 @@ fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState])
 
     for target in targets {
         let mut context = context.target_context(target.handle)?;
-        if target.outcome.failed()
+        if !target.outcome.hit_target()
             || context.target_mon().hp == 0
             || context.mon().hp == 0
             || !Player::can_switch(context.target_mon_context()?.as_player_context())
@@ -3093,11 +3156,12 @@ pub fn remove_volatile(
         .wrap_expectation("volatile must have an id")?
         .clone();
 
-    if !context
+    if context
         .target()
         .volatile_state
         .volatiles
-        .contains_key(&volatile)
+        .get(&volatile)
+        .is_none_or(|effect_state| effect_state.ending())
     {
         return Ok(false);
     }
@@ -3287,7 +3351,12 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
         .wrap_expectation("side condition must have an id")?
         .clone();
 
-    if !context.side().conditions.contains_key(&condition) {
+    if context
+        .side()
+        .conditions
+        .get(&condition)
+        .is_none_or(|effect_state| effect_state.ending())
+    {
         return Ok(false);
     }
 
@@ -4011,11 +4080,12 @@ pub fn remove_pseudo_weather(
         .wrap_expectation("pseudo weather must have an id")?
         .clone();
 
-    if !context
+    if context
         .battle()
         .field
         .pseudo_weathers
-        .contains_key(&pseudo_weather)
+        .get(&pseudo_weather)
+        .is_none_or(|effect_state| effect_state.ending())
     {
         return Ok(false);
     }
@@ -4287,11 +4357,15 @@ pub fn remove_slot_condition(
         .wrap_expectation("slot condition must have an id")?
         .clone();
 
-    if !context
+    if context
         .side()
         .slot_conditions
         .get(&slot)
-        .is_some_and(|conditions| conditions.contains_key(&condition))
+        .is_some_and(|conditions| {
+            conditions
+                .get(&condition)
+                .is_none_or(|effect_state| effect_state.ending())
+        })
     {
         return Ok(false);
     }
@@ -5216,12 +5290,13 @@ pub enum FormeChangeType {
     Permanent,
     MegaEvolution,
     PrimalReversion,
+    Gigantamax,
 }
 
 impl FormeChangeType {
     pub fn permanent(&self) -> bool {
         match self {
-            Self::Temporary => false,
+            Self::Temporary | Self::Gigantamax => false,
             Self::Permanent | Self::MegaEvolution | Self::PrimalReversion => true,
         }
     }
@@ -5265,6 +5340,9 @@ pub fn forme_change(
         FormeChangeType::PrimalReversion => {
             core_battle_logs::primal_reversion(context)?;
         }
+        FormeChangeType::Gigantamax => {
+            core_battle_logs::gigantamax(context)?;
+        }
     }
 
     // Change the ability after logs, since battle effects start triggering.
@@ -5295,15 +5373,22 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
 
 fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
     if let Some(special_forme_change_type) = context.target().special_forme_change_type {
+        let base_species_update = match special_forme_change_type {
+            MonSpecialFormeChangeType::MegaEvolution
+            | MonSpecialFormeChangeType::PrimalReversion => true,
+            MonSpecialFormeChangeType::Gigantamax => false,
+        };
+
         let species = context.target().original_base_species.clone();
         let ability = context.target().original_base_ability.clone();
 
-        Mon::set_species(&mut context.target_context()?, &species)?;
-
         {
             let mut context = context.target_context()?;
-            core_battle_logs::species_change(&mut context)?;
-            Mon::set_base_species(&mut context, &species, &ability)?;
+            Mon::set_species(&mut context, &species)?;
+            if base_species_update {
+                core_battle_logs::species_change(&mut context)?;
+                Mon::set_base_species(&mut context, &species, &ability)?;
+            }
         }
 
         match special_forme_change_type {
@@ -5313,10 +5398,16 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
             MonSpecialFormeChangeType::PrimalReversion => {
                 core_battle_logs::revert_primal_reversion(context)?;
             }
-            _ => todo!("revert log not implemented"),
+            MonSpecialFormeChangeType::Gigantamax => {
+                core_battle_logs::revert_gigantamax(context)?;
+            }
         }
 
         context.target_mut().special_forme_change_type = None;
+    }
+
+    if context.target().dynamaxed {
+        end_dynamax(context)?;
     }
 
     Ok(())
@@ -5367,4 +5458,172 @@ pub fn primal_reversion(context: &mut ApplyingEffectContext, species: &Id) -> Re
     context.target_mut().special_forme_change_type =
         Some(MonSpecialFormeChangeType::PrimalReversion);
     Ok(true)
+}
+
+/// Checks if the Mon can Dynamax.
+pub fn can_dynamax(context: &mut MonContext) -> Result<Option<Id>> {
+    if !context.player().can_dynamax {
+        return Ok(None);
+    }
+    if !Mon::can_dynamax(context)? {
+        return Ok(None);
+    }
+
+    if context.mon().gigantamax_factor {
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&context.mon().base_species)?;
+
+        let forme = species
+            .data
+            .formes
+            .iter()
+            .map(|forme| Id::from(forme.as_ref()))
+            .find(|forme| {
+                context
+                    .battle()
+                    .dex
+                    .species
+                    .get_by_id(&forme)
+                    .is_ok_and(|forme| forme.data.gigantamax())
+            });
+        if let Some(forme) = forme {
+            return Ok(Some(forme));
+        }
+    }
+
+    Ok(Some(context.mon().volatile_state.species.clone()))
+}
+
+/// Dynamaxes the Mon if it is able to do so.
+pub fn dynamax(context: &mut MonContext) -> Result<bool> {
+    let forme = match can_dynamax(context)? {
+        Some(forme) => forme,
+        None => return Ok(false),
+    };
+
+    let target = context.mon_handle();
+    let mut context = context.as_battle_context_mut().applying_effect_context(
+        EffectHandle::Condition(Id::from_known("dynamax")),
+        None,
+        target,
+        None,
+    )?;
+
+    if !core_battle_effects::run_event_for_mon(
+        &mut context.target_context()?,
+        fxlang::BattleEvent::BeforeDynamax,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
+
+    if forme != context.target().volatile_state.species {
+        if forme_change(&mut context, &forme, FormeChangeType::Gigantamax)? {
+            context.target_mut().special_forme_change_type =
+                Some(MonSpecialFormeChangeType::Gigantamax);
+        }
+    }
+
+    if !add_volatile(&mut context, &Id::from_known("dynamax"), false, None)? {
+        return Ok(false);
+    }
+
+    core_battle_logs::dynamax(&mut context)?;
+
+    context.target_mut().dynamaxed = true;
+    Mon::update_max_hp(
+        &mut context.target_context()?,
+        RecalculateBaseStatsHpPolicy::KeepHealthRatio,
+    )?;
+
+    context.target_context()?.player_mut().can_dynamax = false;
+    Ok(true)
+}
+
+/// Ends the Mon's Dynamax, if applicable.
+pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
+    if !context.target().dynamaxed {
+        return Ok(());
+    }
+
+    context.target_mut().dynamaxed = false;
+
+    if context.target().special_forme_change_type == Some(MonSpecialFormeChangeType::Gigantamax) {
+        revert(context)?;
+    }
+    core_battle_logs::revert_dynamax(context)?;
+    remove_volatile(context, &Id::from_known("dynamax"), false)?;
+    Mon::update_max_hp(
+        &mut context.target_context()?,
+        RecalculateBaseStatsHpPolicy::KeepHealthRatioCeiling,
+    )?;
+    Ok(())
+}
+
+/// Looks up the Max Move for the given move ID.
+pub fn max_move_by_id(context: &mut MonContext, move_id: &Id) -> Result<Option<Id>> {
+    let mov = context.battle().dex.moves.get_by_id(&move_id)?;
+    let move_data = mov.data.clone();
+    max_move(context, &move_data)
+}
+
+/// Looks up the Max Move for the given move data.
+pub fn max_move(context: &mut MonContext, move_data: &MoveData) -> Result<Option<Id>> {
+    if move_data.category == MoveCategory::Status {
+        return Ok(Some(Id::from_known("maxguard")));
+    }
+
+    let mut species = context.mon().volatile_state.species.clone();
+
+    if !context.mon().dynamaxed
+        && let Some(dynamax_forme) = can_dynamax(context)?
+    {
+        species = dynamax_forme.clone();
+    }
+
+    let species = context.battle().dex.species.get_by_id(&species)?;
+    if let Some(gigantamax_move) = &species.data.gigantamax_move {
+        if let Ok(gigantamax_move) = context
+            .battle()
+            .dex
+            .moves
+            .get_by_id(&Id::from(gigantamax_move.as_str()))
+            && gigantamax_move.data.primary_type == move_data.primary_type
+        {
+            return Ok(Some(gigantamax_move.id().clone()));
+        }
+    }
+
+    if move_data.max_move.is_none() {
+        return Ok(None);
+    }
+
+    let id = match move_data.primary_type {
+        Type::Flying => "maxairstream",
+        Type::Dark => "maxdarkness",
+        Type::Fire => "maxflare",
+        Type::Bug => "maxflutterby",
+        Type::Water => "maxgeyser",
+        Type::Ice => "maxhailstorm",
+        Type::Fighting => "maxknuckle",
+        Type::Electric => "maxlightning",
+        Type::Psychic => "maxmindstorm",
+        Type::Poison => "maxooze",
+        Type::Grass => "maxovergrowth",
+        Type::Ghost => "maxphantasm",
+        Type::Ground => "maxquake",
+        Type::Rock => "maxrockfall",
+        Type::Fairy => "maxstarfall",
+        Type::Steel => "maxsteelspike",
+        Type::Normal | Type::None => "maxstrike",
+        Type::Dragon => "maxwyrmwind",
+    };
+
+    match context.battle().dex.moves.get_by_id(&Id::from_known(id)) {
+        Ok(max_move) => Ok(Some(max_move.id().clone())),
+        Err(_) => Ok(None),
+    }
 }

@@ -15,6 +15,9 @@ pub enum MoveFlag {
     #[string = "BypassSubstitute"]
     #[alias = "BypassSub"]
     BypassSubstitute,
+    /// Bypasses a target's Max Guard.
+    #[string = "BypassMaxGuard"]
+    BypassMaxGuard,
     /// A bite move.
     #[string = "Bite"]
     Bite,
@@ -66,6 +69,9 @@ pub enum MoveFlag {
     /// Cannot be used during Heal Block's effect.
     #[string = "Heal"]
     Heal,
+    /// Can be used in Dynamax.
+    #[string = "Max"]
+    Max,
     /// Can be copied by Mirror Move.
     #[string = "Mirror"]
     Mirror,
@@ -135,6 +141,9 @@ pub enum MoveFlag {
     /// Thaws the target when hit.
     #[string = "ThawsTarget"]
     ThawsTarget,
+    /// Move is weakened when hitting through protection.
+    #[string = "WeakenThroughProtection"]
+    WeakenThroughProtection,
     /// A wind move.
     #[string = "Wind"]
     Wind,

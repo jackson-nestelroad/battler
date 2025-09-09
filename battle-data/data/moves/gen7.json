@@ -542,9 +542,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": [],
-    "hit_effect": {
-      "terrain": "psychicterrain"
-    },
+    "hit_effect": { "terrain": "psychicterrain" },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -607,7 +605,8 @@
     "accuracy": 100,
     "base_power": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 130 }
   },
   "burnup": {
     "name": "Burn Up",
@@ -960,7 +959,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Reflectable"]
+    "flags": ["BypassMaxGuard", "Mirror", "Reflectable"]
   },
   "zingzap": {
     "name": "Zing Zap",
@@ -989,7 +988,8 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 95 }
   },
   "10000000voltthunderbolt": {
     "name": "10,000,000 Volt Thunderbolt",
@@ -1231,6 +1231,7 @@
     "base_power": 60,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 140 }
   }
 }

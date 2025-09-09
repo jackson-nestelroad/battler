@@ -1315,6 +1315,10 @@ impl<'d> CoreBattle<'d> {
                 let mut context = context.mon_context(action.mon)?;
                 core_battle_actions::mega_evolve(&mut context)?;
             }
+            Action::Dynamax(action) => {
+                let mut context = context.mon_context(action.mon)?;
+                core_battle_actions::dynamax(&mut context)?;
+            }
             Action::Pass => (),
             Action::BeforeTurn => {
                 for mon_handle in context
@@ -1598,14 +1602,23 @@ impl<'d> CoreBattle<'d> {
 
     fn calculate_action_priority(context: &mut Context, action: &mut Action) -> Result<()> {
         if let Action::Move(action) = action {
-            let mov = context.battle().dex.moves.get_by_id(&action.id)?;
-            let priority = mov.data.priority as i32;
-
             let mut context = context.mon_context(action.mon_action.mon)?;
-            let mut context =
-                context.active_move_context(action.active_move_handle.wrap_expectation(
-                    "expected active move to exist on action for priority calculation",
-                )?)?;
+
+            let mut active_move_handle = action.active_move_handle.wrap_expectation(
+                "expected active move to exist on action for priority calculation",
+            )?;
+
+            // Resolve priority using upgraded move (e.g., Max Move).
+            if action.effective_move_id() != &action.id {
+                active_move_handle = Self::register_active_move_by_id(
+                    context.as_battle_context_mut(),
+                    action.effective_move_id(),
+                    action.mon_action.mon,
+                )?;
+            }
+
+            let mut context = context.active_move_context(active_move_handle)?;
+            let priority = context.active_move().data.priority as i32;
             let mut context = context.user_applying_effect_context(None)?;
 
             let priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
@@ -1613,6 +1626,7 @@ impl<'d> CoreBattle<'d> {
                 fxlang::BattleEvent::ModifyPriority,
                 priority,
             );
+
             action.priority = priority;
 
             action.sub_priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
@@ -1632,14 +1646,23 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    pub fn register_active_move(context: &mut Context, active_move: Move) -> Result<MoveHandle> {
+    pub fn register_active_move(
+        context: &mut Context,
+        active_move: Move,
+        user: MonHandle,
+    ) -> Result<MoveHandle> {
         let active_move_handle = context.battle_mut().register_move(active_move);
+        context.active_move_mut(active_move_handle)?.used_by = Some(user);
         Ok(active_move_handle)
     }
 
-    pub fn register_active_move_by_id(context: &mut Context, move_id: &Id) -> Result<MoveHandle> {
+    pub fn register_active_move_by_id(
+        context: &mut Context,
+        move_id: &Id,
+        user: MonHandle,
+    ) -> Result<MoveHandle> {
         let active_move = (*context.battle_mut().dex.moves.get_by_id(move_id)?).clone();
-        Self::register_active_move(context, active_move)
+        Self::register_active_move(context, active_move, user)
     }
 
     /// Resolves the given action by calculating its priority in the context of the battle.
@@ -1649,9 +1672,11 @@ impl<'d> CoreBattle<'d> {
             if let Some(target) = action.target {
                 action.original_target = Mon::get_target(&mut context, target)?;
             }
+            let mon_handle = context.mon_handle();
             action.active_move_handle = Some(Self::register_active_move_by_id(
                 context.as_battle_context_mut(),
                 &action.id,
+                mon_handle,
             )?);
         }
         Self::calculate_action_priority(context, action)?;

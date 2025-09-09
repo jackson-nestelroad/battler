@@ -60,6 +60,13 @@ pub struct SecondaryEffectData {
     pub effect: serde_json::Value,
 }
 
+/// Data about how a move affects Max Moves.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct MaxMoveData {
+    /// Base power.
+    pub base_power: u32,
+}
+
 fn default_crit_ratio() -> Option<u8> {
     Some(1)
 }
@@ -182,6 +189,8 @@ pub struct MoveData {
     /// Does the move avoid random targets?
     #[serde(default)]
     pub no_random_target: bool,
+    /// Data about how the move affects Max Moves.
+    pub max_move: Option<MaxMoveData>,
 
     /// Dynamic battle effects.
     #[serde(default)]

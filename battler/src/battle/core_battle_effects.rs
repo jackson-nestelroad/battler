@@ -25,6 +25,7 @@ use crate::{
         MonContext,
         MonHandle,
         MoveEventResult,
+        MoveHandle,
         MoveOutcomeOnTarget,
         PlayerContext,
         PlayerEffectContext,
@@ -921,15 +922,12 @@ fn find_callbacks_on_mon(
         }
     }
 
-    // Species only activates if we are truly that species.
-    if context.mon().volatile_state.species == context.mon().base_species {
-        callbacks.push(CallbackHandle::new(
-            EffectHandle::Species(context.mon().volatile_state.species.clone()),
-            event,
-            modifier,
-            AppliedEffectLocation::Mon(context.mon_handle()),
-        ));
-    }
+    callbacks.push(CallbackHandle::new(
+        EffectHandle::Species(context.mon().volatile_state.species.clone()),
+        event,
+        modifier,
+        AppliedEffectLocation::Mon(context.mon_handle()),
+    ));
 
     callbacks.push(CallbackHandle::new(
         EffectHandle::ItemCondition(context.mon().ball.clone()),
@@ -2378,6 +2376,25 @@ pub fn run_active_move_event_expecting_move_event_result(
     }
 }
 
+/// Runs an event on an active [`Move`][`crate::moves::Move`].
+///
+/// Expects a [`Type`].
+pub fn run_active_move_event_expecting_type(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+    target: MoveTargetForEvent,
+    typ: Type,
+) -> Option<Type> {
+    run_active_move_event(
+        context,
+        event,
+        target,
+        fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+    )?
+    .mon_type()
+    .ok()
+}
+
 /// Runs an event on the target [`Mon`]'s current status.
 ///
 /// Expects an integer that can fit in a [`u8`].
@@ -3017,6 +3034,44 @@ pub fn run_event_for_applying_effect_expecting_secondary_effects(
             .unwrap_or(secondary_effects),
         None => secondary_effects,
     }
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects a [`Type`].
+pub fn run_event_for_applying_effect_expecting_type(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    typ: Type,
+) -> Type {
+    run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+        &RunCallbacksOptions::default(),
+    )
+    .map(|val| val.mon_type().ok())
+    .flatten()
+    .unwrap_or(typ)
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
+/// Expects a [`MoveHandle`].
+pub fn run_event_for_applying_effect_expecting_move_quick_return(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<MoveHandle> {
+    run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
+    )?
+    .active_move()
+    .ok()
 }
 
 /// Runs an event targeted on the given [`Mon`].

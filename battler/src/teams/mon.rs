@@ -88,6 +88,12 @@ pub struct MonData {
     /// Different original trainer.
     #[serde(default)]
     pub different_original_trainer: bool,
+    /// Dynamax level.
+    #[serde(default)]
+    pub dynamax_level: u8,
+    /// Can Gigantamax.
+    #[serde(default)]
+    pub gigantamax_factor: bool,
     /// Persistent battle data.
     #[serde(default)]
     pub persistent_battle_data: MonPersistentBattleData,

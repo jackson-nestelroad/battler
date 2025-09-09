@@ -197,6 +197,7 @@ impl TestBattleBuilder {
                 has_strict_bag: true,
                 mons_caught: 151,
                 cannot_mega_evolve: false,
+                cannot_dynamax: false,
             },
             team: TeamData::default(),
             dex: PlayerDex::default(),
@@ -261,17 +262,21 @@ impl TestBattleBuilder {
         self
     }
 
-    pub fn with_bag_items(mut self, bag_items: bool) -> Self {
+    fn with_boolean_rule(mut self, name: &str, value: bool) -> Self {
         let rule = Rule::Value {
-            name: Id::from("Bag Items"),
+            name: Id::from(name),
             value: String::default(),
         };
-        if bag_items {
+        if value {
             self.options.format.rules.insert(rule);
         } else {
             self.options.format.rules.remove(&rule);
         }
         self
+    }
+
+    pub fn with_bag_items(self, bag_items: bool) -> Self {
+        self.with_boolean_rule("Bag Items", bag_items)
     }
 
     pub fn with_infinite_bags(mut self, infinite_bags: bool) -> Self {
@@ -279,30 +284,16 @@ impl TestBattleBuilder {
         self
     }
 
-    pub fn with_mega_evolution(mut self, mega_evolution: bool) -> Self {
-        let rule = Rule::Value {
-            name: Id::from("Mega Evolution"),
-            value: String::default(),
-        };
-        if mega_evolution {
-            self.options.format.rules.insert(rule);
-        } else {
-            self.options.format.rules.remove(&rule);
-        }
-        self
+    pub fn with_mega_evolution(self, mega_evolution: bool) -> Self {
+        self.with_boolean_rule("Mega Evolution", mega_evolution)
     }
 
-    pub fn with_primal_reversion(mut self, primal_reversion: bool) -> Self {
-        let rule = Rule::Value {
-            name: Id::from("Primal Reversion"),
-            value: String::default(),
-        };
-        if primal_reversion {
-            self.options.format.rules.insert(rule);
-        } else {
-            self.options.format.rules.remove(&rule);
-        }
-        self
+    pub fn with_primal_reversion(self, primal_reversion: bool) -> Self {
+        self.with_boolean_rule("Primal Reversion", primal_reversion)
+    }
+
+    pub fn with_dynamax(self, dynamax: bool) -> Self {
+        self.with_boolean_rule("Dynamax", dynamax)
     }
 
     pub fn with_weather(mut self, weather: Option<String>) -> Self {

@@ -106,7 +106,18 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ## Mega Evolution
 
-1. Not implemented.
+1. Mon changes forme.
+
+## Primal Reversion
+
+1. Mon changes forme.
+
+## Dynamax
+
+1. `CanDynamax`.
+1. Mon changes to Gigantamax forme, if applicable.
+1. `BeforeDynamax`.
+1. Add `Dynamax` volatile status.
 
 ## Priority Charge (per move)
 
@@ -114,6 +125,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ## Move
 
+1. `UpgradeMove`.
 1. `OverrideMove`.
 1. Use active move:
 
@@ -123,6 +135,7 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. `ModifyTarget`.
    1. Use active move:
 
+      1. `ModifyMoveType`.
       1. `UseMove`.
       1. `RedirectTarget`.
       1. `TryMove`.
@@ -226,7 +239,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. Terrain `FieldStart`.
                         1. `AfterAddPseudoWeather`.
                      1. Apply force switch if possible.
-                     1. `HitField`, `HitSide`, or `Hit`.
+                     1. `HitField`, `HitSide`, `Hit`, or, `HitUser`.
                      1. Mon self-destructs conditionally.
                   1. Hit user for user effect once.
                   1. Apply secondary effects:

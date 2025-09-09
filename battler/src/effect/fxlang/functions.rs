@@ -77,7 +77,10 @@ use crate::{
         general_error,
     },
     log::UncommittedBattleLogEntry,
-    moves::Move,
+    moves::{
+        Move,
+        UpgradedMoveSource,
+    },
 };
 
 /// Runs an fxlang function.
@@ -110,6 +113,7 @@ pub fn run_function(
         "all_mons_in_party" => all_mons_in_party(context).map(|val| Some(val)),
         "all_mons_on_side" => all_mons_on_side(context).map(|val| Some(val)),
         "all_types" => all_types(context).map(|val| Some(val)),
+        "allies_and_self" => allies_and_self(context).map(|val| Some(val)),
         "any_mon_will_move_this_turn" => any_mon_will_move_this_turn(context).map(|val| Some(val)),
         "append" => append(context).map(|val| Some(val)),
         "apply_drain" => apply_drain(context).map(|()| None),
@@ -147,6 +151,7 @@ pub fn run_function(
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "end_ability" => end_ability(context).map(|()| None),
+        "end_dynamax" => end_dynamax(context).map(|()| None),
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
         "end_item" => end_item(context).map(|()| None),
         "escape" => escape(context).map(|val| Some(val)),
@@ -159,6 +164,7 @@ pub fn run_function(
         "get_boost" => get_boost(context).map(|val| Some(val)),
         "get_item" => get_item(context),
         "get_move" => get_move(context),
+        "get_move_targets" => get_move_targets(context).map(|val| Some(val)),
         "get_species" => get_species(context),
         "get_stat" => get_stat(context).map(|val| Some(val)),
         "has_ability" => has_ability(context).map(|val| Some(val)),
@@ -203,7 +209,9 @@ pub fn run_function(
         "log_status" => log_status(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
         "max" => max(context).map(|val| Some(val)),
+        "max_move" => max_move(context),
         "min" => min(context).map(|val| Some(val)),
+        "modify_move_type" => modify_move_type(context).map(|_| None),
         "mon_ability_suppressed_by_this_effect" => {
             mon_ability_suppressed_by_this_effect(context).map(|val| Some(val))
         }
@@ -263,9 +271,11 @@ pub fn run_function(
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_illusion" => set_illusion(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
+        "set_upgraded_to_max_move" => set_upgraded_to_max_move(context).map(|_| None),
         "set_pp" => set_pp(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
+        "set_terrain" => set_terrain(context).map(|val| Some(val)),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
@@ -2308,6 +2318,15 @@ fn all_foes(mut context: FunctionContext) -> Result<Value> {
     ))
 }
 
+fn allies_and_self(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    Ok(Value::List(
+        Mon::active_allies_and_self(&mut context.mon_context(mon_handle)?)
+            .map(|mon| Value::Mon(mon))
+            .collect(),
+    ))
+}
+
 fn clear_boosts(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
     context.mon_context(mon_handle)?.mon_mut().clear_boosts();
@@ -2345,8 +2364,13 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value> {
         .evaluation_context()
         .active_move(active_move)?
         .clone_for_battle();
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
     let active_move_handle =
-        CoreBattle::register_active_move(context.battle_context_mut(), active_move)?;
+        CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
     Ok(Value::ActiveMove(active_move_handle))
 }
 
@@ -2354,11 +2378,15 @@ fn new_active_move(mut context: FunctionContext) -> Result<Value> {
     let move_id = context
         .pop_front()
         .wrap_expectation("missing move")?
-        .string()
+        .move_id(context.evaluation_context_mut())
         .wrap_error_with_message("invalid move")?;
-    let move_id = Id::from(move_id);
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
     let active_move_handle =
-        CoreBattle::register_active_move_by_id(context.battle_context_mut(), &move_id)?;
+        CoreBattle::register_active_move_by_id(context.battle_context_mut(), &move_id, mon_handle)?;
     Ok(Value::ActiveMove(active_move_handle))
 }
 
@@ -2388,8 +2416,13 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
     ))?
     .clone();
     let active_move = Move::new_unlinked(move_id, move_data);
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
     let active_move_handle =
-        CoreBattle::register_active_move(context.battle_context_mut(), active_move)?;
+        CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
     Ok(Value::ActiveMove(active_move_handle))
 }
 
@@ -2656,6 +2689,17 @@ fn set_weather(mut context: FunctionContext) -> Result<Value> {
         .map(Value::Boolean)
 }
 
+fn set_terrain(mut context: FunctionContext) -> Result<Value> {
+    let terrain = context
+        .pop_front()
+        .wrap_expectation("missing terrain")?
+        .string()
+        .wrap_error_with_message("invalid terrain")?;
+    let terrain = Id::from(terrain);
+    core_battle_actions::set_terrain(&mut context.forward_to_field_effect()?, &terrain)
+        .map(Value::Boolean)
+}
+
 fn clear_weather(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::clear_weather(&mut context.forward_to_field_effect()?).map(Value::Boolean)
 }
@@ -2869,10 +2913,13 @@ fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<
         .queue
         .pending_move_this_turn(mon_handle)
         .map(|move_action| {
-            Value::Object(HashMap::from_iter([(
-                "id".to_owned(),
-                Value::String(move_action.id.to_string()),
-            )]))
+            Value::Object(HashMap::from_iter([
+                ("id".to_owned(), Value::String(move_action.id.to_string())),
+                (
+                    "effective_id".to_owned(),
+                    Value::String(move_action.effective_move_id().to_string()),
+                ),
+            ]))
         }))
 }
 
@@ -2937,6 +2984,32 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value> {
             .forward_to_applying_effect_context_with_effect_and_target(effect_handle, mon_handle)?,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn modify_move_type(mut context: FunctionContext) -> Result<()> {
+    let target = context.source_handle();
+    let mut context = context
+        .source_active_move_context()?
+        .wrap_expectation("context is not an active move")?;
+    core_battle_actions::modify_move_type(&mut context, target)?;
+    Ok(())
+}
+
+fn max_move(mut context: FunctionContext) -> Result<Option<Value>> {
+    let target = context.target_handle_positional()?;
+    let move_handle = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let mut context = context.mon_context(target)?;
+    let move_data = context
+        .as_battle_context()
+        .active_move(move_handle)?
+        .data
+        .clone();
+    core_battle_actions::max_move(&mut context, &move_data)
+        .map(|move_id| move_id.map(|val| Value::String(val.to_string())))
 }
 
 fn set_hp(mut context: FunctionContext) -> Result<Value> {
@@ -3394,6 +3467,13 @@ fn primal_reversion(mut context: FunctionContext) -> Result<Value> {
     .map(|val| Value::Boolean(val))
 }
 
+fn end_dynamax(mut context: FunctionContext) -> Result<()> {
+    let target = context.target_handle_positional()?;
+    core_battle_actions::end_dynamax(
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
+    )
+}
+
 fn increase_friendship(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
     let delta_1 = context
@@ -3807,4 +3887,53 @@ fn has_species_registered(mut context: FunctionContext) -> Result<Value> {
 fn force_fully_heal(mut context: FunctionContext) -> Result<()> {
     let target = context.target_handle_positional()?;
     Mon::force_fully_heal(&mut context.mon_context(target)?)
+}
+
+fn set_upgraded_to_max_move(mut context: FunctionContext) -> Result<()> {
+    let active_move = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let base_move = context
+        .pop_front()
+        .wrap_expectation("missing base move")?
+        .move_id(context.evaluation_context_mut())
+        .wrap_error_with_message("invalid base move")?;
+    context
+        .battle_context_mut()
+        .active_move_mut(active_move)?
+        .upgraded = Some(UpgradedMoveSource::MaxMove { base_move });
+    Ok(())
+}
+
+fn get_move_targets(mut context: FunctionContext) -> Result<Value> {
+    let active_move = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let mon_handle = context
+        .pop_front()
+        .wrap_expectation("missing user")?
+        .mon_handle()
+        .wrap_error_with_message("invalid user")?;
+    let target = context
+        .pop_front()
+        .map(|val| val.mon_handle().wrap_error_with_message("invalid target"))
+        .transpose()?;
+    core_battle_actions::get_move_targets(
+        &mut context
+            .mon_context(mon_handle)?
+            .active_move_context(active_move)?,
+        target,
+    )
+    .map(|targets| {
+        Value::List(
+            targets
+                .into_iter()
+                .map(|target| Value::Mon(target))
+                .collect(),
+        )
+    })
 }

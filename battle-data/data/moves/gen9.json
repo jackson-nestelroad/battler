@@ -334,9 +334,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": ["NoMetronome"],
-    "hit_effect": {
-      "weather": "snowweather"
-    }
+    "hit_effect": { "weather": "snowweather" }
   },
   "pounce": {
     "name": "Pounce",
@@ -688,7 +686,8 @@
     "base_power": 50,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Slicing"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 140 }
   },
   "hardpress": {
     "name": "Hard Press",

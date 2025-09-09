@@ -7,7 +7,41 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["NoMetronome", "Stalling"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "Stalling"
+    ],
+    "hit_effect": { "volatile_status": "maxguard" },
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": [
+          "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
+        ],
+        "on_hit": ["add_volatile: $target stall"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_start": ["log_single_turn: with_target"],
+        "on_try_hit": {
+          "priority": 1,
+          "program": [
+            "if func_call(move_has_flag: $move bypassmaxguard):",
+            ["return"],
+            "log_activate: with_target",
+            "return stop"
+          ]
+        }
+      }
+    }
   },
   "dynamaxcannon": {
     "name": "Dynamax Cannon",
@@ -96,7 +130,8 @@
     "target": "Normal",
     "flags": ["Mirror", "NoParentalBond", "Protect"],
     "multihit": 2,
-    "smart_target": true
+    "smart_target": true,
+    "max_move": { "base_power": 130 }
   },
   "teatime": {
     "name": "Teatime",
@@ -151,9 +186,28 @@
     "primary_type": "Fire",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 100,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_weather: harshsunlight"
+        ]
+      }
+    }
   },
   "maxflutterby": {
     "name": "Max Flutterby",
@@ -161,9 +215,29 @@
     "primary_type": "Bug",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'spa:-1'"]
+        ]
+      }
+    }
   },
   "maxlightning": {
     "name": "Max Lightning",
@@ -171,9 +245,28 @@
     "primary_type": "Electric",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: electricterrain"
+        ]
+      }
+    }
   },
   "maxstrike": {
     "name": "Max Strike",
@@ -181,9 +274,29 @@
     "primary_type": "Normal",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'spe:-1'"]
+        ]
+      }
+    }
   },
   "maxknuckle": {
     "name": "Max Knuckle",
@@ -191,9 +304,29 @@
     "primary_type": "Fighting",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'atk:1'"]
+        ]
+      }
+    }
   },
   "maxphantasm": {
     "name": "Max Phantasm",
@@ -201,9 +334,29 @@
     "primary_type": "Ghost",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'def:-1'"]
+        ]
+      }
+    }
   },
   "maxhailstorm": {
     "name": "Max Hailstorm",
@@ -211,9 +364,28 @@
     "primary_type": "Ice",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_weather: hailweather"
+        ]
+      }
+    }
   },
   "maxooze": {
     "name": "Max Ooze",
@@ -221,9 +393,29 @@
     "primary_type": "Poison",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'spa:1'"]
+        ]
+      }
+    }
   },
   "maxgeyser": {
     "name": "Max Geyser",
@@ -231,9 +423,28 @@
     "primary_type": "Water",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_weather: rainweather"
+        ]
+      }
+    }
   },
   "maxairstream": {
     "name": "Max Airstream",
@@ -241,9 +452,29 @@
     "primary_type": "Flying",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'spe:1'"]
+        ]
+      }
+    }
   },
   "maxstarfall": {
     "name": "Max Starfall",
@@ -251,9 +482,28 @@
     "primary_type": "Fairy",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: mistyterrain"
+        ]
+      }
+    }
   },
   "maxwyrmwind": {
     "name": "Max Wyrmwind",
@@ -261,9 +511,29 @@
     "primary_type": "Dragon",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'atk:-1'"]
+        ]
+      }
+    }
   },
   "maxmindstorm": {
     "name": "Max Mindstorm",
@@ -271,9 +541,28 @@
     "primary_type": "Psychic",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: psychicterrain"
+        ]
+      }
+    }
   },
   "maxrockfall": {
     "name": "Max Rockfall",
@@ -281,9 +570,28 @@
     "primary_type": "Rock",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_weather: sandstorm"
+        ]
+      }
+    }
   },
   "maxquake": {
     "name": "Max Quake",
@@ -291,9 +599,29 @@
     "primary_type": "Ground",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'spd:1'"]
+        ]
+      }
+    }
   },
   "maxdarkness": {
     "name": "Max Darkness",
@@ -301,9 +629,29 @@
     "primary_type": "Dark",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'spd:-1'"]
+        ]
+      }
+    }
   },
   "maxovergrowth": {
     "name": "Max Overgrowth",
@@ -311,9 +659,28 @@
     "primary_type": "Grass",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "set_terrain: grassyterrain"
+        ]
+      }
+    }
   },
   "maxsteelspike": {
     "name": "Max Steelspike",
@@ -321,9 +688,29 @@
     "primary_type": "Steel",
     "pp": 10,
     "accuracy": "exempt",
-    "base_power": 10,
     "target": "AdjacentFoe",
-    "flags": ["NoMetronome"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["boost: $mon 'def:1'"]
+        ]
+      }
+    }
   },
   "clangoroussoul": {
     "name": "Clangorous Soul",
@@ -352,7 +739,7 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome"]
+    "flags": ["BypassMaxGuard", "NoMetronome"]
   },
   "drumbeating": {
     "name": "Drum Beating",
@@ -506,7 +893,13 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Allies",
-    "flags": ["BypassSubstitute", "Heal", "NoMetronome", "Snatch"],
+    "flags": [
+      "BypassMaxGuard",
+      "BypassSubstitute",
+      "Heal",
+      "NoMetronome",
+      "Snatch"
+    ],
     "hit_effect": { "heal_percent": "25%" }
   },
   "obstruct": {
@@ -588,7 +981,8 @@
     "base_power": 25,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 130 }
   },
   "meteorbeam": {
     "name": "Meteor Beam",
@@ -639,7 +1033,8 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "max_move": { "base_power": 140 }
   },
   "terrainpulse": {
     "name": "Terrain Pulse",
@@ -649,7 +1044,8 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Pulse"]
+    "flags": ["Mirror", "Protect", "Pulse"],
+    "max_move": { "base_power": 130 }
   },
   "skittersmack": {
     "name": "Skitter Smack",
@@ -707,7 +1103,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute"]
   },
   "flipturn": {
     "name": "Flip Turn",
@@ -729,7 +1125,8 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "multiaccuracy": true,
-    "multihit": 3
+    "multihit": 3,
+    "max_move": { "base_power": 140 }
   },
   "dualwingbeat": {
     "name": "Dual Wingbeat",
@@ -740,7 +1137,8 @@
     "base_power": 40,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": 2
+    "multihit": 2,
+    "max_move": { "base_power": 130 }
   },
   "scorchingsands": {
     "name": "Scorching Sands",
@@ -759,7 +1157,7 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Allies",
-    "flags": ["BypassSubstitute", "Heal", "NoMetronome"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Heal", "NoMetronome"]
   },
   "wickedblow": {
     "name": "Wicked Blow",
@@ -782,7 +1180,8 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "multihit": 3,
-    "will_crit": true
+    "will_crit": true,
+    "max_move": { "base_power": 130 }
   },
   "thundercage": {
     "name": "Thunder Cage",
@@ -1108,5 +1507,1058 @@
     "base_power": 0,
     "target": "User",
     "flags": ["Snatch"]
+  },
+  "gmaxbefuddle": {
+    "name": "G-Max Befuddle",
+    "category": "Physical",
+    "primary_type": "Bug",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          [
+            "$rand = func_call(random: 3)",
+            "if $rand == 0:",
+            ["$status = slp"],
+            "else if $rand == 1:",
+            ["$status = par"],
+            "else:",
+            ["$status = psn"],
+            "set_status: $mon $status"
+          ]
+        ]
+      }
+    }
+  },
+  "gmaxcannonade": {
+    "name": "G-Max Cannonade",
+    "category": "Physical",
+    "primary_type": "Water",
+    "pp": 10,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.foe_side $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_residual": [
+          "if !func_call(has_type: $target water):",
+          ["damage: $target expr($target.base_max_hp / 6)"]
+        ],
+        "on_side_end": ["log_side_end"]
+      }
+    }
+  },
+  "gmaxcentiferno": {
+    "name": "G-Max Centiferno",
+    "category": "Physical",
+    "primary_type": "Fire",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon partiallytrapped"]
+        ]
+      }
+    }
+  },
+  "gmaxchistrike": {
+    "name": "G-Max Chi Strike",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["add_volatile: $mon $this.id"]
+        ]
+      }
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "$effect_state.layers = 1",
+          "log_start: str('count:{}', $effect_state.layers)"
+        ],
+        "on_restart": [
+          "if $effect_state.layers >= 3:",
+          ["return false"],
+          "$effect_state.layers = $effect_state.layers + 1",
+          "log_start: str('count:{}', $effect_state.layers)",
+          "return true"
+        ],
+        "on_modify_crit_ratio": ["return $crit_ratio + $effect_state.layers"]
+      }
+    }
+  },
+  "gmaxcuddle": {
+    "name": "G-Max Cuddle",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon attract"]
+        ]
+      }
+    }
+  },
+  "gmaxdepletion": {
+    "name": "G-Max Depletion",
+    "category": "Physical",
+    "primary_type": "Dragon",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "eff†ect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          [
+            "if !$mon.last_move:",
+            ["continue"],
+            "$last_move_id = $mon.last_move",
+            "if $mon.last_move.upgraded and $mon.last_move.upgraded_base_move.is_defined:",
+            ["$last_move_id = $mon.last_move.upgraded_base_move"],
+            "if func_call(deduct_pp: $mon $last_move_id 2) > 0:",
+            ["log_activate: with_target $mon"]
+          ]
+        ]
+      }
+    }
+  },
+  "gmaxdrumsolo": {
+    "name": "G-Max Drum Solo",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 5,
+    "accuracy": "exempt",
+    "base_power": 160,
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_before_move": ["add_pseudo_weather: moldbreaker"],
+        "on_after_move": ["remove_pseudo_weather: moldbreaker"]
+      }
+    }
+  },
+  "gmaxfinale": {
+    "name": "G-Max Finale",
+    "category": "Physical",
+    "primary_type": "Fairy",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["heal: $mon expr($mon.max_hp / 6)"]
+        ]
+      }
+    }
+  },
+  "gmaxfireball": {
+    "name": "G-Max Fire Ball",
+    "category": "Physical",
+    "primary_type": "Fire",
+    "pp": 5,
+    "accuracy": "exempt",
+    "base_power": 160,
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "delegates": ["move:gmaxdrumsolo"]
+    }
+  },
+  "gmaxfoamburst": {
+    "name": "G-Max Foam Burst",
+    "category": "Physical",
+    "primary_type": "Water",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'spe:-2'"]
+        ]
+      }
+    }
+  },
+  "gmaxgoldrush": {
+    "name": "G-Max Gold Rush",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon confusion"]
+        ]
+      }
+    }
+  },
+  "gmaxgravitas": {
+    "name": "G-Max Gravitas",
+    "category": "Physical",
+    "primary_type": "Psychic",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_pseudo_weather: gravity"
+        ]
+      }
+    }
+  },
+  "gmaxhydrosnipe": {
+    "name": "G-Max Hydrosnipe",
+    "category": "Physical",
+    "primary_type": "Water",
+    "pp": 5,
+    "accuracy": "exempt",
+    "base_power": 160,
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "delegates": ["move:gmaxdrumsolo"]
+    }
+  },
+  "gmaxmalodor": {
+    "name": "G-Max Malodor",
+    "category": "Physical",
+    "primary_type": "Poison",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["set_status: $mon psn"]
+        ]
+      }
+    }
+  },
+  "gmaxmeltdown": {
+    "name": "G-Max Meltdown",
+    "category": "Physical",
+    "primary_type": "Steel",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon torment"]
+        ]
+      }
+    }
+  },
+  "gmaxoneblow": {
+    "name": "G-Max One Blow",
+    "category": "Physical",
+    "primary_type": "Dark",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk"
+    ],
+    "effect": {
+      "delegates": ["condition:breakprotectmovebase"]
+    }
+  },
+  "gmaxrapidflow": {
+    "name": "G-Max Rapid Flow",
+    "category": "Physical",
+    "primary_type": "Water",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk"
+    ],
+    "effect": {
+      "delegates": ["condition:breakprotectmovebase"]
+    }
+  },
+  "gmaxreplenish": {
+    "name": "G-Max Replenish",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "if func_call(random: 2) == 0:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          [
+            "if $mon.last_item.is_defined and func_call(item_has_flag: $mon.last_item berry):",
+            [
+              "$item = $mon.last_item",
+              "$mon.last_item = undefined",
+              "set_item: $mon $item"
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "gmaxresonance": {
+    "name": "G-Max Resonance",
+    "category": "Physical",
+    "primary_type": "Ice",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.side auroraveil"
+        ]
+      }
+    }
+  },
+  "gmaxsandblast": {
+    "name": "G-Max Sandblast",
+    "category": "Physical",
+    "primary_type": "Ground",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon partiallytrapped"]
+        ]
+      }
+    }
+  },
+  "gmaxsmite": {
+    "name": "G-Max Smite",
+    "category": "Physical",
+    "primary_type": "Fairy",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon confusion"]
+        ]
+      }
+    }
+  },
+  "gmaxsnooze": {
+    "name": "G-Max Snooze",
+    "category": "Physical",
+    "primary_type": "Dark",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target.status.is_defined or func_call(check_immunity: $target slp):",
+          ["return"],
+          "if func_call(random: 2) == 0:",
+          ["return"],
+          "add_volatile: $target yawn"
+        ],
+        "on_after_substitute_damage": ["run_event_on_move: Hit"]
+      }
+    }
+  },
+  "gmaxsteelsurge": {
+    "name": "G-Max Steelsurge",
+    "category": "Physical",
+    "primary_type": "Steel",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.foe_side $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_switch_in": [
+          "if $mon.is_immune_to_entry_hazards:",
+          ["return"],
+          "$type_modifier = func_call(type_modifier: $mon)",
+          "damage: $mon expr($mon.max_hp * (2 ^ $type_modifier) / 8)"
+        ],
+        "on_side_end": ["log_side_end"]
+      }
+    }
+  },
+  "gmaxstonesurge": {
+    "name": "G-Max Stonesurge",
+    "category": "Physical",
+    "primary_type": "Water",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.foe_side stealthrock"
+        ]
+      }
+    }
+  },
+  "gmaxstunshock": {
+    "name": "G-Max Stun Shock",
+    "category": "Physical",
+    "primary_type": "Electric",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          [
+            "if func_call(random: 2) == 0:",
+            ["$status = par"],
+            "else:",
+            ["$status = psn"],
+            "set_status: $mon $status"
+          ]
+        ]
+      }
+    }
+  },
+  "gmaxsweetness": {
+    "name": "G-Max Sweetness",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(allies_and_self: $source):",
+          ["cure_status: $mon"]
+        ]
+      }
+    }
+  },
+  "gmaxtartness": {
+    "name": "G-Max Tartness",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["boost: $mon 'eva:-1'"]
+        ]
+      }
+    }
+  },
+  "gmaxterror": {
+    "name": "G-Max Terror",
+    "category": "Physical",
+    "primary_type": "Ghost",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["add_volatile: $mon trapped"]
+        ]
+      }
+    }
+  },
+  "gmaxvinelash": {
+    "name": "G-Max Vine Lash",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.foe_side $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_residual": [
+          "if !func_call(has_type: $target grass):",
+          ["damage: $target expr($target.base_max_hp / 6)"]
+        ],
+        "on_side_end": ["log_side_end"]
+      }
+    }
+  },
+  "gmaxvolcalith": {
+    "name": "G-Max Volcalith",
+    "category": "Physical",
+    "primary_type": "Rock",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.foe_side $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_residual": [
+          "if !func_call(has_type: $target rock):",
+          ["damage: $target expr($target.base_max_hp / 6)"]
+        ],
+        "on_side_end": ["log_side_end"]
+      }
+    }
+  },
+  "gmaxvoltcrash": {
+    "name": "G-Max Volt Crash",
+    "category": "Physical",
+    "primary_type": "Electric",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "foreach $mon in func_call(all_foes: $source):",
+          ["set_status: $mon par"]
+        ]
+      }
+    }
+  },
+  "gmaxwildfire": {
+    "name": "G-Max Wildfire",
+    "category": "Physical",
+    "primary_type": "Fire",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "callbacks": {
+        "on_hit_user": [
+          "if !$source.dynamaxed:",
+          ["return"],
+          "add_side_condition: $source.foe_side $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_residual": [
+          "if !func_call(has_type: $target fire):",
+          ["damage: $target expr($target.base_max_hp / 6)"]
+        ],
+        "on_side_end": ["log_side_end"]
+      }
+    }
+  },
+  "gmaxwindrage": {
+    "name": "G-Max Wind Rage",
+    "category": "Physical",
+    "primary_type": "Flying",
+    "pp": 5,
+    "accuracy": "exempt",
+    "target": "AdjacentFoe",
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection"
+    ],
+    "user_effect": {},
+    "effect": {
+      "delegates": ["condition:defogmovebase;on_hit=>on_hit_user"],
+      "local_data": {
+        "values": {
+          "use_source_foe_side": "true"
+        }
+      }
+    }
   }
 }

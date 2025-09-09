@@ -24,7 +24,7 @@
           "$last_move = $target.last_move",
           "if !$last_move or $source.transformed or func_call(has_move: $source $last_move.id):",
           ["return false"],
-          "if func_call(move_has_flag: $last_move nosketch):",
+          "if func_call(move_has_flag: $last_move nosketch) or $last_move.upgraded:",
           ["return false"],
           "$sketch_index = func_call(move_slot_index: $source $this.id)",
           "overwrite_move_slot: $source $sketch_index func_call(move_slot: $last_move) override_base_slot",
@@ -44,6 +44,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "multiaccuracy": true,
     "multihit": 3,
+    "max_move": { "base_power": 80 },
     "effect": {
       "callbacks": { "on_move_base_power": ["return 10 * $move.hit"] }
     }
@@ -87,9 +88,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "volatile_status": "trapped"
-    }
+    "hit_effect": { "volatile_status": "trapped" }
   },
   "mindreader": {
     "name": "Mind Reader",
@@ -116,9 +115,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "hit_effect": {
-      "volatile_status": "nightmare"
-    },
+    "hit_effect": { "volatile_status": "nightmare" },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -158,11 +155,7 @@
     "secondary_effects": [
       { "chance": "30%", "target": { "volatile_status": "flinch" } }
     ],
-    "effect": {
-      "callbacks": {
-        "on_try_use_move": ["return $user.is_asleep"]
-      }
-    }
+    "effect": { "callbacks": { "on_try_use_move": ["return $user.is_asleep"] } }
   },
   "curse": {
     "name": "Curse",
@@ -171,10 +164,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute"],
-    "hit_effect": {
-      "volatile_status": "curse"
-    },
+    "flags": ["BypassMaxGuard", "BypassSubstitute"],
+    "hit_effect": { "volatile_status": "curse" },
     "effect": {
       "callbacks": {
         "on_move_target_override": [
@@ -218,6 +209,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 130 },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -328,10 +320,12 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "$last_move = $target.last_move",
-          "if !$last_move:",
+          "if !$target.last_move:",
           ["return false"],
-          "$pp = func_call(deduct_pp: $target $last_move.id 4)",
+          "$last_move_id = $target.last_move.id",
+          "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $target.last_move.upgraded_base_move"],
+          "$pp = func_call(deduct_pp: $target $last_move_id 4)",
           "if $pp == 0:",
           ["return false"]
         ]
@@ -347,14 +341,7 @@
     "base_power": 40,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect"],
-    "secondary_effects": [
-      {
-        "chance": "10%",
-        "target": {
-          "status": "frz"
-        }
-      }
-    ]
+    "secondary_effects": [{ "chance": "10%", "target": { "status": "frz" } }]
   },
   "protect": {
     "name": "Protect",
@@ -365,9 +352,7 @@
     "priority": 4,
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
-    "hit_effect": {
-      "volatile_status": "protect"
-    },
+    "hit_effect": { "volatile_status": "protect" },
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
@@ -378,6 +363,7 @@
     },
     "condition": {
       "duration": 1,
+      "delegates": ["weakenthroughprotectionmovebase"],
       "callbacks": {
         "on_start": ["log_single_turn: with_target"],
         "on_try_hit": {
@@ -411,11 +397,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "boosts": {
-        "spe": -2
-      }
-    }
+    "hit_effect": { "boosts": { "spe": -2 } }
   },
   "feintattack": {
     "name": "Feint Attack",
@@ -435,9 +417,7 @@
     "accuracy": 75,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "volatile_status": "confusion"
-    }
+    "hit_effect": { "volatile_status": "confusion" }
   },
   "bellydrum": {
     "name": "Belly Drum",
@@ -467,14 +447,7 @@
     "base_power": 90,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
-    "secondary_effects": [
-      {
-        "chance": "30%",
-        "target": {
-          "status": "psn"
-        }
-      }
-    ]
+    "secondary_effects": [{ "chance": "30%", "target": { "status": "psn" } }]
   },
   "mudslap": {
     "name": "Mud-Slap",
@@ -485,15 +458,7 @@
     "base_power": 20,
     "target": "Normal",
     "flags": ["AccuracyLowering", "Mirror", "Protect"],
-    "secondary_effects": [
-      {
-        "target": {
-          "boosts": {
-            "acc": -1
-          }
-        }
-      }
-    ]
+    "secondary_effects": [{ "target": { "boosts": { "acc": -1 } } }]
   },
   "octazooka": {
     "name": "Octazooka",
@@ -505,14 +470,7 @@
     "target": "Normal",
     "flags": ["AccuracyLowering", "Bullet", "Mirror", "Protect"],
     "secondary_effects": [
-      {
-        "chance": "50%",
-        "target": {
-          "boosts": {
-            "acc": -1
-          }
-        }
-      }
+      { "chance": "50%", "target": { "boosts": { "acc": -1 } } }
     ]
   },
   "spikes": {
@@ -523,9 +481,7 @@
     "accuracy": "exempt",
     "target": "FoeSide",
     "flags": ["MustPressure", "Reflectable"],
-    "hit_effect": {
-      "side_condition": "spikes"
-    },
+    "hit_effect": { "side_condition": "spikes" },
     "condition": {
       "callbacks": {
         "on_side_start": [
@@ -568,13 +524,7 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
-    "secondary_effects": [
-      {
-        "target": {
-          "status": "par"
-        }
-      }
-    ]
+    "secondary_effects": [{ "target": { "status": "par" } }]
   },
   "foresight": {
     "name": "Foresight",
@@ -584,9 +534,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "volatile_status": "foresight"
-    },
+    "hit_effect": { "volatile_status": "foresight" },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -607,14 +555,12 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["BypassSubstitute", "FailCopycat", "NoAssist", "NoMetronome"],
-    "hit_effect": {
-      "volatile_status": "destinybond"
-    },
+    "hit_effect": { "volatile_status": "destinybond" },
     "condition": {
       "callbacks": {
         "on_start": ["log_single_move: with_target"],
         "on_faint": [
-          "if !$source or !$effect or func_call(is_ally: $target $source):",
+          "if !$source or !$effect or func_call(is_ally: $target $source) or $source.dynamaxed:",
           ["return"],
           "if $effect.is_move and !func_call(move_has_flag: $effect future):",
           ["log_activate: with_target", "faint: $source"]
@@ -633,7 +579,7 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["BypassSubstitute", "Distance", "Sound"],
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Distance", "Sound"],
     "effect": {
       "callbacks": {
         "on_hit_field": [
@@ -673,15 +619,7 @@
     "base_power": 55,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Wind"],
-    "secondary_effects": [
-      {
-        "target": {
-          "boosts": {
-            "spe": -1
-          }
-        }
-      }
-    ]
+    "secondary_effects": [{ "target": { "boosts": { "spe": -1 } } }]
   },
   "detect": {
     "name": "Detect",
@@ -692,12 +630,8 @@
     "priority": 4,
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
-    "hit_effect": {
-      "volatile_status": "protect"
-    },
-    "effect": {
-      "delegates": ["move:protect"]
-    }
+    "hit_effect": { "volatile_status": "protect" },
+    "effect": { "delegates": ["move:protect"] }
   },
   "bonerush": {
     "name": "Bone Rush",
@@ -708,7 +642,8 @@
     "base_power": 25,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "max_move": { "base_power": 130 }
   },
   "lockon": {
     "name": "Lock-On",
@@ -748,9 +683,7 @@
     "base_power": 120,
     "target": "RandomNormal",
     "flags": ["Contact", "FailInstruct", "Mirror", "Protect"],
-    "user_effect": {
-      "volatile_status": "lockedmove"
-    }
+    "user_effect": { "volatile_status": "lockedmove" }
   },
   "sandstorm": {
     "name": "Sandstorm",
@@ -760,9 +693,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": ["Wind"],
-    "hit_effect": {
-      "weather": "sandstormweather"
-    }
+    "hit_effect": { "weather": "sandstormweather" }
   },
   "gigadrain": {
     "name": "Giga Drain",
@@ -784,9 +715,7 @@
     "priority": 4,
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
-    "hit_effect": {
-      "volatile_status": "endure"
-    },
+    "hit_effect": { "volatile_status": "endure" },
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
@@ -817,11 +746,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "boosts": {
-        "atk": -2
-      }
-    }
+    "hit_effect": { "boosts": { "atk": -2 } }
   },
   "rollout": {
     "name": "Rollout",
@@ -892,12 +817,7 @@
     "accuracy": 85,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "status": "confusion",
-      "boosts": {
-        "atk": 2
-      }
-    }
+    "hit_effect": { "status": "confusion", "boosts": { "atk": 2 } }
   },
   "milkdrink": {
     "name": "Milk Drink",
@@ -907,9 +827,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "hit_effect": {
-      "heal_percent": "50%"
-    }
+    "hit_effect": { "heal_percent": "50%" }
   },
   "spark": {
     "name": "Spark",
@@ -920,14 +838,7 @@
     "base_power": 65,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "secondary_effects": [
-      {
-        "chance": "30%",
-        "target": {
-          "status": "par"
-        }
-      }
-    ]
+    "secondary_effects": [{ "chance": "30%", "target": { "status": "par" } }]
   },
   "furycutter": {
     "name": "Fury Cutter",
@@ -970,14 +881,7 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      {
-        "chance": "10%",
-        "user": {
-          "boosts": {
-            "def": -1
-          }
-        }
-      }
+      { "chance": "10%", "user": { "boosts": { "def": -1 } } }
     ]
   },
   "meanlook": {
@@ -987,10 +891,8 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Reflectable"],
-    "hit_effect": {
-      "volatile_status": "trapped"
-    }
+    "flags": ["BypassMaxGuard", "Mirror", "Reflectable"],
+    "hit_effect": { "volatile_status": "trapped" }
   },
   "attract": {
     "name": "Attract",
@@ -1000,9 +902,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "volatile_status": "attract"
-    },
+    "hit_effect": { "volatile_status": "attract" },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -1056,7 +956,7 @@
           "foreach $move_slot in $target.move_slots:",
           [
             "$potential_move = func_call(get_move: $move_slot.id)",
-            "if $move_slot.is_defined and !func_call(move_has_flag: $potential_move nosleeptalk):",
+            "if $move_slot.is_defined and !func_call(move_has_flag: $potential_move nosleeptalk) and $potential_move.callable:",
             ["$moves = func_call(append: $moves $potential_move.id)"]
           ],
           "$random_move = func_call(sample: $moves)",
@@ -1074,7 +974,13 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "AllyTeam",
-    "flags": ["BypassSubstitute", "Distance", "Snatch", "Sound"],
+    "flags": [
+      "BypassMaxGuard",
+      "BypassSubstitute",
+      "Distance",
+      "Snatch",
+      "Sound"
+    ],
     "effect": {
       "callbacks": {
         "on_hit_side": [
@@ -1101,6 +1007,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 130 },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -1145,6 +1052,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
+    "max_move": { "base_power": 130 },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -1161,9 +1069,7 @@
     "accuracy": "exempt",
     "target": "AllySide",
     "flags": ["Snatch"],
-    "hit_effect": {
-      "side_condition": "safeguard"
-    },
+    "hit_effect": { "side_condition": "safeguard" },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -1203,7 +1109,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "$target_hp = $target.hp",
+          "$target_hp = $target.undynamaxed_hp",
           "$average_hp = func_call(max: 1 expr(($target.hp + $source.hp) / 2))",
           "$target_diff = $target_hp - $average_hp",
           "set_hp: $target $average_hp",
@@ -1221,14 +1127,7 @@
     "base_power": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Thawing"],
-    "secondary_effects": [
-      {
-        "chance": "50%",
-        "target": {
-          "status": "brn"
-        }
-      }
-    ]
+    "secondary_effects": [{ "chance": "50%", "target": { "status": "brn" } }]
   },
   "magnitude": {
     "name": "Magnitude",
@@ -1238,6 +1137,7 @@
     "accuracy": 100,
     "target": "AllAdjacent",
     "flags": ["Mirror", "Protect"],
+    "max_move": { "base_power": 140 },
     "effect": {
       "callbacks": {
         "on_use_move": [
@@ -1272,13 +1172,7 @@
     "base_power": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"],
-    "secondary_effects": [
-      {
-        "target": {
-          "volatile_status": "confusion"
-        }
-      }
-    ]
+    "secondary_effects": [{ "target": { "volatile_status": "confusion" } }]
   },
   "megahorn": {
     "name": "Megahorn",
@@ -1299,14 +1193,7 @@
     "base_power": 60,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "secondary_effects": [
-      {
-        "chance": "30%",
-        "target": {
-          "status": "par"
-        }
-      }
-    ]
+    "secondary_effects": [{ "chance": "30%", "target": { "status": "par" } }]
   },
   "batonpass": {
     "name": "Baton Pass",
@@ -1342,15 +1229,18 @@
       "Protect",
       "Reflectable"
     ],
-    "hit_effect": {
-      "volatile_status": "encore"
-    },
+    "hit_effect": { "volatile_status": "encore" },
     "condition": {
       "duration": 3,
       "no_copy": true,
       "callbacks": {
         "on_start": [
-          "$last_move = $target.last_move",
+          "if !$target.last_move:",
+          ["return false"],
+          "$last_move_id = $target.last_move.id",
+          "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $last_move.upgraded_base_move"],
+          "$last_move = func_call(get_move: $last_move_id)",
           "if !$last_move or func_call(move_has_flag: $last_move failencore):",
           ["return false"],
           "$index = func_call(move_slot_index: $target $last_move.id)",
@@ -1474,11 +1364,7 @@
     "accuracy": 100,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": {
-      "boosts": {
-        "eva": -2
-      }
-    }
+    "hit_effect": { "boosts": { "eva": -2 } }
   },
   "irontail": {
     "name": "Iron Tail",
@@ -1490,14 +1376,7 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      {
-        "chance": "30%",
-        "target": {
-          "boosts": {
-            "def": -1
-          }
-        }
-      }
+      { "chance": "30%", "target": { "boosts": { "def": -1 } } }
     ]
   },
   "metalclaw": {
@@ -1510,14 +1389,7 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      {
-        "chance": "10%",
-        "target": {
-          "boosts": {
-            "atk": 1
-          }
-        }
-      }
+      { "chance": "10%", "target": { "boosts": { "atk": 1 } } }
     ]
   },
   "vitalthrow": {
@@ -1563,9 +1435,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "effect": {
-      "delegates": ["move:morningsun"]
-    }
+    "effect": { "delegates": ["move:morningsun"] }
   },
   "moonlight": {
     "name": "Moonlight",
@@ -1575,9 +1445,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "effect": {
-      "delegates": ["move:morningsun"]
-    }
+    "effect": { "delegates": ["move:morningsun"] }
   },
   "hiddenpower": {
     "name": "Hidden Power",
@@ -1589,9 +1457,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "effect": {
-      "callbacks": {
-        "on_use_move": ["$move.type = $user.hidden_power_type"]
-      }
+      "callbacks": { "on_modify_move_type": ["return $user.hidden_power_type"] }
     }
   },
   "crosschop": {
@@ -1615,12 +1481,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Wind"],
     "secondary_effects": [
-      {
-        "chance": "20%",
-        "target": {
-          "volatile_status": "flinch"
-        }
-      }
+      { "chance": "20%", "target": { "volatile_status": "flinch" } }
     ]
   },
   "raindance": {
@@ -1631,9 +1492,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": [],
-    "hit_effect": {
-      "weather": "rainweather"
-    }
+    "hit_effect": { "weather": "rainweather" }
   },
   "sunnyday": {
     "name": "Sunny Day",
@@ -1643,9 +1502,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": [],
-    "hit_effect": {
-      "weather": "harshsunlight"
-    }
+    "hit_effect": { "weather": "harshsunlight" }
   },
   "crunch": {
     "name": "Crunch",
@@ -1657,14 +1514,7 @@
     "target": "Normal",
     "flags": ["Bite", "Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      {
-        "chance": "20%",
-        "target": {
-          "boosts": {
-            "def": -1
-          }
-        }
-      }
+      { "chance": "20%", "target": { "boosts": { "def": -1 } } }
     ]
   },
   "mirrorcoat": {
@@ -1779,14 +1629,7 @@
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
     "secondary_effects": [
-      {
-        "chance": "20%",
-        "target": {
-          "boosts": {
-            "spd": -1
-          }
-        }
-      }
+      { "chance": "20%", "target": { "boosts": { "spd": -1 } } }
     ]
   },
   "futuresight": {
@@ -1797,7 +1640,7 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Future"],
+    "flags": ["BypassMaxGuard", "Future"],
     "effect": {
       "callbacks": {
         "on_ignore_immunity": ["return true"],
@@ -1833,14 +1676,7 @@
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      {
-        "chance": "50%",
-        "target": {
-          "boosts": {
-            "def": -1
-          }
-        }
-      }
+      { "chance": "50%", "target": { "boosts": { "def": -1 } } }
     ]
   },
   "whirlpool": {
@@ -1852,9 +1688,7 @@
     "base_power": 35,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "hit_effect": {
-      "volatile_status": "partiallytrapped"
-    }
+    "hit_effect": { "volatile_status": "partiallytrapped" }
   },
   "beatup": {
     "name": "Beat Up",

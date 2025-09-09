@@ -298,9 +298,13 @@ pub struct MonMoveRequest {
     pub team_position: usize,
     pub moves: Vec<MonMoveSlotData>,
     #[serde(default)]
+    pub max_moves: Vec<MonMoveSlotData>,
+    #[serde(default)]
     pub trapped: bool,
     #[serde(default)]
     pub can_mega_evolve: bool,
+    #[serde(default)]
+    pub can_dynamax: bool,
     #[serde(default)]
     pub locked_into_move: bool,
 }
@@ -371,6 +375,7 @@ pub enum RecalculateBaseStatsHpPolicy {
     #[default]
     DoNotUpdate,
     KeepHealthRatio,
+    KeepHealthRatioCeiling,
     KeepHealthRatioSilently,
     KeepDamageTaken,
 }
@@ -378,7 +383,16 @@ pub enum RecalculateBaseStatsHpPolicy {
 impl RecalculateBaseStatsHpPolicy {
     fn keep_health_ratio(&self) -> bool {
         match self {
-            Self::KeepHealthRatio | Self::KeepHealthRatioSilently => true,
+            Self::KeepHealthRatio
+            | Self::KeepHealthRatioCeiling
+            | Self::KeepHealthRatioSilently => true,
+            _ => false,
+        }
+    }
+
+    fn use_ceil(&self) -> bool {
+        match self {
+            Self::KeepHealthRatioCeiling => true,
             _ => false,
         }
     }
@@ -528,6 +542,8 @@ pub struct Mon {
     pub ball: Id,
     pub hidden_power_type: Type,
     pub different_original_trainer: bool,
+    pub dynamax_level: u8,
+    pub gigantamax_factor: bool,
 
     pub base_move_slots: Vec<MoveSlot>,
     pub original_base_ability: Id,
@@ -620,6 +636,8 @@ impl Mon {
             ball: Id::from(data.ball),
             hidden_power_type,
             different_original_trainer: data.different_original_trainer,
+            dynamax_level: data.dynamax_level,
+            gigantamax_factor: data.gigantamax_factor,
             base_move_slots,
             original_base_ability: ability.clone(),
             base_ability: ability,
@@ -849,6 +867,22 @@ impl Mon {
     /// viewed as the Mon's available move options.
     pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>> {
         Self::moves_and_locked_move(context).map(|(moves, _)| moves)
+    }
+
+    /// Looks up all Max Move slot data.
+    ///
+    /// Does not account for locked moves.
+    fn max_moves(context: &mut MonContext) -> Result<Vec<MoveSlot>> {
+        let mut max_moves = context.mon().volatile_state.move_slots.clone();
+        for move_slot in &mut max_moves {
+            if let Some(max_move) = core_battle_actions::max_move_by_id(context, &move_slot.id)? {
+                let mov = context.battle().dex.moves.get_by_id(&max_move)?;
+                move_slot.id = mov.id().clone();
+                move_slot.name = mov.data.name.clone();
+                move_slot.target = mov.data.target;
+            }
+        }
+        Ok(max_moves)
     }
 
     fn position_on_side_by_active_position(context: &MonContext, active_position: usize) -> usize {
@@ -1436,8 +1470,10 @@ impl Mon {
         let mut request = MonMoveRequest {
             team_position: context.mon().team_position,
             moves,
+            max_moves: Vec::default(),
             trapped: false,
             can_mega_evolve: false,
+            can_dynamax: false,
             locked_into_move: false,
         };
 
@@ -1449,6 +1485,18 @@ impl Mon {
         if locked_move.is_none() {
             request.can_mega_evolve =
                 context.player().can_mega_evolve && context.mon().next_turn_state.can_mega_evolve;
+            request.can_dynamax =
+                context.player().can_dynamax && context.mon().next_turn_state.can_dynamax;
+
+            // Communicate Max Moves, mostly for the player's convenience.
+            //
+            // The actual Max Move is decided immediately when the move is used.
+            if request.can_dynamax || context.mon().dynamaxed {
+                request.max_moves = Self::max_moves(context)?
+                    .into_iter()
+                    .map(|move_slot| MonMoveSlotData::from(context, &move_slot))
+                    .collect::<Result<_>>()?;
+            }
         } else {
             request.locked_into_move = true;
         }
@@ -1620,11 +1668,18 @@ impl Mon {
         Ok(())
     }
 
-    fn update_max_hp(
+    /// Updates the Mon's maximum HP.
+    pub fn update_max_hp(
         context: &mut MonContext,
         hp_policy: RecalculateBaseStatsHpPolicy,
     ) -> Result<()> {
-        let new_max_hp = context.mon().base_max_hp;
+        let new_max_hp = if context.mon().dynamaxed {
+            let ratio =
+                Fraction::new(3, 2) + Fraction::new(1, 20) * context.mon().dynamax_level as u16;
+            (ratio * context.mon().base_max_hp).floor()
+        } else {
+            context.mon().base_max_hp
+        };
 
         // Mon is being initialized.
         if context.mon().max_hp == 0 || hp_policy == RecalculateBaseStatsHpPolicy::DoNotUpdate {
@@ -1642,7 +1697,12 @@ impl Mon {
             if current_health > 1 {
                 current_health = Fraction::from(1u32);
             }
-            (current_health * new_max_hp as u32).floor() as u16
+            let hp = current_health * new_max_hp as u32;
+            if hp_policy.use_ceil() {
+                hp.ceil() as u16
+            } else {
+                hp.floor() as u16
+            }
         } else {
             let damage_taken = if context.mon().hp > context.mon().max_hp {
                 0
@@ -1669,6 +1729,15 @@ impl Mon {
         }
 
         Ok(())
+    }
+
+    /// The current un-Dynamaxed HP of the Mon.
+    pub fn undynamaxed_hp(&self) -> u16 {
+        if self.dynamaxed {
+            (Fraction::new(self.base_max_hp, self.max_hp) * self.hp).ceil()
+        } else {
+            self.hp
+        }
     }
 
     /// Recalculates a Mon's stats.
@@ -2268,6 +2337,10 @@ impl Mon {
             context.mon_mut().next_turn_state.can_mega_evolve = true;
         }
 
+        if core_battle_actions::can_dynamax(context)?.is_some() {
+            context.mon_mut().next_turn_state.can_dynamax = true;
+        }
+
         if let Some(locked_move) = core_battle_effects::run_event_for_mon_expecting_string(
             context,
             fxlang::BattleEvent::LockMove,
@@ -2279,6 +2352,7 @@ impl Mon {
             context.mon_mut().next_turn_state.trapped = true;
             context.mon_mut().next_turn_state.cannot_receive_items = true;
             context.mon_mut().next_turn_state.can_mega_evolve = false;
+            context.mon_mut().next_turn_state.can_dynamax = false;
         }
 
         Ok(())
@@ -2420,6 +2494,17 @@ impl Mon {
             can_escape,
         );
         Ok(can_escape)
+    }
+
+    /// Checks if the Mon can Dynamax, based on its own effects.
+    pub fn can_dynamax(context: &mut MonContext) -> Result<bool> {
+        let can_dynamax = true;
+        let can_dynamax = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+            context,
+            fxlang::BattleEvent::CanDynamax,
+            can_dynamax,
+        );
+        Ok(can_dynamax)
     }
 
     /// Sets the HP on the Mon directly, returning the delta.

@@ -241,6 +241,10 @@ pub struct PlayerOptions {
     /// If the player cannot Mega Evolve, assuming Mega Evolution is allowed.
     #[serde(default)]
     pub cannot_mega_evolve: bool,
+
+    /// If the player cannot Dynamax, assuming Mega Evolution is allowed.
+    #[serde(default)]
+    pub cannot_dynamax: bool,
 }
 
 /// A player's dex, noting what has previously been caught by the player.
@@ -302,6 +306,8 @@ pub struct ChoiceState {
     pub switch_ins: HashSet<usize>,
     /// Did the Player choose to Mega Evolve?
     pub mega: bool,
+    /// Did the Player choose to Dynamax?
+    pub dyna: bool,
 }
 
 impl ChoiceState {
@@ -315,6 +321,7 @@ impl ChoiceState {
             forced_passes_left: 0,
             switch_ins: HashSet::default(),
             mega: false,
+            dyna: false,
         }
     }
 }
@@ -325,6 +332,7 @@ struct MoveChoice {
     pub move_slot: usize,
     pub target: Option<isize>,
     pub mega: bool,
+    pub dyna: bool,
 }
 
 impl MoveChoice {
@@ -347,6 +355,7 @@ impl MoveChoice {
             move_slot,
             target: None,
             mega: false,
+            dyna: false,
         };
 
         if let Some(target) = args
@@ -361,6 +370,9 @@ impl MoveChoice {
         match args.front().cloned() {
             Some("mega") => {
                 choice.mega = true;
+            }
+            Some("dyna") => {
+                choice.dyna = true;
             }
             Some(str) => {
                 return Err(general_error(format!(
@@ -464,6 +476,7 @@ pub struct Player {
     active_or_exited: Vec<Option<MonHandle>>,
 
     pub can_mega_evolve: bool,
+    pub can_dynamax: bool,
 
     pub escape_attempts: u16,
     pub escaped: bool,
@@ -495,6 +508,8 @@ impl Player {
         };
         let can_mega_evolve = !data.player_options.cannot_mega_evolve
             && format.rules.has_rule(&Id::from_known("megaevolution"));
+        let can_dynamax = !data.player_options.cannot_dynamax
+            && format.rules.has_rule(&Id::from_known("dynamax"));
         let mut player = Self {
             id: data.id,
             name: data.name,
@@ -510,6 +525,7 @@ impl Player {
             active_or_exited: active,
             request: None,
             can_mega_evolve,
+            can_dynamax,
             escape_attempts: 0,
             escaped: false,
             bag: HashMap::default(),
@@ -1200,6 +1216,7 @@ impl Player {
             ))?;
 
         let request = Mon::move_request(&mut context)?;
+
         let move_slot = request
             .moves
             .get(choice.move_slot)
@@ -1211,6 +1228,19 @@ impl Player {
 
         let mut move_id = move_slot.id.clone();
 
+        // Use the upgraded move for some validation checks (e.g., the move target).
+        let (move_name, move_target, upgraded_move_id) = if (choice.dyna || context.mon().dynamaxed)
+            && let Some(move_slot) = request.max_moves.get(choice.move_slot)
+        {
+            (
+                move_slot.name.clone(),
+                move_slot.target,
+                Some(move_slot.id.clone()),
+            )
+        } else {
+            (move_slot.name.clone(), move_slot.target, None)
+        };
+
         if let Some(locked_move) = context.mon().next_turn_state.locked_move.clone() {
             let locked_move_target = context.mon().volatile_state.last_move_target_location;
             context
@@ -1219,27 +1249,17 @@ impl Player {
                 .actions
                 .push(Action::Move(MoveAction::new(MoveActionInput {
                     id: Id::from(locked_move),
+                    upgraded_id: None,
                     mon: mon_handle,
                     target: locked_move_target,
                     mega: false,
+                    dyna: false,
                 })));
             // Locked move, the Mon cannot do anything else.
             return Ok(());
         }
 
         let moves = Mon::moves(&mut context)?;
-
-        let mov = context
-            .battle()
-            .dex
-            .moves
-            .get_by_id(&move_id)
-            .wrap_error_with_format(format_args!("expected move id {} to exist", move_slot.id))?;
-        // Clone these to avoid borrow errors.
-        //
-        // We could find a way around this if we're clever, but this keeps things simple for now.
-        let move_name = mov.data.name.clone();
-        let move_target = move_slot.target;
 
         if moves.is_empty() {
             // No moves, the Mon must use Struggle.
@@ -1267,7 +1287,7 @@ impl Player {
         }
 
         let target_required = context.battle().format.battle_type.active_per_player() > 1;
-        match (mov.data.target.choosable(), choice.target) {
+        match (move_target.choosable(), choice.target) {
             (true, None) => {
                 if target_required {
                     return Err(general_error(format!("{move_name} requires a target")));
@@ -1286,7 +1306,6 @@ impl Player {
             _ => (),
         }
 
-        // Mega evolution.
         if choice.mega && !context.mon().next_turn_state.can_mega_evolve {
             return Err(general_error(format!(
                 "{} cannot mega evolve",
@@ -1297,19 +1316,34 @@ impl Player {
             return Err(general_error("you can only mega evolve once per battle"));
         }
 
+        if choice.dyna && !context.mon().next_turn_state.can_dynamax {
+            return Err(general_error(format!(
+                "{} cannot dynamax",
+                context.mon().name
+            )));
+        }
+        if choice.dyna && context.player().choice.dyna {
+            return Err(general_error("you can only dynamax once per battle"));
+        }
+
         context
             .player_mut()
             .choice
             .actions
             .push(Action::Move(MoveAction::new(MoveActionInput {
                 id: move_id,
+                upgraded_id: upgraded_move_id,
                 mon: mon_handle,
                 target: choice.target,
                 mega: choice.mega,
+                dyna: choice.dyna,
             })));
 
         if choice.mega {
             context.player_mut().choice.mega = true;
+        }
+        if choice.dyna {
+            context.player_mut().choice.dyna = true;
         }
 
         Ok(())
@@ -1658,7 +1692,8 @@ mod move_choice_test {
             Ok(MoveChoice {
                 move_slot: 0,
                 target: Some(0),
-                mega: false
+                mega: false,
+                dyna: false,
             })
         );
     }
@@ -1671,6 +1706,7 @@ mod move_choice_test {
                 move_slot: 1,
                 target: Some(0),
                 mega: true,
+                dyna: false,
             })
         );
     }
@@ -1683,6 +1719,7 @@ mod move_choice_test {
                 move_slot: 2,
                 target: None,
                 mega: false,
+                dyna: false,
             })
         );
     }
@@ -1695,6 +1732,20 @@ mod move_choice_test {
                 move_slot: 3,
                 target: None,
                 mega: true,
+                dyna: false,
+            })
+        );
+    }
+
+    #[test]
+    fn parses_move_dyna() {
+        assert_matches::assert_matches!(
+            MoveChoice::new("3, dyna"),
+            Ok(MoveChoice {
+                move_slot: 3,
+                target: None,
+                mega: false,
+                dyna: true,
             })
         );
     }

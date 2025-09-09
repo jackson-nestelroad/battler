@@ -10,8 +10,12 @@ use battler_data::{
     HitEffect,
     Id,
     Identifiable,
+    MaxMoveData,
+    MoveCategory,
     MoveData,
+    MoveFlag,
     SecondaryEffectData,
+    Type,
 };
 
 use crate::{
@@ -72,6 +76,66 @@ impl SecondaryEffect {
     }
 }
 
+/// The source of an upgraded move.
+#[derive(Debug, Clone)]
+pub enum UpgradedMoveSource {
+    MaxMove { base_move: Id },
+}
+
+impl UpgradedMoveSource {
+    /// The base move of the upgraded move.
+    pub fn base_move(&self) -> Option<Id> {
+        match self {
+            Self::MaxMove { base_move, .. } => Some(base_move.clone()),
+        }
+    }
+}
+
+fn default_max_move(
+    id: &Id,
+    category: MoveCategory,
+    primary_type: Type,
+    base_power: u32,
+) -> Option<MaxMoveData> {
+    if category == MoveCategory::Status || id == "struggle" {
+        return None;
+    }
+
+    if primary_type == Type::Fighting || primary_type == Type::Poison {
+        if base_power >= 150 {
+            Some(MaxMoveData { base_power: 100 })
+        } else if base_power >= 110 {
+            Some(MaxMoveData { base_power: 95 })
+        } else if base_power >= 75 {
+            Some(MaxMoveData { base_power: 90 })
+        } else if base_power >= 65 {
+            Some(MaxMoveData { base_power: 85 })
+        } else if base_power >= 55 {
+            Some(MaxMoveData { base_power: 80 })
+        } else if base_power >= 45 {
+            Some(MaxMoveData { base_power: 75 })
+        } else {
+            Some(MaxMoveData { base_power: 70 })
+        }
+    } else {
+        if base_power >= 150 {
+            Some(MaxMoveData { base_power: 150 })
+        } else if base_power >= 110 {
+            Some(MaxMoveData { base_power: 140 })
+        } else if base_power >= 75 {
+            Some(MaxMoveData { base_power: 130 })
+        } else if base_power >= 65 {
+            Some(MaxMoveData { base_power: 120 })
+        } else if base_power >= 55 {
+            Some(MaxMoveData { base_power: 110 })
+        } else if base_power >= 45 {
+            Some(MaxMoveData { base_power: 100 })
+        } else {
+            Some(MaxMoveData { base_power: 90 })
+        }
+    }
+}
+
 /// An individual move, which can be used by a Mon in battle.
 ///
 /// Unlike other move effects, [`Move`]s are mutable across multiple Mons and turns. A move used by
@@ -98,6 +162,8 @@ pub struct Move {
     pub total_damage: u64,
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
+    /// Is the move upgraded?
+    pub upgraded: Option<UpgradedMoveSource>,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -118,8 +184,16 @@ pub struct Move {
 }
 
 impl Move {
+    fn apply_defaults_to_data(mut data: MoveData, id: &Id) -> MoveData {
+        if data.max_move.is_none() && !data.flags.contains(&MoveFlag::Max) {
+            data.max_move = default_max_move(id, data.category, data.primary_type, data.base_power);
+        }
+        data
+    }
+
     /// Creates a new active move, which can be modified for the use of the move.
     pub fn new(id: Id, data: MoveData) -> Self {
+        let data = Self::apply_defaults_to_data(data, &id);
         let effect = data.effect.clone().try_into().unwrap_or_default();
         let condition = data.condition.clone().try_into().unwrap_or_default();
         Self {
@@ -134,6 +208,7 @@ impl Move {
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
+            upgraded: None,
             effect_state: fxlang::EffectState::default(),
             unlinked: false,
             secondary_effects: HashMap::default(),
@@ -143,6 +218,7 @@ impl Move {
 
     /// Creates a new active move, with unlinked effect callbacks.
     pub fn new_unlinked(id: Id, data: MoveData) -> Self {
+        let data = Self::apply_defaults_to_data(data, &id);
         let effect = data.effect.clone().try_into().unwrap_or_default();
         let condition = data.condition.clone().try_into().unwrap_or_default();
         Self {
@@ -157,6 +233,7 @@ impl Move {
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
+            upgraded: None,
             effect_state: fxlang::EffectState::default(),
             unlinked: true,
             secondary_effects: HashMap::default(),
@@ -299,6 +376,11 @@ impl Move {
             ),
             None => Box::new(std::iter::empty::<(usize, Option<Fraction<u16>>)>()),
         }
+    }
+
+    /// This move is callable from other moves.
+    pub fn callable(&self) -> bool {
+        !self.data.flags.contains(&MoveFlag::Max)
     }
 }
 

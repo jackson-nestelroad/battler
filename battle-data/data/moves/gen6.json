@@ -81,9 +81,7 @@
       "NoAssist",
       "NoSleepTalk"
     ],
-    "effect": {
-      "delegates": ["condition:breakprotectmovebase"]
-    }
+    "effect": { "delegates": ["condition:breakprotectmovebase"] }
   },
   "trickortreat": {
     "name": "Trick-or-Treat",
@@ -219,9 +217,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": [],
-    "hit_effect": {
-      "terrain": "grassyterrain"
-    },
+    "hit_effect": { "terrain": "grassyterrain" },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -257,9 +253,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": [],
-    "hit_effect": {
-      "terrain": "mistyterrain"
-    },
+    "hit_effect": { "terrain": "mistyterrain" },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -377,7 +371,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Reflectable"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Mirror", "Reflectable"]
   },
   "confide": {
     "name": "Confide",
@@ -386,7 +380,13 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Reflectable", "Sound"]
+    "flags": [
+      "BypassMaxGuard",
+      "BypassSubstitute",
+      "Mirror",
+      "Reflectable",
+      "Sound"
+    ]
   },
   "diamondstorm": {
     "name": "Diamond Storm",
@@ -417,9 +417,7 @@
     "base_power": 80,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "NoMetronome"],
-    "effect": {
-      "delegates": ["condition:breakprotectmovebase"]
-    }
+    "effect": { "delegates": ["condition:breakprotectmovebase"] }
   },
   "watershuriken": {
     "name": "Water Shuriken",
@@ -460,7 +458,7 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AdjacentAlly",
-    "flags": ["BypassSubstitute"],
+    "flags": ["BypassMaxGuard", "BypassSubstitute"],
     "hit_effect": { "boosts": { "spd": 1 } }
   },
   "eerieimpulse": {
@@ -526,9 +524,7 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": [],
-    "hit_effect": {
-      "terrain": "electricterrain"
-    },
+    "hit_effect": { "terrain": "electricterrain" },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -598,6 +594,7 @@
     "accuracy": "exempt",
     "target": "AdjacentAlly",
     "flags": [
+      "BypassMaxGuard",
       "BypassSubstitute",
       "FailCopycat",
       "FailInstruct",
@@ -748,8 +745,6 @@
     "base_power": 100,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "NoSketch"],
-    "effect": {
-      "delegates": ["condition:breakprotectmovebase"]
-    }
+    "effect": { "delegates": ["condition:breakprotectmovebase"] }
   }
 }
