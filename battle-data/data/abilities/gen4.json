@@ -355,7 +355,7 @@
     "effect": {
       "callbacks": {
         "on_source_base_power": {
-          "priority": -100,
+          "order": 1,
           "program": ["if $base_power <= 60:", ["return $base_power * 3/2"]]
         }
       }

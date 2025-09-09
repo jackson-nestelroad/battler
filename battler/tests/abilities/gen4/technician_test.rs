@@ -85,7 +85,7 @@ fn technician_boosts_power_of_move_below_60_base_power() {
 }
 
 #[test]
-fn technician_does_not_boost_power_of_move_if_boosted_above_60_base_power() {
+fn technician_boosts_power_of_move_if_boosted_above_60_base_power() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = ambipom().unwrap();
     team_1.members[0].item = Some("Normal Gem".to_owned());
@@ -103,8 +103,8 @@ fn technician_does_not_boost_power_of_move_if_boosted_above_60_base_power() {
             "move|mon:Ambipom,player-1,1|name:Cut|target:Ambipom,player-2,1",
             "itemend|mon:Ambipom,player-1,1|item:Normal Gem",
             "split|side:1",
-            "damage|mon:Ambipom,player-2,1|health:69/135",
-            "damage|mon:Ambipom,player-2,1|health:52/100",
+            "damage|mon:Ambipom,player-2,1|health:38/135",
+            "damage|mon:Ambipom,player-2,1|health:29/100",
             "move|mon:Ambipom,player-2,1|name:Cut|target:Ambipom,player-1,1",
             "itemend|mon:Ambipom,player-2,1|item:Normal Gem",
             "split|side:0",
