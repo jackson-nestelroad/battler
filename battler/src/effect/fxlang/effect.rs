@@ -382,6 +382,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterTakeItem"]
     AfterTakeItem,
+    /// Runs after a Mon Terastallizes.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterTerastallization"]
+    AfterTerastallization,
     /// Runs after a Mon uses its item.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -416,6 +421,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "BeforeSwitchOut"]
     BeforeSwitchOut,
+    /// Runs before a Mon Terastallizes.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "BeforeTerastallization"]
+    BeforeTerastallization,
     /// Runs before a turn of a battle.
     ///
     /// Runs in the context of a Mon.
@@ -584,6 +594,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ForceEscape"]
     ForceEscape,
+    /// Runs when determining the types of a Mon, to force types early.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ForceTypes"]
+    ForceTypes,
     /// Runs when a Mon is hit by a move.
     ///
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
@@ -1203,12 +1218,14 @@ impl BattleEvent {
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterTerastallization => CommonCallbackType::MonVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
+            Self::BeforeTerastallization => CommonCallbackType::MonResult as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
             Self::CanDynamax => CommonCallbackType::MonResult as u32,
@@ -1241,6 +1258,7 @@ impl BattleEvent {
             Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::ForceEscape => CommonCallbackType::MonResult as u32,
+            Self::ForceTypes => CommonCallbackType::MonTypes as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
@@ -1378,6 +1396,7 @@ impl BattleEvent {
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
             ],
+            Self::ForceTypes => &[("types", ValueType::List, true)],
             Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],
             Self::ModifyActionSpeed => &[("spe", ValueType::UFraction, true)],
             Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
@@ -1510,6 +1529,7 @@ impl BattleEvent {
         match self {
             Self::SuppressMonAbility => 0,
             Self::SuppressMonItem => 1,
+            Self::ForceTypes => 2,
             Self::Types => 2,
             Self::IsGrounded => 3,
             Self::IsSemiInvulnerable => 3,

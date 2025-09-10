@@ -75,6 +75,9 @@ impl BattleQueue {
                 if action.dyna {
                     actions.push(Action::Dynamax(action.mon_action.clone()));
                 }
+                if action.tera {
+                    actions.push(Action::Terastallize(action.mon_action.clone()));
+                }
                 actions
             }
             Action::SwitchEvents(action) => {
@@ -315,6 +318,7 @@ mod queue_test {
             original_target: None,
             mega: false,
             dyna: false,
+            tera: false,
             priority,
             sub_priority,
             active_move_handle: None,
@@ -379,6 +383,7 @@ mod queue_test {
                 }
                 Action::MegaEvo(action) => format!("megaevo {}", action.mon),
                 Action::Dynamax(action) => format!("dynamax {}", action.mon),
+                Action::Terastallize(action) => format!("tera {}", action.mon),
                 Action::Experience(action) => format!("experience {}", action.mon),
                 Action::LevelUp(action) => format!("levelup {}", action.mon),
                 Action::LearnMove(action) => format!("learnmove {}", action.mon),

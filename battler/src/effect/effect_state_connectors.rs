@@ -149,6 +149,37 @@ impl fxlang::EffectStateConnector for MonStatusEffectStateConnector {
     }
 }
 
+/// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for the
+/// Terastallization of a Mon.
+#[derive(Debug, Clone)]
+pub struct MonTerastallizationEffectStateConnector {
+    mon: MonHandle,
+}
+
+impl MonTerastallizationEffectStateConnector {
+    pub fn new(mon: MonHandle) -> Self {
+        Self { mon }
+    }
+}
+
+impl fxlang::EffectStateConnector for MonTerastallizationEffectStateConnector {
+    fn exists(&self, context: &mut Context) -> Result<bool> {
+        Ok(context.mon(self.mon)?.terastallized.is_some())
+    }
+
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
+        Ok(Some(&mut context.mon_mut(self.mon)?.terastallization_state))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::MonTerastallization(self.mon)
+    }
+
+    fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
+        fxlang::DynamicEffectStateConnector::new(self.clone())
+    }
+}
+
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for a
 /// volatile status on a Mon.
 #[derive(Debug, Clone)]

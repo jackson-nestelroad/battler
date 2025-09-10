@@ -218,6 +218,10 @@ mod mechanics {
         mod mega_stone_test;
         mod primal_reversion_test;
     }
+
+    mod tera {
+        mod terastallization_test;
+    }
 }
 
 mod moves {

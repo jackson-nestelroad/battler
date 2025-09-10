@@ -11,6 +11,7 @@ use crate::{
         MonAbilityEffectStateConnector,
         MonItemEffectStateConnector,
         MonStatusEffectStateConnector,
+        MonTerastallizationEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
         PseudoWeatherEffectStateConnector,
         SideConditionEffectStateConnector,
@@ -36,6 +37,7 @@ pub enum AppliedEffectLocation {
     MonSideCondition(usize, MonHandle),
     MonSlotCondition(usize, usize, MonHandle),
     MonStatus(MonHandle),
+    MonTerastallization(MonHandle),
     MonTerrain(MonHandle),
     MonType(MonHandle),
     MonVolatile(MonHandle),
@@ -71,6 +73,7 @@ impl AppliedEffectLocation {
             | Self::MonSideCondition(_, mon)
             | Self::MonSlotCondition(_, _, mon)
             | Self::MonStatus(mon)
+            | Self::MonTerastallization(mon)
             | Self::MonTerrain(mon)
             | Self::MonType(mon)
             | Self::MonVolatile(mon)
@@ -110,6 +113,9 @@ impl AppliedEffectHandle {
             }
             AppliedEffectLocation::MonStatus(mon) => {
                 Some(MonStatusEffectStateConnector::new(mon).make_dynamic())
+            }
+            AppliedEffectLocation::MonTerastallization(mon) => {
+                Some(MonTerastallizationEffectStateConnector::new(mon).make_dynamic())
             }
             AppliedEffectLocation::MonType(_) => None,
             AppliedEffectLocation::MonVolatile(mon) => self.effect_handle.try_id().map(|id| {
@@ -152,6 +158,10 @@ impl AppliedEffectHandle {
             AppliedEffectLocation::MonStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
                 core_battle_actions::clear_status(&mut context)
+            }
+            AppliedEffectLocation::MonTerastallization(mon) => {
+                let mut context = context.applying_effect_context(None, mon)?;
+                core_battle_actions::end_terastallization(&mut context).map(|()| true)
             }
             AppliedEffectLocation::MonVolatile(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;

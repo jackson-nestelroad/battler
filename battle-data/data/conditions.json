@@ -1090,5 +1090,31 @@
         "on_end": ["end_dynamax: $target"]
       }
     }
+  },
+  "terastallization": {
+    "name": "Terastallization",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_force_types": [
+          "if !$mon.terastallized:",
+          ["return"],
+          "return [$mon.terastallized]"
+        ],
+        "on_set_types": {
+          "order": 1,
+          "program": ["return false"]
+        },
+        "on_modify_stab": {
+          "order": 1,
+          "program": [
+            "if !$user.terastallized:",
+            ["return"],
+            "if func_call(has_type_before_forced_types: $user $user.terastallized):",
+            ["return $stab * 4/3"]
+          ]
+        }
+      }
+    }
   }
 }

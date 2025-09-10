@@ -198,6 +198,7 @@ impl TestBattleBuilder {
                 mons_caught: 151,
                 cannot_mega_evolve: false,
                 cannot_dynamax: false,
+                cannot_terastallize: false,
             },
             team: TeamData::default(),
             dex: PlayerDex::default(),
@@ -294,6 +295,10 @@ impl TestBattleBuilder {
 
     pub fn with_dynamax(self, dynamax: bool) -> Self {
         self.with_boolean_rule("Dynamax", dynamax)
+    }
+
+    pub fn with_terastallization(self, terastallization: bool) -> Self {
+        self.with_boolean_rule("Terastallization", terastallization)
     }
 
     pub fn with_weather(mut self, weather: Option<String>) -> Self {

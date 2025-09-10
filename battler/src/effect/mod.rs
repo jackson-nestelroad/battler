@@ -20,6 +20,7 @@ pub use effect_state_connectors::{
     MonAbilityEffectStateConnector,
     MonItemEffectStateConnector,
     MonStatusEffectStateConnector,
+    MonTerastallizationEffectStateConnector,
     MonVolatileStatusEffectStateConnector,
     PseudoWeatherEffectStateConnector,
     SideConditionEffectStateConnector,

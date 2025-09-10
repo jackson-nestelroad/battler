@@ -1094,6 +1094,11 @@ where
                                 Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
                                 None => ValueRef::Undefined,
                             },
+                            "terastallized" => context
+                                .mon(mon_handle)?
+                                .terastallized
+                                .map(|val| ValueRef::Type(val))
+                                .unwrap_or(ValueRef::Undefined),
                             "transformed" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.transformed,
                             ),

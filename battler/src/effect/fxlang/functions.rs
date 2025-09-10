@@ -174,6 +174,9 @@ pub fn run_function(
         "has_side_condition" => has_side_condition(context).map(|val| Some(val)),
         "has_species_registered" => has_species_registered(context).map(|val| Some(val)),
         "has_type" => has_type(context).map(|val| Some(val)),
+        "has_type_before_forced_types" => {
+            has_type_before_forced_types(context).map(|val| Some(val))
+        }
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
         "heal" => heal(context).map(|val| Some(val)),
         "hit_effect" => hit_effect().map(|val| Some(val)),
@@ -1914,6 +1917,19 @@ fn has_type(mut context: FunctionContext) -> Result<Value> {
         .mon_type()
         .wrap_error_with_message("invalid type")?;
     Ok(Value::Boolean(Mon::has_type(
+        &mut context.mon_context(mon_handle)?,
+        typ,
+    )))
+}
+
+fn has_type_before_forced_types(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let typ = context
+        .pop_front()
+        .wrap_expectation("missing type")?
+        .mon_type()
+        .wrap_error_with_message("invalid type")?;
+    Ok(Value::Boolean(Mon::has_type_before_forced_types(
         &mut context.mon_context(mon_handle)?,
         typ,
     )))
