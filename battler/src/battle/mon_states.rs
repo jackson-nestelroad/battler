@@ -21,7 +21,7 @@ pub fn effective_types(context: &mut MonContext) -> Vec<Type> {
     let types = core_battle_effects::run_event_for_mon_expecting_types(
         context,
         fxlang::BattleEvent::ForceTypes,
-        context.mon().volatile_state.types.clone(),
+        Vec::default(),
     );
     if !types.is_empty() {
         return types;
