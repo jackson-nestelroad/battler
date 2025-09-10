@@ -85,7 +85,7 @@ fn make_battle(
 }
 
 #[test]
-fn stellar_type_removes_type_effectiveness() {
+fn stellar_type_uses_original_type_defensively() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
@@ -101,11 +101,13 @@ fn stellar_type_removes_type_effectiveness() {
             "damage|mon:Eevee,player-2,1|health:90/115",
             "damage|mon:Eevee,player-2,1|health:79/100",
             "move|mon:Eevee,player-2,1|name:Earthquake",
+            "supereffective|mon:Pikachu,player-1,1",
             "split|side:0",
-            "damage|mon:Pikachu,player-1,1|health:35/95",
-            "damage|mon:Pikachu,player-1,1|health:37/100",
-            "residual",
-            "turn|turn:2"
+            "damage|mon:Pikachu,player-1,1|health:0",
+            "damage|mon:Pikachu,player-1,1|health:0",
+            "faint|mon:Pikachu,player-1,1",
+            "reverttera|mon:Pikachu,player-1,1",
+            "win|side:1"
         ]"#,
     )
     .unwrap();

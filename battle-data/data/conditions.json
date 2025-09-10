@@ -1101,7 +1101,7 @@
     "condition": {
       "callbacks": {
         "on_force_types": [
-          "if !$mon.terastallized:",
+          "if !$mon.terastallized or $mon.terastallized == stellar:",
           ["return"],
           "return [$mon.terastallized]"
         ],
