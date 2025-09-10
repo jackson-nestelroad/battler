@@ -7,7 +7,31 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "MustPressure", "Protect"]
+    "flags": ["Mirror", "MustPressure", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $source.terastallized == stellar:",
+          ["return 100"]
+        ],
+        "on_modify_move_type": [
+          "if $user.terastallized.is_defined:",
+          ["return $user.terastallized"]
+        ],
+        "on_use_move": [
+          "if $user.terastallized.is_defined:",
+          [
+            "if func_call(get_stat: $user atk unmodified) > func_call(get_stat: $user spa unmodified):",
+            ["$move.category = physical"],
+            "if $user.terastallized == stellar:",
+            [
+              "$move.user_effect = func_call(hit_effect)",
+              "$move.user_effect.boosts = func_call(boost_table: 'atk:-1' 'spa:-1')"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "silktrap": {
     "name": "Silk Trap",

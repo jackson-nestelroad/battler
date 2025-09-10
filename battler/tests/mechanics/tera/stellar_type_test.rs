@@ -27,7 +27,8 @@ fn pikachu() -> Result<TeamData> {
                         "Tackle",
                         "Thunderbolt",
                         "Water Gun",
-                        "Flamethrower"
+                        "Flamethrower",
+                        "Tera Blast"
                     ],
                     "nature": "Hardy",
                     "level": 50,
@@ -212,6 +213,35 @@ fn stellar_type_boosts_moves_once_per_type() {
             "damage|mon:Eevee,player-2,1|health:37/100",
             "residual",
             "turn|turn:9"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn stellar_type_is_super_effective_on_terastallized_targets() {
+    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+    let mut battle = make_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4,tera"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,tera"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "tera|mon:Pikachu,player-1,1|type:Stellar",
+            "tera|mon:Eevee,player-2,1|type:Normal",
+            "move|mon:Pikachu,player-1,1|name:Tera Blast|target:Eevee,player-2,1",
+            "supereffective|mon:Eevee,player-2,1",
+            "split|side:1",
+            "damage|mon:Eevee,player-2,1|health:0",
+            "damage|mon:Eevee,player-2,1|health:0",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1",
+            "unboost|mon:Pikachu,player-1,1|stat:spa|by:1",
+            "faint|mon:Eevee,player-2,1",
+            "reverttera|mon:Eevee,player-2,1",
+            "win|side:0"
         ]"#,
     )
     .unwrap();
