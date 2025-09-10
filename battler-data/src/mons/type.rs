@@ -68,6 +68,8 @@ pub enum Type {
     Fairy,
     #[string = "None"]
     None,
+    #[string = "Stellar"]
+    Stellar,
 }
 
 /// Type effectiveness of one type against another.

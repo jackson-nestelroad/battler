@@ -1668,6 +1668,17 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         Some(mov) => mov.data.primary_type,
         None => return Ok(0),
     };
+
+    let modifier = core_battle_effects::run_event_for_applying_effect_expecting_i8(
+        context,
+        fxlang::BattleEvent::ForceEffectiveness,
+        0,
+        fxlang::VariableInput::default(),
+    );
+    if modifier != 0 {
+        return Ok(modifier);
+    }
+
     let target_handle = context.target_handle();
     let mut total = 0;
     for defense in mon_states::effective_types(&mut context.target_context()?) {
@@ -1741,12 +1752,20 @@ fn modify_damage(
     let stab = !context.active_move().data.typeless
         && (mon_states::has_type(context.as_mon_context_mut(), move_type)
             || mon_states::has_type_before_forced_types(context.as_mon_context_mut(), move_type));
-    if stab {
-        let stab_modifier = context
+    let stab_modifier = if stab {
+        context
             .active_move()
             .clone()
             .stab_modifier
-            .unwrap_or(Fraction::new(3, 2));
+            .unwrap_or(Fraction::new(3, 2))
+    } else {
+        core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
+            &mut context.user_applying_effect_context()?,
+            fxlang::BattleEvent::ForceStab,
+            0u32.into(),
+        )
+    };
+    if stab_modifier > 0 {
         let stab_modifier =
             core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
                 &mut context.user_applying_effect_context()?,
@@ -3383,6 +3402,10 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
 
 /// Sets the types of a Mon.
 pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool> {
+    if types.contains(&Type::None) || types.contains(&Type::Stellar) {
+        return Ok(false);
+    }
+
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::SetTypes,
@@ -5624,7 +5647,7 @@ pub fn max_move(context: &mut MonContext, move_data: &MoveData) -> Result<Option
         Type::Rock => "maxrockfall",
         Type::Fairy => "maxstarfall",
         Type::Steel => "maxsteelspike",
-        Type::Normal | Type::None => "maxstrike",
+        Type::Normal | Type::None | Type::Stellar => "maxstrike",
         Type::Dragon => "maxwyrmwind",
     };
 

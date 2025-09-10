@@ -238,6 +238,8 @@ pub fn run_function(
         "new_object" => Ok(Some(new_object(context))),
         "object_keys" => object_keys(context).map(|val| Some(val)),
         "object_increment" => object_increment(context).map(|val| Some(val)),
+        "object_get" => object_get(context),
+        "object_set" => object_set(context).map(|val| Some(val)),
         "object_value" => object_value(context),
         "overwrite_move_slot" => overwrite_move_slot(context).map(|()| None),
         "pending_move_action_this_turn" => pending_move_action_this_turn(context),
@@ -3652,6 +3654,36 @@ fn object_increment(mut context: FunctionContext) -> Result<Value> {
     };
     let value = value + 1;
     object.insert(key, Value::UFraction(value.into()));
+    Ok(Value::Object(object))
+}
+
+fn object_get(mut context: FunctionContext) -> Result<Option<Value>> {
+    let object = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .object()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    Ok(object.get(&key).cloned())
+}
+
+fn object_set(mut context: FunctionContext) -> Result<Value> {
+    let mut object = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .object()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    let value = context.pop_front().wrap_expectation("missing value")?;
+    object.insert(key, value);
     Ok(Value::Object(object))
 }
 

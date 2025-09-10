@@ -220,6 +220,7 @@ mod mechanics {
     }
 
     mod tera {
+        mod stellar_type_test;
         mod terastallization_test;
     }
 }

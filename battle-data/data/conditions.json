@@ -224,6 +224,10 @@
     "name": "None",
     "condition_type": "Type"
   },
+  "stellartype": {
+    "name": "Stellar",
+    "condition_type": "Type"
+  },
   "brn": {
     "name": "Burn",
     "condition_type": "Status",
@@ -842,7 +846,7 @@
         "on_effectiveness": {
           "priority": -1,
           "program": [
-            "if $move.category != status and $type == flying and $modifier > 0:",
+            "if $effect.category != status and $type == flying and $modifier > 0:",
             ["log_field_activate", "return 0"]
           ]
         },
@@ -1105,15 +1109,34 @@
           "order": 1,
           "program": ["return false"]
         },
+        "on_force_stab": ["if $user.terastallized == stellar:", ["return 1"]],
         "on_modify_stab": {
           "order": 1,
           "program": [
             "if !$user.terastallized:",
             ["return"],
-            "if func_call(has_type_before_forced_types: $user $user.terastallized):",
+            "if $user.terastallized == stellar:",
+            [
+              "if !$effect_state.boosted_types:",
+              ["$effect_state.boosted_types = func_call(new_object)"],
+              "if !func_call(object_get: $effect_state.boosted_types $move.type.to_string):",
+              [
+                "if func_call(has_type_before_forced_types: $user $move.type):",
+                ["$stab = 2"],
+                "else:",
+                ["$stab = 6/5"],
+                "$effect_state.boosted_types = func_call(object_set: $effect_state.boosted_types $move.type.to_string true)",
+                "return $stab"
+              ]
+            ],
+            "else if func_call(has_type_before_forced_types: $user $user.terastallized):",
             ["return $stab * 4/3"]
           ]
-        }
+        },
+        "on_force_effectiveness": [
+          "if $target.terastallized.is_defined and $effect.type == stellar:",
+          ["return 1"]
+        ]
       }
     }
   }
