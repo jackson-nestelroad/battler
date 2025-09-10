@@ -483,6 +483,7 @@ mod battler_service_test {
             different_original_trainer: false,
             dynamax_level: 0,
             gigantamax_factor: false,
+            tera_type: None,
             persistent_battle_data: MonPersistentBattleData::default(),
         }
     }
