@@ -844,7 +844,7 @@
           "if func_call(has_volatile: $target ingrain) or func_call(has_volatile: $target smackdown) or func_call(has_pseudo_weather: gravity):",
           ["return"],
           "# Overall effectiveness of Ground moves against a target with Flying type is 1x.",
-          "if $move.type == ground and func_call(has_type: $target flying):",
+          "if $effect.type == ground and func_call(has_type: $target flying):",
           ["return 0"]
         ]
       }

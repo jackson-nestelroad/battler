@@ -956,6 +956,15 @@ fn find_callbacks_on_mon(
         ));
     }
 
+    if context.mon().terastallized.is_some() {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::Condition(Id::from_known("terastallization")),
+            event,
+            modifier,
+            AppliedEffectLocation::MonTerastallization(mon),
+        ));
+    }
+
     Ok(callbacks)
 }
 
@@ -1909,6 +1918,15 @@ fn run_residual_callbacks_with_errors(
                 )?;
             }
             AppliedEffectLocation::MonStatus(mon) => {
+                let context = context.applying_effect_context(None, mon)?;
+                run_callback_with_errors(
+                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
+                    fxlang::VariableInput::default(),
+                    &event_state,
+                    callback_handle,
+                )?;
+            }
+            AppliedEffectLocation::MonTerastallization(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
@@ -3200,6 +3218,27 @@ pub fn run_event_for_mon_expecting_stat_table(
 ///
 /// Expects a [`Vec<Type>`].
 pub fn run_event_for_mon_expecting_types(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+    types: Vec<Type>,
+) -> Vec<Type> {
+    match run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([fxlang::Value::List(
+            types.iter().map(|typ| fxlang::Value::Type(*typ)).collect(),
+        )]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.types_list().unwrap_or(types),
+        None => types,
+    }
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a [`Vec<Type>`].
+pub fn run_event_for_mon_expecting_types_quick_return(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
     types: Vec<Type>,

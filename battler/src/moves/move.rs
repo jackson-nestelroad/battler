@@ -191,8 +191,7 @@ impl Move {
         data
     }
 
-    /// Creates a new active move, which can be modified for the use of the move.
-    pub fn new(id: Id, data: MoveData) -> Self {
+    fn new_internal(id: Id, data: MoveData, unlinked: bool) -> Self {
         let data = Self::apply_defaults_to_data(data, &id);
         let effect = data.effect.clone().try_into().unwrap_or_default();
         let condition = data.condition.clone().try_into().unwrap_or_default();
@@ -210,35 +209,20 @@ impl Move {
             primary_user_effect_applied: false,
             upgraded: None,
             effect_state: fxlang::EffectState::default(),
-            unlinked: false,
+            unlinked,
             secondary_effects: HashMap::default(),
             hit_data: HashMap::default(),
         }
     }
 
+    /// Creates a new active move, which can be modified for the use of the move.
+    pub fn new(id: Id, data: MoveData) -> Self {
+        Self::new_internal(id, data, false)
+    }
+
     /// Creates a new active move, with unlinked effect callbacks.
     pub fn new_unlinked(id: Id, data: MoveData) -> Self {
-        let data = Self::apply_defaults_to_data(data, &id);
-        let effect = data.effect.clone().try_into().unwrap_or_default();
-        let condition = data.condition.clone().try_into().unwrap_or_default();
-        Self {
-            id,
-            data,
-            effect,
-            condition,
-            used_by: None,
-            stab_modifier: None,
-            external: false,
-            spread_hit: false,
-            hit: 0,
-            total_damage: 0,
-            primary_user_effect_applied: false,
-            upgraded: None,
-            effect_state: fxlang::EffectState::default(),
-            unlinked: true,
-            secondary_effects: HashMap::default(),
-            hit_data: HashMap::default(),
-        }
+        Self::new_internal(id, data, true)
     }
 
     /// Clones an active move for use in battle.

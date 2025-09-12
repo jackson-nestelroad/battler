@@ -219,7 +219,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_modify_stab": ["return 2"]
+        "on_modify_stab": ["if $stab == 2:", ["return 9/4"], "return 2"]
       }
     }
   },

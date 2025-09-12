@@ -20,19 +20,40 @@ use crate::{
 pub fn effective_types(context: &mut MonContext) -> Vec<Type> {
     let types = core_battle_effects::run_event_for_mon_expecting_types(
         context,
+        fxlang::BattleEvent::ForceTypes,
+        Vec::default(),
+    );
+    if !types.is_empty() {
+        return types;
+    }
+    effective_types_before_forced_types(context)
+}
+
+/// The effective types for the Mon, before forced types (e.g., Terastallization).
+///
+/// Non-empty. [`Type::None`] is returned when the Mon has no types
+fn effective_types_before_forced_types(context: &mut MonContext) -> Vec<Type> {
+    let types = core_battle_effects::run_event_for_mon_expecting_types(
+        context,
         fxlang::BattleEvent::Types,
         context.mon().volatile_state.types.clone(),
     );
     if !types.is_empty() {
         return types;
     }
-    return Vec::from_iter([Type::None]);
+    Vec::from_iter([Type::None])
 }
 
 /// Checks if the Mon has the given type.
 pub fn has_type(context: &mut MonContext, typ: Type) -> bool {
     let types = effective_types(context);
-    return types.contains(&typ);
+    types.contains(&typ)
+}
+
+/// Checks if the Mon has the given type, before forced types (e.g., Terastallization).
+pub fn has_type_before_forced_types(context: &mut MonContext, typ: Type) -> bool {
+    let types = effective_types_before_forced_types(context);
+    types.contains(&typ)
 }
 
 /// The health at which the [`Mon`][`crate::battle::Mon`] eats berries.

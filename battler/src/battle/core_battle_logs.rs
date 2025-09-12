@@ -274,6 +274,32 @@ pub fn revert_gigantamax(context: &mut ApplyingEffectContext) -> Result<()> {
     forme_change_internal(context, "revertgigantamax".to_owned(), false)
 }
 
+pub fn terastallize(context: &mut ApplyingEffectContext, typ: Type) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source: context.source_handle(),
+        additional: vec![format!("type:{typ}")],
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "tera".to_owned(),
+        activation,
+    )
+}
+
+pub fn revert_terastallization(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "reverttera".to_owned(),
+        activation,
+    )
+}
 pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,

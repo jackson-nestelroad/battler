@@ -56,7 +56,7 @@ fn make_battle(
 }
 
 #[test]
-fn steadfast_boosts_speed_on_flinch() {
+fn adaptability_boosts_stab() {
     let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = eevee().unwrap();
     team.members[0].ability = "No Ability".to_owned();
@@ -70,12 +70,12 @@ fn steadfast_boosts_speed_on_flinch() {
         r#"[
             "move|mon:Eevee,player-1,1|name:Tackle|target:Eevee,player-2,1",
             "split|side:1",
-            "damage|mon:Eevee,player-2,1|health:84/115",
-            "damage|mon:Eevee,player-2,1|health:74/100",
+            "damage|mon:Eevee,player-2,1|health:73/115",
+            "damage|mon:Eevee,player-2,1|health:64/100",
             "move|mon:Eevee,player-2,1|name:Tackle|target:Eevee,player-1,1",
             "split|side:0",
-            "damage|mon:Eevee,player-1,1|health:73/115",
-            "damage|mon:Eevee,player-1,1|health:64/100",
+            "damage|mon:Eevee,player-1,1|health:84/115",
+            "damage|mon:Eevee,player-1,1|health:74/100",
             "residual",
             "turn|turn:2"
         ]"#,

@@ -119,6 +119,7 @@ pub struct ActiveMonDetails {
     pub side_position: usize,
     pub health: String,
     pub status: String,
+    pub tera: Option<Type>,
 }
 
 impl BattleLoggable for ActiveMonDetails {
@@ -129,6 +130,9 @@ impl BattleLoggable for ActiveMonDetails {
         entry.set("health", &self.health);
         if !self.status.is_empty() {
             entry.set("status", &self.status);
+        }
+        if let Some(tera) = self.tera {
+            entry.set("tera", tera);
         }
         self.public_details.log(entry);
     }
@@ -305,6 +309,8 @@ pub struct MonMoveRequest {
     pub can_mega_evolve: bool,
     #[serde(default)]
     pub can_dynamax: bool,
+    #[serde(default)]
+    pub can_terastallize: bool,
     #[serde(default)]
     pub locked_into_move: bool,
 }
@@ -544,6 +550,7 @@ pub struct Mon {
     pub different_original_trainer: bool,
     pub dynamax_level: u8,
     pub gigantamax_factor: bool,
+    pub tera_type: Type,
 
     pub base_move_slots: Vec<MoveSlot>,
     pub original_base_ability: Id,
@@ -571,7 +578,8 @@ pub struct Mon {
 
     pub special_forme_change_type: Option<MonSpecialFormeChangeType>,
     pub dynamaxed: bool,
-    pub terastallized: bool,
+    pub terastallized: Option<Type>,
+    pub terastallization_state: fxlang::EffectState,
 }
 
 // Construction and initialization logic.
@@ -638,6 +646,7 @@ impl Mon {
             different_original_trainer: data.different_original_trainer,
             dynamax_level: data.dynamax_level,
             gigantamax_factor: data.gigantamax_factor,
+            tera_type: data.tera_type.unwrap_or(Type::None),
             base_move_slots,
             original_base_ability: ability.clone(),
             base_ability: ability,
@@ -661,7 +670,8 @@ impl Mon {
             learnable_moves: Vec::default(),
             special_forme_change_type: None,
             dynamaxed: false,
-            terastallized: false,
+            terastallized: None,
+            terastallization_state: fxlang::EffectState::default(),
         })
     }
 
@@ -716,6 +726,12 @@ impl Mon {
                 Some(mon_handle),
                 None,
             )?;
+        }
+
+        if context.mon().tera_type == Type::None
+            && let Some(first_type) = context.mon().volatile_state.types.first()
+        {
+            context.mon_mut().tera_type = *first_type;
         }
 
         Ok(())
@@ -799,6 +815,7 @@ impl Mon {
                 Self::public_health(context)
             },
             status,
+            tera: context.mon().terastallized,
         })
     }
 
@@ -1474,6 +1491,7 @@ impl Mon {
             trapped: false,
             can_mega_evolve: false,
             can_dynamax: false,
+            can_terastallize: false,
             locked_into_move: false,
         };
 
@@ -1483,10 +1501,9 @@ impl Mon {
         }
 
         if locked_move.is_none() {
-            request.can_mega_evolve =
-                context.player().can_mega_evolve && context.mon().next_turn_state.can_mega_evolve;
-            request.can_dynamax =
-                context.player().can_dynamax && context.mon().next_turn_state.can_dynamax;
+            request.can_mega_evolve = context.mon().next_turn_state.can_mega_evolve;
+            request.can_dynamax = context.mon().next_turn_state.can_dynamax;
+            request.can_terastallize = context.mon().next_turn_state.can_terastallize;
 
             // Communicate Max Moves, mostly for the player's convenience.
             //
@@ -2289,6 +2306,11 @@ impl Mon {
         mon_states::has_type(context, typ)
     }
 
+    /// Checks if the Mon has the given type, before forced types (e.g., Terastallization).
+    pub fn has_type_before_forced_types(context: &mut MonContext, typ: Type) -> bool {
+        mon_states::has_type_before_forced_types(context, typ)
+    }
+
     /// Checks if the Mon has a volatile effect.
     pub fn has_volatile(context: &mut MonContext, id: &Id) -> bool {
         context.mon().volatile_state.volatiles.contains_key(id)
@@ -2341,6 +2363,10 @@ impl Mon {
             context.mon_mut().next_turn_state.can_dynamax = true;
         }
 
+        if core_battle_actions::can_terastallize(context)?.is_some() {
+            context.mon_mut().next_turn_state.can_terastallize = true;
+        }
+
         if let Some(locked_move) = core_battle_effects::run_event_for_mon_expecting_string(
             context,
             fxlang::BattleEvent::LockMove,
@@ -2353,6 +2379,7 @@ impl Mon {
             context.mon_mut().next_turn_state.cannot_receive_items = true;
             context.mon_mut().next_turn_state.can_mega_evolve = false;
             context.mon_mut().next_turn_state.can_dynamax = false;
+            context.mon_mut().next_turn_state.can_terastallize = false;
         }
 
         Ok(())

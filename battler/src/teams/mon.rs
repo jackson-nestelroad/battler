@@ -94,6 +94,8 @@ pub struct MonData {
     /// Can Gigantamax.
     #[serde(default)]
     pub gigantamax_factor: bool,
+    /// Tera Type.
+    pub tera_type: Option<Type>,
     /// Persistent battle data.
     #[serde(default)]
     pub persistent_battle_data: MonPersistentBattleData,

@@ -119,6 +119,11 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `BeforeDynamax`.
 1. Add `Dynamax` volatile status.
 
+## Terastallization
+
+1. `BeforeTerastallization`.
+1. `AfterTerastallization`.
+
 ## Priority Charge (per move)
 
 1. Move `PriorityChargeMove`.
@@ -183,8 +188,8 @@ Note that this is not meant to be an exact description of how battles work. Many
                      1. Apply damage modifiers:
                         1. `WeatherModifyDamage`.
                         1. Randomize base damage.
-                        1. `ModifyStab`.
-                        1. Type effectiveness: `IgnoreImmunity`, `Effectiveness`.
+                        1. `ForceStab`, `ModifyStab`.
+                        1. Type effectiveness: `IgnoreImmunity`, `ForceEffectiveness`, `Effectiveness`.
                         1. `ModifyDamage`.
                   1. Apply damage for each target:
                      1. Check immunity: `Immunity`.
@@ -360,6 +365,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ### Mons
 
+- `ForceTypes`.
 - `IsAsleep`.
 - `IsAwayFromField`.
 - `IsBehindSubstitute`.

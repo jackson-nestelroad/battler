@@ -85,6 +85,7 @@ pub struct MoveActionInput {
     pub target: Option<isize>,
     pub mega: bool,
     pub dyna: bool,
+    pub tera: bool,
 }
 
 /// A move action.
@@ -97,6 +98,7 @@ pub struct MoveAction {
     pub original_target: Option<MonHandle>,
     pub mega: bool,
     pub dyna: bool,
+    pub tera: bool,
     pub priority: i32,
     pub sub_priority: i32,
 
@@ -117,6 +119,7 @@ impl MoveAction {
             original_target: None,
             mega: input.mega,
             dyna: input.dyna,
+            tera: input.tera,
             priority: 0,
             sub_priority: 0,
             active_move_handle: None,
@@ -280,6 +283,7 @@ pub enum Action {
     PriorityChargeMove(BeforeMoveAction),
     MegaEvo(MonAction),
     Dynamax(MonAction),
+    Terastallize(MonAction),
     Experience(ExperienceAction),
     LevelUp(LevelUpAction),
     LearnMove(LearnMoveAction),
@@ -299,6 +303,7 @@ impl Action {
             Self::PriorityChargeMove(action) => Some(&mut action.mon_action),
             Self::MegaEvo(action) => Some(action),
             Self::Dynamax(action) => Some(action),
+            Self::Terastallize(action) => Some(action),
             Self::Escape(action) => Some(&mut action.mon_action),
             Self::Item(action) => Some(&mut action.mon_action),
             _ => None,
@@ -331,7 +336,8 @@ impl SpeedOrderable for Action {
             Self::SwitchEvents(_) => 103,
             Self::MegaEvo(_) => 104,
             Self::Dynamax(_) => 105,
-            Self::PriorityChargeMove(_) => 106,
+            Self::Terastallize(_) => 106,
+            Self::PriorityChargeMove(_) => 107,
             Self::Move(_) => 200,
             Self::Pass => 200,
             Self::Residual => 300,

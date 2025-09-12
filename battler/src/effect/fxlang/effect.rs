@@ -188,7 +188,8 @@ enum CommonCallbackType {
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString | CallbackFlag::ReturnsVoid,
-    MonTypes = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes,
+    MonTypes =
+        CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes | CallbackFlag::ReturnsVoid,
     MonBoostModifier =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoosts | CallbackFlag::ReturnsVoid,
     MonValidator = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsStrings,
@@ -382,6 +383,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterTakeItem"]
     AfterTakeItem,
+    /// Runs after a Mon Terastallizes.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterTerastallization"]
+    AfterTerastallization,
     /// Runs after a Mon uses its item.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -416,6 +422,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "BeforeSwitchOut"]
     BeforeSwitchOut,
+    /// Runs before a Mon Terastallizes.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "BeforeTerastallization"]
+    BeforeTerastallization,
     /// Runs before a turn of a battle.
     ///
     /// Runs in the context of a Mon.
@@ -531,7 +542,7 @@ pub enum BattleEvent {
     EatItem,
     /// Runs when determining the type effectiveness of a move.
     ///
-    /// Runs on the active move and in the context of a move target.
+    /// Runs on the effect and in the context of an applying effect on a Mon.
     #[string = "Effectiveness"]
     Effectiveness,
     /// Runs when an effect ends.
@@ -579,11 +590,27 @@ pub enum BattleEvent {
     /// Runs in the context of the target Mon.
     #[string = "Flinch"]
     Flinch,
+    /// Runs when determining the type effectiveness of an effect, to prevent normal type
+    /// effectiveness from being used.
+    ///
+    /// Runs on the effect and in the context of an applying effect on a Mon.
+    #[string = "ForceEffectiveness"]
+    ForceEffectiveness,
     /// Runs when a Mon is attempting to escape from battle, prior to any speed check.
     ///
     /// Runs in the context of a Mon.
     #[string = "ForceEscape"]
     ForceEscape,
+    /// Runs when determining if a move gains a STAB multiplier.
+    ///
+    /// Runs in the context of a move user.
+    #[string = "ForceStab"]
+    ForceStab,
+    /// Runs when determining the types of a Mon, to force types early.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ForceTypes"]
+    ForceTypes,
     /// Runs when a Mon is hit by a move.
     ///
     /// Can fail, but will only fail the move if everything else failed. Can be viewed as part of
@@ -1203,12 +1230,14 @@ impl BattleEvent {
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
             Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterTerastallization => CommonCallbackType::MonVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
             Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
+            Self::BeforeTerastallization => CommonCallbackType::MonResult as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
             Self::CanDynamax => CommonCallbackType::MonResult as u32,
@@ -1228,7 +1257,7 @@ impl BattleEvent {
             Self::DeductPp => CommonCallbackType::SourceMoveModifier as u32,
             Self::DragOut => CommonCallbackType::MonResult as u32,
             Self::Duration => CommonCallbackType::ApplyingEffectModifier as u32,
-            Self::Effectiveness => CommonCallbackType::MoveModifier as u32,
+            Self::Effectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::Eat => CommonCallbackType::MonVoid as u32,
             Self::EatItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
@@ -1240,7 +1269,10 @@ impl BattleEvent {
             Self::FieldRestart => CommonCallbackType::FieldResult as u32,
             Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
+            Self::ForceEffectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ForceEscape => CommonCallbackType::MonResult as u32,
+            Self::ForceStab => CommonCallbackType::SourceMoveModifier as u32,
+            Self::ForceTypes => CommonCallbackType::MonTypes as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
             Self::HitSide => CommonCallbackType::MoveSideResult as u32,
@@ -1378,6 +1410,7 @@ impl BattleEvent {
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
             ],
+            Self::ForceEffectiveness => &[("modifier", ValueType::Fraction, true)],
             Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],
             Self::ModifyActionSpeed => &[("spe", ValueType::UFraction, true)],
             Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
@@ -1400,7 +1433,7 @@ impl BattleEvent {
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
-            Self::ModifyStab => &[("stab", ValueType::UFraction, true)],
+            Self::ModifyStab | Self::ForceStab => &[("stab", ValueType::UFraction, true)],
             Self::ModifyTarget => &[("target", ValueType::Mon, false)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
@@ -1425,7 +1458,7 @@ impl BattleEvent {
             Self::TryUseItem => &[("item", ValueType::Effect, true)],
             Self::TryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
-            Self::Types => &[("types", ValueType::List, true)],
+            Self::Types | Self::ForceTypes => &[("types", ValueType::List, true)],
             Self::UseMove => &[("selected_target", ValueType::Mon, false)],
             Self::ValidateMon | Self::ValidateTeam => &[("problems", ValueType::List, true)],
             _ => &[],
@@ -1510,6 +1543,7 @@ impl BattleEvent {
         match self {
             Self::SuppressMonAbility => 0,
             Self::SuppressMonItem => 1,
+            Self::ForceTypes => 2,
             Self::Types => 2,
             Self::IsGrounded => 3,
             Self::IsSemiInvulnerable => 3,

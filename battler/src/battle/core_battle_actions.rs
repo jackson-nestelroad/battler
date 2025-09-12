@@ -1668,6 +1668,17 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         Some(mov) => mov.data.primary_type,
         None => return Ok(0),
     };
+
+    let modifier = core_battle_effects::run_event_for_applying_effect_expecting_i8(
+        context,
+        fxlang::BattleEvent::ForceEffectiveness,
+        0,
+        fxlang::VariableInput::default(),
+    );
+    if modifier != 0 {
+        return Ok(modifier);
+    }
+
     let target_handle = context.target_handle();
     let mut total = 0;
     for defense in mon_states::effective_types(&mut context.target_context()?) {
@@ -1739,18 +1750,27 @@ fn modify_damage(
     // STAB.
     let move_type = context.active_move().data.primary_type;
     let stab = !context.active_move().data.typeless
-        && mon_states::has_type(context.as_mon_context_mut(), move_type);
-    if stab {
-        let stab_modifier = context
+        && (mon_states::has_type(context.as_mon_context_mut(), move_type)
+            || mon_states::has_type_before_forced_types(context.as_mon_context_mut(), move_type));
+    let stab_modifier = if stab {
+        context
             .active_move()
             .clone()
             .stab_modifier
-            .unwrap_or(Fraction::new(3, 2));
+            .unwrap_or(Fraction::new(3, 2))
+    } else {
+        core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
+            &mut context.user_applying_effect_context()?,
+            fxlang::BattleEvent::ForceStab,
+            0u32.into(),
+        )
+    };
+    if stab_modifier > 0 {
         let stab_modifier =
             core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
-                &mut context.applying_effect_context()?,
+                &mut context.user_applying_effect_context()?,
                 fxlang::BattleEvent::ModifyStab,
-                stab_modifier.convert(),
+                stab_modifier,
             );
         base_damage = modify_32(base_damage, stab_modifier);
     }
@@ -3382,6 +3402,10 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
 
 /// Sets the types of a Mon.
 pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool> {
+    if types.contains(&Type::None) || types.contains(&Type::Stellar) {
+        return Ok(false);
+    }
+
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::SetTypes,
@@ -5356,7 +5380,8 @@ pub fn forme_change(
 
 /// Reverts the Mon when it is exiting, if applicable.
 pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
-    let needs_mechanic_revert = context.target().dynamaxed || context.target().terastallized;
+    let needs_mechanic_revert =
+        context.target().dynamaxed || context.target().terastallized.is_some();
     let needs_forme_change_revert = match context.target().special_forme_change_type {
         Some(MonSpecialFormeChangeType::MegaEvolution | MonSpecialFormeChangeType::Gigantamax) => {
             true
@@ -5408,6 +5433,10 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
 
     if context.target().dynamaxed {
         end_dynamax(context)?;
+    }
+
+    if context.target().terastallized.is_some() {
+        end_terastallization(context)?;
     }
 
     Ok(())
@@ -5618,7 +5647,7 @@ pub fn max_move(context: &mut MonContext, move_data: &MoveData) -> Result<Option
         Type::Rock => "maxrockfall",
         Type::Fairy => "maxstarfall",
         Type::Steel => "maxsteelspike",
-        Type::Normal | Type::None => "maxstrike",
+        Type::Normal | Type::None | Type::Stellar => "maxstrike",
         Type::Dragon => "maxwyrmwind",
     };
 
@@ -5626,4 +5655,71 @@ pub fn max_move(context: &mut MonContext, move_data: &MoveData) -> Result<Option
         Ok(max_move) => Ok(Some(max_move.id().clone())),
         Err(_) => Ok(None),
     }
+}
+
+/// Checks if the Mon can Terastallize.
+pub fn can_terastallize(context: &mut MonContext) -> Result<Option<Type>> {
+    if !context.player().can_terastallize {
+        return Ok(None);
+    }
+    if context.mon().tera_type == Type::None {
+        return Ok(None);
+    }
+    Ok(Some(context.mon().tera_type))
+}
+
+/// Terastallizes the Mon if it is able to do so.
+pub fn terastallize(context: &mut MonContext) -> Result<bool> {
+    let tera_type = match can_terastallize(context)? {
+        Some(tera_type) => tera_type,
+        None => return Ok(false),
+    };
+
+    let target = context.mon_handle();
+    let mut context = context.as_battle_context_mut().applying_effect_context(
+        EffectHandle::Condition(Id::from_known("terastallization")),
+        None,
+        target,
+        None,
+    )?;
+
+    if !core_battle_effects::run_event_for_mon(
+        &mut context.target_context()?,
+        fxlang::BattleEvent::BeforeTerastallization,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
+
+    core_battle_logs::terastallize(&mut context, tera_type)?;
+
+    context.target_mut().terastallized = Some(tera_type);
+    context.target_mut().terastallization_state = fxlang::EffectState::initial_effect_state(
+        context.as_battle_context_mut(),
+        None,
+        Some(target),
+        None,
+    )?;
+
+    core_battle_effects::run_event_for_mon(
+        &mut context.target_context()?,
+        fxlang::BattleEvent::AfterTerastallization,
+        fxlang::VariableInput::default(),
+    );
+
+    context.target_context()?.player_mut().can_terastallize = false;
+    Ok(true)
+}
+
+/// Ends the Mon's Terastallization, if applicable.
+pub fn end_terastallization(context: &mut ApplyingEffectContext) -> Result<()> {
+    if context.target().terastallized.is_none() {
+        return Ok(());
+    }
+
+    context.target_mut().terastallized = None;
+    context.target_mut().terastallization_state = fxlang::EffectState::default();
+
+    core_battle_logs::revert_terastallization(context)?;
+    Ok(())
 }

@@ -242,9 +242,12 @@ pub struct PlayerOptions {
     #[serde(default)]
     pub cannot_mega_evolve: bool,
 
-    /// If the player cannot Dynamax, assuming Mega Evolution is allowed.
+    /// If the player cannot Dynamax, assuming Dynamax is allowed.
     #[serde(default)]
     pub cannot_dynamax: bool,
+
+    /// If the player cannot Terastallize, assuming Terastallization is allowed.
+    pub cannot_terastallize: bool,
 }
 
 /// A player's dex, noting what has previously been caught by the player.
@@ -308,6 +311,8 @@ pub struct ChoiceState {
     pub mega: bool,
     /// Did the Player choose to Dynamax?
     pub dyna: bool,
+    /// Did the Player choose to Terastallize?
+    pub tera: bool,
 }
 
 impl ChoiceState {
@@ -322,6 +327,7 @@ impl ChoiceState {
             switch_ins: HashSet::default(),
             mega: false,
             dyna: false,
+            tera: false,
         }
     }
 }
@@ -333,6 +339,7 @@ struct MoveChoice {
     pub target: Option<isize>,
     pub mega: bool,
     pub dyna: bool,
+    pub tera: bool,
 }
 
 impl MoveChoice {
@@ -356,6 +363,7 @@ impl MoveChoice {
             target: None,
             mega: false,
             dyna: false,
+            tera: false,
         };
 
         if let Some(target) = args
@@ -373,6 +381,9 @@ impl MoveChoice {
             }
             Some("dyna") => {
                 choice.dyna = true;
+            }
+            Some("tera") => {
+                choice.tera = true;
             }
             Some(str) => {
                 return Err(general_error(format!(
@@ -477,6 +488,7 @@ pub struct Player {
 
     pub can_mega_evolve: bool,
     pub can_dynamax: bool,
+    pub can_terastallize: bool,
 
     pub escape_attempts: u16,
     pub escaped: bool,
@@ -510,6 +522,8 @@ impl Player {
             && format.rules.has_rule(&Id::from_known("megaevolution"));
         let can_dynamax = !data.player_options.cannot_dynamax
             && format.rules.has_rule(&Id::from_known("dynamax"));
+        let can_terastallize = !data.player_options.cannot_terastallize
+            && format.rules.has_rule(&Id::from_known("terastallization"));
         let mut player = Self {
             id: data.id,
             name: data.name,
@@ -526,6 +540,7 @@ impl Player {
             request: None,
             can_mega_evolve,
             can_dynamax,
+            can_terastallize,
             escape_attempts: 0,
             escaped: false,
             bag: HashMap::default(),
@@ -1254,6 +1269,7 @@ impl Player {
                     target: locked_move_target,
                     mega: false,
                     dyna: false,
+                    tera: false,
                 })));
             // Locked move, the Mon cannot do anything else.
             return Ok(());
@@ -1326,6 +1342,16 @@ impl Player {
             return Err(general_error("you can only dynamax once per battle"));
         }
 
+        if choice.tera && !context.mon().next_turn_state.can_terastallize {
+            return Err(general_error(format!(
+                "{} cannot terastallize",
+                context.mon().name
+            )));
+        }
+        if choice.tera && context.player().choice.tera {
+            return Err(general_error("you can only terastallize once per battle"));
+        }
+
         context
             .player_mut()
             .choice
@@ -1337,6 +1363,7 @@ impl Player {
                 target: choice.target,
                 mega: choice.mega,
                 dyna: choice.dyna,
+                tera: choice.tera,
             })));
 
         if choice.mega {
@@ -1344,6 +1371,9 @@ impl Player {
         }
         if choice.dyna {
             context.player_mut().choice.dyna = true;
+        }
+        if choice.dyna {
+            context.player_mut().choice.tera = true;
         }
 
         Ok(())
@@ -1694,6 +1724,7 @@ mod move_choice_test {
                 target: Some(0),
                 mega: false,
                 dyna: false,
+                tera: false,
             })
         );
     }
@@ -1707,6 +1738,7 @@ mod move_choice_test {
                 target: Some(0),
                 mega: true,
                 dyna: false,
+                tera: false,
             })
         );
     }
@@ -1720,6 +1752,7 @@ mod move_choice_test {
                 target: None,
                 mega: false,
                 dyna: false,
+                tera: false,
             })
         );
     }
@@ -1733,6 +1766,7 @@ mod move_choice_test {
                 target: None,
                 mega: true,
                 dyna: false,
+                tera: false,
             })
         );
     }
@@ -1746,6 +1780,21 @@ mod move_choice_test {
                 target: None,
                 mega: false,
                 dyna: true,
+                tera: false,
+            })
+        );
+    }
+
+    #[test]
+    fn parses_move_tera() {
+        assert_matches::assert_matches!(
+            MoveChoice::new("3, tera"),
+            Ok(MoveChoice {
+                move_slot: 3,
+                target: None,
+                mega: false,
+                dyna: false,
+                tera: true,
             })
         );
     }

@@ -174,6 +174,9 @@ pub fn run_function(
         "has_side_condition" => has_side_condition(context).map(|val| Some(val)),
         "has_species_registered" => has_species_registered(context).map(|val| Some(val)),
         "has_type" => has_type(context).map(|val| Some(val)),
+        "has_type_before_forced_types" => {
+            has_type_before_forced_types(context).map(|val| Some(val))
+        }
         "has_volatile" => has_volatile(context).map(|val| Some(val)),
         "heal" => heal(context).map(|val| Some(val)),
         "hit_effect" => hit_effect().map(|val| Some(val)),
@@ -235,6 +238,8 @@ pub fn run_function(
         "new_object" => Ok(Some(new_object(context))),
         "object_keys" => object_keys(context).map(|val| Some(val)),
         "object_increment" => object_increment(context).map(|val| Some(val)),
+        "object_get" => object_get(context),
+        "object_set" => object_set(context).map(|val| Some(val)),
         "object_value" => object_value(context),
         "overwrite_move_slot" => overwrite_move_slot(context).map(|()| None),
         "pending_move_action_this_turn" => pending_move_action_this_turn(context),
@@ -1914,6 +1919,19 @@ fn has_type(mut context: FunctionContext) -> Result<Value> {
         .mon_type()
         .wrap_error_with_message("invalid type")?;
     Ok(Value::Boolean(Mon::has_type(
+        &mut context.mon_context(mon_handle)?,
+        typ,
+    )))
+}
+
+fn has_type_before_forced_types(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let typ = context
+        .pop_front()
+        .wrap_expectation("missing type")?
+        .mon_type()
+        .wrap_error_with_message("invalid type")?;
+    Ok(Value::Boolean(Mon::has_type_before_forced_types(
         &mut context.mon_context(mon_handle)?,
         typ,
     )))
@@ -3636,6 +3654,36 @@ fn object_increment(mut context: FunctionContext) -> Result<Value> {
     };
     let value = value + 1;
     object.insert(key, Value::UFraction(value.into()));
+    Ok(Value::Object(object))
+}
+
+fn object_get(mut context: FunctionContext) -> Result<Option<Value>> {
+    let object = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .object()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    Ok(object.get(&key).cloned())
+}
+
+fn object_set(mut context: FunctionContext) -> Result<Value> {
+    let mut object = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .object()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    let value = context.pop_front().wrap_expectation("missing value")?;
+    object.insert(key, value);
     Ok(Value::Object(object))
 }
 
