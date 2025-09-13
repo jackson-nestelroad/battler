@@ -1626,6 +1626,44 @@ fn modify_state_from_effect(
                 record_effect_from_mon(state, &effect, &mon)?;
             }
         }
+        "swapboosts" => {
+            let mon_name: MonName = entry.value_or_else("mon")?;
+            let mon = mons_by_mon_name_require_one(state, &mon_name)?;
+            let source_name = entry.value_or_else("of")?;
+            let source = mons_by_mon_name_require_one(state, &source_name)?;
+            let stats = entry
+                .value::<String>("stats")
+                .map(|stats| stats.split(',').map(|s| s.to_owned()).collect::<Vec<_>>());
+            let mon_boosts = state
+                .field
+                .mon_by_reference_or_else(&mon)?
+                .volatile_data
+                .stat_boosts
+                .clone();
+            let source_boosts = state
+                .field
+                .mon_by_reference_or_else(&source)?
+                .volatile_data
+                .stat_boosts
+                .clone();
+
+            let mut swap_boosts = |name: &MonName, boosts: BTreeMap<String, i64>| -> Result<()> {
+                apply_for_each_mon(state, &name, |mon, _| match &stats {
+                    Some(stats) => {
+                        for stat in stats {
+                            mon.volatile_data.stat_boosts.insert(
+                                stat.clone(),
+                                boosts.get(stat).cloned().unwrap_or_default(),
+                            );
+                        }
+                    }
+                    None => mon.volatile_data.stat_boosts = boosts.clone(),
+                })
+            };
+
+            swap_boosts(&mon_name, source_boosts)?;
+            swap_boosts(&source_name, mon_boosts)?;
+        }
         "transform" => {
             let mon = entry.value_or_else("mon")?;
             let species = entry.value_or_else("species")?;
@@ -1723,6 +1761,7 @@ fn alter_battle_state_for_entry(
         | "miss"
         | "ohko"
         | "prepare"
+        | "protectweaken"
         | "resisted"
         | "restorepp"
         | "revive"
@@ -1736,6 +1775,7 @@ fn alter_battle_state_for_entry(
         | "status"
         | "start"
         | "supereffective"
+        | "swapboosts"
         | "transform"
         | "typechange"
         | "uncatchable"
@@ -6358,6 +6398,285 @@ mod state_test {
                     position: 0,
                 })),
             }]),
+        );
+    }
+
+    #[test]
+    fn records_copied_boosts() {
+        let log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "boost|mon:Charmander,player-2,1|stat:atk|by:1",
+            "boost|mon:Charmander,player-2,1|stat:def|by:1",
+            "unboost|mon:Charmander,player-2,1|stat:spe|by:1",
+            "copyboosts|mon:Squirtle,player-1,1|of:Charmander,player-2,1",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([
+                ("atk".to_owned(), 1),
+                ("def".to_owned(), 1),
+                ("spe".to_owned(), -1),
+            ])
+        );
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0,
+                    }),
+                    stat: "atk".to_owned(),
+                    by: 1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0,
+                    }),
+                    stat: "def".to_owned(),
+                    by: 1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0,
+                    }),
+                    stat: "spe".to_owned(),
+                    by: -1,
+                },
+                ui::UiLogEntry::Effect {
+                    title: "copyboosts".to_owned(),
+                    effect: ui::EffectData {
+                        target: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 0,
+                            position: 0,
+                        })),
+                        source: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 1,
+                            position: 0,
+                        })),
+                        ..Default::default()
+                    }
+                }
+            ]),
+        );
+    }
+
+    #[test]
+    fn records_swapped_boosts_for_all_stats() {
+        let log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "boost|mon:Charmander,player-2,1|stat:spa|by:1",
+            "boost|mon:Charmander,player-2,1|stat:spd|by:1",
+            "unboost|mon:Squirtle,player-1,1|stat:atk|by:1",
+            "unboost|mon:Squirtle,player-1,1|stat:def|by:1",
+            "swapboosts|mon:Squirtle,player-1,1|of:Charmander,player-2,1",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([("spa".to_owned(), 1), ("spd".to_owned(), 1),])
+        );
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([("atk".to_owned(), -1), ("def".to_owned(), -1),])
+        );
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0,
+                    }),
+                    stat: "spa".to_owned(),
+                    by: 1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0,
+                    }),
+                    stat: "spd".to_owned(),
+                    by: 1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    stat: "atk".to_owned(),
+                    by: -1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    stat: "def".to_owned(),
+                    by: -1,
+                },
+                ui::UiLogEntry::Effect {
+                    title: "swapboosts".to_owned(),
+                    effect: ui::EffectData {
+                        target: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 0,
+                            position: 0,
+                        })),
+                        source: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 1,
+                            position: 0,
+                        })),
+                        ..Default::default()
+                    }
+                }
+            ]),
+        );
+    }
+
+    #[test]
+    fn records_swapped_boosts_for_some_stats() {
+        let log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "boost|mon:Charmander,player-2,1|stat:spa|by:1",
+            "boost|mon:Charmander,player-2,1|stat:spd|by:1",
+            "unboost|mon:Squirtle,player-1,1|stat:atk|by:1",
+            "unboost|mon:Squirtle,player-1,1|stat:def|by:1",
+            "swapboosts|mon:Squirtle,player-1,1|stats:atk,spa|of:Charmander,player-2,1",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([
+                ("atk".to_owned(), 0),
+                ("def".to_owned(), -1),
+                ("spa".to_owned(), 1),
+            ])
+        );
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[1].players["player-2"].mons[0]
+                .volatile_data
+                .stat_boosts,
+            BTreeMap::from_iter([
+                ("atk".to_owned(), -1),
+                ("spa".to_owned(), 0),
+                ("spd".to_owned(), 1),
+            ])
+        );
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0,
+                    }),
+                    stat: "spa".to_owned(),
+                    by: 1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 1,
+                        position: 0,
+                    }),
+                    stat: "spd".to_owned(),
+                    by: 1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    stat: "atk".to_owned(),
+                    by: -1,
+                },
+                ui::UiLogEntry::StatBoost {
+                    mon: ui::Mon::Active(ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    }),
+                    stat: "def".to_owned(),
+                    by: -1,
+                },
+                ui::UiLogEntry::Effect {
+                    title: "swapboosts".to_owned(),
+                    effect: ui::EffectData {
+                        target: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 0,
+                            position: 0,
+                        })),
+                        source: Some(ui::Mon::Active(ui::FieldPosition {
+                            side: 1,
+                            position: 0,
+                        })),
+                        additional: HashMap::from_iter([(
+                            "stats".to_owned(),
+                            "atk,spa".to_owned()
+                        )]),
+                        ..Default::default()
+                    }
+                }
+            ]),
         );
     }
 }
