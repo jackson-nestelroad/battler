@@ -292,10 +292,12 @@ impl From<&MonBattleAppearanceFromSwitchIn> for MonBattleAppearance {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MonBattleAppearanceWithRecovery {
     /// Mon is inactive, so it contains a single battle appearance.
+    #[serde(rename = "inactive")]
     Inactive(MonBattleAppearance),
     /// Mon is active, so it records the difference between battle data up to the last switch out
     /// and battle data from the last switch in. If the Mon is found to be an illusion, the battle
     /// data from the last switch in is moved to another Mon.
+    #[serde(rename = "active")]
     Active {
         primary_battle_appearance: MonBattleAppearance,
         battle_appearance_up_to_last_switch_out: MonBattleAppearance,
@@ -1089,9 +1091,13 @@ impl Field {
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BattlePhase {
     #[default]
+    #[serde(rename = "pre_battle")]
     PreBattle,
+    #[serde(rename = "pre_team_preview")]
     PreTeamPreview,
+    #[serde(rename = "team_preview")]
     TeamPreview(usize),
+    #[serde(rename = "battle")]
     Battle,
 }
 
