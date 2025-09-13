@@ -3,20 +3,33 @@ use std::{
     collections::BTreeSet,
 };
 
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
 /// A value that requires discovery.
 ///
 /// If a value is "known", a single value will be recorded. Otherwise, a set of "possible values"
 /// will be stored. Values can be "recorded" (in which the new value takes precedence) or "merged"
 /// (in which the two values take equal precedence).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DiscoveryRequired<T> {
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DiscoveryRequired<T>
+where
+    T: Ord,
+{
     /// A known value.
+    #[serde(rename = "known")]
     Known(T),
     /// A set of possible values.
+    #[serde(rename = "possibly_one_of")]
     PossibleValues(BTreeSet<T>),
 }
 
-impl<T> DiscoveryRequired<T> {
+impl<T> DiscoveryRequired<T>
+where
+    T: Ord,
+{
     /// Checks if there are no values stored.
     pub fn is_empty(&self) -> bool {
         match self {
@@ -116,13 +129,19 @@ where
     }
 }
 
-impl<T> Default for DiscoveryRequired<T> {
+impl<T> Default for DiscoveryRequired<T>
+where
+    T: Ord,
+{
     fn default() -> Self {
         Self::PossibleValues(BTreeSet::default())
     }
 }
 
-impl<T> From<T> for DiscoveryRequired<T> {
+impl<T> From<T> for DiscoveryRequired<T>
+where
+    T: Ord,
+{
     fn from(value: T) -> Self {
         Self::Known(value)
     }
@@ -134,13 +153,20 @@ impl<T> From<T> for DiscoveryRequired<T> {
 /// This type is basically a wrapper around two sets of value: one for known values and one for
 /// possible values. It keeps the semantics of [`DiscoveryRequired`] in terms of recording and
 /// merging.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct DiscoveryRequiredSet<T> {
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DiscoveryRequiredSet<T>
+where
+    T: Ord,
+{
     known: BTreeSet<T>,
+    #[serde(rename = "possibly_includes")]
     possible_values: BTreeSet<T>,
 }
 
-impl<T> DiscoveryRequiredSet<T> {
+impl<T> DiscoveryRequiredSet<T>
+where
+    T: Ord,
+{
     /// Checks if there are no values stored.
     pub fn is_empty(&self) -> bool {
         self.known.is_empty() && self.possible_values.is_empty()

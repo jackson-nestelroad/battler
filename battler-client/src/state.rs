@@ -16,6 +16,10 @@ use anyhow::{
     Error,
     Result,
 };
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
 use crate::{
     discovery::{
@@ -40,14 +44,14 @@ enum Ambiguity {
 }
 
 /// Data about some condition.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ConditionData {
     pub since_turn: usize,
     pub data: HashMap<String, String>,
 }
 
 /// Volatile data for a Mon, which applies only when the Mon is active.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonVolatileData {
     pub moves: BTreeSet<String>,
     pub ability: Option<String>,
@@ -103,7 +107,7 @@ impl MonVolatileData {
 /// battle.
 ///
 /// When a Mon creates an illusion, it is expected to mimic this physical appearance.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct MonPhysicalAppearance {
     pub name: String,
     pub species: String,
@@ -127,19 +131,21 @@ struct MonBattleAppearanceFromSwitchIn {
     level: u64,
     health: (u64, u64),
     status: String,
+    terastallization: String,
 }
 
 /// Data about a Mon that is slowly discovered and may change throughout the course of the battle.
 ///
 /// Some data, like `level` and `health`, are discovered on switch in. Other data, like `moves` and
 /// `ability`, are discovered when used or activated.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonBattleAppearance {
     pub level: DiscoveryRequired<u64>,
     pub health: DiscoveryRequired<(u64, u64)>,
     pub status: DiscoveryRequired<String>,
     pub ability: DiscoveryRequired<String>,
     pub item: DiscoveryRequired<String>,
+    pub terastallization: DiscoveryRequired<String>,
 
     pub moves: DiscoveryRequiredSet<String>,
 
@@ -150,9 +156,15 @@ impl MonBattleAppearance {
     fn is_empty(&self) -> bool {
         self.level.is_empty()
             && self.health.is_empty()
-            && self.status.is_empty()
+            && (self.status.is_empty()
+                || self.status.known().is_some_and(|status| status.is_empty()))
             && self.ability.is_empty()
             && self.item.is_empty()
+            && (self.terastallization.is_empty()
+                || self
+                    .terastallization
+                    .known()
+                    .is_some_and(|tera| tera.is_empty()))
             && self.moves.is_empty()
     }
 
@@ -162,6 +174,7 @@ impl MonBattleAppearance {
         self.status = self.status.make_ambiguous();
         self.ability = self.ability.make_ambiguous();
         self.item = self.item.make_ambiguous();
+        self.terastallization = self.terastallization.make_ambiguous();
         self.moves = self.moves.make_ambiguous();
         self
     }
@@ -206,6 +219,18 @@ impl MonBattleAppearance {
         };
     }
 
+    fn record_terastallization(
+        &mut self,
+        terastallization: DiscoveryRequired<String>,
+        ambiguity: Ambiguity,
+    ) {
+        self.terastallization = if ambiguity == Ambiguity::Ambiguous {
+            self.terastallization.take().merge(terastallization)
+        } else {
+            self.terastallization.take().record(terastallization)
+        };
+    }
+
     fn record_move(&mut self, name: String, ambiguity: Ambiguity) {
         if ambiguity == Ambiguity::Ambiguous {
             self.moves.record_possible(name);
@@ -236,6 +261,7 @@ impl MonBattleAppearance {
         self.record_status(other.status, Ambiguity::Precise);
         self.record_ability(other.ability, Ambiguity::Precise);
         self.record_item(other.item, Ambiguity::Precise);
+        self.record_terastallization(other.terastallization, Ambiguity::Precise);
 
         for mov in other.moves.known().iter().cloned() {
             self.record_move(mov, Ambiguity::Precise);
@@ -256,13 +282,14 @@ impl From<&MonBattleAppearanceFromSwitchIn> for MonBattleAppearance {
         data.record_level(value.level.into(), Ambiguity::Precise);
         data.record_health(value.health.into(), Ambiguity::Precise);
         data.record_status(value.status.clone().into(), Ambiguity::Precise);
+        data.record_terastallization(value.terastallization.clone().into(), Ambiguity::Precise);
         data
     }
 }
 
 /// A version of [`MonBattleAppearance`] that supports recovery when a Mon is discovered to be an
 /// illusion of another Mon.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MonBattleAppearanceWithRecovery {
     /// Mon is inactive, so it contains a single battle appearance.
     Inactive(MonBattleAppearance),
@@ -391,6 +418,16 @@ impl MonBattleAppearanceWithRecovery {
         });
     }
 
+    fn record_terastallization(
+        &mut self,
+        terastallization: DiscoveryRequired<String>,
+        ambiguity: Ambiguity,
+    ) {
+        self.apply_for_each_battle_appearance(|appearance| {
+            appearance.record_terastallization(terastallization.clone(), ambiguity);
+        });
+    }
+
     fn record_move(&mut self, name: String, ambiguity: Ambiguity) {
         self.apply_for_each_battle_appearance(|appearance| {
             appearance.record_move(name.clone(), ambiguity);
@@ -429,7 +466,7 @@ impl From<MonBattleAppearance> for MonBattleAppearanceWithRecovery {
 }
 
 /// A single Mon in a battle.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Mon {
     pub physical_appearance: MonPhysicalAppearance,
     pub battle_appearances: VecDeque<MonBattleAppearanceWithRecovery>,
@@ -496,7 +533,7 @@ impl Mon {
 }
 
 /// A reference to a [`MonBattleAppearance`].
-#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct MonBattleAppearanceReference {
     pub player: String,
     pub mon_index: usize,
@@ -504,7 +541,7 @@ pub struct MonBattleAppearanceReference {
 }
 
 /// A player participating in a battle, which consists of one or more Mons.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Player {
     pub name: String,
     pub id: String,
@@ -531,7 +568,7 @@ impl Player {
 }
 
 /// A side of the battle, which consists of one or more players and a list of active Mons.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Side {
     pub name: String,
     pub id: usize,
@@ -923,7 +960,7 @@ impl Side {
     }
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Field {
     pub sides: Vec<Side>,
     pub environment: Option<String>,
@@ -1049,7 +1086,7 @@ impl Field {
     }
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BattlePhase {
     #[default]
     PreBattle,
@@ -1058,7 +1095,7 @@ pub enum BattlePhase {
     Battle,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleState {
     pub phase: BattlePhase,
     pub turn: usize,
@@ -1129,9 +1166,7 @@ fn mon_name_from_log_entry(entry: &LogEntry) -> Result<MonName> {
     let player = entry
         .value("player")
         .ok_or_else(|| Error::msg("missing player"))?;
-    let position = entry
-        .value::<usize>("position")
-        .map(|position| position - 1);
+    let position = entry.value::<usize>("position").map(|position| position);
     Ok(MonName {
         name,
         player,
@@ -1160,6 +1195,7 @@ fn mon_appearance_from_log_entry(
     let shiny = entry.value_ref("shiny").is_some();
     let health = health_from_log_entry(entry)?;
     let status: String = entry.value("status").unwrap_or_default();
+    let terastallization: String = entry.value("tera").unwrap_or_default();
     Ok((
         MonPhysicalAppearance {
             name,
@@ -1171,6 +1207,7 @@ fn mon_appearance_from_log_entry(
             level,
             health,
             status,
+            terastallization,
         },
     ))
 }
@@ -1433,7 +1470,7 @@ fn modify_state_from_effect(
 
             let side = state.field.side_for_player(&mon.player)?;
             apply_for_each_mon_reference(state, &mon, |state, mon, _| {
-                state.field.side_mut_or_else(side)?.switch_out(&mon, true)
+                state.field.side_mut_or_else(side)?.switch_out(&mon, false)
             })?;
         }
         "clearallboosts" => {
@@ -1492,6 +1529,19 @@ fn modify_state_from_effect(
                 mon.record_health(health.into(), ambiguity);
             })?;
         }
+        "dynamax" => {
+            let mon = entry.value_or_else("mon")?;
+            let turn = state.turn;
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.volatile_data.record_condition(
+                    "Dynamax".to_owned(),
+                    ConditionData {
+                        since_turn: turn,
+                        data: effect_data.additional.clone(),
+                    },
+                );
+            })?;
+        }
         "end" => {
             let mon = entry.value_or_else("mon")?;
             if let Some(effect) = &effect_data.effect {
@@ -1518,7 +1568,7 @@ fn modify_state_from_effect(
                 );
             }
         }
-        "formechange" => {
+        "formechange" | "gigantamax" | "revertgigantamax" => {
             let mon = entry.value_or_else("mon")?;
             let species: String = entry.value_or_else("species")?;
             apply_for_each_mon(state, &mon, |mon, _| {
@@ -1553,6 +1603,18 @@ fn modify_state_from_effect(
                     );
                 })?;
             }
+        }
+        "revertdynamax" => {
+            let mon = entry.value_or_else("mon")?;
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.volatile_data.remove_condition("Dynamax");
+            })?;
+        }
+        "reverttera" => {
+            let mon = entry.value_or_else("mon")?;
+            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                mon.record_terastallization(String::default().into(), ambiguity);
+            })?;
         }
         "sideend" => {
             let side = entry.value_or_else("side")?;
@@ -1664,6 +1726,13 @@ fn modify_state_from_effect(
             swap_boosts(&mon_name, source_boosts)?;
             swap_boosts(&source_name, mon_boosts)?;
         }
+        "tera" => {
+            let mon = entry.value_or_else("mon")?;
+            let typ: String = entry.value_or_else("type")?;
+            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                mon.record_terastallization(typ.clone().into(), ambiguity);
+            })?;
+        }
         "transform" => {
             let mon = entry.value_or_else("mon")?;
             let species = entry.value_or_else("species")?;
@@ -1746,6 +1815,7 @@ fn alter_battle_state_for_entry(
         | "crit"
         | "damage"
         | "deductpp"
+        | "dynamax"
         | "end"
         | "fail"
         | "faint"
@@ -1753,17 +1823,23 @@ fn alter_battle_state_for_entry(
         | "fieldend"
         | "fieldstart"
         | "formechange"
+        | "gigantamax"
         | "heal"
         | "hitcount"
         | "immune"
         | "item"
         | "itemend"
+        | "mega"
         | "miss"
         | "ohko"
         | "prepare"
         | "protectweaken"
         | "resisted"
         | "restorepp"
+        | "revertdynamax"
+        | "revertgigantamax"
+        | "revertmega"
+        | "reverttera"
         | "revive"
         | "sethp"
         | "setpp"
@@ -1776,6 +1852,7 @@ fn alter_battle_state_for_entry(
         | "start"
         | "supereffective"
         | "swapboosts"
+        | "tera"
         | "transform"
         | "typechange"
         | "uncatchable"
@@ -1800,7 +1877,8 @@ fn alter_battle_state_for_entry(
                 "faint" => {
                     ui_log.push(ui::UiLogEntry::Faint { effect });
                 }
-                "formechange" | "specieschange" | "transform" => {
+                "formechange" | "gigantamax" | "mega" | "revertgigantamax" | "revertmega"
+                | "specieschange" | "transform" => {
                     let species = entry.value_or_else("species")?;
                     ui_log.push(ui::UiLogEntry::UpdateAppearance {
                         title: entry.title().to_owned(),
@@ -2142,7 +2220,8 @@ fn alter_battle_state_for_entry(
                     );
                 }
 
-                // Mark that the previous Mon is inactive if we are replacing an illusion.
+                // Mark that the previous Mon is inactive if we are replacing an illusion, or if the
+                // Mon fainted.
                 //
                 // Ordinarily, we want the previous Mon to still be considered active when switching
                 // in the new Mon, so that it is clear that the new and previous Mons are distinct.
@@ -2150,21 +2229,24 @@ fn alter_battle_state_for_entry(
                 // appearance of was *never* active, so we want that Mon to be a candidate for
                 // merging.
                 //
+                // The same reasoning applies if the previous Mon fainted; if this Mon is the same
+                // as the fainted one, then it should not really be fainted (handled later) and we
+                // should be able to use the Mon we thought fainted.
+                //
                 // There is technically an edge case here: if an illusion user creates an illusion
                 // of a Mon that looks exactly identical (by physical appearance) to it, then when
                 // the illusion breaks, the active Mon will not really change. However, this case is
                 // acceptable because there is ambiguity *anyway*. To avoid this edge case, we would
                 // need to track switching for non-overlap with a separate field somewhere.
-                //
-                // SAFETY: Resized above.
-                side.switch_out(&previous, replace)?;
+                side.switch_out(
+                    &previous,
+                    replace || side.mon_by_reference_or_else(previous)?.fainted,
+                )?;
 
                 // If the replaced Mon ends up empty, we can remove that battle appearance.
-                if side
-                    .mon_battle_appearance_with_recovery_mut_by_reference_or_else(&previous)?
-                    .primary()
-                    .is_empty()
-                {
+                let previous_mon_appearance =
+                    side.mon_battle_appearance_with_recovery_mut_by_reference_or_else(&previous)?;
+                if previous_mon_appearance.primary().is_empty() {
                     side.mon_mut_by_reference_or_else(&previous)?
                         .remove_battle_appearance(previous.battle_appearance_index);
                 }
@@ -2413,6 +2495,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (100, 100).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     ..Default::default()
                                                 },
                                                 battle_appearance_up_to_last_switch_out:
@@ -2422,6 +2505,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         ..Default::default()
                                                     },
                                             }
@@ -2462,6 +2546,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (100, 100).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     ..Default::default()
                                                 },
                                                 battle_appearance_up_to_last_switch_out:
@@ -2471,6 +2556,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         ..Default::default()
                                                     },
                                             }
@@ -2576,6 +2662,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (100, 100).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     moves: DiscoveryRequiredSet::from_known([
                                                         "Pound".to_owned()
                                                     ]),
@@ -2591,6 +2678,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         moves: DiscoveryRequiredSet::from_known([
                                                             "Pound".to_owned()
                                                         ]),
@@ -2637,6 +2725,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (75, 100).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     ..Default::default()
                                                 },
                                                 battle_appearance_up_to_last_switch_out:
@@ -2646,6 +2735,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (75, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         ..Default::default()
                                                     },
                                             }
@@ -2787,6 +2877,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         moves: DiscoveryRequiredSet::from_known([
                                                             "Pound".to_owned()
                                                         ]),
@@ -2814,6 +2905,8 @@ mod state_test {
                                                             level: 5.into(),
                                                             health: (50, 100).into(),
                                                             status: String::default().into(),
+                                                            terastallization: String::default()
+                                                                .into(),
                                                             ..Default::default()
                                                         },
                                                     battle_appearance_up_to_last_switch_out:
@@ -2823,6 +2916,8 @@ mod state_test {
                                                             level: 5.into(),
                                                             health: (50, 100).into(),
                                                             status: String::default().into(),
+                                                            terastallization: String::default()
+                                                                .into(),
                                                             ..Default::default()
                                                         },
                                                 },
@@ -2864,6 +2959,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (75, 100).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     ..Default::default()
                                                 },
                                                 battle_appearance_up_to_last_switch_out:
@@ -2873,6 +2969,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (75, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         ..Default::default()
                                                     },
                                             }
@@ -3034,6 +3131,8 @@ mod state_test {
                                                             level: 5.into(),
                                                             health: (100, 100).into(),
                                                             status: String::default().into(),
+                                                            terastallization: String::default()
+                                                                .into(),
                                                             moves: DiscoveryRequiredSet::from_known(
                                                                 [
                                                                     "Pound".to_owned(),
@@ -3051,6 +3150,8 @@ mod state_test {
                                                             level: 5.into(),
                                                             health: (100, 100).into(),
                                                             status: String::default().into(),
+                                                            terastallization: String::default()
+                                                                .into(),
                                                             moves: DiscoveryRequiredSet::from_known(
                                                                 ["Pound".to_owned(),]
                                                             ),
@@ -3064,6 +3165,8 @@ mod state_test {
                                                             level: 5.into(),
                                                             health: (100, 100).into(),
                                                             status: String::default().into(),
+                                                            terastallization: String::default()
+                                                                .into(),
                                                             moves: DiscoveryRequiredSet::from_known(
                                                                 ["Water Gun".to_owned()]
                                                             ),
@@ -3090,6 +3193,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (50, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         ..Default::default()
                                                     }
                                                 ),
@@ -3131,6 +3235,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (1, 100).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     ..Default::default()
                                                 },
                                                 battle_appearance_up_to_last_switch_out:
@@ -3140,6 +3245,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (1, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         ..Default::default()
                                                     },
                                             }
@@ -3409,6 +3515,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (100, 100).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     moves: DiscoveryRequiredSet::from_known([
                                                         "Water Gun".to_owned()
                                                     ]),
@@ -3424,6 +3531,7 @@ mod state_test {
                                                         level: 5.into(),
                                                         health: (100, 100).into(),
                                                         status: String::default().into(),
+                                                        terastallization: String::default().into(),
                                                         moves: DiscoveryRequiredSet::from_known([
                                                             "Water Gun".to_owned()
                                                         ]),
@@ -3470,6 +3578,7 @@ mod state_test {
                                                     level: 5.into(),
                                                     health: (0, 1).into(),
                                                     status: String::default().into(),
+                                                    terastallization: String::default().into(),
                                                     ..Default::default()
                                                 }
                                             ),
@@ -3480,7 +3589,11 @@ mod state_test {
                                     ..Default::default()
                                 }
                             )]),
-                            active: Vec::from_iter([None]),
+                            active: Vec::from_iter([Some(MonBattleAppearanceReference {
+                                player: "player-2".to_owned(),
+                                mon_index: 0,
+                                battle_appearance_index: 0
+                            })]),
                             ..Default::default()
                         }
                     ]),
@@ -3606,6 +3719,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -3623,6 +3737,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -3641,6 +3756,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance::default(),
@@ -3648,6 +3764,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                         }
@@ -3686,6 +3803,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -3703,6 +3821,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -3721,6 +3840,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (75, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -3729,6 +3849,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (75, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -3777,6 +3898,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
                             move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
@@ -3796,6 +3918,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                             move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                             ..Default::default()
@@ -3816,6 +3939,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (50, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known([
                                     "Bite".to_owned(),
@@ -3831,6 +3955,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (75, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
                                 move_history: VecDeque::from_iter(["Bite".to_owned()]),
@@ -3840,6 +3965,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (50, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
                                 move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
@@ -3887,6 +4013,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
                             move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
@@ -3906,6 +4033,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                             move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                             ..Default::default()
@@ -3914,6 +4042,7 @@ mod state_test {
                             level: 6.into(),
                             health: (50, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
                             move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                             ..Default::default()
@@ -3934,6 +4063,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (25, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known([
                                     "Bite".to_owned(),
@@ -3949,6 +4079,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (50, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known([
                                     "Bite".to_owned(),
@@ -3964,6 +4095,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (25, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -4006,6 +4138,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
                             move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
@@ -4025,6 +4158,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                             move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                             ..Default::default()
@@ -4034,6 +4168,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (12, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known([
                                     "Bite".to_owned(),
                                     "Crunch".to_owned(),
@@ -4048,6 +4183,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (25, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
                                 move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                                 ..Default::default()
@@ -4056,6 +4192,7 @@ mod state_test {
                                 level: 6.into(),
                                 health: (12, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
                                 move_history: VecDeque::from_iter(["Bite".to_owned()]),
                                 ..Default::default()
@@ -4076,6 +4213,7 @@ mod state_test {
                             level: 6.into(),
                             health: (25, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ability: "Illusion".to_owned().into(),
                             moves: DiscoveryRequiredSet::from_known([
                                 "Bite".to_owned(),
@@ -4119,6 +4257,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
                             move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
@@ -4139,6 +4278,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
@@ -4147,6 +4287,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
@@ -4155,6 +4296,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                         },
@@ -4162,6 +4304,7 @@ mod state_test {
                             level: 6.into(),
                             health: (25, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
                             move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                             ..Default::default()
@@ -4181,6 +4324,7 @@ mod state_test {
                             level: 6.into(),
                             health: (12, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ability: "Illusion".to_owned().into(),
                             moves: DiscoveryRequiredSet::from_known([
                                 "Bite".to_owned(),
@@ -4226,6 +4370,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Growl".to_owned()]),
                             move_history: VecDeque::from_iter(["Growl".to_owned()]),
                             ..Default::default()
@@ -4246,6 +4391,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
@@ -4254,6 +4400,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Absorb".to_owned()]),
                                 move_history: VecDeque::from_iter(["Absorb".to_owned()]),
                                 ..Default::default()
@@ -4262,6 +4409,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                         },
@@ -4269,6 +4417,7 @@ mod state_test {
                             level: 6.into(),
                             health: (12, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Crunch".to_owned()]),
                             move_history: VecDeque::from_iter(["Crunch".to_owned()]),
                             ..Default::default()
@@ -4288,6 +4437,7 @@ mod state_test {
                             level: 6.into(),
                             health: (12, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ability: "Illusion".to_owned().into(),
                             moves: DiscoveryRequiredSet::from_known([
                                 "Bite".to_owned(),
@@ -4351,18 +4501,21 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                         },
@@ -4381,6 +4534,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4414,6 +4568,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4431,6 +4586,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4449,6 +4605,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (75, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -4457,6 +4614,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (75, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -4503,6 +4661,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known([
                                 "Growl".to_owned(),
                                 "Scratch".to_owned(),
@@ -4518,6 +4677,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known([
                                     "Bite".to_owned(),
                                     "Dark Pulse".to_owned(),
@@ -4532,6 +4692,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
                                 move_history: VecDeque::from_iter(["Bite".to_owned()]),
                                 ..Default::default()
@@ -4540,6 +4701,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
                                 move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
                                 ..Default::default()
@@ -4560,6 +4722,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4577,6 +4740,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ability: "Illusion".to_owned().into(),
                             ..Default::default()
                         })
@@ -4610,6 +4774,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known([
                                 "Growl".to_owned(),
                                 "Scratch".to_owned(),
@@ -4624,6 +4789,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             moves: DiscoveryRequiredSet::from_known(["Bite".to_owned()]),
                             move_history: VecDeque::from_iter(["Bite".to_owned()]),
                             ..Default::default()
@@ -4643,6 +4809,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4661,6 +4828,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
                                 move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
@@ -4670,6 +4838,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -4677,6 +4846,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 moves: DiscoveryRequiredSet::from_known(["Dark Pulse".to_owned()]),
                                 move_history: VecDeque::from_iter(["Dark Pulse".to_owned()]),
                                 ..Default::default()
@@ -4731,6 +4901,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         }),
                     ]),
@@ -4749,6 +4920,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4767,6 +4939,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance::default(),
@@ -4774,6 +4947,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                         },
@@ -4834,18 +5008,21 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                             battle_appearance_up_to_last_switch_out: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (0, 1).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                             battle_appearance_from_last_switch_in: MonBattleAppearance {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                         },
@@ -4865,6 +5042,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4882,6 +5060,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ability: "Illusion".to_owned().into(),
                             ..Default::default()
                         }),
@@ -4901,6 +5080,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ability: "Illusion".to_owned().into(),
                             ..Default::default()
                         }),
@@ -4935,6 +5115,7 @@ mod state_test {
                             level: 5.into(),
                             health: (0, 1).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         }),
                     ]),
@@ -4953,6 +5134,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ..Default::default()
                         })
                     ]),
@@ -4971,6 +5153,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (50, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -4978,6 +5161,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (100, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ability: "Illusion".to_owned().into(),
                                 ..Default::default()
                             },
@@ -4985,6 +5169,7 @@ mod state_test {
                                 level: 5.into(),
                                 health: (50, 100).into(),
                                 status: String::default().into(),
+                                terastallization: String::default().into(),
                                 ..Default::default()
                             },
                         },
@@ -5003,6 +5188,7 @@ mod state_test {
                             level: 5.into(),
                             health: (100, 100).into(),
                             status: String::default().into(),
+                            terastallization: String::default().into(),
                             ability: "Illusion".to_owned().into(),
                             ..Default::default()
                         }),
@@ -5323,7 +5509,9 @@ mod state_test {
         let state = BattleState::default();
         let state = alter_battle_state(state, &log).unwrap();
 
-        assert_matches::assert_matches!(state.field.sides[1].active[0], None);
+        // Caught Mon is not inactive, but it is fainted.
+        assert_matches::assert_matches!(state.field.sides[1].active[0], Some(_));
+        assert!(state.field.sides[1].players["player-2"].mons[0].fainted);
 
         pretty_assertions::assert_eq!(
             state.ui_log[1],
@@ -6677,6 +6865,240 @@ mod state_test {
                     }
                 }
             ]),
+        );
+    }
+
+    #[test]
+    fn records_mega_evolution() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "specieschange|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle-Mega|level:5|gender:M",
+            "mega|mon:Squirtle,player-1,1|species:Squirtle-Mega|from:item:Squirtleite",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .physical_appearance
+                .species,
+            "Squirtle-Mega"
+        );
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .battle_appearances[0]
+                .primary()
+                .item
+                .known(),
+            Some(item) => {
+                assert_eq!(item, "Squirtleite");
+            }
+        );
+
+        log.extend(&[
+            "faint|mon:Squirtle,player-1,1",
+            "specieschange|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "revertmega|mon:Squirtle,player-1,1|species:Squirtle-Mega|from:Faint",
+            "turn|turn:3",
+        ]).unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert!(state.field.sides[0].players["player-1"].mons[0].fainted);
+        assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .physical_appearance
+                .species,
+            "Squirtle"
+        );
+    }
+
+    #[test]
+    fn records_dynamax() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "dynamax|mon:Squirtle,player-1,1",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::from_iter([(
+                "Dynamax".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::default(),
+                },
+            )])
+        );
+
+        log.extend(&["revertdynamax|mon:Squirtle,player-1,1", "turn|turn:3"])
+            .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::default()
+        );
+    }
+
+    #[test]
+    fn records_gigantamax() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "gigantamax|mon:Squirtle,player-1,1|species:Squirtle-Gmax",
+            "dynamax|mon:Squirtle,player-1,1",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::from_iter([(
+                "Dynamax".to_owned(),
+                ConditionData {
+                    since_turn: 1,
+                    data: HashMap::default(),
+                },
+            )])
+        );
+        assert_matches::assert_matches!(
+            &state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .forme_change,
+            Some(forme) => {
+                assert_eq!(forme, "Squirtle-Gmax");
+            }
+        );
+
+        log.extend(&[
+            "revertgigantamax|mon:Squirtle,player-1,1|species:Squirtle",
+            "revertdynamax|mon:Squirtle,player-1,1",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .conditions,
+            BTreeMap::default()
+        );
+        assert_matches::assert_matches!(
+            &state.field.sides[0].players["player-1"].mons[0]
+                .volatile_data
+                .forme_change,
+            Some(forme) => {
+                assert_eq!(forme, "Squirtle");
+            }
+        );
+    }
+
+    #[test]
+    fn records_terastallization() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "tera|mon:Squirtle,player-1,1|type:Fire",
+            "turn|turn:2",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .battle_appearances[0]
+                .primary()
+                .terastallization
+                .known(),
+            Some(tera) => {
+                assert_eq!(tera, "Fire");
+            }
+        );
+
+        log.extend(&[
+            "faint|mon:Squirtle,player-1,1",
+            "reverttera|mon:Squirtle,player-1,1",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(state, &log).unwrap();
+
+        assert!(state.field.sides[0].players["player-1"].mons[0].fainted);
+        assert_matches::assert_matches!(
+            state.field.sides[0].players["player-1"].mons[0]
+                .battle_appearances[0]
+                .primary()
+                .terastallization
+                .known(),
+            Some(tera) => {
+                assert_eq!(tera, "");
+            }
         );
     }
 }
