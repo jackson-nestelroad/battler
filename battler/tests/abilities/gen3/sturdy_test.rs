@@ -70,12 +70,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn sturdy_survives_one_hit_ko() {
-    let mut battle = make_battle(
-        0,
-        geodude().unwrap(),
-        swampert().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, geodude().unwrap(), swampert().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -99,12 +94,7 @@ fn sturdy_survives_one_hit_ko() {
 
 #[test]
 fn sturdy_resists_ohko_move() {
-    let mut battle = make_battle(
-        0,
-        geodude().unwrap(),
-        swampert().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, geodude().unwrap(), swampert().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

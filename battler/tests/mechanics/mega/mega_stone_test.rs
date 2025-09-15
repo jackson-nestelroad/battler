@@ -55,12 +55,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn cannot_fling_mega_stone_before_mega_evolution() {
-    let mut battle = make_battle(
-        0,
-        gengar().unwrap(),
-        gengar().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, gengar().unwrap(), gengar().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -80,12 +75,7 @@ fn cannot_fling_mega_stone_before_mega_evolution() {
 
 #[test]
 fn cannot_fling_mega_stone_after_mega_evolution() {
-    let mut battle = make_battle(
-        0,
-        gengar().unwrap(),
-        gengar().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, gengar().unwrap(), gengar().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
@@ -136,12 +126,7 @@ fn can_fling_mega_stone_for_different_species() {
 
 #[test]
 fn cannot_take_mega_stone_before_mega_evolution() {
-    let mut battle = make_battle(
-        0,
-        gengar().unwrap(),
-        gengar().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, gengar().unwrap(), gengar().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -164,12 +149,7 @@ fn cannot_take_mega_stone_before_mega_evolution() {
 
 #[test]
 fn cannot_take_mega_stone_after_mega_evolution() {
-    let mut battle = make_battle(
-        0,
-        gengar().unwrap(),
-        gengar().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, gengar().unwrap(), gengar().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
@@ -198,12 +178,7 @@ fn cannot_take_mega_stone_after_mega_evolution() {
 
 #[test]
 fn embargo_cannot_stop_mega_evolution() {
-    let mut battle = make_battle(
-        0,
-        gengar().unwrap(),
-        gengar().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, gengar().unwrap(), gengar().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

@@ -51,12 +51,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn normalize_changes_move_type_to_normal() {
-    let mut battle = make_battle(
-        0,
-        delcatty().unwrap(),
-        delcatty().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, delcatty().unwrap(), delcatty().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -78,12 +73,7 @@ fn normalize_changes_move_type_to_normal() {
 
 #[test]
 fn normalize_does_not_change_natural_gift() {
-    let mut battle = make_battle(
-        0,
-        delcatty().unwrap(),
-        delcatty().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, delcatty().unwrap(), delcatty().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

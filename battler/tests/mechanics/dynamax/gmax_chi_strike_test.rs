@@ -59,12 +59,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn gmax_chi_strike_boosts_crit_ratio_and_stacks() {
-    let mut battle = make_battle(
-        0,
-        machamp().unwrap(),
-        machamp().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, machamp().unwrap(), machamp().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

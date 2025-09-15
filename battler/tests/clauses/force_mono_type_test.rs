@@ -5,8 +5,10 @@ use battler::{
     WrapResultError,
     error::ValidationError,
 };
-use battler_test_utils::TestBattleBuilder;
-use battler_test_utils::static_local_data_store;
+use battler_test_utils::{
+    TestBattleBuilder,
+    static_local_data_store,
+};
 use itertools::Itertools;
 
 fn make_battle_builder() -> TestBattleBuilder {

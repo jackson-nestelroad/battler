@@ -98,12 +98,7 @@ fn mon_cannot_mega_evolve_with_wrong_stone() {
 
 #[test]
 fn one_mon_can_mega_evolve() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -183,12 +178,7 @@ fn one_mon_can_mega_evolve() {
 
 #[test]
 fn mega_evolution_persists_on_switch() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
@@ -230,12 +220,7 @@ fn mega_evolution_persists_on_switch() {
 
 #[test]
 fn mega_evolution_reverts_on_faint() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
@@ -329,12 +314,7 @@ fn mega_evolution_reverts_on_faint() {
 
 #[test]
 fn mega_evolution_occurs_in_speed_order() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));

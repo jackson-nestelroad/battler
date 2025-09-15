@@ -70,13 +70,7 @@ fn make_battle(
 
 #[test]
 fn mirror_move_copies_targets_last_move() {
-    let mut battle = make_battle(
-        BattleType::Singles,
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // Fails with no last move.
@@ -192,13 +186,7 @@ fn mirror_move_copies_targets_last_move() {
 
 #[test]
 fn mirror_move_locks_target_like_source_move() {
-    let mut battle = make_battle(
-        BattleType::Doubles,
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));

@@ -50,12 +50,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn liquid_ooze_damages_attacker_on_drain() {
-    let mut battle = make_battle(
-        0,
-        swalot().unwrap(),
-        swalot().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, swalot().unwrap(), swalot().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

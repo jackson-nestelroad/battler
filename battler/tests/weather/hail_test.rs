@@ -156,12 +156,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn sandstorm_lasts_for_five_turns() {
-    let mut battle = make_battle(
-        0,
-        dewgong().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, dewgong().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -220,12 +215,8 @@ fn sandstorm_lasts_for_five_turns() {
 
 #[test]
 fn hail_lasts_for_eight_turns_with_icy_rock() {
-    let mut battle = make_battle(
-        0,
-        dewgong_with_icy_rock().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, dewgong_with_icy_rock().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -337,12 +328,7 @@ fn hail_warning_starts_hail_on_switch() {
 
 #[test]
 fn air_lock_suppresses_sandstorm() {
-    let mut battle = make_battle(
-        0,
-        dewgong().unwrap(),
-        rayquaza().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, dewgong().unwrap(), rayquaza().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -400,12 +386,7 @@ fn utility_umbrella_does_not_suppress_sandstorm() {
 
 #[test]
 fn dig_is_protected_from_residual_damage() {
-    let mut battle = make_battle(
-        0,
-        dewgong().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, dewgong().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

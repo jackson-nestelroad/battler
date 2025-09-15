@@ -89,13 +89,7 @@ fn make_battle(
 
 #[test]
 fn aromatherapy_cures_all_statuses_on_side() {
-    let mut battle = make_battle(
-        BattleType::Singles,
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));

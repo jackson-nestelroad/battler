@@ -144,12 +144,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn harsh_sunlight_lasts_five_turns() {
-    let mut battle = make_battle(
-        0,
-        charizard().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, charizard().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -196,12 +191,8 @@ fn harsh_sunlight_lasts_five_turns() {
 
 #[test]
 fn harsh_sunlight_lasts_eight_turns_with_heat_rock() {
-    let mut battle = make_battle(
-        0,
-        charizard_with_heat_rock().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, charizard_with_heat_rock().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -266,12 +257,7 @@ fn harsh_sunlight_lasts_eight_turns_with_heat_rock() {
 
 #[test]
 fn harsh_sunlight_boosts_fire_damage() {
-    let mut battle = make_battle(
-        0,
-        charizard().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, charizard().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -313,12 +299,7 @@ fn harsh_sunlight_boosts_fire_damage() {
 
 #[test]
 fn harsh_sunlight_reduces_water_damage() {
-    let mut battle = make_battle(
-        0,
-        charizard().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, charizard().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -360,12 +341,7 @@ fn harsh_sunlight_reduces_water_damage() {
 
 #[test]
 fn harsh_sunlight_removes_charge_turn_from_solar_beam() {
-    let mut battle = make_battle(
-        0,
-        charizard().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, charizard().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -399,12 +375,8 @@ fn harsh_sunlight_removes_charge_turn_from_solar_beam() {
 
 #[test]
 fn drought_starts_harsh_sunlight_on_switch() {
-    let mut battle = make_battle(
-        0,
-        charizard_with_drought().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, charizard_with_drought().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -456,12 +428,7 @@ fn drought_starts_harsh_sunlight_on_switch() {
 
 #[test]
 fn air_lock_suppresses_harsh_sunlight() {
-    let mut battle = make_battle(
-        0,
-        charizard().unwrap(),
-        rayquaza().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, charizard().unwrap(), rayquaza().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -517,12 +484,7 @@ fn air_lock_suppresses_harsh_sunlight() {
 
 #[test]
 fn harsh_sunlight_increases_growth_boost() {
-    let mut battle = make_battle(
-        0,
-        charizard().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, charizard().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));

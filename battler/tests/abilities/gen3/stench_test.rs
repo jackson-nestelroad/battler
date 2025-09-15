@@ -51,12 +51,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn stench_adds_change_to_flinch() {
-    let mut battle = make_battle(
-        0,
-        grimer().unwrap(),
-        grimer().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, grimer().unwrap(), grimer().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

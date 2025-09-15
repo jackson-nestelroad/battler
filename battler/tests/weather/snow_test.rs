@@ -116,12 +116,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn snow_lasts_for_five_turns() {
-    let mut battle = make_battle(
-        0,
-        dewgong().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, dewgong().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -168,12 +163,8 @@ fn snow_lasts_for_five_turns() {
 
 #[test]
 fn snow_lasts_for_eight_turns_with_icy_rock() {
-    let mut battle = make_battle(
-        0,
-        dewgong_with_icy_rock().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, dewgong_with_icy_rock().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -238,12 +229,7 @@ fn snow_lasts_for_eight_turns_with_icy_rock() {
 
 #[test]
 fn snow_boosts_ice_defense() {
-    let mut battle = make_battle(
-        345332,
-        dewgong().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(345332, dewgong().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

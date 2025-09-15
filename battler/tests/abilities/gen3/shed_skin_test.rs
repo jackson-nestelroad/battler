@@ -51,12 +51,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn shed_skin_has_chance_to_cure_status() {
-    let mut battle = make_battle(
-        0,
-        seviper().unwrap(),
-        seviper().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, seviper().unwrap(), seviper().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

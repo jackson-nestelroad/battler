@@ -52,12 +52,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn leaf_guard_prevents_status_in_sun() {
-    let mut battle = make_battle(
-        0,
-        budew().unwrap(),
-        budew().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, budew().unwrap(), budew().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -81,12 +76,7 @@ fn leaf_guard_prevents_status_in_sun() {
 
 #[test]
 fn leaf_guard_prevents_yawn_in_sun() {
-    let mut battle = make_battle(
-        0,
-        budew().unwrap(),
-        budew().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, budew().unwrap(), budew().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

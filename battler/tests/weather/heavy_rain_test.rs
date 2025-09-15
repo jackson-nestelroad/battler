@@ -126,12 +126,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn primordial_sea_starts_heavy_rain_on_switch_in() {
-    let mut battle = make_battle(
-        0,
-        kyogre().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, kyogre().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -165,12 +160,7 @@ fn primordial_sea_starts_heavy_rain_on_switch_in() {
 
 #[test]
 fn primordial_sea_dissipates_fire_type_moves() {
-    let mut battle = make_battle(
-        0,
-        kyogre().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, kyogre().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -200,12 +190,7 @@ fn primordial_sea_dissipates_fire_type_moves() {
 
 #[test]
 fn normal_rain_cannot_override_primordial_sea() {
-    let mut battle = make_battle(
-        0,
-        kyogre().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, kyogre().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -235,12 +220,8 @@ fn normal_rain_cannot_override_primordial_sea() {
 
 #[test]
 fn primordial_sea_stops_when_last_mon_with_ability_switches_out() {
-    let mut battle = make_battle(
-        0,
-        charizard_kyogre().unwrap(),
-        charizard_kyogre().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, charizard_kyogre().unwrap(), charizard_kyogre().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));

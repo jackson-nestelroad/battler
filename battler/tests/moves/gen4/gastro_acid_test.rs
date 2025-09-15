@@ -165,13 +165,8 @@ fn gastro_acid_suppresses_ability() {
 
 #[test]
 fn gastro_acid_fails_on_unsuppressible_ability() {
-    let mut battle = make_battle(
-        BattleType::Singles,
-        0,
-        swalot().unwrap(),
-        komala().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(BattleType::Singles, 0, swalot().unwrap(), komala().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -236,13 +231,8 @@ fn gastro_acid_cannot_be_passed_to_unsuppressible_ability() {
 fn gastro_acid_triggers_ability_end() {
     let mut team = psyduck_castform().unwrap();
     team.members[0].ability = "Cloud Nine".to_owned();
-    let mut battle = make_battle(
-        BattleType::Doubles,
-        0,
-        psyduck_castform().unwrap(),
-        team,
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(BattleType::Doubles, 0, psyduck_castform().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(

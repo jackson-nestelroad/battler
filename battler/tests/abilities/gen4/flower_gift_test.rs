@@ -94,12 +94,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn flower_gift_changes_cherrim_form_in_sun() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -130,12 +125,7 @@ fn flower_gift_changes_cherrim_form_in_sun() {
 
 #[test]
 fn flower_gift_boosts_attack_in_sun() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -182,12 +172,7 @@ fn flower_gift_boosts_attack_in_sun() {
 
 #[test]
 fn flower_gift_boosts_ally_attack_in_sun() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -234,12 +219,7 @@ fn flower_gift_boosts_ally_attack_in_sun() {
 
 #[test]
 fn flower_gift_boosts_special_defense_in_sun() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -288,12 +268,7 @@ fn flower_gift_boosts_special_defense_in_sun() {
 
 #[test]
 fn flower_gift_boosts_ally_special_defense_in_sun() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -342,12 +317,7 @@ fn flower_gift_boosts_ally_special_defense_in_sun() {
 
 #[test]
 fn flower_gift_does_not_activate_when_transformed() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -379,12 +349,7 @@ fn flower_gift_does_not_activate_when_transformed() {
 
 #[test]
 fn flower_gift_ends_due_to_gaining_weather_suppressing_item() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -475,12 +440,7 @@ fn flower_gift_activates_when_weather_is_unsuppressed() {
 
 #[test]
 fn can_transform_into_cherrim_sunshine() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));

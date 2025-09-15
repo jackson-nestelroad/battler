@@ -47,12 +47,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn speed_boost_boosts_speed_at_end_of_turn() {
-    let mut battle = make_battle(
-        0,
-        yanma().unwrap(),
-        yanma().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, yanma().unwrap(), yanma().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

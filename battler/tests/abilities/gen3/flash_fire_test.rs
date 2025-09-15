@@ -90,12 +90,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn flash_fire_boosts_attack_after_hit_by_fire_move() {
-    let mut battle = make_battle(
-        0,
-        ninetales().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, ninetales().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -137,12 +132,7 @@ fn flash_fire_boosts_attack_after_hit_by_fire_move() {
 
 #[test]
 fn flash_fire_gets_suppressed_and_reactivates() {
-    let mut battle = make_battle(
-        0,
-        ninetales().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, ninetales().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

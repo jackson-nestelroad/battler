@@ -320,13 +320,8 @@ fn neutralizing_gas_ends_ability_on_appearance() {
 fn neutralizing_gas_does_not_end_ability_on_appearance_with_ability_shield() {
     let mut team = ninetales_weezing().unwrap();
     team.members[0].item = Some("Ability Shield".to_owned());
-    let mut battle = make_battle(
-        BattleType::Singles,
-        0,
-        ninetales_weezing().unwrap(),
-        team,
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(BattleType::Singles, 0, ninetales_weezing().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -458,13 +453,8 @@ fn neutralizing_gas_restarts_abilities_on_end() {
 fn neutralizing_gas_does_not_suppress_with_ability_shield() {
     let mut team = psyduck_castform().unwrap();
     team.members[1].item = Some("Ability Shield".to_owned());
-    let mut battle = make_battle(
-        BattleType::Doubles,
-        0,
-        koffing_mightyena().unwrap(),
-        team,
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(BattleType::Doubles, 0, koffing_mightyena().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));

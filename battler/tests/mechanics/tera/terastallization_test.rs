@@ -146,12 +146,7 @@ fn one_mon_can_terastallize() {
 
 #[test]
 fn terastallization_preserved_on_switch() {
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        eevee().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,tera"), Ok(()));
@@ -190,12 +185,7 @@ fn terastallization_preserved_on_switch() {
 
 #[test]
 fn terastallization_ends_on_faint() {
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        eevee().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,tera"), Ok(()));
@@ -285,12 +275,7 @@ fn terastallization_gives_stab_for_tera_type() {
 
 #[test]
 fn terastallization_boosts_stab_for_tera_type_if_mon_has_original_type() {
-    let mut battle = make_battle(
-        0,
-        eevee().unwrap(),
-        eevee().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, eevee().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2,tera"), Ok(()));

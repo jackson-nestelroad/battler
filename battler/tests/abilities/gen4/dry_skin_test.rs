@@ -52,12 +52,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn dry_skin_resists_water_moves() {
-    let mut battle = make_battle(
-        0,
-        toxicroak().unwrap(),
-        toxicroak().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, toxicroak().unwrap(), toxicroak().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -77,12 +72,7 @@ fn dry_skin_resists_water_moves() {
 
 #[test]
 fn dry_skin_heals_when_hit_by_water_move() {
-    let mut battle = make_battle(
-        0,
-        toxicroak().unwrap(),
-        toxicroak().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, toxicroak().unwrap(), toxicroak().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -106,12 +96,7 @@ fn dry_skin_heals_when_hit_by_water_move() {
 
 #[test]
 fn dry_skin_heals_in_rain() {
-    let mut battle = make_battle(
-        0,
-        toxicroak().unwrap(),
-        toxicroak().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, toxicroak().unwrap(), toxicroak().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -137,12 +122,7 @@ fn dry_skin_heals_in_rain() {
 
 #[test]
 fn dry_skin_damages_in_sun() {
-    let mut battle = make_battle(
-        0,
-        toxicroak().unwrap(),
-        toxicroak().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, toxicroak().unwrap(), toxicroak().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));

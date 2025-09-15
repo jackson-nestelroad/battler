@@ -52,12 +52,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn magic_guard_prevents_non_move_damage() {
-    let mut battle = make_battle(
-        0,
-        alakazam().unwrap(),
-        alakazam().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, alakazam().unwrap(), alakazam().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -86,12 +81,7 @@ fn magic_guard_prevents_non_move_damage() {
 
 #[test]
 fn magic_guard_does_not_prevent_confusion_damage() {
-    let mut battle = make_battle(
-        0,
-        alakazam().unwrap(),
-        alakazam().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, alakazam().unwrap(), alakazam().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));

@@ -50,12 +50,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn rain_dish_heals_in_rain() {
-    let mut battle = make_battle(
-        0,
-        lotad().unwrap(),
-        lotad().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, lotad().unwrap(), lotad().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

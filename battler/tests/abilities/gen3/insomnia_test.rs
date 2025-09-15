@@ -49,12 +49,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn insomnia_resists_sleep() {
-    let mut battle = make_battle(
-        0,
-        drowzee().unwrap(),
-        drowzee().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, drowzee().unwrap(), drowzee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

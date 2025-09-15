@@ -49,12 +49,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn aftermath_deals_damage_to_opponent_on_contact_on_faint() {
-    let mut battle = make_battle(
-        0,
-        drifblim().unwrap(),
-        drifblim().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, drifblim().unwrap(), drifblim().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

@@ -80,12 +80,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn stellar_type_uses_original_type_defensively() {
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        eevee().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,tera"), Ok(()));
@@ -114,12 +109,7 @@ fn stellar_type_uses_original_type_defensively() {
 
 #[test]
 fn stellar_type_boosts_moves_once_per_type() {
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        eevee().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,tera"), Ok(()));
@@ -225,12 +215,7 @@ fn stellar_type_boosts_moves_once_per_type() {
 
 #[test]
 fn stellar_type_is_super_effective_on_terastallized_targets() {
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        eevee().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4,tera"), Ok(()));

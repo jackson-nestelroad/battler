@@ -67,12 +67,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn potion_heals_20_hp() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -106,12 +101,7 @@ fn potion_heals_20_hp() {
 
 #[test]
 fn using_item_removes_from_bag() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -135,12 +125,7 @@ fn using_item_removes_from_bag() {
 
 #[test]
 fn potion_can_heal_inactive_mon() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -182,12 +167,7 @@ fn potion_can_heal_inactive_mon() {
 
 #[test]
 fn potion_fails_at_max_hp() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -198,12 +178,7 @@ fn potion_fails_at_max_hp() {
 
 #[test]
 fn potion_fails_on_fainted_mon() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -225,12 +200,7 @@ fn potion_fails_on_fainted_mon() {
 
 #[test]
 fn potion_fails_on_foe() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -241,12 +211,7 @@ fn potion_fails_on_foe() {
 
 #[test]
 fn embargo_prevents_potion_usage_from_bag() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));
@@ -261,12 +226,7 @@ fn embargo_prevents_potion_usage_from_bag() {
 
 #[test]
 fn potion_heals_despite_heal_block() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "pass"), Ok(()));

@@ -68,13 +68,7 @@ fn make_battle(
 
 #[test]
 fn metronome_uses_random_move() {
-    let mut battle = make_battle(
-        BattleType::Doubles,
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

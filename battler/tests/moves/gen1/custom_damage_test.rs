@@ -193,12 +193,8 @@ fn super_fang_does_half_hp_damge() {
 
 #[test]
 fn low_kick_deals_damage_based_on_weight() {
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        mon_by_species("Chespin").unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, pikachu().unwrap(), mon_by_species("Chespin").unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
@@ -215,12 +211,8 @@ fn low_kick_deals_damage_based_on_weight() {
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);
 
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        mon_by_species("Turtwig").unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, pikachu().unwrap(), mon_by_species("Turtwig").unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
@@ -237,12 +229,8 @@ fn low_kick_deals_damage_based_on_weight() {
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);
 
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        mon_by_species("Serperior").unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, pikachu().unwrap(), mon_by_species("Serperior").unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
@@ -259,12 +247,8 @@ fn low_kick_deals_damage_based_on_weight() {
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);
 
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        mon_by_species("Wailord").unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, pikachu().unwrap(), mon_by_species("Wailord").unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));

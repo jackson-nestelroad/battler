@@ -78,12 +78,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn natural_cure_heals_status_on_switch_out() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -112,12 +107,7 @@ fn natural_cure_heals_status_on_switch_out() {
 
 #[test]
 fn natural_cure_heals_status_on_battle_end() {
-    let mut battle = make_battle(
-        0,
-        team_1().unwrap(),
-        team_2().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

@@ -49,12 +49,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn pressure_deducts_extra_pp_from_opponent() {
-    let mut battle = make_battle(
-        0,
-        dusclops().unwrap(),
-        dusclops().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, dusclops().unwrap(), dusclops().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

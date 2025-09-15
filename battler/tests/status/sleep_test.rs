@@ -54,12 +54,8 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn sleep_prevents_movement_until_waking_up() {
-    let mut battle = make_battle(
-        910624796386061,
-        charizard().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(910624796386061, charizard().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -114,12 +110,8 @@ fn sleep_prevents_movement_until_waking_up() {
 
 #[test]
 fn sleep_usable_moves_can_only_be_used_while_asleep() {
-    let mut battle = make_battle(
-        632700081244845,
-        charizard().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(632700081244845, charizard().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

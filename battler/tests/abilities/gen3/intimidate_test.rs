@@ -66,12 +66,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn intimidate_lowers_adjacent_foes_attack_on_appearance() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -129,12 +124,7 @@ fn intimidate_lowers_adjacent_foes_attack_on_appearance() {
 
 #[test]
 fn substitute_resists_intimidate() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(

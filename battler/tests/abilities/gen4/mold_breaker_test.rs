@@ -107,12 +107,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn mold_breaker_suppresses_breakable_ability() {
-    let mut battle = make_battle(
-        0,
-        rampardos().unwrap(),
-        shedinja().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, rampardos().unwrap(), shedinja().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -144,12 +139,7 @@ fn mold_breaker_suppresses_breakable_ability() {
 
 #[test]
 fn mold_breaker_does_not_suppress_non_breakable_ability() {
-    let mut battle = make_battle(
-        0,
-        rampardos().unwrap(),
-        bastiodon().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, rampardos().unwrap(), bastiodon().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -191,12 +181,7 @@ fn mold_breaker_does_not_suppress_breakable_ability_with_ability_shield() {
 
 #[test]
 fn gastro_acid_suppresses_mold_breaker() {
-    let mut battle = make_battle(
-        0,
-        rampardos().unwrap(),
-        gengar().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, rampardos().unwrap(), gengar().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

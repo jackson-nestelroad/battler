@@ -869,7 +869,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
 #[cfg(test)]
 mod team_validator_test {
-    
+
     use battler_test_utils::static_local_data_store;
     use serde::Deserialize;
 

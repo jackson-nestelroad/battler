@@ -89,12 +89,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn destiny_bond_faints_attacking_mon() {
-    let mut battle = make_battle(
-        0,
-        level_50_team().unwrap(),
-        level_100_team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, level_50_team().unwrap(), level_100_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -141,12 +136,7 @@ fn destiny_bond_faints_attacking_mon() {
 
 #[test]
 fn destiny_bond_resets_when_using_another_move() {
-    let mut battle = make_battle(
-        0,
-        level_50_team().unwrap(),
-        level_100_team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, level_50_team().unwrap(), level_100_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

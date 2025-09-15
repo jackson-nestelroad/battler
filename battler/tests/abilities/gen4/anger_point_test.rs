@@ -49,12 +49,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn anger_point_maximizes_attack_on_crit() {
-    let mut battle = make_battle(
-        0,
-        primeape().unwrap(),
-        primeape().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, primeape().unwrap(), primeape().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

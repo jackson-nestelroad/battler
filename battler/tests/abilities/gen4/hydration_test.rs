@@ -50,12 +50,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn hydration_cures_status_in_rain() {
-    let mut battle = make_battle(
-        0,
-        manaphy().unwrap(),
-        manaphy().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, manaphy().unwrap(), manaphy().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

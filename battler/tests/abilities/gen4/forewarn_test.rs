@@ -93,12 +93,7 @@ fn forewarn_reveals_strongest_move_of_one_foe_using_rng_for_ties() {
     let mut team = musharna().unwrap();
     team.members[0].moves = vec!["Tackle".to_owned(), "Pound".to_owned()];
     team.members[1].moves = vec!["Tackle".to_owned(), "Pound".to_owned()];
-    let mut battle = make_battle(
-        837467192384912,
-        musharna().unwrap(),
-        team,
-    )
-    .unwrap();
+    let mut battle = make_battle(837467192384912, musharna().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

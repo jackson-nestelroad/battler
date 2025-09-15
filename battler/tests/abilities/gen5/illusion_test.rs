@@ -123,12 +123,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn illusion_casts_illusion_until_damaged_by_move() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -181,12 +176,7 @@ fn illusion_casts_illusion_until_damaged_by_move() {
 
 #[test]
 fn illusion_target_influenced_by_switches() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -236,12 +226,7 @@ fn illusion_target_influenced_by_switches() {
 
 #[test]
 fn illusion_does_not_activate_if_no_other_team_members() {
-    let mut battle = make_battle(
-        0,
-        zoroark().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, zoroark().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -303,12 +288,7 @@ fn illusion_does_not_activate_if_no_other_unfainted_team_members() {
 
 #[test]
 fn illusion_ends_when_ability_is_suppressed() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -335,12 +315,7 @@ fn illusion_ends_when_ability_is_suppressed() {
 
 #[test]
 fn illusion_ends_when_ability_is_suppressed_with_neutralizing_gass() {
-    let mut battle = make_battle(
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 4"), Ok(()));

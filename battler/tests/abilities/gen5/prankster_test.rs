@@ -87,12 +87,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn prankster_boosts_priority_of_status_moves() {
-    let mut battle = make_battle(
-        0,
-        whimsicott().unwrap(),
-        ninjask().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, whimsicott().unwrap(), ninjask().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -113,12 +108,7 @@ fn prankster_boosts_priority_of_status_moves() {
 
 #[test]
 fn dark_types_resist_prankster_boosted_moves() {
-    let mut battle = make_battle(
-        0,
-        whimsicott().unwrap(),
-        sableye().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, whimsicott().unwrap(), sableye().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

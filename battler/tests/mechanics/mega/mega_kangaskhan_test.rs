@@ -54,12 +54,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn kangaskhan_mega_evolves_and_gains_parental_bond() {
-    let mut battle = make_battle(
-        0,
-        kangaskhan().unwrap(),
-        kangaskhan().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, kangaskhan().unwrap(), kangaskhan().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));

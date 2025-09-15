@@ -68,12 +68,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn scrappy_ignores_immunity_for_ghost_types() {
-    let mut battle = make_battle(
-        0,
-        kangaskhan().unwrap(),
-        gengar().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, kangaskhan().unwrap(), gengar().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

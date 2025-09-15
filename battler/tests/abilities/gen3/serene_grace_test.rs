@@ -51,12 +51,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn serene_grace_doubles_secondary_effect_chances() {
-    let mut battle = make_battle(
-        0,
-        jirachi().unwrap(),
-        jirachi().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, jirachi().unwrap(), jirachi().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

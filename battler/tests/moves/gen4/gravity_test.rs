@@ -255,13 +255,7 @@ fn gravity_cancels_and_disables_fly_after_used() {
 fn gravity_cancels_fly_before_first_use() {
     let mut staraptor = staraptor().unwrap();
     staraptor.members[0].level = 1;
-    let mut battle = make_battle(
-        BattleType::Singles,
-        0,
-        probopass().unwrap(),
-        staraptor,
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, probopass().unwrap(), staraptor).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -284,13 +278,7 @@ fn gravity_cancels_fly_before_first_use() {
 fn gravity_cancels_fly_before_second_use() {
     let mut staraptor = staraptor().unwrap();
     staraptor.members[0].level = 1;
-    let mut battle = make_battle(
-        BattleType::Singles,
-        0,
-        probopass().unwrap(),
-        staraptor,
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, probopass().unwrap(), staraptor).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -353,13 +341,8 @@ fn gravity_cancels_sky_drop() {
 fn gravity_cancels_sky_drop_before_second_use() {
     let mut team = probopass_hawlucha().unwrap();
     team.members[1].level = 1;
-    let mut battle = make_battle(
-        BattleType::Doubles,
-        0,
-        probopass_hawlucha().unwrap(),
-        team,
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(BattleType::Doubles, 0, probopass_hawlucha().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));

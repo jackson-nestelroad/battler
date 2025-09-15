@@ -49,12 +49,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn bad_dreams_inflicts_damage_when_asleep() {
-    let mut battle = make_battle(
-        0,
-        darkrai().unwrap(),
-        darkrai().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, darkrai().unwrap(), darkrai().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

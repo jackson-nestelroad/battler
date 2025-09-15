@@ -81,12 +81,7 @@ fn apply_rng(battle: &mut PublicCoreBattle, shake_probability: u64) {
 
 #[test]
 fn beast_ball_has_low_catch_rate_for_non_ultra_beast() {
-    let mut battle = make_battle(
-        0,
-        bulbasaur().unwrap(),
-        bulbasaur().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, bulbasaur().unwrap(), bulbasaur().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 38489);
@@ -122,12 +117,7 @@ fn beast_ball_has_low_catch_rate_for_non_ultra_beast() {
 
 #[test]
 fn beast_ball_works_for_ultra_beasts() {
-    let mut battle = make_battle(
-        0,
-        bulbasaur().unwrap(),
-        buzzwole().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, bulbasaur().unwrap(), buzzwole().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 24966);
@@ -175,12 +165,7 @@ fn beast_ball_works_for_ultra_beasts() {
 
 #[test]
 fn master_ball_works_for_ultra_beasts() {
-    let mut battle = make_battle(
-        0,
-        bulbasaur().unwrap(),
-        buzzwole().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, bulbasaur().unwrap(), buzzwole().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 65535);

@@ -177,12 +177,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn sandstorm_lasts_for_five_turns() {
-    let mut battle = make_battle(
-        0,
-        golem().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, golem().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -241,12 +236,8 @@ fn sandstorm_lasts_for_five_turns() {
 
 #[test]
 fn sandstorm_lasts_for_eight_turns_with_smooth_rock() {
-    let mut battle = make_battle(
-        0,
-        golem_with_smooth_rock().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, golem_with_smooth_rock().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -332,12 +323,7 @@ fn sandstorm_lasts_for_eight_turns_with_smooth_rock() {
 
 #[test]
 fn sandstorm_boosts_rock_special_defense() {
-    let mut battle = make_battle(
-        0,
-        golem().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, golem().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -391,12 +377,7 @@ fn sandstorm_boosts_rock_special_defense() {
 
 #[test]
 fn steel_types_resist_sandstorm() {
-    let mut battle = make_battle(
-        0,
-        golem().unwrap(),
-        steelix().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, golem().unwrap(), steelix().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -417,12 +398,8 @@ fn steel_types_resist_sandstorm() {
 
 #[test]
 fn sand_stream_starts_sandstorm_on_switch() {
-    let mut battle = make_battle(
-        0,
-        golem_with_sand_stream().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, golem_with_sand_stream().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -443,12 +420,7 @@ fn sand_stream_starts_sandstorm_on_switch() {
 
 #[test]
 fn air_lock_suppresses_sandstorm() {
-    let mut battle = make_battle(
-        0,
-        golem().unwrap(),
-        rayquaza().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, golem().unwrap(), rayquaza().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -506,12 +478,7 @@ fn utility_umbrella_does_not_suppress_sandstorm() {
 
 #[test]
 fn dig_is_protected_from_residual_damage() {
-    let mut battle = make_battle(
-        0,
-        golem().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, golem().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

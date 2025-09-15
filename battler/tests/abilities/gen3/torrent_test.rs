@@ -69,12 +69,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn torrent_boosts_water_attack_with_one_third_hp() {
-    let mut battle = make_battle(
-        0,
-        swampert().unwrap(),
-        sceptile().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, swampert().unwrap(), sceptile().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

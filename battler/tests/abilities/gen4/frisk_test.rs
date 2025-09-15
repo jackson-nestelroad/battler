@@ -58,12 +58,7 @@ fn frisk_announces_foe_items() {
     let mut team = stantler_tauros().unwrap();
     team.members[0].item = Some("Cheri Berry".to_owned());
     team.members[1].item = Some("Life Orb".to_owned());
-    let mut battle = make_battle(
-        0,
-        team,
-        stantler_tauros().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, team, stantler_tauros().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

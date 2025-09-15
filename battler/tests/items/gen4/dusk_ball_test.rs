@@ -70,13 +70,8 @@ fn apply_rng(battle: &mut PublicCoreBattle) {
 
 #[test]
 fn dusk_ball_does_not_increase_catch_rate_in_day() {
-    let mut battle = make_battle(
-        0,
-        graveler().unwrap(),
-        graveler().unwrap(),
-        TimeOfDay::Day,
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, graveler().unwrap(), graveler().unwrap(), TimeOfDay::Day).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle);

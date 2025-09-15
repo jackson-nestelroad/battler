@@ -118,12 +118,8 @@ fn lunar_dance_fails_if_cannot_switch() {
 
 #[test]
 fn lunar_dance_faints_user_and_heals_slot() {
-    let mut battle = make_battle(
-        0,
-        three_cresselia().unwrap(),
-        three_cresselia().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, three_cresselia().unwrap(), three_cresselia().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

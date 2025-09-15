@@ -89,12 +89,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn forecast_transforms_castform_in_rain() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -121,12 +116,7 @@ fn forecast_transforms_castform_in_rain() {
 
 #[test]
 fn forecast_transforms_castform_in_harsh_sunlight() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -153,12 +143,7 @@ fn forecast_transforms_castform_in_harsh_sunlight() {
 
 #[test]
 fn forecast_transforms_castform_in_hail() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -188,12 +173,7 @@ fn forecast_transforms_castform_in_hail() {
 
 #[test]
 fn forecast_transforms_castform_in_snow() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
@@ -220,12 +200,7 @@ fn forecast_transforms_castform_in_snow() {
 
 #[test]
 fn forecast_fails_for_transformed_ditto() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -254,12 +229,7 @@ fn forecast_fails_for_transformed_ditto() {
 
 #[test]
 fn forecast_reverts_due_to_suppressed_weather() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -391,12 +361,7 @@ fn forecast_activates_due_to_suppressing_weather_suppressing_item() {
 
 #[test]
 fn forecast_reverts_due_to_weather_suppressing_move() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -427,12 +392,7 @@ fn forecast_reverts_due_to_weather_suppressing_move() {
 
 #[test]
 fn forecast_reverts_due_to_losing_ability() {
-    let mut battle = make_battle(
-        0,
-        castform().unwrap(),
-        opponents().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

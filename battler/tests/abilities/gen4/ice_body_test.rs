@@ -51,12 +51,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn ice_body_heals_in_hail() {
-    let mut battle = make_battle(
-        0,
-        seel().unwrap(),
-        seel().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, seel().unwrap(), seel().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -85,12 +80,7 @@ fn ice_body_heals_in_hail() {
 
 #[test]
 fn ice_body_heals_in_snow() {
-    let mut battle = make_battle(
-        0,
-        seel().unwrap(),
-        seel().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, seel().unwrap(), seel().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

@@ -49,12 +49,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn motor_drive_boosts_speed_on_electric_move() {
-    let mut battle = make_battle(
-        0,
-        electivire().unwrap(),
-        electivire().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, electivire().unwrap(), electivire().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

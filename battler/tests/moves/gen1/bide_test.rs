@@ -68,13 +68,7 @@ fn make_battle(
 
 #[test]
 fn bide_deals_double_damage_back_to_last_source() {
-    let mut battle = make_battle(
-        BattleType::Doubles,
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -140,13 +134,7 @@ fn bide_deals_double_damage_back_to_last_source() {
 
 #[test]
 fn bide_fails_if_no_damage_is_directly_received() {
-    let mut battle = make_battle(
-        BattleType::Singles,
-        0,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

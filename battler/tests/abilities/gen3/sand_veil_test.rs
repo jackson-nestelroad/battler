@@ -49,12 +49,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn sand_veil_adds_immunity_to_sandstorm() {
-    let mut battle = make_battle(
-        0,
-        pikachu().unwrap(),
-        pikachu().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

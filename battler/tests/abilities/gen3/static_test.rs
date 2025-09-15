@@ -51,12 +51,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn static_has_chance_to_paralyze_on_contact() {
-    let mut battle = make_battle(
-        0,
-        poochyena().unwrap(),
-        poochyena().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, poochyena().unwrap(), poochyena().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

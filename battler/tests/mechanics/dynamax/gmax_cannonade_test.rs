@@ -77,12 +77,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn gmax_cannonade_damages_non_water_types_at_end_of_turn() {
-    let mut battle = make_battle(
-        100,
-        blastoise().unwrap(),
-        venusaur().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, blastoise().unwrap(), venusaur().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));

@@ -108,12 +108,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn one_mon_can_dynamax_and_use_max_moves() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -242,12 +237,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
 
 #[test]
 fn dynamax_ends_on_switch() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -286,12 +276,7 @@ fn dynamax_ends_on_switch() {
 
 #[test]
 fn dynamax_ends_on_faint() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -336,12 +321,7 @@ fn dynamax_ends_on_faint() {
 
 #[test]
 fn dynamax_ends_after_three_turns() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -469,12 +449,7 @@ fn dynamax_level_increases_hp() {
 
 #[test]
 fn hp_ratio_stays_the_same_before_and_after_dynamax() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -573,12 +548,7 @@ fn dynamax_immune_to_choice_item() {
 
 #[test]
 fn zacian_cannot_dynamax_even_if_transformed() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
@@ -595,12 +565,7 @@ fn zacian_cannot_dynamax_even_if_transformed() {
 
 #[test]
 fn dynamax_immune_to_torment() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -634,12 +599,7 @@ fn dynamax_immune_to_torment() {
 
 #[test]
 fn dynamax_immune_to_flinch() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -679,12 +639,7 @@ fn dynamax_immune_to_flinch() {
 
 #[test]
 fn dynamax_immune_to_low_kick() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -718,12 +673,7 @@ fn dynamax_immune_to_low_kick() {
 
 #[test]
 fn dynamax_immune_to_encore() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -757,12 +707,7 @@ fn dynamax_immune_to_encore() {
 
 #[test]
 fn dynamax_immune_to_destiny_bond() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -809,12 +754,7 @@ fn dynamax_immune_to_destiny_bond() {
 
 #[test]
 fn dynamax_immune_to_skill_swap() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));

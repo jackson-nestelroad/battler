@@ -199,12 +199,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn rain_lasts_for_five_turns() {
-    let mut battle = make_battle(
-        0,
-        blastoise().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, blastoise().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -251,12 +246,8 @@ fn rain_lasts_for_five_turns() {
 
 #[test]
 fn rain_lasts_for_eight_turns_with_damp_rock() {
-    let mut battle = make_battle(
-        0,
-        blastoise_with_damp_rock().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, blastoise_with_damp_rock().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -321,12 +312,7 @@ fn rain_lasts_for_eight_turns_with_damp_rock() {
 
 #[test]
 fn rain_boosts_water_damage() {
-    let mut battle = make_battle(
-        0,
-        blastoise().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, blastoise().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -368,12 +354,7 @@ fn rain_boosts_water_damage() {
 
 #[test]
 fn rain_reduces_fire_damage() {
-    let mut battle = make_battle(
-        0,
-        blastoise().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, blastoise().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -415,12 +396,7 @@ fn rain_reduces_fire_damage() {
 
 #[test]
 fn rain_increases_thunder_accuracy() {
-    let mut battle = make_battle(
-        100,
-        blastoise().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, blastoise().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -473,12 +449,8 @@ fn rain_increases_thunder_accuracy() {
 
 #[test]
 fn drizzle_starts_rain_on_switch() {
-    let mut battle = make_battle(
-        0,
-        blastoise_with_drizzle().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle =
+        make_battle(0, blastoise_with_drizzle().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -530,12 +502,7 @@ fn drizzle_starts_rain_on_switch() {
 
 #[test]
 fn air_lock_suppresses_rain() {
-    let mut battle = make_battle(
-        0,
-        blastoise().unwrap(),
-        rayquaza().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, blastoise().unwrap(), rayquaza().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -595,12 +562,7 @@ fn air_lock_suppresses_rain() {
 
 #[test]
 fn rain_finishes_normally_with_air_lock() {
-    let mut battle = make_battle(
-        0,
-        blastoise().unwrap(),
-        rayquaza_kyogre().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, blastoise().unwrap(), rayquaza_kyogre().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

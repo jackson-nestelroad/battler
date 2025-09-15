@@ -70,12 +70,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn effect_spore_randomly_inflicts_status_to_attacker_on_contact() {
-    let mut battle = make_battle(
-        0,
-        mudkip().unwrap(),
-        shroomish().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, mudkip().unwrap(), shroomish().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
@@ -104,12 +99,7 @@ fn effect_spore_randomly_inflicts_status_to_attacker_on_contact() {
 
 #[test]
 fn effect_spore_causing_attacker_to_fall_asleep_cancels_multi_hit_move() {
-    let mut battle = make_battle(
-        0,
-        mudkip().unwrap(),
-        shroomish().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, mudkip().unwrap(), shroomish().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

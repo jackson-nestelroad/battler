@@ -88,12 +88,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn max_move_changes_based_on_type() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -216,12 +211,7 @@ fn max_move_changes_based_on_type() {
 
 #[test]
 fn status_move_changes_to_max_guard() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -301,12 +291,7 @@ fn max_move_changes_based_on_move_with_dynamic_type() {
 
 #[test]
 fn max_move_can_boost_allies_stats() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -338,12 +323,7 @@ fn max_move_can_boost_allies_stats() {
 
 #[test]
 fn max_move_varies_power_based_on_base_move() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -384,12 +364,7 @@ fn max_move_varies_power_based_on_base_move() {
 
 #[test]
 fn max_move_hits_through_protect() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -422,12 +397,7 @@ fn max_move_hits_through_protect() {
 
 #[test]
 fn feint_hits_through_max_guard() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -461,12 +431,7 @@ fn feint_hits_through_max_guard() {
 
 #[test]
 fn gigantamax_gets_gmax_move_for_certain_type() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -526,12 +491,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
 
 #[test]
 fn disable_fails_after_max_move() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -567,12 +527,7 @@ fn disable_fails_after_max_move() {
 
 #[test]
 fn mimic_fails_after_max_move() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -608,12 +563,7 @@ fn mimic_fails_after_max_move() {
 
 #[test]
 fn sketch_fails_after_max_move() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -649,12 +599,7 @@ fn sketch_fails_after_max_move() {
 
 #[test]
 fn spite_deducts_pp_of_base_move() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -690,12 +635,7 @@ fn spite_deducts_pp_of_base_move() {
 
 #[test]
 fn me_first_fails_for_max_move() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -731,12 +671,7 @@ fn me_first_fails_for_max_move() {
 
 #[test]
 fn max_move_stat_drop_hits_through_substitute() {
-    let mut battle = make_battle(
-        100,
-        team().unwrap(),
-        team().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));

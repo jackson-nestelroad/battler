@@ -53,12 +53,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn loaded_dice_removes_multiaccuracy() {
-    let mut battle = make_battle(
-        0,
-        maushold().unwrap(),
-        maushold().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, maushold().unwrap(), maushold().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -92,12 +87,7 @@ fn loaded_dice_removes_multiaccuracy() {
 
 #[test]
 fn loaded_dice_makes_multihit_move_hit_at_least_four_times() {
-    let mut battle = make_battle(
-        0,
-        maushold().unwrap(),
-        maushold().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, maushold().unwrap(), maushold().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

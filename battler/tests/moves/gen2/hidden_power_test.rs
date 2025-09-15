@@ -71,12 +71,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn hidden_power_uses_hidden_power_type() {
-    let mut battle = make_battle(
-        0,
-        unown_hp_dark().unwrap(),
-        unown_hp_psychic().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, unown_hp_dark().unwrap(), unown_hp_psychic().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

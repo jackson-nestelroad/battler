@@ -52,12 +52,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn cell_battery_increases_atk_on_electric_move() {
-    let mut battle = make_battle(
-        0,
-        emolga().unwrap(),
-        emolga().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, emolga().unwrap(), emolga().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -81,12 +76,7 @@ fn cell_battery_increases_atk_on_electric_move() {
 
 #[test]
 fn cell_battery_does_not_activate_if_atk_cannot_boost() {
-    let mut battle = make_battle(
-        0,
-        emolga().unwrap(),
-        emolga().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, emolga().unwrap(), emolga().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -113,12 +103,7 @@ fn cell_battery_does_not_activate_if_atk_cannot_boost() {
 
 #[test]
 fn embargo_prevents_cell_battery() {
-    let mut battle = make_battle(
-        0,
-        emolga().unwrap(),
-        emolga().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, emolga().unwrap(), emolga().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));

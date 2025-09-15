@@ -123,12 +123,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn desolate_land_starts_extremely_harsh_sunlight_on_switch_in() {
-    let mut battle = make_battle(
-        0,
-        groudon().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, groudon().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -162,12 +157,7 @@ fn desolate_land_starts_extremely_harsh_sunlight_on_switch_in() {
 
 #[test]
 fn desolate_land_dissipates_water_type_moves() {
-    let mut battle = make_battle(
-        0,
-        groudon().unwrap(),
-        blastoise().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, groudon().unwrap(), blastoise().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -197,12 +187,7 @@ fn desolate_land_dissipates_water_type_moves() {
 
 #[test]
 fn normal_harsh_sunlight_cannot_override_desolate_land() {
-    let mut battle = make_battle(
-        0,
-        groudon().unwrap(),
-        charizard().unwrap(),
-    )
-    .unwrap();
+    let mut battle = make_battle(0, groudon().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
