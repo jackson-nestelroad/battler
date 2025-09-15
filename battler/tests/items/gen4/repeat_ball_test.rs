@@ -3,8 +3,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PlayerDex,
     PublicCoreBattle,
     TeamData,
@@ -16,6 +14,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn graveler() -> Result<TeamData> {
@@ -48,12 +47,11 @@ fn apply_rng(battle: &mut PublicCoreBattle) {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
     dex: PlayerDex,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -68,14 +66,12 @@ fn make_battle(
         .with_team("protagonist", team_1)
         .with_player_dex("protagonist", dex)
         .with_team("wild", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn repeat_ball_does_not_increase_catch_rate_if_species_not_registered() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         graveler().unwrap(),
         graveler().unwrap(),
@@ -106,9 +102,7 @@ fn repeat_ball_does_not_increase_catch_rate_if_species_not_registered() {
 
 #[test]
 fn repeat_ball_increases_catch_rate_when_if_species_registered() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         graveler().unwrap(),
         graveler().unwrap(),

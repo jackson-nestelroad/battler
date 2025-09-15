@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn rapidash() -> Result<TeamData> {
@@ -36,11 +35,7 @@ fn rapidash() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)
@@ -52,13 +47,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn flinch_prevents_movement() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, rapidash().unwrap(), rapidash().unwrap()).unwrap();
+    let mut battle = make_battle(rapidash().unwrap(), rapidash().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

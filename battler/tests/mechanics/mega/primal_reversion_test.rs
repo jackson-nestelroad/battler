@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn groudon() -> Result<TeamData> {
@@ -67,12 +66,7 @@ fn kyogre() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -86,15 +80,14 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn groudon_undergoes_primal_reversion_on_switch_with_red_orb() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = groudon().unwrap();
     team.members[0].item = Some("Blue Orb".to_owned());
-    let mut battle = make_battle(&data, 0, groudon().unwrap(), team).unwrap();
+    let mut battle = make_battle(0, groudon().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -120,10 +113,9 @@ fn groudon_undergoes_primal_reversion_on_switch_with_red_orb() {
 
 #[test]
 fn kyogre_undergoes_primal_reversion_on_switch_with_blue_orb() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = kyogre().unwrap();
     team.members[0].item = Some("Red Orb".to_owned());
-    let mut battle = make_battle(&data, 0, kyogre().unwrap(), team).unwrap();
+    let mut battle = make_battle(0, kyogre().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -149,12 +141,11 @@ fn kyogre_undergoes_primal_reversion_on_switch_with_blue_orb() {
 
 #[test]
 fn primal_reversion_not_reverted_on_faint_and_revive() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = kyogre().unwrap();
     team_1.members[0].level = 1;
     let mut team_2 = kyogre().unwrap();
     team_2.members[0].item = None;
-    let mut battle = make_battle(&data, 0, team_1, team_2).unwrap();
+    let mut battle = make_battle(0, team_1, team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

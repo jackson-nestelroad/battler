@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn probopass() -> Result<TeamData> {
@@ -86,12 +85,11 @@ fn probopass_hawlucha() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     battle_type: BattleType,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)
@@ -102,14 +100,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn gravity_grounds_flying_types() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         probopass().unwrap(),
@@ -144,9 +140,7 @@ fn gravity_grounds_flying_types() {
 
 #[test]
 fn gravity_negates_levitate() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         probopass().unwrap(),
@@ -182,11 +176,9 @@ fn gravity_negates_levitate() {
 
 #[test]
 fn gravity_removes_magnet_rise() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = probopass().unwrap();
     team.members[0].ability = "No Ability".to_owned();
-    let mut battle =
-        make_battle(&data, BattleType::Singles, 0, team, probopass().unwrap()).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team, probopass().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -219,9 +211,7 @@ fn gravity_removes_magnet_rise() {
 
 #[test]
 fn gravity_cancels_and_disables_fly_after_used() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         probopass().unwrap(),
@@ -263,11 +253,9 @@ fn gravity_cancels_and_disables_fly_after_used() {
 
 #[test]
 fn gravity_cancels_fly_before_first_use() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut staraptor = staraptor().unwrap();
     staraptor.members[0].level = 1;
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         probopass().unwrap(),
@@ -294,11 +282,9 @@ fn gravity_cancels_fly_before_first_use() {
 
 #[test]
 fn gravity_cancels_fly_before_second_use() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut staraptor = staraptor().unwrap();
     staraptor.members[0].level = 1;
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         probopass().unwrap(),
@@ -332,9 +318,7 @@ fn gravity_cancels_fly_before_second_use() {
 
 #[test]
 fn gravity_cancels_sky_drop() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         probopass_hawlucha().unwrap(),
@@ -367,11 +351,9 @@ fn gravity_cancels_sky_drop() {
 
 #[test]
 fn gravity_cancels_sky_drop_before_second_use() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = probopass_hawlucha().unwrap();
     team.members[1].level = 1;
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         probopass_hawlucha().unwrap(),

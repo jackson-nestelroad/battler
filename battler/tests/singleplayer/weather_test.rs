@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_start_eq,
+    static_local_data_store,
 };
 
 fn pikachu() -> Result<TeamData> {
@@ -36,12 +35,11 @@ fn pikachu() -> Result<TeamData> {
 }
 
 fn make_trainer_singles_battle(
-    data: &dyn DataStore,
     seed: u64,
     weather: String,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -53,14 +51,12 @@ fn make_trainer_singles_battle(
         .add_player_to_side_2("trainer", "Trainer")
         .with_team("protagonist", team_1)
         .with_team("trainer", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn battle_starts_with_rain() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_trainer_singles_battle(
-        &data,
         0,
         "rainweather".to_owned(),
         pikachu().unwrap(),
@@ -87,9 +83,7 @@ fn battle_starts_with_rain() {
 
 #[test]
 fn battle_starts_with_harsh_sunlight() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_trainer_singles_battle(
-        &data,
         0,
         "harshsunlight".to_owned(),
         pikachu().unwrap(),
@@ -116,9 +110,7 @@ fn battle_starts_with_harsh_sunlight() {
 
 #[test]
 fn battle_starts_with_sandstorm() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_trainer_singles_battle(
-        &data,
         0,
         "sandstormweather".to_owned(),
         pikachu().unwrap(),
@@ -145,9 +137,7 @@ fn battle_starts_with_sandstorm() {
 
 #[test]
 fn battle_starts_with_hail() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_trainer_singles_battle(
-        &data,
         0,
         "hailweather".to_owned(),
         pikachu().unwrap(),
@@ -174,9 +164,7 @@ fn battle_starts_with_hail() {
 
 #[test]
 fn battle_starts_with_snow() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_trainer_singles_battle(
-        &data,
         0,
         "snowweather".to_owned(),
         pikachu().unwrap(),
@@ -203,9 +191,7 @@ fn battle_starts_with_snow() {
 
 #[test]
 fn battle_goes_back_to_default_weather() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_trainer_singles_battle(
-        &data,
         0,
         "rainweather".to_owned(),
         pikachu().unwrap(),

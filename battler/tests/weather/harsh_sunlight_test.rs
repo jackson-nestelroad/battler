@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn charizard() -> Result<TeamData> {
@@ -128,12 +127,7 @@ fn rayquaza() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -145,13 +139,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn harsh_sunlight_lasts_five_turns() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, charizard().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        charizard().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -198,9 +196,7 @@ fn harsh_sunlight_lasts_five_turns() {
 
 #[test]
 fn harsh_sunlight_lasts_eight_turns_with_heat_rock() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         charizard_with_heat_rock().unwrap(),
         blastoise().unwrap(),
@@ -270,8 +266,12 @@ fn harsh_sunlight_lasts_eight_turns_with_heat_rock() {
 
 #[test]
 fn harsh_sunlight_boosts_fire_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, charizard().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        charizard().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -313,8 +313,12 @@ fn harsh_sunlight_boosts_fire_damage() {
 
 #[test]
 fn harsh_sunlight_reduces_water_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, charizard().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        charizard().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -356,8 +360,12 @@ fn harsh_sunlight_reduces_water_damage() {
 
 #[test]
 fn harsh_sunlight_removes_charge_turn_from_solar_beam() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, charizard().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        charizard().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -391,9 +399,7 @@ fn harsh_sunlight_removes_charge_turn_from_solar_beam() {
 
 #[test]
 fn drought_starts_harsh_sunlight_on_switch() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         charizard_with_drought().unwrap(),
         blastoise().unwrap(),
@@ -450,8 +456,12 @@ fn drought_starts_harsh_sunlight_on_switch() {
 
 #[test]
 fn air_lock_suppresses_harsh_sunlight() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, charizard().unwrap(), rayquaza().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        charizard().unwrap(),
+        rayquaza().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -507,8 +517,12 @@ fn air_lock_suppresses_harsh_sunlight() {
 
 #[test]
 fn harsh_sunlight_increases_growth_boost() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, charizard().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        charizard().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));

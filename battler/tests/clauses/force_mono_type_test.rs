@@ -1,12 +1,12 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    LocalDataStore,
     TeamData,
     WrapResultError,
     error::ValidationError,
 };
 use battler_test_utils::TestBattleBuilder;
+use battler_test_utils::static_local_data_store;
 use itertools::Itertools;
 
 fn make_battle_builder() -> TestBattleBuilder {
@@ -94,10 +94,9 @@ fn three_water_mons() -> Result<TeamData> {
 
 #[test]
 fn enforces_mono_type() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle_builder()
         .with_rule("Force Mono Type = Water")
-        .build(&data)
+        .build(static_local_data_store())
         .unwrap();
 
     assert_matches::assert_matches!(
@@ -133,11 +132,10 @@ fn enforces_mono_type() {
 
 #[test]
 fn fails_for_missing_value() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     assert_matches::assert_matches!(
         make_battle_builder()
             .with_rule("Force Mono Type")
-            .build(&data)
+            .build(static_local_data_store())
             .err(),
         Some(err) => {
             assert!(format!("{err:#}").contains("rule Force Mono Type is invalid"), "{err:?}");

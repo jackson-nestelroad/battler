@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn sceptile() -> Result<TeamData> {
@@ -58,12 +57,7 @@ fn mightyena() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -75,13 +69,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn shell_bell_restores_hp_based_on_damage_dealt() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, sceptile().unwrap(), mightyena().unwrap()).unwrap();
+    let mut battle = make_battle(0, sceptile().unwrap(), mightyena().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -115,8 +108,7 @@ fn shell_bell_restores_hp_based_on_damage_dealt() {
 
 #[test]
 fn shell_bell_activates_after_multi_hit_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, sceptile().unwrap(), mightyena().unwrap()).unwrap();
+    let mut battle = make_battle(0, sceptile().unwrap(), mightyena().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -171,8 +163,7 @@ fn shell_bell_activates_after_multi_hit_move() {
 
 #[test]
 fn shell_bell_activates_after_hitting_substitute() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, sceptile().unwrap(), mightyena().unwrap()).unwrap();
+    let mut battle = make_battle(0, sceptile().unwrap(), mightyena().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn weezing() -> Result<TeamData> {
@@ -192,12 +191,11 @@ fn ninetales_weezing() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     battle_type: BattleType,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)
@@ -213,14 +211,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn neutralizing_gas_suppresses_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         weezing().unwrap(),
@@ -258,9 +254,7 @@ fn neutralizing_gas_suppresses_ability() {
 
 #[test]
 fn neutralizing_gas_ignores_unsuppressible_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         weezing().unwrap(),
@@ -288,9 +282,7 @@ fn neutralizing_gas_ignores_unsuppressible_ability() {
 
 #[test]
 fn neutralizing_gas_ends_ability_on_appearance() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         ninetales_weezing().unwrap(),
@@ -326,11 +318,9 @@ fn neutralizing_gas_ends_ability_on_appearance() {
 
 #[test]
 fn neutralizing_gas_does_not_end_ability_on_appearance_with_ability_shield() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = ninetales_weezing().unwrap();
     team.members[0].item = Some("Ability Shield".to_owned());
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         ninetales_weezing().unwrap(),
@@ -365,9 +355,7 @@ fn neutralizing_gas_does_not_end_ability_on_appearance_with_ability_shield() {
 
 #[test]
 fn neutralizing_gas_restarts_abilities_on_exit() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         koffing_mightyena().unwrap(),
@@ -419,9 +407,7 @@ fn neutralizing_gas_restarts_abilities_on_exit() {
 
 #[test]
 fn neutralizing_gas_restarts_abilities_on_end() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         koffing_mightyena().unwrap(),
@@ -470,11 +456,9 @@ fn neutralizing_gas_restarts_abilities_on_end() {
 
 #[test]
 fn neutralizing_gas_does_not_suppress_with_ability_shield() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = psyduck_castform().unwrap();
     team.members[1].item = Some("Ability Shield".to_owned());
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         koffing_mightyena().unwrap(),
@@ -528,9 +512,7 @@ fn neutralizing_gas_does_not_suppress_with_ability_shield() {
 
 #[test]
 fn neutralizing_gas_does_not_end_when_another_mon_has_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         koffing_mightyena().unwrap(),
@@ -598,9 +580,7 @@ fn neutralizing_gas_does_not_end_when_another_mon_has_ability() {
 
 #[test]
 fn neutralizing_gas_does_not_activate_when_transformed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         koffing_mightyena().unwrap(),

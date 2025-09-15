@@ -17,3 +17,5 @@ battler-client = { path = "../../battler-client" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
+
+battler-test-utils = { path = "../../battler-test-utils" }

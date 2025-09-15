@@ -3,8 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn venusaur() -> Result<TeamData> {
@@ -139,36 +138,32 @@ fn test_battle_builder(team_1: TeamData, team_2: TeamData) -> TestBattleBuilder 
 }
 
 fn make_battle_with_max_damage(
-    data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn make_battle_with_min_damage(
-    data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Min)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 // Damage: 31-37.
 #[test]
 fn venusaur_tackles_charizard() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -188,7 +183,7 @@ fn venusaur_tackles_charizard() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -211,10 +206,8 @@ fn venusaur_tackles_charizard() {
 // Damage: 29-34.
 #[test]
 fn venusaur_giga_drains_charizard() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -235,7 +228,7 @@ fn venusaur_giga_drains_charizard() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -259,10 +252,8 @@ fn venusaur_giga_drains_charizard() {
 // Damage: 44-52.
 #[test]
 fn venusaur_giga_drains_charizard_with_crit() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
@@ -286,7 +277,7 @@ fn venusaur_giga_drains_charizard_with_crit() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
@@ -313,10 +304,8 @@ fn venusaur_giga_drains_charizard_with_crit() {
 // Damage: 0.
 #[test]
 fn venusaur_earthquakes_charizard() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -337,10 +326,8 @@ fn venusaur_earthquakes_charizard() {
 // Damage: 320-378.
 #[test]
 fn charizard_fire_blasts_venusaur() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -361,7 +348,7 @@ fn charizard_fire_blasts_venusaur() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -385,10 +372,8 @@ fn charizard_fire_blasts_venusaur() {
 // Damage: 260-308.
 #[test]
 fn charizard_flamethrowers_venusaur() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -409,7 +394,7 @@ fn charizard_flamethrowers_venusaur() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -433,10 +418,8 @@ fn charizard_flamethrowers_venusaur() {
 // Damage: 218-258.
 #[test]
 fn charizard_air_slashes_venusaur() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -457,7 +440,7 @@ fn charizard_air_slashes_venusaur() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -481,10 +464,8 @@ fn charizard_air_slashes_venusaur() {
 // Damage: 52-62.
 #[test]
 fn charizard_dragon_claws_venusaur() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -504,7 +485,7 @@ fn charizard_dragon_claws_venusaur() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -527,10 +508,8 @@ fn charizard_dragon_claws_venusaur() {
 // Damage: 79-93.
 #[test]
 fn charizard_dragon_claws_venusaur_with_crit() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
@@ -553,7 +532,7 @@ fn charizard_dragon_claws_venusaur_with_crit() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
@@ -579,10 +558,8 @@ fn charizard_dragon_claws_venusaur_with_crit() {
 // Damage: 390-462.
 #[test]
 fn charizard_flamethrowers_venusaur_with_crit() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
@@ -606,7 +583,7 @@ fn charizard_flamethrowers_venusaur_with_crit() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), charizard().unwrap()).unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(2, 0)]);
@@ -633,11 +610,8 @@ fn charizard_flamethrowers_venusaur_with_crit() {
 // Damage: 102-120.
 #[test]
 fn level_60_charizard_flamethrowers_venusaur() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, venusaur().unwrap(), level_60_charizard().unwrap())
-            .unwrap();
+        make_battle_with_max_damage(venusaur().unwrap(), level_60_charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -658,8 +632,7 @@ fn level_60_charizard_flamethrowers_venusaur() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, venusaur().unwrap(), level_60_charizard().unwrap())
-            .unwrap();
+        make_battle_with_min_damage(venusaur().unwrap(), level_60_charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -684,15 +657,12 @@ fn level_60_charizard_flamethrowers_venusaur() {
 // Damage: 12-15.
 #[test]
 fn attack_and_defense_modifiers_impact_physical_move_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut venusaur = venusaur().unwrap();
     venusaur.members[0].moves[0] = "Growl".to_owned();
     venusaur.members[0].moves[1] = "Iron Defense".to_owned();
     let charizard = charizard().unwrap();
 
-    let mut battle =
-        make_battle_with_max_damage(&data, venusaur.clone(), charizard.clone()).unwrap();
+    let mut battle = make_battle_with_max_damage(venusaur.clone(), charizard.clone()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -732,7 +702,7 @@ fn attack_and_defense_modifiers_impact_physical_move_damage() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
-    let mut battle = make_battle_with_min_damage(&data, venusaur, charizard).unwrap();
+    let mut battle = make_battle_with_min_damage(venusaur, charizard).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -777,16 +747,13 @@ fn attack_and_defense_modifiers_impact_physical_move_damage() {
 // Damage: 294-348.
 #[test]
 fn special_attack_and_defense_modifiers_impact_special_move_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut venusaur = venusaur().unwrap();
     venusaur.members[0].moves[0] = "Calm Mind".to_owned();
     let mut charizard = level_60_charizard().unwrap();
     charizard.members[0].moves[0] = "Nasty Plot".to_owned();
     charizard.members[0].moves[2] = "Fake Tears".to_owned();
 
-    let mut battle =
-        make_battle_with_max_damage(&data, venusaur.clone(), charizard.clone()).unwrap();
+    let mut battle = make_battle_with_max_damage(venusaur.clone(), charizard.clone()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -823,7 +790,7 @@ fn special_attack_and_defense_modifiers_impact_special_move_damage() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
-    let mut battle = make_battle_with_min_damage(&data, venusaur, charizard).unwrap();
+    let mut battle = make_battle_with_min_damage(venusaur, charizard).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

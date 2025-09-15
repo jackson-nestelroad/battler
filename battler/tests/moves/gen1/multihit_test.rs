@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     assert_logs_since_turn_eq,
     assert_turn_logs_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn make_team() -> Result<TeamData> {
@@ -49,7 +48,7 @@ fn make_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -61,13 +60,12 @@ fn make_battle(data: &dyn DataStore, seed: u64) -> Result<PublicCoreBattle<'_>> 
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", make_team()?)
         .with_team("player-2", make_team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn multihit_number_in_range() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 719270381944144).unwrap();
+    let mut battle = make_battle(719270381944144).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
@@ -154,8 +152,7 @@ fn multihit_number_in_range() {
 
 #[test]
 fn multihit_static_number() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 8888888123).unwrap();
+    let mut battle = make_battle(8888888123).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
@@ -221,8 +218,7 @@ fn multihit_static_number() {
 
 #[test]
 fn hit_count_logs_after_faint() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0).unwrap();
+    let mut battle = make_battle(0).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
@@ -261,8 +257,7 @@ fn hit_count_logs_after_faint() {
 
 #[test]
 fn second_hit_can_apply_secondary_effect() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 756101915254781).unwrap();
+    let mut battle = make_battle(756101915254781).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));

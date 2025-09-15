@@ -869,7 +869,8 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 
 #[cfg(test)]
 mod team_validator_test {
-    use battler_data::LocalDataStore;
+    
+    use battler_test_utils::static_local_data_store;
     use serde::Deserialize;
 
     use crate::{
@@ -897,8 +898,7 @@ mod team_validator_test {
     fn team_validator_test_cases() {
         let test_cases =
             read_test_cases::<TeamValidatorTestCase>("team_validator_tests.json").unwrap();
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data).unwrap();
+        let dex = Dex::new(static_local_data_store()).unwrap();
         for (test_name, mut test_case) in test_cases {
             let format = Format::new(test_case.format, &dex).unwrap();
             let validator = TeamValidator::new(&format, &dex);

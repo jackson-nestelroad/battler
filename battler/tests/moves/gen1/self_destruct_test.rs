@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_turn_logs_eq,
+    static_local_data_store,
 };
 
 fn test_team() -> Result<TeamData> {
@@ -58,7 +57,7 @@ fn foe_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_battle() -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_seed(0)
         .with_battle_type(BattleType::Singles)
@@ -69,13 +68,12 @@ fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
         .add_player_to_side_2("foe", "Foe")
         .with_team("test-player", test_team()?)
         .with_team("foe", foe_team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn self_destruct_loses() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 0"), Ok(()));
@@ -98,8 +96,7 @@ fn self_destruct_loses() {
 
 #[test]
 fn user_self_destructs_even_if_missed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("test-player", "pass"), Ok(()));
@@ -125,8 +122,7 @@ fn user_self_destructs_even_if_missed() {
 
 #[test]
 fn user_self_destructs_only_if_move_hits() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("test-player", "move 1"), Ok(()));
@@ -147,8 +143,7 @@ fn user_self_destructs_only_if_move_hits() {
 
 #[test]
 fn user_does_not_self_destruct_if_move_misses() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("test-player", "pass"), Ok(()));

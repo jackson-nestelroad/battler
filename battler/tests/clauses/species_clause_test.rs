@@ -1,12 +1,12 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    LocalDataStore,
     TeamData,
     WrapResultError,
     error::ValidationError,
 };
 use battler_test_utils::TestBattleBuilder;
+use battler_test_utils::static_local_data_store;
 use itertools::Itertools;
 
 fn make_battle_builder() -> TestBattleBuilder {
@@ -57,10 +57,9 @@ fn three_starters() -> Result<TeamData> {
 
 #[test]
 fn enforces_unique_species() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle_builder()
         .with_rule("Species Clause")
-        .build(&data)
+        .build(static_local_data_store())
         .unwrap();
 
     let mut bad_team = three_starters().unwrap();

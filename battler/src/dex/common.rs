@@ -234,7 +234,10 @@ mod dex_test {
     use battler_data::{
         DataStore,
         Id,
-        LocalDataStore,
+    };
+    use battler_test_utils::{
+        local_data_store,
+        static_local_data_store,
     };
     use rand::random;
 
@@ -292,8 +295,7 @@ mod dex_test {
 
     #[test]
     fn finds_and_caches_resource() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = TestDex::new(&data);
+        let dex = TestDex::new(static_local_data_store());
         let first_resource = dex.get("first").unwrap();
         let second_resource = dex.get_by_id(&Id::from("first")).unwrap();
         // Random integers should be the same.
@@ -307,7 +309,7 @@ mod dex_test {
 
     #[test]
     fn resolves_alias() {
-        let mut data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let mut data = local_data_store();
         data.aliases.insert(Id::from("alias3"), Id::from("alias2"));
         data.aliases.insert(Id::from("alias2"), Id::from("alias1"));
         data.aliases.insert(Id::from("alias1"), Id::from("native"));

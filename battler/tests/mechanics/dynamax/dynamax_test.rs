@@ -3,9 +3,7 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
     Id,
-    LocalDataStore,
     MonMoveSlotData,
     MoveTarget,
     PublicCoreBattle,
@@ -18,6 +16,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -88,12 +87,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -109,13 +103,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn one_mon_can_dynamax_and_use_max_moves() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -244,8 +242,12 @@ fn one_mon_can_dynamax_and_use_max_moves() {
 
 #[test]
 fn dynamax_ends_on_switch() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -284,8 +286,12 @@ fn dynamax_ends_on_switch() {
 
 #[test]
 fn dynamax_ends_on_faint() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -330,8 +336,12 @@ fn dynamax_ends_on_faint() {
 
 #[test]
 fn dynamax_ends_after_three_turns() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -372,10 +382,9 @@ fn dynamax_ends_after_three_turns() {
 
 #[test]
 fn dynamax_can_still_struggle() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = team().unwrap();
     team_1.members[2].moves = vec!["Soft-Boiled".to_owned()];
-    let mut battle = make_battle(&data, 100, team_1, team().unwrap()).unwrap();
+    let mut battle = make_battle(100, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
@@ -420,12 +429,11 @@ fn dynamax_can_still_struggle() {
 
 #[test]
 fn dynamax_level_increases_hp() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = team().unwrap();
     team_1.members[0].dynamax_level = 5;
     let mut team_2 = team().unwrap();
     team_2.members[0].dynamax_level = 10;
-    let mut battle = make_battle(&data, 100, team_1, team_2).unwrap();
+    let mut battle = make_battle(100, team_1, team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -461,8 +469,12 @@ fn dynamax_level_increases_hp() {
 
 #[test]
 fn hp_ratio_stays_the_same_before_and_after_dynamax() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -516,10 +528,9 @@ fn hp_ratio_stays_the_same_before_and_after_dynamax() {
 
 #[test]
 fn dynamax_immune_to_choice_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = team().unwrap();
     team_1.members[0].item = Some("Choice Band".to_owned());
-    let mut battle = make_battle(&data, 100, team_1, team().unwrap()).unwrap();
+    let mut battle = make_battle(100, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
@@ -562,8 +573,12 @@ fn dynamax_immune_to_choice_item() {
 
 #[test]
 fn zacian_cannot_dynamax_even_if_transformed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
@@ -580,8 +595,12 @@ fn zacian_cannot_dynamax_even_if_transformed() {
 
 #[test]
 fn dynamax_immune_to_torment() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -615,8 +634,12 @@ fn dynamax_immune_to_torment() {
 
 #[test]
 fn dynamax_immune_to_flinch() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -656,8 +679,12 @@ fn dynamax_immune_to_flinch() {
 
 #[test]
 fn dynamax_immune_to_low_kick() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -691,8 +718,12 @@ fn dynamax_immune_to_low_kick() {
 
 #[test]
 fn dynamax_immune_to_encore() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -726,8 +757,12 @@ fn dynamax_immune_to_encore() {
 
 #[test]
 fn dynamax_immune_to_destiny_bond() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));
@@ -774,8 +809,12 @@ fn dynamax_immune_to_destiny_bond() {
 
 #[test]
 fn dynamax_immune_to_skill_swap() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,dyna"), Ok(()));

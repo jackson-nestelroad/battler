@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     Request,
     TeamData,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn two_pidgeot() -> Result<TeamData> {
@@ -75,12 +74,11 @@ fn blastoise() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     battle_type: BattleType,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)
@@ -92,14 +90,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn razor_wind_uses_two_turns() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         10002323,
         two_pidgeot().unwrap(),
@@ -194,9 +190,7 @@ fn razor_wind_uses_two_turns() {
 
 #[test]
 fn fly_grants_invulnerability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         60528764357287,
         two_pidgeot().unwrap(),
@@ -308,9 +302,7 @@ fn fly_grants_invulnerability() {
 
 #[test]
 fn fly_locks_target() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         two_pidgeot().unwrap(),
@@ -388,9 +380,7 @@ fn fly_locks_target() {
 
 #[test]
 fn skull_bash_also_boosts_defense() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         blastoise().unwrap(),

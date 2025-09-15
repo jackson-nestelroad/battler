@@ -82,7 +82,7 @@ impl TestBattleBuilder {
     }
 
     /// Builds a new [`PublicCoreBattle`] from the battle builder.
-    pub fn build(mut self, data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+    pub fn build<'d>(mut self, data: &'d dyn DataStore) -> Result<PublicCoreBattle<'d>> {
         self.modify_options_for_build();
         let mut battle = PublicCoreBattle::new(self.options, data, self.engine_options)?;
         for (player_id, team) in self.teams {

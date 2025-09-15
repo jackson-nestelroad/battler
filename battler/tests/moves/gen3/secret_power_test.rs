@@ -2,9 +2,7 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
     FieldEnvironment,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn meditite() -> Result<TeamData> {
@@ -38,12 +37,11 @@ fn meditite() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     seed: u64,
     environment: Option<FieldEnvironment>,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -56,13 +54,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn secret_power_can_cause_paralysis_by_default() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, None, meditite().unwrap(), meditite().unwrap()).unwrap();
+    let mut battle = make_battle(0, None, meditite().unwrap(), meditite().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
@@ -88,8 +85,7 @@ fn secret_power_can_cause_paralysis_by_default() {
 
 #[test]
 fn secret_power_can_cause_drop_special_attack_in_misty_terrain() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, None, meditite().unwrap(), meditite().unwrap()).unwrap();
+    let mut battle = make_battle(0, None, meditite().unwrap(), meditite().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -123,9 +119,7 @@ fn secret_power_can_cause_drop_special_attack_in_misty_terrain() {
 
 #[test]
 fn secret_power_changes_behavior_based_on_field_environment() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         Some(FieldEnvironment::Ice),
         meditite().unwrap(),

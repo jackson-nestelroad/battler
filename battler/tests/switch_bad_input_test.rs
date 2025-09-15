@@ -2,13 +2,14 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
 };
-use battler_test_utils::TestBattleBuilder;
+use battler_test_utils::{
+    TestBattleBuilder,
+    static_local_data_store,
+};
 
 fn team() -> Result<TeamData> {
     serde_json::from_str(
@@ -74,7 +75,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_battle() -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
@@ -82,13 +83,12 @@ fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team()?)
         .with_team("player-2", team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn too_many_switches() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2; switch 3; switch 4"),
@@ -98,8 +98,7 @@ fn too_many_switches() {
 
 #[test]
 fn missing_position() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch"),
@@ -113,8 +112,7 @@ fn missing_position() {
 
 #[test]
 fn invalid_position() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch Charmander"),
@@ -128,8 +126,7 @@ fn invalid_position() {
 
 #[test]
 fn no_mon_in_position() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 6"),
@@ -143,8 +140,7 @@ fn no_mon_in_position() {
 
 #[test]
 fn switch_to_active_mon() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 0"),
@@ -162,8 +158,7 @@ fn switch_to_active_mon() {
 
 #[test]
 fn switch_a_mon_in_twice() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch 2; switch 2"),

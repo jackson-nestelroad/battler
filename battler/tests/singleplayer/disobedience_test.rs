@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn pikachu() -> Result<TeamData> {
@@ -59,11 +58,10 @@ fn eevee() -> Result<TeamData> {
 }
 
 fn make_trainer_singles_battle(
-    data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -76,14 +74,12 @@ fn make_trainer_singles_battle(
         .add_player_to_side_2("trainer", "Trainer")
         .with_team("protagonist", team_1)
         .with_team("trainer", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn disobedient_mon_refuses_to_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle =
-        make_trainer_singles_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
+    let mut battle = make_trainer_singles_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
@@ -105,9 +101,7 @@ fn disobedient_mon_refuses_to_move() {
 
 #[test]
 fn disobedient_mon_hurts_self() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle =
-        make_trainer_singles_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
+    let mut battle = make_trainer_singles_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
@@ -132,9 +126,7 @@ fn disobedient_mon_hurts_self() {
 
 #[test]
 fn disobedient_mon_falls_asleep() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle =
-        make_trainer_singles_battle(&data, 0, pikachu().unwrap(), eevee().unwrap()).unwrap();
+    let mut battle = make_trainer_singles_battle(0, pikachu().unwrap(), eevee().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

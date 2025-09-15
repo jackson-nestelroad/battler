@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -108,12 +107,7 @@ fn zoroark() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -124,13 +118,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn illusion_casts_illusion_until_damaged_by_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -183,8 +181,12 @@ fn illusion_casts_illusion_until_damaged_by_move() {
 
 #[test]
 fn illusion_target_influenced_by_switches() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -234,8 +236,12 @@ fn illusion_target_influenced_by_switches() {
 
 #[test]
 fn illusion_does_not_activate_if_no_other_team_members() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, zoroark().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        zoroark().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -255,13 +261,12 @@ fn illusion_does_not_activate_if_no_other_team_members() {
 
 #[test]
 fn illusion_does_not_activate_if_no_other_unfainted_team_members() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut fainted_team = team().unwrap();
     fainted_team.members[0].persistent_battle_data.hp = Some(0);
     fainted_team.members[1].persistent_battle_data.hp = Some(0);
     fainted_team.members[4].persistent_battle_data.hp = Some(0);
     fainted_team.members[5].persistent_battle_data.hp = Some(0);
-    let mut battle = make_battle(&data, 0, fainted_team, team().unwrap()).unwrap();
+    let mut battle = make_battle(0, fainted_team, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -298,8 +303,12 @@ fn illusion_does_not_activate_if_no_other_unfainted_team_members() {
 
 #[test]
 fn illusion_ends_when_ability_is_suppressed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -326,8 +335,12 @@ fn illusion_ends_when_ability_is_suppressed() {
 
 #[test]
 fn illusion_ends_when_ability_is_suppressed_with_neutralizing_gass() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 4"), Ok(()));

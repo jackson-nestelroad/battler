@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn pikachu_team() -> Result<TeamData> {
@@ -76,11 +75,7 @@ fn doubles_pikachu_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_singles_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_singles_battle(seed: u64, team: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -91,14 +86,10 @@ fn make_singles_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team.clone())
         .with_team("player-2", team)
-        .build(data)
+        .build(static_local_data_store())
 }
 
-fn make_doubles_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_doubles_battle(seed: u64, team: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
@@ -109,13 +100,12 @@ fn make_doubles_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team.clone())
         .with_team("player-2", team)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn accuracy_check_applies_normally() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data, 143256777503747, pikachu_team().unwrap()).unwrap();
+    let mut battle = make_singles_battle(143256777503747, pikachu_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -157,8 +147,7 @@ fn accuracy_check_applies_normally() {
 
 #[test]
 fn accuracy_check_impacted_by_lowered_accuracy() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data, 716958313281881, pikachu_team().unwrap()).unwrap();
+    let mut battle = make_singles_battle(716958313281881, pikachu_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -223,8 +212,7 @@ fn accuracy_check_impacted_by_lowered_accuracy() {
 
 #[test]
 fn accuracy_check_impacted_by_raised_evasion() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data, 0, pikachu_team().unwrap()).unwrap();
+    let mut battle = make_singles_battle(0, pikachu_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -289,8 +277,7 @@ fn accuracy_check_impacted_by_raised_evasion() {
 
 #[test]
 fn accuracy_check_for_each_target() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_doubles_battle(&data, 65564654, doubles_pikachu_team().unwrap()).unwrap();
+    let mut battle = make_doubles_battle(65564654, doubles_pikachu_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -327,8 +314,7 @@ fn accuracy_check_for_each_target() {
 
 #[test]
 fn accuracy_check_only_once_for_multihit_moves() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data, 453950743359796, pikachu_team().unwrap()).unwrap();
+    let mut battle = make_singles_battle(453950743359796, pikachu_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -440,8 +426,7 @@ fn accuracy_check_only_once_for_multihit_moves() {
 
 #[test]
 fn accuracy_check_for_multiaccuracy_moves() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data, 21241564315, pikachu_team().unwrap()).unwrap();
+    let mut battle = make_singles_battle(21241564315, pikachu_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -527,8 +512,7 @@ fn accuracy_check_for_multiaccuracy_moves() {
 
 #[test]
 fn moves_can_ignore_evasion() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data, 0, pikachu_team().unwrap()).unwrap();
+    let mut battle = make_singles_battle(0, pikachu_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

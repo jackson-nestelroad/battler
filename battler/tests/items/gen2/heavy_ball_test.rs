@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WildPlayerOptions,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn bulbasaur() -> Result<TeamData> {
@@ -70,12 +69,7 @@ fn venusaur() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -89,7 +83,7 @@ fn make_battle(
         .add_wild_mon_to_side_2("wild", "Wild", WildPlayerOptions::default())
         .with_team("protagonist", team_1)
         .with_team("wild", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn apply_rng(battle: &mut PublicCoreBattle, shake_probability: u64) {
@@ -105,8 +99,7 @@ fn apply_rng(battle: &mut PublicCoreBattle, shake_probability: u64) {
 
 #[test]
 fn heavy_ball_decreases_catch_rate_for_light_mon() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, bulbasaur().unwrap(), bulbasaur().unwrap()).unwrap();
+    let mut battle = make_battle(0, bulbasaur().unwrap(), bulbasaur().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 38489);
@@ -142,8 +135,7 @@ fn heavy_ball_decreases_catch_rate_for_light_mon() {
 
 #[test]
 fn heavy_ball_does_not_modify_catch_rate_for_middle_weight_mon() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, ivysaur().unwrap(), ivysaur().unwrap()).unwrap();
+    let mut battle = make_battle(0, ivysaur().unwrap(), ivysaur().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 38489);
@@ -179,8 +171,7 @@ fn heavy_ball_does_not_modify_catch_rate_for_middle_weight_mon() {
 
 #[test]
 fn heavy_ball_increases_catch_rate_for_heavy_mon() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, venusaur().unwrap(), venusaur().unwrap()).unwrap();
+    let mut battle = make_battle(0, venusaur().unwrap(), venusaur().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 38489);

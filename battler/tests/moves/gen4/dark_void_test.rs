@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -66,12 +65,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
@@ -82,13 +76,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn dark_void_puts_all_adjacent_foes_to_sleep() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 953107372301, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(953107372301, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -109,8 +102,7 @@ fn dark_void_puts_all_adjacent_foes_to_sleep() {
 
 #[test]
 fn dark_void_usable_when_transformed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 953107372301, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(953107372301, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -141,8 +133,7 @@ fn dark_void_usable_when_transformed() {
 
 #[test]
 fn dark_void_cannot_be_sketched() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 953107372301, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(953107372301, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -184,8 +175,7 @@ fn dark_void_cannot_be_sketched() {
 
 #[test]
 fn dark_void_cannot_be_used_by_non_darkrai() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 953107372301, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(953107372301, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -216,8 +206,7 @@ fn dark_void_cannot_be_used_by_non_darkrai() {
 
 #[test]
 fn dark_void_can_be_reflected() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 953107372301, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(953107372301, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));

@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn charizard() -> Result<TeamData> {
@@ -107,12 +106,7 @@ fn blastoise_groudon() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -124,13 +118,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn desolate_land_starts_extremely_harsh_sunlight_on_switch_in() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, groudon().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        groudon().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -164,8 +162,12 @@ fn desolate_land_starts_extremely_harsh_sunlight_on_switch_in() {
 
 #[test]
 fn desolate_land_dissipates_water_type_moves() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, groudon().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        groudon().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -195,8 +197,12 @@ fn desolate_land_dissipates_water_type_moves() {
 
 #[test]
 fn normal_harsh_sunlight_cannot_override_desolate_land() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, groudon().unwrap(), charizard().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        groudon().unwrap(),
+        charizard().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -226,9 +232,7 @@ fn normal_harsh_sunlight_cannot_override_desolate_land() {
 
 #[test]
 fn desolate_land_stops_when_last_mon_with_ability_switches_out() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         blastoise_groudon().unwrap(),
         blastoise_groudon().unwrap(),

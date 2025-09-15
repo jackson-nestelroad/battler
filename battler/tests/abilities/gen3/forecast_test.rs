@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn castform() -> Result<TeamData> {
@@ -74,12 +73,7 @@ fn opponents() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -90,13 +84,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn forecast_transforms_castform_in_rain() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -123,8 +121,12 @@ fn forecast_transforms_castform_in_rain() {
 
 #[test]
 fn forecast_transforms_castform_in_harsh_sunlight() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -151,8 +153,12 @@ fn forecast_transforms_castform_in_harsh_sunlight() {
 
 #[test]
 fn forecast_transforms_castform_in_hail() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -182,8 +188,12 @@ fn forecast_transforms_castform_in_hail() {
 
 #[test]
 fn forecast_transforms_castform_in_snow() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
@@ -210,8 +220,12 @@ fn forecast_transforms_castform_in_snow() {
 
 #[test]
 fn forecast_fails_for_transformed_ditto() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -240,8 +254,12 @@ fn forecast_fails_for_transformed_ditto() {
 
 #[test]
 fn forecast_reverts_due_to_suppressed_weather() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -283,10 +301,9 @@ fn forecast_reverts_due_to_suppressed_weather() {
 
 #[test]
 fn forecast_reverts_due_to_gaining_weather_suppressing_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut opponents = opponents().unwrap();
     opponents.members[0].item = Some("Utility Umbrella".to_owned());
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents).unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -331,10 +348,9 @@ fn forecast_reverts_due_to_gaining_weather_suppressing_item() {
 
 #[test]
 fn forecast_activates_due_to_suppressing_weather_suppressing_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut opponents = opponents().unwrap();
     opponents.members[0].item = Some("Utility Umbrella".to_owned());
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents).unwrap();
+    let mut battle = make_battle(0, castform().unwrap(), opponents).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -375,8 +391,12 @@ fn forecast_activates_due_to_suppressing_weather_suppressing_item() {
 
 #[test]
 fn forecast_reverts_due_to_weather_suppressing_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -407,8 +427,12 @@ fn forecast_reverts_due_to_weather_suppressing_move() {
 
 #[test]
 fn forecast_reverts_due_to_losing_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, castform().unwrap(), opponents().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        castform().unwrap(),
+        opponents().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

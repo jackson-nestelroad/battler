@@ -2,8 +2,6 @@ use ahash::HashMap;
 use anyhow::Result;
 use battler::{
     BattleType,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_new_logs_eq,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -78,7 +77,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_multi_battle() -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_rule("Standard")
@@ -99,13 +98,12 @@ fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
         .with_team("player-2", team()?)
         .with_team("player-3", team()?)
         .with_team("player-4", team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn team_preview_orders_all_player_teams() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_multi_battle(&data).unwrap();
+    let mut battle = make_multi_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.ready_to_continue(), Ok(false));

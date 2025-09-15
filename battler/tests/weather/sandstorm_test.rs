@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn golem() -> Result<TeamData> {
@@ -161,12 +160,7 @@ fn rayquaza() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -178,13 +172,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn sandstorm_lasts_for_five_turns() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, golem().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        golem().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -243,9 +241,7 @@ fn sandstorm_lasts_for_five_turns() {
 
 #[test]
 fn sandstorm_lasts_for_eight_turns_with_smooth_rock() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         golem_with_smooth_rock().unwrap(),
         blastoise().unwrap(),
@@ -336,8 +332,12 @@ fn sandstorm_lasts_for_eight_turns_with_smooth_rock() {
 
 #[test]
 fn sandstorm_boosts_rock_special_defense() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, golem().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        golem().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -391,8 +391,12 @@ fn sandstorm_boosts_rock_special_defense() {
 
 #[test]
 fn steel_types_resist_sandstorm() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, golem().unwrap(), steelix().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        golem().unwrap(),
+        steelix().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -413,9 +417,7 @@ fn steel_types_resist_sandstorm() {
 
 #[test]
 fn sand_stream_starts_sandstorm_on_switch() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         golem_with_sand_stream().unwrap(),
         blastoise().unwrap(),
@@ -441,8 +443,12 @@ fn sand_stream_starts_sandstorm_on_switch() {
 
 #[test]
 fn air_lock_suppresses_sandstorm() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, golem().unwrap(), rayquaza().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        golem().unwrap(),
+        rayquaza().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -471,9 +477,7 @@ fn air_lock_suppresses_sandstorm() {
 
 #[test]
 fn utility_umbrella_does_not_suppress_sandstorm() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         golem().unwrap(),
         blastoise_with_utility_umbrella().unwrap(),
@@ -502,8 +506,12 @@ fn utility_umbrella_does_not_suppress_sandstorm() {
 
 #[test]
 fn dig_is_protected_from_residual_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, golem().unwrap(), blastoise().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        golem().unwrap(),
+        blastoise().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

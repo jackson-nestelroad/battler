@@ -425,7 +425,6 @@ mod battler_service_test {
         FieldData,
         FormatData,
         Gender,
-        LocalDataStore,
         MonData,
         MonPersistentBattleData,
         Nature,
@@ -440,6 +439,7 @@ mod battler_service_test {
         ValidationError,
         battle::PlayerDex,
     };
+    use battler_test_utils::static_local_data_store;
     use itertools::Itertools;
     use tokio::sync::broadcast;
 
@@ -562,8 +562,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn creates_battle_and_players_in_waiting_state() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let battle = battler_service
             .create(
                 core_battle_options(TeamData::default()),
@@ -601,8 +600,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn cannot_start_battle_with_empty_teams() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let battle = battler_service
             .create(
                 core_battle_options(TeamData::default()),
@@ -620,8 +618,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn player_moves_to_ready_state_with_valid_team() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let battle = battler_service
             .create(
                 core_battle_options(TeamData::default()),
@@ -643,8 +640,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn invalid_team_fails_validation_and_resets_state() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let battle = battler_service
             .create(
                 core_battle_options(team(5)),
@@ -679,8 +675,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn starts_battle_and_reports_player_and_request_data() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let battle = battler_service
             .create(
                 core_battle_options(team(5)),
@@ -728,8 +723,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn returns_filtered_logs_by_side() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let battle = battler_service
             .create(
                 core_battle_options(team(5)),
@@ -803,8 +797,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn lists_battles_in_uuid_order() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let mut battles = Vec::new();
         battles.push(
             battler_service
@@ -905,8 +898,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn lists_battles_for_player_in_uuid_order() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         let mut battles = Vec::new();
         battles.push(
             battler_service
@@ -1010,8 +1002,7 @@ mod battler_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn returns_empty_list_for_player_with_no_battles() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let battler_service = BattlerService::new(&data);
+        let battler_service = BattlerService::new(static_local_data_store());
         battler_service
             .create(
                 core_battle_options(team(5)),

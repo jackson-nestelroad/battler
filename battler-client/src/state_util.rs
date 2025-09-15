@@ -330,9 +330,9 @@ mod state_util_test {
 
     use battler::{
         BoostTable,
-        LocalDataStore,
         Type,
     };
+    use battler_test_utils::static_local_data_store;
 
     use crate::{
         discovery::DiscoveryRequiredSet,
@@ -948,7 +948,6 @@ mod state_util_test {
 
     #[test]
     fn returns_mon_types() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 sides: Vec::from_iter([Side {
@@ -979,7 +978,7 @@ mod state_util_test {
                 player: "player-1".to_owned(),
                 mon_index: 0,
                 battle_appearance_index: 0,
-            }, &data),
+            }, static_local_data_store()),
             Ok(types) => {
                 pretty_assertions::assert_eq!(
                     types,
@@ -994,7 +993,6 @@ mod state_util_test {
 
     #[test]
     fn returns_mon_volatile_types() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 sides: Vec::from_iter([Side {
@@ -1029,7 +1027,7 @@ mod state_util_test {
                 player: "player-1".to_owned(),
                 mon_index: 0,
                 battle_appearance_index: 0,
-            }, &data),
+            }, static_local_data_store()),
             Ok(types) => {
                 pretty_assertions::assert_eq!(
                     types,

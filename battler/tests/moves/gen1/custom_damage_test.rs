@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     assert_turn_logs_eq,
+    static_local_data_store,
 };
 
 fn pikachu() -> Result<TeamData> {
@@ -63,12 +62,7 @@ fn mon_by_species(species: &str) -> Result<TeamData> {
     Ok(team)
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -80,13 +74,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn seismic_toss_does_damage_equal_to_level() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -107,7 +100,7 @@ fn seismic_toss_does_damage_equal_to_level() {
 
     let mut team = pikachu().unwrap();
     team.members[0].level = 75;
-    let mut battle = make_battle(&data, 0, team, pikachu().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, pikachu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -130,9 +123,7 @@ fn seismic_toss_does_damage_equal_to_level() {
 // Between 25 and 75 for level 50.
 #[test]
 fn psywave_applies_custom_damage_formula() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle =
-        make_battle(&data, 777294920103, pikachu().unwrap(), pikachu().unwrap()).unwrap();
+    let mut battle = make_battle(777294920103, pikachu().unwrap(), pikachu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // These special boosts should do nothing.
@@ -160,8 +151,7 @@ fn psywave_applies_custom_damage_formula() {
 
 #[test]
 fn super_fang_does_half_hp_damge() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
+    let mut battle = make_battle(0, pikachu().unwrap(), pikachu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // These defense boosts should do nothing.
@@ -203,9 +193,7 @@ fn super_fang_does_half_hp_damge() {
 
 #[test]
 fn low_kick_deals_damage_based_on_weight() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         pikachu().unwrap(),
         mon_by_species("Chespin").unwrap(),
@@ -227,9 +215,7 @@ fn low_kick_deals_damage_based_on_weight() {
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);
 
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         pikachu().unwrap(),
         mon_by_species("Turtwig").unwrap(),
@@ -251,9 +237,7 @@ fn low_kick_deals_damage_based_on_weight() {
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);
 
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         pikachu().unwrap(),
         mon_by_species("Serperior").unwrap(),
@@ -275,9 +259,7 @@ fn low_kick_deals_damage_based_on_weight() {
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);
 
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         pikachu().unwrap(),
         mon_by_species("Wailord").unwrap(),

@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_start_eq,
+    static_local_data_store,
 };
 
 fn musharna() -> Result<TeamData> {
@@ -40,12 +39,7 @@ fn musharna() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
@@ -56,12 +50,11 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn forewarn_reveals_strongest_move_of_one_foe() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = musharna().unwrap();
     team.members[0].moves = vec![
         "Tackle".to_owned(),
@@ -69,7 +62,7 @@ fn forewarn_reveals_strongest_move_of_one_foe() {
         "Dark Pulse".to_owned(),
     ];
     team.members[1].moves = vec!["Tackle".to_owned(), "Pound".to_owned()];
-    let mut battle = make_battle(&data, 0, musharna().unwrap(), team).unwrap();
+    let mut battle = make_battle(0, musharna().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -97,11 +90,15 @@ fn forewarn_reveals_strongest_move_of_one_foe() {
 
 #[test]
 fn forewarn_reveals_strongest_move_of_one_foe_using_rng_for_ties() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = musharna().unwrap();
     team.members[0].moves = vec!["Tackle".to_owned(), "Pound".to_owned()];
     team.members[1].moves = vec!["Tackle".to_owned(), "Pound".to_owned()];
-    let mut battle = make_battle(&data, 837467192384912, musharna().unwrap(), team).unwrap();
+    let mut battle = make_battle(
+        837467192384912,
+        musharna().unwrap(),
+        team,
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -129,10 +126,9 @@ fn forewarn_reveals_strongest_move_of_one_foe_using_rng_for_ties() {
 
 #[test]
 fn forewarn_reveals_ohko_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = musharna().unwrap();
     team.members[0].moves = vec!["Dark Pulse".to_owned(), "Guillotine".to_owned()];
-    let mut battle = make_battle(&data, 0, musharna().unwrap(), team).unwrap();
+    let mut battle = make_battle(0, musharna().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -160,10 +156,9 @@ fn forewarn_reveals_ohko_move() {
 
 #[test]
 fn forewarn_reveals_attacking_move_with_no_base_power() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = musharna().unwrap();
     team.members[0].moves = vec!["Tackle".to_owned(), "Magnitude".to_owned()];
-    let mut battle = make_battle(&data, 0, musharna().unwrap(), team).unwrap();
+    let mut battle = make_battle(0, musharna().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -191,10 +186,9 @@ fn forewarn_reveals_attacking_move_with_no_base_power() {
 
 #[test]
 fn forewarn_reveals_counter() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = musharna().unwrap();
     team.members[0].moves = vec!["Counter".to_owned(), "Earthquake".to_owned()];
-    let mut battle = make_battle(&data, 0, musharna().unwrap(), team).unwrap();
+    let mut battle = make_battle(0, musharna().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(

@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
 };
@@ -11,13 +9,10 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
-fn make_battle(
-    data: &dyn DataStore,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)
@@ -27,12 +22,11 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn moves_can_deal_static_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -51,7 +45,7 @@ fn moves_can_deal_static_damage() {
         }"#,
     )
     .unwrap();
-    let mut battle = make_battle(&data, team.clone(), team).unwrap();
+    let mut battle = make_battle(team.clone(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));

@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WildPlayerOptions,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn bidoof() -> Result<TeamData> {
@@ -36,12 +35,7 @@ fn bidoof() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -54,13 +48,12 @@ fn make_battle(
         .add_wild_mon_to_side_2("wild", "Wild", WildPlayerOptions::default())
         .with_team("protagonist", team_1)
         .with_team("wild", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn regular_ball_does_not_heal_caught_mon() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, bidoof().unwrap(), bidoof().unwrap()).unwrap();
+    let mut battle = make_battle(0, bidoof().unwrap(), bidoof().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));
@@ -111,8 +104,7 @@ fn regular_ball_does_not_heal_caught_mon() {
 
 #[test]
 fn heal_ball_heals_caught_mon() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, bidoof().unwrap(), bidoof().unwrap()).unwrap();
+    let mut battle = make_battle(0, bidoof().unwrap(), bidoof().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0"), Ok(()));

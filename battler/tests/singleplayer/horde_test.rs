@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WildPlayerOptions,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_new_logs_eq,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -70,11 +69,10 @@ fn rattata() -> Result<TeamData> {
 }
 
 fn make_horde_battle(
-    data: &dyn DataStore,
     seed: u64,
     team: TeamData,
     wild: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     let mut builder = TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_adjacency_reach(3)
@@ -90,13 +88,12 @@ fn make_horde_battle(
             .add_wild_mon_to_side_2(&id, "Horde", WildPlayerOptions::default())
             .with_team(&id, wild.clone());
     }
-    builder.build(data)
+    builder.build(static_local_data_store())
 }
 
 #[test]
 fn player_can_hit_all_adjacent_foes() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_horde_battle(&data, 0, team().unwrap(), rattata().unwrap()).unwrap();
+    let mut battle = make_horde_battle(0, team().unwrap(), rattata().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("protagonist", "move 0,5"), Ok(()));

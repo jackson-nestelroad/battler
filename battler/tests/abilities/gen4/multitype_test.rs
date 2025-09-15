@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn arceus() -> Result<TeamData> {
@@ -75,12 +74,7 @@ fn ditto() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -91,17 +85,16 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn multitype_changes_arceus_forme_dynamically_if_incorrect() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = arceus().unwrap();
     team_1.members[0].item = Some("Flame Plate".to_owned());
     let mut team_2 = arceus().unwrap();
     team_2.members[0].item = Some("Splash Plate".to_owned());
-    let mut battle = make_battle(&data, 0, team_1, team_2).unwrap();
+    let mut battle = make_battle(0, team_1, team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -129,14 +122,13 @@ fn multitype_changes_arceus_forme_dynamically_if_incorrect() {
 
 #[test]
 fn multitype_does_not_change_arceus_forme_if_correct() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = arceus().unwrap();
     team_1.members[0].species = "Arceus-Fire".to_owned();
     team_1.members[0].item = Some("Flame Plate".to_owned());
     let mut team_2 = arceus().unwrap();
     team_2.members[0].species = "Arceus-Water".to_owned();
     team_2.members[0].item = Some("Splash Plate".to_owned());
-    let mut battle = make_battle(&data, 0, team_1, team_2).unwrap();
+    let mut battle = make_battle(0, team_1, team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
@@ -156,14 +148,13 @@ fn multitype_does_not_change_arceus_forme_if_correct() {
 
 #[test]
 fn multitype_works_for_non_arceus() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = arceus().unwrap();
     team_1.members[0].species = "Arceus-Water".to_owned();
     team_1.members[0].item = Some("Splash Plate".to_owned());
     let mut team_2 = kecleon().unwrap();
     team_2.members[0].ability = "Multitype".to_owned();
     team_2.members[0].item = Some("Splash Plate".to_owned());
-    let mut battle = make_battle(&data, 0, team_1, team_2).unwrap();
+    let mut battle = make_battle(0, team_1, team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -186,11 +177,10 @@ fn multitype_works_for_non_arceus() {
 
 #[test]
 fn multitype_does_not_change_types_when_transformed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = arceus().unwrap();
     team_1.members[0].species = "Arceus-Water".to_owned();
     team_1.members[0].item = Some("Splash Plate".to_owned());
-    let mut battle = make_battle(&data, 0, team_1, ditto().unwrap()).unwrap();
+    let mut battle = make_battle(0, team_1, ditto().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -224,11 +214,10 @@ fn multitype_does_not_change_types_when_transformed() {
 
 #[test]
 fn multitype_does_not_allow_plate_to_be_taken() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = arceus().unwrap();
     team_1.members[0].species = "Arceus-Water".to_owned();
     team_1.members[0].item = Some("Splash Plate".to_owned());
-    let mut battle = make_battle(&data, 0, team_1, kecleon().unwrap()).unwrap();
+    let mut battle = make_battle(0, team_1, kecleon().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -248,10 +237,9 @@ fn multitype_does_not_allow_plate_to_be_taken() {
 
 #[test]
 fn multitype_does_not_allow_plate_to_be_given() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_2 = kecleon().unwrap();
     team_2.members[0].item = Some("Splash Plate".to_owned());
-    let mut battle = make_battle(&data, 0, arceus().unwrap(), team_2).unwrap();
+    let mut battle = make_battle(0, arceus().unwrap(), team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

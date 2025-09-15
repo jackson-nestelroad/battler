@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
 };
@@ -12,14 +10,14 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn make_singles_battle(
-    data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
     seed: u64,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -31,15 +29,14 @@ fn make_singles_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn make_doubles_battle(
-    data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
     seed: u64,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
@@ -50,12 +47,11 @@ fn make_doubles_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn boost_stops_at_max_6() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -74,7 +70,7 @@ fn boost_stops_at_max_6() {
         }"#,
     )
     .unwrap();
-    let mut battle = make_singles_battle(&data, team.clone(), team, 0).unwrap();
+    let mut battle = make_singles_battle(team.clone(), team, 0).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -137,7 +133,6 @@ fn boost_stops_at_max_6() {
 
 #[test]
 fn drop_stops_at_max_6() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -156,7 +151,7 @@ fn drop_stops_at_max_6() {
         }"#,
     )
     .unwrap();
-    let mut battle = make_singles_battle(&data, team.clone(), team, 0).unwrap();
+    let mut battle = make_singles_battle(team.clone(), team, 0).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -219,7 +214,6 @@ fn drop_stops_at_max_6() {
 
 #[test]
 fn boosts_and_drops_cancel_out() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -239,7 +233,7 @@ fn boosts_and_drops_cancel_out() {
         }"#,
     )
     .unwrap();
-    let mut battle = make_singles_battle(&data, team.clone(), team, 0).unwrap();
+    let mut battle = make_singles_battle(team.clone(), team, 0).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -306,7 +300,6 @@ fn boosts_and_drops_cancel_out() {
 
 #[test]
 fn multi_stat_boost() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -325,7 +318,7 @@ fn multi_stat_boost() {
         }"#,
     )
     .unwrap();
-    let mut battle = make_singles_battle(&data, team.clone(), team, 0).unwrap();
+    let mut battle = make_singles_battle(team.clone(), team, 0).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -346,7 +339,6 @@ fn multi_stat_boost() {
 
 #[test]
 fn raise_all_stats_at_once() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -365,7 +357,7 @@ fn raise_all_stats_at_once() {
         }"#,
     )
     .unwrap();
-    let mut battle = make_singles_battle(&data, team.clone(), team, 0).unwrap();
+    let mut battle = make_singles_battle(team.clone(), team, 0).unwrap();
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
     rng.insert_fake_values_relative_to_sequence_count([(4, 0)]);
@@ -399,7 +391,6 @@ fn raise_all_stats_at_once() {
 
 #[test]
 fn drop_stats_of_all_targets() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -429,7 +420,7 @@ fn drop_stats_of_all_targets() {
         }"#,
     )
     .unwrap();
-    let mut battle = make_doubles_battle(&data, team.clone(), team, 0).unwrap();
+    let mut battle = make_doubles_battle(team.clone(), team, 0).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -451,7 +442,6 @@ fn drop_stats_of_all_targets() {
 
 #[test]
 fn modified_speed_impacts_order() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let team_1: TeamData = serde_json::from_str(
         r#"{
             "members": [
@@ -490,7 +480,7 @@ fn modified_speed_impacts_order() {
     }"#,
     )
     .unwrap();
-    let mut battle = make_singles_battle(&data, team_1, team_2, 0).unwrap();
+    let mut battle = make_singles_battle(team_1, team_2, 0).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

@@ -393,10 +393,10 @@ mod rule_set_test {
     use anyhow::Result;
     use battler_data::{
         Id,
-        LocalDataStore,
         Rule,
         SerializedRuleSet,
     };
+    use battler_test_utils::static_local_data_store;
 
     use crate::{
         battle::BattleType,
@@ -408,8 +408,7 @@ mod rule_set_test {
     };
 
     fn construct_ruleset(serialized: &str, battle_type: &BattleType) -> Result<RuleSet> {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let dex = Dex::new(&data)?;
+        let dex = Dex::new(static_local_data_store())?;
         let ruleset = serde_json::from_str::<SerializedRuleSet>(serialized).unwrap();
         RuleSet::new(ruleset, battle_type, &dex)
     }

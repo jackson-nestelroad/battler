@@ -171,10 +171,8 @@ fn calculate_stats_by_base_stats(
 
 #[cfg(test)]
 mod stats_test {
-    use battler_data::{
-        LocalDataStore,
-        Nature,
-    };
+    use battler_data::Nature;
+    use battler_test_utils::static_local_data_store;
 
     use crate::{
         common::Range,
@@ -186,9 +184,7 @@ mod stats_test {
 
     #[test]
     fn calculates_stat_ranges() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
-        assert_matches::assert_matches!(calculate_stats(&data, "Garchomp", 78, None, None, None), Ok(stats) => {
+        assert_matches::assert_matches!(calculate_stats(static_local_data_store(), "Garchomp", 78, None, None, None), Ok(stats) => {
             assert_eq!(stats, Stats {
                 hp: Range::new(256, 329),
                 atk: Range::new(186, 309),
@@ -199,7 +195,7 @@ mod stats_test {
             });
         });
 
-        assert_matches::assert_matches!(calculate_stats(&data, "Blissey", 100, None, None, None), Ok(stats) => {
+        assert_matches::assert_matches!(calculate_stats(static_local_data_store(), "Blissey", 100, None, None, None), Ok(stats) => {
             assert_eq!(stats, Stats {
                 hp: Range::new(620, 714),
                 atk: Range::new(22, 130),
@@ -210,7 +206,7 @@ mod stats_test {
             });
         });
 
-        assert_matches::assert_matches!(calculate_stats(&data, "Blissey", 100, None, Some(&Stats::default()), None), Ok(stats) => {
+        assert_matches::assert_matches!(calculate_stats(static_local_data_store(), "Blissey", 100, None, Some(&Stats::default()), None), Ok(stats) => {
             assert_eq!(stats, Stats {
                 hp: Range::new(620, 683),
                 atk: Range::new(22, 96),
@@ -224,11 +220,9 @@ mod stats_test {
 
     #[test]
     fn calculates_stats_with_all_information() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
         assert_matches::assert_matches!(
             calculate_stats(
-                &data,
+                static_local_data_store(),
                 "Garchomp",
                 78,
                 Some(Nature::Adamant),
@@ -263,7 +257,7 @@ mod stats_test {
 
         assert_matches::assert_matches!(
             calculate_stats(
-                &data,
+                static_local_data_store(),
                 "Blissey",
                 100,
                 Some(Nature::Bold),

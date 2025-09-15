@@ -23,3 +23,5 @@ battler-service-client = { path = "../battler-service-client" }
 [dev-dependencies]
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
+
+battler-test-utils = { path = "../battler-test-utils" }

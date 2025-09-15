@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn squirtle() -> Result<TeamData> {
@@ -68,20 +67,15 @@ fn test_battle_builder(team_1: TeamData, team_2: TeamData) -> TestBattleBuilder 
         .with_team("player-2", team_2)
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
-    test_battle_builder(team_1, team_2).build(data)
+fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
+    test_battle_builder(team_1, team_2).build(static_local_data_store())
 }
 
 #[test]
 fn stab_increases_damage() {
     // Tackle and Aqua Jet are both Physical moves with the same base damage, so STAB makes the
     // difference.
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, squirtle().unwrap(), pikachu().unwrap()).unwrap();
+    let mut battle = make_battle(squirtle().unwrap(), pikachu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

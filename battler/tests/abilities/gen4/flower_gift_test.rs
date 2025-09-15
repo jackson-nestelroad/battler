@@ -3,8 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn team_1() -> Result<TeamData> {
@@ -78,12 +77,7 @@ fn team_2() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
@@ -95,13 +89,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn flower_gift_changes_cherrim_form_in_sun() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -132,8 +130,12 @@ fn flower_gift_changes_cherrim_form_in_sun() {
 
 #[test]
 fn flower_gift_boosts_attack_in_sun() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -180,8 +182,12 @@ fn flower_gift_boosts_attack_in_sun() {
 
 #[test]
 fn flower_gift_boosts_ally_attack_in_sun() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -228,8 +234,12 @@ fn flower_gift_boosts_ally_attack_in_sun() {
 
 #[test]
 fn flower_gift_boosts_special_defense_in_sun() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -278,8 +288,12 @@ fn flower_gift_boosts_special_defense_in_sun() {
 
 #[test]
 fn flower_gift_boosts_ally_special_defense_in_sun() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -328,8 +342,12 @@ fn flower_gift_boosts_ally_special_defense_in_sun() {
 
 #[test]
 fn flower_gift_does_not_activate_when_transformed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
@@ -361,8 +379,12 @@ fn flower_gift_does_not_activate_when_transformed() {
 
 #[test]
 fn flower_gift_ends_due_to_gaining_weather_suppressing_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -397,10 +419,9 @@ fn flower_gift_ends_due_to_gaining_weather_suppressing_item() {
 
 #[test]
 fn flower_gift_does_not_activate_when_weather_is_suppressed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_2 = team_2().unwrap();
     team_2.members[0].ability = "Cloud Nine".to_owned();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2).unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -420,10 +441,9 @@ fn flower_gift_does_not_activate_when_weather_is_suppressed() {
 
 #[test]
 fn flower_gift_activates_when_weather_is_unsuppressed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_2 = team_2().unwrap();
     team_2.members[1].ability = "Cloud Nine".to_owned();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2).unwrap();
+    let mut battle = make_battle(0, team_1().unwrap(), team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
@@ -455,8 +475,12 @@ fn flower_gift_activates_when_weather_is_unsuppressed() {
 
 #[test]
 fn can_transform_into_cherrim_sunshine() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team_1().unwrap(),
+        team_2().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));

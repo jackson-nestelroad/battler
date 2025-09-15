@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -44,12 +43,11 @@ fn team() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     battle_type: BattleType,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)
@@ -60,17 +58,16 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn skill_swap_swaps_abilities() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut user = team().unwrap();
     user.members[0].ability = "Soundproof".to_owned();
     let mut target = team().unwrap();
     target.members[0].ability = "Drizzle".to_owned();
-    let mut battle = make_battle(&data, BattleType::Singles, 0, user, target).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, user, target).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -103,10 +100,9 @@ fn skill_swap_swaps_abilities() {
 
 #[test]
 fn skill_swap_fails_for_forbidden_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut user = team().unwrap();
     user.members[0].ability = "Wonder Guard".to_owned();
-    let mut battle = make_battle(&data, BattleType::Singles, 0, user, team().unwrap()).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, user, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -126,10 +122,9 @@ fn skill_swap_fails_for_forbidden_ability() {
 
 #[test]
 fn skill_swap_is_private_for_allies() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut user = team().unwrap();
     user.members[0].ability = "Soundproof".to_owned();
-    let mut battle = make_battle(&data, BattleType::Doubles, 0, user, team().unwrap()).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, user, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(

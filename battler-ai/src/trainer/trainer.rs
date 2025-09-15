@@ -549,6 +549,7 @@ mod trainer_test {
     use battler_test_utils::{
         ControlledRandomNumberGenerator,
         TestBattleBuilder,
+        static_local_data_store,
     };
     use uuid::Uuid;
 
@@ -679,8 +680,7 @@ mod trainer_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn scores_moves_evenly_with_no_flags() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let service = BattlerService::new(&data);
+        let service = BattlerService::new(static_local_data_store());
         let battle = start_battle(
             &service,
             0,
@@ -698,7 +698,7 @@ mod trainer_test {
             rng(Some(0)),
         );
 
-        let context = ai_context(&data, &service, battle, "player-2")
+        let context = ai_context(static_local_data_store(), &service, battle, "player-2")
             .await
             .unwrap();
 
@@ -756,8 +756,7 @@ mod trainer_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn scores_moves_with_basic_flag_modifiers() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let service = BattlerService::new(&data);
+        let service = BattlerService::new(static_local_data_store());
         let battle = start_battle(
             &service,
             0,
@@ -775,7 +774,7 @@ mod trainer_test {
             rng(Some(0)),
         );
 
-        let context = ai_context(&data, &service, battle, "player-2")
+        let context = ai_context(static_local_data_store(), &service, battle, "player-2")
             .await
             .unwrap();
 
@@ -833,8 +832,7 @@ mod trainer_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn calculates_match_up_scores_for_switch() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-        let service = BattlerService::new(&data);
+        let service = BattlerService::new(static_local_data_store());
         let battle = start_battle(
             &service,
             0,
@@ -852,7 +850,7 @@ mod trainer_test {
             rng(Some(0)),
         );
 
-        let context = ai_context(&data, &service, battle, "player-2")
+        let context = ai_context(static_local_data_store(), &service, battle, "player-2")
             .await
             .unwrap();
 

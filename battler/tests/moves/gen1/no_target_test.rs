@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -62,17 +61,16 @@ fn make_battle_builder() -> TestBattleBuilder {
         .add_player_to_side_2("player-2", "Player 2")
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_battle() -> Result<PublicCoreBattle<'static>> {
     make_battle_builder()
         .with_team("player-1", team()?)
         .with_team("player-2", team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn retargets_foe_after_original_target_faints() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -101,8 +99,7 @@ fn retargets_foe_after_original_target_faints() {
 
 #[test]
 fn move_fails_with_no_target() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));

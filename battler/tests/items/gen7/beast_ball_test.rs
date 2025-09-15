@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WildPlayerOptions,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn bulbasaur() -> Result<TeamData> {
@@ -52,12 +51,7 @@ fn buzzwole() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -71,7 +65,7 @@ fn make_battle(
         .add_wild_mon_to_side_2("wild", "Wild", WildPlayerOptions::default())
         .with_team("protagonist", team_1)
         .with_team("wild", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn apply_rng(battle: &mut PublicCoreBattle, shake_probability: u64) {
@@ -87,8 +81,12 @@ fn apply_rng(battle: &mut PublicCoreBattle, shake_probability: u64) {
 
 #[test]
 fn beast_ball_has_low_catch_rate_for_non_ultra_beast() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, bulbasaur().unwrap(), bulbasaur().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        bulbasaur().unwrap(),
+        bulbasaur().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 38489);
@@ -124,8 +122,12 @@ fn beast_ball_has_low_catch_rate_for_non_ultra_beast() {
 
 #[test]
 fn beast_ball_works_for_ultra_beasts() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, bulbasaur().unwrap(), buzzwole().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        bulbasaur().unwrap(),
+        buzzwole().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 24966);
@@ -173,8 +175,12 @@ fn beast_ball_works_for_ultra_beasts() {
 
 #[test]
 fn master_ball_works_for_ultra_beasts() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, bulbasaur().unwrap(), buzzwole().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        bulbasaur().unwrap(),
+        buzzwole().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     apply_rng(&mut battle, 65535);

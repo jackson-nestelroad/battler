@@ -1,12 +1,14 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    LocalDataStore,
     TeamData,
     WrapResultError,
     error::ValidationError,
 };
-use battler_test_utils::TestBattleBuilder;
+use battler_test_utils::{
+    TestBattleBuilder,
+    static_local_data_store,
+};
 use itertools::Itertools;
 
 fn make_battle_builder() -> TestBattleBuilder {
@@ -57,10 +59,9 @@ fn three_starters() -> Result<TeamData> {
 
 #[test]
 fn enforces_unique_abilities_by_default() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle_builder()
         .with_rule("Ability Clause")
-        .build(&data)
+        .build(static_local_data_store())
         .unwrap();
 
     let mut bad_team = three_starters().unwrap();
@@ -94,10 +95,9 @@ fn enforces_unique_abilities_by_default() {
 
 #[test]
 fn enforces_ability_limits() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle_builder()
         .with_rule("Ability Clause = 2")
-        .build(&data)
+        .build(static_local_data_store())
         .unwrap();
 
     let mut bad_team = three_starters().unwrap();
@@ -129,11 +129,10 @@ fn enforces_ability_limits() {
 
 #[test]
 fn fails_for_invalid_value() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     assert_matches::assert_matches!(
         make_battle_builder()
             .with_rule("Ability Clause = abc")
-            .build(&data)
+            .build(static_local_data_store())
             .err(),
         Some(err) => {
             assert!(format!("{err:#}").contains("rule Ability Clause is invalid"), "{err:?}");

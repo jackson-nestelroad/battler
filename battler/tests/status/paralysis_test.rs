@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn pikachu() -> Result<TeamData> {
@@ -58,11 +57,7 @@ fn alakazam() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(48205749111)
@@ -74,13 +69,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn paralysis_reduces_speed_and_prevents_movement() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, pikachu().unwrap(), alakazam().unwrap()).unwrap();
+    let mut battle = make_battle(pikachu().unwrap(), alakazam().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
@@ -130,10 +124,9 @@ fn paralysis_reduces_speed_and_prevents_movement() {
 
 #[test]
 fn quick_feet_resists_paralysis_speed_reduction() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = alakazam().unwrap();
     team.members[0].ability = "Quick Feet".to_owned();
-    let mut battle = make_battle(&data, pikachu().unwrap(), team).unwrap();
+    let mut battle = make_battle(pikachu().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
@@ -173,8 +166,7 @@ fn quick_feet_resists_paralysis_speed_reduction() {
 
 #[test]
 fn electric_types_resist_paralysis() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, pikachu().unwrap(), pikachu().unwrap()).unwrap();
+    let mut battle = make_battle(pikachu().unwrap(), pikachu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     let rng = get_controlled_rng_for_battle(&mut battle).unwrap();

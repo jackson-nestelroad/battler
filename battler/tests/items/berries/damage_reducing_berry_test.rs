@@ -3,8 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn snivy() -> Result<TeamData> {
@@ -77,12 +76,7 @@ fn oshawott() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -96,15 +90,14 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn occa_berry_reduces_fire_type_super_effective_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = snivy().unwrap();
     team.members[0].item = Some("Occa Berry".to_owned());
-    let mut battle = make_battle(&data, 0, team, tepig().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, tepig().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -139,10 +132,9 @@ fn occa_berry_reduces_fire_type_super_effective_damage() {
 
 #[test]
 fn occa_berry_does_not_activate_on_substitute() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = snivy().unwrap();
     team.members[0].item = Some("Occa Berry".to_owned());
-    let mut battle = make_battle(&data, 100, team, tepig().unwrap()).unwrap();
+    let mut battle = make_battle(100, team, tepig().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -180,10 +172,9 @@ fn occa_berry_does_not_activate_on_substitute() {
 
 #[test]
 fn passho_berry_reduces_water_type_super_effective_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = tepig().unwrap();
     team.members[0].item = Some("Passho Berry".to_owned());
-    let mut battle = make_battle(&data, 0, team, oshawott().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, oshawott().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -208,10 +199,9 @@ fn passho_berry_reduces_water_type_super_effective_damage() {
 
 #[test]
 fn enigma_berry_reduces_super_effective_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = oshawott().unwrap();
     team.members[0].item = Some("Enigma Berry".to_owned());
-    let mut battle = make_battle(&data, 0, team, snivy().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, snivy().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

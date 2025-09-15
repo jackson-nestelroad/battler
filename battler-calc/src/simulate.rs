@@ -1806,11 +1806,11 @@ mod damage_test {
     use battler_data::{
         BoostTable,
         Fraction,
-        LocalDataStore,
         Nature,
         Stat,
         StatTable,
     };
+    use battler_test_utils::static_local_data_store;
 
     use crate::{
         common::{
@@ -1851,9 +1851,8 @@ mod damage_test {
 
     #[test]
     fn fixed_damage() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Bulbasaur".to_owned(),
@@ -1888,9 +1887,8 @@ mod damage_test {
 
     #[test]
     fn basic_tackle_with_high_stat_variance() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -1958,9 +1956,8 @@ mod damage_test {
 
     #[test]
     fn basic_tackle_with_no_stat_variance() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2038,9 +2035,8 @@ mod damage_test {
 
     #[test]
     fn multiple_hits() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2077,9 +2073,8 @@ mod damage_test {
 
     #[test]
     fn spread_modifier() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2108,7 +2103,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(149, 176)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2141,9 +2136,8 @@ mod damage_test {
 
     #[test]
     fn critical_hit() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2189,7 +2183,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(7, 9)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2238,9 +2232,8 @@ mod damage_test {
 
     #[test]
     fn stab() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Blastoise".to_owned(),
@@ -2268,7 +2261,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(51, 60)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Blastoise".to_owned(),
@@ -2300,9 +2293,8 @@ mod damage_test {
 
     #[test]
     fn immune() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Pidgeot".to_owned(),
@@ -2348,9 +2340,8 @@ mod damage_test {
 
     #[test]
     fn type_effectiveness() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Pikachu".to_owned(),
@@ -2382,7 +2373,7 @@ mod damage_test {
             assert!(damage.description().contains(&"x2 - type effectiveness".to_owned()));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Pikachu".to_owned(),
@@ -2415,7 +2406,7 @@ mod damage_test {
             assert!(damage.description().contains(&"x4 - type effectiveness".to_owned()));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Ludicolo".to_owned(),
@@ -2447,7 +2438,7 @@ mod damage_test {
             assert!(damage.description().contains(&"x1/2 - type effectiveness".to_owned()));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Ludicolo".to_owned(),
@@ -2483,9 +2474,8 @@ mod damage_test {
 
     #[test]
     fn levitate_immunity() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2517,9 +2507,8 @@ mod damage_test {
 
     #[test]
     fn grounded_due_to_ingrain_overrides_levitate() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Venusaur".to_owned(),
@@ -2552,9 +2541,8 @@ mod damage_test {
 
     #[test]
     fn grounded_due_to_ingrain_negates_immunity() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Golem".to_owned(),
@@ -2586,9 +2574,8 @@ mod damage_test {
 
     #[test]
     fn burn() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Blastoise".to_owned(),
@@ -2617,7 +2604,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(98, 116)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Blastoise".to_owned(),
@@ -2649,9 +2636,8 @@ mod damage_test {
 
     #[test]
     fn rain() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 weather: Some("Rain".to_owned()),
                 ..Default::default()
@@ -2683,7 +2669,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(133, 157)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 weather: Some("Rain".to_owned()),
                 ..Default::default()
@@ -2717,9 +2703,8 @@ mod damage_test {
 
     #[test]
     fn utility_umbrella_suppresses_rain() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 weather: Some("Rain".to_owned()),
                 ..Default::default()
@@ -2755,9 +2740,8 @@ mod damage_test {
 
     #[test]
     fn embargo_suppresses_item() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 weather: Some("Rain".to_owned()),
                 ..Default::default()
@@ -2794,9 +2778,8 @@ mod damage_test {
 
     #[test]
     fn air_lock_suppresses_rain() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 weather: Some("Rain".to_owned()),
                 ..Default::default()
@@ -2832,9 +2815,8 @@ mod damage_test {
 
     #[test]
     fn huge_power() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Blastoise".to_owned(),
@@ -2864,7 +2846,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(31, 37)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Blastoise".to_owned(),
@@ -2899,9 +2881,8 @@ mod damage_test {
 
     #[test]
     fn ohko() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Golem".to_owned(),
@@ -2933,9 +2914,8 @@ mod damage_test {
 
     #[test]
     fn nature_power() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Ludicolo".to_owned(),
@@ -2965,7 +2945,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(61, 72)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 environment: Some("Water".to_owned()),
                 ..Default::default()
@@ -3002,9 +2982,8 @@ mod damage_test {
 
     #[test]
     fn psychic_terrain() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 terrain: Some("Psychic Terrain".to_owned()),
                 ..Default::default()
@@ -3039,9 +3018,8 @@ mod damage_test {
 
     #[test]
     fn volt_absorb() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3070,7 +3048,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(161, 190)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3103,9 +3081,8 @@ mod damage_test {
 
     #[test]
     fn wonder_guard() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3138,9 +3115,8 @@ mod damage_test {
 
     #[test]
     fn soundproof() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3173,9 +3149,8 @@ mod damage_test {
 
     #[test]
     fn endeavor() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3203,7 +3178,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(0, 0)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3236,9 +3211,8 @@ mod damage_test {
 
     #[test]
     fn weather_ball() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Castform".to_owned(),
@@ -3266,7 +3240,7 @@ mod damage_test {
             assert_eq!(damage.value().min_max_range(), Some(Range::new(47, 55)));
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field {
                 weather: Some("Sandstorm".to_owned()),
                 ..Default::default()
@@ -3302,9 +3276,8 @@ mod damage_test {
 
     #[test]
     fn triple_kick() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Machamp".to_owned(),
@@ -3341,9 +3314,8 @@ mod damage_test {
 
     #[test]
     fn gem() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3375,9 +3347,8 @@ mod damage_test {
 
     #[test]
     fn type_powering_item() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3409,9 +3380,8 @@ mod damage_test {
 
     #[test]
     fn type_powering_ability() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3440,7 +3410,7 @@ mod damage_test {
             assert!(!attack.description().contains(&"x3/2 - Blaze".to_owned()), "{attack:?}");
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3473,9 +3443,8 @@ mod damage_test {
 
     #[test]
     fn thick_fat() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3507,9 +3476,8 @@ mod damage_test {
 
     #[test]
     fn damage_reducing_berry() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3538,7 +3506,7 @@ mod damage_test {
             assert!(damage.description().contains(&"x1/2 - Occa Berry".to_owned()), "{damage:?}");
         });
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3572,9 +3540,8 @@ mod damage_test {
 
     #[test]
     fn toxic() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),
@@ -3612,9 +3579,8 @@ mod damage_test {
 
     #[test]
     fn toxic_immunity() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         assert_matches::assert_matches!(simulate_move(MoveSimulatorInput {
-            data: &data,
+            data: static_local_data_store(),
             field: Field::default(),
             attacker: Mon {
                 name: "Charizard".to_owned(),

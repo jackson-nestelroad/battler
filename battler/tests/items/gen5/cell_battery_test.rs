@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn emolga() -> Result<TeamData> {
@@ -37,12 +36,7 @@ fn emolga() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -53,13 +47,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn cell_battery_increases_atk_on_electric_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, emolga().unwrap(), emolga().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        emolga().unwrap(),
+        emolga().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -83,8 +81,12 @@ fn cell_battery_increases_atk_on_electric_move() {
 
 #[test]
 fn cell_battery_does_not_activate_if_atk_cannot_boost() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, emolga().unwrap(), emolga().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        emolga().unwrap(),
+        emolga().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -111,8 +113,12 @@ fn cell_battery_does_not_activate_if_atk_cannot_boost() {
 
 #[test]
 fn embargo_prevents_cell_battery() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, emolga().unwrap(), emolga().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        emolga().unwrap(),
+        emolga().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -141,10 +147,9 @@ fn embargo_prevents_cell_battery() {
 
 #[test]
 fn cell_battery_on_contrary_mon_does_not_activate_if_atk_cannot_lower() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = emolga().unwrap();
     team.members[0].ability = "Contrary".to_owned();
-    let mut battle = make_battle(&data, 0, team, emolga().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, emolga().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));

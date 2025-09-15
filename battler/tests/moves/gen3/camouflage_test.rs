@@ -2,9 +2,7 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
     FieldEnvironment,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn staryu() -> Result<TeamData> {
@@ -37,12 +36,11 @@ fn staryu() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     seed: u64,
     environment: Option<FieldEnvironment>,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -54,13 +52,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn camouflage_changes_user_type_to_normal_by_default() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, None, staryu().unwrap(), staryu().unwrap()).unwrap();
+    let mut battle = make_battle(0, None, staryu().unwrap(), staryu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -80,8 +77,7 @@ fn camouflage_changes_user_type_to_normal_by_default() {
 
 #[test]
 fn camouflage_changes_user_type_to_psychic_in_psychic_terrain() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, None, staryu().unwrap(), staryu().unwrap()).unwrap();
+    let mut battle = make_battle(0, None, staryu().unwrap(), staryu().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -109,9 +105,7 @@ fn camouflage_changes_user_type_to_psychic_in_psychic_terrain() {
 
 #[test]
 fn camouflage_changes_user_type_based_on_field_environment() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         Some(FieldEnvironment::Sky),
         staryu().unwrap(),

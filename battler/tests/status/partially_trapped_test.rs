@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn two_gyarados() -> Result<TeamData> {
@@ -46,11 +45,7 @@ fn two_gyarados() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)
@@ -61,13 +56,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn bind_partially_traps_target() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, two_gyarados().unwrap(), two_gyarados().unwrap()).unwrap();
+    let mut battle = make_battle(two_gyarados().unwrap(), two_gyarados().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -134,10 +128,9 @@ fn bind_partially_traps_target() {
 
 #[test]
 fn bind_partially_traps_target_for_longer_with_grip_claw() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = two_gyarados().unwrap();
     team.members[0].item = Some("Grip Claw".to_owned());
-    let mut battle = make_battle(&data, team, two_gyarados().unwrap()).unwrap();
+    let mut battle = make_battle(team, two_gyarados().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -228,8 +221,7 @@ fn bind_partially_traps_target_for_longer_with_grip_claw() {
 
 #[test]
 fn bind_ends_when_user_switches() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, two_gyarados().unwrap(), two_gyarados().unwrap()).unwrap();
+    let mut battle = make_battle(two_gyarados().unwrap(), two_gyarados().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

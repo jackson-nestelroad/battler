@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     MonSummaryData,
     PublicCoreBattle,
     TeamData,
@@ -15,6 +13,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn pikachu() -> Result<TeamData> {
@@ -145,12 +144,11 @@ fn metagross() -> Result<TeamData> {
 }
 
 fn make_wild_singles_battle(
-    data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
     wild_options: WildPlayerOptions,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -164,11 +162,10 @@ fn make_wild_singles_battle(
         .add_wild_mon_to_side_2("wild", "Wild", wild_options)
         .with_team("protagonist", team_1)
         .with_team("wild", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn make_wild_multi_battle<'d>(
-    data: &'d dyn DataStore,
     seed: u64,
     team: TeamData,
     wild: Vec<TeamData>,
@@ -192,15 +189,14 @@ fn make_wild_multi_battle<'d>(
             .with_team(&id, wild);
     }
 
-    builder.build(data)
+    builder.build(static_local_data_store())
 }
 
 fn make_trainer_singles_battle(
-    data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -213,14 +209,12 @@ fn make_trainer_singles_battle(
         .add_player_to_side_2("trainer", "Trainer")
         .with_team("protagonist", team_1)
         .with_team("trainer", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn level_5_magikarp_caught_in_poke_ball() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         magikarp().unwrap(),
@@ -330,9 +324,7 @@ fn level_5_magikarp_caught_in_poke_ball() {
 
 #[test]
 fn catching_mon_continues_battle() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         magikarp_gyarados().unwrap(),
@@ -385,9 +377,7 @@ fn catching_mon_continues_battle() {
 
 #[test]
 fn ball_can_only_be_used_on_isolated_foe() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_multi_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         vec![magikarp().unwrap(), magikarp().unwrap()],
@@ -456,9 +446,7 @@ fn ball_can_only_be_used_on_isolated_foe() {
 
 #[test]
 fn level_100_metagross_caught_in_master_ball() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         metagross().unwrap(),
@@ -540,9 +528,7 @@ fn level_100_metagross_caught_in_master_ball() {
 
 #[test]
 fn level_100_metagross_critical_capture() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         metagross().unwrap(),
@@ -578,11 +564,9 @@ fn level_100_metagross_critical_capture() {
 
 #[test]
 fn level_50_magikarp_critical_capture() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut wild = magikarp().unwrap();
     wild.members[0].level = 50;
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         wild,
@@ -614,9 +598,7 @@ fn level_50_magikarp_critical_capture() {
 
 #[test]
 fn level_100_sleeping_blissey_in_master_ball() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         blissey().unwrap(),
         blissey().unwrap(),
@@ -674,14 +656,13 @@ fn level_100_sleeping_blissey_in_master_ball() {
 
 #[test]
 fn level_100_sleeping_magikarp_critical_in_master_ball() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = pikachu().unwrap();
     team.members[0].level = 100;
     let mut wild = magikarp().unwrap();
     wild.members[0].level = 100;
     wild.members[0].moves.clear();
     let mut battle =
-        make_wild_singles_battle(&data, 65535, team, wild, WildPlayerOptions::default()).unwrap();
+        make_wild_singles_battle(65535, team, wild, WildPlayerOptions::default()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     for _ in 0..5 {
@@ -719,9 +700,7 @@ fn level_100_sleeping_magikarp_critical_in_master_ball() {
 
 #[test]
 fn uncatchable_wild_player_fails_catch() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         metagross().unwrap(),
@@ -753,9 +732,8 @@ fn uncatchable_wild_player_fails_catch() {
 
 #[test]
 fn trainer_mons_are_uncatchable() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
-        make_trainer_singles_battle(&data, 65535, pikachu().unwrap(), magikarp().unwrap()).unwrap();
+        make_trainer_singles_battle(65535, pikachu().unwrap(), magikarp().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -778,9 +756,7 @@ fn trainer_mons_are_uncatchable() {
 
 #[test]
 fn cannot_throw_ball_at_semi_invulnerable_mon() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         65535,
         pikachu().unwrap(),
         magikarp().unwrap(),

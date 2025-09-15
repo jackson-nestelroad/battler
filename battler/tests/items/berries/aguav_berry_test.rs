@@ -3,8 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     Nature,
     PublicCoreBattle,
     TeamData,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn blaziken() -> Result<TeamData> {
@@ -56,12 +55,7 @@ fn swampert() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -75,15 +69,14 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn aguav_berry_heals_one_third_hp() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = blaziken().unwrap();
     team.members[0].item = Some("Aguav Berry".to_owned());
-    let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, swampert().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -110,12 +103,11 @@ fn aguav_berry_heals_one_third_hp() {
 
 #[test]
 fn aguav_berry_causes_confusion_to_special_defense_dropping_natures() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = blaziken().unwrap();
     team.members[0].item = Some("Aguav Berry".to_owned());
     team.members[0].nature = Nature::Sassy;
     team.members[0].true_nature = Some(Nature::Naughty);
-    let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, swampert().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -143,11 +135,10 @@ fn aguav_berry_causes_confusion_to_special_defense_dropping_natures() {
 
 #[test]
 fn gluttony_eats_aguav_berry_early() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = blaziken().unwrap();
     team.members[0].item = Some("Aguav Berry".to_owned());
     team.members[0].ability = "Gluttony".to_owned();
-    let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, swampert().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -175,10 +166,9 @@ fn gluttony_eats_aguav_berry_early() {
 
 #[test]
 fn aguav_berry_can_be_used_from_bag() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = blaziken().unwrap();
     team.members[0].nature = Nature::Naughty;
-    let mut battle = make_battle(&data, 0, team, swampert().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, swampert().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

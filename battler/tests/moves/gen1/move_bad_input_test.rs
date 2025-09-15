@@ -2,14 +2,15 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     Request,
     TeamData,
     WrapResultError,
 };
-use battler_test_utils::TestBattleBuilder;
+use battler_test_utils::{
+    TestBattleBuilder,
+    static_local_data_store,
+};
 
 fn singles_team() -> Result<TeamData> {
     serde_json::from_str(
@@ -35,7 +36,7 @@ fn singles_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_singles_battle() -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_auto_continue(false)
@@ -44,7 +45,7 @@ fn make_singles_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", singles_team()?)
         .with_team("player-2", singles_team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn singles_team_no_moves() -> Result<TeamData> {
@@ -66,7 +67,7 @@ fn singles_team_no_moves() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_singles_battle_with_struggle() -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_auto_continue(false)
@@ -75,7 +76,7 @@ fn make_singles_battle_with_struggle(data: &dyn DataStore) -> Result<PublicCoreB
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", singles_team_no_moves()?)
         .with_team("player-2", singles_team_no_moves()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn player_request(battle: &PublicCoreBattle, player_id: &str) -> Option<Request> {
@@ -91,8 +92,7 @@ fn player_has_active_request(battle: &PublicCoreBattle, player_id: &str) -> bool
 
 #[test]
 fn too_many_moves() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data).unwrap();
+    let mut battle = make_singles_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
@@ -104,8 +104,7 @@ fn too_many_moves() {
 
 #[test]
 fn missing_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data).unwrap();
+    let mut battle = make_singles_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
@@ -117,8 +116,7 @@ fn missing_move() {
 
 #[test]
 fn invalid_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data).unwrap();
+    let mut battle = make_singles_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
@@ -130,8 +128,7 @@ fn invalid_move() {
 
 #[test]
 fn target_not_allowed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data).unwrap();
+    let mut battle = make_singles_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
@@ -151,8 +148,7 @@ fn target_not_allowed() {
 
 #[test]
 fn target_implied_in_singles() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data).unwrap();
+    let mut battle = make_singles_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));
@@ -161,8 +157,7 @@ fn target_implied_in_singles() {
 
 #[test]
 fn target_chosen_for_singles() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data).unwrap();
+    let mut battle = make_singles_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3, 1"), Ok(()));
@@ -171,8 +166,7 @@ fn target_chosen_for_singles() {
 
 #[test]
 fn target_out_of_bounds() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle(&data).unwrap();
+    let mut battle = make_singles_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
@@ -184,8 +178,7 @@ fn target_out_of_bounds() {
 
 #[test]
 fn struggle_when_no_available_moves() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_singles_battle_with_struggle(&data).unwrap();
+    let mut battle = make_singles_battle_with_struggle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert!(player_request(&battle, "player-1").is_some_and(|request| {
@@ -266,7 +259,7 @@ fn triples_team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_triples_battle() -> Result<PublicCoreBattle<'static>> {
     // Adjacency rules really only matter for Triples, so we use a Triples battle to verify our
     // adjacency rules.
     TestBattleBuilder::new()
@@ -276,13 +269,12 @@ fn make_triples_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", triples_team()?)
         .with_team("player-2", triples_team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn target_normal() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_triples_battle(&data).unwrap();
+    let mut battle = make_triples_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
@@ -337,8 +329,7 @@ fn target_normal() {
 
 #[test]
 fn target_any_except_user() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_triples_battle(&data).unwrap();
+    let mut battle = make_triples_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     // Blastoise's Water Pulse can hit a non-adjacent foe.
@@ -355,8 +346,7 @@ fn target_any_except_user() {
 
 #[test]
 fn target_adjacent_foe() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_triples_battle(&data).unwrap();
+    let mut battle = make_triples_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
@@ -387,8 +377,7 @@ fn target_adjacent_foe() {
 
 #[test]
 fn target_adjacent_ally() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_triples_battle(&data).unwrap();
+    let mut battle = make_triples_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 
@@ -415,8 +404,7 @@ fn target_adjacent_ally() {
 
 #[test]
 fn target_adjacent_ally_or_user() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_triples_battle(&data).unwrap();
+    let mut battle = make_triples_battle().unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
@@ -453,7 +441,7 @@ fn target_adjacent_ally_or_user() {
     );
 }
 
-fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_multi_battle() -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_auto_continue(false)
@@ -469,15 +457,14 @@ fn make_multi_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
         .with_team("player-4", singles_team()?)
         .with_team("player-5", singles_team()?)
         .with_team("player-6", singles_team()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn adjacency_rules_apply_across_players() {
-    // Use a 3v3 Multi battle to determine if the adjacnency rules behave the same as a Triples
+    // Use a 3v3 Multi battle to determine if the adjacency rules behave the same as a Triples
     // battle.
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_multi_battle(&data).unwrap();
+    let mut battle = make_multi_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
 

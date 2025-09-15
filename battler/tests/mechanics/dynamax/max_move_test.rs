@@ -3,9 +3,7 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
     Id,
-    LocalDataStore,
     MonMoveSlotData,
     MoveTarget,
     PublicCoreBattle,
@@ -18,6 +16,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -68,12 +67,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
@@ -89,13 +83,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn max_move_changes_based_on_type() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -218,8 +216,12 @@ fn max_move_changes_based_on_type() {
 
 #[test]
 fn status_move_changes_to_max_guard() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -265,11 +267,10 @@ fn status_move_changes_to_max_guard() {
 
 #[test]
 fn max_move_changes_based_on_move_with_dynamic_type() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = team().unwrap();
     team_1.members[0].moves = vec!["Hidden Power".to_owned()];
     team_1.members[0].hidden_power_type = Some(Type::Dark);
-    let mut battle = make_battle(&data, 100, team_1, team().unwrap()).unwrap();
+    let mut battle = make_battle(100, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -300,8 +301,12 @@ fn max_move_changes_based_on_move_with_dynamic_type() {
 
 #[test]
 fn max_move_can_boost_allies_stats() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -333,8 +338,12 @@ fn max_move_can_boost_allies_stats() {
 
 #[test]
 fn max_move_varies_power_based_on_base_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -375,8 +384,12 @@ fn max_move_varies_power_based_on_base_move() {
 
 #[test]
 fn max_move_hits_through_protect() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -409,8 +422,12 @@ fn max_move_hits_through_protect() {
 
 #[test]
 fn feint_hits_through_max_guard() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -444,8 +461,12 @@ fn feint_hits_through_max_guard() {
 
 #[test]
 fn gigantamax_gets_gmax_move_for_certain_type() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -505,8 +526,12 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
 
 #[test]
 fn disable_fails_after_max_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -542,8 +567,12 @@ fn disable_fails_after_max_move() {
 
 #[test]
 fn mimic_fails_after_max_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -579,8 +608,12 @@ fn mimic_fails_after_max_move() {
 
 #[test]
 fn sketch_fails_after_max_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -616,8 +649,12 @@ fn sketch_fails_after_max_move() {
 
 #[test]
 fn spite_deducts_pp_of_base_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -653,8 +690,12 @@ fn spite_deducts_pp_of_base_move() {
 
 #[test]
 fn me_first_fails_for_max_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -690,8 +731,12 @@ fn me_first_fails_for_max_move() {
 
 #[test]
 fn max_move_stat_drop_hits_through_substitute() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));

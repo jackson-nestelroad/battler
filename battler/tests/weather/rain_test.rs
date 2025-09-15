@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn blastoise() -> Result<TeamData> {
@@ -183,12 +182,7 @@ fn rayquaza_kyogre() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -200,13 +194,17 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn rain_lasts_for_five_turns() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, blastoise().unwrap(), charizard().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        blastoise().unwrap(),
+        charizard().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -253,9 +251,7 @@ fn rain_lasts_for_five_turns() {
 
 #[test]
 fn rain_lasts_for_eight_turns_with_damp_rock() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         blastoise_with_damp_rock().unwrap(),
         charizard().unwrap(),
@@ -325,8 +321,12 @@ fn rain_lasts_for_eight_turns_with_damp_rock() {
 
 #[test]
 fn rain_boosts_water_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, blastoise().unwrap(), charizard().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        blastoise().unwrap(),
+        charizard().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -368,8 +368,12 @@ fn rain_boosts_water_damage() {
 
 #[test]
 fn rain_reduces_fire_damage() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, blastoise().unwrap(), charizard().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        blastoise().unwrap(),
+        charizard().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -411,8 +415,12 @@ fn rain_reduces_fire_damage() {
 
 #[test]
 fn rain_increases_thunder_accuracy() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 100, blastoise().unwrap(), charizard().unwrap()).unwrap();
+    let mut battle = make_battle(
+        100,
+        blastoise().unwrap(),
+        charizard().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -465,9 +473,7 @@ fn rain_increases_thunder_accuracy() {
 
 #[test]
 fn drizzle_starts_rain_on_switch() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         blastoise_with_drizzle().unwrap(),
         charizard().unwrap(),
@@ -524,8 +530,12 @@ fn drizzle_starts_rain_on_switch() {
 
 #[test]
 fn air_lock_suppresses_rain() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, blastoise().unwrap(), rayquaza().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        blastoise().unwrap(),
+        rayquaza().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -585,9 +595,12 @@ fn air_lock_suppresses_rain() {
 
 #[test]
 fn rain_finishes_normally_with_air_lock() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle =
-        make_battle(&data, 0, blastoise().unwrap(), rayquaza_kyogre().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        blastoise().unwrap(),
+        rayquaza_kyogre().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -647,9 +660,7 @@ fn rain_finishes_normally_with_air_lock() {
 
 #[test]
 fn utility_umbrella_suppresses_rain() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         blastoise().unwrap(),
         charizard_with_utility_umbrella().unwrap(),
@@ -708,9 +719,7 @@ fn utility_umbrella_suppresses_rain() {
 
 #[test]
 fn suppressed_utility_umbrella_does_not_suppress_rain() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         blastoise().unwrap(),
         charizard_with_utility_umbrella().unwrap(),

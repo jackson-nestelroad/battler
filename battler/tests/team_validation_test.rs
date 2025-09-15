@@ -1,12 +1,14 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    LocalDataStore,
     TeamData,
     WrapResultError,
     error::ValidationError,
 };
-use battler_test_utils::TestBattleBuilder;
+use battler_test_utils::{
+    TestBattleBuilder,
+    static_local_data_store,
+};
 use itertools::Itertools;
 
 fn make_battle_builder() -> TestBattleBuilder {
@@ -56,12 +58,11 @@ fn three_starters() -> Result<TeamData> {
 
 #[test]
 fn validates_empty_side() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     assert_matches::assert_matches!(
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
             .add_player_to_side_1("player-1", "Player 1")
-            .build(&data)
+            .build(static_local_data_store())
             .err(),
         Some(err) => {
             assert!(format!("{err:#}").contains("Side 2 has no players"), "{err:?}");
@@ -71,14 +72,13 @@ fn validates_empty_side() {
 
 #[test]
 fn validates_players_per_side() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     assert_matches::assert_matches!(
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Singles)
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_2("player-2", "Player 2")
             .add_player_to_side_1("player-3", "Player 3")
-            .build(&data)
+            .build(static_local_data_store())
             .err(),
         Some(err) => {
             assert!(format!("{err:#}").contains("Side 1 has too many players for a singles battle"), "{err:?}");
@@ -88,7 +88,6 @@ fn validates_players_per_side() {
 
 #[test]
 fn validates_players_per_side_clause() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     assert_matches::assert_matches!(
         TestBattleBuilder::new()
             .with_battle_type(BattleType::Multi)
@@ -96,7 +95,7 @@ fn validates_players_per_side_clause() {
             .add_player_to_side_1("player-1", "Player 1")
             .add_player_to_side_1("player-2", "Player 2")
             .add_player_to_side_2("player-3", "Player 3")
-            .build(&data)
+            .build(static_local_data_store())
             .err(),
         Some(err) => {
             assert!(format!("{err:#}").contains("Side 2 must have exactly 2 players."), "{err:?}");
@@ -106,8 +105,9 @@ fn validates_players_per_side_clause() {
 
 #[test]
 fn validates_empty_teams_before_start() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle_builder().build(&data).unwrap();
+    let mut battle = make_battle_builder()
+        .build(static_local_data_store())
+        .unwrap();
     assert_matches::assert_matches!(battle.start(), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Validation failed for Player 1: Empty team is not allowed."), "{err:?}");
@@ -135,10 +135,9 @@ fn validates_empty_teams_before_start() {
 
 #[test]
 fn validates_team_legality_during_update() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle_builder()
         .with_rule("Max Team Size = 2")
-        .build(&data)
+        .build(static_local_data_store())
         .unwrap();
 
     assert_matches::assert_matches!(
@@ -160,8 +159,9 @@ fn validates_team_legality_during_update() {
 
 #[test]
 fn fails_to_update_team_for_nonexistent_player() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle_builder().build(&data).unwrap();
+    let mut battle = make_battle_builder()
+        .build(static_local_data_store())
+        .unwrap();
 
     assert_matches::assert_matches!(
         battle.update_team("player-3", three_starters().unwrap()),

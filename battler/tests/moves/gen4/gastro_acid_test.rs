@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_start_eq,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn swalot() -> Result<TeamData> {
@@ -105,12 +104,11 @@ fn psyduck_castform() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     battle_type: BattleType,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
         .with_seed(seed)
@@ -126,14 +124,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn gastro_acid_suppresses_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         swalot().unwrap(),
@@ -169,9 +165,7 @@ fn gastro_acid_suppresses_ability() {
 
 #[test]
 fn gastro_acid_fails_on_unsuppressible_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         BattleType::Singles,
         0,
         swalot().unwrap(),
@@ -197,10 +191,9 @@ fn gastro_acid_fails_on_unsuppressible_ability() {
 
 #[test]
 fn gastro_acid_cannot_be_passed_to_unsuppressible_ability() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = shedinja().unwrap();
     team.members.extend(komala().unwrap().members);
-    let mut battle = make_battle(&data, BattleType::Singles, 0, swalot().unwrap(), team).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, swalot().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -241,11 +234,9 @@ fn gastro_acid_cannot_be_passed_to_unsuppressible_ability() {
 
 #[test]
 fn gastro_acid_triggers_ability_end() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = psyduck_castform().unwrap();
     team.members[0].ability = "Cloud Nine".to_owned();
     let mut battle = make_battle(
-        &data,
         BattleType::Doubles,
         0,
         psyduck_castform().unwrap(),

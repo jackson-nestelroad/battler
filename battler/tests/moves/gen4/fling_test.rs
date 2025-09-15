@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -12,6 +10,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn ambipom() -> Result<TeamData> {
@@ -37,12 +36,7 @@ fn ambipom() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -53,13 +47,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn fling_fails_with_no_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, ambipom().unwrap(), ambipom().unwrap()).unwrap();
+    let mut battle = make_battle(0, ambipom().unwrap(), ambipom().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -79,10 +72,9 @@ fn fling_fails_with_no_item() {
 
 #[test]
 fn fling_throws_berry() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = ambipom().unwrap();
     team.members[0].item = Some("Pecha Berry".to_owned());
-    let mut battle = make_battle(&data, 0, team, ambipom().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, ambipom().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -116,10 +108,9 @@ fn fling_throws_berry() {
 
 #[test]
 fn fling_causes_target_to_eat_berry() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = ambipom().unwrap();
     team.members[0].item = Some("Pecha Berry".to_owned());
-    let mut battle = make_battle(&data, 0, team, ambipom().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, ambipom().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -146,10 +137,9 @@ fn fling_causes_target_to_eat_berry() {
 
 #[test]
 fn fling_power_depends_on_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = ambipom().unwrap();
     team.members[0].item = Some("Iron Ball".to_owned());
-    let mut battle = make_battle(&data, 0, team, ambipom().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, ambipom().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -173,10 +163,9 @@ fn fling_power_depends_on_item() {
 
 #[test]
 fn fling_toxic_orb_triggers_bad_poison() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = ambipom().unwrap();
     team.members[0].item = Some("Toxic Orb".to_owned());
-    let mut battle = make_battle(&data, 0, team, ambipom().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, ambipom().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -204,10 +193,9 @@ fn fling_toxic_orb_triggers_bad_poison() {
 
 #[test]
 fn fling_mental_herb_uses_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = ambipom().unwrap();
     team.members[0].item = Some("Mental Herb".to_owned());
-    let mut battle = make_battle(&data, 0, team, ambipom().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, ambipom().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
@@ -234,10 +222,9 @@ fn fling_mental_herb_uses_item() {
 
 #[test]
 fn fling_white_herb_uses_item() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = ambipom().unwrap();
     team.members[0].item = Some("White Herb".to_owned());
-    let mut battle = make_battle(&data, 0, team, ambipom().unwrap()).unwrap();
+    let mut battle = make_battle(0, team, ambipom().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 3"), Ok(()));

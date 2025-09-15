@@ -481,10 +481,7 @@ impl Debug for Mon<'_, '_> {
 mod mon_test {
     use std::collections::BTreeMap;
 
-    use battler::{
-        LocalDataStore,
-        MonBattleData,
-    };
+    use battler::MonBattleData;
     use battler_client::state::{
         BattleState,
         Field,
@@ -492,6 +489,7 @@ mod mon_test {
         Player,
         Side,
     };
+    use battler_test_utils::static_local_data_store;
 
     use crate::{
         Mon,
@@ -500,7 +498,6 @@ mod mon_test {
 
     #[test]
     fn active_location() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 max_side_length: 3,
@@ -572,7 +569,7 @@ mod mon_test {
                 battle_data: &mon_player_1,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let mon_player_5 = MonBattleAppearanceReference {
@@ -580,7 +577,11 @@ mod mon_test {
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_5 = Mon::new(MonReference::State(&mon_player_5), &state, &data);
+        let mon_player_5 = Mon::new(
+            MonReference::State(&mon_player_5),
+            &state,
+            static_local_data_store(),
+        );
 
         assert_matches::assert_matches!(mon_player_1.side(), Ok(0));
         assert_matches::assert_matches!(mon_player_1.active_position(), Ok(Some(0)));
@@ -590,7 +591,6 @@ mod mon_test {
 
     #[test]
     fn relative_position() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 max_side_length: 3,
@@ -656,42 +656,66 @@ mod mon_test {
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_1 = Mon::new(MonReference::State(&mon_player_1), &state, &data);
+        let mon_player_1 = Mon::new(
+            MonReference::State(&mon_player_1),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_2 = MonBattleAppearanceReference {
             player: "player-2".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_2 = Mon::new(MonReference::State(&mon_player_2), &state, &data);
+        let mon_player_2 = Mon::new(
+            MonReference::State(&mon_player_2),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_3 = MonBattleAppearanceReference {
             player: "player-3".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_3 = Mon::new(MonReference::State(&mon_player_3), &state, &data);
+        let mon_player_3 = Mon::new(
+            MonReference::State(&mon_player_3),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_4 = MonBattleAppearanceReference {
             player: "player-4".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_4 = Mon::new(MonReference::State(&mon_player_4), &state, &data);
+        let mon_player_4 = Mon::new(
+            MonReference::State(&mon_player_4),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_5 = MonBattleAppearanceReference {
             player: "player-5".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_5 = Mon::new(MonReference::State(&mon_player_5), &state, &data);
+        let mon_player_5 = Mon::new(
+            MonReference::State(&mon_player_5),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_6 = MonBattleAppearanceReference {
             player: "player-6".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_6 = Mon::new(MonReference::State(&mon_player_6), &state, &data);
+        let mon_player_6 = Mon::new(
+            MonReference::State(&mon_player_6),
+            &state,
+            static_local_data_store(),
+        );
 
         assert_matches::assert_matches!(mon_player_1.relative_position(&mon_player_1), Ok(Some(0)));
         assert_matches::assert_matches!(
@@ -709,7 +733,6 @@ mod mon_test {
 
     #[test]
     fn relative_location_with_battle_data() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 max_side_length: 3,
@@ -781,7 +804,7 @@ mod mon_test {
                 battle_data: &mon_player_1,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let mon_player_2 = MonBattleData {
@@ -795,7 +818,7 @@ mod mon_test {
                 battle_data: &mon_player_2,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let mon_player_5 = MonBattleAppearanceReference {
@@ -803,7 +826,11 @@ mod mon_test {
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_5 = Mon::new(MonReference::State(&mon_player_5), &state, &data);
+        let mon_player_5 = Mon::new(
+            MonReference::State(&mon_player_5),
+            &state,
+            static_local_data_store(),
+        );
 
         assert_matches::assert_matches!(
             mon_player_1.relative_position(&mon_player_2),
@@ -814,7 +841,6 @@ mod mon_test {
 
     #[test]
     fn is_adjacent() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 max_side_length: 3,
@@ -886,7 +912,7 @@ mod mon_test {
                 battle_data: &mon_player_1,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let mon_player_2 = MonBattleData {
@@ -900,7 +926,7 @@ mod mon_test {
                 battle_data: &mon_player_2,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let mon_player_3 = MonBattleAppearanceReference {
@@ -908,28 +934,44 @@ mod mon_test {
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_3 = Mon::new(MonReference::State(&mon_player_3), &state, &data);
+        let mon_player_3 = Mon::new(
+            MonReference::State(&mon_player_3),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_4 = MonBattleAppearanceReference {
             player: "player-4".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_4 = Mon::new(MonReference::State(&mon_player_4), &state, &data);
+        let mon_player_4 = Mon::new(
+            MonReference::State(&mon_player_4),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_5 = MonBattleAppearanceReference {
             player: "player-5".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_5 = Mon::new(MonReference::State(&mon_player_5), &state, &data);
+        let mon_player_5 = Mon::new(
+            MonReference::State(&mon_player_5),
+            &state,
+            static_local_data_store(),
+        );
 
         let mon_player_6 = MonBattleAppearanceReference {
             player: "player-6".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let mon_player_6 = Mon::new(MonReference::State(&mon_player_6), &state, &data);
+        let mon_player_6 = Mon::new(
+            MonReference::State(&mon_player_6),
+            &state,
+            static_local_data_store(),
+        );
 
         assert_matches::assert_matches!(mon_player_1.is_adjacent(&mon_player_2, 2), Ok(true));
         assert_matches::assert_matches!(mon_player_1.is_adjacent(&mon_player_3, 2), Ok(false));
@@ -940,7 +982,6 @@ mod mon_test {
 
     #[test]
     fn is_same_with_battle_data_only() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 max_side_length: 1,
@@ -980,7 +1021,7 @@ mod mon_test {
                 battle_data: &active_mon_player_1,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let inactive_mon_player_1 = MonBattleData {
@@ -993,7 +1034,7 @@ mod mon_test {
                 battle_data: &inactive_mon_player_1,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let active_mon_player_2 = MonBattleData {
@@ -1007,7 +1048,7 @@ mod mon_test {
                 battle_data: &active_mon_player_2,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let inactive_mon_player_2 = MonBattleData {
@@ -1020,7 +1061,7 @@ mod mon_test {
                 battle_data: &inactive_mon_player_2,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         assert_matches::assert_matches!(
@@ -1060,7 +1101,6 @@ mod mon_test {
 
     #[test]
     fn is_same_with_state_references_only() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 max_side_length: 1,
@@ -1094,32 +1134,44 @@ mod mon_test {
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let active_mon_player_1 =
-            Mon::new(MonReference::State(&active_mon_player_1), &state, &data);
+        let active_mon_player_1 = Mon::new(
+            MonReference::State(&active_mon_player_1),
+            &state,
+            static_local_data_store(),
+        );
 
         let inactive_mon_player_1 = MonBattleAppearanceReference {
             player: "player-1".to_owned(),
             mon_index: 1,
             battle_appearance_index: 0,
         };
-        let inactive_mon_player_1 =
-            Mon::new(MonReference::State(&inactive_mon_player_1), &state, &data);
+        let inactive_mon_player_1 = Mon::new(
+            MonReference::State(&inactive_mon_player_1),
+            &state,
+            static_local_data_store(),
+        );
 
         let active_mon_player_2 = MonBattleAppearanceReference {
             player: "player-2".to_owned(),
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let active_mon_player_2 =
-            Mon::new(MonReference::State(&active_mon_player_2), &state, &data);
+        let active_mon_player_2 = Mon::new(
+            MonReference::State(&active_mon_player_2),
+            &state,
+            static_local_data_store(),
+        );
 
         let inactive_mon_player_2 = MonBattleAppearanceReference {
             player: "player-2".to_owned(),
             mon_index: 1,
             battle_appearance_index: 0,
         };
-        let inactive_mon_player_2 =
-            Mon::new(MonReference::State(&inactive_mon_player_2), &state, &data);
+        let inactive_mon_player_2 = Mon::new(
+            MonReference::State(&inactive_mon_player_2),
+            &state,
+            static_local_data_store(),
+        );
 
         assert_matches::assert_matches!(
             active_mon_player_1.is_same(&active_mon_player_1),
@@ -1158,7 +1210,6 @@ mod mon_test {
 
     #[test]
     fn is_same_with_mixed() {
-        let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
         let state = BattleState {
             field: Field {
                 max_side_length: 1,
@@ -1198,7 +1249,7 @@ mod mon_test {
                 battle_data: &active_mon_player_1,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let inactive_mon_player_1 = MonBattleData {
@@ -1211,7 +1262,7 @@ mod mon_test {
                 battle_data: &inactive_mon_player_1,
             },
             &state,
-            &data,
+            static_local_data_store(),
         );
 
         let active_mon_player_2 = MonBattleAppearanceReference {
@@ -1219,16 +1270,22 @@ mod mon_test {
             mon_index: 0,
             battle_appearance_index: 0,
         };
-        let active_mon_player_2 =
-            Mon::new(MonReference::State(&active_mon_player_2), &state, &data);
+        let active_mon_player_2 = Mon::new(
+            MonReference::State(&active_mon_player_2),
+            &state,
+            static_local_data_store(),
+        );
 
         let inactive_mon_player_2 = MonBattleAppearanceReference {
             player: "player-2".to_owned(),
             mon_index: 1,
             battle_appearance_index: 0,
         };
-        let inactive_mon_player_2 =
-            Mon::new(MonReference::State(&inactive_mon_player_2), &state, &data);
+        let inactive_mon_player_2 = Mon::new(
+            MonReference::State(&inactive_mon_player_2),
+            &state,
+            static_local_data_store(),
+        );
 
         assert_matches::assert_matches!(
             active_mon_player_1.is_same(&active_mon_player_1),

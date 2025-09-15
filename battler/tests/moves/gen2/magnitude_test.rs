@@ -3,8 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn sandslash() -> Result<TeamData> {
@@ -38,7 +37,7 @@ fn sandslash() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
+fn make_battle() -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(204759285930)
@@ -49,13 +48,12 @@ fn make_battle(data: &dyn DataStore) -> Result<PublicCoreBattle<'_>> {
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", sandslash()?)
         .with_team("player-2", sandslash()?)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn magnitude_randomly_sets_base_power() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data).unwrap();
+    let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

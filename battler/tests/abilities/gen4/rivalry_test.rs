@@ -3,9 +3,7 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
     Gender,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -14,6 +12,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn shinx(gender: Gender) -> Result<TeamData> {
@@ -38,12 +37,7 @@ fn shinx(gender: Gender) -> Result<TeamData> {
     Ok(team)
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -55,14 +49,12 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn rivalry_has_no_effect_when_mon_is_genderless() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         shinx(Gender::Unknown).unwrap(),
         shinx(Gender::Female).unwrap(),
@@ -93,9 +85,7 @@ fn rivalry_has_no_effect_when_mon_is_genderless() {
 
 #[test]
 fn rivalry_boosts_power_when_mons_are_same_gender() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         shinx(Gender::Female).unwrap(),
         shinx(Gender::Female).unwrap(),
@@ -126,9 +116,7 @@ fn rivalry_boosts_power_when_mons_are_same_gender() {
 
 #[test]
 fn rivalry_reduces_power_when_mons_are_different_gender() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         shinx(Gender::Female).unwrap(),
         shinx(Gender::Male).unwrap(),

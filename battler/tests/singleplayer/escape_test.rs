@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WildPlayerOptions,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn jolteon() -> Result<TeamData> {
@@ -102,12 +101,11 @@ fn ralts() -> Result<TeamData> {
 }
 
 fn make_wild_singles_battle(
-    data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
     wild_options: WildPlayerOptions,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -119,11 +117,10 @@ fn make_wild_singles_battle(
         .add_wild_mon_to_side_2("wild", "Wild", wild_options)
         .with_team("protagonist", team_1)
         .with_team("wild", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn make_wild_multi_battle<'d>(
-    data: &'d dyn DataStore,
     seed: u64,
     team: TeamData,
     wild: Vec<TeamData>,
@@ -145,15 +142,14 @@ fn make_wild_multi_battle<'d>(
             .with_team(&id, wild);
     }
 
-    builder.build(data)
+    builder.build(static_local_data_store())
 }
 
 fn make_trainer_singles_battle(
-    data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -164,14 +160,12 @@ fn make_trainer_singles_battle(
         .add_player_to_side_2("trainer", "Trainer")
         .with_team("protagonist", team_1)
         .with_team("trainer", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn player_escapes_with_higher_speed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         0,
         jolteon().unwrap(),
         primeape().unwrap(),
@@ -196,9 +190,7 @@ fn player_escapes_with_higher_speed() {
 
 #[test]
 fn mon_cannot_escape_with_locked_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         0,
         jolteon().unwrap(),
         primeape().unwrap(),
@@ -218,9 +210,7 @@ fn mon_cannot_escape_with_locked_move() {
 
 #[test]
 fn wild_player_can_escape() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         0,
         jolteon().unwrap(),
         primeape().unwrap(),
@@ -245,9 +235,7 @@ fn wild_player_can_escape() {
 
 #[test]
 fn player_escapes_with_lower_speed() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         3245467,
         low_level_pikachu().unwrap(),
         primeape().unwrap(),
@@ -296,11 +284,9 @@ fn player_escapes_with_lower_speed() {
 
 #[test]
 fn player_escapes_with_smoke_ball() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = low_level_pikachu().unwrap();
     team.members[0].item = Some("Smoke Ball".to_owned());
     let mut battle = make_wild_singles_battle(
-        &data,
         3245467,
         team,
         primeape().unwrap(),
@@ -326,11 +312,9 @@ fn player_escapes_with_smoke_ball() {
 
 #[test]
 fn player_escapes_with_poke_doll() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team = low_level_pikachu().unwrap();
     team.bag.items.insert("Poke Doll".to_owned(), 1);
     let mut battle = make_wild_singles_battle(
-        &data,
         3245467,
         team,
         primeape().unwrap(),
@@ -359,11 +343,9 @@ fn player_escapes_with_poke_doll() {
 
 #[test]
 fn run_away_escapes_immediately() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut low_level_pikachu = low_level_pikachu().unwrap();
     low_level_pikachu.members[0].ability = "Run Away".to_owned();
     let mut battle = make_wild_singles_battle(
-        &data,
         3245467,
         low_level_pikachu,
         primeape().unwrap(),
@@ -388,9 +370,8 @@ fn run_away_escapes_immediately() {
 
 #[test]
 fn cannot_escape_trainer_battle() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle =
-        make_trainer_singles_battle(&data, 0, jolteon().unwrap(), primeape().unwrap()).unwrap();
+        make_trainer_singles_battle(0, jolteon().unwrap(), primeape().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(
@@ -405,9 +386,7 @@ fn cannot_escape_trainer_battle() {
 
 #[test]
 fn wild_players_escape_individually() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_multi_battle(
-        &data,
         0,
         jolteon().unwrap(),
         vec![
@@ -464,9 +443,7 @@ fn wild_players_escape_individually() {
 
 #[test]
 fn teleport_escapes_wild_battle() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         40920948098,
         ralts().unwrap(),
         primeape().unwrap(),
@@ -492,9 +469,7 @@ fn teleport_escapes_wild_battle() {
 
 #[test]
 fn cannot_escape_partially_trapping_move() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_wild_singles_battle(
-        &data,
         0,
         jolteon().unwrap(),
         primeape().unwrap(),

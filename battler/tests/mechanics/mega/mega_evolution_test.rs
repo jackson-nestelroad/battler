@@ -3,8 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     Request,
     TeamData,
@@ -15,6 +13,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn team() -> Result<TeamData> {
@@ -62,12 +61,7 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn make_battle(
-    data: &dyn DataStore,
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -83,15 +77,14 @@ fn make_battle(
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
         .with_team("player-2", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn mon_cannot_mega_evolve_with_wrong_stone() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut team_1 = team().unwrap();
     team_1.members[0].item = Some("Gengarite".to_owned());
-    let mut battle = make_battle(&data, 0, team_1, team().unwrap()).unwrap();
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -105,8 +98,12 @@ fn mon_cannot_mega_evolve_with_wrong_stone() {
 
 #[test]
 fn one_mon_can_mega_evolve() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
@@ -186,8 +183,12 @@ fn one_mon_can_mega_evolve() {
 
 #[test]
 fn mega_evolution_persists_on_switch() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
@@ -229,8 +230,12 @@ fn mega_evolution_persists_on_switch() {
 
 #[test]
 fn mega_evolution_reverts_on_faint() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
@@ -324,8 +329,12 @@ fn mega_evolution_reverts_on_faint() {
 
 #[test]
 fn mega_evolution_occurs_in_speed_order() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-    let mut battle = make_battle(&data, 0, team().unwrap(), team().unwrap()).unwrap();
+    let mut battle = make_battle(
+        0,
+        team().unwrap(),
+        team().unwrap(),
+    )
+    .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));

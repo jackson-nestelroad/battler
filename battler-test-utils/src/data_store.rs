@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use ahash::{
     HashMap,
     HashMapExt,
@@ -15,6 +17,17 @@ use battler::{
     SpeciesData,
     TypeChart,
 };
+
+/// A [`LocalDataStore`] created from the environment.
+pub fn local_data_store() -> LocalDataStore {
+    LocalDataStore::new_from_env("DATA_DIR").unwrap()
+}
+
+/// A static [`LocalDataStore`], created from the environment.
+pub fn static_local_data_store() -> &'static LocalDataStore {
+    static DATA_STORE: LazyLock<LocalDataStore> = LazyLock::new(|| local_data_store());
+    &*DATA_STORE
+}
 
 /// Wrapper around a battle's [`LocalDataStore`] for testing.
 ///

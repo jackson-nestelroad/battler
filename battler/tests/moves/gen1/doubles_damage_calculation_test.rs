@@ -3,8 +3,6 @@ use battler::{
     BattleType,
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     WrapResultError,
@@ -13,6 +11,7 @@ use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
     assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn blastoise() -> Result<TeamData> {
@@ -124,27 +123,25 @@ fn test_battle_builder(team_1: TeamData, team_2: TeamData) -> TestBattleBuilder 
 }
 
 fn make_battle_with_max_damage(
-    data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn make_battle_with_min_damage(
-    data: &dyn DataStore,
     team_1: TeamData,
     team_2: TeamData,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     test_battle_builder(team_1, team_2)
         .with_seed(0)
         .with_controlled_rng(true)
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Min)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 // Venusaur: 15-18.
@@ -153,11 +150,8 @@ fn make_battle_with_min_damage(
 // Venusaur (once Charizard has fainted): 21-24.
 #[test]
 fn blastoise_surfs_venusaur_and_charizard() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
-
     let mut battle =
-        make_battle_with_max_damage(&data, blastoise().unwrap(), venusaur_charizard().unwrap())
-            .unwrap();
+        make_battle_with_max_damage(blastoise().unwrap(), venusaur_charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -210,8 +204,7 @@ fn blastoise_surfs_venusaur_and_charizard() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 
     let mut battle =
-        make_battle_with_min_damage(&data, blastoise().unwrap(), venusaur_charizard().unwrap())
-            .unwrap();
+        make_battle_with_min_damage(blastoise().unwrap(), venusaur_charizard().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));

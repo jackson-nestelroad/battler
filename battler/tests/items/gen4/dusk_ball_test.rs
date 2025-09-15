@@ -2,8 +2,6 @@ use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
-    DataStore,
-    LocalDataStore,
     PublicCoreBattle,
     TeamData,
     TimeOfDay,
@@ -15,6 +13,7 @@ use battler_test_utils::{
     TestBattleBuilder,
     assert_logs_since_turn_eq,
     get_controlled_rng_for_battle,
+    static_local_data_store,
 };
 
 fn graveler() -> Result<TeamData> {
@@ -36,12 +35,11 @@ fn graveler() -> Result<TeamData> {
 }
 
 fn make_battle(
-    data: &dyn DataStore,
     seed: u64,
     team_1: TeamData,
     team_2: TeamData,
     time: TimeOfDay,
-) -> Result<PublicCoreBattle<'_>> {
+) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)
@@ -56,7 +54,7 @@ fn make_battle(
         .add_wild_mon_to_side_2("wild", "Wild", WildPlayerOptions::default())
         .with_team("protagonist", team_1)
         .with_team("wild", team_2)
-        .build(data)
+        .build(static_local_data_store())
 }
 
 fn apply_rng(battle: &mut PublicCoreBattle) {
@@ -72,9 +70,7 @@ fn apply_rng(battle: &mut PublicCoreBattle) {
 
 #[test]
 fn dusk_ball_does_not_increase_catch_rate_in_day() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         graveler().unwrap(),
         graveler().unwrap(),
@@ -105,9 +101,7 @@ fn dusk_ball_does_not_increase_catch_rate_in_day() {
 
 #[test]
 fn dusk_ball_increases_catch_rate_at_night() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         graveler().unwrap(),
         graveler().unwrap(),
@@ -138,9 +132,7 @@ fn dusk_ball_increases_catch_rate_at_night() {
 
 #[test]
 fn dusk_ball_increases_catch_rate_in_evening() {
-    let data = LocalDataStore::new_from_env("DATA_DIR").unwrap();
     let mut battle = make_battle(
-        &data,
         0,
         graveler().unwrap(),
         graveler().unwrap(),
