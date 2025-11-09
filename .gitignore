@@ -4,4 +4,10 @@ target/
 /.ignore
 /dev
 
-*.txt
+/*.txt
+/battler-wamp/*.txt
+
+/.venv
+
+.env
+.debug
