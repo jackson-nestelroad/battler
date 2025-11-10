@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-schema-proc-macro"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2024"
 description = "Procedural macro for strongly-typed WAMP peers."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]

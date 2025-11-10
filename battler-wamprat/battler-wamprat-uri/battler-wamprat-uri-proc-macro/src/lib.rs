@@ -747,7 +747,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 #[doc = "Custom generator for"]
                 #[doc = concat!("[`", stringify!(#ident),"`]")]
                 #[doc = "."]
-                #[allow(unused_variables, dead_code)]
+                #[allow(unused, dead_code)]
                 #derive
                 pub struct #generator_ident #field_declarations
 
@@ -758,8 +758,8 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 }
 
                 impl ::core::fmt::Display for #generator_ident {
+                    #[allow(unused, deprecated)]
                     fn fmt(&self, __formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        #[allow(unused_variables, deprecated)]
                         let Self #constructor_fields = self;
                         #(#fixed_fields)*
                         ::core::write!(__formatter, #uri_pattern #uri_pattern_args)
@@ -783,6 +783,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 #match_style
             }
 
+            #[allow(unused, dead_code)]
             fn wamp_match_uri(uri: &str) -> ::core::result::Result<Self, ::battler_wamprat_uri::WampUriMatchError> {
                 #generator
                 ::core::result::Result::Ok(Self #constructor_fields)
@@ -794,8 +795,8 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         }
 
         impl ::core::fmt::Display for #ident {
+            #[allow(unused, dead_code, deprecated)]
             fn fmt(&self, __formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                #[allow(unused_variables, deprecated)]
                 let Self #constructor_fields = self;
                 ::core::write!(__formatter, #uri_pattern #uri_pattern_args)
             }
