@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    mem,
+    sync::Arc,
+};
 
 use anyhow::{
     Context,
@@ -35,8 +38,14 @@ impl Role {
     }
 }
 
+pub enum BattleClientEvent {
+    Request(Option<battler::Request>),
+    End,
+    Error(String),
+}
+
 /// A client for a single player in an individual battle.
-pub struct BattlerClient {
+pub struct BattlerClient<'b> {
     battle: Uuid,
     player: String,
     role: Role,
@@ -44,23 +53,21 @@ pub struct BattlerClient {
     log: Mutex<Log>,
     state: Mutex<BattleState>,
 
-    service: Arc<Box<dyn BattlerServiceClient + Send + Sync>>,
+    service: Arc<Box<dyn BattlerServiceClient + 'b>>,
 
     cancel_tx: broadcast::Sender<()>,
-    request_tx: watch::Sender<Option<battler::Request>>,
-    request_rx: watch::Receiver<Option<battler::Request>>,
-    watcher_error_tx: watch::Sender<Option<String>>,
-    watcher_error_rx: watch::Receiver<Option<String>>,
+    battle_event_tx: watch::Sender<BattleClientEvent>,
+    battle_event_rx: watch::Receiver<BattleClientEvent>,
 
     task_handle: Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
-impl BattlerClient {
+impl<'b> BattlerClient<'b> {
     /// Creates a new client for a player in a battle.
     pub async fn new(
         battle: Uuid,
         player: String,
-        service: Arc<Box<dyn BattlerServiceClient + Send + Sync>>,
+        service: Arc<Box<dyn BattlerServiceClient + 'b>>,
     ) -> Result<Arc<Self>> {
         let battle = service
             .battle(battle)
@@ -88,9 +95,8 @@ impl BattlerClient {
         let state = alter_battle_state(state, &log)?;
 
         let request = service.request(battle.uuid, &player).await?;
-
-        let (request_tx, request_rx) = watch::channel(request);
-        let (watcher_error_tx, watcher_error_rx) = watch::channel(None);
+        let (battle_event_tx, battle_event_rx) =
+            watch::channel(BattleClientEvent::Request(request));
 
         let client = Self {
             battle: battle.uuid,
@@ -100,15 +106,20 @@ impl BattlerClient {
             state: Mutex::new(state),
             service,
             cancel_tx,
-            request_tx,
-            request_rx,
-            watcher_error_tx,
-            watcher_error_rx,
+            battle_event_tx,
+            battle_event_rx,
             task_handle: Mutex::new(None),
         };
         let client = Arc::new(client);
 
-        let task_handle = tokio::spawn(client.clone().watch_battle(log_entry_rx, cancel_rx));
+        let task_handle = {
+            // SAFETY: We only transmute the lifetime, from 'b to 'static. The Drop implementation
+            // of this type ensures we cancel and wait for this task to finish. Thus, this client is
+            // captured in the asynchronous task only for the life of this object.
+            let client: Arc<BattlerClient<'static>> = unsafe { mem::transmute(client.clone()) };
+            tokio::spawn(client.watch_battle(log_entry_rx, cancel_rx))
+        };
+
         *client.task_handle.lock().await = Some(task_handle);
 
         Ok(client)
@@ -120,7 +131,9 @@ impl BattlerClient {
         cancel_rx: broadcast::Receiver<()>,
     ) {
         if let Err(err) = self.watch_battle_internal(log_entry_rx, cancel_rx).await {
-            self.watcher_error_tx.send(Some(format!("{err:#}"))).ok();
+            self.battle_event_tx
+                .send(BattleClientEvent::Error(format!("{err:#}")))
+                .ok();
         }
     }
 
@@ -145,9 +158,21 @@ impl BattlerClient {
     async fn process_log_entry(&self, log_entry: battler_service::LogEntry) -> Result<()> {
         self.update_battle_state(log_entry).await?;
 
+        // Check if the battle ended.
+        let battle = self
+            .service
+            .battle(self.battle)
+            .await
+            .context("battle does not exist")?;
+        if battle.state == battler_service::BattleState::Finished {
+            self.battle_event_tx.send(BattleClientEvent::End)?;
+            return Ok(());
+        }
+
         // Check for a new request.
         let request = self.service.request(self.battle, &self.player).await?;
-        self.request_tx.send(request)?;
+        self.battle_event_tx
+            .send(BattleClientEvent::Request(request))?;
 
         Ok(())
     }
@@ -216,18 +241,26 @@ impl BattlerClient {
         self.service.player_data(self.battle, &self.player).await
     }
 
-    /// Receiver for requests for the player.
-    pub async fn request_rx(&self) -> watch::Receiver<Option<battler::Request>> {
-        self.request_rx.clone()
-    }
-
-    /// Receiver for errors that occur in the watcher task.
-    pub async fn watcher_error_rx(&self) -> watch::Receiver<Option<String>> {
-        self.watcher_error_rx.clone()
+    /// Receiver for battle events for the player.
+    pub fn battle_event_rx(&self) -> watch::Receiver<BattleClientEvent> {
+        self.battle_event_rx.clone()
     }
 
     /// The battle state.
     pub async fn state(&self) -> BattleState {
         self.state.lock().await.clone()
+    }
+}
+
+impl Drop for BattlerClient<'_> {
+    fn drop(&mut self) {
+        // Ensure we stop using the client.
+        //
+        // SAFETY: Crashing is OK because if we leak the client, undefined behavior can occur due to
+        // the lifetime of the client.
+        tokio::runtime::Runtime::new()
+            .unwrap()
+            .block_on(self.cancel())
+            .unwrap();
     }
 }

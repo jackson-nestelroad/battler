@@ -24,6 +24,7 @@ uuid = { workspace = true }
 zone-alloc = { workspace = true }
 zone-alloc-strong-handle-derive = { workspace = true }
 
+battler-choice = { path = "../battler-choice" }
 battler-data = { path = "../battler-data" }
 battler-prng = { path = "../battler-prng" }
 

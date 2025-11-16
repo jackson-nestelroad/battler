@@ -6,5 +6,8 @@ pub mod state;
 pub mod state_util;
 pub mod ui;
 
-pub use client::BattlerClient;
+pub use client::{
+    BattleClientEvent,
+    BattlerClient,
+};
 pub use manager::BattlerClientManager;

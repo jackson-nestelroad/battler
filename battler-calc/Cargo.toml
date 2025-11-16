@@ -6,7 +6,7 @@ description = "Damage and stat calculations for battler."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["pokemon", "battle"]
 license = "MIT"
-repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ai"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-calc"
 
 [dependencies]
 ahash = { workspace = true }

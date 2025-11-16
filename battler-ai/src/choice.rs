@@ -1,95 +1,22 @@
-use std::{
-    fmt::Display,
-    sync::LazyLock,
-};
+use std::sync::LazyLock;
 
 use anyhow::{
     Context,
     Error,
     Result,
 };
+use battler_choice::{
+    Choice,
+    ItemChoice,
+    MoveChoice,
+};
 use regex::Regex;
+use serde::Serialize;
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct MoveChoice {
-    pub slot: usize,
-    pub target: Option<isize>,
-    pub mega: bool,
-}
-
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct ItemChoice {
-    pub item: String,
-    pub target: Option<isize>,
-    pub additional: Vec<isize>,
-}
-
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub enum Choice {
-    #[default]
-    Pass,
-    Escape,
-    Forfeit,
-    Team {
-        mons: Vec<usize>,
-    },
-    Switch {
-        mon: usize,
-    },
-    Move(MoveChoice),
-    Item(ItemChoice),
-    LearnMove {
-        forget: usize,
-    },
-}
-
-impl Display for Choice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Pass => write!(f, "pass"),
-            Self::Escape => write!(f, "escape"),
-            Self::Forfeit => write!(f, "forfeit"),
-            Self::Team { mons } => {
-                write!(f, "team")?;
-                for (i, mon) in mons.iter().enumerate() {
-                    if i > 0 {
-                        write!(f, ",")?;
-                    }
-                    write!(f, " {mon}")?;
-                }
-                Ok(())
-            }
-            Self::Switch { mon } => write!(f, "switch {mon}"),
-            Self::Move(MoveChoice { slot, target, mega }) => {
-                write!(f, "move {slot}")?;
-                if let Some(target) = target {
-                    write!(f, ",{target}")?;
-                }
-                if *mega {
-                    write!(f, ",mega")?;
-                }
-                Ok(())
-            }
-            Self::Item(ItemChoice {
-                item,
-                target,
-                additional,
-            }) => {
-                write!(f, "item {item}")?;
-                if let Some(target) = target {
-                    write!(f, ",{target}")?;
-                }
-                for (i, val) in additional.iter().enumerate() {
-                    if i > 0 {
-                        write!(f, ",")?;
-                    }
-                    write!(f, "{val}")?;
-                }
-                Ok(())
-            }
-            Self::LearnMove { forget } => write!(f, "learnmove {forget}"),
-        }
-    }
+#[derive(Serialize)]
+pub struct MakeChoiceFailure {
+    pub choice: String,
+    pub reason: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

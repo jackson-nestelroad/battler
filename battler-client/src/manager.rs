@@ -12,12 +12,12 @@ use crate::BattlerClient;
 /// participating in.
 pub struct BattlerClientManager {
     player: String,
-    service: Arc<Box<dyn BattlerServiceClient + Send + Sync>>,
+    service: Arc<Box<dyn BattlerServiceClient>>,
 }
 
 impl BattlerClientManager {
     /// Creates a new manager.
-    pub fn new(player: String, service: Arc<Box<dyn BattlerServiceClient + Send + Sync>>) -> Self {
+    pub fn new(player: String, service: Arc<Box<dyn BattlerServiceClient>>) -> Self {
         Self { player, service }
     }
 
@@ -28,7 +28,7 @@ impl BattlerClientManager {
     }
 
     /// Joins the battle, creating a new client for it.
-    pub async fn join(&self, battle: Uuid) -> Result<Arc<BattlerClient>> {
+    pub async fn join(&self, battle: Uuid) -> Result<Arc<BattlerClient<'_>>> {
         BattlerClient::new(battle, self.player.clone(), self.service.clone()).await
     }
 

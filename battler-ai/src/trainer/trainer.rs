@@ -8,6 +8,7 @@ use anyhow::{
     Error,
     Result,
 };
+use async_trait::async_trait;
 use battler::{
     Fraction,
     LearnMoveRequest,
@@ -22,6 +23,11 @@ use battler_calc_client_util::{
     Mon,
     MonReference,
 };
+use battler_choice::{
+    Choice,
+    MoveChoice,
+    SwitchChoice,
+};
 use battler_prng::{
     PseudoRandomNumberGenerator,
     rand_util,
@@ -31,11 +37,9 @@ use itertools::Itertools;
 
 use crate::{
     AiContext,
-    BattlerAi,
+    BattlerAiStructured,
     choice::{
-        Choice,
         ChoiceFailure,
-        MoveChoice,
         MoveChoiceFailure,
         SwitchChoiceFailure,
     },
@@ -80,8 +84,8 @@ struct ChoiceState {
 impl ChoiceState {
     fn update(&mut self, choice: &Choice) {
         match choice {
-            Choice::Switch { mon } => {
-                self.switched.insert(*mon);
+            Choice::Switch(choice) => {
+                self.switched.insert(choice.mon);
             }
             _ => (),
         }
@@ -95,11 +99,12 @@ pub struct Trainer {
     prng: Mutex<Box<dyn PseudoRandomNumberGenerator>>,
 }
 
-impl BattlerAi for Trainer {
-    async fn make_choice(
+#[async_trait]
+impl BattlerAiStructured for Trainer {
+    async fn make_choice<'a>(
         &mut self,
-        context: AiContext<'_>,
-        request: Request,
+        context: &AiContext<'a>,
+        request: &Request,
     ) -> Result<Vec<Choice>> {
         match request {
             Request::TeamPreview(request) => self.team_preview(context, request),
@@ -126,13 +131,17 @@ impl Trainer {
 
     fn team_preview(
         &mut self,
-        context: AiContext,
-        request: TeamPreviewRequest,
+        context: &AiContext,
+        request: &TeamPreviewRequest,
     ) -> Result<Vec<Choice>> {
         return Err(Error::msg("team preview is not implemented"));
     }
 
-    async fn turn(&mut self, context: AiContext<'_>, request: TurnRequest) -> Result<Vec<Choice>> {
+    async fn turn(
+        &mut self,
+        context: &AiContext<'_>,
+        request: &TurnRequest,
+    ) -> Result<Vec<Choice>> {
         let TurnRequest { active, allies } = request;
         let mut state = ChoiceState::default();
         let mut choices = Vec::default();
@@ -148,18 +157,18 @@ impl Trainer {
 
     async fn switch(
         &mut self,
-        context: AiContext<'_>,
-        request: SwitchRequest,
+        context: &AiContext<'_>,
+        request: &SwitchRequest,
     ) -> Result<Vec<Choice>> {
         let SwitchRequest { needs_switch } = request;
         let mut state = ChoiceState::default();
         let mut choices = Vec::default();
         for position in needs_switch {
             let mon = self
-                .select_mon_to_switch_in(&context, position, &state)
+                .select_mon_to_switch_in(&context, *position, &state)
                 .await?;
             let choice = match mon {
-                Some(mon) => Choice::Switch { mon },
+                Some(mon) => Choice::Switch(SwitchChoice { mon }),
                 None => Choice::Pass,
             };
             state.update(&choice);
@@ -168,7 +177,11 @@ impl Trainer {
         Ok(choices)
     }
 
-    fn learn_move(&mut self, context: AiContext, request: LearnMoveRequest) -> Result<Vec<Choice>> {
+    fn learn_move(
+        &mut self,
+        context: &AiContext,
+        request: &LearnMoveRequest,
+    ) -> Result<Vec<Choice>> {
         return Err(Error::msg("learn move is not implemented"));
     }
 
@@ -303,7 +316,7 @@ impl Trainer {
         context: &AiContext<'_>,
         active_position: usize,
         allies: &[PlayerBattleData],
-        request: MonMoveRequest,
+        request: &MonMoveRequest,
         state: &ChoiceState,
     ) -> Result<Choice> {
         if request.locked_into_move {
@@ -338,7 +351,7 @@ impl Trainer {
                 let active_score = self.options.match_up_ratio_required_to_switch * active_score;
                 let active_score = active_score.floor();
                 if score > active_score {
-                    return Ok(Choice::Switch { mon });
+                    return Ok(Choice::Switch(SwitchChoice { mon }));
                 }
             }
         }
@@ -645,6 +658,7 @@ mod trainer_test {
             state,
             player_data,
             choice_failures: HashSet::default(),
+            make_choice_failures: Vec::default(),
         })
     }
 

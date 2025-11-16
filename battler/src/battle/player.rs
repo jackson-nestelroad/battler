@@ -1,10 +1,8 @@
 use std::{
     cmp,
-    collections::{
-        VecDeque,
-        hash_map::Entry,
-    },
+    collections::hash_map::Entry,
     mem,
+    str::FromStr,
 };
 
 use ahash::{
@@ -12,6 +10,11 @@ use ahash::{
     HashSet,
 };
 use anyhow::Result;
+use battler_choice::{
+    ItemChoice,
+    LearnMoveChoice,
+    MoveChoice,
+};
 use battler_data::{
     Id,
     Identifiable,
@@ -313,6 +316,8 @@ pub struct ChoiceState {
     pub dyna: bool,
     /// Did the Player choose to Terastallize?
     pub tera: bool,
+    /// Did the Player choose to leave?
+    pub forfeiting: bool,
 }
 
 impl ChoiceState {
@@ -328,116 +333,8 @@ impl ChoiceState {
             mega: false,
             dyna: false,
             tera: false,
+            forfeiting: false,
         }
-    }
-}
-
-/// A move choice for a single Mon on a single turn.
-#[derive(Debug, PartialEq, Eq)]
-struct MoveChoice {
-    pub move_slot: usize,
-    pub target: Option<isize>,
-    pub mega: bool,
-    pub dyna: bool,
-    pub tera: bool,
-}
-
-impl MoveChoice {
-    /// Parses a new [`MoveChoice`] from a string.
-    ///
-    /// For example, `move 0, 2, mega` says to use the move in slot 0 against the Mon in position
-    /// 2 while also Mega Evolving.
-    ///
-    /// The `move` prefix should already be trimmed off.
-    pub fn new(data: &str) -> Result<Self> {
-        let mut args = data
-            .split(',')
-            .map(|str| str.trim())
-            .collect::<VecDeque<&str>>();
-        let move_slot = args.pop_front().wrap_expectation("missing move slot")?;
-        let move_slot = move_slot
-            .parse()
-            .wrap_error_with_message("invalid move slot")?;
-        let mut choice = Self {
-            move_slot,
-            target: None,
-            mega: false,
-            dyna: false,
-            tera: false,
-        };
-
-        if let Some(target) = args
-            .front()
-            .map(|target| target.parse::<isize>().ok())
-            .flatten()
-        {
-            choice.target = Some(target);
-            args.pop_front();
-        }
-
-        match args.front().cloned() {
-            Some("mega") => {
-                choice.mega = true;
-            }
-            Some("dyna") => {
-                choice.dyna = true;
-            }
-            Some("tera") => {
-                choice.tera = true;
-            }
-            Some(str) => {
-                return Err(general_error(format!(
-                    "invalid option in move choice: {str}"
-                )));
-            }
-            None => (),
-        }
-
-        Ok(choice)
-    }
-}
-
-/// A choice to learn a move for a single Mon.
-#[derive(Debug, PartialEq, Eq)]
-struct LearnMoveChoice {
-    pub forget_move_slot: usize,
-}
-
-impl LearnMoveChoice {
-    pub fn new(data: &str) -> Result<Self> {
-        let move_slot = data
-            .trim()
-            .parse()
-            .wrap_error_with_message("invalid move slot")?;
-        Ok(Self {
-            forget_move_slot: move_slot,
-        })
-    }
-}
-
-/// An item choice for a single Mon on a single turn.
-#[derive(Debug, PartialEq, Eq)]
-struct ItemChoice {
-    pub item: Id,
-    pub target: Option<isize>,
-    pub additional_input: VecDeque<String>,
-}
-
-impl ItemChoice {
-    pub fn new(data: &str) -> Result<Self> {
-        let mut args = data
-            .split(',')
-            .map(|str| str.trim())
-            .collect::<VecDeque<&str>>();
-        let item = args.pop_front().wrap_expectation("missing item")?;
-        let item = Id::from(item);
-        let target = args.pop_front().map(|target| target.parse().ok()).flatten();
-        let additional_input = args.into_iter().map(|arg| arg.to_owned()).collect();
-        Ok(Self {
-            item,
-            target,
-            additional_input,
-        })
     }
 }
 
@@ -779,6 +676,11 @@ impl Player {
 
     /// Is the player's choice done?
     pub fn choice_done(context: &mut PlayerContext) -> Result<bool> {
+        // If the player is forfeiting, they don't need to make additional choices.
+        if context.player().choice.forfeiting {
+            return Ok(true);
+        }
+
         match context.player().request_type() {
             None => Ok(true),
             Some(RequestType::TeamPreview) => {
@@ -1211,7 +1113,7 @@ impl Player {
             Some(RequestType::Turn) => (),
             _ => return Err(general_error("you cannot move out of turn")),
         }
-        let mut choice = MoveChoice::new(data.wrap_expectation("missing move choice")?)?;
+        let mut choice = MoveChoice::from_str(data.wrap_expectation("missing move choice")?)?;
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(general_error("you sent more choices than active mons"));
@@ -1234,18 +1136,18 @@ impl Player {
 
         let move_slot = request
             .moves
-            .get(choice.move_slot)
+            .get(choice.slot)
             .wrap_expectation_with_format(format_args!(
                 "{} does not have a move in slot {}",
                 context.mon().name,
-                choice.move_slot
+                choice.slot
             ))?;
 
         let mut move_id = move_slot.id.clone();
 
         // Use the upgraded move for some validation checks (e.g., the move target).
         let (move_name, move_target, upgraded_move_id) = if (choice.dyna || context.mon().dynamaxed)
-            && let Some(move_slot) = request.max_moves.get(choice.move_slot)
+            && let Some(move_slot) = request.max_moves.get(choice.slot)
         {
             (
                 move_slot.name.clone(),
@@ -1283,11 +1185,8 @@ impl Player {
         } else {
             // Make sure the selected move is not disabled.
             let move_slot = moves
-                .get(choice.move_slot)
-                .wrap_not_found_error_with_format(format_args!(
-                    "move in slot {}",
-                    choice.move_slot,
-                ))?;
+                .get(choice.slot)
+                .wrap_not_found_error_with_format(format_args!("move in slot {}", choice.slot,))?;
             if move_slot.disabled {
                 return Err(general_error(format!(
                     "{}'s {} is disabled",
@@ -1385,7 +1284,8 @@ impl Player {
             _ => return Err(general_error("you cannot learn move out of turn")),
         }
 
-        let choice = LearnMoveChoice::new(data.wrap_expectation("missing learn move choice")?)?;
+        let choice =
+            LearnMoveChoice::from_str(data.wrap_expectation("missing learn move choice")?)?;
         let team_position = Self::get_position_for_next_choice(context, false)?;
         if team_position >= context.player().mons.len() {
             return Err(general_error("you sent more choices than mons"));
@@ -1473,11 +1373,16 @@ impl Player {
             _ => return Err(general_error("you cannot forfeit out of turn")),
         }
 
+        if !Self::can_forfeit(context) {
+            // If the player can escape but not forfeit, just choose to escape instead.
+            if Self::can_escape(context) {
+                return Self::choose_escape(context);
+            }
+            return Err(general_error("you cannot forfeit"));
+        }
+
         if Self::get_position_for_next_choice(context, false)? >= context.player().active.len() {
             return Err(general_error("you sent more choices than active mons"));
-        }
-        if !Self::can_forfeit(context) {
-            return Err(general_error("you cannot forfeit"));
         }
 
         let action = Action::Forfeit(ForfeitAction {
@@ -1485,6 +1390,7 @@ impl Player {
             order: context.battle_mut().next_forfeit_order(),
         });
         context.player_mut().choice.actions.push(action);
+        context.player_mut().choice.forfeiting = true;
 
         Ok(())
     }
@@ -1503,7 +1409,7 @@ impl Player {
             Some(RequestType::Turn) => (),
             _ => return Err(general_error("you cannot use an item out of turn")),
         }
-        let mut choice = ItemChoice::new(data.wrap_expectation("missing item choice")?)?;
+        let mut choice = ItemChoice::from_str(data.wrap_expectation("missing item choice")?)?;
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(general_error("you sent more choices than active mons"));
@@ -1523,11 +1429,12 @@ impl Player {
             )));
         }
 
+        let item_id = Id::from(choice.item);
         let item = context
             .battle()
             .dex
             .items
-            .get_by_id(&choice.item)
+            .get_by_id(&item_id)
             .wrap_error_with_message("item does not exist")?;
         let item_id = item.id().clone();
         let item_name = item.data.name.clone();
@@ -1565,7 +1472,7 @@ impl Player {
 
         let mut action = ItemAction::new(ItemActionInput {
             mon: mon_handle,
-            item: choice.item,
+            item: item_id.clone(),
             target: choice.target,
         });
 
@@ -1708,103 +1615,6 @@ impl Player {
     /// Checks if the player has the given species registered in its dex.
     pub fn has_species_registered(context: &PlayerContext, species: &Id) -> bool {
         context.player().dex.species.contains(species.as_ref())
-    }
-}
-
-#[cfg(test)]
-mod move_choice_test {
-    use crate::battle::player::MoveChoice;
-
-    #[test]
-    fn parses_move_target() {
-        assert_matches::assert_matches!(
-            MoveChoice::new("0, 0"),
-            Ok(MoveChoice {
-                move_slot: 0,
-                target: Some(0),
-                mega: false,
-                dyna: false,
-                tera: false,
-            })
-        );
-    }
-
-    #[test]
-    fn parses_move_target_mega() {
-        assert_matches::assert_matches!(
-            MoveChoice::new("1, 0, mega"),
-            Ok(MoveChoice {
-                move_slot: 1,
-                target: Some(0),
-                mega: true,
-                dyna: false,
-                tera: false,
-            })
-        );
-    }
-
-    #[test]
-    fn parses_move_no_target() {
-        assert_matches::assert_matches!(
-            MoveChoice::new("2"),
-            Ok(MoveChoice {
-                move_slot: 2,
-                target: None,
-                mega: false,
-                dyna: false,
-                tera: false,
-            })
-        );
-    }
-
-    #[test]
-    fn parses_move_mega() {
-        assert_matches::assert_matches!(
-            MoveChoice::new("3, mega"),
-            Ok(MoveChoice {
-                move_slot: 3,
-                target: None,
-                mega: true,
-                dyna: false,
-                tera: false,
-            })
-        );
-    }
-
-    #[test]
-    fn parses_move_dyna() {
-        assert_matches::assert_matches!(
-            MoveChoice::new("3, dyna"),
-            Ok(MoveChoice {
-                move_slot: 3,
-                target: None,
-                mega: false,
-                dyna: true,
-                tera: false,
-            })
-        );
-    }
-
-    #[test]
-    fn parses_move_tera() {
-        assert_matches::assert_matches!(
-            MoveChoice::new("3, tera"),
-            Ok(MoveChoice {
-                move_slot: 3,
-                target: None,
-                mega: false,
-                dyna: false,
-                tera: true,
-            })
-        );
-    }
-
-    #[test]
-    fn fails_empty_string() {
-        assert_matches::assert_matches!(
-            MoveChoice::new(""),
-            Err(err) => assert!(format!("{err:#}").contains("invalid move slot"))
-        );
     }
 }
 

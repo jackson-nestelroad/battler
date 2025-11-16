@@ -225,8 +225,7 @@ For each index in `request_data.switch.needs_switch`, you can find the Pokémon 
 
 ## Failed Actions
 
-Additionally, actions that you previously attempted will be sent in a hash map, mapping the actions to the error message from the battle engine.
-
+Additionally, actions that you previously attempted will be sent in a list, mapping the actions to the error message from the battle engine.
 These actions should not be repeated. If you are controlling multiple active Pokémon, only one of the actions may be incorrect. In that case, the correct action may be reused if it is still valid and optimal.
 
 # Making Decisions
