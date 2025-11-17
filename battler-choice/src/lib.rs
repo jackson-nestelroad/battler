@@ -1,5 +1,4 @@
 #![feature(pattern)]
-
 use std::{
     collections::VecDeque,
     fmt::Display,
@@ -12,7 +11,9 @@ use std::{
 use anyhow::{
     Context,
     Error,
+    Result,
 };
+use itertools::Itertools;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -170,6 +171,11 @@ impl FromStr for TeamSelectionChoice {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.is_empty() {
+            return Ok(Self {
+                mons: Vec::default(),
+            });
+        }
         let mons = s
             .split(" ")
             .map(|str| str.trim())
@@ -293,6 +299,30 @@ impl FromStr for Choice {
     }
 }
 
+/// Serializes multiple [`Choice`]s to a string.
+pub fn choices_to_string<I>(choices: I) -> String
+where
+    I: IntoIterator<Item = Choice>,
+{
+    choices
+        .into_iter()
+        .map(|choice| choice.to_string())
+        .join(";")
+}
+
+/// Deserializes multiple [`Choice`]s from a string.
+pub fn choices_from_string<S>(choices: S) -> Result<Vec<Choice>>
+where
+    S: AsRef<str>,
+{
+    choices
+        .as_ref()
+        .split(";")
+        .map(|str| str.trim())
+        .map(|str| Choice::from_str(str))
+        .collect()
+}
+
 #[cfg(test)]
 mod battler_choice_test {
     use std::{
@@ -307,6 +337,8 @@ mod battler_choice_test {
         MoveChoice,
         SwitchChoice,
         TeamSelectionChoice,
+        choices_from_string,
+        choices_to_string,
     };
 
     #[test]
@@ -493,5 +525,51 @@ mod battler_choice_test {
                 });
             }
         );
+    }
+
+    #[test]
+    fn serializes_multiple_to_string() {
+        assert_eq!(
+            choices_to_string([Choice::Move(MoveChoice {
+                slot: 1,
+                target: Some(2),
+                ..Default::default()
+            })]),
+            "move 1,2"
+        );
+        assert_eq!(
+            choices_to_string([
+                Choice::Move(MoveChoice {
+                    slot: 1,
+                    target: Some(2),
+                    ..Default::default()
+                }),
+                Choice::Switch(SwitchChoice { mon: 3 }),
+                Choice::Forfeit,
+            ]),
+            "move 1,2;switch 3;forfeit"
+        );
+    }
+
+    #[test]
+    fn deserializes_multiple_from_string() {
+        assert_matches::assert_matches!(choices_from_string("move 1,2"), Ok(choices) => {
+            pretty_assertions::assert_eq!(choices, Vec::from_iter([Choice::Move(MoveChoice {
+                slot: 1,
+                target: Some(2),
+                ..Default::default()
+            })]));
+        });
+        assert_matches::assert_matches!(choices_from_string("move 1,2;switch 3;forfeit"), Ok(choices) => {
+            pretty_assertions::assert_eq!(choices, Vec::from_iter([
+                Choice::Move(MoveChoice {
+                    slot: 1,
+                    target: Some(2),
+                    ..Default::default()
+                }),
+                Choice::Switch(SwitchChoice { mon: 3 }),
+                Choice::Forfeit,
+            ]));
+        });
     }
 }

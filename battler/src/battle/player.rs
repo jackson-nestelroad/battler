@@ -2,7 +2,6 @@ use std::{
     cmp,
     collections::hash_map::Entry,
     mem,
-    str::FromStr,
 };
 
 use ahash::{
@@ -11,9 +10,13 @@ use ahash::{
 };
 use anyhow::Result;
 use battler_choice::{
+    Choice,
     ItemChoice,
     LearnMoveChoice,
     MoveChoice,
+    SwitchChoice,
+    TeamSelectionChoice,
+    choices_from_string,
 };
 use battler_data::{
     Id,
@@ -65,10 +68,7 @@ use crate::{
         core_battle_effects,
         mon_states,
     },
-    common::{
-        Captures,
-        split_once_optional,
-    },
+    common::Captures,
     config::Format,
     dex::Dex,
     effect::{
@@ -786,7 +786,7 @@ impl Player {
         )
     }
 
-    fn choose_team(context: &mut PlayerContext, input: Option<&str>) -> Result<()> {
+    fn choose_team(context: &mut PlayerContext, choice: TeamSelectionChoice) -> Result<()> {
         let player = context.player_mut();
         match player.request_type() {
             Some(RequestType::TeamPreview) => (),
@@ -794,35 +794,29 @@ impl Player {
         }
 
         let picked_team_size = Self::picked_team_size(context);
-        let selected: Vec<usize> = match input {
+        let selected: Vec<usize> = if choice.mons.is_empty() {
             // No input, automatically choose Mons.
-            None => (0..picked_team_size).collect(),
-            Some(input) => {
-                let mut selected: Vec<usize> = input
-                    .split(" ")
-                    .map(|str| str.trim())
-                    .map(|str| str.parse::<usize>())
-                    .collect::<Result<_, _>>()
-                    .wrap_error_with_message("invalid team preview selection")?;
-                let selected_len = selected.len();
-                if selected_len > picked_team_size {
-                    // Too many Mons, truncate the list.
-                    selected.truncate(picked_team_size);
-                } else if selected_len < picked_team_size {
-                    // Not enough Mons, automatically choose Mons that are not yet selected.
-                    let mut next_position = 0;
-                    for _ in selected_len..picked_team_size {
-                        for i in next_position..context.player().mons.len() {
-                            if !selected.contains(&i) {
-                                selected.push(i);
-                                next_position = i + 1;
-                                break;
-                            }
+            (0..picked_team_size).collect()
+        } else {
+            let mut selected = choice.mons;
+            let selected_len = selected.len();
+            if selected_len > picked_team_size {
+                // Too many Mons, truncate the list.
+                selected.truncate(picked_team_size);
+            } else if selected_len < picked_team_size {
+                // Not enough Mons, automatically choose Mons that are not yet selected.
+                let mut next_position = 0;
+                for _ in selected_len..picked_team_size {
+                    for i in next_position..context.player().mons.len() {
+                        if !selected.contains(&i) {
+                            selected.push(i);
+                            next_position = i + 1;
+                            break;
                         }
                     }
                 }
-                selected
             }
+            selected
         };
 
         for (i, mon_index) in selected.iter().enumerate() {
@@ -876,26 +870,28 @@ impl Player {
 
         Self::clear_choice(context);
 
-        for (i, choice) in input.split(";").map(|str| str.trim()).enumerate() {
-            let (choice, data) = split_once_optional(choice, " ");
+        for (i, choice) in choices_from_string(input)?.into_iter().enumerate() {
             let result = match choice {
-                "team" => Self::choose_team(context, data)
+                Choice::Team(choice) => Self::choose_team(context, choice)
                     .wrap_error_with_message("team preview choice failed"),
-                "switch" => {
-                    Self::choose_switch(context, data).wrap_error_with_message("cannot switch")
+                Choice::Switch(choice) => {
+                    Self::choose_switch(context, choice).wrap_error_with_message("cannot switch")
                 }
-                "move" => Self::choose_move(context, data).wrap_error_with_message("cannot move"),
-                "pass" => Self::choose_pass(context).wrap_error_with_message("cannot pass"),
-                "learnmove" => Self::choose_learn_move(context, data)
+                Choice::Move(choice) => {
+                    Self::choose_move(context, choice).wrap_error_with_message("cannot move")
+                }
+                Choice::Pass => Self::choose_pass(context).wrap_error_with_message("cannot pass"),
+                Choice::LearnMove(choice) => Self::choose_learn_move(context, choice)
                     .wrap_error_with_message("cannot learn move"),
-                "escape" => Self::choose_escape(context).wrap_error_with_message("cannot escape"),
-                "forfeit" => {
+                Choice::Escape => {
+                    Self::choose_escape(context).wrap_error_with_message("cannot escape")
+                }
+                Choice::Forfeit => {
                     Self::choose_forfeit(context).wrap_error_with_message("cannot forfeit")
                 }
-                "item" => {
-                    Self::choose_item(context, data).wrap_error_with_message("cannot use item")
+                Choice::Item(choice) => {
+                    Self::choose_item(context, choice).wrap_error_with_message("cannot use item")
                 }
-                _ => Err(general_error(format!("unrecognized choice: {choice}"))),
             };
             if let Err(error) = result {
                 return Err(error.wrap_error_with_message(format!("invalid choice {i}")));
@@ -910,7 +906,7 @@ impl Player {
         Ok(())
     }
 
-    fn choose_switch(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
+    fn choose_switch(context: &mut PlayerContext, choice: SwitchChoice) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::Turn | RequestType::Switch) => (),
             _ => return Err(general_error("you cannot switch out of turn")),
@@ -938,11 +934,8 @@ impl Player {
             .active_position
             .or(active_mon.old_active_position)
             .wrap_expectation("mon to switch out is not in an active position")?;
-        let data = data.wrap_expectation("you must select a mon to switch in")?;
-        let slot = data
-            .parse::<usize>()
-            .wrap_error_with_message("switch argument is not an integer")?;
 
+        let slot = choice.mon;
         let target_mon_handle = context
             .player()
             .mons
@@ -1108,12 +1101,11 @@ impl Player {
         Ok(())
     }
 
-    fn choose_move(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
+    fn choose_move(context: &mut PlayerContext, mut choice: MoveChoice) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::Turn) => (),
             _ => return Err(general_error("you cannot move out of turn")),
         }
-        let mut choice = MoveChoice::from_str(data.wrap_expectation("missing move choice")?)?;
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(general_error("you sent more choices than active mons"));
@@ -1278,14 +1270,12 @@ impl Player {
         Ok(())
     }
 
-    fn choose_learn_move(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
+    fn choose_learn_move(context: &mut PlayerContext, choice: LearnMoveChoice) -> Result<()> {
         match context.player().request_type() {
             Some(RequestType::LearnMove) => (),
             _ => return Err(general_error("you cannot learn move out of turn")),
         }
 
-        let choice =
-            LearnMoveChoice::from_str(data.wrap_expectation("missing learn move choice")?)?;
         let team_position = Self::get_position_for_next_choice(context, false)?;
         if team_position >= context.player().mons.len() {
             return Err(general_error("you sent more choices than mons"));
@@ -1395,7 +1385,7 @@ impl Player {
         Ok(())
     }
 
-    fn choose_item(context: &mut PlayerContext, data: Option<&str>) -> Result<()> {
+    fn choose_item(context: &mut PlayerContext, mut choice: ItemChoice) -> Result<()> {
         if !context
             .battle()
             .format
@@ -1409,7 +1399,6 @@ impl Player {
             Some(RequestType::Turn) => (),
             _ => return Err(general_error("you cannot use an item out of turn")),
         }
-        let mut choice = ItemChoice::from_str(data.wrap_expectation("missing item choice")?)?;
         let active_position = Self::get_position_for_next_choice(context, false)?;
         if active_position >= context.player().active.len() {
             return Err(general_error("you sent more choices than active mons"));
