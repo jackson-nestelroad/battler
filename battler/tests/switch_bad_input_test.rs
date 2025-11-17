@@ -102,11 +102,11 @@ fn missing_position() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch"),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you must select a mon to switch in")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot parse integer from empty string")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch  "),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you must select a mon to switch in")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot parse integer from empty string")
     );
 }
 
@@ -116,11 +116,11 @@ fn invalid_position() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch Charmander"),
-        Err(err) => assert!(format!("{err:#}").contains("invalid choice 0: cannot switch: switch argument is not an integer"))
+        Err(err) => assert!(format!("{err:#}").contains("invalid choice 0: invalid digit"), "{err:#}")
     );
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "switch -1"),
-        Err(err) => assert!(format!("{err:#}").contains("invalid choice 0: cannot switch: switch argument is not an integer"))
+        Err(err) => assert!(format!("{err:#}").contains("invalid choice 0: invalid digit"), "{err:#}")
     );
 }
 

@@ -16,7 +16,7 @@ use battler_choice::{
     MoveChoice,
     SwitchChoice,
     TeamSelectionChoice,
-    choices_from_string,
+    choice_results_from_string,
 };
 use battler_data::{
     Id,
@@ -870,29 +870,31 @@ impl Player {
 
         Self::clear_choice(context);
 
-        for (i, choice) in choices_from_string(input)?.into_iter().enumerate() {
-            let result = match choice {
-                Choice::Team(choice) => Self::choose_team(context, choice)
-                    .wrap_error_with_message("team preview choice failed"),
-                Choice::Switch(choice) => {
-                    Self::choose_switch(context, choice).wrap_error_with_message("cannot switch")
-                }
-                Choice::Move(choice) => {
-                    Self::choose_move(context, choice).wrap_error_with_message("cannot move")
-                }
-                Choice::Pass => Self::choose_pass(context).wrap_error_with_message("cannot pass"),
-                Choice::LearnMove(choice) => Self::choose_learn_move(context, choice)
-                    .wrap_error_with_message("cannot learn move"),
-                Choice::Escape => {
-                    Self::choose_escape(context).wrap_error_with_message("cannot escape")
-                }
-                Choice::Forfeit => {
-                    Self::choose_forfeit(context).wrap_error_with_message("cannot forfeit")
-                }
-                Choice::Item(choice) => {
-                    Self::choose_item(context, choice).wrap_error_with_message("cannot use item")
-                }
-            };
+        for (i, choice) in choice_results_from_string(input).into_iter().enumerate() {
+            let result =
+                match choice {
+                    Ok(Choice::Team(choice)) => Self::choose_team(context, choice)
+                        .wrap_error_with_message("team preview choice failed"),
+                    Ok(Choice::Switch(choice)) => Self::choose_switch(context, choice)
+                        .wrap_error_with_message("cannot switch"),
+                    Ok(Choice::Move(choice)) => {
+                        Self::choose_move(context, choice).wrap_error_with_message("cannot move")
+                    }
+                    Ok(Choice::Pass) => {
+                        Self::choose_pass(context).wrap_error_with_message("cannot pass")
+                    }
+                    Ok(Choice::LearnMove(choice)) => Self::choose_learn_move(context, choice)
+                        .wrap_error_with_message("cannot learn move"),
+                    Ok(Choice::Escape) => {
+                        Self::choose_escape(context).wrap_error_with_message("cannot escape")
+                    }
+                    Ok(Choice::Forfeit) => {
+                        Self::choose_forfeit(context).wrap_error_with_message("cannot forfeit")
+                    }
+                    Ok(Choice::Item(choice)) => Self::choose_item(context, choice)
+                        .wrap_error_with_message("cannot use item"),
+                    Err(err) => Err(err),
+                };
             if let Err(error) = result {
                 return Err(error.wrap_error_with_message(format!("invalid choice {i}")));
             }

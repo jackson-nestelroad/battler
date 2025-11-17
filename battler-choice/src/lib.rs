@@ -323,6 +323,20 @@ where
         .collect()
 }
 
+/// Deserializes multiple [`Choice`]s from a string, returning the result of parsing for each
+/// choice.
+pub fn choice_results_from_string<S>(choices: S) -> Vec<Result<Choice>>
+where
+    S: AsRef<str>,
+{
+    choices
+        .as_ref()
+        .split(";")
+        .map(|str| str.trim())
+        .map(|str| Choice::from_str(str))
+        .collect()
+}
+
 #[cfg(test)]
 mod battler_choice_test {
     use std::{
@@ -337,6 +351,7 @@ mod battler_choice_test {
         MoveChoice,
         SwitchChoice,
         TeamSelectionChoice,
+        choice_results_from_string,
         choices_from_string,
         choices_to_string,
     };
@@ -571,5 +586,19 @@ mod battler_choice_test {
                 Choice::Forfeit,
             ]));
         });
+    }
+
+    #[test]
+    fn deserializes_multiple_results_from_string() {
+        let choices = choice_results_from_string("move 1,2;switch");
+        assert_eq!(choices.len(), 2);
+        assert_matches::assert_matches!(&choices[0], Ok(choice) => {
+            pretty_assertions::assert_eq!(choice, &Choice::Move(MoveChoice {
+                slot: 1,
+                target: Some(2),
+                ..Default::default()
+            }));
+        });
+        assert_matches::assert_matches!(&choices[1], Err(_));
     }
 }
