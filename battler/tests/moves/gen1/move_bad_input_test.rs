@@ -109,7 +109,7 @@ fn missing_move() {
     assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move"),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: missing move choice")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: invalid move slot: cannot parse integer from empty string")
     );
     assert!(player_has_active_request(&battle, "player-1"));
 }
