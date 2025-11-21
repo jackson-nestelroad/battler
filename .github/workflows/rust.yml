@@ -9,9 +9,29 @@ on:
 env:
   CARGO_TERM_COLOR: always
   DATA_DIR: ${{ github.workspace }}/battle-data/data
-  TEST_CASE_DIR: ${{ github.workspace }}/battler/test_cases
+  CRATE_ROOT: ${{ github.workspace }}
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 jobs:
+  setup-python-venv:
+    name: Setup Python venv
+    runs-on: ubuntu-latest
+    outputs:
+      python_venv: ${{ steps.set_output.outputs.python_venv }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python and cache venv
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: ${{ github.workspace }}/battler-ai-gemini-py/requirements.txt
+      - name: Set output
+        id: set_output
+        run: |
+          PYTHON_VENV=$(python -c "import sys; print(sys.prefix)")
+          echo "python_venv=$PYTHON_VENV" >> $GITHUB_OUTPUT
+
   test-battler:
     name: Run battler tests
     runs-on: ubuntu-latest
@@ -63,6 +83,9 @@ jobs:
   test-battler-ai:
     name: Run battler-ai tests
     runs-on: ubuntu-latest
+    needs: setup-python-venv
+    env:
+      GEMINI_PYTHON_VENV: ${{ needs.setup-python-venv.outputs.python_venv }}
     steps:
       - uses: actions/checkout@v4
       - name: Install latest nightly
