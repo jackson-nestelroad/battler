@@ -255,12 +255,9 @@ impl<'b> BattlerClient<'b> {
 impl Drop for BattlerClient<'_> {
     fn drop(&mut self) {
         // Ensure we stop using the client.
-        //
-        // SAFETY: Crashing is OK because if we leak the client, undefined behavior can occur due to
-        // the lifetime of the client.
         tokio::runtime::Runtime::new()
             .unwrap()
             .block_on(self.cancel())
-            .unwrap();
+            .ok();
     }
 }

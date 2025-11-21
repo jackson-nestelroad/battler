@@ -41,8 +41,8 @@ class Options:
 def validate_player(player: str) -> str:
     if not player:
         raise NameError("Player ID is not defined")
-    if not re.findall(r"^[a-zA-Z0-9]+$", player):
-        raise ValueError("Player is not an alphanumeric ID")
+    if not re.findall(r"^[\w-]+$", player):
+        raise ValueError(f"Player is not an alphanumeric ID")
     return player
 
 
@@ -82,7 +82,7 @@ def validate_data(data: pathlib.Path) -> pathlib.Path:
 # Replaces input of the form "${{ KEY }}" with the given value.
 def prompt_input(prompt: str, key: str, value: str) -> str:
     key = re.escape(key)
-    return re.sub(rf"\${{{{\s+{key}\s+}}}}", value, prompt)
+    return re.sub(rf"\$\{{\{{\s+{key}\s+\}}\}}", lambda _: value, prompt)
 
 
 def read_file(dir: pathlib.Path, file: str) -> str:
@@ -220,6 +220,8 @@ def str_to_bool(val: str):
 
 
 def run(options: Options):
+    load_dotenv(options.binary_dir / ".env")
+
     context = read_file(options.binary_dir, "context.md")
     prompt = read_file(options.binary_dir, "prompt.md")
 
@@ -232,8 +234,6 @@ def run(options: Options):
 
 
 def main():
-    load_dotenv()
-
     parser = argparse.ArgumentParser(description="battler AI via Gemini")
 
     parser.add_argument("--player", type=str, help="Player ID")

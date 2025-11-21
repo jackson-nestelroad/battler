@@ -11,23 +11,27 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ai
 [dependencies]
 ahash = { workspace = true }
 anyhow = { workspace = true }
+async-trait = { workspace = true }
 futures-util = { workspace = true }
 itertools = { workspace = true }
 num = { workspace = true }
 regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
 
 battler = { path = "../battler" }
 battler-calc = { path = "../battler-calc" }
 battler-calc-client-util = { path = "../battler-calc/battler-calc-client-util" }
+battler-choice = { path = "../battler-choice" }
 battler-client = { path = "../battler-client" }
 battler-prng = { path = "../battler-prng" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
-serde_json = { workspace = true }
 
 battler-service = { path = "../battler-service" }
+battler-service-client = { path = "../battler-service-client" }
 battler-test-utils = { path = "../battler-test-utils" }

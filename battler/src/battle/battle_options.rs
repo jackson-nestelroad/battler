@@ -47,6 +47,22 @@ fn default_rng_factory() -> fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberG
     |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed))
 }
 
+fn default_true() -> bool {
+    true
+}
+
+fn default_100() -> u32 {
+    100
+}
+
+fn default_randomize() -> CoreBattleEngineRandomizeBaseDamage {
+    CoreBattleEngineRandomizeBaseDamage::Randomize
+}
+
+fn default_random() -> CoreBattleEngineSpeedSortTieResolution {
+    CoreBattleEngineSpeedSortTieResolution::Random
+}
+
 /// Options that change how the battle engine itself behaves, which is not necessarily specific to
 /// any individual battle.
 ///
@@ -55,6 +71,7 @@ fn default_rng_factory() -> fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberG
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreBattleEngineOptions {
     /// Should all teams be validated prior to the battle being able to start?
+    #[serde(default = "default_true")]
     pub validate_teams: bool,
 
     /// Should the [`CoreBattle`][`crate::battle::CoreBattle`] automatically continue when it is
@@ -68,6 +85,7 @@ pub struct CoreBattleEngineOptions {
     /// If set to `false`,
     /// [`PublicCoreBattle::continue_battle`][`crate::battle::PublicCoreBattle::continue_battle`]
     /// must be called to manually continue the battle (even at the start of the battle).
+    #[serde(default = "default_true")]
     pub auto_continue: bool,
 
     /// Should the [`CoreBattle`][`crate::battle::CoreBattle`] reveal the actual health of all Mons
@@ -76,12 +94,14 @@ pub struct CoreBattleEngineOptions {
     /// By default, the public log will show the health of all Mons as a percentage (fraction out
     /// of 100). If this option is set to `true`, the battle will show the actual HP stat of each
     /// Mon.
+    #[serde(default)]
     pub reveal_actual_health: bool,
 
     /// A custom denominator for public health logs.
     ///
     /// By default, public health is revealed as a percentage out of 100. A different base can be
     /// used for higher or lower precision.
+    #[serde(default = "default_100")]
     pub public_health_base: u32,
 
     /// Function for creating the battle's random number generator.
@@ -103,6 +123,7 @@ pub struct CoreBattleEngineOptions {
     /// If this property is set to `true`, players will be allowed to send "pass" actions. This is
     /// mostly useful for tests where we want to control one side while the other side sits
     /// passively.
+    #[serde(default)]
     pub allow_pass_for_unfainted_mon: bool,
 
     /// Describes how base damage should be randomized in the damage calculation.
@@ -110,6 +131,7 @@ pub struct CoreBattleEngineOptions {
     /// By default, base damage is randomized early in the damage calculation. This property can
     /// control how the damage should be randomized. This is useful for tests against the damage
     /// calculator to discover the minimum and maximum damage values.
+    #[serde(default = "default_randomize")]
     pub randomize_base_damage: CoreBattleEngineRandomizeBaseDamage,
 
     /// Describes how ties should be resolved when sorting elements by speed.
@@ -117,6 +139,7 @@ pub struct CoreBattleEngineOptions {
     /// By default, speed ties are resolved randomly. However, many tests involve a lot of speed
     /// ties, complicating test results when RNG shifts slightly. This property can be used to
     /// avoid using RNG in speed sorting completely.
+    #[serde(default = "default_random")]
     pub speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution,
 
     /// Should volatile statuses be logged?
@@ -125,6 +148,7 @@ pub struct CoreBattleEngineOptions {
     /// complex interactions in the battle system. It may be helpful, especially for debugging
     /// purposes, to view all volatile statuses added to and removed from Mons through the course
     /// of a battle.
+    #[serde(default)]
     pub log_volatile_statuses: bool,
 
     /// Should side conditions be logged?
@@ -132,6 +156,7 @@ pub struct CoreBattleEngineOptions {
     /// By default, side conditions are invisible to Mons unless explicitly logged. It may be
     /// helpful, especially for debugging purposes, to view all side conditions added to and
     /// removed from sides through the course of a battle.
+    #[serde(default)]
     pub log_side_conditions: bool,
 
     /// Should slot conditions be logged?
@@ -139,6 +164,7 @@ pub struct CoreBattleEngineOptions {
     /// By default, slot conditions are invisible to Mons unless explicitly logged. It may be
     /// helpful, especially for debugging purposes, to view all slot conditions added to and
     /// removed from sides through the course of a battle.
+    #[serde(default)]
     pub log_slot_conditions: bool,
 
     /// Should identical Mon names for a single player be disambiguated?
@@ -146,11 +172,13 @@ pub struct CoreBattleEngineOptions {
     /// If set to true, Mons with the same name for a single player will have a disambiguation
     /// string appended to their name of the pattern `###N` (where `N` is a number). Clients can
     /// simply strip off this string when displaying the Mon name.
+    #[serde(default)]
     pub disambiguate_identical_names: bool,
 
     /// Should catch rates and shake probabilities be logged?
     ///
     /// Helpful for debugging.
+    #[serde(default)]
     pub log_catch_rate: bool,
 }
 

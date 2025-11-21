@@ -1,10 +1,12 @@
 fn main() {
     let python_dir = "../battler-ai-gemini-py";
     let python_dir = std::path::Path::new(python_dir);
+    let build_dir = python_dir.join("build");
     let script = python_dir.join("main.py");
     let spec = python_dir.join("main.spec");
 
     println!("cargo:rerun-if-changed={}", script.to_str().unwrap());
+    println!("cargo:rerun-if-changed={}", spec.to_str().unwrap());
 
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_dir = std::path::Path::new(&out_dir);
@@ -14,7 +16,9 @@ fn main() {
     let venv = std::path::Path::new(&venv);
     let mut command = std::process::Command::new(venv.join("bin/pyinstaller"));
     let output = command
-        .arg("-y")
+        .arg("--noconfirm")
+        .arg("--workpath")
+        .arg(&build_dir)
         .arg("--distpath")
         .arg(&python_build_dir)
         .arg(spec)

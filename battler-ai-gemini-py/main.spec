@@ -2,10 +2,14 @@
 
 
 a = Analysis(
-    ['../battler-ai-gemini-py/main.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[
+        ('.env', '.'),
+        ('context.md', '.'),
+        ('prompt.md', '.'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -13,6 +17,7 @@ a = Analysis(
     excludes=[],
     noarchive=False,
     optimize=0,
+    contents_directory = '.',
 )
 pyz = PYZ(a.pure)
 

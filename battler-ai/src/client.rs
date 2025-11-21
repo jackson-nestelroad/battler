@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    sync::Arc,
+    usize,
+};
 
 use ahash::HashSet;
 use anyhow::{
@@ -9,6 +12,7 @@ use battler::{
     DataStoreByName,
     Request,
 };
+use battler_choice::choices_from_string;
 use battler_client::{
     BattleClientEvent,
     BattlerClient,
@@ -17,17 +21,22 @@ use battler_client::{
 use crate::{
     AiContext,
     BattlerAi,
-    choice::MakeChoiceFailure,
+    choice::{
+        ChoiceFailure,
+        MakeChoiceFailure,
+    },
 };
 
-struct BattlerAiClient<'data, 'battle> {
+/// A wrapper around a [`BattlerClient`] that uses a [`BattlerAi`] implementation to make decisions.
+pub struct BattlerAiClient<'data, 'battle> {
     data: &'data dyn DataStoreByName,
     client: Arc<BattlerClient<'battle>>,
     ai: Box<dyn BattlerAi>,
 }
 
 impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
-    fn new(
+    /// Creates a new [`BattlerAiClient`].
+    pub fn new(
         data: &'data dyn DataStoreByName,
         client: Arc<BattlerClient<'battle>>,
         ai: Box<dyn BattlerAi>,
@@ -35,17 +44,26 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
         Self { data, client, ai }
     }
 
-    async fn run(mut self) -> Result<()> {
-        self.handle_battle_events().await
+    /// Runs the client.
+    pub async fn run(mut self) -> Result<()> {
+        self.handle_battle_events(usize::MAX).await
     }
 
-    async fn handle_battle_events(&mut self) -> Result<()> {
+    /// Runs the client for a given number of requests.
+    pub async fn run_for_requests(mut self, requests: usize) -> Result<()> {
+        self.handle_battle_events(requests).await
+    }
+
+    async fn handle_battle_events(&mut self, mut requests: usize) -> Result<()> {
         let mut battle_event_rx = self.client.battle_event_rx();
         loop {
+            if requests == 0 {
+                return Ok(());
+            }
             tokio::select! {
                 changed = battle_event_rx.changed() => {
                     changed?;
-                    if self.handle_battle_event(&battle_event_rx.borrow_and_update()).await? {
+                    if self.handle_battle_event(&battle_event_rx.borrow_and_update(), &mut requests).await? {
                         return Ok(());
                     }
                 }
@@ -53,11 +71,16 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
         }
     }
 
-    async fn handle_battle_event(&mut self, event: &BattleClientEvent) -> Result<bool> {
+    async fn handle_battle_event(
+        &mut self,
+        event: &BattleClientEvent,
+        requests: &mut usize,
+    ) -> Result<bool> {
         match event {
             BattleClientEvent::Request(request) => match request {
                 Some(request) => {
                     self.make_choice(request).await?;
+                    *requests -= 1;
                     Ok(false)
                 }
                 None => Ok(false),
@@ -78,13 +101,15 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
                 Ok(()) => return Ok(()),
                 Err(err) => {
                     ai_context.make_choice_failures.push(MakeChoiceFailure {
-                        choice,
+                        choice: choice.clone(),
                         reason: err.to_string(),
                     });
-                    // TODO: Need to parse for choice_failures.
-                    //
-                    // Let's put choice input serialization and deserialization into the types
-                    // crate, so it can be used by everyone.
+                    // Parse choice failure if possible.
+                    if let Ok(choices) = choices_from_string(choice)
+                        && let Ok(choice_failure) = ChoiceFailure::new(err, &choices)
+                    {
+                        ai_context.choice_failures.insert(choice_failure);
+                    }
                 }
             }
         }

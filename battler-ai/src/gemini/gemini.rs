@@ -35,6 +35,7 @@ struct Output {
     explanation: String,
 }
 
+#[derive(Default)]
 pub struct Gemini {}
 
 #[async_trait]
@@ -58,7 +59,10 @@ impl BattlerAi for Gemini {
         };
         let mut cmd = Command::new(executable);
         cmd.arg("--use_cache=false")
-            .arg(format!("--input='{}'", serde_json::to_string(&input)?));
+            .arg("--player")
+            .arg(&context.player_data.id)
+            .arg("--input")
+            .arg(serde_json::to_string(&input)?);
         let output = cmd.output().await?;
         if !output.status.success() {
             return Err(Error::msg(format!(
@@ -67,6 +71,12 @@ impl BattlerAi for Gemini {
             )));
         }
         let result = String::from_utf8_lossy(&output.stdout);
+
+        // Trim to where the JSON seems to begin and end.
+        let start = result.find("{").unwrap_or(0);
+        let end = result.rfind("}").unwrap_or(result.len() - 1);
+        let result = &result[start..=end];
+
         let output: Output = serde_json::from_str(&result)?;
         Ok(output.actions)
     }

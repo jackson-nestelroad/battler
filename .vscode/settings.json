@@ -25,8 +25,7 @@
     "rust-analyzer.procMacro.enable": true,
     "rust-analyzer.runnables.extraEnv": {
         "DATA_DIR": "${workspaceFolder}/battle-data/data",
-        "TEST_CASE_DIR": "${workspaceFolder}/battler/test_cases",
-        "INTEGRATION_TEST_EXPECTED_IO_DIR": "${workspaceFolder}/battler/tests/expected",
+        "CRATE_ROOT": "${workspaceFolder}",
         "GEMINI_PYTHON_VENV": "${workspaceFolder}/.venv",
         "RUST_LOG": "debug"
     },

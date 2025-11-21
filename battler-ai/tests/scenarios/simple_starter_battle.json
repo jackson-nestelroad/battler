@@ -1,0 +1,63 @@
+{
+  "input": {
+    "options": {
+      "format": {
+        "battle_type": "Singles",
+        "rules": []
+      },
+      "field": {},
+      "side_1": {
+        "name": "Side 1",
+        "players": [
+          {
+            "id": "player-1",
+            "name": "Player 1",
+            "team": {
+              "members": [
+                {
+                  "name": "Charmander",
+                  "species": "Charmander",
+                  "ability": "Blaze",
+                  "moves": ["Tackle", "Growl"],
+                  "item": null,
+                  "nature": "Hardy",
+                  "gender": "M",
+                  "level": 5
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "side_2": {
+        "name": "Side 2",
+        "players": [
+          {
+            "id": "player-2",
+            "name": "Player 2",
+            "team": {
+              "members": [
+                {
+                  "name": "Squirtle",
+                  "species": "Squirtle",
+                  "ability": "Torrent",
+                  "moves": ["Tackle", "Tail Whip"],
+                  "item": null,
+                  "nature": "Hardy",
+                  "gender": "M",
+                  "level": 5
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "engine_options": {},
+    "choices": []
+  },
+  "expected": {
+    "player": "player-2",
+    "choice": null
+  }
+}

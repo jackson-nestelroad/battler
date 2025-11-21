@@ -57,7 +57,7 @@ where
 }
 
 fn test_case_dir<'s>() -> Result<String> {
-    env::var("TEST_CASE_DIR").wrap_error_with_message("TEST_CASE_DIR is not defined")
+    Ok(format!("{}/battler/test_cases", env::var("CRATE_ROOT")?))
 }
 
 pub fn read_test_json<T: DeserializeOwned>(file: &str) -> Result<T> {
