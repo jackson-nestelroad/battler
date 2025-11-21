@@ -23,7 +23,10 @@ fn main() {
         .arg(&python_build_dir)
         .arg(spec)
         .output()
-        .expect("failed to execute pyinstaller");
+        .expect(&format!(
+            "failed to execute pyinstaller from {}",
+            venv.to_string_lossy()
+        ));
 
     if !output.status.success() {
         eprintln!("pyinstaller failed:");
