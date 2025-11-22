@@ -10,6 +10,7 @@ runs:
         cache: "pip"
         cache-dependency-path: ${{ github.workspace }}/battler-ai-gemini-py/requirements.txt
     - name: Create virtual environment
+      shell: bash
       run: |
         python -m venv .venv
         source .venv/bin/activate
