@@ -1,0 +1,16 @@
+name: Set up battler-ai-gemini-py
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+        cache: "pip"
+        cache-dependency-path: ${{ github.workspace }}/battler-ai-gemini-py/requirements.txt
+    - name: Create virtual environment
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        pip install -r battler-ai-gemini-py/requirements.txt
