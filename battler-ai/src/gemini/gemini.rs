@@ -1,3 +1,5 @@
+use std::env;
+
 use anyhow::{
     Error,
     Result,
@@ -58,6 +60,10 @@ impl BattlerAi for Gemini {
             failed_actions: &context.make_choice_failures,
         };
         let mut cmd = Command::new(executable);
+        cmd.env(
+            "GEMINI_API_KEY",
+            env::var("GEMINI_API_KEY").unwrap_or_default(),
+        );
         cmd.arg("--use_cache=false")
             .arg("--player")
             .arg(&context.player_data.id)

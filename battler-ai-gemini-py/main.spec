@@ -6,7 +6,6 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('.env', '.'),
         ('context.md', '.'),
         ('prompt.md', '.'),
     ],
