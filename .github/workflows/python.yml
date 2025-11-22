@@ -1,0 +1,22 @@
+name: Python
+
+on:
+  workflow_call:
+
+jobs:
+  setup-battler-ai-gemini-py-venv:
+    name: Setup battler-ai-gemini-py virtual environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: ${{ github.workspace }}/battler-ai-gemini-py/requirements.txt
+      - name: Create virtual environment
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r battler-ai-gemini-py/requirements.txt
