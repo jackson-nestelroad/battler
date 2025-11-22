@@ -27,7 +27,8 @@ jobs:
       - name: Create virtual environment
         run: |
           python -m venv .venv
-          ./.venv/bin/pip install -r battler-ai-gemini-py/requirements.txt
+          source .venv/bin/activate
+          pip install -r battler-ai-gemini-py/requirements.txt
       - name: Upload virtual environment
         uses: actions/upload-artifact@v4
         with:
@@ -96,6 +97,8 @@ jobs:
         with:
           name: venv-artifact
           path: .venv
+      - name: Fix venv permissions
+        run: chmod a+x .venv/bin/pyinstaller
       - name: Install latest nightly
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
