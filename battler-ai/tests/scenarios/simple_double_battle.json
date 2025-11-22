@@ -1,0 +1,154 @@
+{
+  "input": {
+    "options": {
+      "format": {
+        "battle_type": "Doubles",
+        "rules": ["Terastallization"]
+      },
+      "field": {},
+      "side_1": {
+        "name": "Side 1",
+        "players": [
+          {
+            "id": "player-1",
+            "name": "Player 1",
+            "team": {
+              "members": [
+                {
+                  "name": "Venusaur",
+                  "species": "Venusaur",
+                  "ability": "Overgrow",
+                  "moves": [
+                    "Giga Drain",
+                    "Sludge Bomb",
+                    "Knock Off",
+                    "Synthesis"
+                  ],
+                  "item": "Leftovers",
+                  "nature": "Bold",
+                  "gender": "M",
+                  "level": 100,
+                  "ivs": {
+                    "hp": 31,
+                    "atk": 31,
+                    "def": 31,
+                    "spa": 31,
+                    "spd": 31,
+                    "spe": 31
+                  },
+                  "evs": {
+                    "hp": 252,
+                    "def": 168,
+                    "spe": 88
+                  },
+                  "tera_type": "Water"
+                },
+                {
+                  "name": "Charizard",
+                  "species": "Charizard",
+                  "ability": "Blaze",
+                  "moves": [
+                    "Belly Drum",
+                    "Acrobatics",
+                    "Earthquake",
+                    "Flame Charge"
+                  ],
+                  "item": "Sitrus Berry",
+                  "nature": "Jolly",
+                  "gender": "M",
+                  "level": 100,
+                  "ivs": {
+                    "hp": 31,
+                    "atk": 31,
+                    "def": 31,
+                    "spa": 31,
+                    "spd": 31,
+                    "spe": 31
+                  },
+                  "evs": {
+                    "hp": 4,
+                    "atk": 252,
+                    "spe": 252
+                  },
+                  "tera_type": "Flying"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "side_2": {
+        "name": "Side 2",
+        "players": [
+          {
+            "id": "player-2",
+            "name": "Player 2",
+            "team": {
+              "members": [
+                {
+                  "name": "Blastoise",
+                  "species": "Blastoise",
+                  "ability": "Torrent",
+                  "moves": ["Shell Smash", "Surf", "Ice Beam", "Tera Blast"],
+                  "item": "White Herb",
+                  "nature": "Modest",
+                  "gender": "M",
+                  "level": 100,
+                  "ivs": {
+                    "hp": 31,
+                    "atk": 31,
+                    "def": 31,
+                    "spa": 31,
+                    "spd": 31,
+                    "spe": 31
+                  },
+                  "evs": {
+                    "spa": 252,
+                    "spd": 4,
+                    "spe": 252
+                  },
+                  "tera_type": "Electric"
+                },
+                {
+                  "name": "Raichu",
+                  "species": "Raichu-Alola",
+                  "ability": "Surge Surfer",
+                  "moves": [
+                    "Nasty Plot",
+                    "Thunderbolt",
+                    "Psyshock",
+                    "Draining Kiss"
+                  ],
+                  "item": "Life Orb",
+                  "nature": "Timid",
+                  "gender": "M",
+                  "level": 100,
+                  "ivs": {
+                    "hp": 31,
+                    "atk": 31,
+                    "def": 31,
+                    "spa": 31,
+                    "spd": 31,
+                    "spe": 31
+                  },
+                  "evs": {
+                    "spa": 252,
+                    "spd": 4,
+                    "spe": 252
+                  },
+                  "tera_type": "Fairy"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "engine_options": {},
+    "choices": []
+  },
+  "expected": {
+    "player": "player-2",
+    "choice": null
+  }
+}
