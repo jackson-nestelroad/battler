@@ -29,12 +29,13 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install -r battler-ai-gemini-py/requirements.txt
+      - name: Compress virtual environment
+        run: tar -czvf venv.tar.gz .venv/
       - name: Upload virtual environment
         uses: actions/upload-artifact@v4
         with:
-          name: venv-artifact
-          include-hidden-files: true
-          path: .venv
+          name: venv-tar-artifact
+          path: venv.tar.gz
 
   test-battler:
     name: Run battler tests
@@ -95,10 +96,10 @@ jobs:
       - name: Download Python virtual environment
         uses: actions/download-artifact@v4
         with:
-          name: venv-artifact
-          path: .venv
-      - name: Fix venv permissions
-        run: chmod a+x .venv/bin/pyinstaller
+          name: venv-tar-artifact
+          path: venv.tar.gz
+      - name: Extract virtual environment
+        run: tar -xzvf venv.tar.gz
       - name: Install latest nightly
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
