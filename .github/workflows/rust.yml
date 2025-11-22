@@ -28,6 +28,8 @@ jobs:
           cache-dependency-path: ${{ github.workspace }}/battler-ai-gemini-py/requirements.txt
       - name: Create virtual environment
         run: python -m venv .venv
+      - name: Activate virtual environment
+        run: source .venv/bin/activate
       - name: Install dependencies
         run: pip install -r battler-ai-gemini-py/requirements.txt
       - name: Set output
