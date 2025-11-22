@@ -8,6 +8,7 @@ target/
 /battler-wamp/*.txt
 
 /.venv
+/.cargo
 
 .env
 .debug

@@ -1,5 +1,0 @@
-[env]
-DATA_DIR = "/Users/jackson/Code/GitHub/pokemon/battle-data/data"
-CRATE_ROOT = "/Users/jackson/Code/GitHub/pokemon"
-GEMINI_PYTHON_VENV = "/Users/jackson/Code/GitHub/pokemon/.venv"
-GEMINI_API_KEY = "AIzaSyB5hEg8D7hKsLzQcM8SvPVfVCak8bJg-vQ"
