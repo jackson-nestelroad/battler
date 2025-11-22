@@ -37,6 +37,7 @@ struct Output {
     explanation: String,
 }
 
+/// A battle AI where decisions are made by Gemini.
 #[derive(Default)]
 pub struct Gemini {}
 
