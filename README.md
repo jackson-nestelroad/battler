@@ -6,7 +6,9 @@ This repository features multiple crates:
 
 1. [`battler`](./battler/) - The core battle engine.
 1. [`battler-ai`](./battler-ai/) - AI implementation for battler.
+1. [`battler-ai-gemini-py`](./battler-ai-gemini-py/) - Python script for making choices via Gemini.
 1. [`battler-calc`](./battler-calc/) - Move simulator (a.k.a., damage calculator) for battler.
+1. [`battler-choice`](./battler-choice/) - Common choice parsing logic.
 1. [`battler-client`](./battler-client/) - Client-side logic for battler.
 1. [`battler-data`](./battler-data/) - Common data types for battler.
 1. [`battler-prng`](./battler-prng/) - RNG module for battler.
