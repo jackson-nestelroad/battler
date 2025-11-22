@@ -67,6 +67,7 @@ jobs:
     env:
       GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/workflows/python.yml
       - name: Install latest nightly
         uses: actions-rust-lang/setup-rust-toolchain@v1
