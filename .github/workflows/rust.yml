@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r battler-ai-gemini-py/requirements.txt
       - name: Upload virtual environment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: venv
           path: .venv
@@ -93,7 +93,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download Python virtual environment
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: venv
           path: .venv
