@@ -16,8 +16,6 @@ jobs:
   setup-python-venv:
     name: Setup Python virtual environment
     runs-on: ubuntu-latest
-    outputs:
-      python_venv: ${{ steps.set_output.outputs.python_venv }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python and cache venv
@@ -32,10 +30,11 @@ jobs:
         run: source .venv/bin/activate
       - name: Install dependencies
         run: pip install -r battler-ai-gemini-py/requirements.txt
-      - name: Set output
-        id: set_output
-        run: |
-          echo "python_venv=${GITHUB_WORKSPACE}/.venv" >> $GITHUB_OUTPUT
+      - name: Upload virtual environment
+        uses: actions/upload-artifact@v3
+        with:
+          name: venv
+          path: .venv
 
   test-battler:
     name: Run battler tests
@@ -90,9 +89,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-python-venv
     env:
-      GEMINI_PYTHON_VENV: ${{ needs.setup-python-venv.outputs.python_venv }}
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
     steps:
       - uses: actions/checkout@v4
+      - name: Download Python virtual environment
+        uses: actions/download-artifact@v3
+        with:
+          name: venv
+          path: .venv
       - name: Install latest nightly
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
