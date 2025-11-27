@@ -191,6 +191,11 @@ impl<'d> PublicCoreBattle<'d> {
     pub fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<()> {
         self.internal.set_player_choice(player_id, input)
     }
+
+    /// Automatically ends the battle, deciding the winner dynamically.
+    pub fn auto_end(&mut self) -> Result<()> {
+        self.internal.auto_end()
+    }
 }
 
 /// An entry in the faint queue.
@@ -575,6 +580,10 @@ impl<'d> CoreBattle<'d> {
 
     fn set_player_choice(&mut self, player_id: &str, input: &str) -> Result<()> {
         Self::set_player_choice_internal(&mut self.context(), player_id, input)
+    }
+
+    fn auto_end(&mut self) -> Result<()> {
+        Self::end_battle_deciding_winner(&mut self.context())
     }
 }
 
@@ -1247,8 +1256,7 @@ impl<'d> CoreBattle<'d> {
                 context.battle_mut().mid_turn = true;
             }
             Action::End(action) => {
-                core_battle_actions::end_battle(context)?;
-                Self::win(context, action.winning_side)?;
+                Self::end_battle(context, action.winning_side)?;
             }
             Action::Team(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
@@ -1605,6 +1613,73 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().log.commit();
         Self::clear_requests(context)?;
         Ok(())
+    }
+
+    fn end_battle(context: &mut Context, winning_side: Option<usize>) -> Result<()> {
+        core_battle_actions::end_battle(context)?;
+        Self::win(context, winning_side)?;
+        Ok(())
+    }
+
+    fn end_battle_deciding_winner(context: &mut Context) -> Result<()> {
+        let winner = Self::decide_winner(context)?;
+        Self::end_battle(context, winner)
+    }
+
+    fn decide_winner(context: &mut Context) -> Result<Option<usize>> {
+        // First, decide winner by number of Mons remaining.
+        let mons_left_per_side = context
+            .battle()
+            .side_indices()
+            .map(|side| Ok((side, Side::mons_left(&mut context.side_context(side)?)?)))
+            .collect::<Result<HashMap<_, _>>>()?;
+        let max = mons_left_per_side
+            .iter()
+            .max_by_key(|(_, mons_left)| **mons_left)
+            .map(|(_, mons_left)| *mons_left);
+        let max = match max {
+            Some(max) => max,
+            None => return Ok(None),
+        };
+
+        let sides = mons_left_per_side
+            .into_iter()
+            .filter_map(|(side, mons_left)| (mons_left == max).then_some(side))
+            .collect::<Vec<_>>();
+        if sides.len() == 1 {
+            return Ok(sides.first().cloned());
+        }
+
+        // Second, decide winner by health percentage left per side.
+        let health_per_side = sides
+            .into_iter()
+            .map(|side| {
+                Ok((
+                    side,
+                    Side::health_percentage_left(&mut context.side_context(side)?)?,
+                ))
+            })
+            .collect::<Result<HashMap<_, _>>>()?;
+
+        let max = health_per_side
+            .iter()
+            .max_by_key(|(_, health_left)| **health_left)
+            .map(|(_, health_left)| *health_left);
+        let max = match max {
+            Some(max) => max,
+            None => return Ok(None),
+        };
+
+        let sides = health_per_side
+            .into_iter()
+            .filter_map(|(side, health_left)| (health_left == max).then_some(side))
+            .collect::<Vec<_>>();
+        if sides.len() == 1 {
+            return Ok(sides.first().cloned());
+        }
+
+        // No winner could be decided.
+        Ok(None)
     }
 
     fn calculate_action_priority(context: &mut Context, action: &mut Action) -> Result<()> {

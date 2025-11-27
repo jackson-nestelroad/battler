@@ -639,6 +639,21 @@ impl Player {
         Ok(count)
     }
 
+    /// Counts the total health percentage left on the side.
+    pub fn health_percentage_left(context: &mut PlayerContext) -> Result<u64> {
+        if context.player().escaped {
+            return Ok(0);
+        }
+        let mut count = 0;
+        for mon in context.player().mons.clone() {
+            let context = context.mon_context(mon)?;
+            if context.mon().exited.is_none() {
+                count += Mon::public_health_percentage(&context).0 as u64;
+            }
+        }
+        Ok(count)
+    }
+
     /// Request data for the player in a battle.
     pub fn request_data(context: &mut PlayerContext) -> Result<PlayerBattleData> {
         let mon_handles = context.player().mon_handles().cloned().collect::<Vec<_>>();

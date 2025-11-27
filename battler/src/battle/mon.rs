@@ -740,12 +740,12 @@ impl Mon {
 
 // Basic getters.
 impl Mon {
-    fn health(&self, actual_health: bool, public_base: u32) -> String {
+    fn health(&self, actual_health: bool, public_base: u32) -> (u32, u32) {
         if actual_health {
             return self.actual_health();
         }
         if self.hp == 0 || self.max_hp == 0 {
-            return "0".to_owned();
+            return (self.hp as u32, self.max_hp as u32);
         }
         let ratio = Fraction::new(self.hp as u32, self.max_hp as u32);
         // Always round up to avoid returning 0 when the Mon is not fainted.
@@ -756,10 +756,22 @@ impl Mon {
             percentage = public_base - 1;
         }
 
-        format!("{percentage}/{public_base}")
+        (percentage, public_base)
     }
 
-    fn actual_health(&self) -> String {
+    fn health_string(&self, actual_health: bool, public_base: u32) -> String {
+        let (hp, max_hp) = self.health(actual_health, public_base);
+        if hp == 0 || max_hp == 0 {
+            return "0".to_owned();
+        }
+        format!("{hp}/{max_hp}")
+    }
+
+    fn actual_health(&self) -> (u32, u32) {
+        (self.hp as u32, self.max_hp as u32)
+    }
+
+    fn actual_health_string(&self) -> String {
         if self.hp == 0 || self.max_hp == 0 {
             return "0".to_owned();
         }
@@ -810,9 +822,9 @@ impl Mon {
                 .wrap_expectation("expected mon to be active")?
                 + 1,
             health: if secret {
-                context.mon().actual_health()
+                context.mon().actual_health_string()
             } else {
-                Self::public_health(context)
+                Self::public_health_string(context)
             },
             status,
             tera: context.mon().terastallized,
@@ -856,16 +868,31 @@ impl Mon {
     }
 
     /// The public health of the Mon.
-    pub fn public_health(context: &MonContext) -> String {
+    pub fn public_health(context: &MonContext) -> (u32, u32) {
         context.mon().health(
             context.battle().engine_options.reveal_actual_health,
             context.battle().engine_options.public_health_base,
         )
     }
 
+    /// The public health of the Mon, always based as a percentage.
+    pub fn public_health_percentage(context: &MonContext) -> (u32, u32) {
+        context
+            .mon()
+            .health(false, context.battle().engine_options.public_health_base)
+    }
+
+    /// The public health of the Mon.
+    pub fn public_health_string(context: &MonContext) -> String {
+        context.mon().health_string(
+            context.battle().engine_options.reveal_actual_health,
+            context.battle().engine_options.public_health_base,
+        )
+    }
+
     /// The secret health of the Mon.
-    pub fn secret_health(context: &MonContext) -> String {
-        context.mon().actual_health()
+    pub fn secret_health_string(context: &MonContext) -> String {
+        context.mon().actual_health_string()
     }
 
     fn moves_and_locked_move(
@@ -1367,7 +1394,7 @@ impl Mon {
             species,
             hp: context.mon().hp,
             max_hp: context.mon().max_hp,
-            health: context.mon().actual_health(),
+            health: context.mon().actual_health_string(),
             types: context.mon().volatile_state.types.clone(),
             active: context.mon().active,
             player_team_position: context.mon().team_position,

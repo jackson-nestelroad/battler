@@ -113,6 +113,21 @@ impl Side {
         Ok(count)
     }
 
+    /// Counts the total health percentage left on the side.
+    pub fn health_percentage_left(context: &mut SideContext) -> Result<u64> {
+        let mut count = 0;
+        for player in context
+            .battle()
+            .player_indices_on_side(context.side().index)
+            .collect::<Vec<_>>()
+        {
+            count += Player::health_percentage_left(
+                &mut context.as_battle_context_mut().player_context(player)?,
+            )?;
+        }
+        Ok(count)
+    }
+
     /// Counts the number of active Mons on the side.
     pub fn active_mons_count(context: &SideContext) -> usize {
         context

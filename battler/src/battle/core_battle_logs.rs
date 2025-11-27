@@ -453,8 +453,8 @@ pub fn damage(
     )?;
     let mut public_event = private_event.clone();
 
-    private_event.set("health", Mon::secret_health(context));
-    public_event.set("health", Mon::public_health(context));
+    private_event.set("health", Mon::secret_health_string(context));
+    public_event.set("health", Mon::public_health_string(context));
 
     let side = context.mon().side;
     context
@@ -479,8 +479,8 @@ pub fn heal(context: &mut ApplyingEffectContext) -> Result<()> {
     let mut public_event = private_event.clone();
 
     let context = &mut context.target_context()?;
-    private_event.set("health", Mon::secret_health(&context));
-    public_event.set("health", Mon::public_health(&context));
+    private_event.set("health", Mon::secret_health_string(&context));
+    public_event.set("health", Mon::public_health_string(&context));
 
     let side = context.mon().side;
     context
@@ -508,8 +508,8 @@ pub fn set_hp(
     )?;
     let mut public_event = private_event.clone();
 
-    private_event.set("health", Mon::secret_health(context));
-    public_event.set("health", Mon::public_health(context));
+    private_event.set("health", Mon::secret_health_string(context));
+    public_event.set("health", Mon::public_health_string(context));
 
     let side = context.mon().side;
     context
