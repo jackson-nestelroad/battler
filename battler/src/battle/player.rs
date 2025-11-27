@@ -937,7 +937,28 @@ impl Player {
             .or(active_mon.old_active_position)
             .wrap_expectation("mon to switch out is not in an active position")?;
 
-        let slot = choice.mon;
+        let slot = match choice.mon {
+            Some(mon) => mon,
+            None => {
+                // Choose a random Mon to switch to, excluding Mons we have already selected to
+                // switch in.
+                let player = context.player().index;
+                let exclude = context
+                    .player()
+                    .choice
+                    .switch_ins
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<_>>();
+                let switch_to = CoreBattle::random_switchable_excluding_team_positions(
+                    context.as_battle_context_mut(),
+                    player,
+                    exclude,
+                )?
+                .wrap_expectation("no mons can be switched in at random")?;
+                context.mon(switch_to)?.team_position
+            }
+        };
         let target_mon_handle = context
             .player()
             .mons
@@ -1180,7 +1201,7 @@ impl Player {
             // Make sure the selected move is not disabled.
             let move_slot = moves
                 .get(choice.slot)
-                .wrap_not_found_error_with_format(format_args!("move in slot {}", choice.slot,))?;
+                .wrap_not_found_error_with_format(format_args!("move in slot {}", choice.slot))?;
             if move_slot.disabled {
                 return Err(general_error(format!(
                     "{}'s {} is disabled",
@@ -1193,6 +1214,15 @@ impl Player {
         // Choosing 0 is the same as no target at all.
         if choice.target.is_some_and(|target| target == 0) {
             choice.target = None;
+        }
+
+        // Generate a random target.
+        if choice.random_target {
+            if let Some(target) =
+                CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_target)?
+            {
+                choice.target = Some(Mon::get_target_location(&mut context, target)?);
+            }
         }
 
         let target_required = context.battle().format.battle_type.active_per_player() > 1;

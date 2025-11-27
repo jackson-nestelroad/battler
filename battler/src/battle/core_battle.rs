@@ -10,7 +10,10 @@ use std::{
     },
 };
 
-use ahash::HashMap;
+use ahash::{
+    HashMap,
+    HashSet,
+};
 use anyhow::Result;
 use battler_data::{
     DataStore,
@@ -1699,6 +1702,33 @@ impl<'d> CoreBattle<'d> {
         .cloned())
     }
 
+    /// Selects a random switchable Mon from the player, excluding the given team positions.
+    pub fn random_switchable_excluding_team_positions<I>(
+        context: &mut Context,
+        player: usize,
+        exclude: I,
+    ) -> Result<Option<MonHandle>>
+    where
+        I: IntoIterator<Item = usize>,
+    {
+        let exclude: HashSet<usize> = exclude.into_iter().collect();
+        let prng = context.battle_mut().prng.as_mut();
+        // SAFETY: PRNG is completely disjoint from the iterator created below.
+        let prng = unsafe { mem::transmute(prng) };
+
+        let context = context.player_context(player)?;
+        let mut switchables = Vec::new();
+        for mon_handle in Player::switchable_mon_handles(&context)
+            .cloned()
+            .collect::<Vec<_>>()
+        {
+            if !exclude.contains(&context.mon(mon_handle)?.team_position) {
+                switchables.push(mon_handle);
+            }
+        }
+        Ok(rand_util::sample_iter(prng, switchables.iter()).cloned())
+    }
+
     /// Selects a random target for the move.
     pub fn random_target(
         context: &mut Context,
@@ -1733,12 +1763,7 @@ impl<'d> CoreBattle<'d> {
             })
             .collect::<Vec<_>>();
 
-        Ok(
-            rand_util::sample_slice(context.battle_mut().prng.as_mut(), &mons)
-                .cloned()
-                .map(|mon| Some(mon))
-                .unwrap_or(None),
-        )
+        Ok(rand_util::sample_slice(context.battle_mut().prng.as_mut(), &mons).cloned())
     }
 
     /// Gets the selected target of the move.

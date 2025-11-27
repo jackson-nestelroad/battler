@@ -101,12 +101,12 @@ fn missing_position() {
     let mut battle = make_battle().unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
-        battle.set_player_choice("player-1", "switch"),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot parse integer from empty string")
+        battle.set_player_choice("player-1", "switch;switch"),
+        Ok(())
     );
     assert_matches::assert_matches!(
-        battle.set_player_choice("player-1", "switch  "),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot parse integer from empty string")
+        battle.set_player_choice("player-1", "switch  ;switch "),
+        Ok(())
     );
 }
 

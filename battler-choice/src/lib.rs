@@ -33,6 +33,8 @@ pub struct MoveChoice {
     pub dyna: bool,
     /// Terastallize?
     pub tera: bool,
+    /// Force a random target to be selected?
+    pub random_target: bool,
 }
 
 impl Display for MoveChoice {
@@ -49,6 +51,9 @@ impl Display for MoveChoice {
         }
         if self.tera {
             write!(f, ",tera")?;
+        }
+        if self.random_target {
+            write!(f, ",randomtarget")?;
         }
         Ok(())
     }
@@ -72,6 +77,7 @@ impl FromStr for MoveChoice {
             mega: false,
             dyna: false,
             tera: false,
+            random_target: false,
         };
 
         if let Some(target) = args
@@ -93,6 +99,9 @@ impl FromStr for MoveChoice {
                 }
                 "tera" => {
                     choice.tera = true;
+                }
+                "randomtarget" => {
+                    choice.random_target = true;
                 }
                 _ => {
                     return Err(Error::msg(format!("invalid option in move choice: {arg}")));
@@ -189,19 +198,24 @@ impl FromStr for TeamSelectionChoice {
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct SwitchChoice {
     /// The Mon to switch in.
-    pub mon: usize,
+    ///
+    /// If not specified, a random Mon will be selected.
+    pub mon: Option<usize>,
 }
 
 impl Display for SwitchChoice {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.mon)
+        if let Some(mon) = self.mon {
+            write!(f, "{}", mon)?;
+        }
+        Ok(())
     }
 }
 
 impl FromStr for SwitchChoice {
     type Err = <usize as FromStr>::Err;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mon = s.parse()?;
+        let mon = (!s.is_empty()).then(|| s.parse()).transpose()?;
         Ok(Self { mon })
     }
 }
@@ -284,7 +298,7 @@ impl FromStr for Choice {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (choice, data) = split_once_optional(s, " ");
-        let data = data.unwrap_or_default();
+        let data = data.unwrap_or_default().trim();
         match choice {
             "pass" => Ok(Self::Pass),
             "escape" => Ok(Self::Escape),
@@ -369,8 +383,12 @@ mod battler_choice_test {
             "team 0 2 4"
         );
         assert_eq!(
-            Choice::Switch(SwitchChoice { mon: 1 }).to_string(),
+            Choice::Switch(SwitchChoice { mon: Some(1) }).to_string(),
             "switch 1"
+        );
+        assert_eq!(
+            Choice::Switch(SwitchChoice { mon: None }).to_string(),
+            "switch"
         );
         assert_eq!(
             Choice::Move(MoveChoice {
@@ -379,6 +397,7 @@ mod battler_choice_test {
                 mega: false,
                 dyna: false,
                 tera: false,
+                random_target: false,
             })
             .to_string(),
             "move 0"
@@ -390,6 +409,7 @@ mod battler_choice_test {
                 mega: false,
                 dyna: false,
                 tera: false,
+                random_target: false,
             })
             .to_string(),
             "move 1,-1"
@@ -401,6 +421,7 @@ mod battler_choice_test {
                 mega: true,
                 dyna: false,
                 tera: false,
+                random_target: false,
             })
             .to_string(),
             "move 2,2,mega"
@@ -412,6 +433,7 @@ mod battler_choice_test {
                 mega: true,
                 dyna: true,
                 tera: true,
+                random_target: false,
             })
             .to_string(),
             "move 3,mega,dyna,tera"
@@ -460,7 +482,15 @@ mod battler_choice_test {
             Choice::from_str("switch 1"),
             Ok(Choice::Switch(choice)) => {
                 assert_eq!(choice, SwitchChoice {
-                    mon: 1,
+                    mon: Some(1),
+                });
+            }
+        );
+        assert_matches::assert_matches!(
+            Choice::from_str("switch"),
+            Ok(Choice::Switch(choice)) => {
+                assert_eq!(choice, SwitchChoice {
+                    mon: None,
                 });
             }
         );
@@ -473,6 +503,7 @@ mod battler_choice_test {
                     mega: false,
                     dyna: false,
                     tera: false,
+                    random_target: false,
                 });
             }
         );
@@ -485,6 +516,7 @@ mod battler_choice_test {
                     mega: false,
                     dyna: false,
                     tera: false,
+                    random_target: false,
                 });
             }
         );
@@ -497,6 +529,7 @@ mod battler_choice_test {
                     mega: true,
                     dyna: false,
                     tera: false,
+                    random_target: false,
                 });
             }
         );
@@ -509,6 +542,7 @@ mod battler_choice_test {
                     mega: true,
                     dyna: true,
                     tera: true,
+                    random_target: false,
                 });
             }
         );
@@ -559,7 +593,7 @@ mod battler_choice_test {
                     target: Some(2),
                     ..Default::default()
                 }),
-                Choice::Switch(SwitchChoice { mon: 3 }),
+                Choice::Switch(SwitchChoice { mon: Some(3) }),
                 Choice::Forfeit,
             ]),
             "move 1,2;switch 3;forfeit"
@@ -582,7 +616,7 @@ mod battler_choice_test {
                     target: Some(2),
                     ..Default::default()
                 }),
-                Choice::Switch(SwitchChoice { mon: 3 }),
+                Choice::Switch(SwitchChoice { mon: Some(3) }),
                 Choice::Forfeit,
             ]));
         });
