@@ -2,6 +2,7 @@ use std::{
     cmp,
     collections::hash_map::Entry,
     mem,
+    usize,
 };
 
 use ahash::{
@@ -24,6 +25,7 @@ use battler_data::{
     ItemFlag,
     ItemInput,
 };
+use battler_prng::rand_util;
 use itertools::{
     EitherOrBoth,
     Itertools,
@@ -893,6 +895,9 @@ impl Player {
                     }
                     Ok(Choice::Item(choice)) => Self::choose_item(context, choice)
                         .wrap_error_with_message("cannot use item"),
+                    Ok(Choice::Random) => {
+                        Self::choose_random(context).wrap_error_with_message("random choice failed")
+                    }
                     Err(err) => Err(err),
                 };
             if let Err(error) = result {
@@ -1557,6 +1562,79 @@ impl Player {
             .push(Action::Item(action));
 
         Ok(())
+    }
+
+    fn choose_random(context: &mut PlayerContext) -> Result<()> {
+        match context.player().request_type() {
+            // Do not learn the move.
+            Some(RequestType::LearnMove) => Self::choose_learn_move(
+                context,
+                LearnMoveChoice {
+                    forget_move_slot: usize::MAX,
+                },
+            ),
+            // Randomly switch in a Mon.
+            Some(RequestType::Switch) => Self::choose_switch(context, SwitchChoice::default()),
+            // Auto-select first Mons.
+            Some(RequestType::TeamPreview) => {
+                Self::choose_team(context, TeamSelectionChoice::default())
+            }
+            Some(RequestType::Turn) => {
+                // Select a random, valid move.
+                let active_position = Self::get_position_for_next_choice(context, false)?;
+                if active_position >= context.player().active.len() {
+                    return Err(general_error("you sent more choices than active mons"));
+                }
+                let mon_handle = context
+                    .player()
+                    .active_mon_handle(active_position)
+                    .wrap_expectation_with_format(format_args!(
+                        "expected an active mon in position {active_position}"
+                    ))?;
+                let mut context =
+                    context
+                        .mon_context(mon_handle)
+                        .wrap_error_with_format(format_args!(
+                            "expected mon to exist for handle {mon_handle}"
+                        ))?;
+
+                // Select from set of non-disabled moves.
+                let request = Mon::move_request(&mut context)?;
+                let mut potential_moves = request
+                    .moves
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, move_slot)| (!move_slot.disabled).then_some(i))
+                    .collect::<HashSet<_>>();
+
+                // Pick a random move. If it fails, try again.
+                while let Some(move_slot) = rand_util::sample_iter(
+                    context.battle_mut().prng.as_mut(),
+                    potential_moves.iter(),
+                )
+                .cloned()
+                {
+                    match Self::choose_move(
+                        context.as_player_context_mut(),
+                        MoveChoice {
+                            slot: move_slot,
+                            random_target: true,
+                            ..Default::default()
+                        },
+                    ) {
+                        Ok(()) => break,
+                        Err(_) => {
+                            potential_moves.remove(&move_slot);
+                        }
+                    }
+                }
+
+                // We have exhausted all options for some reason. Normally the battle engine should
+                // instruct us to Struggle in this case, so this error is unexpected.
+                Err(general_error("no move was valid during random selection"))
+            }
+            None => return Err(general_error("you cannot make choices out of turn")),
+        }
     }
 
     /// Checks if the player needs to switch a Mon out.

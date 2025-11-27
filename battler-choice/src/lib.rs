@@ -247,6 +247,8 @@ pub enum Choice {
     /// Do nothing.
     #[default]
     Pass,
+    /// Make a random choice, depending on the type of request.
+    Random,
     /// Attempt to escape from the battle.
     Escape,
     /// Forfeit the battle.
@@ -267,6 +269,7 @@ impl Display for Choice {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Pass => write!(f, "pass"),
+            Self::Random => write!(f, "random"),
             Self::Escape => write!(f, "escape"),
             Self::Forfeit => write!(f, "forfeit"),
             Self::Team(choice) => {
@@ -301,6 +304,7 @@ impl FromStr for Choice {
         let data = data.unwrap_or_default().trim();
         match choice {
             "pass" => Ok(Self::Pass),
+            "random" => Ok(Self::Random),
             "escape" => Ok(Self::Escape),
             "forfeit" => Ok(Self::Forfeit),
             "team" => Ok(Self::Team(TeamSelectionChoice::from_str(data)?)),
@@ -373,6 +377,7 @@ mod battler_choice_test {
     #[test]
     fn serializes_to_string() {
         assert_eq!(Choice::Pass.to_string(), "pass");
+        assert_eq!(Choice::Random.to_string(), "random");
         assert_eq!(Choice::Escape.to_string(), "escape");
         assert_eq!(Choice::Forfeit.to_string(), "forfeit");
         assert_eq!(
@@ -388,7 +393,7 @@ mod battler_choice_test {
         );
         assert_eq!(
             Choice::Switch(SwitchChoice { mon: None }).to_string(),
-            "switch"
+            "switch "
         );
         assert_eq!(
             Choice::Move(MoveChoice {
@@ -468,6 +473,7 @@ mod battler_choice_test {
     #[test]
     fn deserializes_from_string() {
         assert_matches::assert_matches!(Choice::from_str("pass"), Ok(Choice::Pass));
+        assert_matches::assert_matches!(Choice::from_str("random"), Ok(Choice::Random));
         assert_matches::assert_matches!(Choice::from_str("escape"), Ok(Choice::Escape));
         assert_matches::assert_matches!(Choice::from_str("forfeit"), Ok(Choice::Forfeit));
         assert_matches::assert_matches!(
@@ -624,7 +630,7 @@ mod battler_choice_test {
 
     #[test]
     fn deserializes_multiple_results_from_string() {
-        let choices = choice_results_from_string("move 1,2;switch");
+        let choices = choice_results_from_string("move 1,2;switch abc");
         assert_eq!(choices.len(), 2);
         assert_matches::assert_matches!(&choices[0], Ok(choice) => {
             pretty_assertions::assert_eq!(choice, &Choice::Move(MoveChoice {

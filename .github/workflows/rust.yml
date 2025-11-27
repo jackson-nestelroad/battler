@@ -23,7 +23,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Run battler tests
-        run: cargo test -p battler -p battler-data -p battler-prng
+        run: cargo test -p battler -p battler-choice -p battler-data -p battler-prng
 
   test-battler-service:
     name: Run battler-service tests
