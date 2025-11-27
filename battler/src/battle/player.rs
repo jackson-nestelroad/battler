@@ -189,14 +189,6 @@ impl PlayerType {
         }
     }
 
-    /// Can other players forfeit against this player?
-    pub fn forfeitable(&self) -> bool {
-        match self {
-            Self::Trainer | Self::Protagonist => true,
-            _ => false,
-        }
-    }
-
     /// Can this player escape?
     ///
     /// If true, other checks are performed before an escape succeeds. For instance, all foe players
@@ -205,14 +197,6 @@ impl PlayerType {
         match self {
             Self::Wild(wild) => wild.can_escape,
             Self::Protagonist => true,
-            _ => false,
-        }
-    }
-
-    /// Can this player forfeit?
-    pub fn can_forfeit(&self) -> bool {
-        match self {
-            Self::Trainer | Self::Protagonist => true,
             _ => false,
         }
     }
@@ -1400,14 +1384,6 @@ impl Player {
             _ => return Err(general_error("you cannot forfeit out of turn")),
         }
 
-        if !Self::can_forfeit(context) {
-            // If the player can escape but not forfeit, just choose to escape instead.
-            if Self::can_escape(context) {
-                return Self::choose_escape(context);
-            }
-            return Err(general_error("you cannot forfeit"));
-        }
-
         if Self::get_position_for_next_choice(context, false)? >= context.player().active.len() {
             return Err(general_error("you sent more choices than active mons"));
         }
@@ -1660,15 +1636,6 @@ impl Player {
                     .battle()
                     .players_on_side(context.foe_side().index)
                     .all(|foe| foe.player_type.escapable()))
-    }
-
-    /// Checks if the player can forfeit.
-    pub fn can_forfeit(context: &PlayerContext) -> bool {
-        context.player().player_type.can_forfeit()
-            && context
-                .battle()
-                .players_on_side(context.foe_side().index)
-                .all(|foe| foe.player_type.forfeitable())
     }
 
     /// The wild encounter type, if applicable.
