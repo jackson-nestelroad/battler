@@ -85,7 +85,9 @@ impl ChoiceState {
     fn update(&mut self, choice: &Choice) {
         match choice {
             Choice::Switch(choice) => {
-                self.switched.insert(choice.mon);
+                if let Some(mon) = choice.mon {
+                    self.switched.insert(mon);
+                }
             }
             _ => (),
         }
@@ -168,7 +170,7 @@ impl Trainer {
                 .select_mon_to_switch_in(&context, *position, &state)
                 .await?;
             let choice = match mon {
-                Some(mon) => Choice::Switch(SwitchChoice { mon }),
+                Some(mon) => Choice::Switch(SwitchChoice { mon: Some(mon) }),
                 None => Choice::Pass,
             };
             state.update(&choice);
@@ -351,7 +353,7 @@ impl Trainer {
                 let active_score = self.options.match_up_ratio_required_to_switch * active_score;
                 let active_score = active_score.floor();
                 if score > active_score {
-                    return Ok(Choice::Switch(SwitchChoice { mon }));
+                    return Ok(Choice::Switch(SwitchChoice { mon: Some(mon) }));
                 }
             }
         }
