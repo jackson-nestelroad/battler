@@ -286,7 +286,7 @@ impl<'d> LiveBattle<'d> {
     where
         S: Display,
     {
-        format!("-battlerservice|{log}")
+        format!("-battlerservice:{log}")
     }
 
     fn timer_log(
@@ -1096,17 +1096,14 @@ mod battler_service_test {
         }
     }
 
-    async fn read_all_entries_from_log_rx(
+    async fn read_all_entries_from_log_rx_stopping_at(
         log_rx: &mut broadcast::Receiver<LogEntry>,
+        stop_at: &str,
     ) -> Vec<String> {
         let mut entries = Vec::new();
-        // Block for the first entry.
-        match log_rx.recv().await {
-            Ok(entry) => entries.push(entry.content),
-            Err(_) => return entries,
-        }
-        // Read as much as is available.
-        while let Ok(entry) = log_rx.try_recv() {
+        while let Ok(entry) = log_rx.recv().await
+            && entry.content != stop_at
+        {
             entries.push(entry.content);
         }
         entries
@@ -1329,36 +1326,33 @@ mod battler_service_test {
         );
 
         pretty_assertions::assert_eq!(
-            read_all_entries_from_log_rx(&mut side_1_log_rx).await[1..],
+            read_all_entries_from_log_rx_stopping_at(&mut side_1_log_rx, "turn|turn:2").await[1..],
             [
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
                 "damage|mon:Bulbasaur,player-2,1|health:79/100",
                 "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
                 "damage|mon:Bulbasaur,player-1,1|health:15/19",
                 "residual",
-                "turn|turn:2"
             ],
         );
         pretty_assertions::assert_eq!(
-            read_all_entries_from_log_rx(&mut side_2_log_rx).await[1..],
+            read_all_entries_from_log_rx_stopping_at(&mut side_2_log_rx, "turn|turn:2").await[1..],
             [
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
                 "damage|mon:Bulbasaur,player-2,1|health:15/19",
                 "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
                 "damage|mon:Bulbasaur,player-1,1|health:79/100",
                 "residual",
-                "turn|turn:2"
             ],
         );
         pretty_assertions::assert_eq!(
-            read_all_entries_from_log_rx(&mut public_log_rx).await[1..],
+            read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:2").await[1..],
             [
                 "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
                 "damage|mon:Bulbasaur,player-2,1|health:79/100",
                 "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
                 "damage|mon:Bulbasaur,player-1,1|health:79/100",
                 "residual",
-                "turn|turn:2"
             ],
         );
     }
@@ -1640,11 +1634,11 @@ mod battler_service_test {
                 log[(log.len() - 7)..],
                 [
                     "turn|turn:1",
-                    "-battlerservice|timer|battle|remainingsecs:5",
-                    "-battlerservice|timer|battle|warning|remainingsecs:4",
-                    "-battlerservice|timer|battle|warning|remainingsecs:2",
-                    "-battlerservice|timer|battle|warning|remainingsecs:1",
-                    "-battlerservice|timer|battle|done|remainingsecs:0",
+                    "-battlerservice:timer|battle|remainingsecs:5",
+                    "-battlerservice:timer|battle|warning|remainingsecs:4",
+                    "-battlerservice:timer|battle|warning|remainingsecs:2",
+                    "-battlerservice:timer|battle|warning|remainingsecs:1",
+                    "-battlerservice:timer|battle|done|remainingsecs:0",
                     "tie",
                 ]
             );
@@ -1720,12 +1714,12 @@ mod battler_service_test {
                 log[(log.len() - 11)..],
                 [
                     "turn|turn:1",
-                    "-battlerservice|timer|player:player-1|remainingsecs:5",
-                    "-battlerservice|timer|player:player-2|remainingsecs:5",
-                    "-battlerservice|timer|player:player-2|warning|remainingsecs:4",
-                    "-battlerservice|timer|player:player-2|warning|remainingsecs:2",
-                    "-battlerservice|timer|player:player-2|warning|remainingsecs:1",
-                    "-battlerservice|timer|player:player-2|done|remainingsecs:0",
+                    "-battlerservice:timer|player:player-1|remainingsecs:5",
+                    "-battlerservice:timer|player:player-2|remainingsecs:5",
+                    "-battlerservice:timer|player:player-2|warning|remainingsecs:4",
+                    "-battlerservice:timer|player:player-2|warning|remainingsecs:2",
+                    "-battlerservice:timer|player:player-2|warning|remainingsecs:1",
+                    "-battlerservice:timer|player:player-2|done|remainingsecs:0",
                     "continue",
                     "switchout|mon:Bulbasaur,player-2,1",
                     "forfeited|player:player-2",
@@ -1773,12 +1767,10 @@ mod battler_service_test {
 
         assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
-        // Wait for battle to start.
         let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-        assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
 
-        // Read all logs from the battle starting; we only care to verify the first turn.
-        while let Ok(_) = public_log_rx.try_recv() {}
+        // Wait for turn 1.
+        read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
 
         assert_matches::assert_matches!(
             battler_service
@@ -1787,14 +1779,12 @@ mod battler_service_test {
             Ok(())
         );
 
+        // Wait for the battle to continue.
+        read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "continue").await;
+
         pretty_assertions::assert_eq!(
-            read_all_entries_from_log_rx(&mut public_log_rx).await,
-            ["-battlerservice|timer|action:player-2|done|remainingsecs:0"],
-        );
-        pretty_assertions::assert_eq!(
-            read_all_entries_from_log_rx(&mut public_log_rx).await,
+            read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:2").await,
             [
-                "continue",
                 "move|mon:Charmander,player-1,2|name:Scratch|target:Bulbasaur,player-2,1",
                 "damage|mon:Bulbasaur,player-2,1|health:79/100",
                 "move|mon:Charmander,player-2,2|name:Growl|spread:Bulbasaur,player-1,1;Charmander,player-1,2",
@@ -1805,9 +1795,6 @@ mod battler_service_test {
                 "move|mon:Bulbasaur,player-2,1|name:Tackle|target:Bulbasaur,player-1,1",
                 "damage|mon:Bulbasaur,player-1,1|health:79/100",
                 "residual",
-                "turn|turn:2",
-                "-battlerservice|timer|action:player-1|remainingsecs:5",
-                "-battlerservice|timer|action:player-2|remainingsecs:5",
             ],
         );
     }

@@ -2338,7 +2338,23 @@ fn alter_battle_state_for_entry(
             let side = entry.value_or_else("side")?;
             ui_log.push(ui::UiLogEntry::Win { side });
         }
-        title @ _ => return Err(Error::msg(format!("unsupported log: {title}"))),
+        title @ _ => {
+            if title.starts_with("-") {
+                let (source, title) = title
+                    .split_once(":")
+                    .ok_or_else(|| Error::msg("extension log had no title following a colon"))?;
+                ui_log.push(ui::UiLogEntry::Extension {
+                    source: source.to_owned(),
+                    title: title.to_owned(),
+                    values: entry
+                        .values()
+                        .map(|(k, v)| (k.to_owned(), v.to_owned()))
+                        .collect(),
+                });
+            } else {
+                return Err(Error::msg(format!("unsupported log: {title}")));
+            }
+        }
     }
     Ok(())
 }
@@ -7106,6 +7122,41 @@ mod state_test {
             Some(tera) => {
                 assert_eq!(tera, "");
             }
+        );
+    }
+
+    #[test]
+    fn records_extension_log() {
+        let  log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+            "turn|turn:1",
+            "-battlerservice:timer|battle|remainingsecs:5",
+        ])
+        .unwrap();
+
+        let state = BattleState::default();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        pretty_assertions::assert_eq!(
+            state.ui_log[1],
+            Vec::from_iter([ui::UiLogEntry::Extension {
+                source: "-battlerservice".to_owned(),
+                title: "timer".to_owned(),
+                values: HashMap::from_iter([
+                    ("battle".to_owned(), "".to_owned()),
+                    ("remainingsecs".to_owned(), "5".to_owned()),
+                ])
+            }])
         );
     }
 }

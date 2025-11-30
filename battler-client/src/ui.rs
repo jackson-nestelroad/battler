@@ -89,6 +89,12 @@ pub enum UiLogEntry {
     Effect { title: String, effect: EffectData },
     /// A Mon received experience.
     Experience { mon: Mon, exp: u64 },
+    /// A log from some other source was generated.
+    Extension {
+        source: String,
+        title: String,
+        values: HashMap<String, String>,
+    },
     /// A Mon fainted.
     Faint { effect: EffectData },
     /// A Mon healed damage.
