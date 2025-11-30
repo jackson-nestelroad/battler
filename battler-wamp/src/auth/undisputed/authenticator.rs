@@ -198,7 +198,7 @@ mod scram_test {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn client_and_server_authenticate_correctly() {
         let server_authenticator = ScramServerAuthenticator::new(Box::new(
             FakeUserDatabase::from_iter([("user", "password123!")]),
@@ -222,7 +222,7 @@ mod scram_test {
         );
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn authentication_fails_for_invalid_password() {
         let server_authenticator = ScramServerAuthenticator::new(Box::new(
             FakeUserDatabase::from_iter([("user", "password123!")]),
@@ -241,7 +241,7 @@ mod scram_test {
         });
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn authentication_fails_for_invalid_user() {
         let server_authenticator = ScramServerAuthenticator::new(Box::new(
             FakeUserDatabase::from_iter([("user", "password123!")]),

@@ -28,7 +28,10 @@ use battler::{
     TimeOfDay,
     WildPlayerOptions,
 };
-use battler_service::BattlerService;
+use battler_service::{
+    BattleServiceOptions,
+    BattlerService,
+};
 use uuid::Uuid;
 
 use crate::ControlledRandomNumberGenerator;
@@ -37,6 +40,7 @@ use crate::ControlledRandomNumberGenerator;
 pub struct TestBattleBuilder {
     options: CoreBattleOptions,
     engine_options: CoreBattleEngineOptions,
+    service_options: BattleServiceOptions,
     teams: HashMap<String, TeamData>,
     controlled_rng: bool,
     infinite_bags: bool,
@@ -63,6 +67,7 @@ impl TestBattleBuilder {
                 },
             },
             engine_options: CoreBattleEngineOptions::default(),
+            service_options: BattleServiceOptions::default(),
             teams: HashMap::default(),
             controlled_rng: false,
             infinite_bags: false,
@@ -93,7 +98,9 @@ impl TestBattleBuilder {
 
     pub async fn build_on_service(mut self, service: &BattlerService<'_>) -> Result<Uuid> {
         self.modify_options_for_build();
-        let battle = service.create(self.options, self.engine_options).await?;
+        let battle = service
+            .create(self.options, self.engine_options, self.service_options)
+            .await?;
         for (player_id, team) in self.teams {
             service.update_team(battle.uuid, &player_id, team).await?;
         }

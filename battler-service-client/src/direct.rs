@@ -12,6 +12,7 @@ use battler::{
 use battler_service::{
     Battle,
     BattlePreview,
+    BattleServiceOptions,
     BattlerService,
     LogEntry,
     PlayerValidation,
@@ -49,9 +50,13 @@ impl<'d> BattlerServiceClient for DirectBattlerServiceClient<'d> {
         self.service.battle(battle).await
     }
 
-    async fn create(&self, options: CoreBattleOptions) -> Result<Battle> {
+    async fn create(
+        &self,
+        options: CoreBattleOptions,
+        service_options: BattleServiceOptions,
+    ) -> Result<Battle> {
         self.service
-            .create(options, self.engine_options.clone())
+            .create(options, self.engine_options.clone(), service_options)
             .await
     }
 
@@ -81,6 +86,14 @@ impl<'d> BattlerServiceClient for DirectBattlerServiceClient<'d> {
 
     async fn full_log(&self, battle: Uuid, side: Option<usize>) -> Result<Vec<String>> {
         self.service.full_log(battle, side).await
+    }
+
+    async fn last_log_entry(
+        &self,
+        battle: Uuid,
+        side: Option<usize>,
+    ) -> Result<Option<(usize, String)>> {
+        self.service.last_log_entry(battle, side).await
     }
 
     async fn subscribe(

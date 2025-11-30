@@ -1927,6 +1927,7 @@ fn alter_battle_state_for_entry(
             let player = entry.value_or_else("player")?;
             ui_log.push(ui::UiLogEntry::CannotEscape { player });
         }
+        "continue" => (),
         "debug" | "fxlang_debug" => ui_log.push(ui::UiLogEntry::Debug {
             title: entry.title().to_owned(),
             values: entry

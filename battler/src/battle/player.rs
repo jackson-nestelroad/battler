@@ -1,6 +1,9 @@
 use std::{
     cmp,
-    collections::hash_map::Entry,
+    collections::{
+        BTreeSet,
+        hash_map::Entry,
+    },
     mem,
     usize,
 };
@@ -897,6 +900,8 @@ impl Player {
                     Ok(Choice::Random) => {
                         Self::choose_random(context).wrap_error_with_message("random choice failed")
                     }
+                    Ok(Choice::RandomAll) => Self::choose_random_all(context)
+                        .wrap_error_with_message("random all choice failed"),
                     Err(err) => Err(err),
                 };
             if let Err(error) = result {
@@ -1221,7 +1226,7 @@ impl Player {
         }
 
         // Generate a random target.
-        if choice.random_target {
+        if choice.random_target && move_target.choosable() {
             if let Some(target) =
                 CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_target)?
             {
@@ -1596,7 +1601,7 @@ impl Player {
                     .iter()
                     .enumerate()
                     .filter_map(|(i, move_slot)| (!move_slot.disabled).then_some(i))
-                    .collect::<HashSet<_>>();
+                    .collect::<BTreeSet<_>>();
 
                 // Pick a random move. If it fails, try again.
                 while let Some(move_slot) = rand_util::sample_iter(
@@ -1613,7 +1618,7 @@ impl Player {
                             ..Default::default()
                         },
                     ) {
-                        Ok(()) => break,
+                        Ok(()) => return Ok(()),
                         Err(_) => {
                             potential_moves.remove(&move_slot);
                         }
@@ -1626,6 +1631,13 @@ impl Player {
             }
             None => return Err(general_error("you cannot make choices out of turn")),
         }
+    }
+
+    fn choose_random_all(context: &mut PlayerContext) -> Result<()> {
+        while !Self::choice_done(context)? {
+            Self::choose_random(context)?;
+        }
+        Ok(())
     }
 
     /// Checks if the player needs to switch a Mon out.

@@ -145,6 +145,7 @@
       }
     },
     "engine_options": {},
+    "service_options": {},
     "choices": []
   },
   "expected": {

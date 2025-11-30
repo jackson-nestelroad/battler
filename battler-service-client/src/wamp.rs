@@ -15,6 +15,7 @@ use battler::{
 use battler_service::{
     Battle,
     BattlePreview,
+    BattleServiceOptions,
     LogEntry,
     PlayerValidation,
 };
@@ -75,13 +76,19 @@ where
         export_battle(output.0)
     }
 
-    async fn create(&self, options: CoreBattleOptions) -> Result<Battle> {
+    async fn create(
+        &self,
+        options: CoreBattleOptions,
+        service_options: BattleServiceOptions,
+    ) -> Result<Battle> {
         let battle = self
             .consumer
             .create(
                 battler_service_schema::CreateInput(battler_service_schema::CreateInputArgs {
                     options_json: serde_json::to_string(&options)
                         .context(Error::msg("failed to serialize battle options"))?,
+                    service_options_json: serde_json::to_string(&service_options)
+                        .context(Error::msg("failed to serialize battle service options"))?,
                 }),
                 CallOptions::default(),
             )
@@ -214,6 +221,30 @@ where
             .result()
             .await?;
         Ok(output.0.log)
+    }
+
+    async fn last_log_entry(
+        &self,
+        battle: Uuid,
+        side: Option<usize>,
+    ) -> Result<Option<(usize, String)>> {
+        let output = self
+            .consumer
+            .last_log_entry(
+                battler_service_schema::LastLogEntryPattern(uuid_for_uri(&battle)),
+                battler_service_schema::LastLogEntryInput(
+                    battler_service_schema::LastLogEntryInputArgs {
+                        side: side.map(|side| side as Integer),
+                    },
+                ),
+                CallOptions::default(),
+            )
+            .await?
+            .result()
+            .await?;
+        Ok(output
+            .0
+            .map(|log_entry| (log_entry.index as usize, log_entry.content)))
     }
 
     async fn subscribe(

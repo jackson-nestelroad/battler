@@ -17,7 +17,7 @@ pub struct Log {
 
 impl Log {
     fn new() -> Self {
-        let (entry_tx, _) = broadcast::channel(16);
+        let (entry_tx, _) = broadcast::channel(128);
         Self {
             entries: Vec::new(),
             entry_tx,
@@ -53,7 +53,7 @@ impl Log {
     }
 
     /// All entries in the log.
-    pub fn entries(&self) -> impl Iterator<Item = &str> {
+    pub fn entries(&self) -> impl Iterator<Item = &str> + ExactSizeIterator + DoubleEndedIterator {
         self.entries.iter().map(|s| s.as_str())
     }
 }

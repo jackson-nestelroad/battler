@@ -11,6 +11,7 @@ use battler::{
 use battler_service::{
     Battle,
     BattlePreview,
+    BattleServiceOptions,
     BattlerService,
     LogEntry,
     PlayerValidation,
@@ -29,7 +30,11 @@ pub trait BattlerServiceClient: Send + Sync {
     /// The status of an existing battle.
     async fn battle(&self, battle: Uuid) -> Result<Battle>;
     /// Creates a new battle.
-    async fn create(&self, options: CoreBattleOptions) -> Result<Battle>;
+    async fn create(
+        &self,
+        options: CoreBattleOptions,
+        service_options: BattleServiceOptions,
+    ) -> Result<Battle>;
     /// Updates a player's team for a battle.
     async fn update_team(&self, battle: Uuid, player: &str, team: TeamData) -> Result<()>;
     /// Validates a player in a battle.
@@ -44,6 +49,12 @@ pub trait BattlerServiceClient: Send + Sync {
     async fn make_choice(&self, battle: Uuid, player: &str, choice: &str) -> Result<()>;
     /// Reads the full battle log for the side.
     async fn full_log(&self, battle: Uuid, side: Option<usize>) -> Result<Vec<String>>;
+    /// Reads the last battle log entry for the side.
+    async fn last_log_entry(
+        &self,
+        battle: Uuid,
+        side: Option<usize>,
+    ) -> Result<Option<(usize, String)>>;
     /// Subscribes to battle log updates.
     async fn subscribe(
         &self,

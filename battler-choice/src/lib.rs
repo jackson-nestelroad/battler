@@ -249,6 +249,8 @@ pub enum Choice {
     Pass,
     /// Make a random choice, depending on the type of request.
     Random,
+    /// Make as many random choices as required.
+    RandomAll,
     /// Attempt to escape from the battle.
     Escape,
     /// Forfeit the battle.
@@ -270,6 +272,7 @@ impl Display for Choice {
         match self {
             Self::Pass => write!(f, "pass"),
             Self::Random => write!(f, "random"),
+            Self::RandomAll => write!(f, "randomall"),
             Self::Escape => write!(f, "escape"),
             Self::Forfeit => write!(f, "forfeit"),
             Self::Team(choice) => {
@@ -305,6 +308,7 @@ impl FromStr for Choice {
         match choice {
             "pass" => Ok(Self::Pass),
             "random" => Ok(Self::Random),
+            "randomall" => Ok(Self::RandomAll),
             "escape" => Ok(Self::Escape),
             "forfeit" => Ok(Self::Forfeit),
             "team" => Ok(Self::Team(TeamSelectionChoice::from_str(data)?)),
@@ -378,6 +382,7 @@ mod battler_choice_test {
     fn serializes_to_string() {
         assert_eq!(Choice::Pass.to_string(), "pass");
         assert_eq!(Choice::Random.to_string(), "random");
+        assert_eq!(Choice::RandomAll.to_string(), "randomall");
         assert_eq!(Choice::Escape.to_string(), "escape");
         assert_eq!(Choice::Forfeit.to_string(), "forfeit");
         assert_eq!(
@@ -474,6 +479,7 @@ mod battler_choice_test {
     fn deserializes_from_string() {
         assert_matches::assert_matches!(Choice::from_str("pass"), Ok(Choice::Pass));
         assert_matches::assert_matches!(Choice::from_str("random"), Ok(Choice::Random));
+        assert_matches::assert_matches!(Choice::from_str("randomall"), Ok(Choice::RandomAll));
         assert_matches::assert_matches!(Choice::from_str("escape"), Ok(Choice::Escape));
         assert_matches::assert_matches!(Choice::from_str("forfeit"), Ok(Choice::Forfeit));
         assert_matches::assert_matches!(

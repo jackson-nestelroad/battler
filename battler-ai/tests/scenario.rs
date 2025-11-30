@@ -23,6 +23,7 @@ use battler_ai::{
 use battler_client::BattlerClient;
 use battler_service::{
     Battle,
+    BattleServiceOptions,
     BattlerService,
 };
 use battler_service_client::battler_service_client_over_direct_service;
@@ -36,6 +37,7 @@ use serde::{
 pub struct ScenarioInputData {
     options: CoreBattleOptions,
     engine_options: CoreBattleEngineOptions,
+    service_options: BattleServiceOptions,
     choices: Vec<(String, String)>,
 }
 
@@ -81,7 +83,11 @@ impl<'d> Scenario<'d> {
     pub async fn new(data: ScenarioData, data_store: &'d dyn DataStoreByName) -> Result<Self> {
         let service = Arc::new(BattlerService::new(data_store));
         let battle = service
-            .create(data.input.options, data.input.engine_options)
+            .create(
+                data.input.options,
+                data.input.engine_options,
+                data.input.service_options,
+            )
             .await?;
         service.start(battle.uuid).await?;
         for (player, choice) in data.input.choices {
@@ -120,6 +126,7 @@ impl<'d> Scenario<'d> {
     {
         let player = &self.expected_result.player;
         let ai_context = self.ai_context(player).await?;
+
         let request = self
             .service
             .request(self.battle.uuid, player)
@@ -128,7 +135,8 @@ impl<'d> Scenario<'d> {
         let choice = ai.make_choice(&ai_context, &request).await?;
         self.service
             .make_choice(self.battle.uuid, player, &choice)
-            .await?;
+            .await
+            .with_context(|| choice.clone())?;
         if let Some(expected) = &self.expected_result.choice
             && choice != *expected
         {
@@ -139,7 +147,7 @@ impl<'d> Scenario<'d> {
         Ok(())
     }
 
-    pub async fn client<S>(&self, player: S) -> Result<Arc<BattlerClient<'d>>>
+    pub async fn client<S>(&self, player: S) -> Result<BattlerClient<'d>>
     where
         S: Into<String>,
     {

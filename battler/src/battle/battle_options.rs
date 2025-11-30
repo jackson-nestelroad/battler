@@ -180,6 +180,12 @@ pub struct CoreBattleEngineOptions {
     /// Helpful for debugging.
     #[serde(default)]
     pub log_catch_rate: bool,
+
+    /// Should the time be logged each time the battle continues?
+    ///
+    /// If false, a `continue` log will be added instead.
+    #[serde(default = "default_true")]
+    pub log_time: bool,
 }
 
 impl Default for CoreBattleEngineOptions {
@@ -198,6 +204,7 @@ impl Default for CoreBattleEngineOptions {
             log_slot_conditions: false,
             disambiguate_identical_names: false,
             log_catch_rate: false,
+            log_time: true,
         }
     }
 }

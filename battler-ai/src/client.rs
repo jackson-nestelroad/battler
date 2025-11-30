@@ -1,7 +1,4 @@
-use std::{
-    sync::Arc,
-    usize,
-};
+use std::usize;
 
 use ahash::HashSet;
 use anyhow::{
@@ -30,7 +27,7 @@ use crate::{
 /// A wrapper around a [`BattlerClient`] that uses a [`BattlerAi`] implementation to make decisions.
 pub struct BattlerAiClient<'data, 'battle> {
     data: &'data dyn DataStoreByName,
-    client: Arc<BattlerClient<'battle>>,
+    client: BattlerClient<'battle>,
     ai: Box<dyn BattlerAi>,
 }
 
@@ -38,7 +35,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
     /// Creates a new [`BattlerAiClient`].
     pub fn new(
         data: &'data dyn DataStoreByName,
-        client: Arc<BattlerClient<'battle>>,
+        client: BattlerClient<'battle>,
         ai: Box<dyn BattlerAi>,
     ) -> Self {
         Self { data, client, ai }
@@ -134,7 +131,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
 /// Runs a battler AI implementation for the given client.
 pub async fn run_battler_ai_client<'data, 'battle>(
     data: &'data dyn DataStoreByName,
-    client: Arc<BattlerClient<'battle>>,
+    client: BattlerClient<'battle>,
     ai: Box<dyn BattlerAi>,
 ) -> Result<()> {
     let client = BattlerAiClient::new(data, client, ai);

@@ -2,7 +2,7 @@ use battler_ai::gemini::Gemini;
 
 use crate::scenario::Scenario;
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn picks_valid_move() {
     let scenario = Scenario::from_scenarios_dir("simple_starter_battle.json")
         .await
@@ -11,7 +11,7 @@ async fn picks_valid_move() {
     assert_matches::assert_matches!(scenario.validate_expected_result(&mut gemini).await, Ok(()));
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn picks_valid_move_for_double_battle() {
     let scenario = Scenario::from_scenarios_dir("simple_double_battle.json")
         .await

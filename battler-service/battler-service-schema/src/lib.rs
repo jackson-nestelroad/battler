@@ -69,6 +69,8 @@ pub struct BattlesOutput(#[arguments] pub BattlesOutputArgs);
 pub struct CreateInputArgs {
     /// JSON-serialized [`battler::CoreBattleOptions`].
     pub options_json: String,
+    /// JSON-serialized [`battler_service::BattleServiceOptions`].
+    pub service_options_json: String,
 }
 
 /// Input for creating a new battle.
@@ -267,6 +269,28 @@ pub struct FullLogOutputArgs {
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct FullLogOutput(#[arguments] pub FullLogOutputArgs);
 
+/// URI pattern for reading the last log entry of a battle.
+#[derive(Debug, Clone, WampUriMatcher)]
+#[uri("com.battler.battler_service.battles.{0}.last_log_entry")]
+pub struct LastLogEntryPattern(pub String);
+
+/// Arguments for reading the last log entry of a battle.
+#[derive(Debug, Clone, WampList)]
+pub struct LastLogEntryInputArgs {
+    /// Side of the battle.
+    ///
+    /// If `None`, the public log is used.
+    pub side: Option<u64>,
+}
+
+/// Input for reading the last log entry of a battle.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct LastLogEntryInput(#[arguments] pub LastLogEntryInputArgs);
+
+/// Output of reading the last log entry of a battle.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct LastLogEntryOutput(#[arguments] pub Option<LogEntry>);
+
 #[derive(Debug, Default, Clone)]
 pub enum LogSelector {
     #[default]
@@ -351,6 +375,9 @@ pub enum BattlerService {
     /// Reads the full log of a battle.
     #[rpc(pattern = FullLogPattern, input = FullLogInput, output = FullLogOutput)]
     FullLog,
+    /// Reads the last log entry of a battle.
+    #[rpc(pattern = LastLogEntryPattern, input = LastLogEntryInput, output = LastLogEntryOutput)]
+    LastLogEntry,
     /// Events for new entries to the log of a battle.
     #[pubsub(pattern = LogPattern, subscription = LogPattern, event = LogEvent)]
     Log,

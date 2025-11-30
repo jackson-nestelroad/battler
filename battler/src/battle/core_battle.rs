@@ -926,10 +926,6 @@ impl<'d> CoreBattle<'d> {
             .as_millis()
     }
 
-    fn log_current_time(&mut self) {
-        self.log(battle_log_entry!("time", ("value", self.time_now())));
-    }
-
     fn log_team_sizes(&mut self) {
         let team_size_events = self
             .players()
@@ -1144,7 +1140,14 @@ impl<'d> CoreBattle<'d> {
             Self::commit_choices(context)?;
         }
 
-        context.battle_mut().log_current_time();
+        if context.battle().engine_options.log_time {
+            let time = context.battle().time_now();
+            context
+                .battle_mut()
+                .log(battle_log_entry!("time", ("value", time)));
+        } else {
+            context.battle_mut().log(battle_log_entry!("continue"));
+        }
 
         context.battle_mut().request = None;
 

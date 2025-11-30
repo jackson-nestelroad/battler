@@ -643,6 +643,10 @@ mod trainer_test {
             .build_on_service(service)
             .await?;
         service.start(battle).await?;
+
+        // Wait for the battle to start.
+        service.subscribe(battle, None).await?.recv().await?;
+
         Ok(battle)
     }
 

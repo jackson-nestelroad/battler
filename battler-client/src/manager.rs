@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use battler::CoreBattleOptions;
-use battler_service::BattlePreview;
+use battler_service::{
+    BattlePreview,
+    BattleServiceOptions,
+};
 use battler_service_client::BattlerServiceClient;
 use uuid::Uuid;
 
@@ -22,13 +25,17 @@ impl BattlerClientManager {
     }
 
     /// Creates a new battle.
-    pub async fn create(&self, options: CoreBattleOptions) -> Result<Uuid> {
-        let battle = self.service.create(options).await?;
+    pub async fn create(
+        &self,
+        options: CoreBattleOptions,
+        service_options: BattleServiceOptions,
+    ) -> Result<Uuid> {
+        let battle = self.service.create(options, service_options).await?;
         Ok(battle.uuid)
     }
 
     /// Joins the battle, creating a new client for it.
-    pub async fn join(&self, battle: Uuid) -> Result<Arc<BattlerClient<'_>>> {
+    pub async fn join(&self, battle: Uuid) -> Result<BattlerClient<'_>> {
         BattlerClient::new(battle, self.player.clone(), self.service.clone()).await
     }
 
