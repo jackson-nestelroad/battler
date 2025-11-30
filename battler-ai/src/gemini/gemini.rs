@@ -85,6 +85,9 @@ impl BattlerAi for Gemini {
         let result = &result[start..=end];
 
         let output: Output = serde_json::from_str(&result)?;
+        if output.actions.is_empty() {
+            return Err(Error::msg(output.explanation));
+        }
         Ok(output.actions)
     }
 }
