@@ -20,7 +20,10 @@ use battler_ai::{
     AiContext,
     BattlerAi,
 };
-use battler_client::BattlerClient;
+use battler_client::{
+    BattleClientEvent,
+    BattlerClient,
+};
 use battler_service::{
     Battle,
     BattleServiceOptions,
@@ -101,7 +104,11 @@ impl<'d> Scenario<'d> {
         })
     }
 
-    async fn ai_context<'a, S>(&'a self, player: S) -> Result<AiContext<'a>>
+    async fn ai_context<'a, S>(
+        &'a self,
+        player: S,
+        client: &BattlerClient<'a>,
+    ) -> Result<AiContext<'a>>
     where
         S: AsRef<str>,
     {
@@ -109,7 +116,6 @@ impl<'d> Scenario<'d> {
             .service
             .player_data(self.battle.uuid, player.as_ref())
             .await?;
-        let client = self.client(player.as_ref()).await?;
         let state = client.state().await;
         Ok(AiContext {
             data: self.data_store,
@@ -125,14 +131,28 @@ impl<'d> Scenario<'d> {
         A: BattlerAi,
     {
         let player = &self.expected_result.player;
-        let ai_context = self.ai_context(player).await?;
+        let client = self.client(player).await?;
 
-        let request = self
-            .service
-            .request(self.battle.uuid, player)
-            .await?
-            .context("player has no open request")?;
-        let choice = ai.make_choice(&ai_context, &request).await?;
+        // Wait for the client to present a request to us.
+        let mut battle_event_rx = client.battle_event_rx();
+        let request = battle_event_rx
+            .wait_for(|event| match event {
+                BattleClientEvent::Request(Some(_)) => true,
+                _ => false,
+            })
+            .await?;
+        let request = match &*request {
+            BattleClientEvent::Request(Some(request)) => request,
+            _ => {
+                return Err(Error::msg(
+                    "request event unexpectedly did not match after waiting",
+                ));
+            }
+        };
+
+        let ai_context = self.ai_context(player, &client).await?;
+
+        let choice = ai.make_choice(&ai_context, request).await?;
         self.service
             .make_choice(self.battle.uuid, player, &choice)
             .await

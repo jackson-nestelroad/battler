@@ -12,7 +12,7 @@ use tokio::{
         broadcast,
         watch,
     },
-    task::JoinHandle,
+    task::JoinSet,
 };
 use uuid::Uuid;
 
@@ -92,12 +92,13 @@ impl<'b> BattlerClientInternal<'b> {
 
         let log = service.full_log(battle.uuid, role.side()).await?;
         let log = Log::new(log)?;
-        let state = BattleState::default();
-        let state = alter_battle_state(state, &log)?;
 
-        let request = service.request(battle.uuid, &player).await?;
-        let (battle_event_tx, battle_event_rx) =
-            watch::channel(BattleClientEvent::Request(request));
+        // Start with an empty battle state and request.
+        //
+        // As soon as we start watching for new logs, we will backfill the state and request.
+        let state = BattleState::default();
+
+        let (battle_event_tx, battle_event_rx) = watch::channel(BattleClientEvent::Request(None));
 
         let client = Self {
             battle: battle.uuid,
@@ -131,7 +132,17 @@ impl<'b> BattlerClientInternal<'b> {
         mut log_entry_rx: broadcast::Receiver<battler_service::LogEntry>,
         mut cancel_rx: broadcast::Receiver<()>,
     ) -> Result<()> {
+        // Ensure the log and battle state are caught up.
+        self.ensure_caught_up().await?;
+
         loop {
+            // If we are caught up, propagate a request.
+            if self.caught_up().await? && self.last_log_index().await > 0 {
+                let request = self.service.request(self.battle, &self.player).await?;
+                self.battle_event_tx
+                    .send(BattleClientEvent::Request(request))?;
+            }
+
             tokio::select! {
                 log_entry = log_entry_rx.recv() => {
                     self.process_log_entry(log_entry?).await?;
@@ -144,8 +155,16 @@ impl<'b> BattlerClientInternal<'b> {
         Ok(())
     }
 
+    async fn ensure_caught_up(&self) -> Result<()> {
+        let mut log = self.log.lock().await;
+        // Ensure the log is filled and update the state accordingly.
+        self.backfill_log(&mut log).await?;
+        self.update_battle_state(&log).await?;
+        Ok(())
+    }
+
     async fn process_log_entry(&self, log_entry: battler_service::LogEntry) -> Result<()> {
-        self.update_battle_state(log_entry).await?;
+        self.update_battle_state_for_log_entry(log_entry).await?;
 
         // Check if the battle ended.
         let battle = self
@@ -158,32 +177,36 @@ impl<'b> BattlerClientInternal<'b> {
             return Ok(());
         }
 
-        // Check for a new request when we have caught up.
-        if self.caught_up().await? {
-            let request = self.service.request(self.battle, &self.player).await?;
-            self.battle_event_tx
-                .send(BattleClientEvent::Request(request))?;
-        }
-
         Ok(())
     }
 
-    async fn update_battle_state(&self, log_entry: battler_service::LogEntry) -> Result<()> {
+    async fn backfill_log(&self, log: &mut Log) -> Result<()> {
+        let full_log = self.service.full_log(self.battle, self.role.side()).await?;
+        for (i, entry) in full_log.into_iter().enumerate() {
+            log.add(i, entry)?;
+        }
+        Ok(())
+    }
+
+    async fn update_battle_state_for_log_entry(
+        &self,
+        log_entry: battler_service::LogEntry,
+    ) -> Result<()> {
         let mut log = self.log.lock().await;
         log.add(log_entry.index, log_entry.content)?;
 
         // If the log is not filled, we must backfill the log.
         if !log.filled() {
-            let full_log = self.service.full_log(self.battle, self.role.side()).await?;
-            for (i, entry) in full_log.into_iter().enumerate() {
-                log.add(i, entry)?;
-            }
+            self.backfill_log(&mut *log).await?;
         }
 
-        // Update the battle state.
+        self.update_battle_state(&log).await
+    }
+
+    async fn update_battle_state(&self, log: &Log) -> Result<()> {
         let mut state = self.state.lock().await;
         let mut new_state = BattleState::default();
-        std::mem::swap(&mut new_state, &mut *state);
+        std::mem::swap(&mut new_state, &mut state);
         *state = alter_battle_state(new_state, &*log)?;
 
         Ok(())
@@ -242,7 +265,7 @@ impl<'b> BattlerClientInternal<'b> {
 /// A client for a single player in an individual battle.
 pub struct BattlerClient<'b> {
     client: Arc<BattlerClientInternal<'b>>,
-    task_handle: Mutex<Option<JoinHandle<()>>>,
+    watch_tasks: Mutex<JoinSet<()>>,
 }
 
 impl<'b> BattlerClient<'b> {
@@ -260,7 +283,8 @@ impl<'b> BattlerClient<'b> {
             .await?;
         let cancel_rx = client.cancel_tx.subscribe();
 
-        let task_handle = {
+        let mut watch_tasks = JoinSet::default();
+        {
             // SAFETY: We only transmute the lifetime, from 'b to 'static. The Drop implementation
             // of this wrapper type ensures we cancel and wait for this task to finish. Thus, this
             // client is captured in the asynchronous task only for the life of this object.
@@ -270,22 +294,22 @@ impl<'b> BattlerClient<'b> {
                     Arc<BattlerClientInternal<'static>>,
                 >(client.clone())
             };
-            tokio::spawn(client.watch_battle(log_entry_rx, cancel_rx))
+            watch_tasks.spawn(client.watch_battle(log_entry_rx, cancel_rx))
         };
 
         Ok(Self {
             client,
-            task_handle: Mutex::new(Some(task_handle)),
+            watch_tasks: Mutex::new(watch_tasks),
         })
     }
 
     /// Cancels the client and stops following the battle.
     pub async fn cancel(&self) {
         self.client.cancel_tx.send(()).ok();
-        if let Some(task_handle) = self.task_handle.lock().await.take() {
-            task_handle.abort();
-            task_handle.await.ok();
-        }
+        let mut watch_tasks = JoinSet::default();
+        std::mem::swap(&mut watch_tasks, &mut *self.watch_tasks.lock().await);
+        watch_tasks.abort_all();
+        while let Some(_) = watch_tasks.join_next().await {}
     }
 
     /// Checks if the player is ready for the battle to start.

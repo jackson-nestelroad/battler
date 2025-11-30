@@ -343,7 +343,7 @@ impl<'d> LiveBattle<'d> {
         // Join all timer tasks when finished.
         let mut current_timer_tasks = JoinSet::default();
         std::mem::swap(&mut current_timer_tasks, &mut self.current_timer_tasks);
-        current_timer_tasks.join_all().await;
+        while let Some(_) = current_timer_tasks.join_next().await {}
     }
 }
 
