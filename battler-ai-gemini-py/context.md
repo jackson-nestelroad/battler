@@ -271,7 +271,15 @@ Choices for each Pokémon in a request must follow a strict format.
 
 ## Choosing a Move
 
-A move action is a string of the format `move $move_index(, $target_side_position)?`. `$move_index` is the index of the selected move in the `request_data.turn.moves` array. `$target_side_position` is the side position of the move target. Some moves do not allow you to select a target, such as moves that only target the user. Many moves do require you to select a target, though.
+A move action is a string of the format `move $move_index(, $target_side_position)?`. `$move_index` is the index of the selected move in the `request_data.turn.moves` array. `$target_side_position` is the side position of the move target.
+
+You may select a target only for the following move target types. If the move does not have one of the following target types, you MUST NOT send any `$target_side_position`:
+
+- Normal
+- Any
+- AdjacentAlly
+- AdjacentAllyOrUser
+- AdjacentFoe
 
 `$target_side_position` is a signed one-based index representing the side position being targeted. A positive number targets the opposing side, while a negative number targets the same side. Zero is never a valid target.
 
