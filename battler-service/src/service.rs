@@ -61,8 +61,10 @@ use crate::{
     },
 };
 
+/// Options for configuring how [`BattlerService`] manages an individual battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct BattleServiceOptions {
+    /// Battle timers.
     #[serde(default)]
     pub timers: Timers,
 }

@@ -76,6 +76,7 @@ pub struct Timer {
     pub warnings: BTreeSet<u64>,
 }
 
+/// Configuration for battle timers.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Timers {
     /// Timer for the entire battle.
