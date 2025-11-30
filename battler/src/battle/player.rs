@@ -1400,7 +1400,7 @@ impl Player {
 
     fn choose_forfeit(context: &mut PlayerContext) -> Result<()> {
         match context.player().request_type() {
-            Some(RequestType::Turn) => (),
+            Some(_) => (),
             _ => return Err(general_error("you cannot forfeit out of turn")),
         }
 

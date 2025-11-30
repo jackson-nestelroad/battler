@@ -335,16 +335,6 @@ impl<'d> LiveBattle<'d> {
             TimerType::Action(player) => self.battle.set_player_choice(player, "randomall"),
         }
     }
-
-    async fn join_all_timer_tasks(&mut self) {
-        // Soft cancellation; we want timer tasks to finish so that their state is updated.
-        self.cancel_timers_tx.send(()).ok();
-
-        // Join all timer tasks when finished.
-        let mut current_timer_tasks = JoinSet::default();
-        std::mem::swap(&mut current_timer_tasks, &mut self.current_timer_tasks);
-        while let Some(_) = current_timer_tasks.join_next().await {}
-    }
 }
 
 /// A wrapper around a [`LiveBattle`] for non-atomic operations.
@@ -453,16 +443,37 @@ impl<'d> LiveBattleManager<'d> {
         };
 
         if continued && !ended {
-            Self::resume_timers(battle).await;
+            Self::resume_timers(battle).await?;
         }
 
         Ok(())
     }
 
+    async fn join_all_timer_tasks(battle: &Arc<Mutex<LiveBattle<'d>>>) {
+        // Soft cancellation; we want timer tasks to finish so that their state is updated.
+        battle.lock().await.cancel_timers_tx.send(()).ok();
+
+        // Join all timer tasks when finished.
+        let mut current_timer_tasks = JoinSet::default();
+        std::mem::swap(
+            &mut current_timer_tasks,
+            &mut battle.lock().await.current_timer_tasks,
+        );
+        while let Some(_) = current_timer_tasks.join_next().await {}
+    }
+
     // We must manually add the `Send` trait because this async function can be recursive: when a
     // timer finished, the battle proceeds and restarts timers.
-    fn resume_timers(battle: Arc<Mutex<LiveBattle<'d>>>) -> impl Future<Output = ()> + Send {
+    fn resume_timers(
+        battle: Arc<Mutex<LiveBattle<'d>>>,
+    ) -> impl Future<Output = Result<()>> + Send {
         async move {
+            // CRITICAL: Ensure all previous timer tasks finished.
+            //
+            // If we skip this step, a timer task may not have updated the current state of a
+            // timer, resulting in the timer not progressing.
+            Self::join_all_timer_tasks(&battle).await;
+
             // Get all timers, after all previous timer tasks finished.
             let timers = {
                 let mut battle = battle.lock().await;
@@ -473,22 +484,35 @@ impl<'d> LiveBattleManager<'d> {
                     }
                 }
 
-                let timer_logs = battle
-                    .timers
+                // Filter timers that should be active.
+                let mut timers = BTreeSet::default();
+                for timer_type in battle.timers.keys() {
+                    let active = match timer_type {
+                        TimerType::Battle => true,
+                        TimerType::Player(player) | TimerType::Action(player) => {
+                            battle.battle.request_for_player(player)?.is_some()
+                        }
+                    };
+                    if active {
+                        timers.insert(timer_type.clone());
+                    }
+                }
+
+                let timer_logs = timers
                     .iter()
-                    .map(|(timer_type, timer_state)| {
-                        LiveBattle::timer_log(timer_type, timer_state.remaining, None)
+                    .map(|timer_type| {
+                        LiveBattle::timer_log(
+                            timer_type,
+                            // SAFETY: All keys in `timers` are generated from existing values in
+                            // `battle.timers``.
+                            battle.timers.get(timer_type).unwrap().remaining,
+                            None,
+                        )
                     })
                     .collect::<Vec<_>>();
                 battle.logs.append(timer_logs);
 
-                // CRITICAL: Ensure all previous timer tasks finished.
-                //
-                // If we skip this step, a timer task may not have updated the current state of a
-                // timer, resulting in the timer not progressing.
-                battle.join_all_timer_tasks().await;
-
-                battle.timers.keys().cloned().collect::<BTreeSet<_>>()
+                timers
             };
 
             // Subscribe to channels before spawning tasks. This ensures that tasks won't miss
@@ -503,7 +527,8 @@ impl<'d> LiveBattleManager<'d> {
 
             // Spawn new timer tasks.
             let tasks = {
-                // SAFETY: All tasks spawned here are joined when the object is dropped.
+                // SAFETY: All tasks spawned here are joined when the object is dropped, and before
+                // a new JoinSet is created.
                 let battle = unsafe {
                     std::mem::transmute::<Arc<Mutex<LiveBattle<'d>>>, Arc<Mutex<LiveBattle<'static>>>>(
                         battle.clone(),
@@ -525,6 +550,7 @@ impl<'d> LiveBattleManager<'d> {
                 let mut battle = battle.lock().await;
                 battle.current_timer_tasks = tasks;
             }
+            Ok(())
         }
     }
 
@@ -1797,5 +1823,90 @@ mod battler_service_test {
                 "residual",
             ],
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn only_activates_player_timer_if_request_is_active() {
+        let battler_service = BattlerService::new(static_local_data_store());
+        let mut options = core_battle_options(BattleType::Singles, team(5));
+        options.side_1.players[0].team.members[0].level = 100;
+        let battle = battler_service
+            .create(
+                options,
+                CoreBattleEngineOptions {
+                    speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                    log_time: false,
+                    ..Default::default()
+                },
+                BattleServiceOptions {
+                    timers: Timers {
+                        player: Some(Timer {
+                            secs: 5,
+                            warnings: BTreeSet::default(),
+                        }),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+
+        assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+        let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+        // Wait for turn 1.
+        read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
+
+        assert_matches::assert_matches!(
+            battler_service
+                .make_choice(battle.uuid, "player-1", "move 0")
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(
+            battler_service
+                .make_choice(battle.uuid, "player-2", "move 0")
+                .await,
+            Ok(())
+        );
+
+        read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "continue").await;
+
+        // Wait for the battle to automatically end.
+        let deadline = Instant::now() + Duration::from_secs(10);
+        assert_matches::assert_matches!(
+            tokio::time::timeout_at(
+                deadline,
+                (async || {
+                    while battler_service.battle(battle.uuid).await?.state != BattleState::Finished
+                    {
+                        tokio::time::sleep(Duration::from_secs(1)).await;
+                    }
+                    Ok::<_, Error>(())
+                })(),
+            )
+            .await,
+            Ok(_)
+        );
+
+        assert_matches::assert_matches!(battler_service.full_log(battle.uuid, None).await, Ok(log) => {
+            pretty_assertions::assert_eq!(
+                log[(log.len() - 10)..],
+                [
+                    "continue",
+                    "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
+                    "damage|mon:Bulbasaur,player-2,1|health:0",
+                    "faint|mon:Bulbasaur,player-2,1",
+                    "residual",
+                    "-battlerservice:timer|player:player-2|remainingsecs:4",
+                    "-battlerservice:timer|player:player-2|done|remainingsecs:0",
+                    "continue",
+                    "forfeited|player:player-2",
+                    "win|side:0",
+                ]
+            );
+        });
     }
 }
