@@ -21,7 +21,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler tests
-        run: cargo nextest run -p battler -p battler-choice -p battler-data -p battler-prng
+        run: cargo test -p battler -p battler-choice -p battler-data -p battler-prng
 
   test-battler-service:
     name: Run battler-service tests
