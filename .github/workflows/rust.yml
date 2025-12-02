@@ -75,7 +75,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-wamp tests
-        run: cargo nextest run -p "battler-wamp*" -p "serde*" -- --test-threads=1
+        run: cargo nextest run -p "battler-wamp*" -p "serde*"
 
   formatting:
     name: Check formatting
