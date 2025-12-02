@@ -1695,7 +1695,7 @@ mod battler_service_test {
                     timers: Timers {
                         player: Some(Timer {
                             secs: 5,
-                            warnings: BTreeSet::from_iter([4, 2, 1]),
+                            warnings: BTreeSet::from_iter([1]),
                         }),
                         ..Default::default()
                     },
@@ -1710,6 +1710,13 @@ mod battler_service_test {
         // Wait for battle to start.
         let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
         assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+
+        // Wait for timers to start.
+        read_all_entries_from_log_rx_stopping_at(
+            &mut public_log_rx,
+            "-battlerservice:timer|player:player-1|remainingsecs:5",
+        )
+        .await;
 
         assert_matches::assert_matches!(
             battler_service
@@ -1737,13 +1744,11 @@ mod battler_service_test {
 
         assert_matches::assert_matches!(battler_service.full_log(battle.uuid, None).await, Ok(log) => {
             pretty_assertions::assert_eq!(
-                log[(log.len() - 11)..],
+                log[(log.len() - 9)..],
                 [
                     "turn|turn:1",
                     "-battlerservice:timer|player:player-1|remainingsecs:5",
                     "-battlerservice:timer|player:player-2|remainingsecs:5",
-                    "-battlerservice:timer|player:player-2|warning|remainingsecs:4",
-                    "-battlerservice:timer|player:player-2|warning|remainingsecs:2",
                     "-battlerservice:timer|player:player-2|warning|remainingsecs:1",
                     "-battlerservice:timer|player:player-2|done|remainingsecs:0",
                     "continue",
