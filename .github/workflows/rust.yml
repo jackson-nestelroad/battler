@@ -18,48 +18,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install latest nightly
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: nightly
+      - name: Set up Rust
+        uses: ./.github/actions/rust
       - name: Run battler tests
-        run: cargo test -p battler -p battler-choice -p battler-data -p battler-prng
+        run: cargo nextest -p battler -p battler-choice -p battler-data -p battler-prng
 
   test-battler-service:
     name: Run battler-service tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install latest nightly
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: nightly
+      - name: Set up Rust
+        uses: ./.github/actions/rust
       - name: Run battler-service tests
-        run: cargo test -p "battler-service*"
+        run: cargo nextest -p "battler-service*"
 
   test-battler-client:
     name: Run battler-client tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install latest nightly
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: nightly
+      - name: Set up Rust
+        uses: ./.github/actions/rust
       - name: Run battler-client tests
-        run: cargo test -p "battler-client*"
+        run: cargo nextest -p "battler-client*"
 
   test-battler-calc:
     name: Run battler-calc tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install latest nightly
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: nightly
+      - name: Set up Rust
+        uses: ./.github/actions/rust
       - name: Run battler-calc tests
-        run: cargo test -p "battler-calc*"
+        run: cargo nextest -p "battler-calc*"
 
   test-battler-ai:
     name: Run battler-ai tests
@@ -70,34 +62,27 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: ./.github/actions/battler-ai-gemini-py
-      - name: Install latest nightly
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: nightly
+      - name: Set up Rust
+        uses: ./.github/actions/rust
       - name: Run battler-ai tests
-        run: cargo test -p "battler-ai*"
+        run: cargo nextest -p "battler-ai*"
 
   test-battler-wamp:
     name: Run battler-wamp tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install latest nightly
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: nightly
+      - name: Set up Rust
+        uses: ./.github/actions/rust
       - name: Run battler-wamp tests
-        run: cargo test -p "battler-wamp*" -p "serde*" -- --test-threads=1
+        run: cargo nextest -p "battler-wamp*" -p "serde*" -- --test-threads=1
 
   formatting:
     name: Check formatting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install latest nightly
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: nightly
-          components: rustfmt
+      - name: Set up Rust
+        uses: ./.github/actions/rust
       - name: Check formatting
         uses: actions-rust-lang/rustfmt@v1
