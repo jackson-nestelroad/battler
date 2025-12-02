@@ -273,7 +273,7 @@ Choices for each Pokémon in a request must follow a strict format.
 
 A move action is a string of the format `move $move_index(, $target_side_position)?`. `$move_index` is the index of the selected move in the `request_data.turn.moves` array. `$target_side_position` is the side position of the move target.
 
-You may select a target only for the following move target types. If the move does not have one of the following target types, you MUST NOT send any `$target_side_position`:
+**CRITICAL RULE:** `$target_side_position` MUST only be empty ONLY IF the move's target type is one of the following:
 
 - Normal
 - Any

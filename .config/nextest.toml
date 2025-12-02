@@ -1,2 +1,5 @@
 [profile.default]
-global-timeout = "1m"
+slow-timeout = { period = "1m", terminate-after = 1 } 
+
+[profile.long]
+slow-timeout = { period = "5m", terminate-after = 1 } 

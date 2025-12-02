@@ -65,7 +65,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-ai tests
-        run: cargo nextest run -p "battler-ai*"
+        run: cargo nextest run --profile long -p "battler-ai*"
 
   test-battler-wamp:
     name: Run battler-wamp tests
