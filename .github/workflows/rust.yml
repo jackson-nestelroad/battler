@@ -16,6 +16,7 @@ jobs:
   test-battler:
     name: Run battler tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Set up Rust
@@ -26,36 +27,40 @@ jobs:
   test-battler-service:
     name: Run battler-service tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-service tests
-        run: cargo nextest run -p "battler-service*"
+        run: cargo test -p "battler-service*"
 
   test-battler-client:
     name: Run battler-client tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-client tests
-        run: cargo nextest run -p "battler-client*"
+        run: cargo test -p "battler-client*"
 
   test-battler-calc:
     name: Run battler-calc tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-calc tests
-        run: cargo nextest run -p "battler-calc*"
+        run: cargo test -p "battler-calc*"
 
   test-battler-ai:
     name: Run battler-ai tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
     steps:
@@ -65,21 +70,23 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-ai tests
-        run: cargo nextest run --profile long -p "battler-ai*"
+        run: cargo test -p "battler-ai*"
 
   test-battler-wamp:
     name: Run battler-wamp tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-wamp tests
-        run: cargo nextest run -p "battler-wamp*" -p "serde*"
+        run: cargo test -p "battler-wamp*" -p "serde*"
 
   formatting:
     name: Check formatting
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - name: Set up Rust
