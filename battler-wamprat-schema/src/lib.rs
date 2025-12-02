@@ -551,6 +551,7 @@ impl<T, E> From<battler_wamprat::peer::TypedProgressivePendingRpc<T>>
 }
 
 /// Configuration for a peer connecting to a router.
+#[derive(Debug, Clone)]
 pub struct PeerConfig {
     /// Connection configuration.
     pub connection: battler_wamprat::peer::PeerConnectionConfig,

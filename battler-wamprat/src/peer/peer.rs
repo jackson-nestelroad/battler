@@ -95,7 +95,7 @@ impl Debug for PeerConnectionType {
 }
 
 /// Configuration for a [`Peer`]'s connection to a router.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PeerConnectionConfig {
     /// The type of connection.
     pub connection_type: PeerConnectionType,
