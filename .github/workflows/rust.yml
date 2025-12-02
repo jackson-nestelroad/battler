@@ -21,7 +21,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler tests
-        run: cargo nextest -p battler -p battler-choice -p battler-data -p battler-prng
+        run: cargo nextest run -p battler -p battler-choice -p battler-data -p battler-prng
 
   test-battler-service:
     name: Run battler-service tests
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-service tests
-        run: cargo nextest -p "battler-service*"
+        run: cargo nextest run -p "battler-service*"
 
   test-battler-client:
     name: Run battler-client tests
@@ -41,7 +41,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-client tests
-        run: cargo nextest -p "battler-client*"
+        run: cargo nextest run -p "battler-client*"
 
   test-battler-calc:
     name: Run battler-calc tests
@@ -51,7 +51,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-calc tests
-        run: cargo nextest -p "battler-calc*"
+        run: cargo nextest run -p "battler-calc*"
 
   test-battler-ai:
     name: Run battler-ai tests
@@ -65,7 +65,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-ai tests
-        run: cargo nextest -p "battler-ai*"
+        run: cargo nextest run -p "battler-ai*"
 
   test-battler-wamp:
     name: Run battler-wamp tests
@@ -75,7 +75,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-wamp tests
-        run: cargo nextest -p "battler-wamp*" -p "serde*" -- --test-threads=1
+        run: cargo nextest run -p "battler-wamp*" -p "serde*" -- --test-threads=1
 
   formatting:
     name: Check formatting
