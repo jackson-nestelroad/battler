@@ -1,4 +1,8 @@
-use tokio::sync::broadcast;
+use tokio::sync::{
+    broadcast,
+    mpsc,
+};
+use uuid::Uuid;
 
 /// A single entry of a [`Log`].
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -9,18 +13,36 @@ pub struct LogEntry {
     pub content: String,
 }
 
+/// A global log entry, which corresponds to some side of some battle.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GlobalLogEntry {
+    pub battle: Uuid,
+    pub side: Option<usize>,
+    pub entry: LogEntry,
+}
+
 /// A log of events for a battle.
 pub struct Log {
+    battle: Uuid,
+    side: Option<usize>,
     entries: Vec<String>,
     entry_tx: broadcast::Sender<LogEntry>,
+    global_log_tx: mpsc::UnboundedSender<GlobalLogEntry>,
 }
 
 impl Log {
-    fn new() -> Self {
+    fn new(
+        battle: Uuid,
+        side: Option<usize>,
+        global_log_tx: mpsc::UnboundedSender<GlobalLogEntry>,
+    ) -> Self {
         let (entry_tx, _) = broadcast::channel(128);
         Self {
+            battle,
+            side,
             entries: Vec::new(),
             entry_tx,
+            global_log_tx,
         }
     }
 
@@ -38,10 +60,17 @@ impl Log {
     fn publish_from(&self, index: usize) {
         for (i, entry) in self.entries[index..].iter().enumerate() {
             // If send fails, there is no receiver, which is OK.
-            self.entry_tx
-                .send(LogEntry {
-                    index: i + index,
-                    content: entry.clone(),
+            let entry = LogEntry {
+                index: i + index,
+                content: entry.clone(),
+            };
+            self.entry_tx.send(entry.clone()).ok();
+
+            self.global_log_tx
+                .send(GlobalLogEntry {
+                    battle: self.battle,
+                    side: self.side,
+                    entry,
                 })
                 .ok();
         }
@@ -66,10 +95,16 @@ pub struct SplitLogs {
 
 impl SplitLogs {
     /// Creates a new set of split logs with a given number of sides.
-    pub fn new(sides: usize) -> Self {
+    pub fn new(
+        battle: Uuid,
+        sides: usize,
+        global_log_tx: mpsc::UnboundedSender<GlobalLogEntry>,
+    ) -> Self {
         Self {
-            public_log: Log::new(),
-            per_side_logs: Vec::from_iter(std::iter::repeat_with(|| Log::new()).take(sides)),
+            public_log: Log::new(battle, None, global_log_tx.clone()),
+            per_side_logs: Vec::from_iter(
+                (0..sides).map(|side| Log::new(battle, Some(side), global_log_tx.clone())),
+            ),
         }
     }
 
@@ -146,14 +181,23 @@ impl SplitLogs {
 
 #[cfg(test)]
 mod log_test {
-    use crate::log::{
-        LogEntry,
-        SplitLogs,
+    use std::usize;
+
+    use tokio::sync::mpsc;
+    use uuid::Uuid;
+
+    use crate::{
+        GlobalLogEntry,
+        log::{
+            LogEntry,
+            SplitLogs,
+        },
     };
 
     #[test]
     fn filters_split_logs() {
-        let mut logs = SplitLogs::new(2);
+        let (global_log_tx, _) = mpsc::unbounded_channel();
+        let mut logs = SplitLogs::new(Uuid::from_u64_pair(0, 128), 2, global_log_tx);
         logs.append([
             "time|time:123",
             "abc|def",
@@ -200,12 +244,13 @@ mod log_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn publishes_filtered_logs() {
-        let mut logs = SplitLogs::new(2);
+        let (global_log_tx, mut global_log_rx) = mpsc::unbounded_channel();
+        let mut logs = SplitLogs::new(Uuid::from_u64_pair(0, 128), 2, global_log_tx);
         let mut public_log_rx = logs.public_log().subscribe();
         let mut side_1_log_rx = logs.side_log(0).unwrap().subscribe();
         let mut side_2_log_rx = logs.side_log(1).unwrap().subscribe();
 
-        logs.append(["split|side:0", "ghi|hp:255/255", "ghi|hp:100/100"]);
+        logs.append(["split|side:0", "ghi|hp:255/255", "ghi|hp:100/100", "public"]);
 
         assert_matches::assert_matches!(public_log_rx.recv().await, Ok(entry) => {
             assert_eq!(entry, LogEntry { index: 0, content: "ghi|hp:100/100".to_owned() });
@@ -216,5 +261,61 @@ mod log_test {
         assert_matches::assert_matches!(side_2_log_rx.recv().await, Ok(entry) => {
             assert_eq!(entry, LogEntry { index: 0, content: "ghi|hp:100/100".to_owned() });
         });
+
+        let mut global_log = Vec::default();
+        global_log_rx.recv_many(&mut global_log, usize::MAX).await;
+        pretty_assertions::assert_eq!(
+            global_log,
+            Vec::from_iter([
+                GlobalLogEntry {
+                    battle: Uuid::from_u64_pair(0, 128),
+                    side: None,
+                    entry: LogEntry {
+                        index: 0,
+                        content: "ghi|hp:100/100".to_owned(),
+                    },
+                },
+                GlobalLogEntry {
+                    battle: Uuid::from_u64_pair(0, 128),
+                    side: None,
+                    entry: LogEntry {
+                        index: 1,
+                        content: "public".to_owned(),
+                    },
+                },
+                GlobalLogEntry {
+                    battle: Uuid::from_u64_pair(0, 128),
+                    side: Some(0),
+                    entry: LogEntry {
+                        index: 0,
+                        content: "ghi|hp:255/255".to_owned(),
+                    },
+                },
+                GlobalLogEntry {
+                    battle: Uuid::from_u64_pair(0, 128),
+                    side: Some(0),
+                    entry: LogEntry {
+                        index: 1,
+                        content: "public".to_owned(),
+                    },
+                },
+                GlobalLogEntry {
+                    battle: Uuid::from_u64_pair(0, 128),
+                    side: Some(1),
+                    entry: LogEntry {
+                        index: 0,
+                        content: "ghi|hp:100/100".to_owned(),
+                    },
+                },
+                GlobalLogEntry {
+                    battle: Uuid::from_u64_pair(0, 128),
+                    side: Some(1),
+                    entry: LogEntry {
+                        index: 1,
+                        content: "public".to_owned(),
+                    },
+                },
+            ])
+        );
     }
 }

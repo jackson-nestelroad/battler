@@ -5,6 +5,7 @@ mod timer;
 
 pub use api::*;
 pub use log::{
+    GlobalLogEntry,
     Log,
     LogEntry,
 };

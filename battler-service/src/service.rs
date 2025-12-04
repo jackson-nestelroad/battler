@@ -34,7 +34,10 @@ use serde::{
     Serialize,
 };
 use tokio::{
-    sync::broadcast,
+    sync::{
+        broadcast,
+        mpsc,
+    },
     task::JoinSet,
 };
 use uuid::Uuid;
@@ -43,6 +46,7 @@ use crate::{
     Battle,
     BattlePreview,
     BattleState,
+    GlobalLogEntry,
     Player,
     PlayerPreview,
     PlayerState,
@@ -103,6 +107,7 @@ impl<'d> LiveBattle<'d> {
         engine_options: CoreBattleEngineOptions,
         service_options: BattleServiceOptions,
         data: &'d dyn DataStore,
+        global_log_tx: mpsc::UnboundedSender<GlobalLogEntry>,
     ) -> Result<Self> {
         let uuid = Uuid::new_v4();
         let sides = Vec::from_iter([
@@ -110,7 +115,7 @@ impl<'d> LiveBattle<'d> {
             Self::new_side(&options.side_2),
         ]);
         let battle = PublicCoreBattle::new(options, data, engine_options)?;
-        let logs = SplitLogs::new(sides.len());
+        let logs = SplitLogs::new(uuid, sides.len(), global_log_tx);
 
         let (choice_made_tx, _) = broadcast::channel(16);
         let (cancel_timers_tx, _) = broadcast::channel(16);
@@ -723,20 +728,36 @@ impl<'d> Drop for LiveBattleManager<'d> {
 /// Service for managing multiple battles on the [`battler`] battle engine.
 pub struct BattlerService<'d> {
     data: &'d dyn DataStore,
+
     // SAFETY: Arc is used for the simplicity of looking up battles internally. When we drop this
     // object, we forcibly wait for all references to be dropped.
     battles: Mutex<BTreeMap<Uuid, Arc<LiveBattleManager<'d>>>>,
     battles_by_player: Mutex<HashMap<String, BTreeSet<Uuid>>>,
+
+    global_log_tx: mpsc::UnboundedSender<GlobalLogEntry>,
+    global_log_rx: Option<mpsc::UnboundedReceiver<GlobalLogEntry>>,
 }
 
 impl<'d> BattlerService<'d> {
     /// Creates a new battle service.
     pub fn new(data: &'d dyn DataStore) -> Self {
+        let (global_log_tx, global_log_rx) = mpsc::unbounded_channel();
         Self {
             data,
             battles: Mutex::new(BTreeMap::default()),
             battles_by_player: Mutex::new(HashMap::default()),
+            global_log_tx,
+            global_log_rx: Some(global_log_rx),
         }
+    }
+
+    /// Takes the global log receiver.
+    ///
+    /// All log entries for all battles will be sent over this channel for consumption.
+    ///
+    /// This method can only be called once. Subsequent calls will return [`None`],
+    pub fn take_global_log_rx(&mut self) -> Option<mpsc::UnboundedReceiver<GlobalLogEntry>> {
+        self.global_log_rx.take()
     }
 
     async fn find_battle(&self, uuid: Uuid) -> Option<Arc<LiveBattleManager<'d>>> {
@@ -765,10 +786,15 @@ impl<'d> BattlerService<'d> {
         // Do not auto continue, so that we can capture any errors in our own task.
         engine_options.auto_continue = false;
 
-        let battle = LiveBattle::new(options, engine_options, service_options, self.data)?;
+        let battle = LiveBattle::new(
+            options,
+            engine_options,
+            service_options,
+            self.data,
+            self.global_log_tx.clone(),
+        )?;
         let uuid = battle.uuid;
         let players = battle.players().map(|s| s.to_owned()).collect::<Vec<_>>();
-
         let battle = LiveBattleManager::new(battle);
         self.battles.lock().await.insert(uuid, Arc::new(battle));
 
