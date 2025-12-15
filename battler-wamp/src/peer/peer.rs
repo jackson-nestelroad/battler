@@ -14,6 +14,10 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
+};
 use battler_wamp_values::{
     Dictionary,
     List,
@@ -75,10 +79,6 @@ use crate::{
         stream::{
             MessageStream,
             TransportMessageStream,
-        },
-        uri::{
-            Uri,
-            WildcardUri,
         },
     },
     message::{

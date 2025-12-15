@@ -6,7 +6,7 @@ use std::collections::{
     HashMap,
 };
 
-use battler_wamp::core::uri::Uri;
+use battler_wamp_uri::Uri;
 use itertools::Itertools;
 use proc_macro2::{
     Span,
@@ -752,8 +752,8 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 pub struct #generator_ident #field_declarations
 
                 impl ::battler_wamprat_uri::WampWildcardUriGenerator<#ident> for #generator_ident {
-                    fn wamp_generate_wildcard_uri(&self) -> ::core::result::Result<::battler_wamp::core::uri::WildcardUri, ::battler_wamp::core::uri::InvalidUri> {
-                        ::battler_wamp::core::uri::WildcardUri::try_from(self.to_string().as_str())
+                    fn wamp_generate_wildcard_uri(&self) -> ::core::result::Result<::battler_wamp_uri::WildcardUri, ::battler_wamp_uri::InvalidUri> {
+                        ::battler_wamp_uri::WildcardUri::try_from(self.to_string().as_str())
                     }
                 }
 
@@ -775,8 +775,8 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
 
     quote! {
         impl ::battler_wamprat_uri::WampUriMatcher for #ident {
-            fn uri_for_router() -> ::battler_wamp::core::uri::WildcardUri {
-                ::battler_wamp::core::uri::WildcardUri::try_from(#uri_for_router).unwrap()
+            fn uri_for_router() -> ::battler_wamp_uri::WildcardUri {
+                ::battler_wamp_uri::WildcardUri::try_from(#uri_for_router).unwrap()
             }
 
             fn match_style() -> ::core::option::Option<::battler_wamp::core::match_style::MatchStyle> {
@@ -789,8 +789,8 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 ::core::result::Result::Ok(Self #constructor_fields)
             }
 
-            fn wamp_generate_uri(&self) -> ::core::result::Result<::battler_wamp::core::uri::Uri, ::battler_wamp::core::uri::InvalidUri> {
-                ::battler_wamp::core::uri::Uri::try_from(self.to_string().as_str())
+            fn wamp_generate_uri(&self) -> ::core::result::Result<::battler_wamp_uri::Uri, ::battler_wamp_uri::InvalidUri> {
+                ::battler_wamp_uri::Uri::try_from(self.to_string().as_str())
             }
         }
 

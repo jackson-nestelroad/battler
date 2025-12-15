@@ -11,4 +11,3 @@ pub mod publish_options;
 pub mod roles;
 pub mod service;
 pub mod stream;
-pub mod uri;

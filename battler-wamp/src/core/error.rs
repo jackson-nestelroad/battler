@@ -2,17 +2,15 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_uri::{
+    InvalidUri,
+    Uri,
+};
 use battler_wamp_values::Value;
 use thiserror::Error;
 
 use crate::{
-    core::{
-        id::Id,
-        uri::{
-            InvalidUri,
-            Uri,
-        },
-    },
+    core::id::Id,
     message::message::Message,
     peer::PeerNotConnectedError,
 };

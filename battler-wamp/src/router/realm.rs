@@ -7,6 +7,7 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_uri::Uri;
 use futures_util::future::join_all;
 use tokio::sync::RwLock;
 
@@ -22,7 +23,6 @@ use crate::{
         close::CloseReason,
         hash::HashMap,
         id::Id,
-        uri::Uri,
     },
     router::{
         procedure::ProcedureManager,

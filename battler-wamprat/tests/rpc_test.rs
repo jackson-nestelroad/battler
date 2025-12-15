@@ -8,7 +8,6 @@ use battler_wamp::{
             WampError,
         },
         invocation_policy::InvocationPolicy,
-        uri::Uri,
     },
     peer::{
         PeerConfig,
@@ -25,6 +24,7 @@ use battler_wamp::{
         new_web_socket_router,
     },
 };
+use battler_wamp_uri::Uri;
 use battler_wamp_values::{
     Integer,
     WampList,

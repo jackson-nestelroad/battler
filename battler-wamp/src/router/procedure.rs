@@ -5,6 +5,7 @@ use std::{
 
 use ahash::HashSet;
 use anyhow::Result;
+use battler_wamp_uri::WildcardUri;
 use futures_util::lock::Mutex;
 use rand::Rng;
 use tokio::sync::RwLock;
@@ -20,7 +21,6 @@ use crate::{
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
         roles::RouterRole,
-        uri::WildcardUri,
     },
     router::context::RealmContext,
 };

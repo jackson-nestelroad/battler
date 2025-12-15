@@ -336,6 +336,7 @@ pub struct LogEntry {
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct LogEvent(#[arguments] pub LogEntry);
 
+/// Service for managing battles on the `battler` battle engine.
 #[derive(Debug, Clone, WampSchema)]
 #[realm("com.battler")]
 pub enum BattlerService {

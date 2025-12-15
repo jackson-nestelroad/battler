@@ -1,6 +1,5 @@
 use anyhow::Result;
 use battler_wamp::{
-    core::uri::Uri,
     peer::{
         PeerConfig,
         PeerNotConnectedError,
@@ -17,6 +16,7 @@ use battler_wamp::{
         new_web_socket_router,
     },
 };
+use battler_wamp_uri::Uri;
 use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";

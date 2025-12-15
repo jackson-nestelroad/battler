@@ -11,6 +11,10 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
+};
 use battler_wamp_values::{
     Dictionary,
     List,
@@ -64,10 +68,6 @@ use crate::{
         roles::{
             PeerRoles,
             RouterRoles,
-        },
-        uri::{
-            Uri,
-            WildcardUri,
         },
     },
     message::{

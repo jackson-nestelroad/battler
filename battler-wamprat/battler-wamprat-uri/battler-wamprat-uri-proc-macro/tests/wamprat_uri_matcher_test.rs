@@ -1,9 +1,7 @@
 use std::marker::PhantomData;
 
-use battler_wamp::core::{
-    match_style::MatchStyle,
-    uri::WildcardUri,
-};
+use battler_wamp::core::match_style::MatchStyle;
+use battler_wamp_uri::WildcardUri;
 use battler_wamprat_uri::{
     WampUriMatcher,
     WampWildcardUriGenerator,

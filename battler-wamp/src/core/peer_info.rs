@@ -9,8 +9,14 @@ pub enum ConnectionType {
     Direct,
 }
 
+impl Default for ConnectionType {
+    fn default() -> Self {
+        Self::Remote(String::default())
+    }
+}
+
 /// Information about a peer.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct PeerInfo {
     /// Type of connection the peer is communicating over.
     pub connection_type: ConnectionType,

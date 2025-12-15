@@ -15,10 +15,6 @@ use battler_wamp::{
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
         peer_info::ConnectionType,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
     },
     peer::{
         Invocation,
@@ -42,6 +38,10 @@ use battler_wamp::{
         RouterHandle,
         new_web_socket_router,
     },
+};
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
 };
 use battler_wamp_values::{
     Integer,
@@ -1202,10 +1202,6 @@ mod procedure_wildcard_match_test {
         core::{
             error::InteractionError,
             match_style::MatchStyle,
-            uri::{
-                Uri,
-                WildcardUri,
-            },
         },
         peer::{
             Peer,
@@ -1215,6 +1211,10 @@ mod procedure_wildcard_match_test {
             RpcCall,
             RpcYield,
         },
+    };
+    use battler_wamp_uri::{
+        Uri,
+        WildcardUri,
     };
     use tokio::{
         sync::broadcast,

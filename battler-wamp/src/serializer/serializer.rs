@@ -1,9 +1,9 @@
 use std::fmt::Debug;
 
 use anyhow::Result;
+use battler_wamp_uri::Uri;
 
 use crate::{
-    core::uri::Uri,
     message::message::Message,
     serializer::{
         json::JsonSerializer,

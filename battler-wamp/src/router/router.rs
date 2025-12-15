@@ -11,6 +11,7 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_uri::Uri;
 use futures_util::lock::Mutex;
 use log::{
     debug,
@@ -47,7 +48,6 @@ use crate::{
             MessageStream,
             TransportMessageStream,
         },
-        uri::Uri,
     },
     router::{
         acceptor::acceptor::AcceptorFactory,

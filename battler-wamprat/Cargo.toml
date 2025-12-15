@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat"
-version = "0.6.3"
+version = "0.7.0"
 edition = "2024"
 description = "Asynchronous library for strongly-typed WAMP peer messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -12,16 +12,18 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 ahash = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-battler-wamp = { workspace = true }
-battler-wamp-values = { workspace = true }
-battler-wamprat-error = { workspace = true }
-battler-wamprat-message = { workspace = true }
-battler-wamprat-uri = { workspace = true }
 futures-channel = { workspace = true }
 futures-util = { workspace = true }
 log = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+
+battler-wamp = { workspace = true }
+battler-wamp-uri = { workspace = true }
+battler-wamp-values = { workspace = true }
+battler-wamprat-error = { workspace = true }
+battler-wamprat-message = { workspace = true }
+battler-wamprat-uri = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

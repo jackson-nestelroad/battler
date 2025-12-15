@@ -19,10 +19,6 @@ use battler_wamp::{
         id::Id,
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
     },
     peer::{
         Invocation,
@@ -36,6 +32,10 @@ use battler_wamp::{
         SupportedAuthMethod,
     },
     router::RouterHandle,
+};
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
 };
 use battler_wamprat_message::WampApplicationMessage;
 use futures_util::lock::Mutex;

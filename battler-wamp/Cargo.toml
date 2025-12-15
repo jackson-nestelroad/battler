@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamp"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 description = "Asynchronous library for WAMP messaging."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -14,7 +14,6 @@ anyhow = { workspace = true }
 argon2 = { workspace = true }
 async-trait = { workspace = true }
 base64 = { workspace = true }
-battler-wamp-values = { workspace = true }
 futures-channel = { workspace = true }
 futures-util = { workspace = true }
 hmac = { workspace = true }
@@ -36,6 +35,9 @@ thiserror = { workspace = true }
 tokio = { workspace = true }
 tokio-tungstenite = { workspace = true }
 uuid = { workspace = true }
+
+battler-wamp-values = { workspace = true }
+battler-wamp-uri = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

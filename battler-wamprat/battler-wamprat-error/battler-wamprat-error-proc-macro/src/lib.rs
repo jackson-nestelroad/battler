@@ -1,4 +1,4 @@
-use battler_wamp::core::uri::Uri;
+use battler_wamp_uri::Uri;
 use proc_macro2::{
     Ident,
     Span,
@@ -172,7 +172,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
         Input::Struct(input) => {
             let uri = &input.uri;
             quote! {
-                ::battler_wamp::core::error::WampError::new(::battler_wamp::core::uri::Uri::try_from(#uri).unwrap(), self.to_string())
+                ::battler_wamp::core::error::WampError::new(::battler_wamp_uri::Uri::try_from(#uri).unwrap(), self.to_string())
             }
         }
         Input::Enum(input) => {
@@ -180,7 +180,7 @@ pub fn derive_wamp_uri_matcher(input: proc_macro::TokenStream) -> proc_macro::To
                 let ident = &variant.ident;
                 let uri = &variant.uri;
                 quote! {
-                    Self::#ident { .. } => ::battler_wamp::core::error::WampError::new(::battler_wamp::core::uri::Uri::try_from(#uri).unwrap(), self.to_string())
+                    Self::#ident { .. } => ::battler_wamp::core::error::WampError::new(::battler_wamp_uri::Uri::try_from(#uri).unwrap(), self.to_string())
                 }
             });
             quote! {

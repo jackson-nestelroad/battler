@@ -15,7 +15,6 @@ use battler_wamp::{
             InteractionError,
         },
         hash::HashMap,
-        uri::Uri,
     },
     peer::{
         PeerConfig,
@@ -34,6 +33,7 @@ use battler_wamp::{
         new_web_socket_router,
     },
 };
+use battler_wamp_uri::Uri;
 use battler_wamp_values::{
     Integer,
     WampList,
@@ -180,10 +180,10 @@ impl TypedProcedure for AddHandler {
     type Output = AddOutput;
     type Error = anyhow::Error;
     async fn invoke(&self, invocation: Invocation, input: Self::Input) -> Result<Self::Output> {
-        if invocation.identity.id != "battler-wamprat-test-user" {
+        if invocation.peer_info.identity.id != "battler-wamprat-test-user" {
             return Err(BasicError::NotAllowed(format!(
                 "unexpected user: {}",
-                invocation.identity.id
+                invocation.peer_info.identity.id
             ))
             .into());
         }

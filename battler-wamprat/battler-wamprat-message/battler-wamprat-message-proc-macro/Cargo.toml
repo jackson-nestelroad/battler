@@ -19,7 +19,8 @@ syn = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
-battler-wamp-values = { workspace = true }
 pretty_assertions = { workspace = true }
+
+battler-wamp-values = { workspace = true }
 
 battler-wamprat-message = { path = ".." }

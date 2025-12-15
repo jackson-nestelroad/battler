@@ -44,17 +44,15 @@
 //! ### Router Example
 //!
 //! ```
-//! use battler_wamp::{
-//!     core::uri::Uri,
-//!     router::{
-//!         EmptyPubSubPolicies,
-//!         EmptyRpcPolicies,
-//!         RealmAuthenticationConfig,
-//!         RealmConfig,
-//!         RouterConfig,
-//!         new_web_socket_router,
-//!     },
+//! use battler_wamp::router::{
+//!     EmptyPubSubPolicies,
+//!     EmptyRpcPolicies,
+//!     RealmAuthenticationConfig,
+//!     RealmConfig,
+//!     RouterConfig,
+//!     new_web_socket_router,
 //! };
+//! use battler_wamp_uri::Uri;
 //!
 //! #[tokio::main]
 //! async fn main() {
@@ -104,10 +102,7 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::{
-//!         hash::HashMap,
-//!         uri::Uri,
-//!     },
+//!     core::hash::HashMap,
 //!     peer::{
 //!         Peer,
 //!         PeerConfig,
@@ -124,6 +119,7 @@
 //!         new_web_socket_router,
 //!     },
 //! };
+//! use battler_wamp_uri::Uri;
 //! use tokio::task::JoinHandle;
 //!
 //! async fn start_router() -> anyhow::Result<(RouterHandle, JoinHandle<()>)> {
@@ -182,10 +178,7 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::{
-//!         hash::HashMap,
-//!         uri::Uri,
-//!     },
+//!     core::hash::HashMap,
 //!     peer::{
 //!         Peer,
 //!         PeerConfig,
@@ -203,6 +196,7 @@
 //!         new_web_socket_router,
 //!     },
 //! };
+//! use battler_wamp_uri::Uri;
 //! use battler_wamp_values::{
 //!     Dictionary,
 //!     List,
@@ -302,10 +296,6 @@
 //!     core::{
 //!         hash::HashMap,
 //!         match_style::MatchStyle,
-//!         uri::{
-//!             Uri,
-//!             WildcardUri,
-//!         },
 //!     },
 //!     peer::{
 //!         Peer,
@@ -324,6 +314,10 @@
 //!         RouterHandle,
 //!         new_web_socket_router,
 //!     },
+//! };
+//! use battler_wamp_uri::{
+//!     Uri,
+//!     WildcardUri,
 //! };
 //! use battler_wamp_values::{
 //!     Dictionary,
@@ -434,10 +428,7 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::{
-//!         hash::HashMap,
-//!         uri::Uri,
-//!     },
+//!     core::hash::HashMap,
 //!     peer::{
 //!         Peer,
 //!         PeerConfig,
@@ -459,6 +450,7 @@
 //!         new_web_socket_router,
 //!     },
 //! };
+//! use battler_wamp_uri::Uri;
 //! use battler_wamp_values::{
 //!     Dictionary,
 //!     List,
@@ -563,7 +555,6 @@
 //!     core::{
 //!         error::WampError,
 //!         hash::HashMap,
-//!         uri::Uri,
 //!     },
 //!     peer::{
 //!         Peer,
@@ -586,6 +577,7 @@
 //!         new_web_socket_router,
 //!     },
 //! };
+//! use battler_wamp_uri::Uri;
 //! use battler_wamp_values::{
 //!     Dictionary,
 //!     List,
@@ -709,10 +701,6 @@
 //!     core::{
 //!         hash::HashMap,
 //!         match_style::MatchStyle,
-//!         uri::{
-//!             Uri,
-//!             WildcardUri,
-//!         },
 //!     },
 //!     peer::{
 //!         Peer,
@@ -735,6 +723,10 @@
 //!         RouterHandle,
 //!         new_web_socket_router,
 //!     },
+//! };
+//! use battler_wamp_uri::{
+//!     Uri,
+//!     WildcardUri,
 //! };
 //! use battler_wamp_values::{
 //!     Dictionary,

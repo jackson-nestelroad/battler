@@ -6,18 +6,16 @@ use std::{
 use anyhow::Result;
 use async_trait::async_trait;
 use battler_wamp::{
-    core::{
-        error::WampError,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
-    },
+    core::error::WampError,
     peer::{
         Invocation as NativeInvocation,
         RpcYield,
         SupportedAuthMethod,
     },
+};
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
 };
 use battler_wamp_values::{
     Dictionary,
@@ -157,7 +155,7 @@ impl PeerBuilder {
                 let mut inner_invocation = Invocation::default();
                 std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
                 std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
-                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+                std::mem::swap(&mut invocation.peer_info, &mut inner_invocation.peer_info);
 
                 let result = self
                     .invoke_internal(inner_invocation, arguments, arguments_keyword)
@@ -284,7 +282,7 @@ impl PeerBuilder {
                 let mut inner_invocation = Invocation::default();
                 std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
                 std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
-                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+                std::mem::swap(&mut invocation.peer_info, &mut inner_invocation.peer_info);
 
                 let result = self
                     .invoke_internal(inner_invocation, arguments, arguments_keyword)
@@ -383,7 +381,7 @@ impl PeerBuilder {
                 let mut inner_invocation = Invocation::default();
                 std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
                 std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
-                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+                std::mem::swap(&mut invocation.peer_info, &mut inner_invocation.peer_info);
 
                 let result = self
                     .invoke_internal(inner_invocation, arguments, arguments_keyword, &invocation)
@@ -518,7 +516,7 @@ impl PeerBuilder {
                 let mut inner_invocation = Invocation::default();
                 std::mem::swap(&mut invocation.timeout, &mut inner_invocation.timeout);
                 std::mem::swap(&mut invocation.procedure, &mut inner_invocation.procedure);
-                std::mem::swap(&mut invocation.identity, &mut inner_invocation.identity);
+                std::mem::swap(&mut invocation.peer_info, &mut inner_invocation.peer_info);
 
                 let result = self
                     .invoke_internal(inner_invocation, arguments, arguments_keyword, &invocation)

@@ -1,4 +1,4 @@
-use crate::core::uri::Uri;
+use battler_wamp_uri::Uri;
 
 /// The reason for closing a WAMP session.
 #[derive(Debug, Default, Clone, Copy)]

@@ -93,10 +93,6 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::uri::{
-//!         Uri,
-//!         WildcardUri,
-//!     },
 //!     peer::{
 //!         PeerConfig,
 //!         ReceivedEvent,
@@ -111,6 +107,10 @@
 //!         RouterHandle,
 //!         new_web_socket_router,
 //!     },
+//! };
+//! use battler_wamp_uri::{
+//!     Uri,
+//!     WildcardUri,
 //! };
 //! use battler_wamp_values::WampList;
 //! use battler_wamprat::{
@@ -226,10 +226,6 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::uri::{
-//!         Uri,
-//!         WildcardUri,
-//!     },
 //!     peer::{
 //!         PeerConfig,
 //!         new_web_socket_peer,
@@ -243,6 +239,10 @@
 //!         RouterHandle,
 //!         new_web_socket_router,
 //!     },
+//! };
+//! use battler_wamp_uri::{
+//!     Uri,
+//!     WildcardUri,
 //! };
 //! use battler_wamp_values::WampList;
 //! use battler_wamprat::{
@@ -378,13 +378,7 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::{
-//!         error::WampError,
-//!         uri::{
-//!             Uri,
-//!             WildcardUri,
-//!         },
-//!     },
+//!     core::error::WampError,
 //!     peer::{
 //!         PeerConfig,
 //!         new_web_socket_peer,
@@ -398,6 +392,10 @@
 //!         RouterHandle,
 //!         new_web_socket_router,
 //!     },
+//! };
+//! use battler_wamp_uri::{
+//!     Uri,
+//!     WildcardUri,
 //! };
 //! use battler_wamp_values::{
 //!     Integer,
@@ -541,13 +539,7 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::{
-//!         error::WampError,
-//!         uri::{
-//!             Uri,
-//!             WildcardUri,
-//!         },
-//!     },
+//!     core::error::WampError,
 //!     peer::{
 //!         PeerConfig,
 //!         new_web_socket_peer,
@@ -561,6 +553,10 @@
 //!         RouterHandle,
 //!         new_web_socket_router,
 //!     },
+//! };
+//! use battler_wamp_uri::{
+//!     Uri,
+//!     WildcardUri,
 //! };
 //! use battler_wamp_values::{
 //!     Integer,

@@ -1,4 +1,4 @@
-use battler_wamp::core::uri::Uri;
+use battler_wamp_uri::Uri;
 use proc_macro2::Span;
 use quote::quote;
 use syn::{
@@ -243,7 +243,7 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
                     None => quote!(::anyhow::Error),
                 };
                 let (uri_input, uri_arg) = match &rpc.uri {
-                    UriAttribute::Uri(uri) => (quote!(), quote!(::battler_wamp::core::uri::Uri::try_from(#uri)?)),
+                    UriAttribute::Uri(uri) => (quote!(), quote!(::battler_wamp_uri::Uri::try_from(#uri)?)),
                     UriAttribute::Pattern(pattern) => (quote!(uri: #pattern,), quote!(uri.wamp_generate_uri()?)),
                 };
                 let (output_rpc, method) = if rpc.progressive {
@@ -266,7 +266,7 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
                 let subscribe_name = Ident::new(&format!("subscribe_{name}"), variant.span);
                 let unsubscribe_name = Ident::new(&format!("unsubscribe_{name}"), variant.span);
                 let (parameters, subscribe_method_call, unsubscribe_method_call) = match &pubsub.uri {
-                    UriAttribute::Uri(uri) => (quote!(), quote!(subscribe(::battler_wamp::core::uri::Uri::try_from(#uri)?, subscription)), quote!(unsubscribe(&::battler_wamp::core::uri::WildcardUri::try_from(#uri)?))),
+                    UriAttribute::Uri(uri) => (quote!(), quote!(subscribe(::battler_wamp_uri::Uri::try_from(#uri)?, subscription)), quote!(unsubscribe(&::battler_wamp_uri::WildcardUri::try_from(#uri)?))),
                     UriAttribute::Pattern(pattern) => match &pubsub.subscription {
                         Some(subscription) => (quote!(, generator: &#subscription), quote!(subscribe_pattern_matched_with_generator(generator, subscription)), quote!(unsubscribe_with_generator(generator))),
                         None => (quote!(), quote!(subscribe_pattern_matched(subscription)), quote!(unsubscribe(&#pattern::uri_for_router()))),
@@ -342,10 +342,10 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
                 let name = Ident::new(&format!("register_{name}"), variant.span);
                 let method_call = match &rpc.uri {
                     UriAttribute::Uri(uri) => if rpc.progressive {
-                        quote!(add_procedure_progressive(::battler_wamp::core::uri::Uri::try_from(#uri)?, procedure))
+                        quote!(add_procedure_progressive(::battler_wamp_uri::Uri::try_from(#uri)?, procedure))
 
                     } else {
-                        quote!(add_procedure(::battler_wamp::core::uri::Uri::try_from(#uri)?, procedure))
+                        quote!(add_procedure(::battler_wamp_uri::Uri::try_from(#uri)?, procedure))
                     }
                     UriAttribute::Pattern(_) => if rpc.progressive {
                         quote!(add_procedure_pattern_matched_progressive(procedure))
@@ -381,7 +381,7 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
                 let (uri_input, uri_arg) = match &pubsub.uri {
                     UriAttribute::Uri(uri) => (
                         quote!(),
-                        quote!(::battler_wamp::core::uri::Uri::try_from(#uri)?),
+                        quote!(::battler_wamp_uri::Uri::try_from(#uri)?),
                     ),
                     UriAttribute::Pattern(pattern) => {
                         (quote!(uri: #pattern,), quote!(uri.wamp_generate_uri()?))
@@ -423,7 +423,7 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
                 peer_builder.set_auth_methods(config.auth_methods);
                 let (peer_handle, join_handle) = peer_builder.start(
                     peer,
-                    ::battler_wamp::core::uri::Uri::try_from(#realm)?,
+                    ::battler_wamp_uri::Uri::try_from(#realm)?,
                 );
                 Ok(Self { __peer_handle: peer_handle, __join_handle: join_handle })
             }
@@ -482,7 +482,7 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
 
             #[doc = "Starts the producer on the given peer."]
             pub fn start<S>(self, peer: ::battler_wamp::peer::Peer<S>) -> ::anyhow::Result<#producer<S>> where S: Send + 'static {
-                let (peer_handle, join_handle) = #peer_builder.start(peer, ::battler_wamp::core::uri::Uri::try_from(#realm)?);
+                let (peer_handle, join_handle) = #peer_builder.start(peer, ::battler_wamp_uri::Uri::try_from(#realm)?);
                 Ok(#producer { __peer_handle: peer_handle, __join_handle: join_handle })
             }
 

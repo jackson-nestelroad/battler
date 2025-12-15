@@ -6,24 +6,24 @@ use std::{
 use anyhow::Result;
 use async_trait::async_trait;
 use battler_wamp::{
-    auth::Identity,
     core::{
         error::WampError,
         invocation_policy::InvocationPolicy,
-        uri::Uri,
+        peer_info::PeerInfo,
     },
     peer::{
         Invocation as NativeInvocation,
         RpcYield,
     },
 };
+use battler_wamp_uri::Uri;
 
 /// Information about the invocation of a procedure.
 #[derive(Debug, Default, Clone)]
 pub struct Invocation {
     pub timeout: Duration,
     pub procedure: Option<Uri>,
-    pub identity: Identity,
+    pub peer_info: PeerInfo,
 }
 
 /// Options for registering a procedure.

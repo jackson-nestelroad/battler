@@ -7,6 +7,10 @@ use std::{
 };
 
 use anyhow::Result;
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
+};
 use battler_wamp_values::{
     Dictionary,
     List,
@@ -22,10 +26,6 @@ use crate::{
         match_style::MatchStyle,
         publish_options::PublishOptions,
         roles::RouterRole,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
     },
     message::message::{
         EventMessage,

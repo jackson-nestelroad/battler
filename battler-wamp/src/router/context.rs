@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
 use anyhow::Result;
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
+};
 
 use crate::{
     core::{
         error::InteractionError,
         id::Id,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
     },
     router::{
         procedure::{

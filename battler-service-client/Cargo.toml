@@ -11,11 +11,12 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-se
 [dependencies]
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-battler-wamp-values = { workspace = true }
-battler-wamprat = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
+
+battler-wamp-values = { workspace = true }
+battler-wamprat = { workspace = true }
 
 battler = { path = "../battler" }
 battler-service = { path = "../battler-service" }

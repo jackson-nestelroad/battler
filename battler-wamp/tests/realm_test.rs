@@ -1,9 +1,6 @@
 use anyhow::Result;
 use battler_wamp::{
-    core::{
-        error::InteractionError,
-        uri::Uri,
-    },
+    core::error::InteractionError,
     peer::{
         PeerConfig,
         WebSocketPeer,
@@ -19,6 +16,7 @@ use battler_wamp::{
         new_web_socket_router,
     },
 };
+use battler_wamp_uri::Uri;
 use tokio::task::JoinHandle;
 
 const REALM: &str = "com.battler.test";

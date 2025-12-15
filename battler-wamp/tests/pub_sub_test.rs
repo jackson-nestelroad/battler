@@ -15,10 +15,6 @@ use battler_wamp::{
         match_style::MatchStyle,
         publish_options::PublishOptions,
         roles::RouterRole,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
     },
     peer::{
         PeerConfig,
@@ -40,6 +36,10 @@ use battler_wamp::{
         SupportedAuthMethod as RouterSupportedAuthMethod,
         new_web_socket_router,
     },
+};
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
 };
 use battler_wamp_values::{
     Dictionary,
@@ -1089,19 +1089,17 @@ mod subscription_wildcard_match_test {
     use std::time::Duration;
 
     use battler_wamp::{
-        core::{
-            match_style::MatchStyle,
-            uri::{
-                Uri,
-                WildcardUri,
-            },
-        },
+        core::match_style::MatchStyle,
         peer::{
             Peer,
             PublishedEvent,
             Subscription,
             SubscriptionOptions,
         },
+    };
+    use battler_wamp_uri::{
+        Uri,
+        WildcardUri,
     };
     use tokio::{
         sync::broadcast,

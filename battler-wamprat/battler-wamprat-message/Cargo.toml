@@ -9,7 +9,8 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-message"
 
 [dependencies]
-battler-wamp-values = { workspace = true }
 thiserror = { workspace = true }
+
+battler-wamp-values = { workspace = true }
 
 battler-wamprat-message-proc-macro = "0.1.2"

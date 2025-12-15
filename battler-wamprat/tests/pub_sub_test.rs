@@ -5,10 +5,6 @@ use anyhow::{
     Result,
 };
 use battler_wamp::{
-    core::uri::{
-        Uri,
-        WildcardUri,
-    },
     peer::{
         PeerConfig,
         PublishedEvent,
@@ -25,6 +21,10 @@ use battler_wamp::{
         RouterHandle,
         new_web_socket_router,
     },
+};
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
 };
 use battler_wamp_values::{
     List,

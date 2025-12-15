@@ -1,3 +1,7 @@
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
+};
 use battler_wamp_values::{
     Dictionary,
     Integer,
@@ -14,13 +18,7 @@ use serde_struct_tuple_enum::{
 
 use crate::{
     auth::auth_method::AuthMethod,
-    core::{
-        id::Id,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
-    },
+    core::id::Id,
 };
 
 /// A HELLO message for a peer to initiate a WAMP session in a realm.
@@ -373,6 +371,7 @@ impl Message {
 mod message_test {
     use std::fmt::Debug;
 
+    use battler_wamp_uri::Uri;
     use battler_wamp_values::{
         Dictionary,
         List,
@@ -380,10 +379,7 @@ mod message_test {
     };
 
     use crate::{
-        core::{
-            id::Id,
-            uri::Uri,
-        },
+        core::id::Id,
         message::message::{
             CallMessage,
             HelloMessage,

@@ -1,0 +1,18 @@
+[package]
+name = "battler-wamp-uri"
+version = "0.1.0"
+edition = "2024"
+description = "WAMP URI type."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["wamp", "websocket"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamp/battler-wamp-uri"
+
+[dependencies]
+regex = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+assert_matches = { workspace = true }
+serde_json = { workspace = true }

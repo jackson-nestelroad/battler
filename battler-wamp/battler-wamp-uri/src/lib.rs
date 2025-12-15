@@ -54,7 +54,7 @@ pub struct Uri(String);
 
 impl Uri {
     /// Constructs a URI directly from a value known to be valid, skipping validation.
-    pub(crate) fn from_known<S>(value: S) -> Self
+    pub fn from_known<S>(value: S) -> Self
     where
         S: Into<String>,
     {
@@ -230,7 +230,7 @@ impl<'de> Deserialize<'de> for WildcardUri {
 
 #[cfg(test)]
 mod uri_test {
-    use crate::core::uri::{
+    use crate::{
         Uri,
         WildcardUri,
         validate_strict_uri,

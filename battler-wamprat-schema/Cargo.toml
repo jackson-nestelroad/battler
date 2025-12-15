@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-schema"
-version = "0.3.4"
+version = "0.4.0"
 edition = "2024"
 description = "Procedural macro for strongly-typed WAMP peers."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -10,16 +10,19 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wa
 
 [dependencies]
 anyhow = { workspace = true }
+
 battler-wamp = { workspace = true }
 battler-wamprat = { workspace = true }
 battler-wamprat-message = { workspace = true }
 
-battler-wamprat-schema-proc-macro = "0.4.2"
+battler-wamprat-schema-proc-macro = "0.5.0"
 
 [dev-dependencies]
 assert_matches = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+
+battler-wamp-uri = { workspace = true }
 battler-wamp-values = { workspace = true }
 battler-wamprat-error = { workspace = true }
 battler-wamprat-uri = { workspace = true }
-thiserror = { workspace = true }
-tokio = { workspace = true }

@@ -11,15 +11,15 @@ use battler_wamp::{
         error::WampError,
         id::Id,
         match_style::MatchStyle,
-        uri::{
-            Uri,
-            WildcardUri,
-        },
     },
     peer::{
         ReceivedEvent,
         SubscriptionOptions,
     },
+};
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
 };
 use tokio::sync::broadcast;
 

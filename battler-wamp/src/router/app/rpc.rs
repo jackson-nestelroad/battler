@@ -1,11 +1,9 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use battler_wamp_uri::WildcardUri;
 
 use crate::{
-    core::{
-        id::Id,
-        uri::WildcardUri,
-    },
+    core::id::Id,
     router::context::RealmContext,
 };
 

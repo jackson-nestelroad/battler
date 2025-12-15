@@ -174,11 +174,11 @@
 use battler_wamp::core::{
     error::WampError,
     match_style::MatchStyle,
-    uri::{
-        InvalidUri,
-        Uri,
-        WildcardUri,
-    },
+};
+use battler_wamp_uri::{
+    InvalidUri,
+    Uri,
+    WildcardUri,
 };
 pub use battler_wamprat_uri_proc_macro::WampUriMatcher;
 use thiserror::Error;

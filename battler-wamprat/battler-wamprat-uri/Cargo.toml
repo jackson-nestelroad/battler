@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-uri"
-version = "0.4.3"
+version = "0.5.0"
 edition = "2024"
 description = "Procedural macro for dynamically matching WAMP URIs."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -9,10 +9,11 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-uri"
 
 [dependencies]
-battler-wamp = { workspace = true }
 thiserror = { workspace = true }
 
-battler-wamprat-uri-proc-macro = "0.4.2"
+battler-wamp = { workspace = true }
+battler-wamp-uri = { workspace = true }
+battler-wamprat-uri-proc-macro = "0.5.0"
 
 [dev-dependencies]
 assert_matches = { workspace = true }

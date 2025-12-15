@@ -1,9 +1,7 @@
 use std::fmt::Display;
 
-use battler_wamp::core::{
-    error::WampError,
-    uri::Uri,
-};
+use battler_wamp::core::error::WampError;
+use battler_wamp_uri::Uri;
 use battler_wamprat_error_proc_macro::WampError as WampErrorUnderTest;
 
 #[test]

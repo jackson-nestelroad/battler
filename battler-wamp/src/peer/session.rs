@@ -8,6 +8,7 @@ use anyhow::{
     Error,
     Result,
 };
+use battler_wamp_uri::Uri;
 use battler_wamp_values::{
     Dictionary,
     List,
@@ -46,7 +47,6 @@ use crate::{
             PeerInfo,
         },
         publish_options::PublishOptions,
-        uri::Uri,
     },
     message::{
         common::{
@@ -263,6 +263,7 @@ pub enum ProcedureMessage {
 }
 
 pub(crate) mod peer_session_message {
+    use battler_wamp_uri::Uri;
     use battler_wamp_values::{
         Dictionary,
         List,
@@ -270,10 +271,7 @@ pub(crate) mod peer_session_message {
     use tokio::sync::broadcast;
 
     use crate::{
-        core::{
-            id::Id,
-            uri::Uri,
-        },
+        core::id::Id,
         message::message::WelcomeMessage,
         peer::{
             ReceivedEvent,

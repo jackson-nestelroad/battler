@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-error"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2024"
 description = "Procedural macro for custom WAMP errors."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -9,7 +9,8 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-wamprat/battler-wamprat-error"
 
 [dependencies]
-battler-wamprat-error-proc-macro = "0.1.3"
+battler-wamprat-error-proc-macro = "0.2.0"
 
 [dev-dependencies]
 battler-wamp = { workspace = true }
+battler-wamp-uri = { workspace = true }
