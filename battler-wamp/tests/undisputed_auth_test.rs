@@ -106,11 +106,11 @@ async fn peer_joins_realm_with_undisputed_identity() {
                 arguments_keyword: Dictionary::from_iter([
                     (
                         "id".to_owned(),
-                        Value::String(invocation.identity.id.clone()),
+                        Value::String(invocation.peer_info.identity.id.clone()),
                     ),
                     (
                         "role".to_owned(),
-                        Value::String(invocation.identity.role.clone()),
+                        Value::String(invocation.peer_info.identity.role.clone()),
                     ),
                 ]),
                 ..Default::default()

@@ -14,6 +14,7 @@ use battler_wamp::{
         id::Id,
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
+        peer_info::ConnectionType,
         uri::{
             Uri,
             WildcardUri,
@@ -2246,4 +2247,136 @@ async fn cancellation_occurs_for_shared_registration() {
     assert_matches::assert_matches!(rpc.result().await, Err(err) => {
         assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::Canceled | InteractionError::NoAvailableCallee));
     })
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn invocation_contains_remote_peer_address() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.echo_connection_type").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        fn handle_invocation(invocation: &Invocation) -> Result<String> {
+            let result = match &invocation.peer_info.connection_type {
+                ConnectionType::Remote(addr) => addr.clone(),
+                ConnectionType::Direct => "direct".to_owned(),
+            };
+            Ok(result)
+        }
+
+        while let Ok(ProcedureMessage::Invocation(invocation)) =
+            procedure.procedure_message_rx.recv().await
+        {
+            let result = handle_invocation(&invocation).map(|val| RpcYield {
+                arguments: List::from_iter([Value::String(val)]),
+                ..Default::default()
+            });
+            assert_matches::assert_matches!(invocation.respond(result).await, Ok(()));
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    let caller = create_peer("caller").unwrap();
+
+    assert_matches::assert_matches!(
+        caller
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(
+                Uri::try_from("com.battler.echo_connection_type").unwrap(),
+                RpcCall::default()
+            )
+            .await,
+        Ok(result) => {
+            pretty_assertions::assert_eq!(result, RpcResult {
+                arguments: List::from_iter([Value::String("127.0.0.1".to_owned())]),
+                ..Default::default()
+            });
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn invocation_contains_direct_peer_connection_type() {
+    test_utils::setup::setup_test_environment();
+
+    let (router_handle, _) = start_router().await.unwrap();
+    let callee = create_peer("callee").unwrap();
+
+    assert_matches::assert_matches!(
+        callee
+            .connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
+
+    let procedure = callee
+        .register(Uri::try_from("com.battler.echo_connection_type").unwrap())
+        .await
+        .unwrap();
+
+    async fn handler(mut procedure: Procedure) {
+        fn handle_invocation(invocation: &Invocation) -> Result<String> {
+            let result = match &invocation.peer_info.connection_type {
+                ConnectionType::Remote(addr) => addr.clone(),
+                ConnectionType::Direct => "direct".to_owned(),
+            };
+            Ok(result)
+        }
+
+        while let Ok(ProcedureMessage::Invocation(invocation)) =
+            procedure.procedure_message_rx.recv().await
+        {
+            let result = handle_invocation(&invocation).map(|val| RpcYield {
+                arguments: List::from_iter([Value::String(val)]),
+                ..Default::default()
+            });
+            assert_matches::assert_matches!(invocation.respond(result).await, Ok(()));
+        }
+    }
+
+    tokio::spawn(handler(procedure));
+
+    let connection = router_handle.direct_connect();
+    let caller = create_peer("caller").unwrap();
+
+    assert_matches::assert_matches!(caller.direct_connect(connection.stream()).await, Ok(()));
+    assert_matches::assert_matches!(caller.join_realm(REALM).await, Ok(()));
+
+    assert_matches::assert_matches!(
+        caller
+            .call_and_wait(
+                Uri::try_from("com.battler.echo_connection_type").unwrap(),
+                RpcCall::default()
+            )
+            .await,
+        Ok(result) => {
+            pretty_assertions::assert_eq!(result, RpcResult {
+                arguments: List::from_iter([Value::String("direct".to_owned())]),
+                ..Default::default()
+            });
+        }
+    );
 }

@@ -343,11 +343,11 @@ async fn rpc_invocation_holds_empty_identity_for_caller_without_authentication()
                 arguments_keyword: Dictionary::from_iter([
                     (
                         "id".to_owned(),
-                        Value::String(invocation.identity.id.clone()),
+                        Value::String(invocation.peer_info.identity.id.clone()),
                     ),
                     (
                         "role".to_owned(),
-                        Value::String(invocation.identity.role.clone()),
+                        Value::String(invocation.peer_info.identity.role.clone()),
                     ),
                 ]),
                 ..Default::default()
@@ -437,11 +437,11 @@ async fn rpc_invocation_holds_identity_for_caller_with_authentication() {
                 arguments_keyword: Dictionary::from_iter([
                     (
                         "id".to_owned(),
-                        Value::String(invocation.identity.id.clone()),
+                        Value::String(invocation.peer_info.identity.id.clone()),
                     ),
                     (
                         "role".to_owned(),
-                        Value::String(invocation.identity.role.clone()),
+                        Value::String(invocation.peer_info.identity.role.clone()),
                     ),
                 ]),
                 ..Default::default()

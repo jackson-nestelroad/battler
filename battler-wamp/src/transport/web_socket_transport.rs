@@ -1,5 +1,6 @@
 use core::str;
 use std::{
+    net::SocketAddr,
     pin::Pin,
     task,
 };
@@ -37,7 +38,16 @@ pub struct WebSocketTransport {
     binary: bool,
 }
 
-impl Transport for WebSocketTransport {}
+impl Transport for WebSocketTransport {
+    fn peer_addr(&self) -> Result<SocketAddr> {
+        let tcp_stream = match self.stream.get_ref() {
+            MaybeTlsStream::Plain(stream) => &stream,
+            MaybeTlsStream::Rustls(stream) => stream.get_ref().0,
+            _ => return Err(Error::msg("unsupported tcp stream")),
+        };
+        tcp_stream.peer_addr().map_err(Error::new)
+    }
+}
 
 impl Stream for WebSocketTransport {
     type Item = Result<TransportData>;

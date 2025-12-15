@@ -20,6 +20,7 @@ use tokio::{
 use crate::{
     core::{
         error::InteractionError,
+        peer_info::ConnectionType,
         stream::{
             MessageStream,
             StreamMessage,
@@ -100,6 +101,11 @@ impl Service {
             user_message_tx,
             user_message_rx,
         }
+    }
+
+    /// The connection type of the underlying stream.
+    pub fn connection_type(&self) -> ConnectionType {
+        self.stream.connection_type()
     }
 
     /// The message receiver channel.

@@ -59,6 +59,7 @@ use crate::{
         },
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
+        peer_info::ConnectionType,
         publish_options::PublishOptions,
         roles::{
             PeerRoles,
@@ -311,6 +312,7 @@ impl SessionHandle {
 /// Handles WAMP messages in a state machine and holds all session-scoped state.
 pub struct Session {
     id: Id,
+    connection_type: ConnectionType,
     message_tx: mpsc::Sender<Message>,
     service_message_tx: mpsc::Sender<Message>,
     state: RwLock<SessionState>,
@@ -331,6 +333,7 @@ impl Session {
     /// Creates a new session over a service.
     pub fn new(
         id: Id,
+        connection_type: ConnectionType,
         message_tx: mpsc::Sender<Message>,
         service_message_tx: mpsc::Sender<Message>,
     ) -> Self {
@@ -342,6 +345,7 @@ impl Session {
         let (procedure_message_tx, _) = broadcast::channel(16);
         Self {
             id,
+            connection_type,
             shared_state: Arc::new(RwLock::new(SharedSessionState::default())),
             message_tx,
             service_message_tx,
@@ -1148,6 +1152,18 @@ impl Session {
                 "timeout".to_owned(),
                 Value::Integer(invocation.timeout.as_millis() as u64),
             );
+        }
+
+        match &self.connection_type {
+            ConnectionType::Remote(addr) => {
+                details.insert(
+                    "battler_wamp_remote_addr".to_owned(),
+                    Value::String(addr.clone()),
+                );
+            }
+            ConnectionType::Direct => {
+                details.insert("battler_wamp_direct_peer".to_owned(), Value::Bool(true));
+            }
         }
 
         let identity = self

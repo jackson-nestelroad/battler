@@ -41,6 +41,10 @@ use crate::{
             IdAllocator,
             SequentialIdAllocator,
         },
+        peer_info::{
+            ConnectionType,
+            PeerInfo,
+        },
         publish_options::PublishOptions,
         uri::Uri,
     },
@@ -163,7 +167,7 @@ pub struct Invocation {
     pub timeout: Duration,
     pub procedure: Option<Uri>,
 
-    pub identity: Identity,
+    pub peer_info: PeerInfo,
 
     id: Id,
     message_tx: mpsc::Sender<Message>,
@@ -913,6 +917,24 @@ impl Session {
                     .and_then(|val| val.string())
                     .and_then(|val| Uri::try_from(val).ok());
 
+                let connection_type = if message
+                    .details
+                    .get("battler_wamp_direct_peer")
+                    .is_some_and(|val| val.bool().is_some_and(|val| val))
+                {
+                    ConnectionType::Direct
+                } else {
+                    ConnectionType::Remote(
+                        message
+                            .details
+                            .get("battler_wamp_remote_addr")
+                            .map(|val| val.string())
+                            .flatten()
+                            .unwrap_or_default()
+                            .to_owned(),
+                    )
+                };
+
                 let mut identity = Identity::default();
                 if let Some(auth_id) = message.details.get("battler_wamp_authid") {
                     identity.id = auth_id.string().unwrap_or_default().to_owned();
@@ -921,6 +943,11 @@ impl Session {
                     identity.role = auth_role.string().unwrap_or_default().to_owned();
                 }
 
+                let peer_info = PeerInfo {
+                    connection_type,
+                    identity,
+                };
+
                 procedure
                     .procedure_tx
                     .send(ProcedureMessage::Invocation(Invocation {
@@ -928,7 +955,7 @@ impl Session {
                         arguments_keyword: message.call_arguments_keyword,
                         timeout,
                         procedure: reported_procedure,
-                        identity,
+                        peer_info,
                         id: message.request,
                         message_tx: self.service_message_tx.clone(),
                         receive_progress,

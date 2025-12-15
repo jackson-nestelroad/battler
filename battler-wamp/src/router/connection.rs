@@ -21,6 +21,7 @@ use crate::{
     core::{
         error::ChannelTransmittableResult,
         id::Id,
+        peer_info::ConnectionType,
         service::Service,
     },
     message::message::Message,
@@ -66,6 +67,7 @@ impl Connection {
     }
 
     async fn run_service<S>(&self, context: &RouterContext<S>, service: Service) {
+        let connection_type = service.connection_type();
         let mut message_rx = service.message_rx();
         let end_rx = service.end_rx();
 
@@ -74,6 +76,7 @@ impl Connection {
             if !self
                 .run_session(
                     context,
+                    connection_type.clone(),
                     service_handle.message_tx(),
                     &mut message_rx,
                     end_rx.resubscribe(),
@@ -102,13 +105,14 @@ impl Connection {
     async fn run_session<S>(
         &self,
         context: &RouterContext<S>,
+        connection_type: ConnectionType,
         service_message_tx: mpsc::Sender<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session_id = context.router().id_allocator.generate_id().await;
         let (message_tx, message_rx) = mpsc::channel(16);
-        let session = Session::new(session_id, message_tx, service_message_tx);
+        let session = Session::new(session_id, connection_type, message_tx, service_message_tx);
 
         info!(
             "Proactively starting router session {} for connection {}",

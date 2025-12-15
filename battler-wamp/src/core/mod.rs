@@ -6,6 +6,7 @@ pub mod hash;
 pub mod id;
 pub mod invocation_policy;
 pub mod match_style;
+pub mod peer_info;
 pub mod publish_options;
 pub mod roles;
 pub mod service;

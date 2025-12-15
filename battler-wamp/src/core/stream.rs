@@ -17,6 +17,7 @@ use futures_util::{
 use tokio::sync::mpsc;
 
 use crate::{
+    core::peer_info::ConnectionType,
     message::message::Message,
     serializer::serializer::Serializer,
     transport::transport::{
@@ -38,6 +39,9 @@ pub trait MessageStream:
 {
     /// The message stream type for logging.
     fn message_stream_type(&self) -> &'static str;
+
+    /// The connection type.
+    fn connection_type(&self) -> ConnectionType;
 }
 
 /// A stream of messages over some transport, such as a network connection.
@@ -62,6 +66,14 @@ impl TransportMessageStream {
 impl MessageStream for TransportMessageStream {
     fn message_stream_type(&self) -> &'static str {
         "TransportMessageStream"
+    }
+
+    fn connection_type(&self) -> ConnectionType {
+        let ip = match self.transport.peer_addr() {
+            Ok(addr) => addr.ip().to_string(),
+            Err(_) => "[unknown peer]".to_owned(),
+        };
+        ConnectionType::Remote(ip)
     }
 }
 
@@ -167,6 +179,10 @@ impl Debug for DirectMessageStream {
 impl MessageStream for DirectMessageStream {
     fn message_stream_type(&self) -> &'static str {
         "DirectMessageStream"
+    }
+
+    fn connection_type(&self) -> ConnectionType {
+        ConnectionType::Direct
     }
 }
 

@@ -1,4 +1,7 @@
-use std::fmt::Debug;
+use std::{
+    fmt::Debug,
+    net::SocketAddr,
+};
 
 use anyhow::{
     Error,
@@ -26,6 +29,8 @@ pub enum TransportData {
 pub trait Transport:
     Send + Stream<Item = Result<TransportData>> + Sink<TransportData, Error = Error> + Unpin + Debug
 {
+    /// The peer address of the underlying stream.
+    fn peer_addr(&self) -> Result<SocketAddr>;
 }
 
 /// A factory for creating a new [`Transport`].
