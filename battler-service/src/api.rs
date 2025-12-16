@@ -62,6 +62,13 @@ pub enum BattleState {
     Finished,
 }
 
+/// Metadata about a battle.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BattleMetadata {
+    /// Player who created the battle.
+    pub creator: String,
+}
+
 /// A battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Battle {
@@ -74,6 +81,8 @@ pub struct Battle {
     pub sides: Vec<Side>,
     /// The error that occurred when continuing the battle.
     pub error: Option<String>,
+    /// Metadata about the battle.
+    pub metadata: BattleMetadata,
 }
 
 /// A preview of a [`Player`] in a [`Battle`].

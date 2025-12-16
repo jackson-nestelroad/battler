@@ -44,6 +44,7 @@ use uuid::Uuid;
 
 use crate::{
     Battle,
+    BattleMetadata,
     BattlePreview,
     BattleState,
     GlobalLogEntry,
@@ -68,6 +69,9 @@ use crate::{
 /// Options for configuring how [`BattlerService`] manages an individual battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct BattleServiceOptions {
+    /// Player who created the battle.
+    pub creator: String,
+
     /// Battle timers.
     #[serde(default)]
     pub timers: Timers,
@@ -88,6 +92,7 @@ enum TimerLogType {
 struct LiveBattle<'d> {
     uuid: Uuid,
     battle: PublicCoreBattle<'d>,
+    metadata: BattleMetadata,
     sides: Vec<Side>,
     error: Option<String>,
     logs: SplitLogs,
@@ -126,9 +131,14 @@ impl<'d> LiveBattle<'d> {
             .collect::<Vec<_>>();
         let timers = service_options.timers.to_state(&players);
 
+        let metadata = BattleMetadata {
+            creator: service_options.creator,
+        };
+
         LiveBattle {
             uuid,
             battle,
+            metadata,
             sides,
             error: None,
             logs,
@@ -197,6 +207,7 @@ impl<'d> LiveBattle<'d> {
             state: self.battle_state(),
             sides: self.sides.clone(),
             error: self.error.clone(),
+            metadata: self.metadata.clone(),
         }
     }
 

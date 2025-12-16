@@ -18,7 +18,21 @@ use tokio::sync::{
 };
 use uuid::Uuid;
 
-use crate::handlers::create;
+use crate::handlers::{
+    battle,
+    battles,
+    battles_for_player,
+    create,
+    delete,
+    full_log,
+    last_log_entry,
+    make_choice,
+    player_data,
+    request,
+    start,
+    update_team,
+    validate_player,
+};
 
 fn uuid_for_uri(uuid: &Uuid) -> String {
     uuid.simple()
@@ -28,6 +42,8 @@ fn uuid_for_uri(uuid: &Uuid) -> String {
 
 pub struct Modules {
     pub create_authorizer: Box<dyn create::Authorizer>,
+    pub start_authorizer: Box<dyn start::Authorizer>,
+    pub delete_authorizer: Box<dyn delete::Authorizer>,
 }
 
 pub async fn run_battler_service_producer<'d, S>(
@@ -51,12 +67,48 @@ where
     let mut builder = battler_service_schema::BattlerService::producer_builder(peer_config.clone());
     let service = Arc::new(service);
 
-    let create_authorizer = Arc::new(modules.create_authorizer);
-
     builder.register_create(create::Handler {
         service: service.clone(),
         engine_options,
-        authorizer: create_authorizer,
+        authorizer: modules.create_authorizer,
+    })?;
+    builder.register_battles(battles::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_battles_for_player(battles_for_player::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_battle(battle::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_update_team(update_team::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_validate_player(validate_player::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_start(start::Handler {
+        service: service.clone(),
+        authorizer: modules.start_authorizer,
+    })?;
+    builder.register_player_data(player_data::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_request(request::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_make_choice(make_choice::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_delete(delete::Handler {
+        service: service.clone(),
+        authorizer: modules.delete_authorizer,
+    })?;
+    builder.register_full_log(full_log::Handler {
+        service: service.clone(),
+    })?;
+    builder.register_last_log_entry(last_log_entry::Handler {
+        service: service.clone(),
     })?;
 
     let producer = builder.start(peer)?;

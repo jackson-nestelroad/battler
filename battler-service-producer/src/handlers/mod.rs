@@ -1,1 +1,13 @@
+pub mod battle;
+pub mod battles;
+pub mod battles_for_player;
 pub mod create;
+pub mod delete;
+pub mod full_log;
+pub mod last_log_entry;
+pub mod make_choice;
+pub mod player_data;
+pub mod request;
+pub mod start;
+pub mod update_team;
+pub mod validate_player;
