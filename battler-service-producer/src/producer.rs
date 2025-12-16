@@ -12,6 +12,7 @@ use battler_service::{
     BattlerService,
     GlobalLogEntry,
 };
+use battler_wamp::core::hash::HashSet;
 use tokio::sync::{
     broadcast,
     mpsc,
@@ -112,7 +113,8 @@ where
     })?;
 
     let producer = builder.start(peer)?;
-    run_battler_service_producer_internal(producer, stop_rx, global_log_rx).await?;
+    run_battler_service_producer_internal(producer, service.clone(), stop_rx, global_log_rx)
+        .await?;
 
     Arc::try_unwrap(service).unwrap_or_else(|_| {
         panic!("battler service has additional references after producer was dropped")
@@ -123,6 +125,7 @@ where
 
 async fn run_battler_service_producer_internal<'d, S>(
     producer: battler_service_schema::BattlerServiceProducer<S>,
+    service: Arc<BattlerService<'d>>,
     mut stop_rx: broadcast::Receiver<()>,
     mut global_log_rx: mpsc::UnboundedReceiver<GlobalLogEntry>,
 ) -> Result<()>
@@ -134,6 +137,7 @@ where
             log = global_log_rx.recv() => {
                 publish_log_entry(
                     &producer,
+                    service.as_ref(),
                     log.ok_or_else(|| Error::msg("global log channel unexpectedly closed"))?,
                 ).await?;
 
@@ -147,13 +151,25 @@ where
     Ok(())
 }
 
-async fn publish_log_entry<S>(
+async fn publish_log_entry<'d, S>(
     producer: &battler_service_schema::BattlerServiceProducer<S>,
+    service: &BattlerService<'d>,
     global_log_entry: GlobalLogEntry,
 ) -> Result<()>
 where
     S: Send + 'static,
 {
+    let battle = service.battle(global_log_entry.battle).await?;
+    let players = global_log_entry
+        .side
+        .map(|side| battle.sides.get(side))
+        .flatten()
+        .map(|side| {
+            side.players
+                .iter()
+                .map(|player| player.id.clone())
+                .collect::<HashSet<_>>()
+        });
     let log_pattern = battler_service_schema::LogPattern(
         uuid_for_uri(&global_log_entry.battle),
         match global_log_entry.side {
@@ -169,7 +185,10 @@ where
         .publish_log(
             log_pattern,
             log_event,
-            battler_wamprat::peer::PublishOptions::default(),
+            battler_wamprat::peer::PublishOptions {
+                eligible_authid: players,
+                ..Default::default()
+            },
         )
         .await
 }
