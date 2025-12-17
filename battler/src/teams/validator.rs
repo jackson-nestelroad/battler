@@ -824,7 +824,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
                 None => true,
             })
             .filter(|event| match &event.ball {
-                Some(ball) => mon.ball == *ball,
+                Some(event_ball) => mon.ball.as_ref().is_some_and(|ball| ball == event_ball),
                 None => true,
             })
             .filter(|event| {

@@ -264,7 +264,7 @@ pub struct MonSummaryData {
     pub gender: Gender,
     pub nature: Nature,
     pub shiny: bool,
-    pub ball: String,
+    pub ball: Option<String>,
     pub hp: u16,
     pub friendship: u8,
     pub experience: u32,
@@ -549,7 +549,7 @@ pub struct Mon {
     pub true_nature: Nature,
     pub gender: Gender,
     pub shiny: bool,
-    pub ball: Id,
+    pub ball: Option<Id>,
     pub hidden_power_type: Type,
     pub different_original_trainer: bool,
     pub dynamax_level: u8,
@@ -622,11 +622,16 @@ impl Mon {
             .hidden_power_type
             .unwrap_or(calculate_hidden_power_type(&data.ivs));
 
-        let mut ball = data.ball;
-        if ball.is_empty() {
-            ball = default_ball();
-        }
-        let ball = Id::from(ball);
+        let ball = data
+            .ball
+            .map(|ball| {
+                if ball.is_empty() {
+                    default_ball()
+                } else {
+                    ball
+                }
+            })
+            .map(|ball| Id::from(ball));
 
         Ok(Self {
             player: usize::MAX,
@@ -1462,14 +1467,19 @@ impl Mon {
             ),
             None => None,
         };
-        let ball = context
-            .battle()
-            .dex
-            .items
-            .get_by_id(&context.mon().ball)?
-            .data
-            .name
-            .clone();
+        let ball = match &context.mon().ball {
+            Some(ball) => Some(
+                context
+                    .battle()
+                    .dex
+                    .items
+                    .get_by_id(ball)?
+                    .data
+                    .name
+                    .clone(),
+            ),
+            None => None,
+        };
         Ok(MonSummaryData {
             name: context.mon().name.clone(),
             species,

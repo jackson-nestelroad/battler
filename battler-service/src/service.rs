@@ -1098,7 +1098,7 @@ mod battler_service_test {
             experience: 0,
             shiny: false,
             friendship: 255,
-            ball: "Poké Ball".to_owned(),
+            ball: Some("Poké Ball".to_owned()),
             hidden_power_type: None,
             different_original_trainer: false,
             dynamax_level: 0,

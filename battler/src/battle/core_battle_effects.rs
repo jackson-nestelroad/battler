@@ -929,12 +929,14 @@ fn find_callbacks_on_mon(
         AppliedEffectLocation::Mon(context.mon_handle()),
     ));
 
-    callbacks.push(CallbackHandle::new(
-        EffectHandle::ItemCondition(context.mon().ball.clone()),
-        event,
-        modifier,
-        AppliedEffectLocation::Mon(context.mon_handle()),
-    ));
+    if let Some(ball) = context.mon().ball.clone() {
+        callbacks.push(CallbackHandle::new(
+            EffectHandle::ItemCondition(ball),
+            event,
+            modifier,
+            AppliedEffectLocation::Mon(context.mon_handle()),
+        ));
+    }
 
     if context.mon().different_original_trainer
         && context.mon().level > context.battle().format.rules.numeric_rules.obedience_cap

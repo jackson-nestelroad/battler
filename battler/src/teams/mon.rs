@@ -77,8 +77,7 @@ pub struct MonData {
     #[serde(default)]
     pub friendship: u8,
     /// Type of ball the Mon is stored in.
-    #[serde(default)]
-    pub ball: String,
+    pub ball: Option<String>,
     /// Hidden power type.
     pub hidden_power_type: Option<Type>,
     /// Different original trainer.

@@ -2186,7 +2186,7 @@ impl<'d> CoreBattle<'d> {
             Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
 
-            context.mon_mut().ball = entry.item;
+            context.mon_mut().ball = Some(entry.item);
 
             context
                 .as_battle_context_mut()
