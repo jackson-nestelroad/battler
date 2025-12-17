@@ -70,6 +70,7 @@ use crate::{
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct BattleServiceOptions {
     /// Player who created the battle.
+    #[serde(default)]
     pub creator: String,
 
     /// Battle timers.
