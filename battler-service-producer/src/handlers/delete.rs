@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use anyhow::{
-    Error,
-    Result,
-};
+use anyhow::Result;
 use battler_service::BattlerService;
 use uuid::Uuid;
 
-use crate::BattleAuthorizer;
+use crate::{
+    BattleAuthorizer,
+    BattleManagementOperation,
+};
 
 pub(crate) struct Handler<'d> {
     pub service: Arc<BattlerService<'d>>,
@@ -33,10 +33,12 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
 
         if invocation.peer_info.identity.id != battle.metadata.creator {
             self.authorizer
-                .authorize_battle_management(&invocation.peer_info, &battle)
+                .authorize_battle_management(
+                    &invocation.peer_info,
+                    &battle,
+                    BattleManagementOperation::Delete,
+                )
                 .await?;
-        } else {
-            return Err(Error::msg("you cannot delete the battle"));
         }
 
         self.service.delete(uuid).await?;

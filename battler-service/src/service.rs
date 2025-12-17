@@ -47,6 +47,7 @@ use crate::{
     BattleMetadata,
     BattlePreview,
     BattleState,
+    BattleStatus,
     GlobalLogEntry,
     Player,
     PlayerPreview,
@@ -202,10 +203,17 @@ impl<'d> LiveBattle<'d> {
         }
     }
 
-    fn battle_status(&self) -> Battle {
+    fn battle_status(&self) -> BattleStatus {
+        BattleStatus {
+            turn: self.battle.turn(),
+        }
+    }
+
+    fn battle(&self) -> Battle {
         Battle {
             uuid: self.uuid,
             state: self.battle_state(),
+            status: self.battle_status(),
             sides: self.sides.clone(),
             error: self.error.clone(),
             metadata: self.metadata.clone(),
@@ -383,8 +391,8 @@ impl<'d> LiveBattleManager<'d> {
         self.live_battle.lock().await.battle_state()
     }
 
-    async fn battle_status(&self) -> Battle {
-        self.live_battle.lock().await.battle_status()
+    async fn battle(&self) -> Battle {
+        self.live_battle.lock().await.battle()
     }
 
     async fn battle_preview(&self) -> BattlePreview {
@@ -785,7 +793,7 @@ impl<'d> BattlerService<'d> {
     /// Generates the status of an existing battle.
     pub async fn battle(&self, battle: Uuid) -> Result<Battle> {
         let battle = self.find_battle_or_error(battle).await?;
-        Ok(battle.battle_status().await)
+        Ok(battle.battle().await)
     }
 
     /// Creates a new battle.
@@ -959,6 +967,7 @@ impl<'d> BattlerService<'d> {
 
     /// Lists battles.
     pub async fn battles(&self, count: usize, offset: usize) -> Vec<BattlePreview> {
+        let count = count.min(100);
         let battles = self.battles.lock().await;
         let mut previews = Vec::with_capacity(count);
         for (_, battle) in battles.iter().skip(offset).take(count) {
@@ -974,6 +983,7 @@ impl<'d> BattlerService<'d> {
         count: usize,
         offset: usize,
     ) -> Vec<BattlePreview> {
+        let count = count.min(100);
         let battles = self.battles_by_player.lock().await;
         let battles = match battles.get(player) {
             Some(battles) => battles,
@@ -1341,6 +1351,68 @@ mod battler_service_test {
             battler_service.request(battle.uuid, "player-3").await,
             Err(_)
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn plays_battle_and_finishes_and_deletes() {
+        let battler_service = BattlerService::new(static_local_data_store());
+        let battle = battler_service
+            .create(
+                core_battle_options(BattleType::Singles, team(5)),
+                CoreBattleEngineOptions::default(),
+                BattleServiceOptions::default(),
+            )
+            .await
+            .unwrap();
+
+        assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+        // Wait for battle to start.
+        let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+        assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+
+        assert_matches::assert_matches!(
+            battler_service
+                .make_choice(battle.uuid, "player-1", "move 0")
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(
+            battler_service
+                .make_choice(battle.uuid, "player-2", "move 0")
+                .await,
+            Ok(())
+        );
+
+        read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:2").await;
+
+        assert_matches::assert_matches!(battler_service.delete(battle.uuid).await, Err(err) => {
+            assert_eq!(err.to_string(), "cannot delete an ongoing battle");
+        });
+
+        assert_matches::assert_matches!(
+            battler_service
+                .make_choice(battle.uuid, "player-1", "move 0")
+                .await,
+            Ok(())
+        );
+        assert_matches::assert_matches!(
+            battler_service
+                .make_choice(battle.uuid, "player-2", "forfeit")
+                .await,
+            Ok(())
+        );
+
+        // Wait for battle to end.
+        read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "win|side:0").await;
+
+        assert_matches::assert_matches!(battler_service.battle(battle.uuid).await, Ok(battle) => {
+            assert_eq!(battle.state, BattleState::Finished);
+        });
+
+        assert_matches::assert_matches!(battler_service.delete(battle.uuid).await, Ok(()));
+
+        pretty_assertions::assert_eq!(battler_service.battles(usize::MAX, 0).await, []);
     }
 
     #[tokio::test(flavor = "multi_thread")]

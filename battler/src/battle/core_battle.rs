@@ -135,6 +135,11 @@ impl<'d> PublicCoreBattle<'d> {
         self.internal.ended
     }
 
+    /// The current turn.
+    pub fn turn(&self) -> u64 {
+        self.internal.turn
+    }
+
     /// Does the battle have new battle log entries since the last call to
     /// [`Self::new_log_entries`]?
     pub fn has_new_log_entries(&self) -> bool {
@@ -736,6 +741,16 @@ impl<'d> CoreBattle<'d> {
     }
 
     fn validate_player_internal(context: &mut PlayerContext) -> Result<()> {
+        // Note that we do not call the TeamValidator here, since the player's team is not updated
+        // unless it passes validation.
+        //
+        // If the battle was created with an invalid team, it will bypass the validator, because we
+        // do not have access to the original TeamData here.
+        //
+        // If this is undesired, the battle should be created with empty teams and players should be
+        // REQUIRED to use update_team. Then, validation can occur in the core battle engine, and
+        // the interface into the battle engine can do additional validation (i.e., the player is
+        // not using Mons it does not truly own).
         let mut problems = core_battle_effects::run_event_for_player_expecting_string_list(
             context,
             fxlang::BattleEvent::ValidateTeam,

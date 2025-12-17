@@ -9,10 +9,6 @@ use serde::{
     Serialize,
 };
 
-fn default_ball() -> String {
-    return "Poké Ball".to_owned();
-}
-
 /// Pre-battle data for a specific Mon on a team.
 ///
 /// Data here is meant to carry from battle to battle and is cleared when a Mon is healed. In
@@ -81,7 +77,7 @@ pub struct MonData {
     #[serde(default)]
     pub friendship: u8,
     /// Type of ball the Mon is stored in.
-    #[serde(default = "default_ball")]
+    #[serde(default)]
     pub ball: String,
     /// Hidden power type.
     pub hidden_power_type: Option<Type>,

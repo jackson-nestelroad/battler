@@ -80,6 +80,10 @@ use crate::{
     teams::MonData,
 };
 
+fn default_ball() -> String {
+    return "Poké Ball".to_owned();
+}
+
 /// The physical details of a [`Mon`].
 ///
 /// Copied by "Illusion."
@@ -618,6 +622,12 @@ impl Mon {
             .hidden_power_type
             .unwrap_or(calculate_hidden_power_type(&data.ivs));
 
+        let mut ball = data.ball;
+        if ball.is_empty() {
+            ball = default_ball();
+        }
+        let ball = Id::from(ball);
+
         Ok(Self {
             player: usize::MAX,
             side: usize::MAX,
@@ -641,7 +651,7 @@ impl Mon {
             true_nature: data.true_nature.unwrap_or(data.nature),
             gender: data.gender,
             shiny: data.shiny,
-            ball: Id::from(data.ball),
+            ball,
             hidden_power_type,
             different_original_trainer: data.different_original_trainer,
             dynamax_level: data.dynamax_level,

@@ -31,5 +31,5 @@ pretty_assertions = { workspace = true }
 
 battler-wamp-uri = { workspace = true }
 
+battler-service-client = { path = "../battler-service-client" }
 battler-test-utils = { path = "../battler-test-utils" }
-

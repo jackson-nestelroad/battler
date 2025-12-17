@@ -252,7 +252,7 @@ where
         battle: Uuid,
         side: Option<usize>,
     ) -> Result<broadcast::Receiver<LogEntry>> {
-        let (entry_tx, entry_rx) = broadcast::channel(16);
+        let (entry_tx, entry_rx) = broadcast::channel(128);
         let pattern = battler_service_schema::LogPattern(
             uuid_for_uri(&battle),
             side.map(|side| battler_service_schema::LogSelector::Side(side))

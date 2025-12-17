@@ -67,7 +67,7 @@ impl From<Timer> for TimerState {
 }
 
 /// Configuration for a single timer.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Timer {
     /// Number of seconds.
     pub secs: u64,

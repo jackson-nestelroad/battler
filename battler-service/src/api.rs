@@ -62,6 +62,13 @@ pub enum BattleState {
     Finished,
 }
 
+/// The status of a [`Battle`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BattleStatus {
+    /// The current turn number.
+    pub turn: u64,
+}
+
 /// Metadata about a battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BattleMetadata {
@@ -77,6 +84,8 @@ pub struct Battle {
     pub uuid: Uuid,
     /// The state of the battle.
     pub state: BattleState,
+    /// The status of the battle.
+    pub status: BattleStatus,
     /// The sides participating in the battle.
     pub sides: Vec<Side>,
     /// The error that occurred when continuing the battle.

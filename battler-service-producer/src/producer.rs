@@ -167,7 +167,6 @@ where
                     service.as_ref(),
                     log.ok_or_else(|| Error::msg("global log channel unexpectedly closed"))?,
                 ).await?;
-
             },
             _ = stop_recv => {
                 producer.stop().await?;
@@ -186,7 +185,12 @@ async fn publish_log_entry<'d, S>(
 where
     S: Send + 'static,
 {
-    let battle = service.battle(global_log_entry.battle).await?;
+    // If battle gets deleted, we do not need to publish logs.
+    let battle = match service.battle(global_log_entry.battle).await {
+        Ok(battle) => battle,
+        Err(_) => return Ok(()),
+    };
+
     let players = global_log_entry
         .side
         .map(|side| battle.sides.get(side))

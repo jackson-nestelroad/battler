@@ -147,16 +147,16 @@ impl Connection {
             Ok(done) => {
                 info!(
                     "Router session {} for connection {} finished",
-                    self.uuid,
-                    session.id()
+                    session.id(),
+                    self.uuid
                 );
                 done
             }
             Err(err) => {
                 error!(
                     "Router session {} for connection {} failed: {err:#}",
-                    self.uuid,
-                    session.id()
+                    session.id(),
+                    self.uuid
                 );
                 true
             }

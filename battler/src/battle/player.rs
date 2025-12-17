@@ -256,7 +256,7 @@ pub struct PlayerDex {
 ///
 /// A player is exactly what it sounds like: a single participant in a battle. A player brings their
 /// own team of Mons to the battle and is responsible for controlling their Mons.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct PlayerData {
     /// Unique identifier.
     pub id: String,

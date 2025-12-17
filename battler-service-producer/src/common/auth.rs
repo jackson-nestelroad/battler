@@ -34,9 +34,15 @@ pub(crate) fn authorize_side(
             .iter()
             .find(|player| &player.id == id)
             .map(|_| ())
-            .ok_or_else(|| Error::msg(format!("{id} is not on side {side}"))),
+            .ok_or_else(|| Error::msg(format!("{id} is not on given side"))),
         None => Ok(()),
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BattleManagementOperation {
+    Start,
+    Delete,
 }
 
 /// Authorizer for battle operations.
@@ -54,5 +60,6 @@ pub trait BattleAuthorizer: Send + Sync {
         &self,
         peer_info: &battler_wamp::core::peer_info::PeerInfo,
         battle: &Battle,
+        operation: BattleManagementOperation,
     ) -> Result<()>;
 }
