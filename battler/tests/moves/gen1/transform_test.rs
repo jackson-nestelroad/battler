@@ -153,7 +153,6 @@ fn transform_transforms_into_target() {
                             "gender": "M",
                             "nature": "Hardy",
                             "shiny": false,
-                            "ball": "Poké Ball",
                             "hp": 108,
                             "friendship": 0,
                             "experience": 125000,
