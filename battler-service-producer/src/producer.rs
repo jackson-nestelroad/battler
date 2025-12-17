@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    pin::Pin,
+    sync::Arc,
+};
 
 use anyhow::{
     Error,
@@ -16,23 +19,27 @@ use battler_wamp::core::hash::HashSet;
 use tokio::sync::{
     broadcast,
     mpsc,
+    oneshot,
 };
 use uuid::Uuid;
 
-use crate::handlers::{
-    battle,
-    battles,
-    battles_for_player,
-    create,
-    delete,
-    full_log,
-    last_log_entry,
-    make_choice,
-    player_data,
-    request,
-    start,
-    update_team,
-    validate_player,
+use crate::{
+    BattleAuthorizer,
+    handlers::{
+        battle,
+        battles,
+        battles_for_player,
+        create,
+        delete,
+        full_log,
+        last_log_entry,
+        make_choice,
+        player_data,
+        request,
+        start,
+        update_team,
+        validate_player,
+    },
 };
 
 fn uuid_for_uri(uuid: &Uuid) -> String {
@@ -42,9 +49,9 @@ fn uuid_for_uri(uuid: &Uuid) -> String {
 }
 
 pub struct Modules {
-    pub create_authorizer: Box<dyn create::Authorizer>,
-    pub start_authorizer: Box<dyn start::Authorizer>,
-    pub delete_authorizer: Box<dyn delete::Authorizer>,
+    pub authorizer: Box<dyn BattleAuthorizer>,
+    pub stop_rx: Option<broadcast::Receiver<()>>,
+    pub started_tx: Option<oneshot::Sender<()>>,
 }
 
 pub async fn run_battler_service_producer<'d, S>(
@@ -52,7 +59,6 @@ pub async fn run_battler_service_producer<'d, S>(
     engine_options: CoreBattleEngineOptions,
     peer_config: battler_wamprat_schema::PeerConfig,
     peer: battler_wamp::peer::Peer<S>,
-    stop_rx: broadcast::Receiver<()>,
     modules: Modules,
 ) -> Result<()>
 where
@@ -68,10 +74,12 @@ where
     let mut builder = battler_service_schema::BattlerService::producer_builder(peer_config.clone());
     let service = Arc::new(service);
 
+    let authorizer = Arc::new(modules.authorizer);
+
     builder.register_create(create::Handler {
         service: service.clone(),
         engine_options,
-        authorizer: modules.create_authorizer,
+        authorizer: authorizer.clone(),
     })?;
     builder.register_battles(battles::Handler {
         service: service.clone(),
@@ -90,7 +98,7 @@ where
     })?;
     builder.register_start(start::Handler {
         service: service.clone(),
-        authorizer: modules.start_authorizer,
+        authorizer: authorizer.clone(),
     })?;
     builder.register_player_data(player_data::Handler {
         service: service.clone(),
@@ -103,7 +111,7 @@ where
     })?;
     builder.register_delete(delete::Handler {
         service: service.clone(),
-        authorizer: modules.delete_authorizer,
+        authorizer: authorizer.clone(),
     })?;
     builder.register_full_log(full_log::Handler {
         service: service.clone(),
@@ -113,8 +121,21 @@ where
     })?;
 
     let producer = builder.start(peer)?;
-    run_battler_service_producer_internal(producer, service.clone(), stop_rx, global_log_rx)
-        .await?;
+
+    if let Some(started_tx) = modules.started_tx {
+        producer.wait_until_ready().await?;
+        started_tx
+            .send(())
+            .map_err(|_| Error::msg("writing to started_tx failed"))?;
+    }
+
+    run_battler_service_producer_internal(
+        producer,
+        service.clone(),
+        modules.stop_rx,
+        global_log_rx,
+    )
+    .await?;
 
     Arc::try_unwrap(service).unwrap_or_else(|_| {
         panic!("battler service has additional references after producer was dropped")
@@ -126,13 +147,19 @@ where
 async fn run_battler_service_producer_internal<'d, S>(
     producer: battler_service_schema::BattlerServiceProducer<S>,
     service: Arc<BattlerService<'d>>,
-    mut stop_rx: broadcast::Receiver<()>,
+    mut stop_rx: Option<broadcast::Receiver<()>>,
     mut global_log_rx: mpsc::UnboundedReceiver<GlobalLogEntry>,
 ) -> Result<()>
 where
     S: Send + 'static,
 {
     loop {
+        let stop_recv: Pin<
+            Box<dyn Future<Output = Result<(), broadcast::error::RecvError>> + Send>,
+        > = match &mut stop_rx {
+            Some(stop_rx) => Box::pin(stop_rx.recv()),
+            None => Box::pin(futures_util::future::pending()),
+        };
         tokio::select! {
             log = global_log_rx.recv() => {
                 publish_log_entry(
@@ -142,7 +169,7 @@ where
                 ).await?;
 
             },
-            _ = stop_rx.recv() => {
+            _ = stop_recv => {
                 producer.stop().await?;
                 break;
             },

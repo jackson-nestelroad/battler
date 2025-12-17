@@ -20,14 +20,14 @@ pub struct Battle {
 }
 
 /// A preview of an active battle.
-#[derive(Debug, Clone, WampList)]
+#[derive(Debug, Clone, PartialEq, Eq, WampList)]
 pub struct BattlePreview {
     /// JSON-serialized [`battler_service::BattlePreview`].
     pub battle_json: String,
 }
 
 /// Arguments for listing battles.
-#[derive(Debug, Clone, WampList)]
+#[derive(Debug, Default, Clone, WampList)]
 pub struct BattlesInputArgs {
     /// Number of battles.
     pub count: Integer,

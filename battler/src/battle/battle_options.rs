@@ -210,7 +210,7 @@ impl Default for CoreBattleEngineOptions {
 }
 
 /// Core options for a new battle.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct CoreBattleOptions {
     /// The initial seed for random number generation.
     ///

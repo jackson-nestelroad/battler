@@ -28,7 +28,7 @@ use crate::{
 ///
 /// Effects can be applied to an entire side of the battle, which impacts all Mons on all players on
 /// that side of the battle.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct SideData {
     /// Side name.
     pub name: String,

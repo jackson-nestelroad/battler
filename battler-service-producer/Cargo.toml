@@ -11,6 +11,7 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-se
 [dependencies]
 anyhow = { workspace = true }
 async-trait = { workspace = true }
+futures-util = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
@@ -25,3 +26,10 @@ battler-service = { path = "../battler-service" }
 battler-service-schema = { path = "../battler-service/battler-service-schema" }
 
 [dev-dependencies]
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+
+battler-wamp-uri = { workspace = true }
+
+battler-test-utils = { path = "../battler-test-utils" }
+

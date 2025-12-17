@@ -14,7 +14,7 @@ use crate::{
 };
 
 /// Data for the format of a battle, which describes how a battle is configured.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct FormatData {
     /// The type of battle that will take place.
     pub battle_type: BattleType,

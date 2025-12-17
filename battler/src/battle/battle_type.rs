@@ -5,11 +5,12 @@ use serde_string_enum::{
 
 /// The type of a battle.
 #[derive(
-    Debug, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug, Default, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
 pub enum BattleType {
     /// One Mon from one player battles at a time.
     #[string = "Singles"]
+    #[default]
     Singles,
     /// Two Mons from one player battle at a time.
     #[string = "Doubles"]
