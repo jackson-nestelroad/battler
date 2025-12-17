@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     BattleAuthorizer,
-    BattleManagementOperation,
+    BattleOperation,
 };
 
 pub(crate) struct Handler<'d> {
@@ -33,11 +33,7 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
 
         if invocation.peer_info.identity.id != battle.metadata.creator {
             self.authorizer
-                .authorize_battle_management(
-                    &invocation.peer_info,
-                    &battle,
-                    BattleManagementOperation::Start,
-                )
+                .authorize_battle_operation(&invocation.peer_info, &battle, BattleOperation::Start)
                 .await?;
         }
 

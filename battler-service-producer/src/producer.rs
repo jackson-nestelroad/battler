@@ -92,9 +92,11 @@ where
     })?;
     builder.register_update_team(update_team::Handler {
         service: service.clone(),
+        authorizer: authorizer.clone(),
     })?;
     builder.register_validate_player(validate_player::Handler {
         service: service.clone(),
+        authorizer: authorizer.clone(),
     })?;
     builder.register_start(start::Handler {
         service: service.clone(),
@@ -102,12 +104,15 @@ where
     })?;
     builder.register_player_data(player_data::Handler {
         service: service.clone(),
+        authorizer: authorizer.clone(),
     })?;
     builder.register_request(request::Handler {
         service: service.clone(),
+        authorizer: authorizer.clone(),
     })?;
     builder.register_make_choice(make_choice::Handler {
         service: service.clone(),
+        authorizer: authorizer.clone(),
     })?;
     builder.register_delete(delete::Handler {
         service: service.clone(),
@@ -115,9 +120,11 @@ where
     })?;
     builder.register_full_log(full_log::Handler {
         service: service.clone(),
+        authorizer: authorizer.clone(),
     })?;
     builder.register_last_log_entry(last_log_entry::Handler {
         service: service.clone(),
+        authorizer: authorizer.clone(),
     })?;
 
     let producer = builder.start(peer)?;

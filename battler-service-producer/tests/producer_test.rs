@@ -24,7 +24,6 @@ use battler::{
     TeamData,
 };
 use battler_service::{
-    Battle,
     BattleServiceOptions,
     BattleState,
     LogEntry,
@@ -37,7 +36,6 @@ use battler_service_client::{
 };
 use battler_service_producer::{
     BattleAuthorizer,
-    BattleManagementOperation,
     Modules,
     run_battler_service_producer,
 };
@@ -126,15 +124,6 @@ impl BattleAuthorizer for Authorizer {
             ConnectionType::Direct => Ok(()),
             _ => Err(Error::msg("not allowed")),
         }
-    }
-
-    async fn authorize_battle_management(
-        &self,
-        _: &PeerInfo,
-        _: &Battle,
-        _: BattleManagementOperation,
-    ) -> Result<()> {
-        Err(Error::msg("not allowed"))
     }
 }
 
@@ -466,14 +455,14 @@ async fn owner_can_start_and_delete_battle() {
         .unwrap();
 
     assert_matches::assert_matches!(player_2.delete(battle.uuid).await, Err(err) => {
-        assert_eq!(err.to_string(), "not allowed");
+        assert_eq!(err.to_string(), "player-2 does not own the battle");
     });
     assert_matches::assert_matches!(player_1.delete(battle.uuid).await, Err(err) => {
         assert_eq!(err.to_string(), "cannot delete an ongoing battle");
     });
 
     assert_matches::assert_matches!(player_2.start(battle.uuid).await, Err(err) => {
-        assert_eq!(err.to_string(), "not allowed");
+        assert_eq!(err.to_string(), "player-2 does not own the battle");
     });
     assert_matches::assert_matches!(player_1.start(battle.uuid).await, Ok(()));
 

@@ -4,7 +4,11 @@ mod producer;
 
 pub use common::auth::{
     BattleAuthorizer,
-    BattleManagementOperation,
+    BattleOperation,
+    PlayerOperation,
+    authorize_battle_owner,
+    authorize_player,
+    authorize_side,
 };
 pub use producer::{
     Modules,

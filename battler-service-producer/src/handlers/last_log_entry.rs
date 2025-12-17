@@ -4,10 +4,11 @@ use anyhow::Result;
 use battler_service::BattlerService;
 use uuid::Uuid;
 
-use crate::common::auth::authorize_side;
+use crate::BattleAuthorizer;
 
 pub(crate) struct Handler<'d> {
     pub service: Arc<BattlerService<'d>>,
+    pub authorizer: Arc<Box<dyn BattleAuthorizer>>,
 }
 
 impl<'d> battler_service_schema::LastLogEntryProcedure for Handler<'d> {}
@@ -28,7 +29,9 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         let side = input.0.side.map(|side| side as usize);
         let battle = self.service.battle(uuid).await?;
 
-        authorize_side(&invocation.peer_info, side, &battle)?;
+        self.authorizer
+            .authorize_log_access(&invocation.peer_info, &battle, side)
+            .await?;
 
         let last_log_entry = self
             .service
