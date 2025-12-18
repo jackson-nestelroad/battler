@@ -25,6 +25,7 @@ pub use realm::{
     SupportedAuthMethod,
 };
 pub use router::{
+    DirectConnection,
     Router,
     RouterConfig,
     RouterHandle,
