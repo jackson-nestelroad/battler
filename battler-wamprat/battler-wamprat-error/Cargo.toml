@@ -1,6 +1,6 @@
 [package]
 name = "battler-wamprat-error"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Procedural macro for custom WAMP errors."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]

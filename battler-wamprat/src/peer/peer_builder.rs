@@ -172,6 +172,7 @@ impl PeerBuilder {
                 ignore_registration_error: false,
                 match_style: None,
                 invocation_policy: options.invocation_policy,
+                disclose_caller: options.disclose_caller,
             },
         );
     }
@@ -299,6 +300,7 @@ impl PeerBuilder {
                 ignore_registration_error: false,
                 match_style: Pattern::match_style(),
                 invocation_policy: options.invocation_policy,
+                disclose_caller: options.disclose_caller,
             },
         );
     }
@@ -398,6 +400,7 @@ impl PeerBuilder {
                 ignore_registration_error: false,
                 match_style: None,
                 invocation_policy: options.invocation_policy,
+                disclose_caller: options.disclose_caller,
             },
         );
     }
@@ -533,6 +536,7 @@ impl PeerBuilder {
                 ignore_registration_error: false,
                 match_style: Pattern::match_style(),
                 invocation_policy: options.invocation_policy,
+                disclose_caller: options.disclose_caller,
             },
         );
     }

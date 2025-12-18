@@ -934,10 +934,10 @@ impl Session {
                 };
 
                 let mut identity = Identity::default();
-                if let Some(auth_id) = message.details.get("battler_wamp_authid") {
+                if let Some(auth_id) = message.details.get("caller_authid") {
                     identity.id = auth_id.string().unwrap_or_default().to_owned();
                 }
-                if let Some(auth_role) = message.details.get("battler_wamp_authrole") {
+                if let Some(auth_role) = message.details.get("caller_authrole") {
                     identity.role = auth_role.string().unwrap_or_default().to_owned();
                 }
 

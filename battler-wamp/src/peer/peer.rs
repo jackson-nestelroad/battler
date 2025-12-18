@@ -196,6 +196,8 @@ pub struct ProcedureOptions {
     pub match_style: Option<MatchStyle>,
     /// How a callee should be selected for invocations.
     pub invocation_policy: InvocationPolicy,
+    /// The caller's identity should be disclosed.
+    pub disclose_caller: bool,
 }
 
 struct PeerState {
@@ -774,6 +776,7 @@ where
             progressive_call_results: true,
             call_timeout: self.config.callee.enforce_timeouts,
             shared_registration: true,
+            caller_identification: true,
         };
         details.insert(
             "roles".to_owned(),
@@ -1140,7 +1143,9 @@ where
             "invoke".to_owned(),
             Value::String(options.invocation_policy.into()),
         );
-
+        if options.disclose_caller {
+            message_options.insert("disclose_caller".to_owned(), Value::Bool(true));
+        }
         message_tx
             .send(Message::Register(RegisterMessage {
                 request: request_id,

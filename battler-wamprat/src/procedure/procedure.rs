@@ -30,6 +30,7 @@ pub struct Invocation {
 #[derive(Debug, Default)]
 pub struct ProcedureOptions {
     pub invocation_policy: InvocationPolicy,
+    pub disclose_caller: bool,
 }
 
 /// A procedure that responds to any given invocation with some result.

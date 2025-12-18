@@ -15,4 +15,6 @@ pub struct RpcFeatures {
     pub call_timeout: bool,
     /// A procedure can be shared by multiple callees.
     pub shared_registration: bool,
+    /// Callers can be identified.
+    pub caller_identification: bool,
 }

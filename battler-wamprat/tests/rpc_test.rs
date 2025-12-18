@@ -880,6 +880,7 @@ async fn shared_registration_persists_across_reconnects() {
         fn options() -> ProcedureOptions {
             ProcedureOptions {
                 invocation_policy: InvocationPolicy::First,
+                ..Default::default()
             }
         }
     }
@@ -897,6 +898,7 @@ async fn shared_registration_persists_across_reconnects() {
         fn options() -> ProcedureOptions {
             ProcedureOptions {
                 invocation_policy: InvocationPolicy::First,
+                ..Default::default()
             }
         }
     }

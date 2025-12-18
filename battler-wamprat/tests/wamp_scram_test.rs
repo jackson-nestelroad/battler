@@ -46,6 +46,7 @@ use battler_wamprat::{
     },
     procedure::{
         Invocation,
+        ProcedureOptions,
         TypedProcedure,
     },
 };
@@ -192,6 +193,13 @@ impl TypedProcedure for AddHandler {
         Ok(AddOutput {
             args: SumArgs { sum },
         })
+    }
+
+    fn options() -> ProcedureOptions {
+        ProcedureOptions {
+            disclose_caller: true,
+            ..Default::default()
+        }
     }
 }
 

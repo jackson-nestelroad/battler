@@ -73,6 +73,7 @@ pub(crate) struct PreregisteredProcedure {
     pub ignore_registration_error: bool,
     pub match_style: Option<MatchStyle>,
     pub invocation_policy: InvocationPolicy,
+    pub disclose_caller: bool,
 }
 
 /// The type of connection a [`Peer`] should continually establish with a router.
@@ -822,6 +823,7 @@ where
                     ProcedureOptions {
                         match_style: procedure.match_style,
                         invocation_policy: procedure.invocation_policy,
+                        disclose_caller: procedure.disclose_caller,
                     },
                 )
                 .await

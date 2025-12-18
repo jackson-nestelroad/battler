@@ -100,10 +100,16 @@ impl ProcedureRegistration {
     }
 }
 
+/// Options for a registered procedure.
+pub struct ProcedureOptions {
+    pub match_style: Option<MatchStyle>,
+    pub invocation_policy: InvocationPolicy,
+    pub disclose_caller: bool,
+}
+
 /// A procedure that can be invoked by peers to perform some operation on the callee.
 pub struct Procedure {
-    match_style: Option<MatchStyle>,
-    invocation_policy: InvocationPolicy,
+    options: ProcedureOptions,
     registration: Mutex<ProcedureRegistration>,
     state: Mutex<ProcedureState>,
 }
@@ -114,12 +120,12 @@ impl Procedure {
         self.registration
             .lock()
             .await
-            .get_callee(self.invocation_policy, callees_attempted)
+            .get_callee(self.options.invocation_policy, callees_attempted)
     }
 
     /// Adds a callee to the procedure registration.
     async fn add_callee(&self, callee: Id, registration: Id) -> Result<()> {
-        if self.invocation_policy == InvocationPolicy::Single
+        if self.options.invocation_policy == InvocationPolicy::Single
             && self.registration.lock().await.callees_len() > 0
         {
             return Err(BasicError::NotAllowed(
@@ -132,6 +138,11 @@ impl Procedure {
             .await
             .add_callee(callee, registration);
         Ok(())
+    }
+
+    /// The caller's identity should be disclosed to the callee.
+    pub fn disclose_caller(&self) -> bool {
+        self.options.disclose_caller
     }
 }
 
@@ -151,6 +162,7 @@ impl ProcedureNode {
             Some(uri_component) => {
                 if uri_component.is_empty()
                     && !procedure
+                        .options
                         .match_style
                         .is_some_and(|match_style| match_style == MatchStyle::Wildcard)
                 {
@@ -165,7 +177,7 @@ impl ProcedureNode {
             }
             None => match &self.procedure {
                 Some(existing) => {
-                    if procedure.invocation_policy != existing.invocation_policy {
+                    if procedure.options.invocation_policy != existing.options.invocation_policy {
                         return Err(InteractionError::ProcedureAlreadyExists.into());
                     }
                     Ok(existing.clone())
@@ -199,6 +211,7 @@ impl ProcedureNode {
                 Some(procedure) => procedure.find(uri_components),
                 None => self.procedure.clone().filter(|procedure| {
                     procedure
+                        .options
                         .match_style
                         .is_some_and(|match_style| match_style == MatchStyle::Prefix)
                 }),
@@ -221,8 +234,7 @@ impl ProcedureManager {
         context: &RealmContext<'_, S>,
         session: Id,
         procedure: WildcardUri,
-        match_style: Option<MatchStyle>,
-        invocation_policy: InvocationPolicy,
+        options: ProcedureOptions,
     ) -> Result<Id> {
         if !context.router().config.roles.contains(&RouterRole::Dealer) {
             return Err(BasicError::NotAllowed("router is not a dealer".to_owned()).into());
@@ -256,8 +268,7 @@ impl ProcedureManager {
             .insert(
                 procedure.split(),
                 Procedure {
-                    match_style,
-                    invocation_policy,
+                    options,
                     registration: Mutex::new(ProcedureRegistration::default()),
                     state: Mutex::new(ProcedureState { active: false }),
                 },

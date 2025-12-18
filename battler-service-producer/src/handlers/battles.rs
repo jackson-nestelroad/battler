@@ -36,4 +36,11 @@ impl<'d> battler_wamprat::procedure::TypedProcedure for Handler<'d> {
             },
         ))
     }
+
+    fn options() -> battler_wamprat::procedure::ProcedureOptions {
+        battler_wamprat::procedure::ProcedureOptions {
+            disclose_caller: true,
+            ..Default::default()
+        }
+    }
 }

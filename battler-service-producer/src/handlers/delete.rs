@@ -38,4 +38,11 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         self.service.delete(uuid).await?;
         Ok(battler_service_schema::DeleteOutput)
     }
+
+    fn options() -> battler_wamprat::procedure::ProcedureOptions {
+        battler_wamprat::procedure::ProcedureOptions {
+            disclose_caller: true,
+            ..Default::default()
+        }
+    }
 }

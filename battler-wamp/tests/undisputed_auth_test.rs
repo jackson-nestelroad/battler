@@ -4,6 +4,7 @@ use battler_wamp::{
         PeerConfig,
         Procedure,
         ProcedureMessage,
+        ProcedureOptions,
         RpcCall,
         RpcResult,
         RpcYield,
@@ -22,7 +23,10 @@ use battler_wamp::{
         new_web_socket_router,
     },
 };
-use battler_wamp_uri::Uri;
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
+};
 use battler_wamp_values::{
     Dictionary,
     Value,
@@ -93,7 +97,13 @@ async fn peer_joins_realm_with_undisputed_identity() {
     assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
     let procedure = callee
-        .register(Uri::try_from("com.battler.echo_caller_id").unwrap())
+        .register_with_options(
+            WildcardUri::try_from("com.battler.echo_caller_id").unwrap(),
+            ProcedureOptions {
+                disclose_caller: true,
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
     let procedure_id = procedure.id;

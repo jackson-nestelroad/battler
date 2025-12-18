@@ -44,4 +44,11 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
             .await?;
         Ok(battler_service_schema::MakeChoiceOutput)
     }
+
+    fn options() -> battler_wamprat::procedure::ProcedureOptions {
+        battler_wamprat::procedure::ProcedureOptions {
+            disclose_caller: true,
+            ..Default::default()
+        }
+    }
 }

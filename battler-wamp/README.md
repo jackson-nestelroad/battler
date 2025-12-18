@@ -34,6 +34,7 @@ The WAMP protocol specification is described at https://wamp-proto.org/spec.html
     - Progressive Call Results
     - Call Timeout
     - Call Canceling
+    - Caller Identification
     - Pattern-based Registration
     - Shared Registration
   - Advanced Pub/Sub Features

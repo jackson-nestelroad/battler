@@ -17,6 +17,7 @@ use battler_wamp::{
         PeerConfig,
         Procedure,
         ProcedureMessage,
+        ProcedureOptions,
         RpcCall,
         RpcResult,
         RpcYield,
@@ -35,7 +36,10 @@ use battler_wamp::{
         new_web_socket_router,
     },
 };
-use battler_wamp_uri::Uri;
+use battler_wamp_uri::{
+    Uri,
+    WildcardUri,
+};
 use battler_wamp_values::{
     Dictionary,
     Value,
@@ -330,7 +334,13 @@ async fn rpc_invocation_holds_empty_identity_for_caller_without_authentication()
     assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
     let procedure = callee
-        .register(Uri::try_from("com.battler.echo_caller_id").unwrap())
+        .register_with_options(
+            WildcardUri::try_from("com.battler.echo_caller_id").unwrap(),
+            ProcedureOptions {
+                disclose_caller: true,
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
     let procedure_id = procedure.id;
@@ -424,7 +434,13 @@ async fn rpc_invocation_holds_identity_for_caller_with_authentication() {
     assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
     let procedure = callee
-        .register(Uri::try_from("com.battler.echo_caller_id").unwrap())
+        .register_with_options(
+            WildcardUri::try_from("com.battler.echo_caller_id").unwrap(),
+            ProcedureOptions {
+                disclose_caller: true,
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
     let procedure_id = procedure.id;

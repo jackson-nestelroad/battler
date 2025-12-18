@@ -108,6 +108,7 @@ use crate::{
         procedure::{
             ProcedureCallee,
             ProcedureManager,
+            ProcedureOptions,
         },
         realm::RealmSession,
         topic::TopicManager,
@@ -217,6 +218,7 @@ struct RpcInvocationCalleeDetails {
     callee: ProcedureCallee,
     progressive_call_results: bool,
     forward_timeout_to_callee: bool,
+    caller_identification: bool,
 }
 
 #[derive(Debug, Default)]
@@ -235,6 +237,7 @@ struct RpcInvocation {
     arguments_keyword: Dictionary,
     progressive_call_results: bool,
     timeout: Duration,
+    disclose_me: bool,
     state: Arc<Mutex<RpcInvocationState>>,
 }
 
@@ -607,6 +610,7 @@ impl Session {
             progressive_call_results: true,
             call_timeout: true,
             shared_registration: true,
+            caller_identification: true,
         };
         details.insert(
             "roles".to_owned(),
@@ -912,12 +916,20 @@ impl Session {
             .and_then(|val| val.string())
             .and_then(|val| InvocationPolicy::try_from(val).ok())
             .unwrap_or_default();
+        let disclose_caller = message
+            .options
+            .get("disclose_caller")
+            .and_then(|val| val.bool())
+            .unwrap_or_default();
         let registration = ProcedureManager::register(
             &mut context,
             self.id,
             message.procedure.clone(),
-            match_style,
-            invocation_policy,
+            ProcedureOptions {
+                match_style,
+                invocation_policy,
+                disclose_caller,
+            },
         )
         .await?;
         self.modify_established_session_state(|state| {
@@ -966,14 +978,20 @@ impl Session {
             .options
             .get("receive_progress")
             .and_then(|val| val.bool())
-            .unwrap_or(false);
+            .unwrap_or_default();
 
         let timeout = message
             .options
             .get("timeout")
             .and_then(|val| val.integer())
-            .unwrap_or(0);
+            .unwrap_or_default();
         let timeout = Duration::from_millis(timeout);
+
+        let disclose_me = message
+            .options
+            .get("disclose_me")
+            .and_then(|val| val.bool())
+            .unwrap_or_default();
 
         let request_id = self.id_allocator.generate_id().await;
 
@@ -984,6 +1002,7 @@ impl Session {
             arguments_keyword: message.arguments_keyword.clone(),
             progressive_call_results,
             timeout,
+            disclose_me,
             state: Arc::new(Mutex::new(RpcInvocationState::default())),
         };
 
@@ -1119,11 +1138,18 @@ impl Session {
             .await
             .callee
             .is_some_and(|features| features.call_timeout);
+        let caller_identification = session
+            .session
+            .roles()
+            .await
+            .callee
+            .is_some_and(|features| features.caller_identification);
 
         let callee_details = RpcInvocationCalleeDetails {
             callee,
             progressive_call_results,
             forward_timeout_to_callee,
+            caller_identification,
         };
         invocation.state.lock().await.current_callee = Some(callee_details.clone());
         Ok(callee_details)
@@ -1166,15 +1192,22 @@ impl Session {
             }
         }
 
-        let identity = self
-            .get_from_established_session_state(|state| state.identity.clone())
-            .await?;
-        if let Some(identity) = identity {
-            details.insert("battler_wamp_authid".to_owned(), Value::String(identity.id));
-            details.insert(
-                "battler_wamp_authrole".to_owned(),
-                Value::String(identity.role),
-            );
+        let procedure = context
+            .procedure(&invocation.procedure.clone().into())
+            .await
+            .ok_or_else(|| InteractionError::NoSuchProcedure)?;
+        if callee_details.caller_identification
+            && (invocation.disclose_me || procedure.disclose_caller())
+        {
+            details.insert("caller".to_owned(), self.id.wamp_serialize()?);
+
+            let identity = self
+                .get_from_established_session_state(|state| state.identity.clone())
+                .await?;
+            if let Some(identity) = identity {
+                details.insert("caller_authid".to_owned(), Value::String(identity.id));
+                details.insert("caller_authrole".to_owned(), Value::String(identity.role));
+            }
         }
 
         let session = context
