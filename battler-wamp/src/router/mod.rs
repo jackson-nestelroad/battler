@@ -29,6 +29,7 @@ pub use router::{
     RouterConfig,
     RouterHandle,
 };
+pub use session::SessionHandle;
 pub use web_socket_router::{
     WebSocketRouter,
     new_web_socket_router,

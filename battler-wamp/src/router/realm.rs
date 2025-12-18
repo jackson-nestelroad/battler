@@ -25,8 +25,8 @@ use crate::{
         id::Id,
     },
     router::{
+        SessionHandle,
         procedure::ProcedureManager,
-        session::SessionHandle,
         topic::TopicManager,
     },
 };

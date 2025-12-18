@@ -1,7 +1,7 @@
 use crate::auth::Identity;
 
 /// The type of connection a peer is communicating over.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ConnectionType {
     /// Connection to a remote address.
     Remote(String),
@@ -16,7 +16,7 @@ impl Default for ConnectionType {
 }
 
 /// Information about a peer.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct PeerInfo {
     /// Type of connection the peer is communicating over.
     pub connection_type: ConnectionType,

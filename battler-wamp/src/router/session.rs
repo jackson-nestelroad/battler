@@ -63,7 +63,10 @@ use crate::{
         },
         invocation_policy::InvocationPolicy,
         match_style::MatchStyle,
-        peer_info::ConnectionType,
+        peer_info::{
+            ConnectionType,
+            PeerInfo,
+        },
         publish_options::PublishOptions,
         roles::{
             PeerRoles,
@@ -191,7 +194,7 @@ impl SessionState {
 #[derive(Default)]
 struct SharedSessionState {
     roles: PeerRoles,
-    identity: Option<Identity>,
+    peer_info: Option<PeerInfo>,
 }
 
 mod router_session_message {
@@ -254,8 +257,8 @@ pub struct SessionHandle {
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
     message_tx: mpsc::Sender<Message>,
-    closed_session_rx: broadcast::Receiver<()>,
 
+    closed_session_rx: broadcast::Receiver<()>,
     rpc_yield_rx: broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>,
 }
 
@@ -274,14 +277,11 @@ impl SessionHandle {
         self.shared_state.read().await.roles.clone()
     }
 
-    /// Returns the last known identity.
-    pub async fn identity(&self) -> Option<Identity> {
-        self.shared_state.read().await.identity.clone()
-    }
-
-    /// A reference to the session's ID generator.
-    pub fn id_generator(&self) -> Arc<Box<dyn IdAllocator>> {
-        self.id_allocator.clone()
+    /// Returns the last known [`PeerInfo`].
+    ///
+    /// Set when the session joins a realm.
+    pub async fn peer_info(&self) -> Option<PeerInfo> {
+        self.shared_state.read().await.peer_info.clone()
     }
 
     /// Sends a message over the session.
@@ -297,16 +297,14 @@ impl SessionHandle {
             .map_err(Error::new)
     }
 
-    /// The receiver channel that is populated when the session moves to the CLOSED state.
-    pub fn closed_session_rx(&self) -> broadcast::Receiver<()> {
-        self.closed_session_rx.resubscribe()
+    /// A reference to the session's ID generator.
+    pub(crate) fn id_generator(&self) -> Arc<Box<dyn IdAllocator>> {
+        self.id_allocator.clone()
     }
 
-    ///The receiver channel for responses to INVOCATION messages.
-    pub fn rpc_yield_rx(
-        &self,
-    ) -> broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>> {
-        self.rpc_yield_rx.resubscribe()
+    /// The receiver channel that is populated when the session moves to the CLOSED state.
+    pub(crate) fn closed_session_rx(&self) -> broadcast::Receiver<()> {
+        self.closed_session_rx.resubscribe()
     }
 }
 
@@ -623,6 +621,11 @@ impl Session {
         );
 
         self.shared_state.write().await.roles = Self::read_peer_roles(&message);
+        self.shared_state.write().await.peer_info = Some(PeerInfo {
+            connection_type: self.connection_type.clone(),
+            identity: identity.clone().unwrap_or_default(),
+        });
+
         self.transition_state(SessionState::Established(EstablishedSessionState {
             realm: context.realm().uri().clone(),
             identity,
@@ -684,8 +687,6 @@ impl Session {
             })
             .await?;
         let result = authenticator.authenticate(message).await?;
-
-        self.shared_state.write().await.identity = Some(result.identity.clone());
 
         self.welcome_to_realm(
             context,

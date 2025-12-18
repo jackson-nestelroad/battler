@@ -46,11 +46,17 @@ use battler_service_schema::{
     BattlesInputArgs,
     CreateInput,
     CreateInputArgs,
+    LogEvent,
+    LogPattern,
+    LogSelector,
 };
 use battler_test_utils::static_local_data_store;
 use battler_wamp::{
     core::{
-        error::WampError,
+        error::{
+            BasicError,
+            WampError,
+        },
         hash::HashSet,
         peer_info::{
             ConnectionType,
@@ -63,12 +69,13 @@ use battler_wamp::{
         new_web_socket_peer,
     },
     router::{
-        EmptyPubSubPolicies,
         EmptyRpcPolicies,
+        PubSubPolicies,
         RealmAuthenticationConfig,
         RealmConfig,
         RouterConfig,
         RouterHandle,
+        SessionHandle,
         SupportedAuthMethod,
         new_web_socket_router,
     },
@@ -78,7 +85,9 @@ use battler_wamprat::peer::{
     CallOptions,
     PeerConnectionConfig,
     PeerConnectionType,
+    PublishOptions,
 };
+use battler_wamprat_schema::PeerConfig;
 use tokio::{
     sync::{
         broadcast,
@@ -87,6 +96,24 @@ use tokio::{
     task::JoinHandle,
 };
 use uuid::Uuid;
+
+#[derive(Default)]
+struct BattlerPubSubPolicies;
+
+#[async_trait]
+impl<S> PubSubPolicies<S> for BattlerPubSubPolicies {
+    async fn validate_publication(&self, session: &SessionHandle, _: &Uri) -> Result<()> {
+        match session.peer_info().await {
+            Some(peer_info) => match peer_info.connection_type {
+                ConnectionType::Direct => Ok(()),
+                _ => Err(
+                    BasicError::NotAllowed("remote connection cannot publish".to_owned()).into(),
+                ),
+            },
+            None => Err(BasicError::Internal("missing peer info during publish".to_owned()).into()),
+        }
+    }
+}
 
 async fn start_router_with_config(
     mut config: RouterConfig,
@@ -101,7 +128,7 @@ async fn start_router_with_config(
     });
     let router = new_web_socket_router(
         config,
-        Box::new(EmptyPubSubPolicies::default()),
+        Box::new(BattlerPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
     router.start().await
@@ -771,6 +798,31 @@ async fn publishes_battle_logs() {
             "-battlerservice:timer|battle|remainingsecs:59",
         ]
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn remote_connection_cannot_publish_battle_log() {
+    let (router_handle, _) = start_router().await.unwrap();
+    run_producer(router_handle.clone()).await.unwrap();
+    let bad_producer = BattlerService::producer_builder(PeerConfig {
+        connection: PeerConnectionConfig::new(PeerConnectionType::Remote(format!(
+            "ws://{}",
+            router_handle.local_addr()
+        ))),
+        auth_methods: Vec::default(),
+    })
+    .start(create_peer("player-1").unwrap())
+    .unwrap();
+    assert_matches::assert_matches!(bad_producer.publish_log(
+        LogPattern("battle".to_owned(), LogSelector::Public),
+        LogEvent(battler_service_schema::LogEntry {
+            content: "bad log".to_owned(),
+            index: 0,
+        }),
+        PublishOptions::default(),
+    ).await, Err(err) => {
+        assert_eq!(err.to_string(), "remote connection cannot publish");
+    });
 }
 
 #[tokio::test(flavor = "multi_thread")]

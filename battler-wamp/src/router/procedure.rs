@@ -239,23 +239,18 @@ impl ProcedureManager {
         if !context.router().config.roles.contains(&RouterRole::Dealer) {
             return Err(BasicError::NotAllowed("router is not a dealer".to_owned()).into());
         }
-        if context
+        let realm_session = context
             .session(session)
             .await
-            .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?
-            .session
-            .roles()
-            .await
-            .callee
-            .is_none()
-        {
+            .ok_or_else(|| BasicError::NotFound("expected callee session to exist".to_owned()))?;
+        if realm_session.session.roles().await.callee.is_none() {
             return Err(BasicError::NotAllowed("peer is not a callee".to_owned()).into());
         }
 
         context
             .router()
             .rpc_policies
-            .validate_registration(&context, session, &procedure)
+            .validate_registration(&realm_session.session, &procedure)
             .await?;
         let registration_id = context.router().id_allocator.generate_id().await;
 

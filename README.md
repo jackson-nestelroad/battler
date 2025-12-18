@@ -14,6 +14,7 @@ This repository features multiple crates:
 1. [`battler-prng`](./battler-prng/) - RNG module for battler.
 1. [`battler-service`](./battler-service) - Service object for managing battles.
 1. [`battler-service-client`](./battler-service-client/) - Client-side wrapper for `battler-service`.
+1. [`battler-service-producer`](./battler-service-producer/) - Server-side producer for `battler-service`.
 1. [`battler-test-utils`](./battler-test-utils/) - Test utilities for `battler`.
 1. [`battler-wamp`](./battler-wamp/) - Implementation of the WAMP standard.
 1. [`battler-wamprat`](./battler-wamprat/) - Framework for RPCs and pub/sub over WAMP.

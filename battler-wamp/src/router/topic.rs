@@ -127,23 +127,17 @@ impl TopicManager {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
         }
-        if context
-            .session(session)
-            .await
-            .ok_or_else(|| BasicError::NotFound("expected subscriber session to exist".to_owned()))?
-            .session
-            .roles()
-            .await
-            .subscriber
-            .is_none()
-        {
+        let realm_session = context.session(session).await.ok_or_else(|| {
+            BasicError::NotFound("expected subscriber session to exist".to_owned())
+        })?;
+        if realm_session.session.roles().await.subscriber.is_none() {
             return Err(BasicError::NotAllowed("peer is not a subscriber".to_owned()).into());
         }
 
         context
             .router()
             .pub_sub_policies
-            .validate_subscription(context, session, &topic)
+            .validate_subscription(&realm_session.session, &topic)
             .await?;
         let subscription_id = context
             .session(session)
@@ -211,23 +205,17 @@ impl TopicManager {
         if !context.router().config.roles.contains(&RouterRole::Broker) {
             return Err(BasicError::NotAllowed("router is not a broker".to_owned()).into());
         }
-        if context
-            .session(publisher)
-            .await
-            .ok_or_else(|| BasicError::NotFound("expected publisher session to exist".to_owned()))?
-            .session
-            .roles()
-            .await
-            .publisher
-            .is_none()
-        {
+        let realm_session = context.session(publisher).await.ok_or_else(|| {
+            BasicError::NotFound("expected publisher session to exist".to_owned())
+        })?;
+        if realm_session.session.roles().await.publisher.is_none() {
             return Err(BasicError::NotAllowed("peer is not a publisher".to_owned()).into());
         }
 
         context
             .router()
             .pub_sub_policies
-            .validate_publication(context, publisher, &topic)
+            .validate_publication(&realm_session.session, &topic)
             .await?;
         let published_id = context.router().id_allocator.generate_id().await;
 
@@ -265,26 +253,54 @@ impl TopicManager {
         }
         if let Some(eligible_authid) = &options.eligible_authid {
             authorized = authorized
-                && eligible_authid
-                    .contains(&session.session.identity().await.unwrap_or_default().id)
+                && eligible_authid.contains(
+                    &session
+                        .session
+                        .peer_info()
+                        .await
+                        .unwrap_or_default()
+                        .identity
+                        .id,
+                )
         }
         if let Some(eligible_authrole) = &options.eligible_authrole {
             authorized = authorized
-                && eligible_authrole
-                    .contains(&session.session.identity().await.unwrap_or_default().role)
+                && eligible_authrole.contains(
+                    &session
+                        .session
+                        .peer_info()
+                        .await
+                        .unwrap_or_default()
+                        .identity
+                        .role,
+                )
         }
         if let Some(exclude) = &options.exclude {
             authorized = authorized && !exclude.contains(&session.session.id())
         }
         if let Some(exclude_authid) = &options.exclude_authid {
             authorized = authorized
-                && !exclude_authid
-                    .contains(&session.session.identity().await.unwrap_or_default().id)
+                && !exclude_authid.contains(
+                    &session
+                        .session
+                        .peer_info()
+                        .await
+                        .unwrap_or_default()
+                        .identity
+                        .id,
+                )
         }
         if let Some(exclude_authrole) = &options.exclude_authrole {
             authorized = authorized
-                && !exclude_authrole
-                    .contains(&session.session.identity().await.unwrap_or_default().role)
+                && !exclude_authrole.contains(
+                    &session
+                        .session
+                        .peer_info()
+                        .await
+                        .unwrap_or_default()
+                        .identity
+                        .role,
+                )
         }
         authorized
     }
