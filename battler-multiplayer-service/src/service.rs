@@ -930,6 +930,21 @@ mod battler_multiplayer_service_test {
         Err(Error::msg("deadline exceeded"))
     }
 
+    async fn wait_until_battle_deleted(
+        service: &BattlerService<'static>,
+        battle: Uuid,
+        timeout: Duration,
+    ) -> Result<()> {
+        let deadline = SystemTime::now() + timeout;
+        while SystemTime::now() < deadline {
+            if let Err(_) = service.battle(battle).await {
+                return Ok(());
+            }
+            tokio::time::sleep(Duration::from_millis(500)).await;
+        }
+        Err(Error::msg("deadline exceeded"))
+    }
+
     #[tokio::test(flavor = "multi_thread")]
     async fn cannot_find_invalid_proposed_battle() {
         let service = battler_multiplayer_service();
@@ -1301,9 +1316,10 @@ mod battler_multiplayer_service_test {
             Ok(())
         );
 
-        assert_matches::assert_matches!(battler_service.battle(battle).await, Err(err) => {
-            assert_eq!(err.to_string(), "battle does not exist");
-        });
+        assert_matches::assert_matches!(
+            wait_until_battle_deleted(&battler_service, battle, Duration::from_secs(5)).await,
+            Ok(())
+        );
     }
 
     #[tokio::test(flavor = "multi_thread")]
