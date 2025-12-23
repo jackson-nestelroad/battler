@@ -23,7 +23,7 @@ use uuid::Uuid;
 use crate::BattlerServiceClient;
 
 /// Implementation of [`BattlerServiceClient`] that uses the
-/// [`battler_service::BattlerService`] directly for managing battles remotely via a WAMP router.
+/// [`battler_service::BattlerService`] directly for managing battles.
 pub struct DirectBattlerServiceClient<'d> {
     service: Arc<BattlerService<'d>>,
     engine_options: CoreBattleEngineOptions,

@@ -1,0 +1,24 @@
+[package]
+name = "battler-multiplayer-service-client"
+version = "0.1.0"
+edition = "2024"
+description = "Client wrapper for battler-multiplayer-service."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-service-client"
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+
+battler-wamp-values = { workspace = true }
+battler-wamprat = { workspace = true }
+
+battler-multiplayer-service = { path = "../battler-multiplayer-service" }
+battler-multiplayer-service-schema = { path = "../battler-multiplayer-service/battler-multiplayer-service-schema" }
+
+[dev-dependencies]

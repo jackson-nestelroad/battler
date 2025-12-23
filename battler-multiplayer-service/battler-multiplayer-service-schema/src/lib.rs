@@ -16,7 +16,7 @@ pub struct ProposeBattleInputArgs {
 
 /// Input for proposing a battle.
 #[derive(Debug, Clone, WampApplicationMessage)]
-pub struct ProposeBattleInput(#[arguments] ProposeBattleInputArgs);
+pub struct ProposeBattleInput(#[arguments] pub ProposeBattleInputArgs);
 
 /// A proposed battle.
 #[derive(Debug, Clone, WampList)]
@@ -27,7 +27,7 @@ pub struct ProposedBattle {
 
 /// Output of proposing a battle.
 #[derive(Debug, Clone, WampApplicationMessage)]
-pub struct ProposedBattleOutput(#[arguments] ProposedBattle);
+pub struct ProposedBattleOutput(#[arguments] pub ProposedBattle);
 
 /// URI pattern for looking up a single proposed battle.
 #[derive(Debug, Clone, WampUriMatcher)]
@@ -48,13 +48,13 @@ pub struct RespondToProposedBattlePattern(pub String);
 pub struct RespondToProposedBattleInputArgs {
     /// Player ID.
     pub player: String,
-    /// Accept the battle?
-    pub accept: bool,
+    /// JSON-serialized [`battler_multiplayer_service::ProposedBattleResponse`].
+    pub proposed_battle_response_json: String,
 }
 
 /// Input for responding to a proposed battle.
 #[derive(Debug, Clone, WampApplicationMessage)]
-pub struct RespondToProposedBattleInput(#[arguments] RespondToProposedBattleInputArgs);
+pub struct RespondToProposedBattleInput(#[arguments] pub RespondToProposedBattleInputArgs);
 
 /// Output of responding to a proposed battle.
 #[derive(Debug, Clone, WampApplicationMessage)]
@@ -73,7 +73,7 @@ pub struct ProposedBattlesForPlayerInputArgs {
 
 /// Input for listing proposed battle for a player.
 #[derive(Debug, Clone, WampApplicationMessage)]
-pub struct ProposedBattlesForPlayerInput(#[arguments] ProposedBattlesForPlayerInputArgs);
+pub struct ProposedBattlesForPlayerInput(#[arguments] pub ProposedBattlesForPlayerInputArgs);
 
 /// Arguments for the output of listing proposed battles for a player.
 #[derive(Debug, Clone, WampList)]
@@ -84,7 +84,7 @@ pub struct ProposedBattlesOutputArgs {
 
 /// Output of listing proposed battles for a player.
 #[derive(Debug, Clone, WampApplicationMessage)]
-pub struct ProposedBattlesOutput(#[arguments] ProposedBattlesOutputArgs);
+pub struct ProposedBattlesOutput(#[arguments] pub ProposedBattlesOutputArgs);
 
 /// A rejection of a proposed battle.
 #[derive(Debug, Clone, WampDictionary)]
@@ -104,19 +104,13 @@ pub struct ProposedBattleUpdatesPattern {
 /// An update to a proposed battle.
 #[derive(Debug, Clone, WampDictionary)]
 pub struct ProposedBattleUpdate {
-    /// The proposed battle.
-    pub proposed_battle: ProposedBattle,
-    /// The UUID of the started battle, set only if the battle was fully accepted and started.
-    #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
-    pub created: Option<String>,
-    /// The rejection, set only if the battle was rejected and deleted.
-    #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
-    pub rejected: Option<ProposedBattleRejectionOutputArgs>,
+    /// JSON-serialized [`battler_multiplayer_service::ProposedBattleUpdate`].
+    pub proposed_battle_update_json: String,
 }
 
 /// An event for a proposed battle update.
 #[derive(Debug, Clone, WampApplicationMessage)]
-pub struct ProposedBattleUpdateEvent(#[arguments] ProposedBattleUpdate);
+pub struct ProposedBattleUpdateEvent(#[arguments] pub ProposedBattleUpdate);
 
 /// Service for managing multiplayer battles on the `battler` battle engine.
 #[derive(Debug, Clone, WampSchema)]
@@ -136,7 +130,7 @@ pub enum BattlerMultiplayerService {
     ProposedBattlesForPlayer,
     /// Events for proposed battle updates, such as:
     /// - When a player accepts or rejects the battle.
-    /// - When the battle starts.
+    /// - When the underlying battle is created.
     #[pubsub(pattern = ProposedBattleUpdatesPattern, subscription = ProposedBattleUpdatesPattern, event = ProposedBattleUpdateEvent)]
     ProposedBattleUpdates,
 }

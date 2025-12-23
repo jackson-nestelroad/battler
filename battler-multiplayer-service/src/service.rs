@@ -715,7 +715,7 @@ impl BattlerMultiplayerService {
         proposed_battle.respond(player, response).await
     }
 
-    /// Subscribes to updates to a proposed battle.
+    /// Subscribes to all proposed battle updates for the player.
     pub async fn proposed_battle_updates(
         &self,
         player: &str,
@@ -744,10 +744,7 @@ mod battler_multiplayer_service_test {
         usize,
     };
 
-    use ahash::{
-        HashMap,
-        HashSet,
-    };
+    use ahash::HashSet;
     use anyhow::{
         Error,
         Result,
@@ -875,7 +872,6 @@ mod battler_multiplayer_service_test {
             battle_options: battle_options(),
             service_options: battle_service_options(creator),
             timeout: Duration::from_secs(30),
-            ai_players: HashMap::default(),
         }
     }
 

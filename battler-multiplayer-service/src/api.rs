@@ -3,7 +3,6 @@ use std::time::{
     SystemTime,
 };
 
-use ahash::HashMap;
 use battler::CoreBattleOptions;
 use battler_service::BattleServiceOptions;
 use serde::{
@@ -29,8 +28,6 @@ pub struct ProposedBattleOptions {
     pub service_options: BattleServiceOptions,
     /// Timeout, after which the proposed battle will be deleted.
     pub timeout: Duration,
-    /// List of AI players that will be managed by the service.
-    pub ai_players: HashMap<String, AiPlayerOptions>,
 }
 
 /// The status of a player with respect to a proposed battle.

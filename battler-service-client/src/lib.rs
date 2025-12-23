@@ -8,4 +8,4 @@ pub use client::{
     battler_service_client_over_wamp_consumer,
 };
 pub use direct::DirectBattlerServiceClient;
-pub use wamp::SimpleWampBattlerServiceClient;
+pub use wamp::WampBattlerServiceClient;

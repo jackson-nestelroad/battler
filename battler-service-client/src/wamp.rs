@@ -32,11 +32,11 @@ use crate::BattlerServiceClient;
 /// Implementation of [`BattlerServiceClient`] that uses the
 /// [`battler_service_schema::BattlerServiceConsumer`] for managing battles remotely via a WAMP
 /// router.
-pub struct SimpleWampBattlerServiceClient<S> {
+pub struct WampBattlerServiceClient<S> {
     consumer: Arc<battler_service_schema::BattlerServiceConsumer<S>>,
 }
 
-impl<S> SimpleWampBattlerServiceClient<S> {
+impl<S> WampBattlerServiceClient<S> {
     /// Creates a new client around a WAMP service consumer.
     pub fn new(consumer: Arc<battler_service_schema::BattlerServiceConsumer<S>>) -> Self {
         Self { consumer }
@@ -58,7 +58,7 @@ fn export_battle_preview(battle: battler_service_schema::BattlePreview) -> Resul
 }
 
 #[async_trait]
-impl<S> BattlerServiceClient for SimpleWampBattlerServiceClient<S>
+impl<S> BattlerServiceClient for WampBattlerServiceClient<S>
 where
     S: Send + 'static,
 {

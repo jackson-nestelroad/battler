@@ -21,7 +21,7 @@ use uuid::Uuid;
 
 use crate::{
     DirectBattlerServiceClient,
-    SimpleWampBattlerServiceClient,
+    WampBattlerServiceClient,
 };
 
 /// Client wrapper for [`battler_service::BattlerService`].
@@ -81,7 +81,7 @@ pub fn battler_service_client_over_wamp_consumer<S>(
 where
     S: Send + 'static,
 {
-    Box::new(SimpleWampBattlerServiceClient::new(consumer))
+    Box::new(WampBattlerServiceClient::new(consumer))
 }
 
 /// Creates a new client around a service object.

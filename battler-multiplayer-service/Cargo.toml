@@ -11,6 +11,7 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-mu
 [dependencies]
 ahash = { workspace = true }
 anyhow = { workspace = true }
+async-trait = { workspace = true }
 futures-util = { workspace = true }
 serde = { workspace = true }
 serde_string_enum = { workspace = true }
