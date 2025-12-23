@@ -484,9 +484,6 @@ async fn owner_can_start_and_delete_battle() {
     assert_matches::assert_matches!(player_2.delete(battle.uuid).await, Err(err) => {
         assert_eq!(err.to_string(), "player-2 does not own the battle");
     });
-    assert_matches::assert_matches!(player_1.delete(battle.uuid).await, Err(err) => {
-        assert_eq!(err.to_string(), "cannot delete an ongoing battle");
-    });
 
     assert_matches::assert_matches!(player_2.start(battle.uuid).await, Err(err) => {
         assert_eq!(err.to_string(), "player-2 does not own the battle");
@@ -496,6 +493,10 @@ async fn owner_can_start_and_delete_battle() {
     wait_until_battle_state(player_1.as_ref(), battle.uuid, BattleState::Active)
         .await
         .unwrap();
+
+    assert_matches::assert_matches!(player_1.delete(battle.uuid).await, Err(err) => {
+        assert_eq!(err.to_string(), "cannot delete an ongoing battle");
+    });
 
     assert_matches::assert_matches!(
         player_1
@@ -711,6 +712,7 @@ async fn publishes_battle_logs() {
         )
         .await,
         [
+            "-battlerservice:started",
             "info|battletype:Singles",
             "info|environment:Normal|time:Day",
             "side|id:0|name:Side 1",
@@ -743,6 +745,7 @@ async fn publishes_battle_logs() {
         )
         .await,
         [
+            "-battlerservice:started",
             "info|battletype:Singles",
             "info|environment:Normal|time:Day",
             "side|id:0|name:Side 1",
@@ -775,6 +778,7 @@ async fn publishes_battle_logs() {
         )
         .await,
         [
+            "-battlerservice:started",
             "info|battletype:Singles",
             "info|environment:Normal|time:Day",
             "side|id:0|name:Side 1",

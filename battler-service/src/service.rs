@@ -560,7 +560,7 @@ impl<'d> LiveBattleManager<'d> {
                         LiveBattle::timer_log(
                             timer_type,
                             // SAFETY: All keys in `timers` are generated from existing values in
-                            // `battle.timers``.
+                            // `battle.timers`.
                             battle.timers.get(timer_type).unwrap().remaining,
                             None,
                         )
