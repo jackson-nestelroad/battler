@@ -1,0 +1,30 @@
+[package]
+name = "battler-multiplayer-service"
+version = "0.1.0"
+edition = "2024"
+description = "Service for managing multiplayer Pokémon battles in Rust."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-service"
+
+[dependencies]
+ahash = { workspace = true }
+anyhow = { workspace = true }
+futures-util = { workspace = true }
+serde = { workspace = true }
+serde_string_enum = { workspace = true }
+tokio = { workspace = true }
+unicase = { workspace = true }
+uuid = { workspace = true }
+
+battler = { path = "../battler" }
+battler-client = { path = "../battler-client" }
+battler-service = { path = "../battler-service" }
+battler-service-client = { path = "../battler-service-client" }
+
+[dev-dependencies]
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+
+battler-test-utils = { path = "../battler-test-utils" }

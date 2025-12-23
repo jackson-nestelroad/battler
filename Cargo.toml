@@ -8,6 +8,7 @@ members = [
     "battler-choice",
     "battler-client",
     "battler-data",
+    "battler-multiplayer-service",
     "battler-multiplayer-service/battler-multiplayer-service-schema",
     "battler-prng",
     "battler-service",

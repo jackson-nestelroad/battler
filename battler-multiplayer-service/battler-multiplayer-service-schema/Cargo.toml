@@ -6,7 +6,7 @@ description = "WAMP schema for managing multiplayer Pokémon battles in Rust."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["pokemon", "battle"]
 license = "MIT"
-repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-service"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-service-schema"
 
 [dependencies]
 anyhow = { workspace = true }

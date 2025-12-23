@@ -57,6 +57,17 @@ jobs:
       - name: Run battler-calc tests
         run: cargo test -p "battler-calc*"
 
+  test-battler-multiplayer-service:
+    name: Run battler-multiplayer-service tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-multiplayer-service tests
+        run: cargo test -p "battler-multiplayer-service*"
+
   test-battler-ai:
     name: Run battler-ai tests
     runs-on: ubuntu-latest

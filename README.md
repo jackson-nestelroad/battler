@@ -11,6 +11,7 @@ This repository features multiple crates:
 1. [`battler-choice`](./battler-choice/) - Common choice parsing logic.
 1. [`battler-client`](./battler-client/) - Client-side logic for battler.
 1. [`battler-data`](./battler-data/) - Common data types for battler.
+1. [`battler-multiplayer-service`](./battler-multiplayer-service/) - Service object for managing multiplayer battles.
 1. [`battler-prng`](./battler-prng/) - RNG module for battler.
 1. [`battler-service`](./battler-service) - Service object for managing battles.
 1. [`battler-service-client`](./battler-service-client/) - Client-side wrapper for `battler-service`.

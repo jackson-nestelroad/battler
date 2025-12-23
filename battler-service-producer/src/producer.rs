@@ -18,7 +18,10 @@ use battler_service::{
 use battler_wamp::core::hash::HashSet;
 use tokio::sync::{
     broadcast,
-    mpsc,
+    mpsc::{
+        self,
+        UnboundedReceiver,
+    },
     oneshot,
 };
 use uuid::Uuid;
@@ -71,8 +74,29 @@ where
     let global_log_rx = service
         .take_global_log_rx()
         .ok_or_else(|| Error::msg("expected global log receiver"))?;
+    run_battler_service_producer_over_service(
+        Arc::new(service),
+        global_log_rx,
+        engine_options,
+        peer_config,
+        peer,
+        modules,
+    )
+    .await
+}
+
+pub async fn run_battler_service_producer_over_service<S>(
+    service: Arc<BattlerService<'static>>,
+    global_log_rx: UnboundedReceiver<GlobalLogEntry>,
+    engine_options: CoreBattleEngineOptions,
+    peer_config: battler_wamprat_schema::PeerConfig,
+    peer: battler_wamp::peer::Peer<S>,
+    modules: Modules,
+) -> Result<()>
+where
+    S: Send + 'static,
+{
     let mut builder = battler_service_schema::BattlerService::producer_builder(peer_config.clone());
-    let service = Arc::new(service);
 
     let authorizer = Arc::new(modules.authorizer);
 

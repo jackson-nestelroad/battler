@@ -10,47 +10,33 @@ use battler_wamprat_uri::WampUriMatcher;
 /// Arguments for proposing a battle.
 #[derive(Debug, Clone, WampList)]
 pub struct ProposeBattleInputArgs {
-    pub create_battle: battler_service_schema::CreateInputArgs,
+    /// JSON-serialized [`battler_multiplayer_service::ProposedBattleOptions`].
+    pub proposed_battle_options_json: String,
 }
 
 /// Input for proposing a battle.
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct ProposeBattleInput(#[arguments] ProposeBattleInputArgs);
 
-/// A player in a proposed battle.
-#[derive(Debug, Clone, WampDictionary)]
-pub struct Player {
-    /// Player ID.
-    pub id: String,
-    /// Player name.
-    pub name: String,
-    /// Has the player accepted the battle?
-    ///
-    /// If a player rejects the proposed battle, it is deleted immediately.
-    pub accepted: bool,
-}
-
-/// A side in a proposed battle.
-#[derive(Debug, Clone, WampDictionary)]
-pub struct Side {
-    /// Side name.
-    pub name: String,
-    /// Players on the side.
-    pub players: Vec<Player>,
-}
-
-/// A proposed battle, which has not yet started because all players have not accepted.
-#[derive(Debug, Clone, WampDictionary)]
+/// A proposed battle.
+#[derive(Debug, Clone, WampList)]
 pub struct ProposedBattle {
-    /// Unique identifier.
-    pub uuid: String,
-    /// Sides of the battle.
-    pub sides: Vec<Side>,
+    /// JSON-serialized [`battler_multiplayer_service::ProposedBattle`].
+    pub proposed_battle_json: String,
 }
 
 /// Output of proposing a battle.
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct ProposedBattleOutput(#[arguments] ProposedBattle);
+
+/// URI pattern for looking up a single proposed battle.
+#[derive(Debug, Clone, WampUriMatcher)]
+#[uri("com.battler.battler_multiplayer_service.proposed_battles.{0}")]
+pub struct ProposedBattlePattern(pub String);
+
+/// Input for looking up a single proposed battle.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct ProposedBattleInput;
 
 /// URI pattern for responding to a proposed battle.
 #[derive(Debug, Clone, WampUriMatcher)]
@@ -77,7 +63,7 @@ pub struct RespondToProposedBattleOutput;
 /// Arguments for listing proposed battles for a player.
 #[derive(Debug, Clone, WampDictionary)]
 pub struct ProposedBattlesForPlayerInputArgs {
-    /// Player ID.
+    /// Player.
     pub player: String,
     /// Number of proposed battles.
     pub count: Integer,
@@ -102,9 +88,9 @@ pub struct ProposedBattlesOutput(#[arguments] ProposedBattlesOutputArgs);
 
 /// A rejection of a proposed battle.
 #[derive(Debug, Clone, WampDictionary)]
-pub struct ProposedBattleRejection {
-    /// The player that initiated the rejection.
-    pub rejected_by_player: String,
+pub struct ProposedBattleRejectionOutputArgs {
+    /// JSON-serialized [`battler_multiplayer_service::ProposedBattleRejection`].
+    pub proposed_battle_rejection_json: String,
 }
 
 /// URI pattern for proposed battle updates for a player.
@@ -120,12 +106,12 @@ pub struct ProposedBattleUpdatesPattern {
 pub struct ProposedBattleUpdate {
     /// The proposed battle.
     pub proposed_battle: ProposedBattle,
-    /// The started battle, set only if the battle was fully accepted and started.
+    /// The UUID of the started battle, set only if the battle was fully accepted and started.
     #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
-    pub started: Option<battler_service_schema::Battle>,
+    pub created: Option<String>,
     /// The rejection, set only if the battle was rejected and deleted.
     #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
-    pub rejected: Option<ProposedBattleRejection>,
+    pub rejected: Option<ProposedBattleRejectionOutputArgs>,
 }
 
 /// An event for a proposed battle update.
@@ -139,6 +125,9 @@ pub enum BattlerMultiplayerService {
     /// Proposes a battle to the given players.
     #[rpc(uri = "com.battler.battler_multiplayer_service.proposed_battles.create", input = ProposeBattleInput, output = ProposedBattleOutput)]
     ProposeBattle,
+    /// Looks up a proposed battle.
+    #[rpc(pattern = ProposedBattlePattern, input = ProposedBattleInput, output = ProposedBattleOutput)]
+    ProposedBattle,
     /// Responds to the proposed battle for an individual player.
     #[rpc(pattern = RespondToProposedBattlePattern, input = RespondToProposedBattleInput, output = RespondToProposedBattleOutput)]
     RespondToProposedBattle,

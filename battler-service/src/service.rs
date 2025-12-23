@@ -5,7 +5,10 @@ use std::{
     },
     fmt::Display,
     pin::Pin,
-    sync::Arc,
+    sync::{
+        Arc,
+        Weak,
+    },
     time::{
         Duration,
         Instant,
@@ -307,11 +310,11 @@ impl<'d> LiveBattle<'d> {
         Ok(continued)
     }
 
-    fn injected_log<S>(log: S) -> String
+    fn injected_log_entry<S>(entry: S) -> String
     where
         S: Display,
     {
-        format!("-battlerservice:{log}")
+        format!("-battlerservice:{entry}")
     }
 
     fn timer_log(
@@ -324,7 +327,7 @@ impl<'d> LiveBattle<'d> {
             TimerType::Player(player) => format!("player:{player}"),
             TimerType::Action(player) => format!("action:{player}"),
         };
-        Self::injected_log(format!(
+        format!(
             "timer|{timer_type}{}|remainingsecs:{}",
             match timer_log_type {
                 Some(TimerLogType::Warning) => "|warning",
@@ -332,7 +335,19 @@ impl<'d> LiveBattle<'d> {
                 None => "",
             },
             remaining.as_secs()
-        ))
+        )
+    }
+
+    fn inject_log_entries<I, S>(&mut self, entries: I)
+    where
+        I: IntoIterator<Item = S>,
+        S: Display,
+    {
+        self.logs.append(
+            entries
+                .into_iter()
+                .map(|entry| Self::injected_log_entry(entry)),
+        );
     }
 
     async fn handle_timer_finished(&mut self, timer_type: &TimerType) -> Result<()> {
@@ -348,7 +363,7 @@ impl<'d> LiveBattle<'d> {
             return Ok(());
         }
 
-        self.logs.append([Self::timer_log(
+        self.inject_log_entries([Self::timer_log(
             timer_type,
             Duration::ZERO,
             Some(TimerLogType::Done),
@@ -407,7 +422,13 @@ impl<'d> LiveBattleManager<'d> {
     }
 
     async fn update_team(&self, player: &str, team: TeamData) -> Result<()> {
-        self.live_battle.lock().await.update_team(player, team)
+        let mut live_battle = self.live_battle.lock().await;
+        live_battle.update_team(player, team)?;
+
+        // Inject a log entry so that clients can refresh player states.
+        live_battle.inject_log_entries([format!("teamupdate|player:{player}")]);
+
+        Ok(())
     }
 
     async fn validate_player(&self, player: &str) -> Result<PlayerValidation> {
@@ -427,7 +448,11 @@ impl<'d> LiveBattleManager<'d> {
     }
 
     async fn start(&self) -> Result<()> {
-        self.live_battle.lock().await.battle.start()?;
+        {
+            let mut live_battle = self.live_battle.lock().await;
+            live_battle.battle.start()?;
+            live_battle.inject_log_entries(["started"]);
+        }
         Self::proceed(self.live_battle.clone()).await;
         Ok(())
     }
@@ -451,10 +476,16 @@ impl<'d> LiveBattleManager<'d> {
             .lock()
             .await
             .proceed_tasks
-            .spawn(LiveBattleManager::proceed_detached(live_battle));
+            .spawn(LiveBattleManager::proceed_detached(Arc::downgrade(
+                &live_battle,
+            )));
     }
 
-    async fn proceed_detached(battle: Arc<Mutex<LiveBattle<'d>>>) {
+    async fn proceed_detached(battle: Weak<Mutex<LiveBattle<'d>>>) {
+        let battle = match battle.upgrade() {
+            Some(battle) => battle,
+            None => return,
+        };
         if let Err(err) = Self::proceed_detached_internal(battle.clone()).await {
             battle.lock().await.error = Some(format!("{err:#}"));
         }
@@ -535,7 +566,7 @@ impl<'d> LiveBattleManager<'d> {
                         )
                     })
                     .collect::<Vec<_>>();
-                battle.logs.append(timer_logs);
+                battle.inject_log_entries(timer_logs);
 
                 timers
             };
@@ -684,7 +715,7 @@ impl<'d> LiveBattleManager<'d> {
                 _ = next_warning_future => {
                     // Issue a warning.
                     let mut battle = battle.lock().await;
-                    battle.logs.append([LiveBattle::timer_log(
+                    battle.inject_log_entries([LiveBattle::timer_log(
                         timer_type,
                         next_warning.unwrap_or_default(),
                         Some(TimerLogType::Warning),
@@ -934,7 +965,7 @@ impl<'d> BattlerService<'d> {
                 Ok(battle) => battle,
                 Err(_) => return Ok(()),
             };
-            if battle.battle_state().await != BattleState::Finished {
+            if battle.battle_state().await == BattleState::Active {
                 return Err(Error::msg("cannot delete an ongoing battle"));
             }
         }
