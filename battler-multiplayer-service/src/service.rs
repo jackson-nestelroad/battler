@@ -18,7 +18,10 @@ use anyhow::{
     Error,
     Result,
 };
-use battler::SideData;
+use battler::{
+    DataStoreByName,
+    SideData,
+};
 use battler_service_client::BattlerServiceClient;
 use futures_util::lock::Mutex;
 use tokio::{
@@ -269,15 +272,13 @@ impl ActiveProposedBattleManager {
     }
 
     async fn publish_update_to_player(&self, player: &str, update: ProposedBattleUpdate) {
-        self.battler_multiplayer_service_state
+        let player_state = self
+            .battler_multiplayer_service_state
             .lock()
             .await
             .player_state(player)
-            .lock()
-            .await
-            .update_tx
-            .send(update)
-            .ok();
+            .clone();
+        player_state.lock().await.update_tx.send(update).ok();
     }
 
     async fn start(&self) {
@@ -312,18 +313,27 @@ impl ActiveProposedBattleManager {
     }
 
     async fn update_internal(&self) -> Result<()> {
-        let mut state = self.state.lock().await;
-        let underlying_battle = state.battle.clone();
+        let (underlying_battle, ready_to_create) = {
+            let state = self.state.lock().await;
+            (
+                state.battle.clone(),
+                state.proposed_battle.ready_to_create(),
+            )
+        };
 
-        if underlying_battle.is_none() && state.proposed_battle.ready_to_create() {
-            let battle = self
-                .battler_service_client
-                .create(
+        if underlying_battle.is_none() && ready_to_create {
+            let (battle_options, service_options) = {
+                let state = self.state.lock().await;
+                (
                     state.proposed_battle.options.battle_options.clone(),
                     state.proposed_battle.options.service_options.clone(),
                 )
+            };
+            let battle = self
+                .battler_service_client
+                .create(battle_options, service_options)
                 .await?;
-            state.battle = Some(UnderlyingBattle {
+            self.state.lock().await.battle = Some(UnderlyingBattle {
                 uuid: battle.uuid,
                 started: false,
             })
@@ -341,7 +351,9 @@ impl ActiveProposedBattleManager {
             {
                 // Auto-start the battle.
                 self.battler_service_client.start(battle.uuid).await?;
-                state
+                self.state
+                    .lock()
+                    .await
                     .battle
                     .as_mut()
                     .ok_or_else(|| Error::msg("expected battle"))?
@@ -467,8 +479,8 @@ impl ActiveProposedBattleManager {
         // duplicate.
         self.publish_update().await;
 
-        let state = self.state.lock().await;
-        if let Some(battle) = &state.battle
+        let battle = self.state.lock().await.battle.clone();
+        if let Some(battle) = battle
             && !battle.started
         {
             // NOTE: The battle can leak here, but realistically the only error should be that the
@@ -515,18 +527,41 @@ impl BattlerMultiplayerServiceState {
             .or_insert(Arc::new(Mutex::new(PlayerState::new())))
             .clone()
     }
+
+    async fn delete_proposed_battle(
+        &mut self,
+        uuid: Uuid,
+    ) -> Option<Arc<ActiveProposedBattleManager>> {
+        let proposed_battle = self.proposed_battles.remove(&uuid)?;
+        let players = proposed_battle.players().await;
+
+        for player in players {
+            self.player_state(&player)
+                .lock()
+                .await
+                .proposed_battles
+                .remove(&uuid);
+        }
+        Some(proposed_battle)
+    }
 }
 
 /// Service for managing multiplayer battles on the [`battler`] battle engine.
-pub struct BattlerMultiplayerService {
+pub struct BattlerMultiplayerService<'d> {
+    #[allow(unused)]
+    data: &'d dyn DataStoreByName,
     battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
     state: Arc<Mutex<BattlerMultiplayerServiceState>>,
 }
 
-impl BattlerMultiplayerService {
+impl<'d> BattlerMultiplayerService<'d> {
     /// Creates a new battler multiplayer service.
-    pub fn new(battler_service_client: Box<dyn BattlerServiceClient>) -> Self {
+    pub fn new(
+        data: &'d dyn DataStoreByName,
+        battler_service_client: Box<dyn BattlerServiceClient>,
+    ) -> Self {
         Self {
+            data,
             battler_service_client: Arc::new(battler_service_client),
             state: Arc::new(Mutex::new(BattlerMultiplayerServiceState::default())),
         }
@@ -556,6 +591,13 @@ impl BattlerMultiplayerService {
         self.create_proposed_battle(options).await
     }
 
+    async fn delete_proposed_battle(state: Arc<Mutex<BattlerMultiplayerServiceState>>, uuid: Uuid) {
+        let proposed_battle = state.lock().await.delete_proposed_battle(uuid).await;
+        if let Some(proposed_battle) = proposed_battle {
+            proposed_battle.delete().await;
+        }
+    }
+
     async fn create_proposed_battle(
         self: Arc<Self>,
         options: ProposedBattleOptions,
@@ -566,7 +608,7 @@ impl BattlerMultiplayerService {
             .create_proposed_battle_internal(uuid, options)
             .await;
         if result.is_err() {
-            self.delete_proposed_battle(uuid).await;
+            Self::delete_proposed_battle(self.state.clone(), uuid).await;
         }
         result
     }
@@ -592,18 +634,20 @@ impl BattlerMultiplayerService {
         );
         let active_proposed_battle_manager = Arc::new(active_proposed_battle_manager);
 
-        {
+        let players = {
             let mut state = self.state.lock().await;
             state
                 .proposed_battles
                 .insert(uuid, active_proposed_battle_manager.clone());
+            let mut player_states = Vec::default();
             for player in players {
-                let player_state = state
-                    .players
-                    .entry(player)
-                    .or_insert(Arc::new(Mutex::new(PlayerState::new())));
-                player_state.lock().await.proposed_battles.insert(uuid);
+                player_states.push(state.player_state(&player));
             }
+            player_states
+        };
+
+        for player in players {
+            player.lock().await.proposed_battles.insert(uuid);
         }
 
         active_proposed_battle_manager.start().await;
@@ -613,40 +657,22 @@ impl BattlerMultiplayerService {
             .respond(&creator, &ProposedBattleResponse { accept: true })
             .await?;
 
-        self.state
-            .lock()
-            .await
-            .join_set
-            .spawn(Self::proposed_battle_housekeeping(
-                Arc::downgrade(&self),
+        self.state.lock().await.join_set.spawn(
+            BattlerMultiplayerService::proposed_battle_housekeeping(
+                Arc::downgrade(&self.state),
                 Arc::downgrade(&active_proposed_battle_manager),
-            ));
+            ),
+        );
 
         Ok(active_proposed_battle_manager.proposed_battle().await)
     }
 
-    async fn delete_proposed_battle(&self, uuid: Uuid) {
-        let proposed_battle = self.state.lock().await.proposed_battles.remove(&uuid);
-        let proposed_battle = match proposed_battle {
-            Some(proposed_battle) => proposed_battle,
-            None => return,
-        };
-
-        proposed_battle.delete().await;
-
-        let state = self.state.lock().await;
-        for player in proposed_battle.players().await {
-            if let Some(player) = state.players.get(&player) {
-                player.lock().await.proposed_battles.remove(&uuid);
-            }
-        }
-    }
-
     async fn proposed_battle_housekeeping(
-        battler_multiplayer_service: Weak<Self>,
+        battler_multiplayer_service_state: Weak<Mutex<BattlerMultiplayerServiceState>>,
         active_proposed_battle_manager: Weak<ActiveProposedBattleManager>,
     ) {
-        while let Some(battler_multiplayer_service) = battler_multiplayer_service.upgrade()
+        while let Some(battler_multiplayer_service_state) =
+            battler_multiplayer_service_state.upgrade()
             && let Some(active_proposed_battle_manager) = active_proposed_battle_manager.upgrade()
         {
             if active_proposed_battle_manager
@@ -654,11 +680,14 @@ impl BattlerMultiplayerService {
                 .await
                 .is_some()
             {
-                battler_multiplayer_service
-                    .delete_proposed_battle(active_proposed_battle_manager.uuid().await)
-                    .await;
+                Self::delete_proposed_battle(
+                    battler_multiplayer_service_state.clone(),
+                    active_proposed_battle_manager.uuid().await,
+                )
+                .await;
                 break;
-            } else if active_proposed_battle_manager.needs_to_watch_battle().await {
+            }
+            if active_proposed_battle_manager.needs_to_watch_battle().await {
                 active_proposed_battle_manager.watch_battle().await;
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
@@ -720,15 +749,8 @@ impl BattlerMultiplayerService {
         &self,
         player: &str,
     ) -> Result<broadcast::Receiver<ProposedBattleUpdate>> {
-        Ok(self
-            .state
-            .lock()
-            .await
-            .player_state(player)
-            .lock()
-            .await
-            .update_tx
-            .subscribe())
+        let player_state = self.state.lock().await.player_state(player);
+        Ok(player_state.lock().await.update_tx.subscribe())
     }
 }
 
@@ -789,14 +811,15 @@ mod battler_multiplayer_service_test {
         Arc::new(BattlerService::new(static_local_data_store()))
     }
 
-    fn battler_multiplayer_service() -> Arc<BattlerMultiplayerService> {
+    fn battler_multiplayer_service() -> Arc<BattlerMultiplayerService<'static>> {
         battler_multiplayer_service_over_battler_service(battler_service())
     }
 
     fn battler_multiplayer_service_over_battler_service(
         battler_service: Arc<BattlerService<'static>>,
-    ) -> Arc<BattlerMultiplayerService> {
+    ) -> Arc<BattlerMultiplayerService<'static>> {
         Arc::new(BattlerMultiplayerService::new(
+            static_local_data_store(),
             battler_service_client_over_direct_service(battler_service),
         ))
     }
@@ -912,7 +935,7 @@ mod battler_multiplayer_service_test {
     }
 
     async fn wait_until_proposed_battle_deleted(
-        service: &BattlerMultiplayerService,
+        service: &BattlerMultiplayerService<'_>,
         proposed_battle: Uuid,
         timeout: Duration,
     ) -> Result<()> {

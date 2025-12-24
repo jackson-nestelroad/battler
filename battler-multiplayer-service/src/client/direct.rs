@@ -16,19 +16,19 @@ use crate::{
 
 /// Implementation of [`BattlerMultiplayerServiceClient`] that uses the
 /// [`BattlerMultiplayerService`] directly for managing proposed battles.
-pub struct DirectBattlerMultiplayerServiceClient {
-    service: Arc<BattlerMultiplayerService>,
+pub struct DirectBattlerMultiplayerServiceClient<'d> {
+    service: Arc<BattlerMultiplayerService<'d>>,
 }
 
-impl DirectBattlerMultiplayerServiceClient {
+impl<'d> DirectBattlerMultiplayerServiceClient<'d> {
     /// Creates a new client around a service object.
-    pub fn new(service: Arc<BattlerMultiplayerService>) -> Self {
+    pub fn new(service: Arc<BattlerMultiplayerService<'d>>) -> Self {
         Self { service }
     }
 }
 
 #[async_trait]
-impl BattlerMultiplayerServiceClient for DirectBattlerMultiplayerServiceClient {
+impl<'d> BattlerMultiplayerServiceClient for DirectBattlerMultiplayerServiceClient<'d> {
     async fn propose_battle(&self, options: ProposedBattleOptions) -> Result<ProposedBattle> {
         self.service.clone().propose_battle(options).await
     }
