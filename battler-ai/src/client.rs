@@ -60,7 +60,9 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
             tokio::select! {
                 changed = battle_event_rx.changed() => {
                     changed?;
-                    if self.handle_battle_event(&battle_event_rx.borrow_and_update(), &mut requests).await? {
+                    // Clone because the reference returned by the receiver is not Send.
+                    let event = battle_event_rx.borrow_and_update().clone();
+                    if self.handle_battle_event(&event, &mut requests).await? {
                         return Ok(());
                     }
                 }

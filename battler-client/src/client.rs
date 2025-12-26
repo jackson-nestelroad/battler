@@ -10,6 +10,7 @@ use futures_util::lock::Mutex;
 use tokio::{
     sync::{
         broadcast,
+        mpsc,
         watch,
     },
     task::JoinSet,
@@ -39,7 +40,7 @@ impl Role {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum BattleClientEvent {
     Request(Option<battler::Request>),
     End,
@@ -119,6 +120,7 @@ impl<'b> BattlerClientInternal<'b> {
         self: Arc<Self>,
         log_entry_rx: broadcast::Receiver<battler_service::LogEntry>,
         cancel_rx: broadcast::Receiver<()>,
+        #[allow(unused)] task_tx: mpsc::Sender<()>,
     ) {
         if let Err(err) = self.watch_battle_internal(log_entry_rx, cancel_rx).await {
             self.battle_event_tx
@@ -266,6 +268,7 @@ impl<'b> BattlerClientInternal<'b> {
 pub struct BattlerClient<'b> {
     client: Arc<BattlerClientInternal<'b>>,
     watch_tasks: Mutex<JoinSet<()>>,
+    task_rx: Mutex<mpsc::Receiver<()>>,
 }
 
 impl<'b> BattlerClient<'b> {
@@ -283,6 +286,8 @@ impl<'b> BattlerClient<'b> {
             .await?;
         let cancel_rx = client.cancel_tx.subscribe();
 
+        let (task_tx, task_rx) = mpsc::channel(1);
+
         let mut watch_tasks = JoinSet::default();
         {
             // SAFETY: We only transmute the lifetime, from 'b to 'static. The Drop implementation
@@ -294,22 +299,20 @@ impl<'b> BattlerClient<'b> {
                     Arc<BattlerClientInternal<'static>>,
                 >(client.clone())
             };
-            watch_tasks.spawn(client.watch_battle(log_entry_rx, cancel_rx))
+            watch_tasks.spawn(client.watch_battle(log_entry_rx, cancel_rx, task_tx))
         };
 
         Ok(Self {
             client,
             watch_tasks: Mutex::new(watch_tasks),
+            task_rx: Mutex::new(task_rx),
         })
     }
 
     /// Cancels the client and stops following the battle.
     pub async fn cancel(&self) {
         self.client.cancel_tx.send(()).ok();
-        let mut watch_tasks = JoinSet::default();
-        std::mem::swap(&mut watch_tasks, &mut *self.watch_tasks.lock().await);
-        watch_tasks.abort_all();
-        while let Some(_) = watch_tasks.join_next().await {}
+        self.watch_tasks.lock().await.shutdown().await;
     }
 
     /// Checks if the player is ready for the battle to start.
@@ -360,13 +363,15 @@ impl<'b> BattlerClient<'b> {
     }
 }
 
-impl<'b> Drop for BattlerClient<'b> {
+impl Drop for BattlerClient<'_> {
     fn drop(&mut self) {
         // Ensure we stop using the client.
+        //
+        // Same as `cancel`, but synchronous.
         tokio::task::block_in_place(move || {
-            tokio::runtime::Runtime::new()
-                .unwrap()
-                .block_on(self.cancel());
+            self.client.cancel_tx.send(()).ok();
+            self.watch_tasks.get_mut().abort_all();
+            self.task_rx.get_mut().blocking_recv();
         });
     }
 }
