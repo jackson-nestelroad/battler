@@ -268,7 +268,12 @@ impl Log {
     ///
     /// If false, the log requires reconstructing for middle values.
     pub fn filled(&self) -> bool {
-        self.entries.is_empty() || self.filled_up_to == self.entries.len() - 1
+        self.entries.is_empty()
+            || (self.filled_up_to == self.entries.len() - 1
+                && self
+                    .entries
+                    .iter()
+                    .all(|entry| *entry != LogEntry::default()))
     }
 
     /// Returns all log entries.
