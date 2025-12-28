@@ -31,6 +31,8 @@ use tokio::{
 use uuid::Uuid;
 
 use crate::{
+    AiPlayers,
+    DirectBattlerMultiplayerServiceClient,
     Player,
     PlayerStatus,
     ProposedBattle,
@@ -39,6 +41,10 @@ use crate::{
     ProposedBattleResponse,
     ProposedBattleUpdate,
     Side,
+    ai::{
+        AiPlayerModules,
+        AiPlayerRegistry,
+    },
 };
 
 struct ActiveProposedBattle {
@@ -552,19 +558,52 @@ pub struct BattlerMultiplayerService<'d> {
     data: &'d dyn DataStoreByName,
     battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
     state: Arc<Mutex<BattlerMultiplayerServiceState>>,
+    ai_player_registry: Mutex<AiPlayerRegistry<'d>>,
 }
 
 impl<'d> BattlerMultiplayerService<'d> {
     /// Creates a new battler multiplayer service.
-    pub fn new(
+    pub async fn new(
         data: &'d dyn DataStoreByName,
-        battler_service_client: Box<dyn BattlerServiceClient>,
+        battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
     ) -> Self {
+        let state = Arc::new(Mutex::new(BattlerMultiplayerServiceState::default()));
+        let ai_player_registry = Mutex::new(AiPlayerRegistry::default());
+
+        state
+            .lock()
+            .await
+            .join_set
+            .spawn(BattlerMultiplayerService::clean_up_completed_tasks(
+                Arc::downgrade(&state),
+            ));
+
         Self {
             data,
-            battler_service_client: Arc::new(battler_service_client),
-            state: Arc::new(Mutex::new(BattlerMultiplayerServiceState::default())),
+            battler_service_client,
+            state,
+            ai_player_registry,
         }
+    }
+
+    /// Creates AI players.
+    ///
+    /// Previously-existing AI players will be dropped.
+    pub async fn create_ai_players(self: Arc<Self>, ai_players: AiPlayers) -> Result<()> {
+        let modules = AiPlayerModules {
+            data: self.data,
+            battler_service_client: self.battler_service_client.clone(),
+            battler_multiplayer_service_client: Arc::new(Box::new(
+                DirectBattlerMultiplayerServiceClient::new(self.clone()),
+            )),
+        };
+        let mut ai_player_registry = self.ai_player_registry.lock().await;
+        for (id, options) in ai_players.players {
+            ai_player_registry
+                .create_ai_player(id, options, modules.clone())
+                .await?;
+        }
+        Ok(())
     }
 
     async fn active_proposed_battle_manager(
@@ -585,9 +624,6 @@ impl<'d> BattlerMultiplayerService<'d> {
         self: Arc<Self>,
         options: ProposedBattleOptions,
     ) -> Result<ProposedBattle> {
-        // TODO: Set up AI players in AiPlayerRegistry. They will need a simple client around this
-        // service.
-
         self.create_proposed_battle(options).await
     }
 
@@ -665,6 +701,22 @@ impl<'d> BattlerMultiplayerService<'d> {
         );
 
         Ok(active_proposed_battle_manager.proposed_battle().await)
+    }
+
+    async fn clean_up_completed_tasks(
+        battler_multiplayer_service_state: Weak<Mutex<BattlerMultiplayerServiceState>>,
+    ) {
+        while let Some(battler_multiplayer_service_state) =
+            battler_multiplayer_service_state.upgrade()
+        {
+            while let Some(_) = battler_multiplayer_service_state
+                .lock()
+                .await
+                .join_set
+                .try_join_next()
+            {}
+            tokio::time::sleep(Duration::from_mins(5)).await;
+        }
     }
 
     async fn proposed_battle_housekeeping(
@@ -811,17 +863,20 @@ mod battler_multiplayer_service_test {
         Arc::new(BattlerService::new(static_local_data_store()))
     }
 
-    fn battler_multiplayer_service() -> Arc<BattlerMultiplayerService<'static>> {
-        battler_multiplayer_service_over_battler_service(battler_service())
+    async fn battler_multiplayer_service() -> Arc<BattlerMultiplayerService<'static>> {
+        battler_multiplayer_service_over_battler_service(battler_service()).await
     }
 
-    fn battler_multiplayer_service_over_battler_service(
+    async fn battler_multiplayer_service_over_battler_service(
         battler_service: Arc<BattlerService<'static>>,
     ) -> Arc<BattlerMultiplayerService<'static>> {
-        Arc::new(BattlerMultiplayerService::new(
-            static_local_data_store(),
-            battler_service_client_over_direct_service(battler_service),
-        ))
+        Arc::new(
+            BattlerMultiplayerService::new(
+                static_local_data_store(),
+                Arc::new(battler_service_client_over_direct_service(battler_service)),
+            )
+            .await,
+        )
     }
 
     fn team_data() -> TeamData {
@@ -966,7 +1021,7 @@ mod battler_multiplayer_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn cannot_find_invalid_proposed_battle() {
-        let service = battler_multiplayer_service();
+        let service = battler_multiplayer_service().await;
         assert_matches::assert_matches!(service.proposed_battle(Uuid::new_v4()).await, Err(err) => {
             assert_eq!(err.to_string(), "proposed battle not found");
         });
@@ -974,7 +1029,7 @@ mod battler_multiplayer_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn cannot_create_proposed_battle_if_not_participating() {
-        let service = battler_multiplayer_service();
+        let service = battler_multiplayer_service().await;
         assert_matches::assert_matches!(
             service
                 .clone()
@@ -988,7 +1043,7 @@ mod battler_multiplayer_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn creates_proposed_battle() {
-        let service = battler_multiplayer_service();
+        let service = battler_multiplayer_service().await;
         let proposed_battle = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))
@@ -1022,7 +1077,7 @@ mod battler_multiplayer_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn rejection_deletes_proposed_battle() {
-        let service = battler_multiplayer_service();
+        let service = battler_multiplayer_service().await;
         let proposed_battle = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))
@@ -1069,7 +1124,7 @@ mod battler_multiplayer_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn creator_can_reject() {
-        let service = battler_multiplayer_service();
+        let service = battler_multiplayer_service().await;
         let proposed_battle = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))
@@ -1116,7 +1171,7 @@ mod battler_multiplayer_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn timeout_deletes_proposed_battle() {
-        let service = battler_multiplayer_service();
+        let service = battler_multiplayer_service().await;
         let mut options = proposed_battle_options("player-1");
         options.timeout = Duration::from_secs(2);
         assert_matches::assert_matches!(service.clone().propose_battle(options).await, Ok(_));
@@ -1141,7 +1196,8 @@ mod battler_multiplayer_service_test {
     #[tokio::test(flavor = "multi_thread")]
     async fn battle_created_when_accepted() {
         let battler_service = battler_service();
-        let service = battler_multiplayer_service_over_battler_service(battler_service.clone());
+        let service =
+            battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
         let proposed_battle = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))
@@ -1180,7 +1236,8 @@ mod battler_multiplayer_service_test {
     #[tokio::test(flavor = "multi_thread")]
     async fn proposed_battle_updates_when_team_updates() {
         let battler_service = battler_service();
-        let service = battler_multiplayer_service_over_battler_service(battler_service.clone());
+        let service =
+            battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
         let proposed_battle = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))
@@ -1230,7 +1287,8 @@ mod battler_multiplayer_service_test {
     #[tokio::test(flavor = "multi_thread")]
     async fn battle_starting_deletes_proposed_battle() {
         let battler_service = battler_service();
-        let service = battler_multiplayer_service_over_battler_service(battler_service.clone());
+        let service =
+            battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
         let proposed_battle = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))
@@ -1293,7 +1351,8 @@ mod battler_multiplayer_service_test {
     #[tokio::test(flavor = "multi_thread")]
     async fn rejection_deletes_underlying_battle_after_creation() {
         let battler_service = battler_service();
-        let service = battler_multiplayer_service_over_battler_service(battler_service.clone());
+        let service =
+            battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
         let proposed_battle = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))
@@ -1343,7 +1402,7 @@ mod battler_multiplayer_service_test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn lists_proposed_battles_for_player() {
-        let service = battler_multiplayer_service();
+        let service = battler_multiplayer_service().await;
         let proposed_battle_1 = service
             .clone()
             .propose_battle(proposed_battle_options("player-1"))

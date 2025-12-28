@@ -11,8 +11,10 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-mu
 [dependencies]
 ahash = { workspace = true }
 anyhow = { workspace = true }
+async-scoped = { workspace = true }
 async-trait = { workspace = true }
 futures-util = { workspace = true }
+log = { workspace = true }
 serde = { workspace = true }
 serde_string_enum = { workspace = true }
 tokio = { workspace = true }
@@ -20,6 +22,7 @@ unicase = { workspace = true }
 uuid = { workspace = true }
 
 battler = { path = "../battler" }
+battler-ai = { path = "../battler-ai" }
 battler-client = { path = "../battler-client" }
 battler-service = { path = "../battler-service" }
 battler-service-client = { path = "../battler-service-client" }

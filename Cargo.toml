@@ -63,6 +63,7 @@ serde_json = "1.0"
 serde_string_enum = "0.2"
 
 # Async.
+async-scoped = { version = "0.9", features = ["use-tokio"] }
 futures-channel = "0.3"
 futures-util = "0.3"
 tokio = { version = "1.45", features = ["full"] }

@@ -3,6 +3,10 @@ use std::time::{
     SystemTime,
 };
 
+use ahash::{
+    HashMap,
+    HashSet,
+};
 use battler::CoreBattleOptions;
 use battler_service::BattleServiceOptions;
 use serde::{
@@ -15,9 +19,32 @@ use serde_string_enum::{
 };
 use uuid::Uuid;
 
+/// An AI player using Gemini.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GeminiOptions {}
+
+/// The type of an AI player.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AiPlayerType {
+    #[serde(rename = "gemini")]
+    Gemini(GeminiOptions),
+}
+
 /// Options for an AI player.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AiPlayerOptions {}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AiPlayerOptions {
+    /// Player IDs.
+    pub players: HashSet<String>,
+    /// AI type.
+    pub ai_type: AiPlayerType,
+}
+
+/// A set of AI players.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AiPlayers {
+    /// Players by ID.
+    pub players: HashMap<String, AiPlayerOptions>,
+}
 
 /// Options for a proposed battle.
 #[derive(Debug, Clone, Serialize, Deserialize)]
