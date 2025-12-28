@@ -38,7 +38,7 @@ struct Output {
 }
 
 /// A battle AI where decisions are made by Gemini.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Gemini {}
 
 #[async_trait]

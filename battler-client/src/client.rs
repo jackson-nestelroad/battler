@@ -20,6 +20,7 @@ use uuid::Uuid;
 use crate::{
     log::Log,
     state::{
+        BattlePhase,
         BattleState,
         alter_battle_state,
     },
@@ -40,11 +41,21 @@ impl Role {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BattleClientEvent {
     Request(Option<battler::Request>),
     End,
     Error(String),
+}
+
+impl BattleClientEvent {
+    /// Checks if the event is a non-empty request that must be responded to.
+    pub fn is_request(&self) -> bool {
+        match self {
+            Self::Request(Some(_)) => true,
+            _ => false,
+        }
+    }
 }
 
 fn role_for_player(battle: &Battle, player: &str) -> Role {
@@ -120,8 +131,13 @@ impl<'b> BattlerClientInternal<'b> {
         self: Arc<Self>,
         log_entry_rx: broadcast::Receiver<battler_service::LogEntry>,
         cancel_rx: broadcast::Receiver<()>,
-        #[allow(unused)] task_tx: mpsc::Sender<()>,
+        task_tx: mpsc::WeakSender<()>,
     ) {
+        #[allow(unused)]
+        let task_tx = match task_tx.upgrade() {
+            Some(task_tx) => task_tx,
+            None => return,
+        };
         if let Err(err) = self.watch_battle_internal(log_entry_rx, cancel_rx).await {
             self.battle_event_tx
                 .send(BattleClientEvent::Error(format!("{err:#}")))
@@ -138,6 +154,9 @@ impl<'b> BattlerClientInternal<'b> {
         self.ensure_caught_up().await?;
 
         loop {
+            if *self.battle_event_rx.borrow() == BattleClientEvent::End {
+                break;
+            }
             // If we are caught up, propagate a request.
             if self.caught_up().await? && self.last_log_index().await > 0 {
                 let request = self.service.request(self.battle, &self.player).await?;
@@ -169,12 +188,7 @@ impl<'b> BattlerClientInternal<'b> {
         self.update_battle_state_for_log_entry(log_entry).await?;
 
         // Check if the battle ended.
-        let battle = self
-            .service
-            .battle(self.battle)
-            .await
-            .context("battle does not exist")?;
-        if battle.state == battler_service::BattleState::Finished {
+        if self.state.lock().await.phase == BattlePhase::Finished {
             self.battle_event_tx.send(BattleClientEvent::End)?;
             return Ok(());
         }
@@ -268,6 +282,7 @@ impl<'b> BattlerClientInternal<'b> {
 pub struct BattlerClient<'b> {
     client: Arc<BattlerClientInternal<'b>>,
     watch_tasks: Mutex<JoinSet<()>>,
+    task_tx: Option<mpsc::Sender<()>>,
     task_rx: Mutex<mpsc::Receiver<()>>,
 }
 
@@ -299,12 +314,13 @@ impl<'b> BattlerClient<'b> {
                     Arc<BattlerClientInternal<'static>>,
                 >(client.clone())
             };
-            watch_tasks.spawn(client.watch_battle(log_entry_rx, cancel_rx, task_tx))
+            watch_tasks.spawn(client.watch_battle(log_entry_rx, cancel_rx, task_tx.downgrade()))
         };
 
         Ok(Self {
             client,
             watch_tasks: Mutex::new(watch_tasks),
+            task_tx: Some(task_tx),
             task_rx: Mutex::new(task_rx),
         })
     }
@@ -371,6 +387,7 @@ impl Drop for BattlerClient<'_> {
         tokio::task::block_in_place(move || {
             self.client.cancel_tx.send(()).ok();
             self.watch_tasks.get_mut().abort_all();
+            self.task_tx.take();
             self.task_rx.get_mut().blocking_recv();
         });
     }

@@ -19,6 +19,10 @@ use serde_string_enum::{
 };
 use uuid::Uuid;
 
+/// An AI player using random choices.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RandomOptions {}
+
 /// An AI player using Gemini.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GeminiOptions {}
@@ -26,6 +30,8 @@ pub struct GeminiOptions {}
 /// The type of an AI player.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AiPlayerType {
+    #[serde(rename = "random")]
+    Random(RandomOptions),
     #[serde(rename = "gemini")]
     Gemini(GeminiOptions),
 }
@@ -33,10 +39,10 @@ pub enum AiPlayerType {
 /// Options for an AI player.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AiPlayerOptions {
-    /// Player IDs.
-    pub players: HashSet<String>,
     /// AI type.
     pub ai_type: AiPlayerType,
+    /// Player IDs.
+    pub players: HashSet<String>,
 }
 
 /// A set of AI players.
@@ -47,7 +53,7 @@ pub struct AiPlayers {
 }
 
 /// Options for a proposed battle.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct ProposedBattleOptions {
     /// Battle options.
     pub battle_options: CoreBattleOptions,
@@ -95,6 +101,9 @@ pub struct ProposedBattle {
     pub sides: Vec<Side>,
     /// Deadline in which the battle must start.
     pub deadline: SystemTime,
+    /// The underlying battle, set only if the battle was fully accepted and created.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub battle: Option<Uuid>,
 }
 
 /// A player's response to a proposed battle.
@@ -116,9 +125,6 @@ pub struct ProposedBattleRejection {
 pub struct ProposedBattleUpdate {
     /// The proposed battle.
     pub proposed_battle: ProposedBattle,
-    /// The created battle, set only if the battle was fully accepted and created.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub battle: Option<Uuid>,
     /// The rejection, set only if the battle was rejected and deleted.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rejection: Option<ProposedBattleRejection>,

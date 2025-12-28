@@ -15,6 +15,7 @@ use battler::DataStoreByName;
 use battler_ai::{
     BattlerAi,
     gemini::Gemini,
+    random::Random,
     run_battler_ai_client,
 };
 use battler_client::BattlerClient;
@@ -49,6 +50,7 @@ pub struct AiPlayerHandle<'d> {
     cancel_tx: broadcast::Sender<()>,
     error_rx: broadcast::Receiver<String>,
 
+    task_tx: Option<mpsc::Sender<()>>,
     task_rx: mpsc::Receiver<()>,
 
     phantom: PhantomData<&'d ()>,
@@ -81,6 +83,8 @@ impl Drop for AiPlayerHandle<'_> {
             if let Some(join_handle) = self.join_handle.take() {
                 join_handle.abort();
             }
+
+            self.task_tx.take();
 
             // Wait for all Senders to be blocked. The task in the above JoinSet holds the only
             // Sender.
@@ -153,22 +157,24 @@ impl<'d> AiPlayer<'d> {
         // finishing. Since this task takes ownership of this object, this object cannot outlive the
         // lifetime of the corresponding handle and the lifetime of 'd.
         let ai_player = unsafe { std::mem::transmute::<Self, AiPlayer<'static>>(self) };
-        let join_handle = tokio::spawn(ai_player.run(cancel_rx, task_tx));
+        let join_handle = tokio::spawn(ai_player.run(cancel_rx, task_tx.downgrade()));
 
         Ok(AiPlayerHandle {
             join_handle: Some(join_handle),
             cancel_tx,
             error_rx,
+            task_tx: Some(task_tx),
             task_rx,
             phantom: PhantomData,
         })
     }
 
-    async fn run(
-        mut self,
-        mut cancel_rx: broadcast::Receiver<()>,
-        #[allow(unused)] task_tx: mpsc::Sender<()>,
-    ) {
+    async fn run(mut self, mut cancel_rx: broadcast::Receiver<()>, task_tx: mpsc::WeakSender<()>) {
+        #[allow(unused)]
+        let task_tx = match task_tx.upgrade() {
+            Some(task_tx) => task_tx,
+            None => return,
+        };
         self.run_internal(&mut cancel_rx).await;
         self.battle_tasks.get_mut().shutdown().await;
     }
@@ -179,11 +185,8 @@ impl<'d> AiPlayer<'d> {
 
     async fn handle_proposed_battles(&mut self, cancel_rx: &mut broadcast::Receiver<()>) {
         let (proposed_battle_task_cancel_tx, _) = broadcast::channel(1);
-        // SAFETY: The future is awaited after cancellation.
-        //
-        // If the task is aborted and everything is dropped, the cancel channel created above will
-        // be dropped, which should trigger all tasks to exit as soon as possible.
-        let future = unsafe {
+        // SAFETY: The future is awaited immediately.
+        unsafe {
             async_scoped::TokioScope::scope_and_collect(|scope| {
                 for player in &self.options.players {
                     scope.spawn_cancellable(
@@ -194,16 +197,18 @@ impl<'d> AiPlayer<'d> {
                         || (),
                     );
                 }
-            })
+                // Wait for the global cancellation before notifying that each task must be
+                // canceled.
+                //
+                // We must use separate channels because resubscribing to a channel causes previous
+                // messages to be lost. This way, a cancellation sent before the scoped tasks are
+                // spawned is not lost.
+                scope.spawn((async |cancel_rx: &mut broadcast::Receiver<()>, proposed_battle_task_cancel_tx: broadcast::Sender<()>| {
+                    cancel_rx.recv().await.ok();
+                    proposed_battle_task_cancel_tx.send(()).ok();
+                })(cancel_rx, proposed_battle_task_cancel_tx));
+            }).await
         };
-        // Wait for the global cancellation before notifying that each task must be canceled.
-        //
-        // We must use separate channels because resubscribing to a channel causes previous messages
-        // to be lost. This way, a cancellation sent before the scoped tasks are spawned is not
-        // lost.
-        cancel_rx.recv().await.ok();
-        proposed_battle_task_cancel_tx.send(()).ok();
-        future.await;
     }
 
     async fn handle_proposed_battles_for_player(
@@ -301,7 +306,8 @@ impl<'d> AiPlayer<'d> {
                 &player.id,
                 ProposedBattleResponse { accept: true },
             )
-            .await
+            .await?;
+        Ok(())
     }
 
     async fn watch_proposed_battle_updates(
@@ -329,7 +335,7 @@ impl<'d> AiPlayer<'d> {
     ) -> Result<()> {
         self.respond_to_proposed_battle(player, &update.proposed_battle)
             .await?;
-        if let Some(battle) = update.battle {
+        if let Some(battle) = update.proposed_battle.battle {
             self.handle_battle(player, battle).await;
         }
         Ok(())
@@ -366,6 +372,7 @@ impl<'d> AiPlayer<'d> {
 
     fn create_ai(options: &AiPlayerOptions) -> Box<dyn BattlerAi> {
         match options.ai_type {
+            AiPlayerType::Random(_) => Box::new(Random::default()),
             AiPlayerType::Gemini(_) => Box::new(Gemini::default()),
         }
     }

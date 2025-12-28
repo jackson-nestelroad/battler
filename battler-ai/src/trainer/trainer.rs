@@ -96,6 +96,7 @@ impl ChoiceState {
 
 /// A trainer AI.
 #[allow(unused)]
+#[derive(Debug)]
 pub struct Trainer {
     options: TrainerOptions,
     prng: Mutex<Box<dyn PseudoRandomNumberGenerator>>,

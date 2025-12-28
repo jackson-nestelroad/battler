@@ -28,7 +28,7 @@ pub trait BattlerMultiplayerServiceClient: Send + Sync {
         proposed_battle: Uuid,
         player: &str,
         response: ProposedBattleResponse,
-    ) -> Result<()>;
+    ) -> Result<ProposedBattle>;
     /// Subscribes to all proposed battle updates for the player.
     async fn proposed_battle_updates(
         &self,

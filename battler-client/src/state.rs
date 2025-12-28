@@ -1099,6 +1099,8 @@ pub enum BattlePhase {
     TeamPreview(usize),
     #[serde(rename = "battle")]
     Battle,
+    #[serde(rename = "finished")]
+    Finished,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -2312,6 +2314,7 @@ fn alter_battle_state_for_entry(
             player.mons.clear();
         }
         "tie" => {
+            state.phase = BattlePhase::Finished;
             ui_log.push(ui::UiLogEntry::Tie);
         }
         "time" => (),
@@ -2335,6 +2338,7 @@ fn alter_battle_state_for_entry(
             });
         }
         "win" => {
+            state.phase = BattlePhase::Finished;
             let side = entry.value_or_else("side")?;
             ui_log.push(ui::UiLogEntry::Win { side });
         }
@@ -6546,6 +6550,7 @@ mod state_test {
         let state = BattleState::default();
         let state = alter_battle_state(state, &log).unwrap();
 
+        assert_eq!(state.phase, BattlePhase::Finished);
         pretty_assertions::assert_eq!(state.ui_log[1], Vec::from_iter([ui::UiLogEntry::Tie]),);
     }
 
@@ -6571,6 +6576,7 @@ mod state_test {
         let state = BattleState::default();
         let state = alter_battle_state(state, &log).unwrap();
 
+        assert_eq!(state.phase, BattlePhase::Finished);
         pretty_assertions::assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::Win { side: 1 }]),

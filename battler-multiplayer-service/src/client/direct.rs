@@ -50,7 +50,7 @@ impl<'d> BattlerMultiplayerServiceClient for DirectBattlerMultiplayerServiceClie
         proposed_battle: Uuid,
         player: &str,
         response: ProposedBattleResponse,
-    ) -> Result<()> {
+    ) -> Result<ProposedBattle> {
         self.service
             .respond_to_proposed_battle(proposed_battle, player, &response)
             .await

@@ -19,6 +19,7 @@ use battler::{
 use battler_ai::{
     AiContext,
     BattlerAi,
+    run_battler_ai_client,
 };
 use battler_client::{
     BattleClientEvent,
@@ -35,6 +36,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use tokio::task::JoinHandle;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScenarioInputData {
@@ -179,5 +181,19 @@ impl<'d> Scenario<'d> {
             )),
         )
         .await
+    }
+}
+
+impl Scenario<'static> {
+    pub async fn run_ai<S, A>(&self, player: S, ai: A) -> Result<JoinHandle<Result<()>>>
+    where
+        S: Into<String>,
+        A: BattlerAi + 'static,
+    {
+        Ok(tokio::spawn(run_battler_ai_client(
+            self.data_store,
+            self.client(player).await?,
+            Box::new(ai),
+        )))
     }
 }

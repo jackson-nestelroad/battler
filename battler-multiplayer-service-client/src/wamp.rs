@@ -113,8 +113,9 @@ where
         proposed_battle: Uuid,
         player: &str,
         response: ProposedBattleResponse,
-    ) -> Result<()> {
-        self.consumer
+    ) -> Result<ProposedBattle> {
+        let output = self
+            .consumer
             .respond_to_proposed_battle(
                 battler_multiplayer_service_schema::RespondToProposedBattlePattern(uuid_for_uri(
                     &proposed_battle,
@@ -130,7 +131,7 @@ where
             .await?
             .result()
             .await?;
-        todo!()
+        export_proposed_battle(output.0)
     }
 
     async fn proposed_battle_updates(

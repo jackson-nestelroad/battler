@@ -56,10 +56,6 @@ pub struct RespondToProposedBattleInputArgs {
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct RespondToProposedBattleInput(#[arguments] pub RespondToProposedBattleInputArgs);
 
-/// Output of responding to a proposed battle.
-#[derive(Debug, Clone, WampApplicationMessage)]
-pub struct RespondToProposedBattleOutput;
-
 /// Arguments for listing proposed battles for a player.
 #[derive(Debug, Clone, WampDictionary)]
 pub struct ProposedBattlesForPlayerInputArgs {
@@ -123,7 +119,7 @@ pub enum BattlerMultiplayerService {
     #[rpc(pattern = ProposedBattlePattern, input = ProposedBattleInput, output = ProposedBattleOutput)]
     ProposedBattle,
     /// Responds to the proposed battle for an individual player.
-    #[rpc(pattern = RespondToProposedBattlePattern, input = RespondToProposedBattleInput, output = RespondToProposedBattleOutput)]
+    #[rpc(pattern = RespondToProposedBattlePattern, input = RespondToProposedBattleInput, output = ProposedBattleOutput)]
     RespondToProposedBattle,
     /// Lists all proposed battles for a player.
     #[rpc(uri = "com.battler.battler_multiplayer_service.proposed_battles_for_player", input = ProposedBattlesForPlayerInput, output = ProposedBattlesOutput)]
