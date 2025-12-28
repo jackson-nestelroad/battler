@@ -61,8 +61,12 @@ jobs:
     name: Run battler-multiplayer-service tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-multiplayer-service tests
