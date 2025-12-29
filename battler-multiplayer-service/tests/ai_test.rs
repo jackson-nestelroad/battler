@@ -108,6 +108,51 @@ fn battle_options_singles() -> CoreBattleOptions {
     }
 }
 
+fn battle_options_multi() -> CoreBattleOptions {
+    CoreBattleOptions {
+        seed: Some(0),
+        format: FormatData {
+            battle_type: BattleType::Multi,
+            rules: HashSet::default(),
+        },
+        field: FieldData::default(),
+        side_1: SideData {
+            name: "Side 1".to_owned(),
+            players: Vec::from_iter([
+                PlayerData {
+                    id: "trainer".to_owned(),
+                    name: "Trainer".to_owned(),
+                    team: team_data(),
+                    ..Default::default()
+                },
+                PlayerData {
+                    id: "random-1".to_owned(),
+                    name: "Random 1".to_owned(),
+                    team: team_data(),
+                    ..Default::default()
+                },
+            ]),
+        },
+        side_2: SideData {
+            name: "Side 2".to_owned(),
+            players: Vec::from_iter([
+                PlayerData {
+                    id: "random-2".to_owned(),
+                    name: "Random 2".to_owned(),
+                    team: team_data(),
+                    ..Default::default()
+                },
+                PlayerData {
+                    id: "random-3".to_owned(),
+                    name: "Random 3".to_owned(),
+                    team: team_data(),
+                    ..Default::default()
+                },
+            ]),
+        },
+    }
+}
+
 fn battle_service_options<S>(creator: S) -> BattleServiceOptions
 where
     S: Into<String>,
@@ -210,4 +255,61 @@ async fn hosts_singles_battle_against_random_ai() {
     }
 
     assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
+    assert_matches::assert_matches!(client.state().await.winning_side, Some(_));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn hosts_multi_battle_against_random_ai() {
+    battler_test_utils::collect_logs();
+
+    let battler_service = battler_service();
+    let service = battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
+    assert_matches::assert_matches!(
+        service
+            .clone()
+            .create_ai_players(AiPlayers {
+                players: HashMap::from_iter([(
+                    "random".to_owned(),
+                    AiPlayerOptions {
+                        ai_type: AiPlayerType::Random(RandomOptions::default()),
+                        players: HashSet::from_iter([
+                            "random-1".to_owned(),
+                            "random-2".to_owned(),
+                            "random-3".to_owned()
+                        ]),
+                    },
+                )]),
+            })
+            .await,
+        Ok(())
+    );
+
+    let mut proposed_battle_update_rx = service.proposed_battle_updates("trainer").await.unwrap();
+
+    let proposed_battle = service
+        .propose_battle(proposed_battle_options("trainer", battle_options_multi()))
+        .await
+        .unwrap();
+    let battle =
+        wait_for_battle_from_proposed_battle(proposed_battle.uuid, &mut proposed_battle_update_rx)
+            .await
+            .unwrap();
+    let battle = battler_service.battle(battle).await.unwrap();
+    assert_eq!(battle.state, BattleState::Active);
+
+    let client = BattlerClient::new(
+        battle.uuid,
+        "trainer".to_owned(),
+        Arc::new(battler_service_client_over_direct_service(battler_service)),
+    )
+    .await
+    .unwrap();
+
+    let mut battle_event_rx = client.battle_event_rx();
+    while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
+        assert_matches::assert_matches!(client.make_choice("move 0,1").await, Ok(()));
+    }
+
+    assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
+    assert_matches::assert_matches!(client.state().await.winning_side, Some(_));
 }

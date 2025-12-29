@@ -116,7 +116,7 @@ pub struct AiPlayerModules<'d> {
 
 #[derive(Default)]
 pub struct AiPlayerState {
-    watched_battles: HashSet<Uuid>,
+    watched_battles: HashSet<(String, Uuid)>,
 }
 
 /// An AI-controlled player.
@@ -380,7 +380,13 @@ impl<'d> AiPlayer<'d> {
     }
 
     async fn handle_battle(&self, player: &str, battle: Uuid) {
-        if !self.state.lock().await.watched_battles.insert(battle) {
+        if !self
+            .state
+            .lock()
+            .await
+            .watched_battles
+            .insert((player.to_owned(), battle))
+        {
             return;
         }
         // SAFETY: The `Drop` implementation of this type ensures that all battle tasks finish,
@@ -448,7 +454,11 @@ impl<'d> AiPlayer<'d> {
         }
         log::info!("AI {id} finished watching battle {battle} for {player}");
         if let Some(state) = state.upgrade() {
-            state.lock().await.watched_battles.remove(&battle);
+            state
+                .lock()
+                .await
+                .watched_battles
+                .remove(&(player.to_owned(), battle));
         }
     }
 

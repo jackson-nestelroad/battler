@@ -143,9 +143,6 @@ impl ActiveProposedBattle {
         } else {
             Some(PlayerStatus::Rejected)
         };
-        if new_status == player.status {
-            return Err(Error::msg("already responded"));
-        }
         player.status = new_status;
         Ok(())
     }
@@ -331,52 +328,39 @@ impl ActiveProposedBattleManager {
     }
 
     async fn create_battle_if_needed(&self) -> Result<()> {
-        let (underlying_battle, ready_to_create) = {
-            let state = self.state.lock().await;
-            (
-                state.battle.clone(),
-                state.proposed_battle.ready_to_create(),
-            )
-        };
+        let mut state = self.state.lock().await;
 
-        if underlying_battle.is_none() && ready_to_create {
+        if state.battle.is_none() && state.proposed_battle.ready_to_create() {
             log::info!("Creating battle for proposed battle {}", self.uuid);
-            let (battle_options, service_options) = {
-                let state = self.state.lock().await;
-                (
+            let battle = self
+                .battler_service_client
+                .create(
                     state.proposed_battle.options.battle_options.clone(),
                     state.proposed_battle.options.service_options.clone(),
                 )
-            };
-            let battle = self
-                .battler_service_client
-                .create(battle_options, service_options)
                 .await?;
             log::info!(
                 "Created battle {} for proposed battle {}",
                 battle.uuid,
                 self.uuid
             );
-            {
-                let mut state = self.state.lock().await;
-                state.proposed_battle.proposed_battle.battle = Some(battle.uuid);
-                state.battle = Some(UnderlyingBattle {
-                    uuid: battle.uuid,
-                    started: false,
-                });
-            }
+            state.proposed_battle.proposed_battle.battle = Some(battle.uuid);
+            state.battle = Some(UnderlyingBattle {
+                uuid: battle.uuid,
+                started: false,
+            });
         }
         Ok(())
     }
 
     async fn start_battle_if_needed(&self) -> Result<()> {
-        let underlying_battle = self.state.lock().await.battle.clone();
+        let mut state = self.state.lock().await;
 
-        if let Some(battle) = &underlying_battle
+        if let Some(battle) = &mut state.battle
             && !battle.started
         {
-            let battle = self.battler_service_client.battle(battle.uuid).await?;
-            if battle
+            let underlying_battle = self.battler_service_client.battle(battle.uuid).await?;
+            if underlying_battle
                 .sides
                 .iter()
                 .flat_map(|side| side.players.iter())
@@ -389,13 +373,7 @@ impl ActiveProposedBattleManager {
                     self.uuid
                 );
                 self.battler_service_client.start(battle.uuid).await?;
-                self.state
-                    .lock()
-                    .await
-                    .battle
-                    .as_mut()
-                    .ok_or_else(|| Error::msg("expected battle"))?
-                    .started = true;
+                battle.started = true;
 
                 // We rely on the owner to start watching the battle, in order to avoid a circular
                 // dependency for the borrow and Send trait checkers (since the watching task can

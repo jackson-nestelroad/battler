@@ -1107,6 +1107,7 @@ pub enum BattlePhase {
 pub struct BattleState {
     pub phase: BattlePhase,
     pub turn: usize,
+    pub winning_side: Option<usize>,
     pub last_log_index: usize,
     pub battle_type: String,
     pub field: Field,
@@ -2340,6 +2341,7 @@ fn alter_battle_state_for_entry(
         "win" => {
             state.phase = BattlePhase::Finished;
             let side = entry.value_or_else("side")?;
+            state.winning_side = Some(side);
             ui_log.push(ui::UiLogEntry::Win { side });
         }
         title @ _ => {
@@ -2421,6 +2423,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 1,
+                winning_side: None,
                 last_log_index: 10,
                 battle_type: "singles".to_owned(),
                 field: Field {
@@ -2495,6 +2498,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 1,
+                winning_side: None,
                 last_log_index: 11,
                 battle_type: "singles".to_owned(),
                 field: Field {
@@ -2662,6 +2666,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 2,
+                winning_side: None,
                 last_log_index: 16,
                 battle_type: "singles".to_owned(),
                 field: Field {
@@ -2876,6 +2881,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 3,
+                winning_side: None,
                 last_log_index: 20,
                 battle_type: "singles".to_owned(),
                 field: Field {
@@ -3129,6 +3135,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 5,
+                winning_side: None,
                 last_log_index: 30,
                 battle_type: "singles".to_owned(),
                 field: Field {
@@ -3515,6 +3522,7 @@ mod state_test {
             BattleState {
                 phase: BattlePhase::Battle,
                 turn: 2,
+                winning_side: None,
                 last_log_index: 18,
                 battle_type: "singles".to_owned(),
                 field: Field {
@@ -6577,6 +6585,7 @@ mod state_test {
         let state = alter_battle_state(state, &log).unwrap();
 
         assert_eq!(state.phase, BattlePhase::Finished);
+        assert_eq!(state.winning_side, Some(1));
         pretty_assertions::assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::Win { side: 1 }]),
