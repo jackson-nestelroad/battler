@@ -973,7 +973,7 @@ impl<'d> BattlerService<'d> {
                 .insert(uuid);
         }
 
-        log::debug!("Created battle {uuid}");
+        log::info!("Created battle {uuid}");
 
         self.battle(uuid).await
     }

@@ -76,7 +76,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
             let choice = self.ai.make_choice(&ai_context, request).await?;
             match self.client.make_choice(&choice).await {
                 Ok(()) => {
-                    log::debug!(
+                    log::info!(
                         "AI {} in battle {} succeeded at making choice: {choice}",
                         self.client.player(),
                         self.client.battle()
