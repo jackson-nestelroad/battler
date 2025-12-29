@@ -50,6 +50,10 @@ impl BattlerAi for Gemini {
     ) -> Result<String> {
         // After so many attempts, just give up.
         if context.make_choice_failures.len() > 5 {
+            log::warn!(
+                "Gemini {} in encountered too many choice failures, forfeiting",
+                context.player_data.id
+            );
             return Ok("forfeit".to_owned());
         }
 

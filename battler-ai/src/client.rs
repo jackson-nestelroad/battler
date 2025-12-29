@@ -1,17 +1,14 @@
 use std::usize;
 
 use ahash::HashSet;
-use anyhow::{
-    Error,
-    Result,
-};
+use anyhow::Result;
 use battler::{
     DataStoreByName,
     Request,
 };
 use battler_choice::choices_from_string;
 use battler_client::{
-    BattleClientEvent,
+    BattleEndedError,
     BattlerClient,
 };
 
@@ -57,36 +54,17 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
             if requests == 0 {
                 return Ok(());
             }
-            tokio::select! {
-                changed = battle_event_rx.changed() => {
-                    changed?;
-                    // Clone because the reference returned by the receiver is not Send.
-                    let event = battle_event_rx.borrow_and_update().clone();
-                    if self.handle_battle_event(&event, &mut requests).await? {
-                        return Ok(());
-                    }
+            match BattlerClient::wait_for_request(&mut battle_event_rx).await {
+                Ok(request) => {
+                    self.make_choice(&request).await?;
+                    requests -= 1;
                 }
-            }
-        }
-    }
-
-    async fn handle_battle_event(
-        &mut self,
-        event: &BattleClientEvent,
-        requests: &mut usize,
-    ) -> Result<bool> {
-        match event {
-            BattleClientEvent::Request(request) => match request {
-                Some(request) => {
-                    self.make_choice(request).await?;
-                    *requests -= 1;
-                    Ok(false)
+                Err(err) => {
+                    return err
+                        .downcast::<BattleEndedError>()
+                        .map(|_| ())
+                        .map_err(|err| err.context("battle client failed"));
                 }
-                None => Ok(false),
-            },
-            BattleClientEvent::End => Ok(true),
-            BattleClientEvent::Error(err) => {
-                return Err(Error::msg(format!("battle client failed: {err}")));
             }
         }
     }
@@ -97,8 +75,21 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
         for _ in 0..MAX_ATTEMPTS {
             let choice = self.ai.make_choice(&ai_context, request).await?;
             match self.client.make_choice(&choice).await {
-                Ok(()) => return Ok(()),
+                Ok(()) => {
+                    log::debug!(
+                        "AI {} in battle {} succeeded at making choice: {choice}",
+                        self.client.player(),
+                        self.client.battle()
+                    );
+                    return Ok(());
+                }
                 Err(err) => {
+                    log::error!(
+                        "AI {} in battle {} ({:?}) made a bad choice: {choice}: {err:?}",
+                        self.client.player(),
+                        self.client.battle(),
+                        self.ai
+                    );
                     ai_context.make_choice_failures.push(MakeChoiceFailure {
                         choice: choice.clone(),
                         reason: err.to_string(),
@@ -114,6 +105,12 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
         }
 
         // If we continually fail to make a move, just forfeit the battle.
+        log::warn!(
+            "AI {} in battle {} ({:?}) exceeded {MAX_ATTEMPTS} attempts for request {request:?}, forfeiting",
+            self.client.player(),
+            self.client.battle(),
+            self.ai
+        );
         self.client.make_choice("forfeit").await
     }
 

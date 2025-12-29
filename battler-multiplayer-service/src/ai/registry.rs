@@ -29,6 +29,10 @@ impl<'d> AiPlayerRegistryTaskHandle<'d> {
 
 impl Drop for AiPlayerRegistryTaskHandle<'_> {
     fn drop(&mut self) {
+        log::trace!(
+            "Dropping AI player registry task handle {}",
+            self.ai_player_handle.id()
+        );
         self.abort();
     }
 }
@@ -47,7 +51,7 @@ impl<'d> AiPlayerRegistry<'d> {
         options: AiPlayerOptions,
         modules: AiPlayerModules<'d>,
     ) -> Result<()> {
-        let handle = AiPlayer::new(options, modules).start().await?;
+        let handle = AiPlayer::new(id.clone(), options, modules).start().await?;
         let error_rx = handle.error_rx();
         let join_handle = tokio::spawn(AiPlayerRegistry::watch_ai_player(id.clone(), error_rx));
         let handle = AiPlayerRegistryTaskHandle {

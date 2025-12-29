@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use ahash::HashSet;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -26,7 +28,7 @@ pub struct AiContext<'d> {
 
 /// An AI decision maker for a battle managed by battler.
 #[async_trait]
-pub trait BattlerAi: Send + Sync {
+pub trait BattlerAi: Debug + Send + Sync {
     /// Makes a choice given the current context of the battle.
     async fn make_choice<'a>(
         &mut self,
@@ -49,7 +51,7 @@ pub trait BattlerAiStructured {
 #[async_trait]
 impl<T> BattlerAi for T
 where
-    T: BattlerAiStructured + Send + Sync,
+    T: BattlerAiStructured + Debug + Send + Sync,
 {
     async fn make_choice<'a>(
         &mut self,

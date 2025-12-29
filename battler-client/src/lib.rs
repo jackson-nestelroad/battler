@@ -8,6 +8,7 @@ pub mod ui;
 
 pub use client::{
     BattleClientEvent,
+    BattleEndedError,
     BattlerClient,
 };
 pub use manager::BattlerClientManager;

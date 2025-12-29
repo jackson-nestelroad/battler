@@ -173,7 +173,7 @@ impl FromStr for LogEntry {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Log {
     entries: Vec<LogEntry>,
     turns: Vec<usize>,
@@ -194,7 +194,9 @@ impl Log {
             .collect::<Result<Vec<_>>>()?;
         let mut log = Self {
             entries,
-            ..Default::default()
+            turns: Vec::from_iter([0]),
+            filled_up_to: 0,
+            last_checked_for_turn: 0,
         };
         log.update();
         Ok(log)
@@ -390,6 +392,68 @@ mod log_test {
         );
 
         pretty_assertions::assert_eq!(log.entries_for_turn(4, None), []);
+    }
+
+    #[test]
+    fn avoids_old_log_entries_with_min_index() {
+        let log = Log::new(&[
+            "info|battletype:Singles",
+            "info|environment:Normal|time:Day",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:2",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5",
+            "turn|turn:1",
+            "move|mon:Squirtle,player-1,1|name:Pound|target:Charmander,player-2,1",
+            "damage|mon:Charmander,player-2,1|health:86/100",
+            "residual",
+            "turn|turn:2",
+            "move|mon:Charmander,player-2,1|name:Scratch|target:Squirtle,player-1,1",
+            "damage|mon:Squirtle,player-1,1|health:86/100",
+            "residual",
+            "turn|turn:3",
+        ])
+        .unwrap();
+
+        assert!(log.filled());
+
+        assert_matches::assert_matches!(log.entries_for_turn(0, Some(2)).first(), Some(entry) => {
+            assert_eq!(entry.title(), "side");
+        });
+    }
+
+    #[test]
+    fn returns_log_entries_for_turn_0_before_turn_1() {
+        let log = Log::new(&[
+            "info|battletype:Singles",
+            "info|environment:Normal|time:Day",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:2",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5",
+        ])
+        .unwrap();
+
+        assert!(log.filled());
+
+        assert_matches::assert_matches!(log.entries_for_turn(0, None).first(), Some(entry) => {
+            assert_eq!(entry.title(), "info");
+        });
+        assert_matches::assert_matches!(log.entries_for_turn(0, None).last(), Some(entry) => {
+            assert_eq!(entry.title(), "switch");
+        });
     }
 
     #[test]

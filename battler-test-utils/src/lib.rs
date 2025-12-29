@@ -1,5 +1,6 @@
 mod data_store;
 mod log_util;
+mod logging;
 mod rng;
 mod test_battle_builder;
 
@@ -16,6 +17,7 @@ pub use log_util::{
     write_battle_log_to_file,
     LogMatch,
 };
+pub use logging::collect_logs;
 pub use rng::{
     get_controlled_rng_for_battle,
     ControlledRandomNumberGenerator,

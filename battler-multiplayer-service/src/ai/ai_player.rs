@@ -46,6 +46,8 @@ use crate::{
 /// A handle to an asynchronously-running [`AiPlayer`].
 #[derive(Debug)]
 pub struct AiPlayerHandle<'d> {
+    id: String,
+
     join_handle: Option<JoinHandle<()>>,
     cancel_tx: broadcast::Sender<()>,
     error_rx: broadcast::Receiver<String>,
@@ -57,6 +59,11 @@ pub struct AiPlayerHandle<'d> {
 }
 
 impl<'d> AiPlayerHandle<'d> {
+    /// The unique ID of the AI player.
+    pub fn id(&self) -> String {
+        self.id.clone()
+    }
+
     /// Cancels the task.
     pub fn cancel(&self) -> Result<()> {
         self.cancel_tx.send(()).map(|_| ()).map_err(Error::new)
@@ -77,6 +84,8 @@ impl<'d> AiPlayerHandle<'d> {
 
 impl Drop for AiPlayerHandle<'_> {
     fn drop(&mut self) {
+        log::trace!("Dropping AI player handle {}", self.id);
+
         self.cancel().ok();
         tokio::task::block_in_place(move || {
             // Abort the task.
@@ -88,6 +97,10 @@ impl Drop for AiPlayerHandle<'_> {
 
             // Wait for all Senders to be blocked. The task in the above JoinSet holds the only
             // Sender.
+            log::trace!(
+                "Blocking on task completion for AI player handle {}",
+                self.id
+            );
             self.task_rx.blocking_recv();
         });
     }
@@ -111,6 +124,7 @@ pub struct AiPlayerState {
 /// Watches proposed battles and battles. All proposed battles are immediately accepted. The
 /// underlying [`BattlerAi`] is used to make decisions in active battles.
 pub struct AiPlayer<'d> {
+    id: String,
     options: AiPlayerOptions,
     data: &'d dyn DataStoreByName,
     battler_service_client: Arc<Box<dyn BattlerServiceClient + 'd>>,
@@ -127,10 +141,11 @@ pub struct AiPlayer<'d> {
 
 impl<'d> AiPlayer<'d> {
     /// Creates a new player.
-    pub fn new(options: AiPlayerOptions, modules: AiPlayerModules<'d>) -> Self {
+    pub fn new(id: String, options: AiPlayerOptions, modules: AiPlayerModules<'d>) -> Self {
         let (error_tx, _) = broadcast::channel(16);
         let (task_tx, task_rx) = mpsc::channel(1);
         Self {
+            id,
             options,
             data: modules.data,
             battler_service_client: modules.battler_service_client,
@@ -148,6 +163,7 @@ impl<'d> AiPlayer<'d> {
     /// The asynchronous task takes ownership of this object. Callers can control the player with
     /// the returned handle.
     pub async fn start(self) -> Result<AiPlayerHandle<'d>> {
+        let id = self.id.clone();
         let (cancel_tx, cancel_rx) = broadcast::channel(16);
         let error_rx = self.error_tx.subscribe();
         let (task_tx, task_rx) = mpsc::channel(1);
@@ -160,6 +176,7 @@ impl<'d> AiPlayer<'d> {
         let join_handle = tokio::spawn(ai_player.run(cancel_rx, task_tx.downgrade()));
 
         Ok(AiPlayerHandle {
+            id,
             join_handle: Some(join_handle),
             cancel_tx,
             error_rx,
@@ -175,7 +192,9 @@ impl<'d> AiPlayer<'d> {
             Some(task_tx) => task_tx,
             None => return,
         };
+        log::info!("AI {} is running", self.id);
         self.run_internal(&mut cancel_rx).await;
+        log::info!("AI {} finished running, shutting down", self.id);
         self.battle_tasks.get_mut().shutdown().await;
     }
 
@@ -220,6 +239,10 @@ impl<'d> AiPlayer<'d> {
             .handle_proposed_battles_for_player_internal(player.clone(), &mut cancel_rx)
             .await
         {
+            log::error!(
+                "AI {} encountered an error in handling proposed battles: {err:?}",
+                self.id
+            );
             self.error_tx
                 .send(format!(
                     "Error handling proposed battles for {player}: {err}"
@@ -296,10 +319,16 @@ impl<'d> AiPlayer<'d> {
             Some(player) => player,
             None => return Ok(()),
         };
-        if player.status.is_some() {
+        if player.status.is_some() || proposed_battle.battle.is_some() {
             return Ok(());
         }
 
+        log::info!(
+            "AI {} is accepting proposed battle {} for {}",
+            self.id,
+            proposed_battle.uuid,
+            player.id
+        );
         self.battler_multiplayer_service_client
             .respond_to_proposed_battle(
                 proposed_battle.uuid,
@@ -316,16 +345,25 @@ impl<'d> AiPlayer<'d> {
         mut proposed_battle_update_rx: broadcast::Receiver<ProposedBattleUpdate>,
         cancel_rx: &mut broadcast::Receiver<()>,
     ) -> Result<()> {
+        log::info!(
+            "AI {} is watching for proposed battle updates for {player}",
+            self.id
+        );
         loop {
             tokio::select! {
                 update = proposed_battle_update_rx.recv() => {
                     self.handle_proposed_battle_update(player, &update?).await?;
                 }
                 _ = cancel_rx.recv() => {
-                    return Ok(());
+                    break;
                 }
             }
         }
+        log::info!(
+            "AI {} finished watching for proposed battle updates for {player}",
+            self.id
+        );
+        Ok(())
     }
 
     async fn handle_proposed_battle_update(
@@ -357,6 +395,7 @@ impl<'d> AiPlayer<'d> {
             >(self.battler_service_client.clone())
         };
         self.battle_tasks.lock().await.spawn(AiPlayer::watch_battle(
+            self.id.clone(),
             battle,
             player.to_owned(),
             battler_service_client,
@@ -378,6 +417,7 @@ impl<'d> AiPlayer<'d> {
     }
 
     async fn watch_battle(
+        id: String,
         battle: Uuid,
         player: String,
         service: Arc<Box<dyn BattlerServiceClient + 'd>>,
@@ -387,6 +427,7 @@ impl<'d> AiPlayer<'d> {
         error_tx: broadcast::Sender<String>,
         #[allow(unused)] task_tx: mpsc::Sender<()>,
     ) {
+        log::info!("AI {id} is watching battle {battle} for {player}");
         while let Err(err) = Self::watch_battle_internal(
             battle,
             player.clone(),
@@ -396,12 +437,16 @@ impl<'d> AiPlayer<'d> {
         )
         .await
         {
+            log::error!(
+                "AI {id} encountered an error in watching battle {battle} for {player}: {err:?}"
+            );
             error_tx
                 .send(format!(
                     "Error watching battle {battle} for {player}: {err}"
                 ))
                 .ok();
         }
+        log::info!("AI {id} finished watching battle {battle} for {player}");
         if let Some(state) = state.upgrade() {
             state.lock().await.watched_battles.remove(&battle);
         }
@@ -421,6 +466,8 @@ impl<'d> AiPlayer<'d> {
 
 impl Drop for AiPlayer<'_> {
     fn drop(&mut self) {
+        log::trace!("Dropping AI player {}", self.id);
+
         // SAFETY: Ensure all battle tasks finish, so they do not extend beyond the lifetime of this
         // object and the lifetime of 'd.
         tokio::task::block_in_place(move || {
@@ -432,6 +479,7 @@ impl Drop for AiPlayer<'_> {
 
             // Wait for all Senders to be dropped. One Sender is given to each task, so the Receiver
             // closing means all tasks are finished.
+            log::trace!("Blocking on task completion for AI player {}", self.id);
             self.task_rx.blocking_recv();
         });
     }

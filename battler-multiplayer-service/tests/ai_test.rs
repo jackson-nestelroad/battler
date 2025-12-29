@@ -163,6 +163,8 @@ async fn wait_for_battle_from_proposed_battle(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn hosts_singles_battle_against_random_ai() {
+    battler_test_utils::collect_logs();
+
     let battler_service = battler_service();
     let service = battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
     assert_matches::assert_matches!(
@@ -202,17 +204,10 @@ async fn hosts_singles_battle_against_random_ai() {
     .await
     .unwrap();
 
-    client
-        .battle_event_rx()
-        .wait_for(BattleClientEvent::is_request)
-        .await
-        .unwrap();
-    assert_matches::assert_matches!(client.make_choice("move 0").await, Ok(()));
+    let mut battle_event_rx = client.battle_event_rx();
+    while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
+        assert_matches::assert_matches!(client.make_choice("move 0").await, Ok(()));
+    }
 
-    client
-        .battle_event_rx()
-        .wait_for(BattleClientEvent::is_request)
-        .await
-        .unwrap();
-    assert_matches::assert_matches!(client.make_choice("move 0").await, Ok(()));
+    assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
 }

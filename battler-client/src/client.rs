@@ -2,11 +2,13 @@ use std::sync::Arc;
 
 use anyhow::{
     Context,
+    Error,
     Result,
 };
 use battler_service::Battle;
 use battler_service_client::BattlerServiceClient;
 use futures_util::lock::Mutex;
+use thiserror::Error;
 use tokio::{
     sync::{
         broadcast,
@@ -73,6 +75,11 @@ fn role_for_player(battle: &Battle, player: &str) -> Role {
         .unwrap_or_else(|| Role::Spectator)
 }
 
+/// Error signaling the battle ended.
+#[derive(Error, Debug, Default)]
+#[error("battle ended")]
+pub struct BattleEndedError;
+
 struct BattlerClientInternal<'b> {
     battle: Uuid,
     player: String,
@@ -138,6 +145,11 @@ impl<'b> BattlerClientInternal<'b> {
             Some(task_tx) => task_tx,
             None => return,
         };
+        log::info!(
+            "Starting to watch battle {} for {}",
+            self.battle,
+            self.player
+        );
         if let Err(err) = self.watch_battle_internal(log_entry_rx, cancel_rx).await {
             self.battle_event_tx
                 .send(BattleClientEvent::Error(format!("{err:#}")))
@@ -160,6 +172,12 @@ impl<'b> BattlerClientInternal<'b> {
             // If we are caught up, propagate a request.
             if self.caught_up().await? && self.last_log_index().await > 0 {
                 let request = self.service.request(self.battle, &self.player).await?;
+                log::debug!(
+                    "Propagating request for {} in battle {}: {:?}",
+                    self.player,
+                    self.battle,
+                    request.is_some()
+                );
                 self.battle_event_tx
                     .send(BattleClientEvent::Request(request))?;
             }
@@ -185,10 +203,20 @@ impl<'b> BattlerClientInternal<'b> {
     }
 
     async fn process_log_entry(&self, log_entry: battler_service::LogEntry) -> Result<()> {
+        log::debug!(
+            "Processing log entry {log_entry:?} for {} in battle {}",
+            self.player,
+            self.battle
+        );
         self.update_battle_state_for_log_entry(log_entry).await?;
 
         // Check if the battle ended.
         if self.state.lock().await.phase == BattlePhase::Finished {
+            log::info!(
+                "Client {} in battle {} detected battle finished",
+                self.player,
+                self.battle
+            );
             self.battle_event_tx.send(BattleClientEvent::End)?;
             return Ok(());
         }
@@ -201,6 +229,12 @@ impl<'b> BattlerClientInternal<'b> {
         for (i, entry) in full_log.into_iter().enumerate() {
             log.add(i, entry)?;
         }
+        log::info!(
+            "Battle log for {} in battle {} was backfilled to {} entries",
+            self.player,
+            self.battle,
+            log.len()
+        );
         Ok(())
     }
 
@@ -325,6 +359,16 @@ impl<'b> BattlerClient<'b> {
         })
     }
 
+    /// The battle UUID.
+    pub fn battle(&self) -> Uuid {
+        self.client.battle
+    }
+
+    /// The player ID.
+    pub fn player(&self) -> String {
+        self.client.player.clone()
+    }
+
     /// Cancels the client and stops following the battle.
     pub async fn cancel(&self) {
         self.client.cancel_tx.send(()).ok();
@@ -363,6 +407,26 @@ impl<'b> BattlerClient<'b> {
         self.client.battle_event_rx()
     }
 
+    /// Waits for a new request to be available, failing if an error is encountered or if the battle
+    /// ends.
+    ///
+    /// If the battle ended, [`BattleEndedError`] is returned as the error.
+    pub async fn wait_for_request(
+        battle_event_rx: &mut watch::Receiver<BattleClientEvent>,
+    ) -> Result<battler::Request> {
+        loop {
+            battle_event_rx.changed().await?;
+            // Clone because the reference returned by the receiver is not Send.
+            let event = battle_event_rx.borrow_and_update().clone();
+            match event {
+                BattleClientEvent::Request(Some(request)) => return Ok(request),
+                BattleClientEvent::Request(None) => (),
+                BattleClientEvent::Error(err) => return Err(Error::msg(err)),
+                BattleClientEvent::End => return Err(BattleEndedError.into()),
+            };
+        }
+    }
+
     /// The battle state.
     pub async fn state(&self) -> BattleState {
         self.client.state().await
@@ -381,6 +445,12 @@ impl<'b> BattlerClient<'b> {
 
 impl Drop for BattlerClient<'_> {
     fn drop(&mut self) {
+        log::trace!(
+            "Dropping client {} in battle {}",
+            self.player(),
+            self.battle()
+        );
+
         // Ensure we stop using the client.
         //
         // Same as `cancel`, but synchronous.
@@ -388,6 +458,12 @@ impl Drop for BattlerClient<'_> {
             self.client.cancel_tx.send(()).ok();
             self.watch_tasks.get_mut().abort_all();
             self.task_tx.take();
+
+            log::trace!(
+                "Blocking on task completion for client {} in battle {}",
+                self.player(),
+                self.battle()
+            );
             self.task_rx.get_mut().blocking_recv();
         });
     }

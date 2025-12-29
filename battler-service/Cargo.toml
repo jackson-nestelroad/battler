@@ -12,6 +12,7 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-se
 ahash = { workspace = true }
 anyhow = { workspace = true }
 futures-util = { workspace = true }
+log = { workspace = true }
 serde = { workspace = true }
 serde_string_enum = { workspace = true }
 tokio = { workspace = true }
