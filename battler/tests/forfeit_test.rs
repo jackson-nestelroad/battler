@@ -153,7 +153,7 @@ fn forfeit_ends_multi_battle() {
     assert_matches::assert_matches!(battle.set_player_choice("player-4", "move 0,1"), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0,1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: you left the battle")
+        Err(err) => assert_eq!(format!("{err:#}"), "you cannot do anything: no action requested")
     );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "forfeit"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-3", "pass"), Ok(()));
