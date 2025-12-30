@@ -4,6 +4,7 @@ use crate::scenario::Scenario;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn picks_valid_move() {
+    battler_test_utils::collect_logs();
     let scenario = Scenario::from_scenarios_dir("simple_starter_battle.json")
         .await
         .unwrap();
@@ -13,6 +14,7 @@ async fn picks_valid_move() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn picks_valid_move_for_double_battle() {
+    battler_test_utils::collect_logs();
     let scenario = Scenario::from_scenarios_dir("simple_double_battle.json")
         .await
         .unwrap();

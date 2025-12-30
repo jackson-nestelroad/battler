@@ -662,6 +662,7 @@ mod trainer_test {
         let state = alter_battle_state(BattleState::default(), &Log::new(log.into_iter())?)?;
         Ok(AiContext {
             data,
+            battle,
             state,
             player_data,
             choice_failures: HashSet::default(),

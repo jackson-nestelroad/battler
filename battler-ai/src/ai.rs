@@ -11,6 +11,7 @@ use battler::{
 use battler_choice::Choice;
 use battler_client::state::BattleState;
 use itertools::Itertools;
+use uuid::Uuid;
 
 use crate::choice::{
     ChoiceFailure,
@@ -20,6 +21,7 @@ use crate::choice::{
 /// The context of a battle AI making a choice in a battle.
 pub struct AiContext<'d> {
     pub data: &'d dyn DataStoreByName,
+    pub battle: Uuid,
     pub state: BattleState,
     pub player_data: PlayerBattleData,
     pub choice_failures: HashSet<ChoiceFailure>,

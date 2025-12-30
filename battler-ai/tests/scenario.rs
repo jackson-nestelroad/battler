@@ -121,6 +121,7 @@ impl<'d> Scenario<'d> {
         let state = client.state().await;
         Ok(AiContext {
             data: self.data_store,
+            battle: client.battle(),
             state,
             player_data,
             choice_failures: HashSet::default(),

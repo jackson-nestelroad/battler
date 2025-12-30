@@ -74,6 +74,12 @@ impl BattlerAi for Gemini {
             .arg(&context.player_data.id)
             .arg("--input")
             .arg(serde_json::to_string(&input)?);
+        log::debug!(
+            "Running Gemini command for {} in battle {}: {:?}",
+            context.player_data.id,
+            context.battle,
+            cmd.as_std().get_program()
+        );
         let output = cmd.output().await?;
         if !output.status.success() {
             return Err(Error::msg(format!(
@@ -90,8 +96,22 @@ impl BattlerAi for Gemini {
 
         let output: Output = serde_json::from_str(&result)?;
         if output.actions.is_empty() {
+            log::error!(
+                "Gemini for {} in battle {} failed: {}",
+                context.player_data.id,
+                context.battle,
+                output.explanation
+            );
             return Err(Error::msg(output.explanation));
         }
+
+        log::info!(
+            "Gemini for {} in battle {}: {}: {}",
+            context.player_data.id,
+            context.battle,
+            output.actions,
+            output.explanation
+        );
         Ok(output.actions)
     }
 }

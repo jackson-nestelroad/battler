@@ -56,7 +56,14 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
             }
             match BattlerClient::wait_for_request(&mut battle_event_rx).await {
                 Ok(request) => {
-                    self.make_choice(&request).await?;
+                    if let Err(err) = self.make_choice(&request).await {
+                        log::error!(
+                            "AI client {} in battle {} failed: {err:?}",
+                            self.client.player(),
+                            self.client.battle()
+                        );
+                        return Err(err);
+                    }
                     requests -= 1;
                 }
                 Err(err) => {
@@ -119,6 +126,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
         let state = self.client.state().await;
         Ok(AiContext {
             data: self.data,
+            battle: self.client.battle(),
             state,
             player_data,
             choice_failures: HashSet::default(),
