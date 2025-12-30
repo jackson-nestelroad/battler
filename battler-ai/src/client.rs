@@ -77,7 +77,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
             match self.client.make_choice(&choice).await {
                 Ok(()) => {
                     log::info!(
-                        "AI {} in battle {} succeeded at making choice: {choice}",
+                        "AI client {} in battle {} succeeded at making choice: {choice}",
                         self.client.player(),
                         self.client.battle()
                     );
@@ -85,7 +85,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
                 }
                 Err(err) => {
                     log::error!(
-                        "AI {} in battle {} ({:?}) made a bad choice: {choice}: {err:?}",
+                        "AI client {} in battle {} ({:?}) made a bad choice: {choice}: {err:?}",
                         self.client.player(),
                         self.client.battle(),
                         self.ai
@@ -106,7 +106,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
 
         // If we continually fail to make a move, just forfeit the battle.
         log::warn!(
-            "AI {} in battle {} ({:?}) exceeded {MAX_ATTEMPTS} attempts for request {request:?}, forfeiting",
+            "AI client {} in battle {} ({:?}) exceeded {MAX_ATTEMPTS} attempts for request {request:?}, forfeiting",
             self.client.player(),
             self.client.battle(),
             self.ai
