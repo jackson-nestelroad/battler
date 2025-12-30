@@ -7,7 +7,7 @@ use tokio_tungstenite::{
 
 use crate::{
     peer::{
-        connector::web_socket_connector::WebSocketConnectorFactory,
+        WebSocketConnectorFactory,
         peer::{
             Peer,
             PeerConfig,

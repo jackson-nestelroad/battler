@@ -3,6 +3,12 @@ mod peer;
 mod session;
 mod web_socket_peer;
 
+pub use connector::{
+    Connection,
+    Connector,
+    ConnectorFactory,
+    WebSocketConnectorFactory,
+};
 pub use peer::{
     CalleeConfig,
     Peer,

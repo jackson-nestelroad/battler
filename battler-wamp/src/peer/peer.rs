@@ -101,7 +101,7 @@ use crate::{
         },
     },
     peer::{
-        connector::connector::ConnectorFactory,
+        ConnectorFactory,
         session::{
             ProcedureMessage,
             PublishedEvent,
