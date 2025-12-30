@@ -173,7 +173,7 @@ impl<'b> BattlerClientInternal<'b> {
             if self.caught_up().await? && self.last_log_index().await > 0 {
                 let request = self.service.request(self.battle, &self.player).await?;
                 log::debug!(
-                    "Propagating request for {} in battle {}: {:?}",
+                    "Propagating request for {} in battle {}: has_request = {:?}",
                     self.player,
                     self.battle,
                     request.is_some()
@@ -203,7 +203,7 @@ impl<'b> BattlerClientInternal<'b> {
     }
 
     async fn process_log_entry(&self, log_entry: battler_service::LogEntry) -> Result<()> {
-        log::debug!(
+        log::trace!(
             "Processing log entry {log_entry:?} for {} in battle {}",
             self.player,
             self.battle
@@ -423,7 +423,24 @@ impl<'b> BattlerClient<'b> {
                 BattleClientEvent::Request(None) => (),
                 BattleClientEvent::Error(err) => return Err(Error::msg(err)),
                 BattleClientEvent::End => return Err(BattleEndedError.into()),
-            };
+            }
+        }
+    }
+
+    /// Waits for the battle to end, failing if an error is encountered.
+    pub async fn wait_for_end(
+        battle_event_rx: &mut watch::Receiver<BattleClientEvent>,
+    ) -> Result<()> {
+        battle_event_rx.mark_changed();
+        loop {
+            battle_event_rx.changed().await?;
+            // Clone because the reference returned by the receiver is not Send.
+            let event = battle_event_rx.borrow_and_update().clone();
+            match event {
+                BattleClientEvent::End => return Ok(()),
+                BattleClientEvent::Error(err) => return Err(Error::msg(err)),
+                _ => (),
+            }
         }
     }
 

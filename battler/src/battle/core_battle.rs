@@ -1020,6 +1020,9 @@ impl<'d> CoreBattle<'d> {
                         Mon::move_request(&mut context)
                     })
                     .collect::<Result<Vec<_>, _>>()?;
+                if active.is_empty() {
+                    return Ok(None);
+                }
                 let ally_indices = context
                     .battle()
                     .player_indices_on_side(context.side().index)

@@ -254,6 +254,10 @@ async fn hosts_singles_battle_against_random_ai() {
         assert_matches::assert_matches!(client.make_choice("move 0").await, Ok(()));
     }
 
+    assert_matches::assert_matches!(
+        BattlerClient::wait_for_end(&mut battle_event_rx).await,
+        Ok(())
+    );
     assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
     assert_matches::assert_matches!(client.state().await.winning_side, Some(_));
 }
@@ -310,6 +314,10 @@ async fn hosts_multi_battle_against_random_ai() {
         assert_matches::assert_matches!(client.make_choice("move 0,1").await, Ok(()));
     }
 
+    assert_matches::assert_matches!(
+        BattlerClient::wait_for_end(&mut battle_event_rx).await,
+        Ok(())
+    );
     assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
     assert_matches::assert_matches!(client.state().await.winning_side, Some(_));
 }
