@@ -24,9 +24,9 @@ uuid = { workspace = true }
 zone-alloc = { workspace = true }
 zone-alloc-strong-handle-derive = { workspace = true }
 
-battler-choice = "0.1"
-battler-data = "0.1"
-battler-prng = "0.1"
+battler-choice = { workspace = true }
+battler-data = { workspace = true }
+battler-prng = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

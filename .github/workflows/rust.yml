@@ -22,7 +22,18 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler tests
-        run: cargo test -p battler -p battler-choice -p battler-data -p battler-prng
+        run: cargo test -p battler
+
+  test-battler-modules:
+    name: Run battler module tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler module tests
+        run: cargo test -p battler-choice -p battler-data -p battler-prng
 
   test-battler-service:
     name: Run battler-service tests
