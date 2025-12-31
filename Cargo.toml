@@ -95,6 +95,9 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 
 # Crates residing within this repository.
+battler-choice = "0.1"
+battler-data = "0.1"
+battler-prng = "0.1"
 battler-wamp = "0.5"
 battler-wamp-uri = "0.1"
 battler-wamp-values = "~0.2.2"

@@ -15,7 +15,7 @@ indexmap = { workspace = true }
 num = { workspace = true }
 uuid = { workspace = true }
 
-battler-data = { path = "../battler-data" }
+battler-data = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

@@ -17,6 +17,7 @@ tracing-core = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
 
+battler-prng = { workspace = true }
+
 battler = { path = "../battler" }
-battler-prng = { path = "../battler-prng" }
 battler-service = { path = "../battler-service" }

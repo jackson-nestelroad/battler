@@ -1,6 +1,6 @@
 [package]
 name = "battler"
-version = "0.6.2"
+version = "0.7.0"
 edition = "2024"
 description = "Pokémon battle engine for Rust."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
@@ -24,9 +24,9 @@ uuid = { workspace = true }
 zone-alloc = { workspace = true }
 zone-alloc-strong-handle-derive = { workspace = true }
 
-battler-choice = { path = "../battler-choice" }
-battler-data = { path = "../battler-data" }
-battler-prng = { path = "../battler-prng" }
+battler-choice = "0.1"
+battler-data = "0.1"
+battler-prng = "0.1"
 
 [dev-dependencies]
 assert_matches = { workspace = true }
