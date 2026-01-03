@@ -20,7 +20,7 @@
         }
     },
     "rust-analyzer.linkedProjects": [
-        "${workspaceFolder}/Cargo.toml"
+        "${workspaceFolder}/Cargo.toml",
     ],
     "rust-analyzer.procMacro.enable": true,
     "rust-analyzer.runnables.extraEnv": {
@@ -29,5 +29,7 @@
         "GEMINI_PYTHON_VENV": "${workspaceFolder}/.venv",
         "RUST_LOG": "debug"
     },
-    "rust-analyzer.showUnlinkedFileNotification": false
+    "rust-analyzer.showUnlinkedFileNotification": false,
+    "rust-analyzer.check.workspace": true,
+    "rust-analyzer.cargo.noDefaultFeatures": true
 }

@@ -1,4 +1,11 @@
-use ahash::{
+use alloc::{
+    borrow::ToOwned,
+    format,
+    string::String,
+    vec::Vec,
+};
+
+use hashbrown::{
     HashMap,
     HashSet,
 };

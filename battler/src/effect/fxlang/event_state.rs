@@ -1,24 +1,20 @@
-use std::sync::{
-    Mutex,
-    MutexGuard,
+use core::cell::{
+    RefCell,
+    RefMut,
 };
 
-use ahash::HashSet;
 use battler_data::Id;
+use hashbrown::HashSet;
 
 /// State for the evaluation of an event.
 #[derive(Debug, Default)]
 pub struct EventState {
-    effect_ids_to_skip: Mutex<HashSet<Id>>,
+    effect_ids_to_skip: RefCell<HashSet<Id>>,
 }
 
 impl EventState {
-    fn effect_ids_to_skip(&self) -> MutexGuard<'_, HashSet<Id>> {
-        self.effect_ids_to_skip.lock().unwrap_or_else(|mut e| {
-            e.get_mut().clear();
-            self.effect_ids_to_skip.clear_poison();
-            e.into_inner()
-        })
+    fn effect_ids_to_skip(&self) -> RefMut<'_, HashSet<Id>> {
+        self.effect_ids_to_skip.borrow_mut()
     }
 
     /// Marks the effect's callback to be skipped for the event.

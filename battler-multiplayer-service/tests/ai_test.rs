@@ -84,7 +84,7 @@ fn battle_options_singles() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Singles,
-            rules: HashSet::default(),
+            rules: hashbrown::HashSet::default(),
         },
         field: FieldData::default(),
         side_1: SideData {
@@ -113,7 +113,7 @@ fn battle_options_multi() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Multi,
-            rules: HashSet::default(),
+            rules: hashbrown::HashSet::default(),
         },
         field: FieldData::default(),
         side_1: SideData {

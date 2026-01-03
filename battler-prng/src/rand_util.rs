@@ -1,4 +1,6 @@
-use std::mem;
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+use core::mem;
 
 use crate::PseudoRandomNumberGenerator;
 
@@ -17,6 +19,7 @@ pub fn range(prng: &mut dyn PseudoRandomNumberGenerator, min: u64, max: u64) -> 
 }
 
 /// Returns a random value from the given iterator.
+#[cfg(feature = "alloc")]
 pub fn sample_iter<'a, I, T>(prng: &mut dyn PseudoRandomNumberGenerator, iter: I) -> Option<T>
 where
     I: Iterator<Item = T>,
@@ -61,6 +64,11 @@ pub fn shuffle<T>(prng: &mut dyn PseudoRandomNumberGenerator, items: &mut [T]) {
 
 #[cfg(test)]
 mod rand_util_test {
+    use alloc::{
+        vec,
+        vec::Vec,
+    };
+
     use crate::{
         RealPseudoRandomNumberGenerator,
         rand_util,
@@ -110,6 +118,7 @@ mod rand_util_test {
     }
 
     #[test]
+    #[cfg(feature = "alloc")]
     fn sample_iter_fails_empty_iterator() {
         let mut prng = RealPseudoRandomNumberGenerator::new(Some(123456789));
         let items: Vec<&str> = Vec::new();
@@ -117,6 +126,7 @@ mod rand_util_test {
     }
 
     #[test]
+    #[cfg(feature = "alloc")]
     fn samples_element_in_iterator() {
         let mut prng = RealPseudoRandomNumberGenerator::new(Some(123456789));
         let items = vec!["a", "b", "c", "d"];
@@ -149,7 +159,7 @@ mod rand_util_test {
     }
 
     #[test]
-    fn sample_iter_fails_empty_slice() {
+    fn sample_slice_fails_empty_slice() {
         let mut prng = RealPseudoRandomNumberGenerator::new(Some(987654321));
         let items: Vec<&str> = Vec::new();
         assert_eq!(rand_util::sample_slice(&mut prng, &items), None);

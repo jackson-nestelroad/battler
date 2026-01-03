@@ -1,3 +1,8 @@
+use alloc::{
+    boxed::Box,
+    format,
+};
+
 use anyhow::Result;
 use battler_prng::{
     PseudoRandomNumberGenerator,
@@ -15,6 +20,7 @@ use crate::{
         PlayerData,
         SideData,
     },
+    common::Clock,
     config::FormatData,
     error::general_error,
 };
@@ -45,6 +51,15 @@ pub enum CoreBattleEngineSpeedSortTieResolution {
 
 fn default_rng_factory() -> fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberGenerator> {
     |seed: Option<u64>| Box::new(RealPseudoRandomNumberGenerator::new(seed))
+}
+
+fn default_clock_factory() -> Option<fn() -> Box<dyn Clock>> {
+    #[cfg(feature = "std")]
+    {
+        return Some(|| Box::new(crate::common::SystemTimeClock));
+    }
+    #[allow(unused)]
+    None
 }
 
 fn default_true() -> bool {
@@ -109,6 +124,9 @@ pub struct CoreBattleEngineOptions {
     /// Primarily useful for tests where we wish to have fine-grained control over battle RNG.
     #[serde(skip, default = "default_rng_factory")]
     pub rng_factory: fn(seed: Option<u64>) -> Box<dyn PseudoRandomNumberGenerator>,
+
+    #[serde(skip, default = "default_clock_factory")]
+    pub clock_factory: Option<fn() -> Box<dyn Clock>>,
 
     /// Are players allowed to pass for unfainted Mons?
     ///
@@ -196,6 +214,7 @@ impl Default for CoreBattleEngineOptions {
             reveal_actual_health: false,
             public_health_base: 100,
             rng_factory: default_rng_factory(),
+            clock_factory: default_clock_factory(),
             allow_pass_for_unfainted_mon: false,
             randomize_base_damage: CoreBattleEngineRandomizeBaseDamage::Randomize,
             speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Random,

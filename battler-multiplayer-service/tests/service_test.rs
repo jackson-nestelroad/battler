@@ -87,7 +87,7 @@ fn battle_options() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Singles,
-            rules: HashSet::from_iter([Rule::Value {
+            rules: hashbrown::HashSet::from_iter([Rule::Value {
                 name: Id::from("Species Clause"),
                 value: String::default(),
             }]),

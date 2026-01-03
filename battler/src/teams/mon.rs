@@ -1,3 +1,8 @@
+use alloc::{
+    string::String,
+    vec::Vec,
+};
+
 use battler_data::{
     Gender,
     Nature,

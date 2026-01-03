@@ -1,4 +1,5 @@
-use std::{
+use alloc::format;
+use core::{
     fmt,
     fmt::Display,
     str::FromStr,

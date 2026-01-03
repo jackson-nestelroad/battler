@@ -545,9 +545,14 @@ mod trainer_test {
     };
     use battler::{
         BattleType,
+        CoreBattleEngineOptions,
         CoreBattleEngineSpeedSortTieResolution,
-        LocalDataStore,
+        CoreBattleOptions,
+        FieldData,
+        FormatData,
+        PlayerData,
         Request,
+        SideData,
         TeamData,
         TurnRequest,
     };
@@ -560,11 +565,14 @@ mod trainer_test {
             alter_battle_state,
         },
     };
+    use battler_local_data::LocalDataStore;
     use battler_prng::PseudoRandomNumberGenerator;
-    use battler_service::BattlerService;
+    use battler_service::{
+        BattleServiceOptions,
+        BattlerService,
+    };
     use battler_test_utils::{
         ControlledRandomNumberGenerator,
-        TestBattleBuilder,
         static_local_data_store,
     };
     use uuid::Uuid;
@@ -632,23 +640,48 @@ mod trainer_test {
         team_1: TeamData,
         team_2: TeamData,
     ) -> Result<Uuid> {
-        let battle = TestBattleBuilder::new()
-            .with_battle_type(BattleType::Doubles)
-            .with_seed(seed)
-            .with_team_validation(false)
-            .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
-            .add_player_to_side_1("player-1", "Player 1")
-            .add_player_to_side_2("player-2", "Player 2")
-            .with_team("player-1", team_1)
-            .with_team("player-2", team_2)
-            .build_on_service(service)
+        let battle = service
+            .create(
+                CoreBattleOptions {
+                    seed: Some(seed),
+                    format: FormatData {
+                        battle_type: BattleType::Doubles,
+                        ..Default::default()
+                    },
+                    field: FieldData::default(),
+                    side_1: SideData {
+                        name: "Side 1".to_owned(),
+                        players: Vec::from_iter([PlayerData {
+                            id: "player-1".to_owned(),
+                            name: "Player 1".to_owned(),
+                            team: team_1,
+                            ..Default::default()
+                        }]),
+                    },
+                    side_2: SideData {
+                        name: "Side 2".to_owned(),
+                        players: Vec::from_iter([PlayerData {
+                            id: "player-2".to_owned(),
+                            name: "Player 2".to_owned(),
+                            team: team_2,
+                            ..Default::default()
+                        }]),
+                    },
+                },
+                CoreBattleEngineOptions {
+                    validate_teams: false,
+                    speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                    ..Default::default()
+                },
+                BattleServiceOptions::default(),
+            )
             .await?;
-        service.start(battle).await?;
+        service.start(battle.uuid).await?;
 
         // Wait for the battle to start.
-        service.subscribe(battle, None).await?.recv().await?;
+        service.subscribe(battle.uuid, None).await?.recv().await?;
 
-        Ok(battle)
+        Ok(battle.uuid)
     }
 
     async fn ai_context<'d>(

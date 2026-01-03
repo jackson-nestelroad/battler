@@ -1,5 +1,7 @@
-use ahash::HashMap;
+use alloc::string::String;
+
 use battler_data::Id;
+use hashbrown::HashMap;
 use serde::{
     Deserialize,
     Serialize,

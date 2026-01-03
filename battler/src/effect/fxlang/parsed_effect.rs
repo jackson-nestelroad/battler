@@ -1,7 +1,8 @@
-use std::str::FromStr;
+use alloc::string::String;
+use core::str::FromStr;
 
-use ahash::HashMap;
 use anyhow::Result;
+use hashbrown::HashMap;
 use itertools::Itertools;
 
 use crate::{

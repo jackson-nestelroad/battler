@@ -1,4 +1,4 @@
-use std::str::pattern::Pattern;
+use core::str::pattern::Pattern;
 
 /// Splits the string on the first occurrence of the specified delimiter.
 ///

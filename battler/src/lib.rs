@@ -1,7 +1,13 @@
+#![cfg_attr(not(feature = "std"), no_std)]
 #![feature(const_trait_impl)]
 #![feature(hasher_prefixfree_extras)]
 #![feature(pattern)]
 #![feature(try_trait_v2)]
+
+#[cfg(feature = "std")]
+extern crate std;
+
+extern crate alloc;
 
 pub mod abilities;
 pub mod battle;

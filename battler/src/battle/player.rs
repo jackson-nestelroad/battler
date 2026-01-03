@@ -1,17 +1,18 @@
-use std::{
-    cmp,
-    collections::{
-        BTreeSet,
-        hash_map::Entry,
+use alloc::{
+    collections::btree_set::BTreeSet,
+    format,
+    string::{
+        String,
+        ToString,
     },
-    mem,
+    vec,
+    vec::Vec,
+};
+use core::{
+    cmp,
     usize,
 };
 
-use ahash::{
-    HashMap,
-    HashSet,
-};
 use anyhow::Result;
 use battler_choice::{
     Choice,
@@ -29,6 +30,11 @@ use battler_data::{
     ItemInput,
 };
 use battler_prng::rand_util;
+use hashbrown::{
+    HashMap,
+    HashSet,
+    hash_map::Entry,
+};
 use itertools::{
     EitherOrBoth,
     Itertools,
@@ -773,7 +779,7 @@ impl Player {
 
     /// Takes the choice from the player, resetting it in the process.
     pub fn take_choice(&mut self) -> ChoiceState {
-        mem::replace(&mut self.choice, ChoiceState::new())
+        core::mem::replace(&mut self.choice, ChoiceState::new())
     }
 
     fn picked_team_size(context: &PlayerContext) -> usize {

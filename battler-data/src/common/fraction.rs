@@ -1,9 +1,8 @@
-use std::{
+use alloc::format;
+use core::{
     cmp,
-    fmt::{
-        self,
-        Display,
-    },
+    fmt,
+    fmt::Display,
     marker::PhantomData,
     ops::{
         Add,
@@ -603,6 +602,8 @@ impl<'de> Deserialize<'de> for Fraction<u16> {
 
 #[cfg(test)]
 mod fraction_test {
+    use alloc::vec;
+
     use crate::{
         Fraction,
         test_util::{

@@ -1,3 +1,8 @@
+use alloc::{
+    format,
+    vec::Vec,
+};
+
 use anyhow::Result;
 
 use crate::{
@@ -136,6 +141,13 @@ impl ProgramParser {
 
 #[cfg(test)]
 mod program_parser_test {
+    use alloc::{
+        borrow::ToOwned,
+        boxed::Box,
+        format,
+        vec,
+    };
+
     use battler_data::Fraction;
     use pretty_assertions::assert_eq;
 

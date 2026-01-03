@@ -1,7 +1,13 @@
+#![no_std]
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 pub mod rand_util;
 
-use std::any::Any;
+use core::any::Any;
 
+#[cfg(feature = "std")]
 use rand::Rng;
 
 /// A pseudo-random number generator, created with the intention of using a random number generator
@@ -39,8 +45,13 @@ impl RealPseudoRandomNumberGenerator {
     }
 
     fn generate_seed() -> u64 {
-        let mut rng = rand::rng();
-        rng.random()
+        #[cfg(feature = "std")]
+        {
+            let mut rng = rand::rng();
+            return rng.random();
+        }
+        #[allow(unreachable_code)]
+        u64::MIN
     }
 
     /// Linear Congruential Generator (LCRNG).

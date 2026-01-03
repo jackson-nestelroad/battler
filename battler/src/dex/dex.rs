@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use anyhow::Result;
 use battler_data::{
     DataStore,

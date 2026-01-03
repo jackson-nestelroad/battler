@@ -1,19 +1,21 @@
-use std::{
-    cmp::Ordering,
+use alloc::{
+    borrow::ToOwned,
+    boxed::Box,
     collections::VecDeque,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    sync::Arc,
+    vec::Vec,
+};
+use core::{
+    cmp::Ordering,
     marker::PhantomPinned,
     mem,
-    sync::Arc,
-    time::{
-        SystemTime,
-        UNIX_EPOCH,
-    },
 };
 
-use ahash::{
-    HashMap,
-    HashSet,
-};
 use anyhow::Result;
 use battler_data::{
     DataStore,
@@ -28,6 +30,11 @@ use battler_data::{
 use battler_prng::{
     PseudoRandomNumberGenerator,
     rand_util,
+};
+use hashbrown::{
+    HashMap,
+    HashSet,
+    hash_map::Entry,
 };
 use itertools::Itertools;
 use zone_alloc::{
@@ -70,7 +77,10 @@ use crate::{
         speed_sort,
     },
     battle_log_entry,
-    common::UnsafelyDetachBorrowMut,
+    common::{
+        Clock,
+        UnsafelyDetachBorrowMut,
+    },
     config::Format,
     dex::Dex,
     effect::{
@@ -237,6 +247,7 @@ pub struct CoreBattle<'d> {
     //
     // We could PinBox these, but that would complicate our code quite a bit.
     pub prng: Box<dyn PseudoRandomNumberGenerator>,
+    pub clock: Option<Box<dyn Clock>>,
     pub dex: Dex<'d>,
     pub queue: BattleQueue,
     pub faint_queue: VecDeque<FaintEntry>,
@@ -262,6 +273,7 @@ pub struct CoreBattle<'d> {
     ended: bool,
     next_effect_order: u32,
     next_forfeit_order: u32,
+    next_effect_linked_id: u32,
     last_move_log: Option<usize>,
     last_move: Option<MoveHandle>,
     last_exited: Option<MonHandle>,
@@ -285,6 +297,9 @@ impl<'d> CoreBattle<'d> {
         let dex = Dex::new(data)?;
         let format = Format::new(options.format, &dex)?;
         let prng = (engine_options.rng_factory)(options.seed);
+        let clock = engine_options
+            .clock_factory
+            .map(|clock_factory| clock_factory());
         let log = BattleLog::new();
         let registry = BattleRegistry::new();
         let queue = BattleQueue::new();
@@ -323,6 +338,7 @@ impl<'d> CoreBattle<'d> {
         let mut battle = Self {
             log,
             prng,
+            clock,
             dex,
             queue,
             faint_queue,
@@ -346,6 +362,7 @@ impl<'d> CoreBattle<'d> {
             ended: false,
             next_effect_order: 0,
             next_forfeit_order: 0,
+            next_effect_linked_id: 0,
             last_move_log: None,
             last_move: None,
             last_exited: None,
@@ -516,6 +533,12 @@ impl<'d> CoreBattle<'d> {
     pub fn next_forfeit_order(&mut self) -> u32 {
         let next = self.next_forfeit_order;
         self.next_forfeit_order += 1;
+        next
+    }
+
+    pub fn next_effect_linked_id(&mut self) -> u32 {
+        let next = self.next_effect_linked_id;
+        self.next_effect_linked_id += 1;
         next
     }
 
@@ -934,13 +957,6 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn time_now(&self) -> u128 {
-        SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis()
-    }
-
     fn log_team_sizes(&mut self) {
         let team_size_events = self
             .players()
@@ -1159,7 +1175,10 @@ impl<'d> CoreBattle<'d> {
         }
 
         if context.battle().engine_options.log_time {
-            let time = context.battle().time_now();
+            let time = match &context.battle().clock {
+                Some(clock) => clock.now().to_string(),
+                None => "unavailable".to_owned(),
+            };
             context
                 .battle_mut()
                 .log(battle_log_entry!("time", ("value", time)));
@@ -1197,15 +1216,15 @@ impl<'d> CoreBattle<'d> {
     fn disambiguate_identical_mon_names(context: &mut Context) -> Result<()> {
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
-            let mut seen = HashMap::default();
+            let mut seen = HashMap::new();
             for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
                 let mut context = context.mon_context(mon)?;
                 match seen.entry(context.mon().name.clone()) {
-                    std::collections::hash_map::Entry::Occupied(mut entry) => {
+                    Entry::Occupied(mut entry) => {
                         context.mon_mut().name += &format!("###{}", entry.get());
                         *entry.get_mut() += 1;
                     }
-                    std::collections::hash_map::Entry::Vacant(entry) => {
+                    Entry::Vacant(entry) => {
                         entry.insert(1);
                     }
                 }
@@ -2063,7 +2082,7 @@ impl<'d> CoreBattle<'d> {
                     .type_chart()
                     .types
                     .get(&offense)
-                    .and_then(|row| row.get(&defense))
+                    .and_then(|row| row.get(defense))
                     .unwrap_or(&TypeEffectiveness::Normal)
             })
             .any(|effectiveness| effectiveness == &TypeEffectiveness::None)

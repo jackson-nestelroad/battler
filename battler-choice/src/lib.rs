@@ -1,6 +1,19 @@
+#![no_std]
 #![feature(pattern)]
-use std::{
+
+extern crate alloc;
+
+use alloc::{
+    borrow::ToOwned,
     collections::VecDeque,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
+};
+use core::{
     fmt::Display,
     str::{
         FromStr,
@@ -38,7 +51,7 @@ pub struct MoveChoice {
 }
 
 impl Display for MoveChoice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.slot)?;
         if let Some(target) = self.target {
             write!(f, ",{target}")?;
@@ -127,7 +140,7 @@ pub struct ItemChoice {
 }
 
 impl Display for ItemChoice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.item)?;
         if let Some(target) = self.target {
             write!(f, ",{target}")?;
@@ -165,7 +178,7 @@ pub struct TeamSelectionChoice {
 }
 
 impl Display for TeamSelectionChoice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         for (i, mon) in self.mons.iter().enumerate() {
             if i > 0 {
                 write!(f, " ")?;
@@ -204,7 +217,7 @@ pub struct SwitchChoice {
 }
 
 impl Display for SwitchChoice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         if let Some(mon) = self.mon {
             write!(f, "{}", mon)?;
         }
@@ -228,7 +241,7 @@ pub struct LearnMoveChoice {
 }
 
 impl Display for LearnMoveChoice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.forget_move_slot)
     }
 }
@@ -268,7 +281,7 @@ pub enum Choice {
 }
 
 impl Display for Choice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::Pass => write!(f, "pass"),
             Self::Random => write!(f, "random"),
@@ -361,10 +374,13 @@ where
 
 #[cfg(test)]
 mod battler_choice_test {
-    use std::{
+    use alloc::{
+        borrow::ToOwned,
         collections::VecDeque,
-        str::FromStr,
+        string::ToString,
+        vec::Vec,
     };
+    use core::str::FromStr;
 
     use crate::{
         Choice,

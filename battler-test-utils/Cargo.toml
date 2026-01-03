@@ -15,9 +15,8 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tracing-core = { workspace = true }
 tracing-subscriber = { workspace = true }
-uuid = { workspace = true }
 
 battler-prng = { workspace = true }
 
-battler = { path = "../battler" }
-battler-service = { path = "../battler-service" }
+battler = { path = "../battler", default-features = false }
+battler-local-data = { path = "../battler-local-data" }

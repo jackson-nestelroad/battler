@@ -1,4 +1,6 @@
-use ahash::HashMap;
+use alloc::string::String;
+
+use hashbrown::HashMap;
 
 use crate::Id;
 

@@ -1,13 +1,15 @@
-use std::{
+use alloc::{
+    borrow::ToOwned,
     collections::VecDeque,
-    mem,
-    str::FromStr,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
 };
+use core::str::FromStr;
 
-use ahash::{
-    HashMap,
-    HashSet,
-};
 use anyhow::{
     Error,
     Result,
@@ -28,6 +30,10 @@ use battler_data::{
     TypeEffectiveness,
 };
 use battler_prng::rand_util;
+use hashbrown::{
+    HashMap,
+    HashSet,
+};
 
 use crate::{
     Type,
@@ -418,7 +424,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn boosts_from_rest_of_args(&mut self) -> Result<BoostTable> {
         let mut args = VecDeque::new();
-        mem::swap(&mut args, &mut self.args);
+        core::mem::swap(&mut args, &mut self.args);
         let has_boost_table = args
             .front()
             .is_some_and(|val| val.value_type() == ValueType::BoostTable);
@@ -1081,7 +1087,7 @@ fn log_status(mut context: FunctionContext) -> Result<()> {
         context,
         "status",
         LogEffectActivationBaseContext {
-            additional: vec![format!("status:{status}")],
+            additional: Vec::from_iter([format!("status:{status}")]),
             ..Default::default()
         },
     )
@@ -1091,12 +1097,12 @@ fn log_weather(mut context: FunctionContext) -> Result<()> {
     let (title, mut additional) = match context.pop_front() {
         Some(value) => (
             "weather",
-            vec![format!(
+            Vec::from_iter([format!(
                 "weather:{}",
                 value.string().wrap_error_with_message("invalid weather")?
-            )],
+            )]),
         ),
-        None => ("clearweather", vec![]),
+        None => ("clearweather", Vec::default()),
     };
     if context.residual() {
         additional.push("residual".to_owned());

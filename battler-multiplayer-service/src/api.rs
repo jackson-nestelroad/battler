@@ -13,10 +13,6 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use serde_string_enum::{
-    DeserializeLabeledStringEnum,
-    SerializeLabeledStringEnum,
-};
 use uuid::Uuid;
 
 /// An AI player using random choices.
@@ -64,11 +60,11 @@ pub struct ProposedBattleOptions {
 }
 
 /// The status of a player with respect to a proposed battle.
-#[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlayerStatus {
-    #[string = "rejected"]
+    #[serde(rename = "rejected")]
     Rejected,
-    #[string = "accepted"]
+    #[serde(rename = "accepted")]
     Accepted,
 }
 

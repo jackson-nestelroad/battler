@@ -1,4 +1,5 @@
-use std::marker::PhantomData;
+use alloc::format;
+use core::marker::PhantomData;
 
 use anyhow::Result;
 use battler_data::{
@@ -224,12 +225,11 @@ mod resource_cache_test {
 
 #[cfg(test)]
 mod dex_test {
-    use std::{
+    use core::{
         cell::RefCell,
         ops::Deref,
     };
 
-    use ahash::HashMap;
     use anyhow::Result;
     use battler_data::{
         DataStore,
@@ -239,6 +239,7 @@ mod dex_test {
         local_data_store,
         static_local_data_store,
     };
+    use hashbrown::HashMap;
     use rand::random;
 
     use crate::dex::{

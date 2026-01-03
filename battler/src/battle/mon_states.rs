@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use battler_data::{
     Id,
     MoveFlag,

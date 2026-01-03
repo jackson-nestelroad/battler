@@ -1,4 +1,3 @@
-use ahash::HashMap;
 use anyhow::Result;
 use battler::{
     BattleType,
@@ -12,6 +11,7 @@ use battler_test_utils::{
     assert_new_logs_eq,
     static_local_data_store,
 };
+use hashbrown::HashMap;
 
 fn team() -> Result<TeamData> {
     serde_json::from_str(

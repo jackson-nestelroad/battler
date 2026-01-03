@@ -13,6 +13,19 @@ env:
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 jobs:
+  build-no-std:
+    name: Build battler no_std
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Add target
+        run: rustup target add thumbv7em-none-eabihf
+      - name: Run build
+        run: cargo build -p battler --no-default-features --target thumbv7em-none-eabihf -Z build-std=core,alloc,compiler_builtins
+
   test-battler:
     name: Run battler tests
     runs-on: ubuntu-latest
@@ -23,6 +36,17 @@ jobs:
         uses: ./.github/actions/rust
       - name: Run battler tests
         run: cargo test -p battler
+
+  test-battler-no-std:
+    name: Run battler no_std tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler tests
+        run: cargo test -p battler --no-default-features
 
   test-battler-modules:
     name: Run battler module tests

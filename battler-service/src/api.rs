@@ -2,20 +2,16 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use serde_string_enum::{
-    DeserializeLabeledStringEnum,
-    SerializeLabeledStringEnum,
-};
 use uuid::Uuid;
 
 /// The state of a [`Player`] in a [`Battle`].
-#[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlayerState {
     /// The player is not ready to start the battle.
-    #[string = "waiting"]
+    #[serde(rename = "waiting")]
     Waiting,
     /// The player is ready to start the battle.
-    #[string = "ready"]
+    #[serde(rename = "ready")]
     Ready,
 }
 
@@ -49,16 +45,16 @@ pub struct Side {
 }
 
 /// The state of a [`Battle`].
-#[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BattleState {
     /// The battle is being prepared.
-    #[string = "preparing"]
+    #[serde(rename = "preparing")]
     Preparing,
     /// The battle is active and ongoing.
-    #[string = "active"]
+    #[serde(rename = "active")]
     Active,
     /// The battle ended.
-    #[string = "finished"]
+    #[serde(rename = "finished")]
     Finished,
 }
 

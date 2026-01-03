@@ -1,12 +1,13 @@
-use std::{
-    mem,
-    sync::LazyLock,
+use alloc::{
+    boxed::Box,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
 };
 
-use ahash::{
-    HashMap,
-    HashSet,
-};
 use anyhow::Result;
 use battler_data::{
     Gender,
@@ -15,7 +16,12 @@ use battler_data::{
     MoveSource,
     ShinyChance,
 };
+use hashbrown::{
+    HashMap,
+    HashSet,
+};
 use itertools::Itertools;
+use once_cell::race::OnceBox;
 use regex::Regex;
 use zone_alloc::ElementRef;
 
@@ -72,7 +78,7 @@ impl<'s> MonValidationState<'s> {
             self.possible_events = events;
         } else {
             let mut current_events = HashMap::default();
-            mem::swap(&mut self.possible_events, &mut current_events);
+            core::mem::swap(&mut self.possible_events, &mut current_events);
             for (id, event) in current_events.into_iter() {
                 if events.contains_key(&id) {
                     self.possible_events.insert(id, event);
@@ -210,17 +216,22 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ));
         }
 
-        static NAME_PATTERN: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[^|]+$").unwrap());
-        static DISAMBIGUATION_PATTERN: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(r"#{3}\d+$").unwrap());
+        static NAME_PATTERN: OnceBox<Regex> = OnceBox::new();
+        static DISAMBIGUATION_PATTERN: OnceBox<Regex> = OnceBox::new();
 
-        if !NAME_PATTERN.is_match(&mon.name) {
+        if !NAME_PATTERN
+            .get_or_init(|| Box::new(Regex::new(r"^[^|]+$").unwrap()))
+            .is_match(&mon.name)
+        {
             problems.push(format!(
                 "Nickname \"{}\" contains illegal characters.",
                 mon.name
             ));
         }
-        if DISAMBIGUATION_PATTERN.is_match(&mon.name) {
+        if DISAMBIGUATION_PATTERN
+            .get_or_init(|| Box::new(Regex::new(r"#{3}\d+$").unwrap()))
+            .is_match(&mon.name)
+        {
             problems.push(format!(
                 "Nickname \"{}\" contains a disambiguation number at its end.",
                 mon.name
@@ -311,26 +322,24 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             }
         };
 
-        let mut state = MonValidationState::new();
-        if let Some(item) = &item {
-            problems.append(&mut self.validate_item(&item));
+        {
+            let mut state = MonValidationState::new();
+            if let Some(item) = &item {
+                problems.append(&mut self.validate_item(&item));
+            }
+            problems.append(&mut self.validate_moveset(mon, &species, &mut state));
+            problems.append(&mut self.validate_ability(mon, &species, &ability, &mut state));
+            // At this point, the moves and ability have informed us of a set of possible events
+            // this Mon could have been received from. We must validate the rest of the
+            // Mon's properties to make sure this Mon really did come from that event.
+            problems.append(&mut self.validate_event(mon, &mut state));
         }
-        problems.append(&mut self.validate_moveset(mon, &species, &mut state));
-        problems.append(&mut self.validate_ability(mon, &species, &ability, &mut state));
-        // At this point, the moves and ability have informed us of a set of possible events this
-        // Mon could have been received from. We must validate the rest of the Mon's properties to
-        // make sure this Mon really did come from that event.
-        problems.append(&mut self.validate_event(mon, &mut state));
 
         if let Some(adjust_level_down) = self.format.rules.numeric_rules.adjust_level_down {
             if mon.level > adjust_level_down as u8 {
                 mon.level = adjust_level_down as u8;
             }
         }
-
-        // for clause in self.format.rules.clauses(self.dex) {
-        //     result.merge(clause.on_validate_mon(self, mon));
-        // }
 
         problems
     }
@@ -569,7 +578,7 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     where
         'b: 'state,
     {
-        let mut seen = HashSet::default();
+        let mut seen = HashSet::new();
         let mut current_species: Result<ElementRef<'_, Species>> = Ok(species.clone());
         let mut possible_events = HashMap::default();
 
@@ -870,11 +879,18 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
 #[cfg(test)]
 mod team_validator_test {
 
-    use battler_test_utils::static_local_data_store;
+    use alloc::{
+        string::String,
+        vec::Vec,
+    };
+
+    use battler_test_utils::{
+        read_test_cases,
+        static_local_data_store,
+    };
     use serde::Deserialize;
 
     use crate::{
-        common::read_test_cases,
         config::{
             Format,
             FormatData,

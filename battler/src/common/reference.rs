@@ -1,5 +1,3 @@
-use std::mem;
-
 /// Trait for unsafely detaching an immutable borrow, attaching a new lifetime to it.
 pub trait UnsafelyDetachBorrow<'a, 'b, T> {
     /// Unsafely detaches an immutable borrow, attaching a new lifetime.
@@ -12,7 +10,7 @@ pub trait UnsafelyDetachBorrow<'a, 'b, T> {
 
 impl<'a, 'b, T> UnsafelyDetachBorrow<'a, 'b, T> for T {
     unsafe fn unsafely_detach_borrow(&'a self) -> &'b T {
-        unsafe { mem::transmute(self) }
+        unsafe { core::mem::transmute::<&'a Self, &'b Self>(self) }
     }
 }
 
@@ -28,6 +26,6 @@ pub trait UnsafelyDetachBorrowMut<'a, 'b, T> {
 
 impl<'a, 'b, T> UnsafelyDetachBorrowMut<'a, 'b, T> for T {
     unsafe fn unsafely_detach_borrow_mut(&'a mut self) -> &'b mut T {
-        unsafe { mem::transmute(self) }
+        unsafe { core::mem::transmute::<&'a mut Self, &'b mut Self>(self) }
     }
 }

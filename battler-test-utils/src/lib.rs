@@ -1,9 +1,11 @@
+mod cases;
 mod data_store;
 mod log_util;
 mod logging;
 mod rng;
 mod test_battle_builder;
 
+pub use cases::read_test_cases;
 pub use data_store::{
     local_data_store,
     static_local_data_store,

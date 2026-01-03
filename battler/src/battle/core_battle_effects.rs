@@ -1,6 +1,11 @@
-use std::iter;
+use alloc::{
+    borrow::ToOwned,
+    format,
+    string::String,
+    vec::Vec,
+};
+use core::iter;
 
-use ahash::HashSet;
 use anyhow::Result;
 use battler_data::{
     BoostTable,
@@ -11,6 +16,7 @@ use battler_data::{
     StatTable,
     Type,
 };
+use hashbrown::HashSet;
 
 use crate::{
     battle::{
@@ -1818,7 +1824,7 @@ fn run_residual_callbacks_with_errors(
     callbacks: Vec<CallbackHandle>,
 ) -> Result<()> {
     // Ensure we only decrease the duration of each event once.
-    let mut duration_decreased = HashSet::default();
+    let mut duration_decreased = HashSet::new();
 
     let event_state = fxlang::EventState::default();
     for callback_handle in callbacks {

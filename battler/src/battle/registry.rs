@@ -1,7 +1,7 @@
-use std::{
+use alloc::format;
+use core::{
     fmt,
     fmt::Display,
-    mem,
 };
 
 use anyhow::Result;
@@ -170,7 +170,7 @@ impl BattleRegistry {
                 "cannot advance battle registry to the next turn: last_turn_moves is not safe to drop",
             ));
         }
-        mem::swap(&mut self.last_turn_moves, &mut self.this_turn_moves);
+        core::mem::swap(&mut self.last_turn_moves, &mut self.this_turn_moves);
         self.this_turn_moves = MoveRegistry::new();
         Ok(())
     }

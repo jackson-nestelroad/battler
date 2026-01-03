@@ -1,4 +1,8 @@
-use std::{
+use alloc::{
+    borrow::ToOwned,
+    string::String,
+};
+use core::{
     fmt,
     fmt::Display,
     hash,
@@ -6,11 +10,11 @@ use std::{
     str::FromStr,
 };
 
-use ahash::HashSet;
 use anyhow::{
     Error,
     Result,
 };
+use hashbrown::HashSet;
 use serde_string_enum::{
     DeserializeStringEnum,
     SerializeStringEnum,
@@ -84,11 +88,11 @@ impl FromStr for Rule {
             _ => match s.split_once('=') {
                 None => Ok(Self::Value {
                     name: Id::from(s.trim()),
-                    value: "".to_string(),
+                    value: "".to_owned(),
                 }),
                 Some((name, value)) => Ok(Self::Value {
                     name: Id::from(name.trim()),
-                    value: value.trim().to_string(),
+                    value: value.trim().to_owned(),
                 }),
             },
         }
@@ -137,6 +141,8 @@ pub type SerializedRuleSet = HashSet<Rule>;
 
 #[cfg(test)]
 mod rule_test {
+    use alloc::borrow::ToOwned;
+
     use crate::{
         Id,
         Rule,
@@ -152,7 +158,7 @@ mod rule_test {
         test_string_serialization(
             Rule::Value {
                 name: Id::from("Max Level"),
-                value: "50".to_string(),
+                value: "50".to_owned(),
             },
             "maxlevel=50",
         );

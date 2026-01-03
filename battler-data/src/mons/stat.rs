@@ -1,6 +1,6 @@
-use std::fmt::Debug;
+use core::fmt::Debug;
 
-use ahash::HashMap;
+use hashbrown::HashMap;
 use serde::{
     Deserialize,
     Serialize,

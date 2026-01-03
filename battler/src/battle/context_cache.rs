@@ -1,10 +1,7 @@
-use std::{
-    cell::UnsafeCell,
-    mem,
-};
+use core::cell::UnsafeCell;
 
-use ahash::HashMap;
 use anyhow::Result;
+use hashbrown::HashMap;
 use zone_alloc::ElementRefMut;
 
 use crate::{
@@ -68,7 +65,9 @@ impl<'borrow> ContextCache<'borrow> {
         //
         // SAFETY: This is safe across multiple insertions because ElementRef does not own any data.
         // The underlying reference is not invalidated.
-        let mon = unsafe { mem::transmute(mon) };
+        let mon = unsafe {
+            core::mem::transmute::<ElementRefMut<'_, Mon>, ElementRefMut<'borrow, Mon>>(mon)
+        };
         mons.insert(mon_handle, mon);
         let mon = mons
             .get_mut(&mon_handle)
@@ -99,7 +98,9 @@ impl<'borrow> ContextCache<'borrow> {
         //
         // SAFETY: This is safe across multiple insertions because ElementRef does not own any data.
         // The underlying reference is not invalidated.
-        let mov = unsafe { mem::transmute(mov) };
+        let mov = unsafe {
+            core::mem::transmute::<ElementRefMut<'_, Move>, ElementRefMut<'borrow, Move>>(mov)
+        };
         moves.insert(move_handle, mov);
         let mov = moves
             .get_mut(&move_handle)
