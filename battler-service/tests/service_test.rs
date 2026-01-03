@@ -6,7 +6,6 @@ use std::{
     },
 };
 
-use ahash::HashSet;
 use anyhow::Error;
 use battler::{
     BagData,
@@ -46,6 +45,7 @@ use battler_service::{
     Timers,
 };
 use battler_test_utils::static_local_data_store;
+use hashbrown::HashSet;
 use itertools::Itertools;
 use tokio::{
     sync::broadcast,

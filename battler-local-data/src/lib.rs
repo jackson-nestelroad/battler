@@ -11,9 +11,7 @@ use anyhow::{
     Error,
     Result,
 };
-use serde::de::DeserializeOwned;
-
-use crate::{
+use battler_data::{
     AbilityData,
     Aliases,
     ClauseData,
@@ -27,6 +25,7 @@ use crate::{
     TypeChart,
     deserialize_aliases,
 };
+use serde::de::DeserializeOwned;
 
 /// An implementation of [`DataStore`] that reads all data locally from disk.
 pub struct LocalDataStore {

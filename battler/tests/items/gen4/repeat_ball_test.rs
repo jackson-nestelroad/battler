@@ -1,4 +1,3 @@
-use ahash::HashSet;
 use anyhow::Result;
 use battler::{
     BattleType,
@@ -16,6 +15,7 @@ use battler_test_utils::{
     get_controlled_rng_for_battle,
     static_local_data_store,
 };
+use hashbrown::HashSet;
 
 fn graveler() -> Result<TeamData> {
     serde_json::from_str(

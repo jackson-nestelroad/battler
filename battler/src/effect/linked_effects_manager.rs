@@ -1,7 +1,11 @@
-use ahash::HashMap;
+use alloc::{
+    borrow::ToOwned,
+    vec::Vec,
+};
+
 use anyhow::Result;
 use battler_data::Id;
-use uuid::Uuid;
+use hashbrown::HashMap;
 
 use crate::{
     battle::{
@@ -20,7 +24,7 @@ use crate::{
 ///
 /// A linked effect ends when another effect ends. Linking always goes both ways.
 pub struct LinkedEffectsManager {
-    effects: HashMap<Uuid, AppliedEffectHandle>,
+    effects: HashMap<u32, AppliedEffectHandle>,
 }
 
 impl LinkedEffectsManager {
@@ -31,7 +35,7 @@ impl LinkedEffectsManager {
         }
     }
 
-    fn get_linked_id(context: &mut Context, effect: &AppliedEffectHandle) -> Result<Option<Uuid>> {
+    fn get_linked_id(context: &mut Context, effect: &AppliedEffectHandle) -> Result<Option<u32>> {
         let connector = match effect.effect_state_connector() {
             Some(connector) => connector,
             None => return Ok(None),
@@ -39,17 +43,17 @@ impl LinkedEffectsManager {
         if !connector.exists(context)? {
             return Ok(None);
         }
-        if let Some(uuid) = connector.get_mut(context)?.linked_id() {
-            return Ok(Some(uuid));
+        if let Some(id) = connector.get_mut(context)?.linked_id() {
+            return Ok(Some(id));
         }
-        let uuid = Uuid::new_v4();
-        connector.get_mut(context)?.set_linked_id(uuid);
+        let id = context.battle_mut().next_effect_linked_id();
+        connector.get_mut(context)?.set_linked_id(id);
         context
             .battle_mut()
             .linked_effects_manager
             .effects
-            .insert(uuid, effect.to_owned());
-        Ok(Some(uuid))
+            .insert(id, effect.to_owned());
+        Ok(Some(id))
     }
 
     /// Links one effect to another.

@@ -1,9 +1,6 @@
-use std::fmt;
+use core::fmt;
 
-use ahash::{
-    HashMap,
-    HashMapExt,
-};
+use hashbrown::HashMap;
 use serde::{
     Deserialize,
     Serialize,
@@ -225,7 +222,7 @@ mod type_test {
 
 #[cfg(test)]
 mod type_effectiveness_test {
-    use ahash::HashMap;
+    use hashbrown::HashMap;
 
     use crate::{
         Type,

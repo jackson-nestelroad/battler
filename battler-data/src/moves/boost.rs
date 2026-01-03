@@ -1,4 +1,4 @@
-use std::{
+use core::{
     marker::PhantomData,
     ops::Add,
 };
@@ -310,6 +310,11 @@ mod boost_test {
 
 #[cfg(test)]
 mod boost_table_test {
+
+    use alloc::{
+        vec,
+        vec::Vec,
+    };
 
     use crate::{
         Boost,

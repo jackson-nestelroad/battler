@@ -1,15 +1,19 @@
-use std::str::FromStr;
-
-use ahash::{
-    HashMap,
-    HashSet,
+use alloc::{
+    format,
+    string::String,
 };
+use core::str::FromStr;
+
 use anyhow::Result;
 use battler_data::{
     Id,
     Identifiable,
     Rule,
     SerializedRuleSet,
+};
+use hashbrown::{
+    HashMap,
+    HashSet,
 };
 use zone_alloc::ElementRef;
 
@@ -386,10 +390,12 @@ impl RuleSet {
 
 #[cfg(test)]
 mod rule_set_test {
-    use ahash::{
-        HashMap,
-        HashSet,
+    use alloc::{
+        borrow::ToOwned,
+        format,
+        string::ToString,
     };
+
     use anyhow::Result;
     use battler_data::{
         Id,
@@ -397,6 +403,10 @@ mod rule_set_test {
         SerializedRuleSet,
     };
     use battler_test_utils::static_local_data_store;
+    use hashbrown::{
+        HashMap,
+        HashSet,
+    };
 
     use crate::{
         battle::BattleType,

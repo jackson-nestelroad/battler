@@ -1,3 +1,11 @@
+use alloc::{
+    borrow::ToOwned,
+    boxed::Box,
+    format,
+    vec,
+    vec::Vec,
+};
+
 use anyhow::{
     Error,
     Result,
@@ -91,6 +99,13 @@ impl NextTokenContext {
 }
 
 mod token {
+    use alloc::{
+        borrow::ToOwned,
+        format,
+        string::String,
+        vec::Vec,
+    };
+
     use anyhow::Result;
 
     use super::{
@@ -186,7 +201,7 @@ mod token {
         }
 
         fn lexeme_buffer_str_from_range(&self, (start, end): (usize, usize)) -> Option<&str> {
-            unsafe { Some(std::str::from_utf8_unchecked(self.input.get(start..end)?)) }
+            unsafe { Some(core::str::from_utf8_unchecked(self.input.get(start..end)?)) }
         }
 
         fn lexeme_buffer_str_from_range_or_default(&self, range: (usize, usize)) -> &str {
@@ -283,7 +298,7 @@ mod token {
                 Err(general_error("unterminated string"))
             } else {
                 Ok(Some(unsafe {
-                    std::str::from_utf8_unchecked(string.as_slice()).to_owned()
+                    core::str::from_utf8_unchecked(string.as_slice()).to_owned()
                 }))
             }
         }
@@ -1264,6 +1279,13 @@ impl<'s> StatementParser<'s> {
 
 #[cfg(test)]
 mod statement_parser_test {
+    use alloc::{
+        borrow::ToOwned,
+        boxed::Box,
+        format,
+        vec,
+    };
+
     use battler_data::Fraction;
     use pretty_assertions::assert_eq;
 

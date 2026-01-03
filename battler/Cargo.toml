@@ -8,21 +8,28 @@ keywords = ["pokemon", "battle"]
 license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler"
 
+[features]
+default = ["std"]
+
+std = [
+    "battler-data/std",
+    "battler-prng/std",
+]
+
 [dependencies]
-ahash = { workspace = true }
-anyhow = { workspace = true }
-itertools = { workspace = true }
-num = { workspace = true }
-rand = { workspace = true }
-regex = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
+anyhow = { version = "1.0", default-features = false }
+hashbrown = { workspace = true }
+itertools = { version = "0.14", default-features = false, features = ["use_alloc"] }
+num = { version = "0.4", default-features = false }
+once_cell = { version = "1.21", default-features = false, features = ["alloc", "race"] }
+regex = { version = "1.11", default-features = false, features = ["perf", "unicode"] }
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 serde_string_enum = { workspace = true }
-thiserror = { workspace = true }
+thiserror = { version = "2.0", default-features = false }
 unicase = { workspace = true }
-uuid = { workspace = true }
-zone-alloc = { workspace = true }
-zone-alloc-strong-handle-derive = { workspace = true }
+zone-alloc = { version = "0.4.4", default-features = false, features = ["may-dangle"] }
+zone-alloc-strong-handle-derive = "0.1"
 
 battler-choice = { workspace = true }
 battler-data = { workspace = true }
@@ -31,5 +38,6 @@ battler-prng = { workspace = true }
 [dev-dependencies]
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
+rand = { workspace = true }
 
 battler-test-utils = { path = "../battler-test-utils" }

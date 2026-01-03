@@ -1,6 +1,11 @@
-use ahash::HashMap;
+use alloc::{
+    string::String,
+    vec::Vec,
+};
+
 use anyhow::Result;
 use battler_data::Id;
+use hashbrown::HashMap;
 use num::Integer;
 use serde::{
     Deserialize,

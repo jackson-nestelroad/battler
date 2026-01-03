@@ -1,6 +1,7 @@
 #![cfg(test)]
 
-use std::fmt::{
+use alloc::format;
+use core::fmt::{
     Debug,
     Display,
 };

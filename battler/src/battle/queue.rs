@@ -1,6 +1,6 @@
-use std::{
+use alloc::{
     collections::VecDeque,
-    mem,
+    vec::Vec,
 };
 
 use anyhow::Result;
@@ -138,7 +138,12 @@ impl BattleQueue {
     pub fn sort(context: &mut Context) {
         let prng = context.battle_mut().prng.as_mut();
         // SAFETY: PRNG and battle queue are completely disjoint.
-        let prng = unsafe { mem::transmute(prng) };
+        let prng = unsafe {
+            core::mem::transmute::<
+                &mut dyn PseudoRandomNumberGenerator,
+                &mut dyn PseudoRandomNumberGenerator,
+            >(prng)
+        };
         let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
         context
             .battle_mut()
@@ -181,7 +186,7 @@ impl BattleQueue {
         let before = self.actions.len();
 
         let mut actions = VecDeque::new();
-        mem::swap(&mut actions, &mut self.actions);
+        core::mem::swap(&mut actions, &mut self.actions);
         actions = actions
             .into_iter()
             .filter(|action| {
@@ -192,7 +197,7 @@ impl BattleQueue {
                 }
             })
             .collect();
-        mem::swap(&mut actions, &mut self.actions);
+        core::mem::swap(&mut actions, &mut self.actions);
 
         let after = self.actions.len();
         before > after
@@ -215,7 +220,12 @@ impl BattleQueue {
     ) -> Result<()> {
         let prng = context.battle_mut().prng.as_mut();
         // SAFETY: PRNG and battle queue are completely disjoint.
-        let prng = unsafe { mem::transmute(prng) };
+        let prng = unsafe {
+            core::mem::transmute::<
+                &mut dyn PseudoRandomNumberGenerator,
+                &mut dyn PseudoRandomNumberGenerator,
+            >(prng)
+        };
         let tie_resolution = context.battle().engine_options.speed_sort_tie_resolution;
         context
             .battle_mut()
@@ -271,6 +281,14 @@ impl BattleQueue {
 
 #[cfg(test)]
 mod queue_test {
+    use alloc::{
+        borrow::ToOwned,
+        format,
+        string::String,
+        vec,
+        vec::Vec,
+    };
+
     use battler_data::Id;
     use battler_prng::RealPseudoRandomNumberGenerator;
 

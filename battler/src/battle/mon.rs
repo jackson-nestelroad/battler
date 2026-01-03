@@ -1,19 +1,22 @@
-use std::{
+use alloc::{
+    borrow::ToOwned,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
+};
+use core::{
     fmt::{
         self,
         Display,
     },
     iter,
-    mem,
     ops::Mul,
-    sync::LazyLock,
     u8,
 };
 
-use ahash::{
-    HashMap,
-    HashSet,
-};
 use anyhow::Result;
 use battler_data::{
     Boost,
@@ -29,6 +32,10 @@ use battler_data::{
     StatTable,
     SwitchType,
     Type,
+};
+use hashbrown::{
+    HashMap,
+    HashSet,
 };
 use serde::{
     Deserialize,
@@ -1204,19 +1211,11 @@ impl Mon {
 
             let boost = boosts.get(stat.try_into()?);
 
-            static BOOST_TABLE: LazyLock<[Fraction<u16>; 7]> = LazyLock::new(|| {
-                [
-                    Fraction::new(1, 1),
-                    Fraction::new(3, 2),
-                    Fraction::new(2, 1),
-                    Fraction::new(5, 2),
-                    Fraction::new(3, 1),
-                    Fraction::new(7, 2),
-                    Fraction::new(4, 1),
-                ]
-            });
+            static BOOST_TABLE: [(u16, u16); 7] =
+                [(1, 1), (3, 2), (2, 1), (5, 2), (3, 1), (7, 2), (4, 1)];
             let boost = boost.max(-6).min(6);
-            let boost_fraction = &BOOST_TABLE[boost.abs() as usize];
+            let (num, den) = BOOST_TABLE[boost.abs() as usize];
+            let boost_fraction = Fraction::new(num, den);
             if boost >= 0 {
                 value = boost_fraction.mul(value).floor();
             } else {
@@ -1851,7 +1850,9 @@ impl Mon {
         let species = context.battle().dex.species.get_by_id(species)?;
 
         // SAFETY: Nothing we do below will invalidate any data.
-        let species: ElementRef<Species> = unsafe { mem::transmute(species) };
+        let species = unsafe {
+            core::mem::transmute::<ElementRef<'_, Species>, ElementRef<'_, Species>>(species)
+        };
 
         let previous_species = context.mon().volatile_state.species.clone();
 
@@ -2470,7 +2471,8 @@ impl Mon {
         let mov = context.battle().dex.moves.get_by_id(move_id)?;
         // SAFETY: The move is borrowed with reference counting, so no mutable reference can be
         // taken without causing an error elsewhere.
-        let mov: ElementRef<Move> = unsafe { mem::transmute(mov) };
+        let mov =
+            unsafe { core::mem::transmute::<ElementRef<'_, Move>, ElementRef<'_, Move>>(mov) };
         let (forget_move_slot, forget_move_slot_index) =
             match context.mon_mut().base_move_slots.get_mut(forget_move_slot) {
                 None => {

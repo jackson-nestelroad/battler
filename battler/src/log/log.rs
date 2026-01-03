@@ -1,11 +1,17 @@
-use std::{
-    collections::hash_map::Entry,
+use alloc::{
+    format,
+    string::String,
+    vec::Vec,
+};
+use core::{
     fmt,
     fmt::Display,
-    mem,
 };
 
-use ahash::HashMap;
+use hashbrown::{
+    HashMap,
+    hash_map::Entry,
+};
 use itertools::Itertools;
 
 /// Trait for objects that can be added directly to the battle log.
@@ -241,7 +247,7 @@ impl BattleLog {
 
     /// Commits all uncommitted logs.
     pub fn commit(&mut self) {
-        let new_log_entries = mem::replace(&mut self.new_log_entries, Vec::new());
+        let new_log_entries = core::mem::replace(&mut self.new_log_entries, Vec::new());
         self.committed_logs
             .extend(new_log_entries.into_iter().map(|entry| entry.commit()))
     }
@@ -299,7 +305,17 @@ impl BattleLog {
 
 #[cfg(test)]
 mod battle_log_test {
-    use std::{
+    use alloc::{
+        borrow::ToOwned,
+        format,
+        string::{
+            String,
+            ToString,
+        },
+        vec,
+        vec::Vec,
+    };
+    use core::{
         fmt,
         fmt::Display,
     };

@@ -14,9 +14,9 @@ anyhow = { workspace = true }
 async-scoped = { workspace = true }
 async-trait = { workspace = true }
 futures-util = { workspace = true }
+hashbrown = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }
-serde_string_enum = { workspace = true }
 tokio = { workspace = true }
 unicase = { workspace = true }
 uuid = { workspace = true }

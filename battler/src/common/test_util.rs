@@ -1,23 +1,15 @@
 #![cfg(test)]
 
-use std::{
-    env,
-    fmt::{
-        Debug,
-        Display,
-    },
-    fs::File,
-    path::Path,
+use alloc::format;
+use core::fmt::{
+    Debug,
+    Display,
 };
 
-use ahash::HashMap;
-use anyhow::Result;
 use serde::{
     Serialize,
     de::DeserializeOwned,
 };
-
-use crate::error::WrapResultError;
 
 #[track_caller]
 pub fn test_deserialization<'a, T>(s: &str, expected: T)
@@ -54,24 +46,4 @@ where
     T: Debug + PartialEq + Serialize + DeserializeOwned,
 {
     test_serialization(v, format!("\"{expected}\""))
-}
-
-fn test_case_dir<'s>() -> Result<String> {
-    Ok(format!("{}/battler/test_cases", env::var("CRATE_ROOT")?))
-}
-
-pub fn read_test_json<T: DeserializeOwned>(file: &str) -> Result<T> {
-    serde_json::from_reader(
-        File::open(Path::new(&test_case_dir()?).join(""))
-            .wrap_error_with_format(format_args!("failed to read from {file}"))?,
-    )
-    .wrap_error_with_format(format_args!("failed to read object from {file}"))
-}
-
-pub fn read_test_cases<T: DeserializeOwned>(file: &str) -> Result<HashMap<String, T>> {
-    serde_json::from_reader(
-        File::open(Path::new(&test_case_dir()?).join(file))
-            .wrap_error_with_format(format_args!("failed to read test cases from {file}"))?,
-    )
-    .wrap_error_with_format(format_args!("failed to parse test cases from {file}"))
 }

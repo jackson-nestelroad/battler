@@ -1,5 +1,3 @@
-use std::u8;
-
 use anyhow::Result;
 use battler_data::SerializedRuleSet;
 use serde::{

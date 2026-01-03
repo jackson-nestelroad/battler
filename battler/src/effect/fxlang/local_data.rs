@@ -1,8 +1,10 @@
-use ahash::HashMap;
+use alloc::string::String;
+
 use battler_data::{
     Id,
     MoveData,
 };
+use hashbrown::HashMap;
 use serde::{
     Deserialize,
     Serialize,

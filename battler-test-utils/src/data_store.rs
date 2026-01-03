@@ -12,11 +12,11 @@ use battler::{
     DataStore,
     Id,
     ItemData,
-    LocalDataStore,
     MoveData,
     SpeciesData,
     TypeChart,
 };
+use battler_local_data::LocalDataStore;
 
 /// A [`LocalDataStore`] created from the environment.
 pub fn local_data_store() -> LocalDataStore {

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use core::fmt::Display;
 
 use anyhow::Error;
 use zone_alloc::BorrowError;

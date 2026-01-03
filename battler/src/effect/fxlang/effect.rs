@@ -1,5 +1,10 @@
-use ahash::HashMap;
+use alloc::{
+    string::String,
+    vec::Vec,
+};
+
 use anyhow::Error;
+use hashbrown::HashMap;
 use serde::{
     Deserialize,
     Serialize,

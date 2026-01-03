@@ -1,7 +1,4 @@
-use std::{
-    ops::Div,
-    sync::LazyLock,
-};
+use core::ops::Div;
 
 use battler_data::{
     Fraction,
@@ -57,21 +54,19 @@ pub fn apply_nature_to_stats(mut stats: StatTable, nature: Nature) -> StatTable 
 
 /// Calculates the Hidden Power type based on IVs.
 pub fn calculate_hidden_power_type(ivs: &StatTable) -> Type {
-    static HIDDEN_POWER_STAT_ORDER: LazyLock<[Stat; 6]> = LazyLock::new(|| {
-        [
-            Stat::HP,
-            Stat::Atk,
-            Stat::Def,
-            Stat::Spe,
-            Stat::SpAtk,
-            Stat::SpDef,
-        ]
-    });
+    static HIDDEN_POWER_STAT_ORDER: [Stat; 6] = [
+        Stat::HP,
+        Stat::Atk,
+        Stat::Def,
+        Stat::Spe,
+        Stat::SpAtk,
+        Stat::SpDef,
+    ];
 
     let mut hp_type = 0;
     let mut i = 1;
-    for stat in *HIDDEN_POWER_STAT_ORDER {
-        hp_type += i * (ivs.get(stat) & 1);
+    for stat in &HIDDEN_POWER_STAT_ORDER {
+        hp_type += i * (ivs.get(*stat) & 1);
         i *= 2;
     }
     let hp_type = hp_type * 15 / 63;
@@ -117,15 +112,13 @@ mod calculations_test {
         StatTable,
         Type,
     };
+    use battler_test_utils::read_test_cases;
     use serde::Deserialize;
 
-    use crate::{
-        battle::{
-            apply_nature_to_stats,
-            calculate_hidden_power_type,
-            calculate_mon_stats,
-        },
-        common::read_test_cases,
+    use crate::battle::{
+        apply_nature_to_stats,
+        calculate_hidden_power_type,
+        calculate_mon_stats,
     };
 
     #[test]

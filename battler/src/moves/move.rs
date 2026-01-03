@@ -1,9 +1,9 @@
-use std::collections::hash_map::Entry;
-
-use ahash::{
-    HashMap,
-    HashSet,
+use alloc::{
+    boxed::Box,
+    format,
+    vec::Vec,
 };
+
 use anyhow::Error;
 use battler_data::{
     Fraction,
@@ -16,6 +16,11 @@ use battler_data::{
     MoveFlag,
     SecondaryEffectData,
     Type,
+};
+use hashbrown::{
+    HashMap,
+    HashSet,
+    hash_map::Entry,
 };
 
 use crate::{
@@ -358,7 +363,7 @@ impl Move {
                     .map(|secondary_effect| secondary_effect.data.chance)
                     .enumerate(),
             ),
-            None => Box::new(std::iter::empty::<(usize, Option<Fraction<u16>>)>()),
+            None => Box::new(core::iter::empty::<(usize, Option<Fraction<u16>>)>()),
         }
     }
 

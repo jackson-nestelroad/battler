@@ -1,9 +1,14 @@
-use std::fmt::Debug;
+use alloc::{
+    borrow::ToOwned,
+    boxed::Box,
+    string::String,
+    vec::Vec,
+};
+use core::fmt::Debug;
 
-use ahash::HashMap;
 use anyhow::Result;
 use battler_data::Fraction;
-use uuid::Uuid;
+use hashbrown::HashMap;
 
 use crate::{
     battle::{
@@ -29,8 +34,8 @@ use crate::{
 pub struct EffectState {
     initialized: bool,
     values: HashMap<String, Value>,
-    linked_id: Option<Uuid>,
-    linked_to: Vec<Uuid>,
+    linked_id: Option<u32>,
+    linked_to: Vec<u32>,
     effect_order: u32,
 }
 
@@ -225,22 +230,22 @@ impl EffectState {
     }
 
     /// The unique ID for linking this effect to another.
-    pub fn linked_id(&self) -> Option<Uuid> {
+    pub fn linked_id(&self) -> Option<u32> {
         self.linked_id
     }
 
     /// Sets the unique ID for linking this effect to another
-    pub fn set_linked_id(&mut self, linked_id: Uuid) {
+    pub fn set_linked_id(&mut self, linked_id: u32) {
         self.linked_id = Some(linked_id);
     }
 
     /// The unique IDs of effects this effect is linked to.
-    pub fn linked_to(&self) -> &[Uuid] {
+    pub fn linked_to(&self) -> &[u32] {
         &self.linked_to
     }
 
     /// Adds the unique ID of a linked effect.
-    pub fn add_link(&mut self, linked_id: Uuid) {
+    pub fn add_link(&mut self, linked_id: u32) {
         self.linked_to.push(linked_id);
     }
 

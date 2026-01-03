@@ -8,7 +8,17 @@ keywords = ["pokemon", "battle"]
 license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-prng"
 
+[features]
+default = ["std"]
+
+std = [
+    "alloc",
+    "dep:rand",
+]
+
+alloc = []
+
 [dependencies]
-rand = { workspace = true }
+rand = { workspace = true, optional = true }
 
 [dev-dependencies]

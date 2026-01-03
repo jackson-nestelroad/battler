@@ -57,7 +57,6 @@ use battler_wamp::{
             BasicError,
             WampError,
         },
-        hash::HashSet,
         peer_info::{
             ConnectionType,
             PeerInfo,
@@ -222,7 +221,7 @@ fn battle_options() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Singles,
-            rules: HashSet::default(),
+            ..Default::default()
         },
         field: FieldData::default(),
         side_1: SideData {

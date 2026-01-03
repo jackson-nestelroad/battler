@@ -1,4 +1,5 @@
-use std::fmt::{
+use alloc::format;
+use core::fmt::{
     Arguments,
     Display,
 };

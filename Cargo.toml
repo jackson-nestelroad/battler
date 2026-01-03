@@ -8,6 +8,7 @@ members = [
     "battler-choice",
     "battler-client",
     "battler-data",
+    "battler-local-data",
     "battler-multiplayer-service",
     "battler-multiplayer-service/battler-multiplayer-service-schema",
     "battler-multiplayer-service-client",
@@ -42,6 +43,7 @@ members = [
 # General utility.
 ahash = "0.8"
 async-trait = "0.1"
+hashbrown = { version = "0.16", features = ["serde"] }
 indexmap = "2.9"
 itertools = "0.14"
 num = "0.4"
@@ -49,8 +51,6 @@ rand = "0.9"
 regex = "1.11"
 unicase = "2.8"
 uuid = { version = "1.16", features = ["fast-rng", "serde", "v4"] }
-zone-alloc = { version = "0.4.4", features = ["std", "may-dangle"] }
-zone-alloc-strong-handle-derive = "0.1"
 
 # Error handling.
 anyhow = "1.0"
@@ -60,7 +60,7 @@ thiserror = "2.0"
 rmp-serde = "1.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-serde_string_enum = "0.2"
+serde_string_enum = { version = "0.2", default-features = false, features = ["alloc", "unicase"] }
 
 # Async.
 async-scoped = { version = "0.9", features = ["use-tokio"] }
@@ -95,9 +95,9 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 
 # Crates residing within this repository.
-battler-choice = "0.1"
-battler-data = "0.1"
-battler-prng = "0.1"
+battler-choice = { path = "./battler-choice", default-features = false }
+battler-data = { path = "./battler-data", default-features = false }
+battler-prng = { path = "./battler-prng", default-features = false, features = ["alloc"] }
 battler-wamp = "0.5"
 battler-wamp-uri = "0.1"
 battler-wamp-values = "~0.2.2"

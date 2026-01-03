@@ -1,5 +1,6 @@
-use std::{
-    mem,
+use alloc::{
+    format,
+    string::String,
     sync::Arc,
 };
 
@@ -130,7 +131,7 @@ impl EffectManager {
 
         // SAFETY: Effects are guaranteed to live at least through this turn. We only detach the
         // lifetime of this reference for looking up parsed callbacks in the EffectManager.
-        let effect: Effect = unsafe { mem::transmute(effect) };
+        let effect = unsafe { core::mem::transmute::<Effect<'_>, Effect<'_>>(effect) };
 
         let id = if effect.unlinked() {
             effect_handle.unlinked_fxlang_id().wrap_expectation_with_format(format_args!("unlinked effect {effect_handle:?} does not have an unlinked fxlang id for callback caching"))?

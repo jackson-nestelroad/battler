@@ -1,3 +1,13 @@
+use alloc::{
+    borrow::ToOwned,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
+};
+
 use anyhow::Result;
 use battler_data::{
     Boost,
@@ -214,7 +224,7 @@ fn forme_change_internal(
         target: Some(context.target_handle()),
         source_effect: with_effect.then(|| context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("species:{species}")],
+        additional: Vec::from_iter([format!("species:{species}")]),
         ..Default::default()
     };
     effect_activation(context.as_battle_context_mut(), header, activation)
@@ -278,7 +288,7 @@ pub fn terastallize(context: &mut ApplyingEffectContext, typ: Type) -> Result<()
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         source: context.source_handle(),
-        additional: vec![format!("type:{typ}")],
+        additional: Vec::from_iter([format!("type:{typ}")]),
         ..Default::default()
     };
     effect_activation(
@@ -554,7 +564,7 @@ pub fn cure_status(
             None
         },
         source: context.source_handle(),
-        additional: vec![format!("status:{status}")],
+        additional: Vec::from_iter([format!("status:{status}")]),
         ..Default::default()
     };
     effect_activation(
@@ -575,7 +585,7 @@ pub fn add_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Resul
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("volatile:{volatile}")],
+        additional: Vec::from_iter([format!("volatile:{volatile}")]),
         ..Default::default()
     };
     effect_activation(
@@ -596,7 +606,7 @@ pub fn remove_volatile(context: &mut ApplyingEffectContext, volatile: &Id) -> Re
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("volatile:{volatile}")],
+        additional: Vec::from_iter([format!("volatile:{volatile}")]),
         ..Default::default()
     };
     effect_activation(
@@ -617,7 +627,7 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         side: Some(context.side().index),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("condition:{condition}")],
+        additional: Vec::from_iter([format!("condition:{condition}")]),
         ..Default::default()
     };
     effect_activation(
@@ -638,7 +648,7 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
         side: Some(context.side().index),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("condition:{condition}")],
+        additional: Vec::from_iter([format!("condition:{condition}")]),
         ..Default::default()
     };
     effect_activation(
@@ -664,7 +674,7 @@ pub fn add_slot_condition(
         slot: Some(slot),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("condition:{condition}")],
+        additional: Vec::from_iter([format!("condition:{condition}")]),
         ..Default::default()
     };
     effect_activation(
@@ -690,7 +700,7 @@ pub fn remove_slot_condition(
         slot: Some(slot),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("condition:{condition}")],
+        additional: Vec::from_iter([format!("condition:{condition}")]),
         ..Default::default()
     };
     effect_activation(
@@ -712,7 +722,7 @@ pub fn type_change(
         ignore_active_move_source_effect: true,
         source_effect: effect,
         source,
-        additional: vec![format!("types:{types}")],
+        additional: Vec::from_iter([format!("types:{types}")]),
         ..Default::default()
     };
     effect_activation(
@@ -737,7 +747,7 @@ pub fn transform(context: &mut ApplyingEffectContext, target: MonHandle) -> Resu
         ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("into:{into}"), format!("species:{species}")],
+        additional: Vec::from_iter([format!("into:{into}"), format!("species:{species}")]),
         ..Default::default()
     };
     effect_activation(
@@ -760,7 +770,7 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("ability:{ability}")],
+        additional: Vec::from_iter([format!("ability:{ability}")]),
         ..Default::default()
     };
     effect_activation(
@@ -783,7 +793,7 @@ pub fn ability_end(context: &mut ApplyingEffectContext) -> Result<()> {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("ability:{ability}")],
+        additional: Vec::from_iter([format!("ability:{ability}")]),
         ..Default::default()
     };
     effect_activation(
@@ -811,7 +821,7 @@ pub fn item(context: &mut ApplyingEffectContext) -> Result<()> {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("item:{item}")],
+        additional: Vec::from_iter([format!("item:{item}")]),
         ..Default::default()
     };
     effect_activation(
@@ -840,7 +850,7 @@ pub fn item_end(
         .name
         .clone();
 
-    let mut additional = vec![format!("item:{item}")];
+    let mut additional = Vec::from_iter([format!("item:{item}")]);
     if silent {
         additional.push("silent".to_owned());
     }
@@ -946,7 +956,7 @@ pub fn boost(
         (-delta as u8, "unboost")
     };
 
-    let mut additional = vec![format!("stat:{boost}"), format!("by:{delta}")];
+    let mut additional = Vec::from_iter([format!("stat:{boost}"), format!("by:{delta}")]);
 
     if original_delta >= 12 {
         additional.push("max".to_owned());
@@ -1096,7 +1106,7 @@ pub fn deduct_pp(context: &mut ApplyingEffectContext, move_id: &Id, delta: u8) -
         ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("by:{delta}")],
+        additional: Vec::from_iter([format!("by:{delta}")]),
         ..Default::default()
     };
     effect_activation(
@@ -1113,7 +1123,7 @@ pub fn restore_pp(context: &mut ApplyingEffectContext, move_id: &Id, delta: u8) 
         ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("by:{delta}")],
+        additional: Vec::from_iter([format!("by:{delta}")]),
         ..Default::default()
     };
     effect_activation(
@@ -1130,7 +1140,7 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
         ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: vec![format!("to:{pp}")],
+        additional: Vec::from_iter([format!("to:{pp}")]),
         ..Default::default()
     };
     effect_activation(
@@ -1180,7 +1190,7 @@ pub fn catch_failed(
     shakes: u8,
     critical: bool,
 ) -> Result<()> {
-    let mut additional = vec![format!("shakes:{shakes}")];
+    let mut additional = Vec::from_iter([format!("shakes:{shakes}")]);
     if critical {
         additional.push("critical".to_owned());
     }
@@ -1205,7 +1215,7 @@ pub fn catch(
     shakes: u8,
     critical: bool,
 ) -> Result<()> {
-    let mut additional = vec![format!("shakes:{shakes}")];
+    let mut additional = Vec::from_iter([format!("shakes:{shakes}")]);
     if critical {
         additional.push("critical".to_owned());
     }

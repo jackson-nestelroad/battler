@@ -1,4 +1,5 @@
-use std::{
+use alloc::boxed::Box;
+use core::{
     borrow::Borrow,
     hash::{
         Hash,
@@ -13,10 +14,7 @@ use std::{
     },
 };
 
-use ahash::{
-    HashMap,
-    HashMapExt,
-};
+use hashbrown::HashMap;
 
 /// A reference to a key.
 #[derive(Eq)]
@@ -448,6 +446,11 @@ unsafe impl<'a, K: Sync, V: Sync> Sync for IterMut<'a, K, V> {}
 
 #[cfg(test)]
 mod lru_cache_test {
+    use alloc::{
+        vec,
+        vec::Vec,
+    };
+
     use crate::common::LruCache;
 
     #[test]

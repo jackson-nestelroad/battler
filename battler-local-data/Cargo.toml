@@ -1,0 +1,18 @@
+[package]
+name = "battler-local-data"
+version = "0.1.0"
+edition = "2024"
+description = "Local DataStore implementation for battler."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-local-data"
+
+[dependencies]
+ahash = { workspace = true }
+anyhow = { workspace = true }
+battler-data = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]

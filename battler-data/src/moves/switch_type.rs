@@ -1,8 +1,7 @@
-use std::{
-    fmt::{
-        self,
-        Display,
-    },
+use alloc::format;
+use core::{
+    fmt,
+    fmt::Display,
     str::FromStr,
 };
 

@@ -1,17 +1,22 @@
-use std::{
+use alloc::{
     borrow::{
-        Borrow,
         Cow,
+        ToOwned,
     },
+    boxed::Box,
+    string::String,
+};
+use core::{
+    borrow::Borrow,
+    fmt,
     fmt::{
-        self,
         Debug,
         Display,
     },
     hash::Hash,
-    sync::LazyLock,
 };
 
+use once_cell::race::OnceBox;
 use regex::Regex;
 use serde::{
     Deserialize,
@@ -192,9 +197,12 @@ pub trait Identifiable {
 ///
 /// IDs must have lowercase alphanumeric characters. Non-alphanumeric characters are removed.
 fn normalize_id(id: &str) -> Id {
-    static PATTERN: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[^a-z0-9]").unwrap());
+    static PATTERN: OnceBox<Regex> = OnceBox::new();
 
-    match PATTERN.replace_all(&id.to_ascii_lowercase(), "") {
+    match PATTERN
+        .get_or_init(|| Box::new(Regex::new(r"[^a-z0-9]").unwrap()))
+        .replace_all(&id.to_ascii_lowercase(), "")
+    {
         // There is an optimization to be done here. If this is a &'static str, we can save it
         // without owning it. However, this code is shared for all &str, so we cannot make the
         // distinction as is.

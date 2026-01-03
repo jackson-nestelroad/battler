@@ -1,4 +1,13 @@
-use std::{
+use alloc::{
+    borrow::ToOwned,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
+};
+use core::{
     cmp::Ordering,
     fmt::{
         self,
@@ -7,7 +16,6 @@ use std::{
     str::FromStr,
 };
 
-use ahash::HashMap;
 use anyhow::{
     Error,
     Result,
@@ -34,6 +42,7 @@ use battler_data::{
     StatTable,
     Type,
 };
+use hashbrown::HashMap;
 use num::traits::{
     WrappingAdd,
     WrappingMul,

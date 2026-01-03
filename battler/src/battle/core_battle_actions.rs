@@ -1,12 +1,11 @@
-use std::{
-    collections::hash_map::Entry,
-    sync::LazyLock,
+use alloc::{
+    borrow::ToOwned,
+    boxed::Box,
+    format,
+    string::ToString,
+    vec::Vec,
 };
 
-use ahash::{
-    HashMap,
-    HashSet,
-};
 use anyhow::Result;
 use battler_data::{
     Boost,
@@ -30,6 +29,11 @@ use battler_data::{
     Type,
 };
 use battler_prng::rand_util;
+use hashbrown::{
+    HashMap,
+    HashSet,
+    hash_map::Entry,
+};
 
 use crate::{
     battle::{
@@ -1012,17 +1016,13 @@ fn prepare_direct_move_against_targets(
     context: &mut ActiveMoveContext,
     targets: &mut [MoveStepOutcomeOnTarget],
 ) -> Result<()> {
-    static STEPS: LazyLock<Vec<direct_move_step::DirectMoveStep>> = LazyLock::new(|| {
-        vec![
-            direct_move_step::check_targets_invulnerability,
-            direct_move_step::check_try_hit_event,
-            direct_move_step::check_type_immunity,
-            direct_move_step::check_general_immunity,
-            direct_move_step::handle_accuracy,
-        ]
-    });
-
-    for step in &*STEPS {
+    for step in [
+        direct_move_step::check_targets_invulnerability,
+        direct_move_step::check_try_hit_event,
+        direct_move_step::check_type_immunity,
+        direct_move_step::check_general_immunity,
+        direct_move_step::handle_accuracy,
+    ] {
         step(context, targets)?;
     }
 
@@ -1112,7 +1112,7 @@ fn move_hit_loop(
         .iter()
         .map(|target| MoveStepOutcomeOnTarget::new(*target))
         .collect::<Vec<_>>();
-    let mut target_hit_results = HashMap::default();
+    let mut target_hit_results = HashMap::new();
 
     for hit in 0..hits {
         // No more targets.
@@ -1853,7 +1853,7 @@ pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -
 }
 
 mod direct_move_step {
-    use std::ops::Mul;
+    use core::ops::Mul;
 
     use anyhow::Result;
     use battler_data::{
@@ -1881,6 +1881,7 @@ mod direct_move_step {
     };
 
     /// The interface for any direct move step.
+    #[allow(unused)]
     pub type DirectMoveStep =
         fn(&mut ActiveMoveContext, &mut [MoveStepOutcomeOnTarget]) -> Result<()>;
 

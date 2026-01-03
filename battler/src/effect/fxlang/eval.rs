@@ -1,6 +1,12 @@
-use std::{
+use alloc::{
+    borrow::ToOwned,
     collections::VecDeque,
-    mem,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
 };
 
 use anyhow::{
@@ -356,8 +362,12 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
             let context = self.effect_context_mut();
             // SAFETY: We are shortening the lifetimes of this context to the lifetime of this
             // object.
-            let context: &'eval mut EffectContext<'eval, 'battle, 'data> =
-                unsafe { mem::transmute(context) };
+            let context = unsafe {
+                core::mem::transmute::<
+                    &mut EffectContext<'_, '_, '_>,
+                    &'eval mut EffectContext<'eval, 'battle, 'data>,
+                >(context)
+            };
             return Ok(context.into());
         }
         Ok(self
@@ -1392,7 +1402,7 @@ where
         // we promote this reference to its lifetime.
         //
         // An added bonus is that we know we only use this value for an immutable operation.
-        let value_ref: ValueRef<'eval> = unsafe { mem::transmute(value_ref) };
+        let value_ref = unsafe { core::mem::transmute::<ValueRef<'_>, ValueRef<'eval>>(value_ref) };
         Ok(ValueRefToStoredValue::new(self.stored, value_ref))
     }
 }
@@ -1971,7 +1981,11 @@ impl<'event_state> Evaluator<'event_state> {
                     // This list value can only potentially contain a reference to a stored
                     // variable. If so, we are also storing the object that does runtime borrow
                     // checking, so borrow errors will trigger during evaluation.
-                    let list: MaybeReferenceValue = unsafe { mem::transmute(list) };
+                    let list = unsafe {
+                        core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'_>>(
+                            list,
+                        )
+                    };
                     for i in 0..len {
                         let current_item = list.list_index(i).wrap_expectation_with_format(format_args!(
                             "list has no element at index {i}, but length at beginning of foreach loop was {len}"
@@ -2077,7 +2091,9 @@ impl<'event_state> Evaluator<'event_state> {
                 // value. If it is a reference to the variable that is being assigned to, the
                 // program evaluation will error out because the variable registry has runtime
                 // borrow checking. Thus, we allow the context to be borrowed again.
-                let value = unsafe { mem::transmute(value) };
+                let value = unsafe {
+                    core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'_>>(value)
+                };
                 self.assign_var(context, &assignment.lhs, value)?;
                 Ok(ProgramStatementEvalResult::None)
             }
@@ -2236,7 +2252,11 @@ impl<'event_state> Evaluator<'event_state> {
                     let value_for_operation = MaybeReferenceValueForOperation::from(&value);
                     let result = Self::evaluate_prefix_operator(*op, value_for_operation)?;
                     // SAFETY: `value_for_operation` was consumed by `evaluate_prefix_operator`.
-                    let result: MaybeReferenceValue<'eval> = unsafe { mem::transmute(result) };
+                    let result = unsafe {
+                        core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'eval>>(
+                            result,
+                        )
+                    };
                     value = result;
                 }
                 Ok(value)
@@ -2245,7 +2265,9 @@ impl<'event_state> Evaluator<'event_state> {
                 let value = self.evaluate_expr(context, binary_expr.lhs.as_ref())?;
                 // SAFETY: `context` is not really borrowed mutably when we hold an immutable
                 // reference to some value in the battle or evaluation state.
-                let mut value: MaybeReferenceValue = unsafe { mem::transmute(value) };
+                let mut value = unsafe {
+                    core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'_>>(value)
+                };
                 for rhs_expr in &binary_expr.rhs {
                     let lhs = MaybeReferenceValueForOperation::from(&value);
 
@@ -2255,10 +2277,12 @@ impl<'event_state> Evaluator<'event_state> {
                     // accessing it.
                     match (&lhs, rhs_expr.op) {
                         (MaybeReferenceValueForOperation::Boolean(true), tree::Operator::Or) => {
+                            drop(lhs);
                             value = MaybeReferenceValue::Boolean(true);
                             continue;
                         }
                         (MaybeReferenceValueForOperation::Boolean(false), tree::Operator::And) => {
+                            drop(lhs);
                             value = MaybeReferenceValue::Boolean(false);
                             continue;
                         }
@@ -2269,7 +2293,11 @@ impl<'event_state> Evaluator<'event_state> {
                     let rhs = MaybeReferenceValueForOperation::from(&rhs_value);
                     let result = Self::evaluate_binary_operator(lhs, rhs_expr.op, rhs)?;
                     // SAFETY: Both `lhs` and `rhs` were consumed by `evaluate_binary_operator`.
-                    let result: MaybeReferenceValue<'eval> = unsafe { mem::transmute(result) };
+                    let result = unsafe {
+                        core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'eval>>(
+                            result,
+                        )
+                    };
                     value = result;
                 }
                 Ok(value)
@@ -2392,7 +2420,9 @@ impl<'event_state> Evaluator<'event_state> {
             // SAFETY: It is safe to have an immutable reference into the battle state. The
             // context is not really borrowed mutably.
             let value = self.resolve_value(context, value)?;
-            let value: MaybeReferenceValue<'eval> = unsafe { mem::transmute(value) };
+            let value = unsafe {
+                core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'eval>>(value)
+            };
             resolved.push(value);
         }
         Ok(resolved)

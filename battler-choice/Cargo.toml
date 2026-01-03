@@ -9,11 +9,10 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-aichoice"
 
 [dependencies]
-anyhow = { workspace = true }
-itertools = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-thiserror = { workspace = true }
+anyhow = { version = "1.0", default-features = false }
+itertools = { version = "0.14", default-features = false, features = ["use_alloc"] }
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
+thiserror = { version = "2.0", default-features = false }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

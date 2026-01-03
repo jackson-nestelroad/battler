@@ -1,4 +1,5 @@
 mod captures;
+mod clock;
 mod lru;
 mod maybe_owned;
 mod reference;
@@ -6,6 +7,9 @@ mod strings;
 mod test_util;
 
 pub use captures::Captures;
+pub use clock::Clock;
+#[cfg(feature = "std")]
+pub use clock::system_time_clock::SystemTimeClock;
 pub use lru::{
     Iter,
     IterMut,
@@ -22,8 +26,6 @@ pub use reference::{
 pub use strings::split_once_optional;
 #[cfg(test)]
 pub use test_util::{
-    read_test_cases,
-    read_test_json,
     test_deserialization,
     test_serialization,
     test_string_deserialization,

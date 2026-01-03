@@ -1,5 +1,3 @@
-use std::mem;
-
 use anyhow::Result;
 use battler_data::{
     HitEffect,
@@ -276,8 +274,14 @@ impl<'context, 'battle, 'data> SideContext<'context, 'battle, 'data> {
     ) -> Result<Self> {
         // SAFETY: No side is added or removed for the duration of the battle.
         let foe_side = side ^ 1;
-        let side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(side)?) };
-        let foe_side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(foe_side)?) };
+        let side = unsafe {
+            core::mem::transmute::<&mut Side, &mut Side>(&mut *context.battle_mut().side_mut(side)?)
+        };
+        let foe_side = unsafe {
+            core::mem::transmute::<&mut Side, &mut Side>(
+                &mut *context.battle_mut().side_mut(foe_side)?,
+            )
+        };
         Ok(Self {
             context: context.into(),
             side,
@@ -392,8 +396,11 @@ impl<'side, 'context, 'battle, 'data> PlayerContext<'side, 'context, 'battle, 'd
         player: usize,
     ) -> Result<Self> {
         // SAFETY: Players are not added or removed for the duration of the battle.
-        let player: &mut Player =
-            unsafe { mem::transmute(&mut *context.battle_mut().player_mut(player)?) };
+        let player = unsafe {
+            core::mem::transmute::<&mut Player, &mut Player>(
+                &mut *context.battle_mut().player_mut(player)?,
+            )
+        };
         let context = SideContext::new(context, player.side)?;
         Ok(Self {
             context: context.into(),
@@ -1539,7 +1546,8 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
         // that empties after two turns. The reference can be borrowed as long as the element
         // reference exists in the root context. We ensure that element references are
         // borrowed for the lifetime of the root context.
-        let effect: Effect = unsafe { mem::transmute(effect) };
+        let effect: Effect =
+            unsafe { core::mem::transmute::<Effect<'_>, Effect<'context>>(effect) };
         Ok(Self {
             context,
             effect,
@@ -1971,7 +1979,11 @@ impl<'effect, 'context, 'battle, 'data> PlayerEffectContext<'effect, 'context, '
         source_handle: Option<MonHandle>,
     ) -> Result<Self> {
         // SAFETY: No player is added or removed for the duration of the battle.
-        let player = unsafe { mem::transmute(&mut *context.battle_mut().player_mut(player)?) };
+        let player = unsafe {
+            core::mem::transmute::<&mut Player, &mut Player>(
+                &mut *context.battle_mut().player_mut(player)?,
+            )
+        };
         let source = match source_handle {
             None => None,
             Some(source_handle) => {
@@ -2159,7 +2171,9 @@ impl<'effect, 'context, 'battle, 'data> SideEffectContext<'effect, 'context, 'ba
         source_handle: Option<MonHandle>,
     ) -> Result<Self> {
         // SAFETY: No side is added or removed for the duration of the battle.
-        let side = unsafe { mem::transmute(&mut *context.battle_mut().side_mut(side)?) };
+        let side = unsafe {
+            core::mem::transmute::<&mut Side, &mut Side>(&mut *context.battle_mut().side_mut(side)?)
+        };
         let source = match source_handle {
             None => None,
             Some(source_handle) => {

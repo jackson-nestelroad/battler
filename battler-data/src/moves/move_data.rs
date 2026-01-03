@@ -1,4 +1,9 @@
-use ahash::HashSet;
+use alloc::{
+    string::String,
+    vec::Vec,
+};
+
+use hashbrown::HashSet;
 use serde::{
     Deserialize,
     Serialize,
