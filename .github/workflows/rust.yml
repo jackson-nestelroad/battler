@@ -24,7 +24,7 @@ jobs:
       - name: Add target
         run: rustup target add thumbv7em-none-eabihf
       - name: Run build
-        run: cargo build -p battler --no-default-features --target thumbv7em-none-eabihf -Z build-std=core,alloc,compiler_builtins
+        run: cargo build -p battler -p battler-state --no-default-features --target thumbv7em-none-eabihf -Z build-std=core,alloc,compiler_builtins
 
   test-battler:
     name: Run battler tests
@@ -69,6 +69,28 @@ jobs:
         uses: ./.github/actions/rust
       - name: Run battler-service tests
         run: cargo test -p "battler-service*"
+
+  test-battler-state:
+    name: Run battler-state tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-client tests
+        run: cargo test -p battler-state
+
+  test-battler-state-no-std:
+    name: Run battler-state no_std tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-client tests
+        run: cargo test -p battler-state --no-default-features
 
   test-battler-client:
     name: Run battler-client tests

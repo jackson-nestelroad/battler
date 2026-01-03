@@ -557,19 +557,17 @@ mod trainer_test {
         TurnRequest,
     };
     use battler_calc_client_util::MonReference;
-    use battler_client::{
-        log::Log,
-        state::{
-            BattleState,
-            MonBattleAppearanceReference,
-            alter_battle_state,
-        },
-    };
     use battler_local_data::LocalDataStore;
     use battler_prng::PseudoRandomNumberGenerator;
     use battler_service::{
         BattleServiceOptions,
         BattlerService,
+    };
+    use battler_state::{
+        BattleState,
+        Log,
+        MonBattleAppearanceReference,
+        alter_battle_state,
     };
     use battler_test_utils::{
         ControlledRandomNumberGenerator,

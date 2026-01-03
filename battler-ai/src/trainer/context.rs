@@ -31,14 +31,12 @@ use battler_calc_client_util::{
     MonReference,
     move_simulator_input_from_battle_state,
 };
-use battler_client::{
-    state::{
-        BattleState,
-        MonBattleAppearanceReference,
-    },
-    state_util::side_or_else,
-};
 use battler_prng::PseudoRandomNumberGenerator;
+use battler_state::{
+    BattleState,
+    MonBattleAppearanceReference,
+    side_or_else,
+};
 use futures_util::lock::Mutex;
 
 use crate::trainer::common::{

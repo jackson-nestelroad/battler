@@ -9,7 +9,7 @@ use battler::{
     Request,
 };
 use battler_choice::Choice;
-use battler_client::state::BattleState;
+use battler_state::BattleState;
 use itertools::Itertools;
 use uuid::Uuid;
 

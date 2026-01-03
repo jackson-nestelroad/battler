@@ -21,6 +21,7 @@ uuid = { workspace = true }
 battler = { path = "../battler" }
 battler-service = { path = "../battler-service" }
 battler-service-client = { path = "../battler-service-client" }
+battler-state = { path = "../battler-state" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

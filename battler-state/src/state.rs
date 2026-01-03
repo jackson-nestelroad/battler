@@ -1,20 +1,24 @@
-use std::{
+use alloc::{
+    borrow::ToOwned,
+    boxed::Box,
     collections::{
         BTreeMap,
         BTreeSet,
         VecDeque,
     },
-    usize,
+    format,
+    string::String,
+    vec::Vec,
 };
 
-use ahash::{
-    HashMap,
-    HashSet,
-};
 use anyhow::{
     Context,
     Error,
     Result,
+};
+use hashbrown::{
+    HashMap,
+    HashSet,
 };
 use serde::{
     Deserialize,
@@ -22,17 +26,13 @@ use serde::{
 };
 
 use crate::{
-    discovery::{
-        DiscoveryRequired,
-        DiscoveryRequiredSet,
-    },
-    log::{
-        EffectName,
-        Log,
-        LogEntry,
-        MonName,
-        MonNameList,
-    },
+    DiscoveryRequired,
+    DiscoveryRequiredSet,
+    EffectName,
+    Log,
+    LogEntry,
+    MonName,
+    MonNameList,
     ui,
 };
 
@@ -334,7 +334,7 @@ impl MonBattleAppearanceWithRecovery {
 
     fn switch_in(&mut self) {
         let mut taken = Self::default();
-        std::mem::swap(self, &mut taken);
+        core::mem::swap(self, &mut taken);
         *self = match taken {
             Self::Inactive(appearance) => Self::Active {
                 primary_battle_appearance: appearance.clone(),
@@ -347,7 +347,7 @@ impl MonBattleAppearanceWithRecovery {
 
     fn switch_out(&mut self) {
         let mut taken = Self::default();
-        std::mem::swap(self, &mut taken);
+        core::mem::swap(self, &mut taken);
         *self = match taken {
             Self::Inactive(appearance) => Self::Inactive(appearance),
             Self::Active {
@@ -367,7 +367,7 @@ impl MonBattleAppearanceWithRecovery {
             } => {
                 *primary_battle_appearance = battle_appearance_up_to_last_switch_out.clone();
                 let mut out = MonBattleAppearance::default();
-                std::mem::swap(&mut out, battle_appearance_from_last_switch_in);
+                core::mem::swap(&mut out, battle_appearance_from_last_switch_in);
                 out
             }
         }
@@ -946,7 +946,7 @@ impl Side {
             // SAFETY: other_mon_index is an index into player.mons.
             let other_mon = player.mons.get_mut(replace_index).unwrap();
             let mut battle_appearances = VecDeque::default();
-            std::mem::swap(&mut battle_appearances, &mut other_mon.battle_appearances);
+            core::mem::swap(&mut battle_appearances, &mut other_mon.battle_appearances);
 
             // SAFETY: Index is always less than player.mons.len().
             let mon = player.mons.get_mut(mon_index).unwrap();
@@ -1024,7 +1024,7 @@ impl Field {
                     .enumerate()
                     .filter_map(|(i, val)| val.clone().map(|val| (i, val))),
             ),
-            None => Box::new(std::iter::empty()),
+            None => Box::new(core::iter::empty()),
         }
     }
 
@@ -1498,7 +1498,7 @@ fn modify_state_from_effect(
                     .cloned()
                     .collect::<Vec<_>>()
                 {
-                    if let std::collections::btree_map::Entry::Occupied(entry) =
+                    if let alloc::collections::btree_map::Entry::Occupied(entry) =
                         mon.volatile_data.stat_boosts.entry(stat)
                         && *entry.get() < 0
                     {
@@ -2367,13 +2367,18 @@ fn alter_battle_state_for_entry(
 
 #[cfg(test)]
 mod state_test {
-    use std::collections::{
-        BTreeMap,
-        BTreeSet,
-        VecDeque,
+    use alloc::{
+        borrow::ToOwned,
+        collections::{
+            BTreeMap,
+            BTreeSet,
+            VecDeque,
+        },
+        string::String,
+        vec::Vec,
     };
 
-    use ahash::{
+    use hashbrown::{
         HashMap,
         HashSet,
     };

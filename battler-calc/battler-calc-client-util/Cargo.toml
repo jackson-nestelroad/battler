@@ -14,6 +14,7 @@ anyhow = { workspace = true }
 battler = { path = "../../battler" }
 battler-calc = { path = ".." }
 battler-client = { path = "../../battler-client" }
+battler-state = { path = "../../battler-state" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

@@ -7,6 +7,12 @@ use anyhow::{
 };
 use battler_service::Battle;
 use battler_service_client::BattlerServiceClient;
+use battler_state::{
+    BattlePhase,
+    BattleState,
+    Log,
+    alter_battle_state,
+};
 use futures_util::lock::Mutex;
 use thiserror::Error;
 use tokio::{
@@ -18,15 +24,6 @@ use tokio::{
     task::JoinSet,
 };
 use uuid::Uuid;
-
-use crate::{
-    log::Log,
-    state::{
-        BattlePhase,
-        BattleState,
-        alter_battle_state,
-    },
-};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Role {

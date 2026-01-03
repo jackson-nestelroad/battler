@@ -1,11 +1,17 @@
-use std::str::FromStr;
+use alloc::{
+    borrow::ToOwned,
+    format,
+    string::String,
+    vec::Vec,
+};
+use core::str::FromStr;
 
-use ahash::HashMap;
 use anyhow::{
     Context,
     Error,
     Result,
 };
+use hashbrown::HashMap;
 
 use crate::ui::Effect;
 
@@ -313,6 +319,8 @@ impl Log {
 
 #[cfg(test)]
 mod log_test {
+    use alloc::vec::Vec;
+
     use crate::log::{
         Log,
         LogEntry,

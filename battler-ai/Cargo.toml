@@ -30,6 +30,7 @@ battler-calc = { path = "../battler-calc" }
 battler-calc-client-util = { path = "../battler-calc/battler-calc-client-util" }
 battler-client = { path = "../battler-client" }
 battler-local-data = { path = "../battler-local-data" }
+battler-state = { path = "../battler-state" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
