@@ -1,4 +1,8 @@
-use std::str::FromStr;
+use alloc::{
+    boxed::Box,
+    vec::Vec,
+};
+use core::str::FromStr;
 
 use anyhow::{
     Error,
@@ -11,7 +15,7 @@ use battler::{
     Type,
 };
 
-use crate::state::{
+use crate::{
     BattleState,
     Mon,
     MonBattleAppearance,
@@ -322,10 +326,14 @@ pub fn mon_active_position<'s>(
 
 #[cfg(test)]
 mod state_util_test {
-    use std::collections::{
-        BTreeMap,
-        BTreeSet,
-        VecDeque,
+    use alloc::{
+        borrow::ToOwned,
+        collections::{
+            BTreeMap,
+            BTreeSet,
+            VecDeque,
+        },
+        vec::Vec,
     };
 
     use battler::{

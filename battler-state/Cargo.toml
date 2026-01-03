@@ -1,19 +1,29 @@
 [package]
-name = "battler-choice"
+name = "battler-state"
 version = "0.1.0"
 edition = "2024"
-description = "Choice serialization and deserialization for battler."
+description = "Client state for battles managed via battler."
 authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
 keywords = ["pokemon", "battle"]
 license = "MIT"
-repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-choice"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-state"
+
+[features]
+default = ["std"]
+
+std = [
+    "battler/std",
+]
 
 [dependencies]
 anyhow = { version = "1.0", default-features = false }
-itertools = { version = "0.14", default-features = false, features = ["use_alloc"] }
+hashbrown = { workspace = true }
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
-thiserror = { version = "2.0", default-features = false }
+
+battler = { path = "../battler", default-features = false }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
+
+battler-test-utils = { path = "../battler-test-utils" }

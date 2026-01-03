@@ -17,6 +17,7 @@ members = [
     "battler-service/battler-service-schema",
     "battler-service-client",
     "battler-service-producer",
+    "battler-state",
     "battler-test-utils",
     "battler-wamp",
     "battler-wamp/battler-wamp-uri",

@@ -19,29 +19,25 @@ use battler::{
     StatTable,
     Type,
 };
-use battler_client::{
-    state::{
-        BattleState,
-        ConditionData,
-        MonBattleAppearanceReference,
-    },
-    state_util::{
-        mon_ability,
-        mon_active_position,
-        mon_boosts,
-        mon_conditions,
-        mon_health,
-        mon_item,
-        mon_level,
-        mon_moves,
-        mon_or_else,
-        mon_status,
-        mon_types,
-        player_or_else,
-        side_conditions,
-        side_for_mon,
-        side_or_else,
-    },
+use battler_state::{
+    BattleState,
+    ConditionData,
+    MonBattleAppearanceReference,
+    mon_ability,
+    mon_active_position,
+    mon_boosts,
+    mon_conditions,
+    mon_health,
+    mon_item,
+    mon_level,
+    mon_moves,
+    mon_or_else,
+    mon_status,
+    mon_types,
+    player_or_else,
+    side_conditions,
+    side_for_mon,
+    side_or_else,
 };
 
 /// An reference to a Mon.
@@ -169,7 +165,7 @@ impl<'s, 'd> Mon<'s, 'd> {
         }
     }
 
-    pub fn active_mon_state(&self) -> Result<Option<&battler_client::state::Mon>> {
+    pub fn active_mon_state(&self) -> Result<Option<&battler_state::Mon>> {
         match self.active_state_reference()? {
             Some(reference) => mon_or_else(self.state, &reference).map(|mon| Some(mon)),
             None => Ok(None),
@@ -482,7 +478,7 @@ mod mon_test {
     use std::collections::BTreeMap;
 
     use battler::MonBattleData;
-    use battler_client::state::{
+    use battler_state::{
         BattleState,
         Field,
         MonBattleAppearanceReference,

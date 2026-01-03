@@ -1,7 +1,5 @@
-use std::{
-    borrow::Borrow,
-    collections::BTreeSet,
-};
+use alloc::collections::BTreeSet;
+use core::borrow::Borrow;
 
 use serde::{
     Deserialize,
@@ -49,7 +47,7 @@ where
     /// Takes the value, replacing this instance with a default, empty instance.
     pub fn take(&mut self) -> Self {
         let mut taken = Self::default();
-        std::mem::swap(self, &mut taken);
+        core::mem::swap(self, &mut taken);
         taken
     }
 }

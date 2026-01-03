@@ -9,7 +9,7 @@ use battler::{
     PlayerBattleData,
     Request,
 };
-use battler_client::state::BattleState;
+use battler_state::BattleState;
 use serde::{
     Deserialize,
     Serialize,

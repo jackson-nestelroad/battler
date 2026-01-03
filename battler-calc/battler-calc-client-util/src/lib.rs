@@ -20,14 +20,12 @@ use battler_calc::{
         *,
     },
 };
-use battler_client::{
-    state::BattleState,
-    state_util::{
-        field_conditions,
-        field_terrain,
-        field_weather,
-        side_conditions,
-    },
+use battler_state::{
+    BattleState,
+    field_conditions,
+    field_terrain,
+    field_weather,
+    side_conditions,
 };
 pub use mon::{
     Mon,
