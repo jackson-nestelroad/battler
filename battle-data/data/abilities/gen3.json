@@ -890,7 +890,7 @@
     "name": "Minus",
     "flags": [],
     "effect": {
-      "delegats": ["ability:plus"]
+      "delegates": ["ability:plus"]
     }
   },
   "forecast": {
