@@ -4057,7 +4057,7 @@
       "spd": 45,
       "spe": 15
     },
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "absorb": ["L1"],
       "afteryou": ["T"],
@@ -4144,7 +4144,7 @@
     },
     "prevo": "Sandygast",
     "evolution_data": { "method": "L", "condition": "", "level": 42 },
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "absorb": ["L1"],
       "afteryou": ["T"],

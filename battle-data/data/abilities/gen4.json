@@ -136,7 +136,7 @@
   },
   "simple": {
     "name": "Simple",
-    "flags": ["Breakable"],
+    "flags": ["Breakable", "NoSimpleBeam"],
     "effect": {
       "callbacks": {
         "on_change_boosts": [

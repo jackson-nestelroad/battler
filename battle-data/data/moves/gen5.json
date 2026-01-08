@@ -6,7 +6,13 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "acc": 1
+      }
+    }
   },
   "wideguard": {
     "name": "Wide Guard",
@@ -16,7 +22,29 @@
     "accuracy": "exempt",
     "priority": 3,
     "target": "AllySide",
-    "flags": ["NoMetronome", "Snatch"]
+    "flags": ["NoMetronome", "Snatch"],
+    "hit_effect": {
+      "side_condition": "wideguard"
+    },
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": ["return func_call(any_mon_will_move_this_turn)"],
+        "on_try_hit_side": ["add_volatile: $source stall"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "delegates": ["condition:weakenthroughprotectionmovebase"],
+      "callbacks": {
+        "on_side_start": ["log_single_turn: use_source with_target"],
+        "on_try_hit": [
+          "if !([alladjacent, alladjacentfoes] has $move.target):",
+          ["return"],
+          "log_activate: with_target",
+          "return stop"
+        ]
+      }
+    }
   },
   "guardsplit": {
     "name": "Guard Split",
@@ -25,7 +53,20 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Protect"]
+    "flags": ["Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$def = ($target.stats.def + $source.stats.def) / 2",
+          "$spd = ($target.stats.spd + $source.stats.spd) / 2",
+          "$target.stats.def = $def",
+          "$source.stats.def = $def",
+          "$target.stats.spd = $spd",
+          "$source.stats.spd = $spd",
+          "log_activate: with_target with_source"
+        ]
+      }
+    }
   },
   "powersplit": {
     "name": "Power Split",
@@ -34,7 +75,20 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Protect"]
+    "flags": ["Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$atk = ($target.stats.atk + $source.stats.atk) / 2",
+          "$spa = ($target.stats.spa + $source.stats.spa) / 2",
+          "$target.stats.atk = $atk",
+          "$source.stats.atk = $atk",
+          "$target.stats.spa = $spa",
+          "$source.stats.spa = $spa",
+          "log_activate: with_target with_source"
+        ]
+      }
+    }
   },
   "wonderroom": {
     "name": "Wonder Room",
@@ -43,7 +97,34 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Mirror"]
+    "flags": ["Mirror"],
+    "hit_effect": {
+      "pseudo_weather": "wonderroom"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_field_start": ["log_field_start: with_source"],
+        "on_field_restart": ["remove_pseudo_weather: $this.id", "return true"],
+        "on_field_end": ["log_field_end"],
+        "on_calculate_stat": [
+          "if $name == def:",
+          ["return $target.stats.spd"],
+          "if $name == spd:",
+          ["return $target.stats.def"]
+        ],
+        "on_use_move": [
+          "# Moves that use defense as the offensive stat must be modified.",
+          "if !$move.override_offensive_stat:",
+          ["return"],
+          "$stat = $move.override_offensive_stat",
+          "if $stat == def:",
+          ["$move.override_offensive_stat = spd"],
+          "else if $stat == spd:",
+          ["$move.override_offensive_stat = def"]
+        ]
+      }
+    }
   },
   "psyshock": {
     "name": "Psyshock",
@@ -64,7 +145,15 @@
     "accuracy": 100,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if [psn, tox] has $target.status:",
+          ["return $base_power * 2"]
+        ]
+      }
+    }
   },
   "autotomize": {
     "name": "Autotomize",
@@ -73,7 +162,24 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "spe": 2
+      }
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": ["return func_call(can_boost: $target 'spe:2')"],
+        "on_hit": [
+          "if $target.weight < 1000:",
+          ["$target.weight = 1"],
+          "else:",
+          ["$target.weight = $target.weight - 1000"],
+          "log_start"
+        ]
+      }
+    }
   },
   "ragepowder": {
     "name": "Rage Powder",
@@ -83,7 +189,13 @@
     "accuracy": "exempt",
     "priority": 2,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Powder"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Powder"],
+    "effect": {
+      "delegates": "move:followme"
+    },
+    "condition": {
+      "delegates": "movecondition:followme"
+    }
   },
   "telekinesis": {
     "name": "Telekinesis",
@@ -92,7 +204,37 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Gravity", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Gravity", "Mirror", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if func_call(has_pseudo_weather: gravity):",
+          ["do_not_animate_last_move", "log_cant", "return stop"]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 3,
+      "callbacks": {
+        "on_start": [
+          "# Check base species and the true base species (e.g., Diglett for Diglett-Alola) for immunity.",
+          "$base_species = func_call(base_species: $target)",
+          "if func_call(species_has_flag: $base_species notelekinesis) or func_call(species_has_flag: $target.base_species notelekinesis):",
+          ["log_immune: $target", "return false"],
+          "if func_call(has_volatile: $target smackdown) or func_call(has_volatile: $target ingrain):",
+          ["return false"],
+          "log_start"
+        ],
+        "is_grounded": ["return false"],
+        "on_accuracy_exempt": ["if !$move.ohko:", ["return false"]],
+        "on_update": [
+          "# Handle the case when Gengar Mega Evolves.",
+          "if !$mon.transformed and func_call(species_has_flag: $mon.base_species notelekinesis):",
+          ["remove_volatile: $mon $this.id"]
+        ],
+        "on_end": ["log_end"]
+      }
+    }
   },
   "magicroom": {
     "name": "Magic Room",
@@ -101,7 +243,28 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Mirror"]
+    "flags": ["Mirror"],
+    "hit_effect": {
+      "pseudo_weather": "magicroom"
+    },
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_field_start": [
+          "log_field_start",
+          "foreach $mon in func_call(all_active_mons_in_speed_order):",
+          ["end_item: $mon silent"]
+        ],
+        "on_field_restart": ["remove_pseudo_weather: $this.id", "return true"],
+        "suppress_mon_item": ["if $effect_state.started:", ["return true"]],
+        "on_prevent_used_items": ["return true"],
+        "on_field_end": [
+          "log_field_end",
+          "foreach $mon in func_call(all_active_mons_in_speed_order):",
+          ["start_item: $mon silent"]
+        ]
+      }
+    }
   },
   "smackdown": {
     "name": "Smack Down",
@@ -111,7 +274,29 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "smackdown"
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "if $target.is_grounded:",
+          ["return false"],
+          "if func_call(remove_volatile: $target fly) or func_call(remove_volatile: $target bounce):",
+          ["cancel_move: $target"],
+          "remove_volatile: $target magnetrise",
+          "remove_volatile: $target telekinesis",
+          "log_start"
+        ],
+        "on_restart": [
+          "run_event_on_mon_volatile: $this.id Start",
+          "return true"
+        ],
+        "is_grounded": ["if $effect_state.started:", ["return true"]]
+      }
+    }
   },
   "stormthrow": {
     "name": "Storm Throw",
@@ -132,7 +317,16 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "foreach $mon in func_call(adjacent_allies: $target):",
+          ["damage: $mon expr($mon.base_max_hp / 16) $this.condition"]
+        ],
+        "on_after_substitute_damage": ["run_event_on_move: Hit"]
+      }
+    }
   },
   "sludgewave": {
     "name": "Sludge Wave",
@@ -142,7 +336,8 @@
     "accuracy": 100,
     "base_power": 95,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [{ "chance": "10%", "target": { "status": "psn" } }]
   },
   "quiverdance": {
     "name": "Quiver Dance",
@@ -151,7 +346,14 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Dance", "Snatch"]
+    "flags": ["Dance", "Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "spa": 1,
+        "spd": 1,
+        "spe": 1
+      }
+    }
   },
   "heavyslam": {
     "name": "Heavy Slam",
@@ -161,7 +363,24 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 130 }
+    "max_move": { "base_power": 130 },
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$target_weight = $target.weight",
+          "$source_weight = $source.weight",
+          "if $source_weight >= $target_weight * 5:",
+          ["return 120"],
+          "if $source_weight >= $target_weight * 4:",
+          ["return 100"],
+          "if $source_weight >= $target_weight * 3:",
+          ["return 80"],
+          "if $source_weight >= $target_weight * 2:",
+          ["return 60"],
+          "return 40"
+        ]
+      }
+    }
   },
   "synchronoise": {
     "name": "Synchronoise",
@@ -171,7 +390,15 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_immunity": [
+          "if func_call(has_any_type: $target $source.effective_types):",
+          ["return true"]
+        ]
+      }
+    }
   },
   "electroball": {
     "name": "Electro Ball",
@@ -181,7 +408,28 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
-    "max_move": { "base_power": 130 }
+    "max_move": { "base_power": 130 },
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$target_speed = func_call(get_stat: $target spe)",
+          "$source_speed = func_call(get_stat: $source spe)",
+          "if $source_speed == 0:",
+          ["$ratio = 0"],
+          "else:",
+          ["$ratio = $source_speed / $target_speed"],
+          "if $ratio == 0:",
+          ["return 40"],
+          "if $ratio == 1:",
+          ["return 60"],
+          "if $ratio == 2:",
+          ["return 80"],
+          "if $ratio == 3:",
+          ["return 120"],
+          "return 150"
+        ]
+      }
+    }
   },
   "soak": {
     "name": "Soak",
@@ -190,7 +438,15 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $target.types == [water] or !func_call(set_types: $target water):",
+          ["log_fail: $target", "return false"]
+        ]
+      }
+    }
   },
   "flamecharge": {
     "name": "Flame Charge",
@@ -200,7 +456,16 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "user": {
+          "boosts": {
+            "spe": 1
+          }
+        }
+      }
+    ]
   },
   "coil": {
     "name": "Coil",
@@ -209,7 +474,14 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "def": 1,
+        "acc": 1
+      }
+    }
   },
   "lowsweep": {
     "name": "Low Sweep",
@@ -219,7 +491,16 @@
     "accuracy": 100,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
+      }
+    ]
   },
   "acidspray": {
     "name": "Acid Spray",
@@ -229,7 +510,16 @@
     "accuracy": 100,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"]
+    "flags": ["Bullet", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spd": -2
+          }
+        }
+      }
+    ]
   },
   "foulplay": {
     "name": "Foul Play",
@@ -249,7 +539,19 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability nosimplebeam):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "if !func_call(set_ability: $target simple):",
+          ["return false"]
+        ]
+      }
+    }
   },
   "entrainment": {
     "name": "Entrainment",
@@ -258,7 +560,21 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $target == $source or $target.dynamaxed:",
+          ["return false"],
+          "if $target.ability == $source.ability or func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noentrainment) or func_call(ability_has_flag: $source.ability noentrainmentuser):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "if !func_call(set_ability: $target $source.ability):",
+          ["return false"]
+        ]
+      }
+    }
   },
   "afteryou": {
     "name": "After You",
@@ -267,7 +583,18 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassMaxGuard", "BypassSubstitute", "NoMetronome"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "NoMetronome"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$action = func_call(pending_move_action_this_turn: $target)",
+          "if !$action:",
+          ["return false"],
+          "prioritize_move: $target",
+          "log_activate: with_target"
+        ]
+      }
+    }
   },
   "round": {
     "name": "Round",
@@ -277,7 +604,22 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $move.effect_state.source_effect == $this.id:",
+          ["return $move.base_power * 2"]
+        ],
+        "on_try_use_move": [
+          "for $action in func_call(pending_move_actions_this_turn):",
+          [
+            "if $action.id == $this.id:",
+            ["prioritize_move: $action.mon", "return"]
+          ]
+        ]
+      }
+    }
   },
   "echoedvoice": {
     "name": "Echoed Voice",
@@ -287,7 +629,33 @@
     "accuracy": 100,
     "base_power": 40,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "$pseudo_weather_effect_state = func_call(pseudo_weather_effect_state: $this.id)",
+          "if !$pseudo_weather_effect_state:",
+          ["return $move.base_power"],
+          "return $move.base_power * $pseudo_weather_effect_state.multiplier"
+        ],
+        "on_try_move": ["add_pseudo_weather: $this.id"]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_field_start": ["$effect_state.multiplier = 1"],
+        "on_field_restart": [
+          "# We are in a different turn if the duration changed.",
+          "if $effect_state.duration != 2:",
+          [
+            "$effect_state.duration = 2",
+            "if $effect_state.multiplier < 5:",
+            ["$effect_state.multiplier = $effect_state.multiplier + 1"]
+          ]
+        ]
+      }
+    }
   },
   "chipaway": {
     "name": "Chip Away",
@@ -309,7 +677,12 @@
     "accuracy": "exempt",
     "base_power": 50,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": ["clear_boosts: $target"]
+      }
+    }
   },
   "storedpower": {
     "name": "Stored Power",
@@ -320,7 +693,14 @@
     "base_power": 20,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "max_move": { "base_power": 130 }
+    "max_move": { "base_power": 130 },
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "return $move.base_power + 20 * $source.positive_boosts"
+        ]
+      }
+    }
   },
   "quickguard": {
     "name": "Quick Guard",
@@ -330,7 +710,29 @@
     "accuracy": "exempt",
     "priority": 3,
     "target": "AllySide",
-    "flags": ["NoMetronome", "Snatch"]
+    "flags": ["NoMetronome", "Snatch"],
+    "hit_effect": {
+      "side_condition": "quickguard"
+    },
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": ["return func_call(any_mon_will_move_this_turn)"],
+        "on_try_hit_side": ["add_volatile: $source stall"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "delegates": ["condition:weakenthroughprotectionmovebase"],
+      "callbacks": {
+        "on_side_start": ["log_single_turn: use_source with_target"],
+        "on_try_hit": [
+          "if $move.priority <= 0:",
+          ["return"],
+          "log_activate: with_target",
+          "return stop"
+        ]
+      }
+    }
   },
   "allyswitch": {
     "name": "Ally Switch",

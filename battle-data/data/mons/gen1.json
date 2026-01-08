@@ -5351,7 +5351,7 @@
       "spe": 95
     },
     "formes": ["Diglett-Alola"],
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "aerialace": ["M"],
       "ancientpower": ["E", "M"],
@@ -5448,7 +5448,7 @@
     "prevo": "Diglett",
     "evolution_data": { "method": "L", "condition": "", "level": 26 },
     "formes": ["Dugtrio-Alola"],
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "aerialace": ["M"],
       "astonish": ["L7"],
@@ -17208,7 +17208,7 @@
     "battle_only_forme": true,
     "required_items": ["Gengarite"],
     "changes_from": "Gengar",
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {}
   },
   "kangaskhanmega": {
@@ -18632,7 +18632,7 @@
       "spd": 45,
       "spe": 90
     },
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "aerialace": ["M"],
       "ancientpower": ["E"],
@@ -18718,7 +18718,7 @@
       "spd": 70,
       "spe": 110
     },
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "aerialace": ["M"],
       "astonish": ["L7"],

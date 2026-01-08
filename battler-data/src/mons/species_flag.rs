@@ -22,6 +22,9 @@ pub enum SpeciesFlag {
     #[string = "UltraBeast"]
     #[alias = "Ultra Beast"]
     UltraBeast,
+    /// Cannot be lifted with Telekinesis.
+    #[string = "NoTelekinesis"]
+    NoTelekinesis,
 }
 
 #[cfg(test)]

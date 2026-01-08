@@ -204,11 +204,11 @@
     "effect": {
       "callbacks": {
         "on_modify_species_catch_rate": [
-          "if $target.weight < 100:",
+          "if $target.weight < 1000:",
           ["if $catch_rate < 20:", ["return 0"], "return $catch_rate - 20"],
-          "if $target.weight < 200:",
+          "if $target.weight < 2000:",
           ["return $catch_rate"],
-          "if $target.weight < 300:",
+          "if $target.weight < 3000:",
           ["return $catch_rate + 20"],
           "return $catch_rate + 30"
         ]

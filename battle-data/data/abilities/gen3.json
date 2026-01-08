@@ -826,7 +826,7 @@
   },
   "truant": {
     "name": "Truant",
-    "flags": ["NoWorrySeed"],
+    "flags": ["NoSimpleBeam", "NoWorrySeed"],
     "effect": {
       "callbacks": {
         "on_start": [

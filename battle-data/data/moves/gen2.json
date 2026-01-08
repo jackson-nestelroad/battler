@@ -363,7 +363,7 @@
     },
     "condition": {
       "duration": 1,
-      "delegates": ["weakenthroughprotectionmovebase"],
+      "delegates": ["condition:weakenthroughprotectionmovebase"],
       "callbacks": {
         "on_start": ["log_single_turn: with_target"],
         "on_try_hit": {
@@ -371,7 +371,7 @@
           "program": [
             "if !func_call(move_has_flag: $move protect):",
             ["return"],
-            "log_activate",
+            "log_activate: with_target",
             "return stop"
           ]
         }
