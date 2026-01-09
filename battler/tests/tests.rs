@@ -391,6 +391,7 @@ mod moves {
 
     mod gen5 {
         mod sky_drop_test;
+        mod wide_guard_test;
     }
 }
 

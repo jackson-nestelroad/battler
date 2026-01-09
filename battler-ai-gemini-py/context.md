@@ -327,7 +327,7 @@ An item action is a string of the format `item $item(, $target_side_or_team_posi
 
 ## Choosing to Escape/Forfeit
 
-An escape action is a string of the format `escape`. A forfeit action is a strin of the format `forfeit`.
+An escape action is a string of the format `escape`. A forfeit action is a string of the format `forfeit`.
 
 You should very rarely choose to escape or forfeit, unless you have absolutely no way to win the battle.
 
