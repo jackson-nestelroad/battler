@@ -1,3 +1,4 @@
+mod context;
 mod effect;
 mod effect_state;
 mod eval;
@@ -9,7 +10,9 @@ mod program_parser;
 mod statement_parser;
 mod tree;
 mod value;
+mod variable;
 
+pub use context::EvaluationContext;
 pub use effect::{
     BattleEvent,
     BattleEventModifier,
@@ -29,7 +32,6 @@ pub use effect_state::{
     EffectStateConnector,
 };
 pub use eval::{
-    EvaluationContext,
     Evaluator,
     ProgramEvalResult,
     VariableInput,
@@ -50,4 +52,9 @@ pub use value::{
     ValueRefMut,
     ValueRefToStoredValue,
     ValueType,
+};
+pub use variable::{
+    Variable,
+    VariableMut,
+    VariableRegistry,
 };
