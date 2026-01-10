@@ -627,10 +627,10 @@
           "return stop"
         ],
         "on_hit_user": [
-          "# Remove Fire type from effective types.",
+          "# Remove Fire type.",
           "# Note that if we are forced into the Fire type (e.g., Terastallization), this has no effect.",
           "$types = []",
-          "for $type in $source.effective_types:",
+          "for $type in $source.types:",
           [
             "if $type == fire:",
             ["continue"],
