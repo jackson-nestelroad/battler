@@ -57,7 +57,10 @@ impl TestBattleBuilder {
                     players: Vec::new(),
                 },
             },
-            engine_options: CoreBattleEngineOptions::default(),
+            engine_options: CoreBattleEngineOptions {
+                log_time: false,
+                ..Default::default()
+            },
             teams: HashMap::default(),
             controlled_rng: false,
             infinite_bags: false,

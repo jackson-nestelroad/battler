@@ -156,15 +156,12 @@ fn wide_guard_succeeds_consecutively() {
     .unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    // Turn 1
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0;pass"), Ok(()));
 
-    // Turn 2
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0;pass"), Ok(()));
 
-    // Turn 3
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0;pass"), Ok(()));
 
@@ -177,11 +174,23 @@ fn wide_guard_succeeds_consecutively() {
             "activate|mon:Hitmonchan,player-1,2|move:Wide Guard",
             "resisted|mon:Samurott,player-2,2",
             "split|side:1",
+            "damage|mon:Samurott,player-2,2|health:122/155",
+            "damage|mon:Samurott,player-2,2|health:79/100",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Hitmonchan,player-1,1|name:Wide Guard",
+            "singleturn|mon:Hitmonchan,player-1,1|move:Wide Guard",
+            "move|mon:Samurott,player-2,1|name:Surf|spread:Samurott,player-2,2",
+            "activate|mon:Hitmonchan,player-1,1|move:Wide Guard",
+            "activate|mon:Hitmonchan,player-1,2|move:Wide Guard",
+            "resisted|mon:Samurott,player-2,2",
+            "split|side:1",
             "damage|mon:Samurott,player-2,2|health:92/155",
             "damage|mon:Samurott,player-2,2|health:60/100",
             "residual",
             "turn|turn:3",
-            ["time"],
+            "continue",
             "move|mon:Hitmonchan,player-1,1|name:Wide Guard",
             "singleturn|mon:Hitmonchan,player-1,1|move:Wide Guard",
             "move|mon:Samurott,player-2,1|name:Surf|spread:Samurott,player-2,2",
@@ -196,7 +205,7 @@ fn wide_guard_succeeds_consecutively() {
         ]"#,
     )
     .unwrap();
-    assert_logs_since_turn_eq(&battle, 2, &expected_logs);
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
 
 #[test]
@@ -228,7 +237,7 @@ fn protect_can_fail_after_wide_guard() {
             "damage|mon:Hitmonchan,player-1,1|health:80/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Hitmonchan,player-1,1|name:Protect|noanim",
             "fail|mon:Hitmonchan,player-1,1",
             "residual",

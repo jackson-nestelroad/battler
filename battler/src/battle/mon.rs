@@ -1189,6 +1189,7 @@ impl Mon {
                 fxlang::VariableInput::from_iter([fxlang::Value::Stat(stat)]),
             );
         }
+
         if !unboosted {
             let mut boosts = context.mon().volatile_state.boosts.clone();
 

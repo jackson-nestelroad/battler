@@ -113,15 +113,16 @@
           "if $name == spd:",
           ["return $target.stats.def"]
         ],
-        "on_use_move": [
-          "# Moves that use defense as the offensive stat must be modified.",
-          "if !$move.override_offensive_stat:",
-          ["return"],
-          "$stat = $move.override_offensive_stat",
-          "if $stat == def:",
-          ["$move.override_offensive_stat = spd"],
-          "else if $stat == spd:",
-          ["$move.override_offensive_stat = def"]
+        "on_modify_boosts": [
+          "# Moves that override the offensive stat to be a defense stat use the boosts for the swapped stat.",
+          "if $effect.is_defined and $effect.is_move and $effect.source == $target:",
+          [
+            "if $effect.override_offensive_stat == def:",
+            ["$boosts.def = $boosts.spd"],
+            "if $effect.override_offensive_stat == spd:",
+            ["$boosts.spd = $boosts.def"]
+          ],
+          "return $boosts"
         ]
       }
     }
