@@ -2692,14 +2692,13 @@ fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>
 
 fn set_types(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
-    let typ = context
+    let types = context
         .pop_front()
-        .wrap_expectation("missing type")?
-        .mon_type()
-        .wrap_error_with_message("invalid type")?;
+        .wrap_expectation("missing types")?
+        .types_list()
+        .wrap_error_with_message("invalid types")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
-    core_battle_actions::set_types(&mut context, Vec::from_iter([typ]))
-        .map(|val| Value::Boolean(val))
+    core_battle_actions::set_types(&mut context, types).map(|val| Value::Boolean(val))
 }
 
 fn set_weather(mut context: FunctionContext) -> Result<Value> {

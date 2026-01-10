@@ -442,7 +442,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if $target.types == [water] or !func_call(set_types: $target water):",
+          "if $target.types == [water] or !func_call(set_types: $target [water]):",
           ["log_fail: $target", "return false"]
         ]
       }

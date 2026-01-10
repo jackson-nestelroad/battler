@@ -1138,7 +1138,7 @@
           ["$type = grass"],
           "else if $field.environment == volcano:",
           ["$type = fire"],
-          "set_types: $target $type"
+          "set_types: $target [$type]"
         ]
       }
     }

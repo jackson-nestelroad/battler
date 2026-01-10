@@ -255,7 +255,7 @@
           "if $types.is_empty:",
           ["return false"],
           "$type = func_call(sample: $types)",
-          "return func_call(set_types: $source $type)"
+          "return func_call(set_types: $source [$type])"
         ]
       }
     }

@@ -2301,7 +2301,7 @@
           "$new_type = $target_move.type",
           "if func_call(has_type: $target $new_type):",
           ["return false"],
-          "return func_call(set_types: $target $new_type)"
+          "return func_call(set_types: $target [$new_type])"
         ]
       }
     }
