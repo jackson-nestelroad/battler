@@ -33,13 +33,13 @@ fn bulbasaur() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn ivysaur() -> Result<TeamData> {
+fn venusaur() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Ivysaur",
-                    "species": "Ivysaur",
+                    "name": "Venusaur",
+                    "species": "Venusaur",
                     "ability": "No Ability",
                     "moves": [],
                     "nature": "Hardy",
@@ -51,13 +51,13 @@ fn ivysaur() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn venusaur() -> Result<TeamData> {
+fn crustle() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Venusaur",
-                    "species": "Venusaur",
+                    "name": "Crustle",
+                    "species": "Crustle",
                     "ability": "No Ability",
                     "moves": [],
                     "nature": "Hardy",
@@ -135,42 +135,6 @@ fn heavy_ball_decreases_catch_rate_for_light_mon() {
 
 #[test]
 fn heavy_ball_does_not_modify_catch_rate_for_middle_weight_mon() {
-    let mut battle = make_battle(0, ivysaur().unwrap(), ivysaur().unwrap()).unwrap();
-    assert_matches::assert_matches!(battle.start(), Ok(()));
-
-    apply_rng(&mut battle, 38489);
-    assert_matches::assert_matches!(
-        battle.set_player_choice("protagonist", "item pokeball"),
-        Ok(())
-    );
-    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
-
-    apply_rng(&mut battle, 38489);
-    assert_matches::assert_matches!(
-        battle.set_player_choice("protagonist", "item heavyball"),
-        Ok(())
-    );
-    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
-
-    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "useitem|player:protagonist|name:Poké Ball|target:Ivysaur,wild,1",
-            "catchfailed|player:protagonist|mon:Ivysaur,wild,1|item:Poké Ball|shakes:3",
-            "residual",
-            "turn|turn:2",
-            ["time"],
-            "useitem|player:protagonist|name:Heavy Ball|target:Ivysaur,wild,1",
-            "catchfailed|player:protagonist|mon:Ivysaur,wild,1|item:Heavy Ball|shakes:3",
-            "residual",
-            "turn|turn:3"
-        ]"#,
-    )
-    .unwrap();
-    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
-}
-
-#[test]
-fn heavy_ball_increases_catch_rate_for_heavy_mon() {
     let mut battle = make_battle(0, venusaur().unwrap(), venusaur().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -181,7 +145,7 @@ fn heavy_ball_increases_catch_rate_for_heavy_mon() {
     );
     assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
 
-    apply_rng(&mut battle, 42650);
+    apply_rng(&mut battle, 38489);
     assert_matches::assert_matches!(
         battle.set_player_choice("protagonist", "item heavyball"),
         Ok(())
@@ -197,6 +161,42 @@ fn heavy_ball_increases_catch_rate_for_heavy_mon() {
             ["time"],
             "useitem|player:protagonist|name:Heavy Ball|target:Venusaur,wild,1",
             "catchfailed|player:protagonist|mon:Venusaur,wild,1|item:Heavy Ball|shakes:3",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn heavy_ball_increases_catch_rate_for_heavy_mon() {
+    let mut battle = make_battle(0, crustle().unwrap(), crustle().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    apply_rng(&mut battle, 42650);
+    assert_matches::assert_matches!(
+        battle.set_player_choice("protagonist", "item pokeball"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    apply_rng(&mut battle, 44730);
+    assert_matches::assert_matches!(
+        battle.set_player_choice("protagonist", "item heavyball"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("wild", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "useitem|player:protagonist|name:Poké Ball|target:Crustle,wild,1",
+            "catchfailed|player:protagonist|mon:Crustle,wild,1|item:Poké Ball|shakes:3",
+            "residual",
+            "turn|turn:2",
+            ["time"],
+            "useitem|player:protagonist|name:Heavy Ball|target:Crustle,wild,1",
+            "catchfailed|player:protagonist|mon:Crustle,wild,1|item:Heavy Ball|shakes:3",
             "residual",
             "turn|turn:3"
         ]"#,
