@@ -395,6 +395,7 @@ mod moves {
         mod power_split_test;
         mod psyshock_test;
         mod sky_drop_test;
+        mod smack_down_test;
         mod venoshock_test;
         mod wide_guard_test;
         mod wonder_room_test;
