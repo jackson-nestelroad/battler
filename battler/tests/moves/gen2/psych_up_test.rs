@@ -74,7 +74,7 @@ fn psych_up_copies_target_boosts() {
             "start|mon:Espeon,player-1,1|move:Focus Energy",
             "residual",
             "turn|turn:5",
-            ["time"],
+            "continue",
             "move|mon:Espeon,player-1,1|name:Tackle|target:Espeon,player-2,1",
             "split|side:1",
             "damage|mon:Espeon,player-2,1|health:98/125",

@@ -117,7 +117,7 @@ fn embargo_prevents_cell_battery() {
             "start|mon:Emolga,player-2,1|move:Embargo",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Emolga,player-1,1|name:Thunder Shock|target:Emolga,player-2,1",
             "split|side:1",
             "damage|mon:Emolga,player-2,1|health:82/115",

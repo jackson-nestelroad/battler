@@ -77,7 +77,7 @@ pub fn assert_logs_since_turn_eq(battle: &PublicCoreBattle, turn: usize, want: &
     let turn_log_index = got.iter().position(|log| log == &&turn_log).unwrap();
     // Skip turn logs that are always present.
     let mut turn_log_index = turn_log_index + 1;
-    if got[turn_log_index].starts_with("time") {
+    if got[turn_log_index].starts_with("time") || got[turn_log_index].starts_with("continue") {
         turn_log_index = turn_log_index + 1;
     }
     let got = &got[turn_log_index..];

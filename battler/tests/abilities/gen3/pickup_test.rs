@@ -85,7 +85,7 @@ fn pickup_picks_up_random_used_item() {
             "item|mon:Linoone,player-2,1|item:Rawst Berry|from:ability:Pickup",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Linoone,player-1,1|name:Will-O-Wisp|target:Linoone,player-2,1",
             "status|mon:Linoone,player-2,1|status:Burn",
             "itemend|mon:Linoone,player-2,1|item:Rawst Berry|eat",

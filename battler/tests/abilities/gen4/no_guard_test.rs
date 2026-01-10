@@ -117,7 +117,7 @@ fn no_guard_makes_move_hit_from_target_through_semi_invulnerability() {
             "prepare|mon:Machamp,player-2,1|move:Fly",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Machamp,player-1,1|name:Tackle|target:Machamp,player-2,1",
             "split|side:1",
             "damage|mon:Machamp,player-2,1|health:126/150",

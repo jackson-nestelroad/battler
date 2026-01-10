@@ -86,7 +86,7 @@ fn miracle_eye_ignores_evasion_and_removes_dark_type_immunity_of_psychic_type() 
             "boost|mon:Umbreon,player-2,1|stat:eva|by:1",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Xatu,player-1,1|name:Psychic|target:Umbreon,player-2,1",
             "split|side:1",
             "damage|mon:Umbreon,player-2,1|health:110/155",

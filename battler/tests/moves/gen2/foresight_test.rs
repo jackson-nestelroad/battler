@@ -86,7 +86,7 @@ fn foresight_ignores_evasion_and_removes_ghost_type_immunity() {
             "start|mon:Gengar,player-2,1|move:Foresight",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Machamp,player-1,1|name:Rock Smash|target:Gengar,player-2,1",
             "resisted|mon:Gengar,player-2,1",
             "split|side:1",

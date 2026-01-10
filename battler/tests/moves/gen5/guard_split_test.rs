@@ -97,7 +97,7 @@ fn guard_split_averages_defenses() {
             "activate|mon:Pichu,player-2,1|move:Guard Split|of:Shuckle,player-1,1",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Pichu,player-2,1|name:Earthquake",
             "split|side:0",
             "damage|mon:Shuckle,player-1,1|health:59/80",

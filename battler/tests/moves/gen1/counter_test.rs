@@ -88,7 +88,7 @@ fn counter_doubles_damage_of_last_physical_hit_on_user() {
             "fail|mon:Alakazam,player-2,2",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Alakazam,player-2,2|name:Tackle|target:Alakazam,player-1,2",
             "split|side:0",
             "damage|mon:Alakazam,player-1,2|health:96/115",

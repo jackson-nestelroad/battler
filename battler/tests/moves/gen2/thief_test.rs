@@ -87,7 +87,7 @@ fn thief_steals_target_item() {
             "damage|mon:Crobat,player-1,1|from:weather:Sandstorm|health:94/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Crobat,player-1,1|name:Thief|target:Crobat,player-2,1",
             "split|side:1",
             "damage|mon:Crobat,player-2,1|health:115/145",

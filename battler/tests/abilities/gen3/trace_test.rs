@@ -132,7 +132,7 @@ fn ability_shield_blocks_trace() {
             "block|mon:Ralts,player-1,1|ability:Trace|from:item:Ability Shield",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Ralts,player-2,1|name:Knock Off|target:Ralts,player-1,1",
             "split|side:0",
             "damage|mon:Ralts,player-1,1|health:46/88",

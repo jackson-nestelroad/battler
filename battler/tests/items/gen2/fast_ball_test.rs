@@ -86,7 +86,7 @@ fn fast_ball_increases_catch_rate_for_fast_mon() {
             "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Poké Ball|shakes:3",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "useitem|player:protagonist|name:Fast Ball|target:Electrode,wild,1",
             "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3",
             "residual",

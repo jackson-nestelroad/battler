@@ -68,7 +68,7 @@ fn magic_guard_prevents_non_move_damage() {
             "damage|mon:Alakazam,player-2,1|health:78/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Alakazam,player-1,1|name:Toxic|target:Alakazam,player-2,1",
             "status|mon:Alakazam,player-2,1|status:Bad Poison",
             "residual",

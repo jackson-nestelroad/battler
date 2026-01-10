@@ -84,7 +84,7 @@ fn present_deals_damage_or_heals_target() {
             "damage|mon:Delibird,player-1,1|health:59/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Delibird,player-1,1|name:Present|target:Delibird,player-2,1",
             "split|side:1",
             "damage|mon:Delibird,player-2,1|health:17/105",

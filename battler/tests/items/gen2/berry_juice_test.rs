@@ -93,7 +93,7 @@ fn berry_juice_is_not_used_during_heal_block() {
             "start|mon:Totodile,player-1,1|move:Heal Block",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Totodile,player-2,1|name:Thunderbolt|target:Totodile,player-1,1",
             "supereffective|mon:Totodile,player-1,1",
             "split|side:0",

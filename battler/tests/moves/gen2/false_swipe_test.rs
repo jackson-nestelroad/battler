@@ -70,7 +70,7 @@ fn false_swipe_leaves_target_with_1_hp() {
             "damage|mon:Scyther,player-2,1|health:1/100",
             "residual",
             "turn|turn:4",
-            ["time"],
+            "continue",
             "move|mon:Scyther,player-1,1|name:False Swipe|target:Scyther,player-2,1",
             "residual",
             "turn|turn:5"

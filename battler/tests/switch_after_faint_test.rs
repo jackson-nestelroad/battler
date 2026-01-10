@@ -128,7 +128,7 @@ fn must_switch_after_faint() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
+            "continue",
             "split|side:1",
             "switch|player:player-2|position:2|name:Squirtle|health:19/19|species:Squirtle|level:5|gender:F",
             "switch|player:player-2|position:2|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:F",
@@ -162,7 +162,7 @@ fn must_switch_after_faint() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
+            "continue",
             "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Squirtle,player-2,2",
             "split|side:1",
             "damage|mon:Squirtle,player-2,2|health:0",
@@ -275,7 +275,7 @@ fn must_switch_one_after_two_faint() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
+            "continue",
             "split|side:1",
             "switch|player:player-2|position:2|name:Bulbasaur|health:105/105|species:Bulbasaur|level:50|gender:F",
             "switch|player:player-2|position:2|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:F",

@@ -72,7 +72,7 @@ fn shed_shell_allows_holder_to_switch_out_when_trapped() {
             "activate|mon:Pikachu,player-1,1|condition:Trapped",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "split|side:0",
             "switch|player:player-1|position:1|name:Eevee|health:115/115|species:Eevee|level:50|gender:U",
             "switch|player:player-1|position:1|name:Eevee|health:100/100|species:Eevee|level:50|gender:U",

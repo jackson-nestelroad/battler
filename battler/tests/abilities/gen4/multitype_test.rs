@@ -194,7 +194,7 @@ fn multitype_does_not_change_types_when_transformed() {
             "transform|mon:Ditto,player-2,1|into:Arceus,player-1,1|species:Arceus-Water",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Arceus,player-1,1|name:Judgment|target:Ditto,player-2,1",
             "resisted|mon:Ditto,player-2,1",
             "split|side:1",

@@ -91,7 +91,7 @@ fn magma_armor_prevents_freeze() {
             "status|mon:Linoone,player-2,1|status:Freeze",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Magcargo,player-1,1|name:Skill Swap|target:Linoone,player-2,1",
             "activate|mon:Linoone,player-2,1|move:Skill Swap|of:Magcargo,player-1,1",
             "abilityend|mon:Magcargo,player-1,1|ability:Magma Armor|from:move:Skill Swap|of:Linoone,player-2,1",

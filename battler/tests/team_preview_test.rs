@@ -186,7 +186,7 @@ fn team_preview_orders_all_player_teams() {
     // New logs show updated team size and selected team leads.
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
+            "continue",
             "teamsize|player:player-1|size:3",
             "teamsize|player:player-2|size:3",
             "teamsize|player:player-3|size:3",
@@ -222,7 +222,7 @@ fn team_preview_orders_all_player_teams() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
+            "continue",
             "split|side:0",
             "switch|player:player-2|position:2|name:Charmander F|health:188/188|species:Charmander|level:100|gender:F",
             "switch|player:player-2|position:2|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
@@ -254,7 +254,7 @@ fn team_preview_orders_all_player_teams() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
+            "continue",
             "split|side:0",
             "switch|player:player-2|position:2|name:Squirtle F|health:198/198|species:Squirtle|level:100|gender:F",
             "switch|player:player-2|position:2|name:Squirtle F|health:100/100|species:Squirtle|level:100|gender:F",
@@ -318,7 +318,7 @@ fn team_preview_orders_all_player_teams() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            ["time"],
+            "continue",
             "split|side:1",
             "switch|player:player-4|position:2|name:Squirtle M|health:198/198|species:Squirtle|level:100|gender:M",
             "switch|player:player-4|position:2|name:Squirtle M|health:100/100|species:Squirtle|level:100|gender:M",

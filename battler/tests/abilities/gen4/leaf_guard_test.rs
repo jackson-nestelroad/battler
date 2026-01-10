@@ -119,7 +119,7 @@ fn leaf_guard_prevents_previous_yawn_in_sun() {
             "weather|weather:Harsh Sunlight|residual",
             "residual",
             "turn|turn:3",
-            ["time"],
+            "continue",
             "move|mon:Budew,player-1,1|name:Skill Swap|target:Budew,player-2,1",
             "activate|mon:Budew,player-2,1|move:Skill Swap|of:Budew,player-1,1",
             "abilityend|mon:Budew,player-1,1|ability:Leaf Guard|from:move:Skill Swap|of:Budew,player-2,1",

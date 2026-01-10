@@ -78,7 +78,7 @@ fn hustle_increases_attack_but_decreases_accuracy() {
             "damage|mon:Togepi,player-1,1|health:92/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Togepi,player-1,1|name:Tackle|noanim",
             "miss|mon:Togepi,player-2,1",
             "move|mon:Togepi,player-2,1|name:Tackle|target:Togepi,player-1,1",

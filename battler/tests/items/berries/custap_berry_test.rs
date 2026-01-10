@@ -95,7 +95,7 @@ fn custap_berry_allows_user_to_move_first() {
             "turn|turn:2",
             "itemend|mon:Snorlax,player-1,1|item:Custap Berry|eat",
             "activate|mon:Snorlax,player-1,1|item:Custap Berry",
-            ["time"],
+            "continue",
             "move|mon:Snorlax,player-1,1|name:Earthquake",
             "supereffective|mon:Jolteon,player-2,1",
             "split|side:1",

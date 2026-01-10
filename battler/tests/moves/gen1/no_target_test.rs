@@ -120,7 +120,7 @@ fn move_fails_with_no_target() {
             ["switch", "player-2", "Squirtle"],
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Bulbasaur,player-1,1|name:Air Cutter|spread:Squirtle,player-2,1;Charmander,player-2,2",
             "crit|mon:Charmander,player-2,2",
             "split|side:1",

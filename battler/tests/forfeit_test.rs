@@ -177,7 +177,7 @@ fn forfeit_ends_multi_battle() {
             ["damage", "Bulbasaur,player-2,2"],
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "switchout|mon:Bulbasaur,player-2,2",
             "forfeited|player:player-2",
             "win|side:1"

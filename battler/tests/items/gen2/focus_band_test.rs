@@ -80,7 +80,7 @@ fn focus_band_has_chance_to_save_holder() {
             "damage|mon:Totodile,player-1,1|health:1/100",
             "residual",
             "turn|turn:3",
-            ["time"],
+            "continue",
             "move|mon:Totodile,player-2,1|name:Thunderbolt|target:Totodile,player-1,1",
             "supereffective|mon:Totodile,player-1,1",
             "activate|mon:Totodile,player-1,1|item:Focus Band",

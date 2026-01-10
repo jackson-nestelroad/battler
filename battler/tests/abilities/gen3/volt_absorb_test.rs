@@ -70,7 +70,7 @@ fn volt_absorb_heals_when_hit_by_electric_move() {
             "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:100/100",
             "residual",
             "turn|turn:3",
-            ["time"],
+            "continue",
             "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pikachu,player-1,1",
             "immune|mon:Pikachu,player-1,1|from:ability:Volt Absorb",
             "residual",

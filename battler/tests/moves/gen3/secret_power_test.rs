@@ -103,7 +103,7 @@ fn secret_power_can_cause_drop_special_attack_in_misty_terrain() {
             "fieldstart|move:Misty Terrain",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Meditite,player-1,1|name:Secret Power|target:Meditite,player-2,1",
             "split|side:1",
             "damage|mon:Meditite,player-2,1|health:66/90",
