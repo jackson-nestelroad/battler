@@ -41,7 +41,7 @@
   "analytic": { "name": "Analytic", "flags": [] },
   "illusion": {
     "name": "Illusion",
-    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "flags": ["NoEntrainment", "NoRolePlay", "NoSkillSwap", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_switching_in": [

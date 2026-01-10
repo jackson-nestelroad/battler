@@ -571,7 +571,7 @@
   },
   "trace": {
     "name": "Trace",
-    "flags": ["NoRolePlay", "NoTrace"],
+    "flags": ["NoEntrainment", "NoRolePlay", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_update": [
@@ -826,7 +826,7 @@
   },
   "truant": {
     "name": "Truant",
-    "flags": ["NoSimpleBeam", "NoWorrySeed"],
+    "flags": ["NoEntrainmentTarget", "NoSimpleBeam", "NoWorrySeed"],
     "effect": {
       "callbacks": {
         "on_start": [
@@ -895,7 +895,7 @@
   },
   "forecast": {
     "name": "Forecast",
-    "flags": ["NoRolePlay", "NoTrace"],
+    "flags": ["NoEntrainment", "NoRolePlay", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: WeatherChange"],

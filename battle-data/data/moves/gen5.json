@@ -566,7 +566,7 @@
         "on_try_hit": [
           "if $target == $source or $target.dynamaxed:",
           ["return false"],
-          "if $target.ability == $source.ability or func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noentrainment) or func_call(ability_has_flag: $source.ability noentrainmentuser):",
+          "if $target.ability == $source.ability or func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noentrainmenttarget) or func_call(ability_has_flag: $source.ability noentrainment):",
           ["return false"]
         ],
         "on_hit": [
