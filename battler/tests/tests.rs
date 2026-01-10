@@ -390,6 +390,8 @@ mod moves {
     }
 
     mod gen5 {
+        mod guard_split_test;
+        mod power_split_test;
         mod sky_drop_test;
         mod wide_guard_test;
     }
