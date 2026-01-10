@@ -467,6 +467,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ChangeBoosts"]
     ChangeBoosts,
+    /// Runs when a Mon's stat is being calculated.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "CalculateStat"]
+    CalculateStat,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
     /// Runs on the active move and in the context of a move user.
@@ -1220,6 +1225,7 @@ pub enum BattleEvent {
 impl BattleEvent {
     /// Maps the event to the [`CallbackFlag`] flags.
     pub fn callback_type_flags(&self) -> u32 {
+        // Maintain alphabetical order.
         match self {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
@@ -1245,6 +1251,7 @@ impl BattleEvent {
             Self::BeforeTerastallization => CommonCallbackType::MonResult as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
+            Self::CalculateStat => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::CanDynamax => CommonCallbackType::MonResult as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
@@ -1396,6 +1403,7 @@ impl BattleEvent {
 
     /// The name of the input variable by index.
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
+        // Maintain alphabetical order.
         match self {
             Self::AddPseudoWeather | Self::AfterAddPseudoWeather => {
                 &[("pseudo_weather", ValueType::Effect, true)]
@@ -1406,10 +1414,14 @@ impl BattleEvent {
             }
             Self::BasePower => &[("base_power", ValueType::UFraction, true)],
             Self::BerryEatingHealth => &[("hp", ValueType::UFraction, true)],
+            Self::CalculateStat => &[
+                ("stat", ValueType::UFraction, true),
+                ("name", ValueType::Stat, true),
+            ],
             Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::Damage => &[("damage", ValueType::UFraction, true)],
-            Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
+            Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::EatItem => &[("item", ValueType::Effect, true)],
             Self::Effectiveness => &[
                 ("modifier", ValueType::Fraction, true),

@@ -99,6 +99,7 @@ pub struct MoveAction {
     pub mega: bool,
     pub dyna: bool,
     pub tera: bool,
+    pub order: Option<u32>,
     pub priority: i32,
     pub sub_priority: i32,
 
@@ -120,6 +121,7 @@ impl MoveAction {
             mega: input.mega,
             dyna: input.dyna,
             tera: input.tera,
+            order: None,
             priority: 0,
             sub_priority: 0,
             active_move_handle: None,
@@ -338,7 +340,7 @@ impl SpeedOrderable for Action {
             Self::Dynamax(_) => 105,
             Self::Terastallize(_) => 106,
             Self::PriorityChargeMove(_) => 107,
-            Self::Move(_) => 200,
+            Self::Move(action) => action.order.unwrap_or(200),
             Self::Pass => 200,
             Self::Residual => 300,
         }

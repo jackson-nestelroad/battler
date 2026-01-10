@@ -1182,6 +1182,15 @@ impl Mon {
         }
 
         let mut value = context.mon().volatile_state.stats.get(stat);
+
+        if !unmodified {
+            value = core_battle_effects::run_event_for_mon_expecting_u16(
+                context,
+                fxlang::BattleEvent::CalculateStat,
+                value,
+                fxlang::VariableInput::from_iter([fxlang::Value::Stat(stat)]),
+            );
+        }
         if !unboosted {
             let mut boosts = context.mon().volatile_state.boosts.clone();
 
@@ -1249,6 +1258,7 @@ impl Mon {
                         context,
                         modify_event,
                         value,
+                        fxlang::VariableInput::default(),
                     ),
                 }
             }
@@ -1300,6 +1310,7 @@ impl Mon {
             context,
             fxlang::BattleEvent::ModifyActionSpeed,
             speed,
+            fxlang::VariableInput::default(),
         );
         Ok(speed)
     }
@@ -1913,6 +1924,11 @@ impl Mon {
     /// Clears all stat boosts.
     pub fn clear_boosts(&mut self) {
         self.volatile_state.boosts = BoostTable::new();
+    }
+
+    /// Decreases the weight of the Mon.
+    pub fn decrease_weight(&mut self, delta: u32) {
+        self.volatile_state.weight = self.volatile_state.weight.saturating_sub(delta).max(1);
     }
 
     fn moves_with_locked_move(

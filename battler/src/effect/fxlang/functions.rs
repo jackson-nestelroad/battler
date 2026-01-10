@@ -47,6 +47,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
+        MoveAction,
         MoveOutcomeOnTarget,
         MoveSlot,
         Player,
@@ -64,6 +65,7 @@ use crate::{
         MonAbilityEffectStateConnector,
         MonStatusEffectStateConnector,
         MonVolatileStatusEffectStateConnector,
+        PseudoWeatherEffectStateConnector,
         SideConditionEffectStateConnector,
         fxlang::{
             BattleEvent,
@@ -101,6 +103,7 @@ pub fn run_function(
     effect_state: Option<DynamicEffectStateConnector>,
 ) -> Result<Option<Value>> {
     let context = FunctionContext::new(context, args, event, event_state, effect_state);
+    // Maintain alphabetical order.
     match function_name {
         "ability_effect_state" => ability_effect_state(context),
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
@@ -109,6 +112,7 @@ pub fn run_function(
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context).map(|val| Some(val)),
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
+        "adjacent_allies" => adjacent_allies(context).map(|val| Some(val)),
         "adjacent_foes" => adjacent_foes(context).map(|val| Some(val)),
         "all_active_mons" => all_active_mons(context).map(|val| Some(val)),
         "all_active_mons_in_speed_order" => {
@@ -148,6 +152,7 @@ pub fn run_function(
         "damage" => damage(context).map(|val| Some(val)),
         "debug_log" => debug_log(context).map(|()| None),
         "decrease_friendship" => decrease_friendship(context).map(|()| None),
+        "decrease_weight" => decrease_weight(context).map(|()| None),
         "deduct_pp" => deduct_pp(context).map(|val| Some(val)),
         "direct_damage" => direct_damage(context).map(|()| None),
         "disable_move" => disable_move(context).map(|()| None),
@@ -242,16 +247,21 @@ pub fn run_function(
             new_active_move_from_local_data(context).map(|val| Some(val))
         }
         "new_object" => Ok(Some(new_object(context))),
-        "object_keys" => object_keys(context).map(|val| Some(val)),
-        "object_increment" => object_increment(context).map(|val| Some(val)),
         "object_get" => object_get(context),
+        "object_increment" => object_increment(context).map(|val| Some(val)),
+        "object_keys" => object_keys(context).map(|val| Some(val)),
         "object_set" => object_set(context).map(|val| Some(val)),
         "object_value" => object_value(context),
         "overwrite_move_slot" => overwrite_move_slot(context).map(|()| None),
         "pending_move_action_this_turn" => pending_move_action_this_turn(context),
+        "pending_move_actions_this_turn" => {
+            pending_move_actions_this_turn(context).map(|val| Some(val))
+        }
         "plural" => plural(context).map(|val| Some(val)),
         "prepare_direct_move" => prepare_direct_move(context).map(|val| Some(val)),
         "primal_reversion" => primal_reversion(context).map(|val| Some(val)),
+        "prioritize_move" => prioritize_move(context).map(|()| None),
+        "pseudo_weather_effect_state" => pseudo_weather_effect_state(context),
         "random" => random(context).map(|val| Some(val)),
         "random_target" => random_target(context),
         "received_attack" => received_attack(context).map(|val| Some(val)),
@@ -2004,6 +2014,21 @@ fn ability_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     }
 }
 
+fn pseudo_weather_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
+    let pseudo_weather_id = context
+        .pop_front()
+        .wrap_expectation("missing pseudo weather")?
+        .string()
+        .wrap_error_with_message("invalid pseudo weather")?;
+    let pseudo_weather_id = Id::from(pseudo_weather_id);
+    let effect_state = PseudoWeatherEffectStateConnector::new(pseudo_weather_id);
+    if effect_state.exists(context.battle_context_mut())? {
+        Ok(Some(Value::EffectState(effect_state.make_dynamic())))
+    } else {
+        Ok(None)
+    }
+}
+
 fn side_condition_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let side = context.target_side_index_positional()?;
     let condition_id = context
@@ -2333,6 +2358,15 @@ fn adjacent_foes(mut context: FunctionContext) -> Result<Value> {
     ))
 }
 
+fn adjacent_allies(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    Ok(Value::List(
+        Mon::adjacent_allies(&mut context.mon_context(mon_handle)?)?
+            .map(|mon| Value::Mon(mon))
+            .collect(),
+    ))
+}
+
 fn all_foes(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     Ok(Value::List(
@@ -2353,8 +2387,11 @@ fn allies_and_self(mut context: FunctionContext) -> Result<Value> {
 
 fn clear_boosts(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
-    context.mon_context(mon_handle)?.mon_mut().clear_boosts();
-    Ok(())
+    let silent = context.silent();
+    core_battle_actions::clear_boosts(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        silent,
+    )
 }
 
 fn clear_negative_boosts(mut context: FunctionContext) -> Result<()> {
@@ -2927,6 +2964,17 @@ fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value> {
     ))
 }
 
+fn move_action_to_value(move_action: &MoveAction) -> Value {
+    Value::Object(HashMap::from_iter([
+        ("id".to_owned(), Value::String(move_action.id.to_string())),
+        (
+            "effective_id".to_owned(),
+            Value::String(move_action.effective_move_id().to_string()),
+        ),
+        ("mon".to_owned(), Value::Mon(move_action.mon_action.mon)),
+    ]))
+}
+
 fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context.target_handle_positional()?;
     Ok(context
@@ -2935,15 +2983,21 @@ fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<
         .battle()
         .queue
         .pending_move_this_turn(mon_handle)
-        .map(|move_action| {
-            Value::Object(HashMap::from_iter([
-                ("id".to_owned(), Value::String(move_action.id.to_string())),
-                (
-                    "effective_id".to_owned(),
-                    Value::String(move_action.effective_move_id().to_string()),
-                ),
-            ]))
-        }))
+        .map(|action| move_action_to_value(&action)))
+}
+
+fn pending_move_actions_this_turn(mut context: FunctionContext) -> Result<Value> {
+    let actions = context
+        .battle_context_mut()
+        .battle()
+        .queue
+        .pending_move_actions();
+    Ok(Value::List(
+        actions
+            .into_iter()
+            .map(|action| move_action_to_value(action))
+            .collect(),
+    ))
 }
 
 fn will_move_this_turn(context: FunctionContext) -> Result<Value> {
@@ -3181,6 +3235,16 @@ fn cancel_move(mut context: FunctionContext) -> Result<Value> {
     ))
 }
 
+fn prioritize_move(mut context: FunctionContext) -> Result<()> {
+    let mon_handle = context.target_handle_positional()?;
+    context
+        .battle_context_mut()
+        .battle_mut()
+        .queue
+        .prioritize_move(mon_handle);
+    Ok(())
+}
+
 fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon = context.target_handle_positional()?;
     let dry_run = context.has_flag("dry_run");
@@ -3208,6 +3272,20 @@ fn set_item(mut context: FunctionContext) -> Result<Value> {
         &item,
         dry_run,
     )?))
+}
+
+fn decrease_weight(mut context: FunctionContext) -> Result<()> {
+    let mon_handle = context.target_handle_positional()?;
+    let amount = context
+        .pop_front()
+        .wrap_expectation("missing value")?
+        .integer_u32()
+        .wrap_error_with_message("invalid value")?;
+    context
+        .battle_context_mut()
+        .mon_mut(mon_handle)?
+        .decrease_weight(amount);
+    Ok(())
 }
 
 fn eat_item(mut context: FunctionContext) -> Result<Value> {

@@ -26,13 +26,19 @@ Your tests should match the structure of existing tests as closely as possible:
 2. Create a battle with `TestBattleBuilder`.
 3. Create Rust tests that trigger the effect being tested and verify the battle log output.
 
-In fact, it is acceptable and encouraged to use a test file for an existing effect as a *template* for your test.
+In fact, it is acceptable and encouraged to use a test file for an existing effect as a _template_ for your test.
 
 Individual test cases should be as simple as possible and only test the required effect. Other simple effects can be used when required (for example, using a simple damaging move when a Mon needs to take damage). A battle should only go as long as reasonably required for testing, which is often only one turn.
 
 You SHOULD minimuze the number of turns required to test.
 
 You SHOULD use `pass` actions as much as reasonably possible. For example, in a Singles battle, if only one Mon needs to move, the other player should use `pass`. In a Doubles battle, if only one Mon needs to move for a single player, the second Mon's action should be `pass`.
+
+### Battle Verification
+
+Verifying battle state MUST use the public battle log. NEVER attempt to access battle state directly in tests.
+
+Battle logs MUST be combined as much as possible. DO NOT run multiple turns and verify logs in between; just run all turns back-to-back and verify all logs at the end.
 
 ### Battle Log
 
@@ -42,7 +48,7 @@ NOTE: When viewing log diffs in test failures, the `time` log will always appear
 
 ### Teams
 
-Tests SHOULD use Pokémon that make logical sense for the effect being tested. For example, if testing a Water-type move introduced in Generation 5, use a Water-type Pokémon from Generation 5. This requirement helps ensure a wide variety of Pokémon are used in tests.
+Tests MUST use a variety of Pokémon that make logical sense for the effect being tested. For example, if testing a move or ability, you SHOULD use a Pokémon that can naturally use that move/ability.
 
 ### Tips
 
@@ -63,9 +69,9 @@ Keep code comments as short as reasonably possible. If the code can reasonably b
 ## Step 1: Gather Requirements
 
 1. Ask the user for the following:
-    1. The specific effect that must be tested.
-    2. Any specific tests scenarios that should be included.
-    3. Ask for any additional code that must be completed for the effect to work.
+   1. The specific effect that must be tested.
+   2. Any specific tests scenarios that should be included.
+   3. Ask for any additional code that must be completed for the effect to work.
 
 ## Step 2: Understand the Effect
 
@@ -77,16 +83,16 @@ Keep code comments as short as reasonably possible. If the code can reasonably b
 ## Step 3: Plan the Test
 
 1. Create a plan artifact with the following:
-    1. A short summary of your understanding of the effect.
-    2. The test cases to be written. You SHOULD consider your understanding of the effect (collected in Step 2) in generating test cases.
-    3. Pokémon that will be used for the teams in the test.
-    4. (Optional) Existing tests used as a template, if any.
+   1. A short summary of your understanding of the effect.
+   2. The test cases to be written. You SHOULD consider your understanding of the effect (collected in Step 2) in generating test cases.
+   3. Pokémon that will be used for the teams in the test.
+   4. (Optional) Existing tests used as a template, if any.
 2. Wait for user approval of the plan.
 
 ## Step 4: Write the Test
 
 1. Write the test following your plan.
-2. Ensure the test passes using `cargo test`.
+2. Ensure the test passes using `cargo test` with `--no-default-features`.
 
 ## Step 5: Verify Code
 

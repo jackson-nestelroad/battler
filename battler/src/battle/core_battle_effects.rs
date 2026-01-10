@@ -3140,11 +3140,14 @@ pub fn run_event_for_mon_expecting_u16(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
     input: u16,
+    other_input: fxlang::VariableInput,
 ) -> u16 {
     match run_event_for_mon_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
+        fxlang::VariableInput::from_iter(
+            iter::once(fxlang::Value::UFraction(input.into())).chain(other_input.into_iter()),
+        ),
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),

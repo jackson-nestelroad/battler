@@ -1599,6 +1599,7 @@ pub enum ValueRefMut<'eval> {
     Nature(&'eval mut Nature),
     SpecialItemData(&'eval mut SpecialItemData),
     Stat(&'eval mut Stat),
+    OptionalStat(&'eval mut Option<Stat>),
     StatTable(&'eval mut StatTable),
     TimeOfDay(&'eval mut TimeOfDay),
     Type(&'eval mut Type),
@@ -1664,6 +1665,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
+            Self::OptionalStat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
@@ -1835,6 +1837,9 @@ impl<'eval> ValueRefMut<'eval> {
             }
             ValueRefMut::Stat(var) => {
                 *var = val.stat()?;
+            }
+            ValueRefMut::OptionalStat(var) => {
+                *var = (!val.is_undefined()).then(|| val.stat()).transpose()?;
             }
             ValueRefMut::StatTable(var) => {
                 *var = val.stat_table()?;

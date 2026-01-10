@@ -1,4 +1,12 @@
-use alloc::string::String;
+use alloc::{
+    borrow::ToOwned,
+    format,
+    string::{
+        String,
+        ToString,
+    },
+    vec::Vec,
+};
 
 use anyhow::{
     Error,
@@ -429,6 +437,26 @@ where
                                 .user_effect_chance
                                 .map(|val| ValueRef::UFraction(val.convert()))
                                 .unwrap_or(ValueRef::Undefined),
+                            "override_offensive_stat" => {
+                                match context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .override_offensive_stat
+                                {
+                                    Some(stat) => ValueRef::Stat(stat),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
+                            "override_defensive_stat" => {
+                                match context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .override_defensive_stat
+                                {
+                                    Some(stat) => ValueRef::Stat(stat),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let Some(mon_handle) = value.mon_handle() {
@@ -1140,6 +1168,18 @@ where
                                 .active_move_mut(**active_move_handle)?
                                 .data
                                 .user_effect_chance,
+                        ),
+                        "override_offensive_stat" => ValueRefMut::OptionalStat(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .override_offensive_stat,
+                        ),
+                        "override_defensive_stat" => ValueRefMut::OptionalStat(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .override_defensive_stat,
                         ),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }

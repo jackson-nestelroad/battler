@@ -3170,7 +3170,7 @@ pub fn remove_volatile(
 
     let volatile_status_handle = context
         .battle_mut()
-        .get_effect_handle_by_id(&volatile)?
+        .get_effect_handle_by_id(volatile)?
         .clone();
     let volatile = volatile_status_handle
         .try_id()
@@ -4970,6 +4970,15 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
     let pp = context.target_mut().set_pp(move_id, pp);
     core_battle_logs::set_pp(context, move_id, pp)?;
     Ok(pp)
+}
+
+/// Clears all boosts on the target Mon.
+pub fn clear_boosts(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    context.target_mut().clear_boosts();
+    if !silent {
+        core_battle_logs::clear_boosts(context)?;
+    }
+    Ok(())
 }
 
 /// Clears all negative boosts on the target Mon.

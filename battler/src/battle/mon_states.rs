@@ -65,6 +65,7 @@ pub fn berry_eating_health(context: &mut MonContext) -> u16 {
         context,
         fxlang::BattleEvent::BerryEatingHealth,
         health,
+        fxlang::VariableInput::default(),
     )
 }
 

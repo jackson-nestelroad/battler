@@ -1150,6 +1150,20 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
     )
 }
 
+pub fn clear_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "clearboosts".to_owned(),
+        activation,
+    )
+}
+
 pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),

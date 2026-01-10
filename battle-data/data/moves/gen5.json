@@ -148,9 +148,9 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_source_base_power": [
+        "on_move_base_power": [
           "if [psn, tox] has $target.status:",
-          ["return $base_power * 2"]
+          ["return $move.base_power * 2"]
         ]
       }
     }
@@ -171,13 +171,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": ["return func_call(can_boost: $target 'spe:2')"],
-        "on_hit": [
-          "if $target.weight < 1000:",
-          ["$target.weight = 1"],
-          "else:",
-          ["$target.weight = $target.weight - 1000"],
-          "log_start"
-        ]
+        "on_hit": ["decrease_weight: $target 1000", "log_start"]
       }
     }
   },
@@ -212,6 +206,9 @@
           ["do_not_animate_last_move", "log_cant", "return stop"]
         ]
       }
+    },
+    "hit_effect": {
+      "volatile_status": "telekinesis"
     },
     "condition": {
       "duration": 3,

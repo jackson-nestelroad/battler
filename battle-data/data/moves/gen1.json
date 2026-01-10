@@ -1605,7 +1605,7 @@
         "on_hit_field": [
           "log: clearallboosts",
           "foreach $mon in func_call(all_active_mons):",
-          ["clear_boosts: $mon"]
+          ["clear_boosts: $mon silent"]
         ]
       }
     }
