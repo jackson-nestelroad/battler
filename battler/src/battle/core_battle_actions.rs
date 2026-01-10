@@ -1625,7 +1625,6 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         &mut context.attacker_context()?,
         attack_stat,
         attack_boosts,
-        Fraction::from(1u16),
         Some(move_user),
         Some(CalculateStatContext {
             effect: effect_handle.clone(),
@@ -1636,7 +1635,6 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         &mut context.defender_context()?,
         defense_stat,
         defense_boosts,
-        Fraction::from(1u16),
         Some(move_target),
         Some(CalculateStatContext {
             effect: effect_handle,
@@ -3250,22 +3248,8 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
         .volatile_state
         .boosts
         .get(defense_stat.try_into()?);
-    let attack = Mon::calculate_stat(
-        context,
-        attack_stat,
-        attack_boosts,
-        Fraction::from(1u16),
-        None,
-        None,
-    )?;
-    let defense = Mon::calculate_stat(
-        context,
-        defense_stat,
-        defense_boosts,
-        Fraction::from(1u16),
-        None,
-        None,
-    )?;
+    let attack = Mon::calculate_stat(context, attack_stat, attack_boosts, None, None)?;
+    let defense = Mon::calculate_stat(context, defense_stat, defense_boosts, None, None)?;
     let level = context.mon().level as u32;
     let base_damage = 2 * level / 5 + 2;
     let base_damage = base_damage * base_power;

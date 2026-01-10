@@ -62,7 +62,6 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
-        modify_32,
         mon_states,
     },
     battle_log_entry,
@@ -1169,7 +1168,6 @@ impl Mon {
         unboosted: bool,
         boost: Option<i8>,
         unmodified: bool,
-        modifier: Option<Fraction<u16>>,
         stat_user: Option<MonHandle>,
         calculate_stat_context: Option<CalculateStatContext>,
     ) -> Result<u16> {
@@ -1262,8 +1260,6 @@ impl Mon {
                     ),
                 }
             }
-            let modifier = modifier.unwrap_or(Fraction::from(1u16));
-            value = modify_32(value as u32, modifier.convert()) as u16;
         }
 
         Ok(value)
@@ -1276,7 +1272,6 @@ impl Mon {
         context: &mut MonContext,
         stat: Stat,
         boost: i8,
-        modifier: Fraction<u16>,
         stat_user: Option<MonHandle>,
         calculate_stat_context: Option<CalculateStatContext>,
     ) -> Result<u16> {
@@ -1286,7 +1281,6 @@ impl Mon {
             false,
             Some(boost),
             false,
-            Some(modifier),
             stat_user,
             calculate_stat_context,
         )
@@ -1300,7 +1294,7 @@ impl Mon {
         unboosted: bool,
         unmodified: bool,
     ) -> Result<u16> {
-        Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None, None)
+        Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None)
     }
 
     /// Calculates the speed value to use for battle action ordering.

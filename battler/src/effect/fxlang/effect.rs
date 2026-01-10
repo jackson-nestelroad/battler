@@ -747,7 +747,7 @@ pub enum BattleEvent {
     ModifyAtk,
     /// Runs when modifying a Mon's stat boosts used for stat calculations.
     ///
-    /// Runs in the context of a Mon.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyBoosts"]
     ModifyBoosts,
     /// Runs when calculating the modified catch rate of a Mon.
