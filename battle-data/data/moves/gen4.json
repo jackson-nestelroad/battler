@@ -28,7 +28,11 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_field_start": ["log_field_start"],
+        "on_field_start": [
+          "log_field_start",
+          "foreach $mon in func_call(all_active_mons_in_speed_order):",
+          ["add_volatile: $mon knockdown"]
+        ],
         "on_modify_accuracy": ["return $acc * 5/3"],
         "on_disable_move": [
           "foreach $move_slot in $mon.move_slots:",
@@ -37,7 +41,10 @@
             ["disable_move: $mon $move_slot.id"]
           ]
         ],
-        "is_grounded": { "priority": 1, "program": ["return true"] },
+        "is_grounded": {
+          "priority": 1,
+          "program": ["if $effect_state.started:", ["return true"]]
+        },
         "on_before_move": [
           "if func_call(move_has_flag: $move.id gravity):",
           ["log_cant", "return false"]
@@ -920,11 +927,7 @@
       "callbacks": {
         "on_start": ["log_start"],
         "is_grounded": ["return false"],
-        "on_end": ["log_end"],
-        "on_after_add_pseudo_weather": [
-          "if $pseudo_weather.id == gravity:",
-          ["remove_volatile: $effect_state.target $this.id"]
-        ]
+        "on_end": ["log_end"]
       }
     }
   },

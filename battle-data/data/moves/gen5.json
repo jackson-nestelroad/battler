@@ -280,12 +280,8 @@
       "no_copy": true,
       "callbacks": {
         "on_start": [
-          "if $target.is_grounded:",
+          "if !func_call(add_volatile: $target knockdown):",
           ["return false"],
-          "if func_call(remove_volatile: $target fly) or func_call(remove_volatile: $target bounce):",
-          ["cancel_move: $target"],
-          "remove_volatile: $target magnetrise",
-          "remove_volatile: $target telekinesis",
           "log_start"
         ],
         "on_restart": [

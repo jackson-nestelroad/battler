@@ -2934,6 +2934,16 @@ pub fn try_set_status(
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle)]),
     );
 
+    // If the duration is EXPLICITLY zero, then we remove the status immediately.
+    if context
+        .target()
+        .status_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        cure_status(context, false, false)?;
+    }
+
     Ok(ApplyMoveEffectResult::Success)
 }
 
@@ -3153,6 +3163,19 @@ pub fn add_volatile(
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
     );
 
+    // If the duration is EXPLICITLY zero, then we remove the volatile immediately.
+    if context
+        .target()
+        .volatile_state
+        .volatiles
+        .get(&volatile)
+        .wrap_expectation("expected volatile state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_volatile(context, &volatile, false)?;
+    }
+
     Ok(true)
 }
 
@@ -3341,6 +3364,18 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         fxlang::BattleEvent::SideConditionStart,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(side_condition_handle.clone())]),
     );
+
+    // If the duration is EXPLICITLY zero, then we remove the side condition immediately.
+    if context
+        .side()
+        .conditions
+        .get(&condition)
+        .wrap_expectation("expected side condition state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_side_condition(context, &condition)?;
+    }
 
     Ok(true)
 }
@@ -3812,6 +3847,17 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         fxlang::BattleEvent::WeatherChange,
     )?;
 
+    // If the duration is EXPLICITLY zero, then we remove the weather immediately.
+    if context
+        .battle()
+        .field
+        .weather_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        clear_weather(context)?;
+    }
+
     Ok(true)
 }
 
@@ -3937,6 +3983,17 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
 
     // TODO: TerrainChange event.
 
+    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
+    if context
+        .battle()
+        .field
+        .terrain_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        clear_terrain(context)?;
+    }
+
     Ok(true)
 }
 
@@ -3970,6 +4027,17 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
     }
 
     // TODO: TerrainChange event.
+
+    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
+    if context
+        .battle()
+        .field
+        .terrain_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        clear_terrain(context)?;
+    }
 
     Ok(true)
 }
@@ -4072,6 +4140,19 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
         fxlang::BattleEvent::AfterAddPseudoWeather,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
     );
+
+    // If the duration is EXPLICITLY zero, then we remove the pseudo-weather immediately.
+    if context
+        .battle()
+        .field
+        .pseudo_weathers
+        .get(&pseudo_weather)
+        .wrap_expectation("expected pseudo weather state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_pseudo_weather(context, &pseudo_weather)?;
+    }
 
     Ok(true)
 }
@@ -4348,6 +4429,20 @@ pub fn add_slot_condition(
     }
 
     core_battle_logs::add_slot_condition(context, slot, &condition)?;
+
+    // If the duration is EXPLICITLY zero, then we remove the slot condition immediately.
+    if context
+        .side_mut()
+        .slot_conditions
+        .entry(slot)
+        .or_default()
+        .get(&condition)
+        .wrap_expectation("expected slot condition state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_slot_condition(context, slot, &condition)?;
+    }
 
     Ok(true)
 }

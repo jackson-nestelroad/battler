@@ -973,7 +973,7 @@
     "name": "Break Protect",
     "condition_type": "Built-in",
     "condition": {
-      "duration": 1,
+      "duration": 0,
       "callbacks": {
         "on_start": [
           "$activate = false",
@@ -1136,6 +1136,26 @@
         "on_force_effectiveness": [
           "if $target.terastallized.is_defined and $effect.type == stellar:",
           ["return 1"]
+        ]
+      }
+    }
+  },
+  "knockdown": {
+    "name": "Knock Down",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 0,
+      "callbacks": {
+        "on_start": [
+          "if $target.is_grounded:",
+          ["return false"],
+          "log_activate: with_target use_source_effect",
+          "# During Sky Drop, both the target and user have the Fly volatile.",
+          "# Only the user should have the volatile removed, which cascade removes all other effects.",
+          "if func_call(has_volatile: $target fly) and func_call(has_volatile: $target twoturnmove):",
+          ["remove_volatile: $target fly", "cancel_move: $target"],
+          "remove_volatile: $target magnetrise",
+          "remove_volatile: $target telekinesis"
         ]
       }
     }
