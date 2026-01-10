@@ -35,3 +35,7 @@ Within this repository, `battler` only depends on a few utility crates that shou
 2. Client libraries (e.g., `battler-client`) provide an API for interacting with a single battle.
 
 The most important dependency of `battler` is `battler-state`, which is responsible for reading the battle log and mutating client-side state accordingly, effectively keeping track of the battle from a single player's point of view. If a new log type is ever added, it MUST be properly handled in `battler-state`. However, adding new logs SHOULD BE RARE and requires user approval.
+
+## Testing
+
+`battler` is a `no_std` crate. As such, tests should be run with `--no-default-features` as much as possible.

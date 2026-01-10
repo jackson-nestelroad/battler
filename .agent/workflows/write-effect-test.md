@@ -28,7 +28,9 @@ Your tests should match the structure of existing tests as closely as possible:
 
 In fact, it is acceptable and encouraged to use a test file for an existing effect as a *template* for your test.
 
-Tests should be as simple as possible and only test the required effect. Other simple effects can be used when required (for example, using a simple damaging move when a Mon needs to take damage). A battle should only go as long as reasonably required for testing, which is often only one turn.
+Individual test cases should be as simple as possible and only test the required effect. Other simple effects can be used when required (for example, using a simple damaging move when a Mon needs to take damage). A battle should only go as long as reasonably required for testing, which is often only one turn.
+
+You SHOULD minimuze the number of turns required to test.
 
 You SHOULD use `pass` actions as much as reasonably possible. For example, in a Singles battle, if only one Mon needs to move, the other player should use `pass`. In a Doubles battle, if only one Mon needs to move for a single player, the second Mon's action should be `pass`.
 
@@ -48,17 +50,22 @@ Every test MUST use a set seed to prevent minor RNG differences from failing tes
 
 If you are tempted to generate a large number of turns to verify an RNG-affected condition, consider using the `with_controlled_rng` option instead. This option allows you to call `insert_fake_values_relative_to_sequence_count` to control the RNG values used through the battle. Understanding the correct RNG values WILL require you to run the test multiple times to find the correct injections. Every RNG injection MUST be understood EXACTLY and explained with a comment.
 
-## Fixing Bugs in Non-Test Code
+## Completing Effect Implementations and Fixing Bugs in Non-Test Code
 
-In your testing, you may find a bug in either the fxlang code (JSON) or `battler` itself (Rust). For example, a function used by the effect fxlang code may not be implemented in `battler`.
+You may be instructed by the user to complete some implementation aspect of the effect. This may be in the fxlang code (JSON) or `battler` itself (Rust). For example, a function used by the effect fxlang code may not be implemented in `battler`, or there may be an incorrect implementation in the fxlang code.
 
-You MAY fix such bugs by creating a plan artifact to fix the bug and waiting for user approval.
+You SHOULD make such changes and fix such bugs by including the changes in your plan artifact and waiting for user approval.
+
+## Code Style
+
+Keep code comments as short as reasonably possible. If the code can reasonably be understood WITHOUT comments, then the comments SHOULD be removed.
 
 ## Step 1: Gather Requirements
 
 1. Ask the user for the following:
     1. The specific effect that must be tested.
     2. Any specific tests scenarios that should be included.
+    3. Ask for any additional code that must be completed for the effect to work.
 
 ## Step 2: Understand the Effect
 
