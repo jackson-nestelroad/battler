@@ -3402,8 +3402,8 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
 }
 
 /// Sets the types of a Mon.
-pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool> {
-    if types.contains(&Type::None) || types.contains(&Type::Stellar) {
+pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> Result<bool> {
+    if types.contains(&Type::Stellar) {
         return Ok(false);
     }
 
@@ -3418,8 +3418,9 @@ pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Resul
     }
 
     if types.is_empty() {
-        return Ok(false);
+        types = Vec::from_iter([Type::None]);
     }
+
     context.target_mut().volatile_state.types = types;
     let source = context.source_handle();
     let source_effect = context.source_effect_handle().cloned();
