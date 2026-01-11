@@ -6,12 +6,20 @@ trigger: always_on
 
 This rule describes the REQUIRED code style for Rust.
 
+## Variables
+
+ALWAYS remove intermediate variables that are defined once and used once, EXCEPT in cases where it improves readability (i.e., the variable is a multi-line definition). ALWAYS inline intermediate variables with a single line definition.
+
 ## Tests
 
 Use `assert_matches::assert_matches!` as much as possible for method calls that return a `Result`. Only use `unwrap` when the value must be stored for later parts of the test.
 
 ## Comments
 
-Keep code comments as short as reasonably possible. If the code can reasonably be understood WITHOUT comments, then the comments SHOULD be removed. Complex details about a test SHOULD be commented.
+Comments ALWAYS explain WHY not WHAT.
 
-You MAY use long, explanatory comments in iterative development, but these comments MUST be removed before completing the task.
+All public methods ALWAYS have a rustdoc comment.
+
+Code comments are ALWAYS as short as reasonably possible. If the code can reasonably be understood WITHOUT comments, then the comments MUST be removed. Complex details about a test SHOULD be commented.
+
+If you make code changes, ALWAYS verify surrounding comments are still valid. ALWAYS update comments, ensuring they are true.

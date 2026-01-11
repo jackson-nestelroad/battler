@@ -392,10 +392,12 @@ mod moves {
     mod gen5 {
         mod autotomize_test;
         mod guard_split_test;
+        mod magic_room_test;
         mod power_split_test;
         mod psyshock_test;
         mod sky_drop_test;
         mod smack_down_test;
+        mod telekinesis_test;
         mod venoshock_test;
         mod wide_guard_test;
         mod wonder_room_test;
