@@ -412,13 +412,13 @@
           ["$ratio = 0"],
           "else:",
           ["$ratio = $source_speed / $target_speed"],
-          "if $ratio == 0:",
+          "if $ratio < 1:",
           ["return 40"],
-          "if $ratio == 1:",
+          "if $ratio < 2:",
           ["return 60"],
-          "if $ratio == 2:",
+          "if $ratio < 3:",
           ["return 80"],
-          "if $ratio == 3:",
+          "if $ratio < 4:",
           ["return 120"],
           "return 150"
         ]
@@ -436,8 +436,10 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if $target.types == [water] or !func_call(set_types: $target [water]):",
-          ["log_fail: $target", "return false"]
+          "if $target.types == [water]:",
+          ["log_fail: $target $this.condition", "return"],
+          "if !func_call(set_types: $target [water]):",
+          ["log_fail: $target $this.condition", "return false"]
         ]
       }
     }

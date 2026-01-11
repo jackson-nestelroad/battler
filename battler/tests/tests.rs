@@ -391,6 +391,7 @@ mod moves {
 
     mod gen5 {
         mod autotomize_test;
+        mod electro_ball_test;
         mod flame_burst_test;
         mod guard_split_test;
         mod heavy_slam_test;
@@ -399,6 +400,7 @@ mod moves {
         mod psyshock_test;
         mod sky_drop_test;
         mod smack_down_test;
+        mod soak_test;
         mod telekinesis_test;
         mod venoshock_test;
         mod wide_guard_test;

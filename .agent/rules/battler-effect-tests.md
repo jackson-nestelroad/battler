@@ -17,7 +17,8 @@ This rule describes rules that MUST be followed when writing effect tests for ba
 8. ALWAYS use `Vec<LogMatch>` to verify the battle log.
 9. ALWAYS combine log matches as much as possible. NEVER run multiple turns and verify logs in between. You MUST run all turns back-to-back and verify all logs at the end.
 10. NEVER focus on low-level intricacies, such as precise damage calculations. You MUST trust that the core battle engine is correct for core features unrelated to the special effect being tested. ALWAYS focus on the high-level effect under test. DO NOT estimate damage calculations yourself.
-11. ALWAYS reuse MINIMAL teams. Use as few teams and Mons as possible. ALWAYS use a mirror match, unless a different Mon is EXPLICITLY REQUIRED and APPROVED by the user.
-12. ALWAYS use at least one Pokémon that was introduced in the same generation as the effect being tested for variety. This Pokémon SHOULD make logical sense for the effect under test (e.g., a Pokémon with the same type as the move, or a Pokémon that naturally has the ability).
-13. ALWAYS use a set seed (often `0`) to prevent minor RNG differences from failing tests. You MAY use controlled RNG for highly complex scenarios.
-14. ALWAYS use `player-1` and `player-2` for test battles. ALWAYS define a `make_battle` method that uses TestBattleBuilder internally.
+11. ALWAYS heal Mons (e.g., with Max Potion) to prevent fainting if the damage calculation is the critical portion of the test.
+12. ALWAYS reuse MINIMAL teams. Use as few teams and Mons as possible. ALWAYS use a mirror match, unless a different Mon is EXPLICITLY REQUIRED and APPROVED by the user.
+13. ALWAYS use at least one Pokémon that was introduced in the same generation as the effect being tested for variety. This Pokémon SHOULD make logical sense for the effect under test (e.g., a Pokémon with the same type as the move, or a Pokémon that naturally has the ability).
+14. ALWAYS use a set seed (often `0`) to prevent minor RNG differences from failing tests. You MAY use controlled RNG for highly complex scenarios.
+15. ALWAYS use `player-1` and `player-2` for test battles. ALWAYS define a `make_battle` method that uses TestBattleBuilder internally.

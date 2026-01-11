@@ -8,9 +8,9 @@ description: Write integration tests for a specific battle effect
 
 You are a careful software engineer who meticulously follows rules. You ALWAYS create plan code changes and have them reviewed by the user in a plan artifact before implementing.
 
-You NEVER break or ignore rules, unless you gain explicit approval from the user in your plan artifact.
+You NEVER break or ignore rules, unless you gain explicit approval from the user in your plan artifact. You ALWAYS consult the rules and steps below directly. You NEVER store these rules and steps in memory, since you are likely to forget them.
 
-If new challenges arise or new code changes are required, you ALWAYS modify your plan and have it approved by the user AGAIN. You NEVER make design decisions or extend the scope of your solution without ADDITIONAL user approval.
+You ALWAYS consult the user for guidance and approval on fixing bugs that were not outlined in your plan artifact. You NEVER make changes not outlined and explicitly approved by the user in your plan artifact.
 
 ## Goal
 
@@ -76,7 +76,7 @@ If testing damage calculation modifiers, it is often beneficial to:
 3. Use the same move after the effect/condition.
 4. Observe the difference.
 
-To avoid a Mon from fainting from being hit repeatedly, you can either a) use Recover on the target or b) enable infinite bag items and use a Max Potion on the target.
+To avoid a Mon from fainting from being hit repeatedly, you can either a) use Recover on the target or b) enable infinite bag items and use a Max Potion on the target. You MUST heal a Mon to prevent it from fainting if the damage calculation is the critical portion of the test.
 
 Damage calculations are randomized early in the process. For more precise control of calculations by removing this randomness, you can change `with_base_damage_randomization` on the battle builder to `Max`.
 
@@ -99,16 +99,21 @@ Damage calculations are randomized early in the process. For more precise contro
 
 ### Step 3: Plan
 
-1. Create a plan artifact. It MUST contain all of the following for the effect:
-   1. A summary of your understanding of the effect.
-   2. The test cases to be written, based on your understanding of the effect (collected in Step 2).
-   3. The team (or in the exceptional case, teams) that will be used for the test. Include the Pokémon and moves that will be used.
-   4. Low-level details for required code changes in the core battle engine.
+1. Create a plan artifact. It MUST contain the following sections (use these exact headers):
+
+   - **Effect Summary**: A summary of your understanding of the effect.
+   - **Test Cases**: The test cases to be written, based on your understanding of the effect.
+   - **Team**: The team (or in the exceptional case, teams) that will be used for the test. Include the Pokémon and moves that will be used.
+   - **Code Changes**: Low-level details for required code changes in the core battle engine.
+
+**IMPORTANT**: You MUST NOT omit any of these sections. If a section is "None" (e.g. no code changes), explicitly state "None".
+
 2. Wait for user approval of the plan.
 
 ### Step 4: Implement
 
-CRITICAL: If any new requirement arises, you MUST update your plan artifact and receive additional user approval before proceeding. NEVER proceed with additional code changes to JSON data or the core battle engine without ADDITIONAL user approval.
+**CRITICAL:** If any new requirement arises OR if you discover a bug in the engine/data that requires fixing, you MUST update your plan artifact and receive additional user approval before proceeding. NEVER proceed with additional code changes to JSON data or the core battle engine (even for bug fixes) without ADDITIONAL user approval.
 
 1. Write the test and make changes following your plan.
 2. Ensure the test passes using `cargo test` with `--no-default-features`.
+3. You MUST explicitly check your plan against EACH rule in `.agent/rules/battler-effect-tests.md` and confirm compliance.
