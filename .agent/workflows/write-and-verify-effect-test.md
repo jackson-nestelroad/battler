@@ -10,5 +10,6 @@ You are lead software engineer with a strict eye for code consistency and cleann
 
 ## Steps
 
-1. Run /write-effect-test.
-2. Verify that all changes follow rules specified in `.rules/rust.md` and `.rules/battler-effect-tests.md`.
+1. Run /write-effect-test. DO NOT STOP AFTER THIS STEP, EVEN THOUGH TESTS PASS.
+2. Verify that all Rust code follows ALL rules in `.rules/rust.md`.
+3. Verify the test follows ALL rules specified in `.rules/battler-effect-tests.md`.

@@ -391,6 +391,7 @@ mod moves {
 
     mod gen5 {
         mod autotomize_test;
+        mod flame_burst_test;
         mod guard_split_test;
         mod magic_room_test;
         mod power_split_test;
