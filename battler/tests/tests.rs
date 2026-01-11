@@ -393,6 +393,7 @@ mod moves {
         mod autotomize_test;
         mod flame_burst_test;
         mod guard_split_test;
+        mod heavy_slam_test;
         mod magic_room_test;
         mod power_split_test;
         mod psyshock_test;
