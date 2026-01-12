@@ -393,6 +393,7 @@ mod moves {
         mod ally_switch_test;
         mod autotomize_test;
         mod electro_ball_test;
+        mod entrainment_test;
         mod flame_burst_test;
         mod foul_play_test;
         mod guard_split_test;
@@ -400,6 +401,7 @@ mod moves {
         mod magic_room_test;
         mod power_split_test;
         mod psyshock_test;
+        mod simple_beam_test;
         mod sky_drop_test;
         mod smack_down_test;
         mod soak_test;
