@@ -738,7 +738,39 @@
     "accuracy": "exempt",
     "priority": 2,
     "target": "User",
-    "flags": ["BypassMaxGuard"]
+    "flags": ["BypassMaxGuard"],
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": ["return func_call(add_volatile: $user $this.id)"],
+        "on_try_hit": [
+          "# There must be a corresponding position to switch to (i.e., player has more than one Mon).",
+          "$active_positions = $target.player.total_active_positions",
+          "if $active_positions <= 1:",
+          ["return false"],
+          "# Fail if Mon is in the middle.",
+          "if $active_positions % 2 == 1 and $target.active_position == func_call(floor: expr($active_positions / 2)):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "$position = $target.player.total_active_positions - $target.active_position - 1",
+          "return func_call(swap_position: $target $position)"
+        ]
+      }
+    },
+    "condition": {
+      "duration": 2,
+      "callbacks": {
+        "on_start": ["$effect_state.counter = 3"],
+        "on_restart": [
+          "if !func_call(chance: $effect_state.counter):",
+          ["remove_volatile: $target $this.id no_events", "return false"],
+          "if $effect_state.counter < 729:",
+          ["$effect_state.counter = $effect_state.counter * 3"],
+          "$effect_state.duration = 2",
+          "return true"
+        ]
+      }
+    }
   },
   "scald": {
     "name": "Scald",

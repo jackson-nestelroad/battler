@@ -570,7 +570,8 @@
         "on_restart": [
           "if $effect_state.counter < 729:",
           ["$effect_state.counter = $effect_state.counter * 3"],
-          "$effect_state.duration = 2"
+          "$effect_state.duration = 2",
+          "return true"
         ],
         "on_stall_move": [
           "$success = func_call(chance: $effect_state.counter)",

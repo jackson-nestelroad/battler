@@ -390,9 +390,11 @@ mod moves {
     }
 
     mod gen5 {
+        mod ally_switch_test;
         mod autotomize_test;
         mod electro_ball_test;
         mod flame_burst_test;
+        mod foul_play_test;
         mod guard_split_test;
         mod heavy_slam_test;
         mod magic_room_test;

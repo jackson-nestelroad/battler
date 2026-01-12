@@ -310,6 +310,7 @@ pub fn revert_terastallization(context: &mut ApplyingEffectContext) -> Result<()
         activation,
     )
 }
+
 pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,
@@ -1243,6 +1244,21 @@ pub fn catch(
     effect_activation(
         context.as_battle_context_mut(),
         "catch".to_owned(),
+        activation,
+    )
+}
+
+pub fn swap(context: &mut ApplyingEffectContext, position: usize) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("position:{position}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swap".to_owned(),
         activation,
     )
 }

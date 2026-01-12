@@ -5813,3 +5813,66 @@ pub fn end_terastallization(context: &mut ApplyingEffectContext) -> Result<()> {
     core_battle_logs::revert_terastallization(context)?;
     Ok(())
 }
+
+/// Swaps the positions of two Mons from the same player.
+///
+/// Swapping positions is typically only legal in Doubles and Triples battles, in which all players
+/// are from the same Mon (thus, it appears the Mon switches across Mons on the entire side). Mons
+/// switching positions between players is IMPOSSIBLE.
+pub fn swap_position(
+    context: &mut ApplyingEffectContext,
+    new_position: usize,
+    allow_empty_target: bool,
+) -> Result<bool> {
+    let ((source, old_position), (target, new_position)) = {
+        let context = context.target_context()?;
+
+        if new_position > context.player().total_active_positions() {
+            return Ok(false);
+        }
+
+        let source = context.mon_handle();
+        let target = context.player().active_mon_handle(new_position);
+        if target.is_none() && !allow_empty_target {
+            return Ok(false);
+        }
+
+        let old_position = match context.mon().active_position {
+            Some(old_position) => old_position,
+            None => return Ok(false),
+        };
+
+        if new_position == old_position {
+            return Ok(false);
+        }
+
+        ((source, old_position), (target, new_position))
+    };
+
+    // Log before applying the swap, so that the old Mon position is used in the log. Otherwise, the
+    // Mon will appear to have already been swapped, which is confusing for clients.
+    core_battle_logs::swap(context, new_position + 1)?;
+
+    {
+        let mut context = context.target_context()?;
+
+        context
+            .player_mut()
+            .set_active_position(new_position, Some(source))?;
+        context
+            .player_mut()
+            .set_active_position(old_position, target)?;
+
+        context.mon_mut().active_position = Some(new_position);
+        context.mon_mut().effective_team_position = new_position;
+        if let Some(target) = target {
+            let mut context = context.as_player_context_mut().mon_context(target)?;
+            context.mon_mut().active_position = Some(old_position);
+            context.mon_mut().effective_team_position = old_position;
+        }
+
+        // TODO: Swap event on both Mons.
+    }
+
+    Ok(true)
+}

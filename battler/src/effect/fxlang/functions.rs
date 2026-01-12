@@ -306,6 +306,7 @@ pub fn run_function(
         "start_item" => start_item(context).map(|()| None),
         "status_effect_state" => status_effect_state(context),
         "swap_boosts" => swap_boosts(context).map(|()| None),
+        "swap_position" => swap_position(context).map(|val| Some(val)),
         "take_item" => take_item(context),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
         "transform_into" => transform_into(context).map(|val| Some(val)),
@@ -4067,4 +4068,19 @@ fn get_move_targets(mut context: FunctionContext) -> Result<Value> {
                 .collect(),
         )
     })
+}
+
+fn swap_position(mut context: FunctionContext) -> Result<Value> {
+    let target_handle = context.target_handle_positional()?;
+    let position = context
+        .pop_front()
+        .wrap_expectation("missing position")?
+        .integer_usize()
+        .wrap_error_with_message("invalid position")?;
+    core_battle_actions::swap_position(
+        &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        position,
+        false,
+    )
+    .map(Value::Boolean)
 }

@@ -479,6 +479,14 @@ where
                             "active_move_actions" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.active_move_actions.into(),
                             ),
+                            "active_position" => match context.mon(mon_handle)?.active_position {
+                                Some(active_position) => ValueRef::UFraction(
+                                    TryInto::<u64>::try_into(active_position)
+                                        .map_err(integer_overflow_error)?
+                                        .into(),
+                                ),
+                                None => ValueRef::Undefined,
+                            },
                             "active_turns" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.active_turns.into())
                             }
@@ -770,6 +778,17 @@ where
                                 )?
                                 .map(|mon| ValueRefToStoredValue::new(None, ValueRef::Mon(mon)))
                                 .collect(),
+                            ),
+                            "total_active_positions" => ValueRef::UFraction(
+                                TryInto::<u64>::try_into(
+                                    context
+                                        .battle_context_mut()
+                                        .player_context(player)?
+                                        .player()
+                                        .total_active_positions(),
+                                )
+                                .map_err(integer_overflow_error)?
+                                .into(),
                             ),
                             "wild_encounter_type" => Player::wild_encounter_type(
                                 &mut context.battle_context_mut().player_context(player)?,

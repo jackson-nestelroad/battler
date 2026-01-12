@@ -12,7 +12,9 @@ ALWAYS remove intermediate variables that are defined once and used once, EXCEPT
 
 ## Tests
 
-Use `assert_matches::assert_matches!` as much as possible for method calls that return a `Result`. Only use `unwrap` when the value must be stored for later parts of the test.
+Use `assert_matches::assert_matches!` as much as possible for method calls that return a `Result`. Only use `unwrap` when the value must be stored for later parts of the test. NEVER import `assert_matches::assert_matches!`. ALWAYS fully qualify `assert_matches::assert_matches!`.
+
+ALWAYS fully qualify `pretty_assertions::assert_eq!`.
 
 ## Comments
 
