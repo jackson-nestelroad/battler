@@ -100,10 +100,9 @@ Damage calculations are randomized early in the process. For more precise contro
 ### Step 3: Plan
 
 1. Create a plan artifact. It MUST contain the following sections (use these exact headers):
-
    - **Effect Summary**: A summary of your understanding of the effect.
    - **Test Cases**: The test cases to be written, based on your understanding of the effect.
-   - **Team**: The team (or in the exceptional case, teams) that will be used for the test. Include the Pokémon and moves that will be used. ALWAYS consult rules in `.rules/battler-effect-tests.md` for team selection. ALWAYS use mirror matches unless multiple Mons are required. NEVER include moves, items, abilities, etc. that are not required for the test.
+   - **Team**: The team (or in the exceptional case, teams) that will be used for the test. Include the Pokémon and moves that will be used. ALWAYS consult rules in `.rules/battler-effect-tests.md` for team selection. ALWAYS use mirror matches unless multiple Mons are required. ALWAYS reuse teams if their Mons are equivalent. NEVER include moves, items, abilities, etc. that are not required for the test.
    - **Code Changes**: Low-level details for required code changes in the core battle engine.
 
 **IMPORTANT**: You MUST NOT omit any of these sections. If a section is "None" (e.g. no code changes), explicitly state "None".

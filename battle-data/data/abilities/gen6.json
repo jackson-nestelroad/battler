@@ -12,7 +12,22 @@
   "sweetveil": { "name": "Sweet Veil", "flags": [] },
   "stancechange": { "name": "Stance Change", "flags": ["Permanent"] },
   "galewings": { "name": "Gale Wings", "flags": [] },
-  "megalauncher": { "name": "Mega Launcher", "flags": [] },
+  "megalauncher": {
+    "name": "Mega Launcher",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if func_call(move_has_flag: $move pulse):",
+          ["return $base_power * 3/2"]
+        ],
+        "on_prepare_hit": [
+          "if $move.id == healpulse:",
+          ["$move.effect_state.multiplier = 3/4"]
+        ]
+      }
+    }
+  },
   "grasspelt": { "name": "Grass Pelt", "flags": [] },
   "symbiosis": { "name": "Symbiosis", "flags": [] },
   "toughclaws": { "name": "Tough Claws", "flags": [] },

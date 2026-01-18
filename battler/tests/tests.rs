@@ -390,6 +390,7 @@ mod moves {
     }
 
     mod gen5 {
+        mod after_you_test;
         mod ally_switch_test;
         mod autotomize_test;
         mod electro_ball_test;

@@ -780,7 +780,8 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"]
+    "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"],
+    "secondary_effects": [{ "chance": "30%", "target": { "status": "brn" } }]
   },
   "shellsmash": {
     "name": "Shell Smash",
@@ -789,7 +790,16 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "def": -1,
+        "spd": -1,
+        "atk": 2,
+        "spa": 2,
+        "spe": 2
+      }
+    }
   },
   "healpulse": {
     "name": "Heal Pulse",
@@ -798,7 +808,17 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Any",
-    "flags": ["Distance", "Heal", "Protect", "Pulse", "Reflectable"]
+    "flags": ["Distance", "Heal", "Protect", "Pulse", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$multiplier = 1/2",
+          "if $move.effect_state.multiplier.is_defined:",
+          ["$multiplier = $move.effect_state.multiplier"],
+          "return func_call(heal: $target expr($target.base_max_hp * $multiplier)) > 0"
+        ]
+      }
+    }
   },
   "hex": {
     "name": "Hex",
@@ -808,7 +828,15 @@
     "accuracy": 100,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $target.status.is_defined or $target.is_asleep:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "skydrop": {
     "name": "Sky Drop",
@@ -877,7 +905,13 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 2,
+        "spe": 2
+      }
+    }
   },
   "circlethrow": {
     "name": "Circle Throw",
@@ -888,7 +922,10 @@
     "base_power": 60,
     "priority": -6,
     "target": "Normal",
-    "flags": ["Contact", "FailCopycat", "Mirror", "NoAssist", "Protect"]
+    "flags": ["Contact", "FailCopycat", "Mirror", "NoAssist", "Protect"],
+    "hit_effect": {
+      "force_switch": true
+    }
   },
   "incinerate": {
     "name": "Incinerate",
@@ -898,7 +935,16 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$item = $target.item",
+          "if $item.is_defined and (func_call(item_has_flag: $item berry) or func_call(item_has_flag: $item gem)):",
+          ["take_item: $target"]
+        ]
+      }
+    }
   },
   "quash": {
     "name": "Quash",
@@ -907,7 +953,19 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if $format.mons_per_side == 1:",
+          ["return false"],
+          "if !func_call(will_move_this_turn: $target):",
+          ["return false"],
+          "deprioritize_move: $target",
+          "log_activate: $target"
+        ]
+      }
+    }
   },
   "acrobatics": {
     "name": "Acrobatics",
