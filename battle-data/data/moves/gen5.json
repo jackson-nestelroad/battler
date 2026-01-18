@@ -975,7 +975,15 @@
     "accuracy": 100,
     "base_power": 55,
     "target": "Any",
-    "flags": ["Contact", "Distance", "Mirror", "Protect"]
+    "flags": ["Contact", "Distance", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if !$source.item:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "reflecttype": {
     "name": "Reflect Type",
@@ -984,7 +992,14 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Protect"]
+    "flags": ["BypassSubstitute", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "return func_call(set_types: $target $source.effective_types)"
+        ]
+      }
+    }
   },
   "retaliate": {
     "name": "Retaliate",
@@ -994,7 +1009,15 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $source.player.mon_fainted_last_turn:",
+          ["return $base_power * 2"]
+        ]
+      }
+    }
   },
   "finalgambit": {
     "name": "Final Gambit",
@@ -1004,7 +1027,12 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["NoParentalBond", "Protect"],
-    "self_destruct": true
+    "self_destruct": "ifhit",
+    "effect": {
+      "callbacks": {
+        "on_move_damage": ["return $source.hp"]
+      }
+    }
   },
   "bestow": {
     "name": "Bestow",
@@ -1019,7 +1047,23 @@
       "Mirror",
       "NoAssist",
       "NoMetronome"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if !$source.item:",
+          ["return false"],
+          "if !func_call(set_item: $target $source.item dry_run):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "$item = func_call(take_item: $target)",
+          "if !$item:",
+          ["return false"],
+          "return func_call(set_item: $target $item)"
+        ]
+      }
+    }
   },
   "inferno": {
     "name": "Inferno",
@@ -1029,7 +1073,14 @@
     "accuracy": 50,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "waterpledge": {
     "name": "Water Pledge",
@@ -1039,7 +1090,10 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "PledgeCombo", "Protect"]
+    "flags": ["Mirror", "PledgeCombo", "Protect"],
+    "effect": {
+      "delegates": ["condition:pledgemovebase"]
+    }
   },
   "firepledge": {
     "name": "Fire Pledge",
@@ -1049,7 +1103,10 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "PledgeCombo", "Protect"]
+    "flags": ["Mirror", "PledgeCombo", "Protect"],
+    "effect": {
+      "delegates": ["condition:pledgemovebase"]
+    }
   },
   "grasspledge": {
     "name": "Grass Pledge",
@@ -1059,7 +1116,10 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Mirror", "PledgeCombo", "Protect"]
+    "flags": ["Mirror", "PledgeCombo", "Protect"],
+    "effect": {
+      "delegates": ["condition:pledgemovebase"]
+    }
   },
   "voltswitch": {
     "name": "Volt Switch",
