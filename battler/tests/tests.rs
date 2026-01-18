@@ -402,6 +402,7 @@ mod moves {
         mod magic_room_test;
         mod power_split_test;
         mod psyshock_test;
+        mod quash_test;
         mod simple_beam_test;
         mod sky_drop_test;
         mod smack_down_test;

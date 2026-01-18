@@ -18,6 +18,7 @@ use crate::battle::{
     CoreBattleEngineSpeedSortTieResolution,
     MonHandle,
     MoveAction,
+    SpeedOrderable,
     compare_priority,
     speed_sort,
 };
@@ -197,6 +198,33 @@ impl BattleQueue {
                 move_action.order = Some(6);
             }
             self.actions.push_front(action);
+        }
+    }
+
+    /// Deprioritizes a move for the given Mon, essentially making it the last move action.
+    ///
+    /// The move is moved to the back of the queue, and its order is updated to the back.
+    pub fn deprioritize_move(&mut self, mon: MonHandle) {
+        const DEPRIORITIZED_MOVE_ORDER: u32 = 201;
+
+        let index = self.actions.iter().position(|action| match action {
+            Action::Move(action) => action.mon_action.mon == mon,
+            _ => false,
+        });
+
+        if let Some(index) = index {
+            // SAFETY: `index` is valid and a MoveAction, since it was searched above.
+            let mut action = self.actions.remove(index).unwrap();
+            if let Action::Move(move_action) = &mut action {
+                move_action.order = Some(DEPRIORITIZED_MOVE_ORDER);
+            }
+
+            let insert_index = self
+                .actions
+                .iter()
+                .position(|action| action.order() > DEPRIORITIZED_MOVE_ORDER)
+                .unwrap_or(self.actions.len());
+            self.actions.insert(insert_index, action);
         }
     }
 

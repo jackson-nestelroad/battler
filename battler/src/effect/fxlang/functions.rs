@@ -154,6 +154,7 @@ pub fn run_function(
         "decrease_friendship" => decrease_friendship(context).map(|()| None),
         "decrease_weight" => decrease_weight(context).map(|()| None),
         "deduct_pp" => deduct_pp(context).map(|val| Some(val)),
+        "deprioritize_move" => deprioritize_move(context).map(|()| None),
         "direct_damage" => direct_damage(context).map(|()| None),
         "disable_move" => disable_move(context).map(|()| None),
         "discard_item" => discard_item(context).map(|val| Some(val)),
@@ -3243,6 +3244,16 @@ fn prioritize_move(mut context: FunctionContext) -> Result<()> {
         .battle_mut()
         .queue
         .prioritize_move(mon_handle);
+    Ok(())
+}
+
+fn deprioritize_move(mut context: FunctionContext) -> Result<()> {
+    let mon_handle = context.target_handle_positional()?;
+    context
+        .battle_context_mut()
+        .battle_mut()
+        .queue
+        .deprioritize_move(mon_handle);
     Ok(())
 }
 

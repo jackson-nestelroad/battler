@@ -962,7 +962,7 @@
           "if !func_call(will_move_this_turn: $target):",
           ["return false"],
           "deprioritize_move: $target",
-          "log_activate: $target"
+          "log_activate: with_target"
         ]
       }
     }

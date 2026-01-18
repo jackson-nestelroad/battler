@@ -18,6 +18,10 @@ ALWAYS fully qualify `pretty_assertions::assert_eq!`.
 
 ## Comments
 
+NEVER talk to yourself or have a conversation with the user through comments.
+
+ALWAYS use full sentences with correct grammar and spelling.
+
 Comments ALWAYS explain WHY not WHAT.
 
 All public methods ALWAYS have a rustdoc comment.
