@@ -1095,19 +1095,21 @@
       "delegates": ["condition:pledgemovebase"],
       "callbacks": {
         "on_use_move": [
-          "if !$move.source_effect:",
+          "if !$move.effect_state.source_effect:",
           ["return"],
-          "if $move.source_effect.id == grasspledge:",
+          "if $move.effect_state.source_effect.id == grasspledge:",
           [
             "$move.force_stab = true",
             "$move.type = grass",
+            "$move.hit_effect = func_call(hit_effect)",
             "$move.hit_effect.side_condition = grasspledge"
           ],
-          "if $move.source_effect.id == firepledge:",
+          "if $move.effect_state.source_effect.id == firepledge:",
           [
             "$move.force_stab = true",
-            "$move.type = fire",
-            "$move.hit_effect.side_condition = firepledge"
+            "$move.type = water",
+            "$move.hit_effect = func_call(hit_effect)",
+            "$move.hit_effect.side_condition = waterpledge"
           ]
         ]
       }
@@ -1149,18 +1151,20 @@
       "delegates": ["condition:pledgemovebase"],
       "callbacks": {
         "on_use_move": [
-          "if !$move.source_effect:",
+          "if !$move.effect_state.source_effect:",
           ["return"],
-          "if $move.source_effect.id == grasspledge:",
+          "if $move.effect_state.source_effect.id == grasspledge:",
           [
             "$move.force_stab = true",
-            "$move.type = grass",
-            "$move.hit_effect.side_condition = grasspledge"
+            "$move.type = fire",
+            "$move.hit_effect = func_call(hit_effect)",
+            "$move.hit_effect.side_condition = firepledge"
           ],
-          "if $move.source_effect.id == waterpledge:",
+          "if $move.effect_state.source_effect.id == waterpledge:",
           [
             "$move.force_stab = true",
             "$move.type = water",
+            "$move.hit_effect = func_call(hit_effect)",
             "$move.hit_effect.side_condition = waterpledge"
           ]
         ]
@@ -1191,19 +1195,21 @@
       "delegates": ["condition:pledgemovebase"],
       "callbacks": {
         "on_use_move": [
-          "if !$move.source_effect:",
+          "if !$move.effect_state.source_effect:",
           ["return"],
-          "if $move.source_effect.id == firepledge:",
+          "if $move.effect_state.source_effect.id == firepledge:",
           [
             "$move.force_stab = true",
             "$move.type = fire",
+            "$move.hit_effect = func_call(hit_effect)",
             "$move.hit_effect.side_condition = firepledge"
           ],
-          "if $move.source_effect.id == waterpledge:",
+          "if $move.effect_state.source_effect.id == waterpledge:",
           [
             "$move.force_stab = true",
-            "$move.type = water",
-            "$move.hit_effect.side_condition = waterpledge"
+            "$move.type = grass",
+            "$move.hit_effect = func_call(hit_effect)",
+            "$move.hit_effect.side_condition = grasspledge"
           ]
         ]
       }

@@ -9,18 +9,21 @@ use battler_prng::{
     rand_util,
 };
 
-use crate::battle::{
-    Action,
-    BeforeMoveAction,
-    BeforeMoveActionInput,
-    Context,
-    CoreBattle,
-    CoreBattleEngineSpeedSortTieResolution,
-    MonHandle,
-    MoveAction,
-    SpeedOrderable,
-    compare_priority,
-    speed_sort,
+use crate::{
+    battle::{
+        Action,
+        BeforeMoveAction,
+        BeforeMoveActionInput,
+        Context,
+        CoreBattle,
+        CoreBattleEngineSpeedSortTieResolution,
+        MonHandle,
+        MoveAction,
+        SpeedOrderable,
+        compare_priority,
+        speed_sort,
+    },
+    effect::EffectHandle,
 };
 
 /// A queue of [`Action`]s to be run in a [`CoreBattle`][`crate::battle::CoreBattle`].
@@ -185,47 +188,77 @@ impl BattleQueue {
     /// Prioritizes a move for the given Mon, essentially making it the next action.
     ///
     /// The move is moved to the front of the queue, and its order is updated to the front.
-    pub fn prioritize_move(&mut self, mon: MonHandle) {
-        let index = self.actions.iter().position(|action| match action {
-            Action::Move(action) => action.mon_action.mon == mon,
-            _ => false,
-        });
+    pub fn prioritize_move(
+        context: &mut Context,
+        mon: MonHandle,
+        source_effect: Option<EffectHandle>,
+    ) -> Result<()> {
+        let index = context
+            .battle_mut()
+            .queue
+            .actions
+            .iter()
+            .position(|action| match action {
+                Action::Move(action) => action.mon_action.mon == mon,
+                _ => false,
+            });
 
         if let Some(index) = index {
             // SAFETY: `index` is valid and a MoveAction, since it was searched above.
-            let mut action = self.actions.remove(index).unwrap();
-            if let Action::Move(move_action) = &mut action {
+            let mut action = context.battle_mut().queue.actions.remove(index).unwrap();
+            if let Some(source_effect) = source_effect
+                && let Action::Move(move_action) = &mut action
+            {
                 move_action.order = Some(6);
+                if let Some(active_move) = move_action.active_move_handle {
+                    context
+                        .active_move_mut(active_move)?
+                        .effect_state
+                        .set_source_effect(source_effect);
+                }
             }
-            self.actions.push_front(action);
+            context.battle_mut().queue.actions.push_front(action);
         }
+        Ok(())
     }
 
     /// Deprioritizes a move for the given Mon, essentially making it the last move action.
     ///
     /// The move is moved to the back of the queue, and its order is updated to the back.
-    pub fn deprioritize_move(&mut self, mon: MonHandle) {
+    pub fn deprioritize_move(context: &mut Context, mon: MonHandle) -> Result<()> {
         const DEPRIORITIZED_MOVE_ORDER: u32 = 201;
 
-        let index = self.actions.iter().position(|action| match action {
-            Action::Move(action) => action.mon_action.mon == mon,
-            _ => false,
-        });
+        let index = context
+            .battle_mut()
+            .queue
+            .actions
+            .iter()
+            .position(|action| match action {
+                Action::Move(action) => action.mon_action.mon == mon,
+                _ => false,
+            });
 
         if let Some(index) = index {
             // SAFETY: `index` is valid and a MoveAction, since it was searched above.
-            let mut action = self.actions.remove(index).unwrap();
+            let mut action = context.battle_mut().queue.actions.remove(index).unwrap();
             if let Action::Move(move_action) = &mut action {
                 move_action.order = Some(DEPRIORITIZED_MOVE_ORDER);
             }
 
-            let insert_index = self
+            let insert_index = context
+                .battle_mut()
+                .queue
                 .actions
                 .iter()
                 .position(|action| action.order() > DEPRIORITIZED_MOVE_ORDER)
-                .unwrap_or(self.actions.len());
-            self.actions.insert(insert_index, action);
+                .unwrap_or(context.battle_mut().queue.actions.len());
+            context
+                .battle_mut()
+                .queue
+                .actions
+                .insert(insert_index, action);
         }
+        Ok(())
     }
 
     /// Returns a list of all pending move actions.

@@ -445,6 +445,19 @@ pub fn faint(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "faint")
 }
 
+pub fn waiting(context: &mut MonContext, target: MonHandle) -> Result<()> {
+    let event = battle_log_entry!(
+        "waiting",
+        ("mon", Mon::position_details(context)?),
+        (
+            "on",
+            Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?
+        )
+    );
+    context.battle_mut().log(event);
+    Ok(())
+}
+
 pub fn damage(
     context: &mut MonContext,
     effect: Option<EffectHandle>,

@@ -40,6 +40,7 @@ use crate::{
     battle::{
         ActiveMoveContext,
         ApplyingEffectContext,
+        BattleQueue,
         Context,
         CoreBattle,
         EffectContext,
@@ -222,6 +223,7 @@ pub fn run_function(
         "log_single_turn" => log_single_turn(context).map(|()| None),
         "log_start" => log_start(context).map(|()| None),
         "log_status" => log_status(context).map(|()| None),
+        "log_waiting" => log_waiting(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
         "max" => max(context).map(|val| Some(val)),
         "max_move" => max_move(context),
@@ -2523,6 +2525,20 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
     .map(|val| Value::Boolean(val))
 }
 
+fn log_waiting(mut context: FunctionContext) -> Result<()> {
+    let mon = context
+        .pop_front()
+        .wrap_expectation("missing mon")?
+        .mon_handle()
+        .wrap_error_with_message("invalid mon")?;
+    let target = context
+        .pop_front()
+        .wrap_expectation("missing target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid target")?;
+    core_battle_logs::waiting(&mut context.mon_context(mon)?, target)
+}
+
 fn use_move(mut context: FunctionContext) -> Result<Value> {
     let source_effect = context.source_effect_handle()?;
     let indirect = context.has_flag("indirect");
@@ -3239,21 +3255,17 @@ fn cancel_move(mut context: FunctionContext) -> Result<Value> {
 
 fn prioritize_move(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
-    context
-        .battle_context_mut()
-        .battle_mut()
-        .queue
-        .prioritize_move(mon_handle);
+    let source_effect = context
+        .pop_front()
+        .map(|val| val.effect_handle().ok())
+        .flatten();
+    BattleQueue::prioritize_move(context.battle_context_mut(), mon_handle, source_effect)?;
     Ok(())
 }
 
 fn deprioritize_move(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
-    context
-        .battle_context_mut()
-        .battle_mut()
-        .queue
-        .deprioritize_move(mon_handle);
+    BattleQueue::deprioritize_move(context.battle_context_mut(), mon_handle)?;
     Ok(())
 }
 

@@ -88,24 +88,24 @@
     "condition": {
       "callbacks": {
         "on_prepare_hit": [
-          "if $move.source_effect.is_defined and func_call(move_has_flag: $move.source_effect.id pledgecombo):",
+          "if $move.effect_state.source_effect.is_defined and func_call(move_has_flag: $move.effect_state.source_effect.id pledgecombo):",
           ["return"],
-          "for $action in func_call(pending_move_actions_this_turn):",
+          "foreach $action in func_call(pending_move_actions_this_turn):",
           [
             "if !$action.mon.active or $action.mon.fainted:",
             ["continue"],
             "$other_move_id = $action.effective_id",
-            "if func_call(is_ally: $source $action.mon) and $other_move_id != $this.id and func_call(move_has_flag: $other_move_id pledgecombo):",
+            "if func_call(is_ally: $user $action.mon) and $other_move_id != $this.id and func_call(move_has_flag: $other_move_id pledgecombo):",
             [
-              "prioritize_move: $action.mon",
-              "log_waiting: $source $action.mon",
+              "prioritize_move: $action.mon $this",
+              "log_waiting: $user $action.mon",
               "return stop"
             ]
           ]
         ],
         "on_move_base_power": [
-          "if $move.source_effect.is_defined and $move.source_effect.id != $this.id and func_call(move_has_flag: $move.source_effect pledgecombo):",
-          ["log_combine", "return 150"]
+          "if $move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id != $this.id and func_call(move_has_flag: $move.effect_state.source_effect pledgecombo):",
+          ["log: combine", "return 150"]
         ]
       }
     }
