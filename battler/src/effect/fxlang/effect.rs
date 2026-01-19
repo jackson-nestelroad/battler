@@ -611,11 +611,6 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ForceEscape"]
     ForceEscape,
-    /// Runs when determining if a move gains a STAB multiplier.
-    ///
-    /// Runs in the context of a move user.
-    #[string = "ForceStab"]
-    ForceStab,
     /// Runs when determining the types of a Mon, to force types early.
     ///
     /// Runs in the context of a Mon.
@@ -1283,7 +1278,6 @@ impl BattleEvent {
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::ForceEffectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ForceEscape => CommonCallbackType::MonResult as u32,
-            Self::ForceStab => CommonCallbackType::SourceMoveModifier as u32,
             Self::ForceTypes => CommonCallbackType::MonTypes as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
@@ -1450,7 +1444,7 @@ impl BattleEvent {
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
-            Self::ModifyStab | Self::ForceStab => &[("stab", ValueType::UFraction, true)],
+            Self::ModifyStab => &[("stab", ValueType::UFraction, true)],
             Self::ModifyTarget => &[("target", ValueType::Mon, false)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],

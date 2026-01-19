@@ -1110,7 +1110,10 @@
           "order": 1,
           "program": ["return false"]
         },
-        "on_force_stab": ["if $user.terastallized == stellar:", ["return 1"]],
+        "on_use_move": [
+          "if $user.terastallized == stellar:",
+          ["$move.force_stab = true"]
+        ],
         "on_modify_stab": {
           "order": 1,
           "program": [
@@ -1128,7 +1131,8 @@
                 ["$stab = 6/5"],
                 "$effect_state.boosted_types = func_call(object_set: $effect_state.boosted_types $move.type.to_string true)",
                 "return $stab"
-              ]
+              ],
+              "return 1"
             ],
             "else if func_call(has_type_before_forced_types: $user $user.terastallized):",
             ["return $stab * 4/3"]

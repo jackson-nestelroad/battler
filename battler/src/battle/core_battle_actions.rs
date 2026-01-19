@@ -1747,23 +1747,15 @@ fn modify_damage(
 
     // STAB.
     let move_type = context.active_move().data.primary_type;
-    let stab = !context.active_move().data.typeless
-        && (mon_states::has_type(context.as_mon_context_mut(), move_type)
-            || mon_states::has_type_before_forced_types(context.as_mon_context_mut(), move_type));
-    let stab_modifier = if stab {
-        context
-            .active_move()
-            .clone()
-            .stab_modifier
-            .unwrap_or(Fraction::new(3, 2))
-    } else {
-        core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
-            &mut context.user_applying_effect_context()?,
-            fxlang::BattleEvent::ForceStab,
-            0u32.into(),
-        )
-    };
-    if stab_modifier > 0 {
+    let stab = context.active_move().data.force_stab
+        || (!context.active_move().data.typeless
+            && (mon_states::has_type(context.as_mon_context_mut(), move_type)
+                || mon_states::has_type_before_forced_types(
+                    context.as_mon_context_mut(),
+                    move_type,
+                )));
+    if stab {
+        let stab_modifier = Fraction::new(3, 2);
         let stab_modifier =
             core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
                 &mut context.user_applying_effect_context()?,

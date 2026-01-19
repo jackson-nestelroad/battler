@@ -1092,7 +1092,48 @@
     "target": "Normal",
     "flags": ["Mirror", "PledgeCombo", "Protect"],
     "effect": {
-      "delegates": ["condition:pledgemovebase"]
+      "delegates": ["condition:pledgemovebase"],
+      "callbacks": {
+        "on_use_move": [
+          "if !$move.source_effect:",
+          ["return"],
+          "if $move.source_effect.id == grasspledge:",
+          [
+            "$move.force_stab = true",
+            "$move.type = grass",
+            "$move.hit_effect.side_condition = grasspledge"
+          ],
+          "if $move.source_effect.id == firepledge:",
+          [
+            "$move.force_stab = true",
+            "$move.type = fire",
+            "$move.hit_effect.side_condition = firepledge"
+          ]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_side_end": ["log_side_end"],
+        "on_use_move": [
+          "if $move.id == secretpower:",
+          ["return"],
+          "$secondary_effects = []",
+          "foreach $secondary in $move.secondary_effects:",
+          [
+            "if func_call(has_ability: $user serenegrace) and $secondary.target.volatile_status == flinch:",
+            ["continue"],
+            "if $secondary.chance.is_defined:",
+            ["$secondary.chance = $secondary.chance * 2"],
+            "$secondary_effects = func_call(append: $secondary_effects $secondary)"
+          ],
+          "$move.secondary_effects = $secondary_effects",
+          "if $move.user_effect_chance.is_defined:",
+          ["$move.user_effect_chance = $move.user_effect_chance * 2"]
+        ]
+      }
     }
   },
   "firepledge": {
@@ -1105,7 +1146,36 @@
     "target": "Normal",
     "flags": ["Mirror", "PledgeCombo", "Protect"],
     "effect": {
-      "delegates": ["condition:pledgemovebase"]
+      "delegates": ["condition:pledgemovebase"],
+      "callbacks": {
+        "on_use_move": [
+          "if !$move.source_effect:",
+          ["return"],
+          "if $move.source_effect.id == grasspledge:",
+          [
+            "$move.force_stab = true",
+            "$move.type = grass",
+            "$move.hit_effect.side_condition = grasspledge"
+          ],
+          "if $move.source_effect.id == waterpledge:",
+          [
+            "$move.force_stab = true",
+            "$move.type = water",
+            "$move.hit_effect.side_condition = waterpledge"
+          ]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_side_end": ["log_side_end"],
+        "on_residual": [
+          "if !func_call(has_type: $target fire):",
+          ["damage: $target expr($target.base_max_hp / 8)"]
+        ]
+      }
     }
   },
   "grasspledge": {
@@ -1118,7 +1188,33 @@
     "target": "Normal",
     "flags": ["Mirror", "PledgeCombo", "Protect"],
     "effect": {
-      "delegates": ["condition:pledgemovebase"]
+      "delegates": ["condition:pledgemovebase"],
+      "callbacks": {
+        "on_use_move": [
+          "if !$move.source_effect:",
+          ["return"],
+          "if $move.source_effect.id == firepledge:",
+          [
+            "$move.force_stab = true",
+            "$move.type = fire",
+            "$move.hit_effect.side_condition = firepledge"
+          ],
+          "if $move.source_effect.id == waterpledge:",
+          [
+            "$move.force_stab = true",
+            "$move.type = water",
+            "$move.hit_effect.side_condition = waterpledge"
+          ]
+        ]
+      }
+    },
+    "condition": {
+      "duration": 4,
+      "callbacks": {
+        "on_side_start": ["log_side_start"],
+        "on_side_end": ["log_side_end"],
+        "on_modify_spe": ["return $spe / 4"]
+      }
     }
   },
   "voltswitch": {

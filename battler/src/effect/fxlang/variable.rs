@@ -1140,6 +1140,12 @@ where
                             ActiveMoveEffectStateConnector::new(**active_move_handle)
                                 .make_dynamic(),
                         ),
+                        "force_stab" => ValueRefMut::Boolean(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .data
+                                .force_stab,
+                        ),
                         "hit_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
                                 .active_move_mut(**active_move_handle)?
@@ -1209,6 +1215,9 @@ where
                         "boosts" => ValueRefMut::OptionalBoostTable(&mut hit_effect.boosts),
                         "heal_percent" => {
                             ValueRefMut::OptionalFractionU16(&mut hit_effect.heal_percent)
+                        }
+                        "side_condition" => {
+                            ValueRefMut::OptionalString(&mut hit_effect.side_condition)
                         }
                         "status" => ValueRefMut::OptionalString(&mut hit_effect.status),
                         "volatile_status" => {

@@ -152,9 +152,6 @@ pub struct Move {
     pub effect: fxlang::Effect,
     pub condition: fxlang::Effect,
 
-    /// Custom STAB modifier, if any.
-    pub stab_modifier: Option<Fraction<u32>>,
-
     /// The Mon that used the move.
     pub used_by: Option<MonHandle>,
     /// The move was used externally, rather than directly by a Mon through its moveset.
@@ -206,7 +203,6 @@ impl Move {
             effect,
             condition,
             used_by: None,
-            stab_modifier: None,
             external: false,
             spread_hit: false,
             hit: 0,
