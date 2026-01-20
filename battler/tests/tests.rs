@@ -414,6 +414,7 @@ mod moves {
         mod wide_guard_test;
         mod wonder_room_test;
         mod echoed_voice_test;
+        mod chip_away_test;
     }
 }
 

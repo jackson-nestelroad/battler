@@ -21,3 +21,4 @@ This section describes rules that ALWAYS must be followed when writing effect te
 19. ALWAYS name Mons with the exact same name as their species. NEVER use unique names.
 20. ALWAYS use a set seed (often `0`) to prevent minor RNG differences from failing tests. You MAY use controlled RNG for highly complex scenarios.
 21. ALWAYS use `player-1` and `player-2` for test battles. ALWAYS define a `make_battle` method that uses TestBattleBuilder internally.
+22. ALWAYS use fully-capitalized names for effects, such as moves, abilities, and items, in team definitions.

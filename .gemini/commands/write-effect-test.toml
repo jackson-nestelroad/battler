@@ -111,7 +111,9 @@ Damage calculations are randomized early in the process. For more precise contro
    - **Team**: The team (or in the exceptional case, teams) that will be used for the test. Include the Pokémon and moves that will be used. ALWAYS consult rules in `.rules/battler-effect-tests.md` for team selection. ALWAYS use mirror matches unless multiple Mons are required. ALWAYS reuse teams if their Mons are equivalent. NEVER include moves, items, abilities, etc. that are not required for the test.
    - **Code Changes**: Low-level details for required code changes in the core battle engine.
 
-**IMPORTANT**: You MUST NOT omit any of these sections. If a section is "None" (e.g. no code changes), explicitly state "None".
+**IMPORTANT:** You MUST NOT omit any of these sections. If a section is "None" (e.g. no code changes), explicitly state "None".
+
+**CRITICAL:** You MUST write the plan to a file.
 
 2. Ask the user to review the plan, and wait for their approval of the plan. NEVER use a shell command; ask the user for approval directly and allow them to make comments/suggestions to your plan. If there are comments, address them before proceeding. There may be multiple rounds of review required before approval.
 

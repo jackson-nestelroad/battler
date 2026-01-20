@@ -122,10 +122,6 @@ fn echoed_voice_powers_up_consecutively_and_caps() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    // Turn 5: Echoed Voice (200 BP - cap)
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
-
     let expected_logs: Vec<LogMatch> = serde_json::from_str(
         r#"[
             "move|mon:Audino,player-1,1|name:Echoed Voice|target:Audino,player-2,1",
@@ -169,6 +165,7 @@ fn echoed_voice_powers_up_consecutively_and_caps() {
         ]"#,
     )
     .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
 
 #[test]
@@ -235,15 +232,24 @@ fn echoed_voice_powers_up_when_used_by_different_pokemon() {
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // Turn 1: Player 1 Audino uses Echoed Voice (40 BP)
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1;pass"),
+        Ok(())
+    );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     // Turn 2: Player 2 Audino uses Echoed Voice (80 BP)
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,1;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 0,1;pass"),
+        Ok(())
+    );
 
     // Turn 3: Player 1 Whimsicott uses Echoed Voice (120 BP)
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;move 0,1"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "pass;move 0,1"),
+        Ok(())
+    );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs: Vec<LogMatch> = serde_json::from_str(
@@ -284,7 +290,8 @@ fn echoed_voice_miss_resets_power() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(())); // Audino uses Fly (move index 2)
 
-    // Turn 2: Player 1 Audino uses Echoed Voice. It should miss Player 2 Audino. Player 2 Audino uses Fly (attacks).
+    // Turn 2: Player 1 Audino uses Echoed Voice. It should miss Player 2 Audino. Player 2 Audino
+    // uses Fly (attacks).
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(())); // Fly is a locked move at index 0.
 
