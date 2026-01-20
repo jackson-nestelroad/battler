@@ -206,11 +206,11 @@ impl BattleQueue {
         if let Some(index) = index {
             // SAFETY: `index` is valid and a MoveAction, since it was searched above.
             let mut action = context.battle_mut().queue.actions.remove(index).unwrap();
-            if let Some(source_effect) = source_effect
-                && let Action::Move(move_action) = &mut action
-            {
+            if let Action::Move(move_action) = &mut action {
                 move_action.order = Some(6);
-                if let Some(active_move) = move_action.active_move_handle {
+                if let Some(source_effect) = source_effect
+                    && let Some(active_move) = move_action.active_move_handle
+                {
                     context
                         .active_move_mut(active_move)?
                         .effect_state

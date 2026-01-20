@@ -604,14 +604,14 @@
     "effect": {
       "callbacks": {
         "on_move_base_power": [
-          "if $move.effect_state.source_effect == $this.id:",
+          "if $move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id == $this.id:",
           ["return $move.base_power * 2"]
         ],
         "on_try_use_move": [
-          "for $action in func_call(pending_move_actions_this_turn):",
+          "foreach $action in func_call(pending_move_actions_this_turn):",
           [
             "if $action.id == $this.id:",
-            ["prioritize_move: $action.mon", "return"]
+            ["prioritize_move: $action.mon $this", "return"]
           ]
         ]
       }

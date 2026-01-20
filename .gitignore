@@ -12,3 +12,5 @@ target/
 
 .env
 .debug
+
+/.gemini/work

@@ -11,35 +11,37 @@ use battler_test_utils::{
     assert_logs_since_turn_eq,
     static_local_data_store,
 };
-use serde_json::json;
+use serde_json;
 
 fn team() -> TeamData {
-    serde_json::from_value(json!({
-        "members": [
-            {
-                "name": "Whimsicott",
-                "species": "Whimsicott",
-                "ability": "Prankster",
-                "moves": [
-                    "Quash",
-                    "Quick Attack",
-                    "Scratch"
-                ],
-                "nature": "Hardy",
-                "level": 50
-            },
-            {
-                "name": "Slowpoke",
-                "species": "Slowpoke",
-                "ability": "No Ability",
-                "moves": [
-                    "Scratch"
-                ],
-                "nature": "Hardy",
-                "level": 50
-            }
-        ]
-    }))
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Whimsicott",
+                    "species": "Whimsicott",
+                    "ability": "Prankster",
+                    "moves": [
+                        "Quash",
+                        "Quick Attack",
+                        "Scratch"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                },
+                {
+                    "name": "Slowpoke",
+                    "species": "Slowpoke",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Scratch"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
     .unwrap()
 }
 
@@ -74,24 +76,26 @@ fn quash_deprioritizes_target() {
         Ok(())
     ); // Scratch targeting P1 L1
 
-    let expected_logs = serde_json::from_value::<Vec<LogMatch>>(json!([
-        "move|mon:Whimsicott,player-1,1|name:Quash|target:Whimsicott,player-2,1",
-        "activate|mon:Whimsicott,player-2,1|move:Quash",
-        "move|mon:Slowpoke,player-1,2|name:Scratch|target:Slowpoke,player-2,2",
-        "split|side:1",
-        "damage|mon:Slowpoke,player-2,2|health:132/150",
-        "damage|mon:Slowpoke,player-2,2|health:88/100",
-        "move|mon:Slowpoke,player-2,2|name:Scratch|target:Whimsicott,player-1,1",
-        "split|side:0",
-        "damage|mon:Whimsicott,player-1,1|health:107/120",
-        "damage|mon:Whimsicott,player-1,1|health:90/100",
-        "move|mon:Whimsicott,player-2,1|name:Scratch|target:Whimsicott,player-1,1",
-        "split|side:0",
-        "damage|mon:Whimsicott,player-1,1|health:92/120",
-        "damage|mon:Whimsicott,player-1,1|health:77/100",
-        "residual",
-        "turn|turn:2"
-    ]))
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Whimsicott,player-1,1|name:Quash|target:Whimsicott,player-2,1",
+            "activate|mon:Whimsicott,player-2,1|move:Quash",
+            "move|mon:Slowpoke,player-1,2|name:Scratch|target:Slowpoke,player-2,2",
+            "split|side:1",
+            "damage|mon:Slowpoke,player-2,2|health:132/150",
+            "damage|mon:Slowpoke,player-2,2|health:88/100",
+            "move|mon:Slowpoke,player-2,2|name:Scratch|target:Whimsicott,player-1,1",
+            "split|side:0",
+            "damage|mon:Whimsicott,player-1,1|health:107/120",
+            "damage|mon:Whimsicott,player-1,1|health:90/100",
+            "move|mon:Whimsicott,player-2,1|name:Scratch|target:Whimsicott,player-1,1",
+            "split|side:0",
+            "damage|mon:Whimsicott,player-1,1|health:92/120",
+            "damage|mon:Whimsicott,player-1,1|health:77/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
@@ -115,24 +119,26 @@ fn quash_fails_if_target_moved() {
         Ok(())
     ); // Quash targeting P1 L1
 
-    let expected_logs = serde_json::from_value::<Vec<LogMatch>>(json!([
-        "move|mon:Whimsicott,player-1,1|name:Quick Attack|target:Whimsicott,player-2,1",
-        "split|side:1",
-        "damage|mon:Whimsicott,player-2,1|health:105/120",
-        "damage|mon:Whimsicott,player-2,1|health:88/100",
-        "move|mon:Whimsicott,player-2,1|name:Quash|noanim",
-        "fail|mon:Whimsicott,player-2,1",
-        "move|mon:Slowpoke,player-1,2|name:Scratch|target:Whimsicott,player-2,1",
-        "split|side:1",
-        "damage|mon:Whimsicott,player-2,1|health:92/120",
-        "damage|mon:Whimsicott,player-2,1|health:77/100",
-        "move|mon:Slowpoke,player-2,2|name:Scratch|target:Whimsicott,player-1,1",
-        "split|side:0",
-        "damage|mon:Whimsicott,player-1,1|health:106/120",
-        "damage|mon:Whimsicott,player-1,1|health:89/100",
-        "residual",
-        "turn|turn:2"
-    ]))
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Whimsicott,player-1,1|name:Quick Attack|target:Whimsicott,player-2,1",
+            "split|side:1",
+            "damage|mon:Whimsicott,player-2,1|health:105/120",
+            "damage|mon:Whimsicott,player-2,1|health:88/100",
+            "move|mon:Whimsicott,player-2,1|name:Quash|noanim",
+            "fail|mon:Whimsicott,player-2,1",
+            "move|mon:Slowpoke,player-1,2|name:Scratch|target:Whimsicott,player-2,1",
+            "split|side:1",
+            "damage|mon:Whimsicott,player-2,1|health:92/120",
+            "damage|mon:Whimsicott,player-2,1|health:77/100",
+            "move|mon:Slowpoke,player-2,2|name:Scratch|target:Whimsicott,player-1,1",
+            "split|side:0",
+            "damage|mon:Whimsicott,player-1,1|health:106/120",
+            "damage|mon:Whimsicott,player-1,1|health:89/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
@@ -155,24 +161,26 @@ fn quash_ignores_priority() {
         Ok(())
     ); // Quick Attack targeting P1 L1
 
-    let expected_logs = serde_json::from_value::<Vec<LogMatch>>(json!([
-        "move|mon:Whimsicott,player-1,1|name:Quash|target:Whimsicott,player-2,1",
-        "activate|mon:Whimsicott,player-2,1|move:Quash",
-        "move|mon:Slowpoke,player-1,2|name:Scratch|target:Slowpoke,player-2,2",
-        "split|side:1",
-        "damage|mon:Slowpoke,player-2,2|health:132/150",
-        "damage|mon:Slowpoke,player-2,2|health:88/100",
-        "move|mon:Slowpoke,player-2,2|name:Scratch|target:Whimsicott,player-1,1",
-        "split|side:0",
-        "damage|mon:Whimsicott,player-1,1|health:107/120",
-        "damage|mon:Whimsicott,player-1,1|health:90/100",
-        "move|mon:Whimsicott,player-2,1|name:Quick Attack|target:Whimsicott,player-1,1",
-        "split|side:0",
-        "damage|mon:Whimsicott,player-1,1|health:92/120",
-        "damage|mon:Whimsicott,player-1,1|health:77/100",
-        "residual",
-        "turn|turn:2"
-    ]))
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Whimsicott,player-1,1|name:Quash|target:Whimsicott,player-2,1",
+            "activate|mon:Whimsicott,player-2,1|move:Quash",
+            "move|mon:Slowpoke,player-1,2|name:Scratch|target:Slowpoke,player-2,2",
+            "split|side:1",
+            "damage|mon:Slowpoke,player-2,2|health:132/150",
+            "damage|mon:Slowpoke,player-2,2|health:88/100",
+            "move|mon:Slowpoke,player-2,2|name:Scratch|target:Whimsicott,player-1,1",
+            "split|side:0",
+            "damage|mon:Whimsicott,player-1,1|health:107/120",
+            "damage|mon:Whimsicott,player-1,1|health:90/100",
+            "move|mon:Whimsicott,player-2,1|name:Quick Attack|target:Whimsicott,player-1,1",
+            "split|side:0",
+            "damage|mon:Whimsicott,player-1,1|health:92/120",
+            "damage|mon:Whimsicott,player-1,1|health:77/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
