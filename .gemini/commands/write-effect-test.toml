@@ -42,9 +42,15 @@ Integration tests ALWAYS follow a similar style:
 
 ## Rules
 
-You MUST strictly follow all rules in `.rules/battler-effect-tests.md`.
+You MUST strictly follow all rules in `.gemini/rules/battler-effect-tests.md`.
 
 ## Tips
+
+### Iterative Development
+
+When iteratively developing your test, ALWAYS run `cargo test` only for your specific test module. DO NOT run the entire test suite if you are only interested in your test.
+
+After your test passes, you MAY run a larger test suite if a) your test passes and b) you made code changes that may impact other tests and you want to verify correctness.
 
 ### Test Cases
 
@@ -99,7 +105,7 @@ Damage calculations are randomized early in the process. For more precise contro
 
 ### Step 3: Plan
 
-1. Create a plan artifact. It MUST contain the following sections (use these exact headers):
+1. Create a plan artifact. It MUST be written to a file in markdown for user review. It MUST contain the following sections (use these exact headers):
    - **Effect Summary**: A summary of your understanding of the effect.
    - **Test Cases**: The test cases to be written, based on your understanding of the effect.
    - **Team**: The team (or in the exceptional case, teams) that will be used for the test. Include the Pokémon and moves that will be used. ALWAYS consult rules in `.rules/battler-effect-tests.md` for team selection. ALWAYS use mirror matches unless multiple Mons are required. ALWAYS reuse teams if their Mons are equivalent. NEVER include moves, items, abilities, etc. that are not required for the test.
@@ -114,7 +120,8 @@ Damage calculations are randomized early in the process. For more precise contro
 **CRITICAL:** If any new requirement arises OR if you discover a bug in the engine/data that requires fixing, you MUST update your plan artifact and receive additional user approval before proceeding. NEVER proceed with additional code changes to JSON data or the core battle engine (even for bug fixes) without ADDITIONAL user approval.
 
 1. Write the test and make changes following your plan.
-2. Ensure the test passes using `cargo test` with `--no-default-features`.
+2. Ensure the specific test module passes using `cargo test` with `--no-default-features`.
+3. Ensure all `battler` tests pass using `cargo test -p battler`.
 
 ### Step 5: Verify
 
@@ -122,7 +129,7 @@ Damage calculations are randomized early in the process. For more precise contro
 
 ### Step 6: Review Feedback
 
-1. The user may provide additional feedback about your implementation. Address all changes iteratively. Complex changes require additional planning and user approval.
+1. The user may provide additional feedback about your implementation. Address all changes iteratively. Complex changes require additional planning and additional user approval. DO NOT proceed until you gain ADDITIONAL user approval.
 2. After any change, ensure the test still passes (end of step 4) and verify all rules (step 5).
 
 """

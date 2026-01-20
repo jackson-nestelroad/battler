@@ -8,7 +8,7 @@ use battler::PublicCoreBattle;
 use itertools::Itertools;
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(untagged)]
 pub enum LogMatch {
     Exact(String),
@@ -46,6 +46,21 @@ impl PartialEq<String> for LogMatch {
 impl PartialEq<&str> for LogMatch {
     fn eq(&self, other: &&str) -> bool {
         self.eq(*other)
+    }
+}
+
+impl PartialEq for LogMatch {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (LogMatch::Exact(s1), LogMatch::Exact(s2)) => s1 == s2,
+            (LogMatch::Substrings(s1), LogMatch::Substrings(s2)) => {
+                s1.iter().all(|sub| s2.contains(sub)) || s2.iter().all(|sub| s1.contains(sub))
+            }
+            (LogMatch::Exact(s), LogMatch::Substrings(subs))
+            | (LogMatch::Substrings(subs), LogMatch::Exact(s)) => {
+                subs.iter().all(|sub| s.contains(sub))
+            }
+        }
     }
 }
 

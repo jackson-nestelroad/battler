@@ -413,6 +413,7 @@ mod moves {
         mod venoshock_test;
         mod wide_guard_test;
         mod wonder_room_test;
+        mod echoed_voice_test;
     }
 }
 
