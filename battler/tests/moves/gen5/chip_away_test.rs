@@ -8,9 +8,9 @@ use battler::{
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
     LogMatch,
     TestBattleBuilder,
+    assert_logs_since_turn_eq,
     static_local_data_store,
 };
 use serde_json;
@@ -57,36 +57,17 @@ fn chip_away_ignores_defensive_and_evasion_boosts() {
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-1", "move 0,1"),
-        Ok(())
-    );
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "move 0,1"),
-        Ok(())
-    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,1"), Ok(()));
 
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-1", "move 2"),
-        Ok(())
-    );
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "move 1"),
-        Ok(())
-    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-1", "move 0,1"),
-        Ok(())
-    );
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "move 0,1"),
-        Ok(())
-    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,1"), Ok(()));
 
     let expected_logs: Vec<LogMatch> = serde_json::from_str(
-        r#"
-        [
+        r#"[
             "move|mon:Conkeldurr,player-1,1|name:Chip Away|target:Conkeldurr,player-2,1",
             "split|side:1",
             "damage|mon:Conkeldurr,player-2,1|health:121/165",

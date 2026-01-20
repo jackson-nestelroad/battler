@@ -1,6 +1,6 @@
 This section describes rules that ALWAYS must be followed when writing effect tests for battler. Exceptions to these rules ALWAYS require ADDITIONAL user approval.
 
-1. ALWAYS match the style and organization of existing tests.
+1. ALWAYS match the style and organization of existing tests. Function order MUST be: all team functions, battle builder functions, test cases.
 2. Tests always end in `_test.rs` and are organized according to the existing module structure. NEVER deviate from the existing module structure for new test files.
 3. Test cases are ALWAYS based on the specialized behavior of the effect itself. Focus on testing what makes the effect unique. Focus on edge cases that are identifiable in the fxlang code (JSON) itself. Do not introduce unnecessary complexity unrelated to the test itself.
 4. NEVER use other effects (e.g., moves, abilities, items) unless necessary (for example, using a simple damaging move when a Mon needs to take damage). ALWAYS use `No Ability` when the ability of a Mon does not matter. NEVER attach items, IVs, EVs, or other properties to Mons if they have no effect on the test. ALWAYS remove unused effects (especially moves and abilities).
