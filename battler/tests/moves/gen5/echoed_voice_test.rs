@@ -30,7 +30,6 @@ fn team() -> TeamData {
                         "Fly",
                         "Tackle"
                     ],
-
                     "nature": "Modest",
                     "gender": "M",
                     "level": 50,
