@@ -125,13 +125,20 @@ Damage calculations are randomized early in the process. For more precise contro
 2. Ensure the specific test module passes using `cargo test` with `--no-default-features`.
 3. Ensure all `battler` tests pass using `cargo test -p battler`.
 
+**CRITICAL:** DO NOT commit your changes at this point.
+
 ### Step 5: Verify
 
 1. Explicitly check your implementation against EACH rule in `.gemini/rules/battler-effect-tests.md` and confirm compliance. Your work is not finished if ANY rule is not followed. If a rule cannot be followed, you must have user approval (either in your original plan, or by receiving additional user approval during this step).
 
-### Step 6: Review Feedback
+### Step 6: Receive User Review
 
-1. The user may provide additional feedback about your implementation. Address all changes iteratively. Complex changes require additional planning and additional user approval. DO NOT proceed until you gain ADDITIONAL user approval.
+1. Ask the user to review your code.
+2. The user may provide additional feedback about your implementation. Address all changes iteratively. Complex changes require additional planning and additional user approval. DO NOT proceed until you gain ADDITIONAL user approval.
 2. After any change, ensure the test still passes (end of step 4) and verify all rules (step 5).
+
+### Step 7: Commit Changes
+
+1. Only after rule verification and user review is complete, commit your changes to git.
 
 """

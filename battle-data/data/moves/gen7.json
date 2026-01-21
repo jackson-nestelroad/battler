@@ -621,7 +621,7 @@
     "effect": {
       "callbacks": {
         "on_try_move": [
-          "if func_call(has_type: $user 'Fire'):",
+          "if func_call(has_type: $user fire):",
           ["return"],
           "log_fail: $user",
           "do_not_animate_last_move",
@@ -631,9 +631,9 @@
           "# Remove Fire type.",
           "# Note that if we are forced into the Fire type (e.g., Terastallization), this has no effect.",
           "$types = []",
-          "foreach $type in $target.types:",
+          "foreach $type in $source.types:",
           [
-            "if $type == 'Fire':",
+            "if $type == fire:",
             ["continue"],
             "$types = func_call(append: $types $type)"
           ],
