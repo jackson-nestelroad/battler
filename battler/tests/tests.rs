@@ -419,6 +419,10 @@ mod moves {
         mod stored_power_test;
         mod quick_guard_test;
     }
+
+    mod gen7 {
+        mod burn_up_test;
+    }
 }
 
 mod singleplayer {

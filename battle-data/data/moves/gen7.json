@@ -617,12 +617,13 @@
     "base_power": 130,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Thawing"],
+    "user_effect": {},
     "effect": {
       "callbacks": {
         "on_try_move": [
-          "if func_call(has_type: $source fire):",
+          "if func_call(has_type: $user 'Fire'):",
           ["return"],
-          "log_fail: $source",
+          "log_fail: $user",
           "do_not_animate_last_move",
           "return stop"
         ],
@@ -630,13 +631,13 @@
           "# Remove Fire type.",
           "# Note that if we are forced into the Fire type (e.g., Terastallization), this has no effect.",
           "$types = []",
-          "for $type in $source.types:",
+          "foreach $type in $target.types:",
           [
-            "if $type == fire:",
+            "if $type == 'Fire':",
             ["continue"],
             "$types = func_call(append: $types $type)"
           ],
-          "set_types: $source $types"
+          "set_types: $target $types"
         ]
       }
     }
