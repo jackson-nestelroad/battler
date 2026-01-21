@@ -417,6 +417,7 @@ mod moves {
         mod chip_away_test;
         mod clear_smog_test;
         mod stored_power_test;
+        mod quick_guard_test;
     }
 }
 
