@@ -418,6 +418,7 @@ mod moves {
         mod clear_smog_test;
         mod stored_power_test;
         mod quick_guard_test;
+        mod synchronoise_test;
     }
 
     mod gen7 {

@@ -4,6 +4,7 @@ use anyhow::Result;
 use battler::{
     battle::{
         BattleType,
+        CoreBattleEngineRandomizeBaseDamage,
         PublicCoreBattle,
     },
     teams::TeamData,
@@ -30,7 +31,8 @@ fn amoonguss_team() -> TeamData {
                         "Protect",
                         "Substitute"
                     ],
-                    "nature": "Hardy"
+                    "nature": "Hardy",
+                    "level": 50
                 }
             ]
         }"#,
@@ -47,7 +49,8 @@ fn steel_team() -> TeamData {
                     "species": "Klinklang",
                     "ability": "No Ability",
                     "moves": ["Shift Gear"],
-                    "nature": "Hardy"
+                    "nature": "Hardy",
+                    "level": 50
                 }
             ]
         }"#,
@@ -61,6 +64,7 @@ fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'s
         .with_team_validation(false)
         .with_pass_allowed(true)
         .with_seed(0)
+        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
@@ -88,8 +92,8 @@ fn clear_smog_resets_positive_boosts() {
             "continue",
             "move|mon:Amoonguss,player-1,1|name:Clear Smog|target:Amoonguss,player-2,1",
             "split|side:1",
-            "damage|mon:Amoonguss,player-2,1|health:6/10",
-            "damage|mon:Amoonguss,player-2,1|health:60/100",
+            "damage|mon:Amoonguss,player-2,1|health:137/174",
+            "damage|mon:Amoonguss,player-2,1|health:79/100",
             "clearboosts|mon:Amoonguss,player-2,1|from:move:Clear Smog|of:Amoonguss,player-1,1",
             "residual",
             "turn|turn:3"
@@ -119,8 +123,8 @@ fn clear_smog_resets_negative_boosts() {
             "continue",
             "move|mon:Amoonguss,player-1,1|name:Clear Smog|target:Amoonguss,player-2,1",
             "split|side:1",
-            "damage|mon:Amoonguss,player-2,1|health:6/10",
-            "damage|mon:Amoonguss,player-2,1|health:60/100",
+            "damage|mon:Amoonguss,player-2,1|health:137/174",
+            "damage|mon:Amoonguss,player-2,1|health:79/100",
             "clearboosts|mon:Amoonguss,player-2,1|from:move:Clear Smog|of:Amoonguss,player-1,1",
             "residual",
             "turn|turn:3"
@@ -213,13 +217,13 @@ fn clear_smog_is_blocked_by_substitute() {
             "move|mon:Amoonguss,player-2,1|name:Substitute|target:Amoonguss,player-2,1",
             "start|mon:Amoonguss,player-2,1|move:Substitute",
             "split|side:1",
-            "damage|mon:Amoonguss,player-2,1|health:8/10",
-            "damage|mon:Amoonguss,player-2,1|health:80/100",
+            "damage|mon:Amoonguss,player-2,1|health:131/174",
+            "damage|mon:Amoonguss,player-2,1|health:76/100",
             "residual",
             "turn|turn:3",
             "continue",
             "move|mon:Amoonguss,player-1,1|name:Clear Smog|target:Amoonguss,player-2,1",
-            "end|mon:Amoonguss,player-2,1|move:Substitute",
+            "activate|mon:Amoonguss,player-2,1|move:Substitute|damage",
             "residual",
             "turn|turn:4"
         ]"#,

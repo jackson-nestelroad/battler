@@ -539,6 +539,14 @@ where
                                     None => ValueRef::Undefined,
                                 }
                             }
+                            "effective_types" => ValueRef::TempList(
+                                mon_states::effective_types(&mut context.mon_context(mon_handle)?)
+                                    .iter()
+                                    .map(|val| {
+                                        ValueRefToStoredValue::new(None, ValueRef::Type(*val))
+                                    })
+                                    .collect(),
+                            ),
                             "effective_weather" => {
                                 match mon_states::effective_weather(
                                     &mut context.mon_context(mon_handle)?,

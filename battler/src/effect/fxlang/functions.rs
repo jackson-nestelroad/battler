@@ -181,6 +181,7 @@ pub fn run_function(
         "get_species" => get_species(context),
         "get_stat" => get_stat(context).map(|val| Some(val)),
         "has_ability" => has_ability(context).map(|val| Some(val)),
+        "has_any_type" => has_any_type(context).map(|val| Some(val)),
         "has_item" => has_item(context).map(|val| Some(val)),
         "has_move" => has_move(context).map(|val| Some(val)),
         "has_pseudo_weather" => has_pseudo_weather(context).map(|val| Some(val)),
@@ -1942,6 +1943,23 @@ fn has_type(mut context: FunctionContext) -> Result<Value> {
         &mut context.mon_context(mon_handle)?,
         typ,
     )))
+}
+
+fn has_any_type(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let types = context
+        .pop_front()
+        .wrap_expectation("missing types")?
+        .types_list()
+        .wrap_error_with_message("invalid types")?;
+
+    let mut context = context.mon_context(mon_handle)?;
+    for typ in types {
+        if Mon::has_type(&mut context, typ) {
+            return Ok(Value::Boolean(true));
+        }
+    }
+    Ok(Value::Boolean(false))
 }
 
 fn has_type_before_forced_types(mut context: FunctionContext) -> Result<Value> {

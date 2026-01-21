@@ -388,8 +388,8 @@
     "effect": {
       "callbacks": {
         "on_try_immunity": [
-          "if func_call(has_any_type: $target $source.effective_types):",
-          ["return true"]
+          "if !func_call(has_any_type: $target $source.effective_types):",
+          ["return false"]
         ]
       }
     }
