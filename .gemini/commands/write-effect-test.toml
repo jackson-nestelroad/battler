@@ -42,7 +42,7 @@ Integration tests ALWAYS follow a similar style:
 
 ## Rules
 
-You MUST strictly follow all rules in `.gemini/rules/battler-effect-tests.md`.
+You MUST strictly follow all rules in `.gemini/rules/battler-effect-tests.md` in planning and implementation.
 
 ## Tips
 

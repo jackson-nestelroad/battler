@@ -1231,7 +1231,8 @@
     "accuracy": 100,
     "base_power": 70,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "user_switch": true
   },
   "strugglebug": {
     "name": "Struggle Bug",
@@ -1241,7 +1242,16 @@
     "accuracy": 100,
     "base_power": 50,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spa": -1
+          }
+        }
+      }
+    ]
   },
   "bulldoze": {
     "name": "Bulldoze",
@@ -1251,7 +1261,16 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
+      }
+    ]
   },
   "frostbreath": {
     "name": "Frost Breath",
@@ -1273,7 +1292,10 @@
     "base_power": 60,
     "priority": -6,
     "target": "Normal",
-    "flags": ["Contact", "FailCopycat", "Mirror", "NoAssist", "Protect"]
+    "flags": ["Contact", "FailCopycat", "Mirror", "NoAssist", "Protect"],
+    "hit_effect": {
+      "force_switch": true
+    }
   },
   "workup": {
     "name": "Work Up",
@@ -1282,7 +1304,13 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "spa": 1
+      }
+    }
   },
   "electroweb": {
     "name": "Electroweb",
@@ -1292,7 +1320,16 @@
     "accuracy": 95,
     "base_power": 55,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
+      }
+    ]
   },
   "wildcharge": {
     "name": "Wild Charge",
@@ -1336,7 +1373,15 @@
     "accuracy": 100,
     "base_power": 60,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "hornleech": {
     "name": "Horn Leech",
@@ -1369,7 +1414,17 @@
     "accuracy": 95,
     "base_power": 75,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "boosts": {
+            "def": -1
+          }
+        }
+      }
+    ]
   },
   "heatcrash": {
     "name": "Heat Crash",
@@ -1379,7 +1434,10 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 130 }
+    "max_move": { "base_power": 130 },
+    "effect": {
+      "delegates": ["move:heavyslam"]
+    }
   },
   "leaftornado": {
     "name": "Leaf Tornado",
@@ -1389,7 +1447,17 @@
     "accuracy": 90,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["AccuracyLowering", "Mirror", "Protect"]
+    "flags": ["AccuracyLowering", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
+      }
+    ]
   },
   "steamroller": {
     "name": "Steamroller",
@@ -1399,7 +1467,15 @@
     "accuracy": 100,
     "base_power": 65,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "cottonguard": {
     "name": "Cotton Guard",
@@ -1408,7 +1484,12 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "def": 3
+      }
+    }
   },
   "nightdaze": {
     "name": "Night Daze",
@@ -1418,7 +1499,17 @@
     "accuracy": 95,
     "base_power": 85,
     "target": "Normal",
-    "flags": ["AccuracyLowering", "Mirror", "Protect"]
+    "flags": ["AccuracyLowering", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "40%",
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
+      }
+    ]
   },
   "psystrike": {
     "name": "Psystrike",
@@ -1451,7 +1542,18 @@
     "accuracy": 70,
     "base_power": 110,
     "target": "Any",
-    "flags": ["Distance", "Mirror", "Protect", "Wind"]
+    "flags": ["Distance", "Mirror", "Protect", "Wind"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
+    ],
+    "effect": {
+      "delegates": ["move:thunder"]
+    }
   },
   "headcharge": {
     "name": "Head Charge",
@@ -1484,7 +1586,15 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "AllAdjacent",
-    "flags": ["Bullet", "Mirror", "Protect"]
+    "flags": ["Bullet", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "technoblast": {
     "name": "Techno Blast",
@@ -1494,7 +1604,20 @@
     "accuracy": 100,
     "base_power": 120,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_modify_move_type": [
+          "$item = $user.effective_item",
+          "if !$item:",
+          ["return"],
+          "$data = func_call(special_item_data: $item)",
+          "if !$data or !$data.techno_blast:",
+          ["return"],
+          "return $data.techno_blast.type"
+        ]
+      }
+    }
   },
   "relicsong": {
     "name": "Relic Song",
@@ -1511,7 +1634,24 @@
       "Protect",
       "SleepInducing",
       "Sound"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "if func_call(base_species: $source) == meloetta and !$target.transformed:",
+          ["$move.effect_state.change_forme = true"]
+        ],
+        "on_after_move": [
+          "if $move.effect_state.change_forme:",
+          [
+            "$forme = ''",
+            "if $user.species == meloetta:",
+            ["$forme = pirouette"],
+            "forme_change: $user str('meloetta{}', $forme)"
+          ]
+        ]
+      }
+    }
   },
   "secretsword": {
     "name": "Secret Sword",
@@ -1532,7 +1672,16 @@
     "accuracy": 95,
     "base_power": 65,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
+      }
+    ]
   },
   "boltstrike": {
     "name": "Bolt Strike",
@@ -1542,7 +1691,15 @@
     "accuracy": 85,
     "base_power": 130,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "blueflare": {
     "name": "Blue Flare",
@@ -1552,7 +1709,15 @@
     "accuracy": 85,
     "base_power": 130,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "fierydance": {
     "name": "Fiery Dance",
@@ -1562,7 +1727,17 @@
     "accuracy": 100,
     "base_power": 80,
     "target": "Normal",
-    "flags": ["Dance", "Mirror", "Protect"]
+    "flags": ["Dance", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "user": {
+          "boosts": {
+            "spa": 1
+          }
+        }
+      }
+    ]
   },
   "freezeshock": {
     "name": "Freeze Shock",
@@ -1579,7 +1754,18 @@
       "NoMetronome",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ],
+    "effect": {
+      "delegates": ["condition:chargemovebase"]
+    }
   },
   "iceburn": {
     "name": "Ice Burn",
@@ -1596,7 +1782,18 @@
       "NoMetronome",
       "NoSleepTalk",
       "Protect"
-    ]
+    ],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ],
+    "effect": {
+      "delegates": ["condition:chargemovebase"]
+    }
   },
   "snarl": {
     "name": "Snarl",
@@ -1606,7 +1803,16 @@
     "accuracy": 95,
     "base_power": 55,
     "target": "AllAdjacentFoes",
-    "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "Protect", "Sound"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spa": -1
+          }
+        }
+      }
+    ]
   },
   "iciclecrash": {
     "name": "Icicle Crash",
@@ -1616,7 +1822,15 @@
     "accuracy": 90,
     "base_power": 85,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "vcreate": {
     "name": "V-create",
@@ -1626,7 +1840,14 @@
     "accuracy": 95,
     "base_power": 180,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
+    "user_effect": {
+      "boosts": {
+        "def": -1,
+        "spd": -1,
+        "spe": -1
+      }
+    }
   },
   "fusionflare": {
     "name": "Fusion Flare",
@@ -1636,7 +1857,15 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Thawing"]
+    "flags": ["Mirror", "Protect", "Thawing"],
+    "effect": {
+      "callbacks": {
+        "on_base_power": [
+          "if $battle.last_successful_move == fusionbolt:",
+          ["return $base_power * 2"]
+        ]
+      }
+    }
   },
   "fusionbolt": {
     "name": "Fusion Bolt",
@@ -1646,6 +1875,14 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_base_power": [
+          "if $battle.last_successful_move == fusionflare:",
+          ["return $base_power * 2"]
+        ]
+      }
+    }
   }
 }
