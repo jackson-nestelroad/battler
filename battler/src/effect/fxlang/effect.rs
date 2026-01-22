@@ -339,6 +339,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterCureStatus"]
     AfterCureStatus,
+    /// Runs after an individual stat boost is applied.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterEachBoost"]
+    AfterEachBoost,
     /// Runs after a Mon hits another Mon with a move.
     ///
     /// Runs on the active move.
@@ -840,6 +845,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move user.
     #[string = "ModifyTarget"]
     ModifyTarget,
+    /// Runs when calculating a Mon's weight.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ModifyWeight"]
+    ModifyWeight,
     /// Runs when a move is aborted due to failing the BeforeMove event.
     ///
     /// Runs in the context of a move user.
@@ -1236,6 +1246,7 @@ impl BattleEvent {
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterCureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterEachBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
@@ -1328,6 +1339,7 @@ impl BattleEvent {
             Self::ModifySpeciesCatchRate => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyStab => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyTarget => CommonCallbackType::SourceMoveMonModifier as u32,
+            Self::ModifyWeight => CommonCallbackType::MonModifier as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
@@ -1412,6 +1424,10 @@ impl BattleEvent {
                 &[("pseudo_weather", ValueType::Effect, true)]
             }
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::AfterEachBoost => &[
+                ("boost", ValueType::Boost, true),
+                ("value", ValueType::Fraction, true),
+            ],
             Self::AfterSetItem | Self::AfterTakeItem | Self::AfterUseItem => {
                 &[("item", ValueType::Effect, true)]
             }
@@ -1455,6 +1471,7 @@ impl BattleEvent {
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
             Self::ModifyStab => &[("stab", ValueType::UFraction, true)],
             Self::ModifyTarget => &[("target", ValueType::Mon, false)],
+            Self::ModifyWeight => &[("weight", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
             Self::PlayerTryUseItem => &[("input", ValueType::Object, true)],

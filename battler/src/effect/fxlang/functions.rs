@@ -2096,13 +2096,12 @@ fn boost(mut context: FunctionContext) -> Result<Value> {
 
     let boosts = context.boosts_from_rest_of_args()?;
 
-    core_battle_actions::boost(
-        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
-        boosts,
-        false,
-        false,
-    )
-    .map(|val| Value::Boolean(val))
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
+    let is_self = context
+        .source_handle()
+        .is_some_and(|source| source == context.target_handle());
+
+    core_battle_actions::boost(&mut context, boosts, false, is_self).map(|val| Value::Boolean(val))
 }
 
 fn boost_table(mut context: FunctionContext) -> Result<Value> {

@@ -1361,8 +1361,11 @@ impl Mon {
 
     /// Calculates the Mon's weight.
     pub fn get_weight(context: &mut MonContext) -> u32 {
-        // TODO: ModifyWeight event.
-        context.mon().volatile_state.weight
+        core_battle_effects::run_event_for_mon_expecting_u32(
+            context,
+            fxlang::BattleEvent::ModifyWeight,
+            context.mon().volatile_state.weight,
+        )
     }
 
     /// Creates a speed-orderable object for the Mon.

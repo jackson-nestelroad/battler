@@ -70,15 +70,125 @@
       }
     }
   },
-  "defiant": { "name": "Defiant", "flags": [] },
-  "defeatist": { "name": "Defeatist", "flags": [] },
-  "cursedbody": { "name": "Cursed Body", "flags": [] },
-  "healer": { "name": "Healer", "flags": [] },
-  "friendguard": { "name": "Friend Guard", "flags": [] },
-  "weakarmor": { "name": "Weak Armor", "flags": [] },
-  "heavymetal": { "name": "Heavy Metal", "flags": [] },
-  "lightmetal": { "name": "Light Metal", "flags": [] },
-  "multiscale": { "name": "Multiscale", "flags": [] },
+  "defiant": {
+    "name": "Defiant",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_each_boost": [
+          "if !$source or func_call(is_ally $target $source):",
+          ["return"],
+          "if $value < 0:",
+          ["boost: $target 'atk:2' use_target_as_source"]
+        ]
+      }
+    }
+  },
+  "defeatist": {
+    "name": "Defeatist",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $target.hp <= $target.max_hp / 2:",
+          ["return $atk / 2"]
+        ],
+        "on_modify_spa": [
+          "if $target.hp <= $target.max_hp / 2:",
+          ["return $spa / 2"]
+        ]
+      }
+    }
+  },
+  "cursedbody": {
+    "name": "Cursed Body",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(has_volatile: $source disable):",
+          ["return"],
+          "if $move.upgraded or func_call(move_has_flag: $move future) or $move.id == struggle:",
+          ["return"],
+          "if func_call(chance: 3 10):",
+          ["add_volatile: $source disable use_target_as_source"]
+        ]
+      }
+    }
+  },
+  "healer": {
+    "name": "Healer",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "foreach $ally in func_call(adjacent_allies: $target):",
+          [
+            "if $ally.status.is_defined and func_call(chance: 3 10):",
+            ["log_activate: with_target", "cure_status: $ally"]
+          ]
+        ]
+      }
+    }
+  },
+  "friendguard": {
+    "name": "Friend Guard",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_modify_damage": [
+          "if $target != $effect_state.target and func_call(is_ally: $target $effect_state.target):",
+          ["return $damage * 3/4"]
+        ]
+      }
+    }
+  },
+  "weakarmor": {
+    "name": "Weak Armor",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.category == physical:",
+          ["boost: $target 'def:-1' 'spe:2'"]
+        ]
+      }
+    }
+  },
+  "heavymetal": {
+    "name": "Heavy Metal",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_weight": {
+          "priority": 1,
+          "program": ["return $weight * 2"]
+        }
+      }
+    }
+  },
+  "lightmetal": {
+    "name": "Light Metal",
+    "flags": [],
+    "callbacks": {
+      "on_modify_weight": {
+        "priority": 1,
+        "program": ["return $weight / 2"]
+      }
+    }
+  },
+  "multiscale": {
+    "name": "Multiscale",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $target.hp >= $target.max_hp:",
+          ["return $damage / 2"]
+        ]
+      }
+    }
+  },
   "toxicboost": { "name": "Toxic Boost", "flags": [] },
   "flareboost": { "name": "Flare Boost", "flags": [] },
   "harvest": { "name": "Harvest", "flags": [] },

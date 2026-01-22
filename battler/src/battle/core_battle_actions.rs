@@ -2633,6 +2633,15 @@ pub fn boost(
         if delta != 0 || capped || (!is_secondary && !is_self && user_intended && !suppressed) {
             core_battle_logs::boost(context, boost, delta, original_delta)?;
         }
+
+        core_battle_effects::run_applying_effect_event(
+            context,
+            fxlang::BattleEvent::AfterEachBoost,
+            fxlang::VariableInput::from_iter([
+                fxlang::Value::Boost(boost),
+                fxlang::Value::Fraction(original_delta.into()),
+            ]),
+        );
     }
 
     // TODO: AfterBoost event.
