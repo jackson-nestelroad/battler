@@ -12,12 +12,13 @@ use battler_test_utils::{
 };
 
 fn make_battle(
+    seed: u64,
     team_1: TeamData,
     team_2: TeamData,
 ) -> Result<PublicCoreBattle<'static>, anyhow::Error> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Doubles)
-        .with_seed(0)
+        .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
@@ -56,7 +57,7 @@ fn pansear() -> TeamData {
 
 #[test]
 fn flame_burst_damages_adjacent_mons() {
-    let mut battle = make_battle(pansear(), pansear()).unwrap();
+    let mut battle = make_battle(0, pansear(), pansear()).unwrap();
 
     // Turn 1: Pansear hits Pansear. Simisear (adjacent ally of target) takes damage.
     assert_matches::assert_matches!(battle.start(), Ok(()));
@@ -104,7 +105,7 @@ fn flame_burst_damages_adjacent_mons() {
 
 #[test]
 fn flame_burst_triggers_on_substitute() {
-    let mut battle = make_battle(pansear(), pansear()).unwrap();
+    let mut battle = make_battle(0, pansear(), pansear()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -148,7 +149,7 @@ fn flame_burst_triggers_on_ko() {
     let mut pansear_2 = pansear();
     // Reduce HP for KO.
     pansear_2.members[0].level = 1;
-    let mut battle = make_battle(pansear(), pansear_2).unwrap();
+    let mut battle = make_battle(0, pansear(), pansear_2).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
@@ -178,7 +179,7 @@ fn flame_burst_triggers_on_ko() {
 
 #[test]
 fn flame_burst_blocked_by_protect() {
-    let mut battle = make_battle(pansear(), pansear()).unwrap();
+    let mut battle = make_battle(0, pansear(), pansear()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
@@ -206,7 +207,7 @@ fn flame_burst_blocked_by_protect() {
 fn flame_burst_blocked_by_magic_guard() {
     let mut pansear_2 = pansear();
     pansear_2.members[1].ability = "Magic Guard".to_owned();
-    let mut battle = make_battle(pansear(), pansear_2).unwrap();
+    let mut battle = make_battle(0, pansear(), pansear_2).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
@@ -234,7 +235,7 @@ fn flame_burst_blocked_by_magic_guard() {
 fn flame_burst_ignores_flash_fire() {
     let mut pansear_2 = pansear();
     pansear_2.members[1].ability = "Flash Fire".to_owned();
-    let mut battle = make_battle(pansear(), pansear_2).unwrap();
+    let mut battle = make_battle(0, pansear(), pansear_2).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(

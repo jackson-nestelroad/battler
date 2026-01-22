@@ -35,12 +35,13 @@ fn team() -> TeamData {
 
 fn make_battle(
     battle_type: BattleType,
+    seed: u64,
     team_1: TeamData,
     team_2: TeamData,
 ) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
-        .with_seed(0)
+        .with_seed(seed)
         .with_team_validation(false)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .with_pass_allowed(true)
@@ -53,7 +54,7 @@ fn make_battle(
 
 #[test]
 fn stored_power_damage_calculation() {
-    let mut battle = make_battle(BattleType::Singles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 

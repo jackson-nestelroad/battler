@@ -58,12 +58,12 @@ fn steel_team() -> TeamData {
     .unwrap()
 }
 
-fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_team_validation(false)
         .with_pass_allowed(true)
-        .with_seed(0)
+        .with_seed(seed)
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -74,7 +74,7 @@ fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'s
 
 #[test]
 fn clear_smog_resets_positive_boosts() {
-    let mut battle = make_battle(amoonguss_team(), amoonguss_team()).unwrap();
+    let mut battle = make_battle(0, amoonguss_team(), amoonguss_team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -105,7 +105,7 @@ fn clear_smog_resets_positive_boosts() {
 
 #[test]
 fn clear_smog_resets_negative_boosts() {
-    let mut battle = make_battle(amoonguss_team(), amoonguss_team()).unwrap();
+    let mut battle = make_battle(0, amoonguss_team(), amoonguss_team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2, 1"), Ok(()));
@@ -136,7 +136,7 @@ fn clear_smog_resets_negative_boosts() {
 
 #[test]
 fn clear_smog_is_blocked_by_immunity() {
-    let mut battle = make_battle(amoonguss_team(), steel_team()).unwrap();
+    let mut battle = make_battle(0, amoonguss_team(), steel_team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -165,7 +165,7 @@ fn clear_smog_is_blocked_by_immunity() {
 
 #[test]
 fn clear_smog_is_blocked_by_protect() {
-    let mut battle = make_battle(amoonguss_team(), amoonguss_team()).unwrap();
+    let mut battle = make_battle(0, amoonguss_team(), amoonguss_team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -195,7 +195,7 @@ fn clear_smog_is_blocked_by_protect() {
 
 #[test]
 fn clear_smog_is_blocked_by_substitute() {
-    let mut battle = make_battle(amoonguss_team(), amoonguss_team()).unwrap();
+    let mut battle = make_battle(0, amoonguss_team(), amoonguss_team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));

@@ -52,12 +52,13 @@ fn team() -> TeamData {
 
 fn make_battle(
     battle_type: BattleType,
+    seed: u64,
     team_1: TeamData,
     team_2: TeamData,
 ) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
-        .with_seed(0)
+        .with_seed(seed)
         .with_team_validation(false)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .with_pass_allowed(true)
@@ -70,7 +71,7 @@ fn make_battle(
 
 #[test]
 fn round_powers_up_and_moves_ally_immediately() {
-    let mut battle = make_battle(BattleType::Doubles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
@@ -110,7 +111,7 @@ fn round_powers_up_and_moves_ally_immediately() {
 
 #[test]
 fn round_does_not_power_up_if_ally_does_not_use_round() {
-    let mut battle = make_battle(BattleType::Doubles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
@@ -150,7 +151,7 @@ fn round_does_not_power_up_if_ally_does_not_use_round() {
 
 #[test]
 fn round_chains_in_doubles() {
-    let mut battle = make_battle(BattleType::Doubles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
@@ -190,7 +191,7 @@ fn round_chains_in_doubles() {
 
 #[test]
 fn round_powers_up_from_opponent() {
-    let mut battle = make_battle(BattleType::Doubles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team(), team()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(

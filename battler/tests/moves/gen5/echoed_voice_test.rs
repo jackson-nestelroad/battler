@@ -78,12 +78,13 @@ fn team() -> TeamData {
 
 fn make_battle(
     battle_type: BattleType,
+    seed: u64,
     team_1: TeamData,
     team_2: TeamData,
 ) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
-        .with_seed(0)
+        .with_seed(seed)
         .with_team_validation(false)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .with_pass_allowed(true)
@@ -96,7 +97,7 @@ fn make_battle(
 
 #[test]
 fn echoed_voice_powers_up_consecutively_and_caps() {
-    let mut battle = make_battle(BattleType::Singles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -168,7 +169,7 @@ fn echoed_voice_powers_up_consecutively_and_caps() {
 
 #[test]
 fn echoed_voice_resets_power_if_different_move_is_used() {
-    let mut battle = make_battle(BattleType::Singles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -225,7 +226,7 @@ fn echoed_voice_resets_power_if_different_move_is_used() {
 
 #[test]
 fn echoed_voice_powers_up_when_used_by_different_pokemon() {
-    let mut battle = make_battle(BattleType::Doubles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -280,7 +281,7 @@ fn echoed_voice_powers_up_when_used_by_different_pokemon() {
 
 #[test]
 fn echoed_voice_miss_resets_power() {
-    let mut battle = make_battle(BattleType::Singles, team(), team()).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 

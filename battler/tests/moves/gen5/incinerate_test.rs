@@ -44,13 +44,18 @@ fn target_team() -> TeamData {
     .unwrap()
 }
 
-fn make_battle(seed: u64) -> TestBattleBuilder {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> anyhow::Result<battler::PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_seed(seed)
         .with_battle_type(BattleType::Singles)
         .with_team_validation(false)
         .with_pass_allowed(true)
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
+        .add_player_to_side_1("player-1", "Player 1")
+        .add_player_to_side_2("player-2", "Player 2")
+        .with_team("player-1", team_1)
+        .with_team("player-2", team_2)
+        .build(static_local_data_store())
 }
 
 #[test]
@@ -58,13 +63,7 @@ fn incinerate_destroys_berry() {
     let mut team_2 = target_team();
     team_2.members[0].item = Some("Oran Berry".to_string());
 
-    let mut battle = make_battle(0)
-        .add_player_to_side_1("player-1", "Player 1")
-        .add_player_to_side_2("player-2", "Player 2")
-        .with_team("player-1", team())
-        .with_team("player-2", team_2)
-        .build(static_local_data_store())
-        .unwrap();
+    let mut battle = make_battle(0, team(), team_2).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -92,13 +91,7 @@ fn incinerate_destroys_gem() {
     let mut team_2 = target_team();
     team_2.members[0].item = Some("Fire Gem".to_string());
 
-    let mut battle = make_battle(0)
-        .add_player_to_side_1("player-1", "Player 1")
-        .add_player_to_side_2("player-2", "Player 2")
-        .with_team("player-1", team())
-        .with_team("player-2", team_2)
-        .build(static_local_data_store())
-        .unwrap();
+    let mut battle = make_battle(0, team(), team_2).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -126,13 +119,7 @@ fn incinerate_does_not_destroy_other_items() {
     let mut team_2 = target_team();
     team_2.members[0].item = Some("Leftovers".to_string());
 
-    let mut battle = make_battle(0)
-        .add_player_to_side_1("player-1", "Player 1")
-        .add_player_to_side_2("player-2", "Player 2")
-        .with_team("player-1", team())
-        .with_team("player-2", team_2)
-        .build(static_local_data_store())
-        .unwrap();
+    let mut battle = make_battle(0, team(), team_2).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 

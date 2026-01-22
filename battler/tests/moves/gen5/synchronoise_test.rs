@@ -35,7 +35,7 @@ fn heatmor_team() -> TeamData {
     .unwrap()
 }
 
-fn make_battle(team: TeamData) -> TestBattleBuilder {
+fn make_battle(team_1: TeamData, team_2: TeamData) -> anyhow::Result<battler::PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)
@@ -45,13 +45,14 @@ fn make_battle(team: TeamData) -> TestBattleBuilder {
         .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Min)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
-        .with_team("player-1", team.clone())
-        .with_team("player-2", team)
+        .with_team("player-1", team_1)
+        .with_team("player-2", team_2)
+        .build(static_local_data_store())
 }
 
 #[test]
 fn synchronoise_hits_target_with_shared_type() {
-    let mut battle = make_battle(heatmor_team()).build(static_local_data_store()).unwrap();
+    let mut battle = make_battle(heatmor_team(), heatmor_team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 

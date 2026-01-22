@@ -58,7 +58,8 @@ fn gothitelle() -> TeamData {
 fn make_battle(
     battle_type: BattleType,
     seed: u64,
-    team: TeamData,
+    team_1: TeamData,
+    team_2: TeamData,
 ) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(battle_type)
@@ -68,15 +69,15 @@ fn make_battle(
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
-        .with_team("player-1", team.clone())
-        .with_team("player-2", team)
+        .with_team("player-1", team_1)
+        .with_team("player-2", team_2)
         .build(static_local_data_store())
 }
 
 #[test]
 fn ally_switch_swaps_positions() {
     let team = gothitelle();
-    let mut battle = make_battle(BattleType::Doubles, 0, team).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team.clone(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0; pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass; pass"), Ok(()));
@@ -109,7 +110,7 @@ fn ally_switch_swaps_positions() {
 #[test]
 fn ally_switch_fails_single_battle() {
     let team = gothitelle();
-    let mut battle = make_battle(BattleType::Singles, 0, team).unwrap();
+    let mut battle = make_battle(BattleType::Singles, 0, team.clone(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
@@ -129,7 +130,7 @@ fn ally_switch_fails_single_battle() {
 #[test]
 fn ally_switch_swaps_positions_triples() {
     let team = gothitelle();
-    let mut battle = make_battle(BattleType::Triples, 0, team).unwrap();
+    let mut battle = make_battle(BattleType::Triples, 0, team.clone(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "move 0; pass; pass"),
@@ -171,7 +172,7 @@ fn ally_switch_swaps_positions_triples() {
 #[test]
 fn ally_switch_fails_middle_triples() {
     let team = gothitelle();
-    let mut battle = make_battle(BattleType::Triples, 0, team).unwrap();
+    let mut battle = make_battle(BattleType::Triples, 0, team.clone(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(
         battle.set_player_choice("player-1", "pass; move 0; pass"),
@@ -198,7 +199,7 @@ fn ally_switch_fails_middle_triples() {
 fn ally_switch_fails_partner_fainted() {
     let mut team = gothitelle();
     team.members[1].persistent_battle_data.hp = Some(0);
-    let mut battle = make_battle(BattleType::Doubles, 0, team).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team.clone(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0; pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass; pass"), Ok(()));
@@ -218,7 +219,7 @@ fn ally_switch_fails_partner_fainted() {
 #[test]
 fn ally_switch_consecutive_fails() {
     let team = gothitelle();
-    let mut battle = make_battle(BattleType::Doubles, 0, team).unwrap();
+    let mut battle = make_battle(BattleType::Doubles, 0, team.clone(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(

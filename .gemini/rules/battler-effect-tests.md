@@ -1,7 +1,7 @@
 This section describes rules that ALWAYS must be followed when writing effect tests for battler. Exceptions to these rules ALWAYS require ADDITIONAL user approval.
 
 1. ALWAYS match the style and organization of existing tests. Function order MUST be: all team functions, battle builder functions, test cases.
-2. ALWAYS put as much common functionality into the battle builder function as possible. The battle builder function MUST return `Result<PublicCoreBattle<'static>>`. The allowed inputs are: battle type, seed, teams.
+2. ALWAYS put as much common functionality into the battle builder function (`make_battle`) as possible. The battle builder function MUST return `Result<PublicCoreBattle<'static>>`. This function MUST take in teams as input. You MAY optionally pass battle type and seed ONLY if they are dynamic across multiple tests (otherwise, they should be hard-coded).
 3. Tests always end in `_test.rs` and are organized according to the existing module structure. NEVER deviate from the existing module structure for new test files.
 4. Test cases are ALWAYS based on the specialized behavior of the effect itself. Focus on testing what makes the effect unique. Focus on edge cases that are identifiable in the fxlang code (JSON) itself. Do not introduce unnecessary complexity unrelated to the test itself.
 5. NEVER access battle engine internals such as context objects.
