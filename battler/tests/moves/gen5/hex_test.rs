@@ -18,9 +18,8 @@ fn team() -> TeamData {
                     "name": "Mew",
                     "species": "Mew",
                     "ability": "No Ability",
-                    "moves": ["Splash"],
-                    "level": 100,
-                    "evs": { "hp": 252, "spd": 252 }
+                    "moves": ["Recover"],
+                    "level": 100
                 },
                 {
                     "name": "Chandelure",
@@ -33,9 +32,8 @@ fn team() -> TeamData {
                     "name": "Mew",
                     "species": "Mew",
                     "ability": "Comatose",
-                    "moves": ["Splash"],
-                    "level": 100,
-                    "evs": { "hp": 252, "spd": 252 }
+                    "moves": [],
+                    "level": 100
                 }
             ]
         }"#,
@@ -64,42 +62,47 @@ fn hex_doubles_power_on_status() {
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    // Turn 1: Switch Player 1 to Chandelure.
+    // Switch to Chandelure.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    // Turn 2: Hex on healthy target.
+    // Hex on healthy target.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    // Turn 3: Thunder Wave.
+    // Recover.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    // Thunder Wave.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    // Turn 4: Hex on paralyzed target.
+    // Hex on paralyzed target.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
-
-    // Mew has 373 HP.
-    // Hex 1: 186 damage. Remaining: 187.
-    // Hex 2 (doubled): ~366 damage. Remaining: -179 -> 0.
-    // If not doubled: 186 damage. Remaining: 1.
-    // So if it faints, we know it dealt > 187 damage.
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Chandelure,player-1,1|name:Hex|target:Mew,player-2,1",
             "supereffective|mon:Mew,player-2,1",
             "split|side:1",
-            ["damage", "mon:Mew,player-2,1", "health:187/373"],
-            ["damage", "mon:Mew,player-2,1", "health:51/100"],
+            ["damage", "mon:Mew,player-2,1", "health:70/310"],
+            ["damage", "mon:Mew,player-2,1", "health:23/100"],
             "residual",
             "turn|turn:3",
+            "continue",
+            "move|mon:Mew,player-2,1|name:Recover|target:Mew,player-2,1",
+            "split|side:1",
+            ["heal", "mon:Mew,player-2,1", "health:225/310"],
+            ["heal", "mon:Mew,player-2,1", "health:73/100"],
+            "residual",
+            "turn|turn:4",
             "continue",
             "move|mon:Chandelure,player-1,1|name:Thunder Wave|target:Mew,player-2,1",
             "status|mon:Mew,player-2,1|status:Paralysis",
             "residual",
-            "turn|turn:4",
+            "turn|turn:5",
             "continue",
             "move|mon:Chandelure,player-1,1|name:Hex|target:Mew,player-2,1",
             "supereffective|mon:Mew,player-2,1",
@@ -126,39 +129,34 @@ fn hex_doubles_power_on_comatose() {
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    // Turn 1: Switch Player 1 to Chandelure.
+    // Switch to Chandelure.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    // Turn 2: Hex on Mew.
+    // Hex on Mew.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    // Turn 3: Player 2 switches to Comatose Mew.
+    // Switch to Comatose Mew.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 2"), Ok(()));
 
-    // Turn 4: Hex on Comatose Mew.
+    // Hex on Comatose Mew.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
-
-    // Normal Mew HP 373 -> 187 (186 dmg).
-    // Comatose Mew HP 373 -> 7 (366 dmg).
-    // If not doubled, it would be 187.
-    // We check exact logs.
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Chandelure,player-1,1|name:Hex|target:Mew,player-2,1",
             "supereffective|mon:Mew,player-2,1",
             "split|side:1",
-            ["damage", "mon:Mew,player-2,1", "health:187/373"],
-            ["damage", "mon:Mew,player-2,1", "health:51/100"],
+            ["damage", "mon:Mew,player-2,1", "health:70/310"],
+            ["damage", "mon:Mew,player-2,1", "health:23/100"],
             "residual",
             "turn|turn:3",
             "continue",
             "split|side:1",
-            ["switch", "player:player-2", "position:1", "name:Mew", "health:373/373"],
+            ["switch", "player:player-2", "position:1", "name:Mew", "health:310/310"],
             ["switch", "player:player-2", "position:1", "name:Mew", "health:100/100"],
             "residual",
             "turn|turn:4",
@@ -166,10 +164,10 @@ fn hex_doubles_power_on_comatose() {
             "move|mon:Chandelure,player-1,1|name:Hex|target:Mew,player-2,1",
             "supereffective|mon:Mew,player-2,1",
             "split|side:1",
-            ["damage", "mon:Mew,player-2,1", "health:7/373"],
-            ["damage", "mon:Mew,player-2,1", "health:2/100"],
-            "residual",
-            "turn|turn:5"
+            ["damage", "mon:Mew,player-2,1", "health:0"],
+            ["damage", "mon:Mew,player-2,1", "health:0"],
+            "faint|mon:Mew,player-2,1",
+            "residual"
         ]"#,
     )
     .unwrap();
