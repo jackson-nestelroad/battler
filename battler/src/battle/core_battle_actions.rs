@@ -785,6 +785,20 @@ fn use_active_move_internal(
         );
     }
 
+    if !context.active_move().ignore_all_secondary_effects {
+        core_battle_effects::run_active_move_event_expecting_void(
+            context,
+            fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
+            core_battle_effects::MoveTargetForEvent::User,
+            fxlang::VariableInput::default(),
+        );
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context.user_applying_effect_context(target)?,
+            fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
+            fxlang::VariableInput::default(),
+        );
+    }
+
     Ok(outcome)
 }
 
@@ -1275,18 +1289,20 @@ fn move_hit_loop(
     // Trigger effects at the end of each move.
     CoreBattle::update(context.as_battle_context_mut())?;
 
-    for target in targets.iter().filter(|target| target.outcome.success()) {
-        core_battle_effects::run_active_move_event_expecting_void(
-            context,
-            fxlang::BattleEvent::AfterMoveSecondaryEffects,
-            core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-            fxlang::VariableInput::default(),
-        );
-        core_battle_effects::run_event_for_applying_effect(
-            &mut context.applying_effect_context_for_target(target.handle)?,
-            fxlang::BattleEvent::AfterMoveSecondaryEffects,
-            fxlang::VariableInput::default(),
-        );
+    if !context.active_move().ignore_all_secondary_effects {
+        for target in targets.iter().filter(|target| target.outcome.success()) {
+            core_battle_effects::run_active_move_event_expecting_void(
+                context,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
+                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+                fxlang::VariableInput::default(),
+            );
+            core_battle_effects::run_event_for_applying_effect(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
+                fxlang::VariableInput::default(),
+            );
+        }
     }
 
     // At this point, all hits have been applied.

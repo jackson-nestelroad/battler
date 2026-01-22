@@ -18,9 +18,10 @@ This section describes rules that ALWAYS must be followed when writing effect te
 16. When testing damage calculations, ALWAYS heal Mons (e.g., with the move Recover, or item Max Potion) to prevent fainting if the damage calculation is the critical portion of the test. NEVER allow a Mon to faint when testing damage calculation modifiers, unless the faint is caused by the very last damage calculation in the test.
 17. NEVER include a Mon solely for the purpose of surviving multiple hits. You SHOULD use healing effects instead (see above).
 18. ALWAYS reuse MINIMAL teams. Use as few teams and Mons as possible, where ALL Mons play an active and important role in the battle. ALWAYS use a mirror match, unless a different Mon is EXPLICITLY REQUIRED and APPROVED by the user. ALWAYS combine mirror matches into a single team for simplicity.
-19. You do not need to adhere to team validation. You MAY turn team validation off.
-20. ALWAYS use at least one Pokémon that was introduced in the same generation as the effect being tested for variety. This Pokémon SHOULD make logical sense for the effect under test (e.g., a Pokémon with the same type as the move, or a Pokémon that naturally has the ability).
-21. ALWAYS name Mons with the exact same name as their species. NEVER use unique names.
-22. ALWAYS use a set seed (often `0`) to prevent minor RNG differences from failing tests. You MAY use controlled RNG for highly complex scenarios. You MAY use max or min base damage randomization (you do not need to if damage numbers do not matter in the test).
-23. ALWAYS use `player-1` and `player-2` for test battles. ALWAYS define a `make_battle` method that uses TestBattleBuilder internally.
-24. ALWAYS use properly capitalized names for effects, such as moves, abilities, and items, in team definitions.
+19. ALWAYS use one function per team.
+20. You do not need to adhere to team validation. You MAY turn team validation off.
+21. ALWAYS use at least one Pokémon that was introduced in the same generation as the effect being tested for variety. This Pokémon SHOULD make logical sense for the effect under test (e.g., a Pokémon with the same type as the move, or a Pokémon that naturally has the ability).
+22. ALWAYS name Mons with the exact same name as their species. NEVER use unique names.
+23. ALWAYS use a set seed (often `0`) to prevent minor RNG differences from failing tests. You MAY use controlled RNG for highly complex scenarios. You MAY use max or min base damage randomization (you do not need to if damage numbers do not matter in the test).
+24. ALWAYS use `player-1` and `player-2` for test battles. ALWAYS define a `make_battle` method that uses TestBattleBuilder internally.
+25. ALWAYS use properly capitalized names for effects, such as moves, abilities, and items, in team definitions.

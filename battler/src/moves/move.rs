@@ -166,6 +166,8 @@ pub struct Move {
     pub primary_user_effect_applied: bool,
     /// Is the move upgraded?
     pub upgraded: Option<UpgradedMoveSource>,
+    /// Ignore all secondary effects?
+    pub ignore_all_secondary_effects: bool,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -209,6 +211,7 @@ impl Move {
             total_damage: 0,
             primary_user_effect_applied: false,
             upgraded: None,
+            ignore_all_secondary_effects: false,
             effect_state: fxlang::EffectState::default(),
             unlinked,
             secondary_effects: HashMap::default(),

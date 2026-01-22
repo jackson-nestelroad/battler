@@ -1160,6 +1160,11 @@ where
                                 .data
                                 .hit_effect,
                         ),
+                        "ignore_all_secondary_effects" => ValueRefMut::Boolean(
+                            &mut context
+                                .active_move_mut(**active_move_handle)?
+                                .ignore_all_secondary_effects,
+                        ),
                         "multiaccuracy" => ValueRefMut::Boolean(
                             &mut context
                                 .active_move_mut(**active_move_handle)?

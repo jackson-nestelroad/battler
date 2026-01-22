@@ -1,6 +1,43 @@
 {
-  "pickpocket": { "name": "Pickpocket", "flags": [] },
-  "sheerforce": { "name": "Sheer Force", "flags": [] },
+  "pickpocket": {
+    "name": "Pickpocket",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects": [
+          "if $source == $target or !func_call(move_makes_contact: $move):",
+          ["return"],
+          "if !$source.item or $target.item.is_defined or $target.needs_switch or $target.force_switch or $source.needs_switch:",
+          ["return"],
+          "if !func_call(set_item: $target $source.item dry_run):",
+          ["return"],
+          "$item = func_call(take_item: $source use_target_as_source)",
+          "if !$item:",
+          ["return"],
+          "set_item: $target $item"
+        ]
+      }
+    }
+  },
+  "sheerforce": {
+    "name": "Sheer Force",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if $move.secondary_effects.is_empty:",
+          ["return"],
+          "$move.secondary_effects = []",
+          "$move.user_effect = undefined",
+          "$move.ignore_all_secondary_effects = true"
+        ],
+        "on_base_power": [
+          "if $move.ignore_all_secondary_effects:",
+          ["return $base_power * 13/10"]
+        ]
+      }
+    }
+  },
   "contrary": {
     "name": "Contrary",
     "flags": ["Breakable"],
@@ -17,7 +54,22 @@
       }
     }
   },
-  "unnerve": { "name": "Unnerve", "flags": [] },
+  "unnerve": {
+    "name": "Unnerve",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "if $effect_state.unnerved:",
+          ["return"],
+          "log_ability",
+          "$effect_state.unnerved = true"
+        ],
+        "on_end": ["$effect_state.unnerved = false"],
+        "on_foe_try_eat_item": ["return !$effect_state.unnerved"]
+      }
+    }
+  },
   "defiant": { "name": "Defiant", "flags": [] },
   "defeatist": { "name": "Defeatist", "flags": [] },
   "cursedbody": { "name": "Cursed Body", "flags": [] },

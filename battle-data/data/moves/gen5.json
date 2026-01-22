@@ -1641,7 +1641,7 @@
           "if func_call(base_species: $source) == meloetta and !$target.transformed:",
           ["$move.effect_state.change_forme = true"]
         ],
-        "on_after_move": [
+        "on_after_move_secondary_effects_user": [
           "if $move.effect_state.change_forme:",
           [
             "$forme = ''",

@@ -265,6 +265,7 @@ Note that this is not meant to be an exact description of how battles work. Many
             1. `AfterMoveSecondaryEffects`.
 
          1. `MoveFailed`.
+         1. `AfterMoveSecondaryEffectsUser`.
 
    1. `AfterMove`.
 

@@ -351,11 +351,19 @@ pub enum BattleEvent {
     AfterMove,
     /// Runs after a move's secondary effects have been applied.
     ///
-    /// Should be viewed as the last effect the move needs to apply.
+    /// Should be viewed as the last effect the move needs to apply on the target.
     ///
     /// Runs on the active move and in the context of a move target.
     #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
+    /// Runs after a move's secondary effects have been applied.
+    ///
+    /// Should be viewed as the last effect the move needs to apply on the user. Minimal difference
+    /// with `AfterMove`; the key difference is that Sheer Force prevents this event from running.
+    ///
+    /// Runs on the active move and in the context of a move user.
+    #[string = "AfterMoveSecondaryEffectsUser"]
+    AfterMoveSecondaryEffectsUser,
     /// Runs after a Mon has its ability set.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1231,6 +1239,7 @@ impl BattleEvent {
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
+            Self::AfterMoveSecondaryEffectsUser => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterSetAbility => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
