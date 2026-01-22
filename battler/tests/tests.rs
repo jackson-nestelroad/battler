@@ -415,6 +415,7 @@ mod moves {
         mod wonder_room_test;
         mod echoed_voice_test;
         mod heal_pulse_test;
+        mod hex_test;
         mod chip_away_test;
         mod clear_smog_test;
         mod stored_power_test;
