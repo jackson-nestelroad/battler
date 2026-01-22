@@ -399,6 +399,7 @@ mod moves {
         mod foul_play_test;
         mod guard_split_test;
         mod heavy_slam_test;
+        mod incinerate_test;
         mod magic_room_test;
         mod pledge_test;
         mod power_split_test;
