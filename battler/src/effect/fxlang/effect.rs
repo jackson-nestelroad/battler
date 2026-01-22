@@ -1596,6 +1596,7 @@ impl BattleEvent {
     /// an event.
     pub fn run_callback_on_source_effect(&self) -> bool {
         match self {
+            Self::BasePower => true,
             Self::Damage => true,
             Self::ModifyCatchRate => true,
             Self::ModifySpeciesCatchRate => true,

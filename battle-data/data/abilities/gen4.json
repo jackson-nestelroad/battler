@@ -156,7 +156,7 @@
     "effect": {
       "delegates": ["ability:waterabsorb"],
       "callbacks": {
-        "on_source_base_power": [
+        "on_base_power": [
           "if $move.type == fire:",
           ["return $base_power * 5/4"]
         ],

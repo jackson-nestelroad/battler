@@ -31,7 +31,7 @@
           "$move.user_effect = undefined",
           "$move.ignore_all_secondary_effects = true"
         ],
-        "on_base_power": [
+        "on_source_base_power": [
           "if $move.ignore_all_secondary_effects:",
           ["return $base_power * 13/10"]
         ]
@@ -189,11 +189,93 @@
       }
     }
   },
-  "toxicboost": { "name": "Toxic Boost", "flags": [] },
-  "flareboost": { "name": "Flare Boost", "flags": [] },
-  "harvest": { "name": "Harvest", "flags": [] },
-  "telepathy": { "name": "Telepathy", "flags": [] },
-  "moody": { "name": "Moody", "flags": [] },
+  "toxicboost": {
+    "name": "Toxic Boost",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if ($source.status == psn or $source.status == tox) and $move.category == physical:",
+          ["return $base_power * 3/2"]
+        ]
+      }
+    }
+  },
+  "flareboost": {
+    "name": "Flare Boost",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $source.status == brn and $move.category == physical:",
+          ["return $base_power * 3/2"]
+        ]
+      }
+    }
+  },
+  "harvest": {
+    "name": "Harvest",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if !$field.weather or !$field.weather.is_sunny:",
+          ["return"],
+          "if $target.item.is_defined or !$target.last_item or !func_call(item_has_flag: $target.last_item berry):",
+          ["return false"],
+          "$item = $target.last_item",
+          "$target.last_item = undefined",
+          "set_item: $target $item"
+        ]
+      }
+    }
+  },
+  "telepathy": {
+    "name": "Telepathy",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $target != source and func_call(is_ally: $target $source):",
+          ["log_activate: with_target", "return stop"]
+        ]
+      }
+    }
+  },
+  "moody": {
+    "name": "Moody",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "$possible_boosts = []",
+          "foreach $stat in func_call(boostable_stats):",
+          [
+            "if $stat == acc or $stat == eva:",
+            ["continue"],
+            "if func_all(can_boost: $target str('{}:1', $stat):",
+            ["$possible_boosts = func_call(append: $possible_boosts $stat)"]
+          ],
+          "$boost = func_call(sample: $possible_boosts)",
+          "foreach $stat in func_call(boostable_stats):",
+          "$possible_drops = []",
+          [
+            "if $stat == acc or $stat == eva:",
+            ["continue"],
+            "if func_all(can_boost: $target str('{}:-1', $stat):",
+            ["$possible_drops = func_call(append: $possible_drops $stat)"]
+          ],
+          "$drop = func_call(sample: $possible_drops)",
+          "$boosts = func_call(boost_table)",
+          "if $boost:",
+          ["$boosts = func_call(set_boost: $boosts $boost 2)"],
+          "if $drop:",
+          ["$boosts = func_call(set_boost: $boosts $drop -1)"],
+          "boost: $target $boosts"
+        ]
+      }
+    }
+  },
   "overcoat": { "name": "Overcoat", "flags": [] },
   "poisontouch": { "name": "Poison Touch", "flags": [] },
   "regenerator": { "name": "Regenerator", "flags": [] },
