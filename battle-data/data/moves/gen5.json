@@ -1644,9 +1644,9 @@
         "on_after_move_secondary_effects_user": [
           "if $move.effect_state.change_forme:",
           [
-            "$forme = ''",
-            "if $user.species == meloetta:",
-            ["$forme = pirouette"],
+            "$forme = pirouette",
+            "if $user.species == meloettapirouette:",
+            ["$forme = ''"],
             "forme_change: $user str('meloetta{}', $forme)"
           ]
         ]
