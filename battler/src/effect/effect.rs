@@ -172,6 +172,7 @@ impl EffectHandle {
             _ => false,
         }
     }
+
     /// Is the effect handle an item?
     pub fn is_item(&self) -> bool {
         match self {

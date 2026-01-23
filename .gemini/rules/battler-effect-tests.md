@@ -18,19 +18,20 @@ This section describes rules that ALWAYS must be followed when writing effect te
 16. ALWAYS define teams, log expectations, and other complex battle objects with `serde_json::from_str`. ALWAYS qualify `serde_json::from_str`. String formatting and indentation should match that of other effect tests: `r#"{` and `}"#` must be on their own indented lines, and inner JSON contents must be additionally indented.
 17. ALWAYS combine log matches into a single assertion at the end of the test. NEVER run multiple turns and verify logs in between. ALWAYS run all turns back-to-back and verify all logs at the end.
 18. NEVER focus on low-level intricacies, such as precise damage calculations. ALWAYS trust that the core battle engine is correct for core features unrelated to the special effect being tested. ALWAYS focus on the high-level effect under test. DO NOT estimate damage calculations yourself.
-19. NEVER heal a Mon unnecessarily if you are not testing damage calculations or if the Mon is at no risk of fainting during the test.
-20. When testing damage calculations, ALWAYS heal Mons (e.g., with the move Recover, or item Max Potion) to prevent fainting if the damage calculation is the critical portion of the test. NEVER allow a Mon to faint when testing damage calculation modifiers, unless the faint is caused by the very last damage calculation in the test.
-21. NEVER include a Mon solely for the purpose of surviving multiple hits. You SHOULD use healing effects instead (see above).
-22. NEVER include EVs or IVs only for the purpose of making a Mon survive hits. Use a different species instead.
-23. ALWAYS reuse MINIMAL teams. Use as few teams and Mons as possible, where ALL Mons play an active and important role in the battle. ALWAYS use a mirror match, unless a different Mon is EXPLICITLY REQUIRED and APPROVED by the user. ALWAYS combine mirror matches into a single team for simplicity.
-24. If a specific move, item, or ability must be variable, ALWAYS use a single team and just set the field dynamically on the team JSON before starting the battle. KEEP THINGS SIMPLE. Just set the member directly on the mutable TeamData variable.
-25. ALWAYS use one function per team.
-26. You do not need to adhere to team validation. You MAY turn team validation off.
-27. ALWAYS use at least one Pokémon that was introduced in the same generation as the effect being tested for variety. This Pokémon SHOULD make logical sense for the effect under test (e.g., a Pokémon with the same type as the move, or a Pokémon that naturally has the ability).
-28. ALWAYS name Mons with the exact same name as their species. NEVER use unique names.
-29. ALWAYS use a set seed (often `0`) to prevent minor RNG differences from failing tests. You MAY use controlled RNG for highly complex scenarios. You MAY use max or min base damage randomization (you do not need to if damage numbers do not matter in the test).
-30. ALWAYS use `player-1` and `player-2` for test battles. ALWAYS define a `make_battle` method that uses TestBattleBuilder internally.
-31. ALWAYS use properly capitalized names for effects, such as moves, abilities, and items, in team definitions.
+19. NEVER estimate damage calculations. ALWAYS visibly verify damage calculations with the battle log.
+20. NEVER heal a Mon unnecessarily if you are not testing damage calculations or if the Mon is at no risk of fainting during the test.
+21. When testing damage calculations, ALWAYS heal Mons (e.g., with the move Recover, or item Max Potion) to prevent fainting if the damage calculation is the critical portion of the test. NEVER allow a Mon to faint when testing damage calculation modifiers, unless the faint is caused by the very last damage calculation in the test.
+22. NEVER include a Mon solely for the purpose of surviving multiple hits. You SHOULD use healing effects instead (see above).
+23. NEVER include EVs or IVs only for the purpose of making a Mon survive hits. Use a different species instead.
+24. ALWAYS reuse MINIMAL teams. Use as few teams and Mons as possible, where ALL Mons play an active and important role in the battle. ALWAYS use a mirror match, unless a different Mon is EXPLICITLY REQUIRED and APPROVED by the user. ALWAYS combine mirror matches into a single team for simplicity.
+25. If a specific move, item, or ability must be variable, ALWAYS use a single team and just set the field dynamically on the team JSON before starting the battle. KEEP THINGS SIMPLE. Just set the member directly on the mutable TeamData variable.
+26. ALWAYS use one function per team.
+27. You do not need to adhere to team validation. You MAY turn team validation off.
+28. ALWAYS use at least one Pokémon that was introduced in the same generation as the effect being tested for variety. This Pokémon SHOULD make logical sense for the effect under test (e.g., a Pokémon with the same type as the move, or a Pokémon that naturally has the ability).
+29. ALWAYS name Mons with the exact same name as their species. NEVER use unique names.
+30. ALWAYS use a set seed (often `0`) to prevent minor RNG differences from failing tests. You MAY use controlled RNG for highly complex scenarios. When using a set seed, you DO NOT need to set base damage randomization if damage values are visibly different.
+31. ALWAYS use `player-1` and `player-2` for test battles. ALWAYS define a `make_battle` method that uses TestBattleBuilder internally.
+32. ALWAYS use properly capitalized names for effects, such as moves, abilities, and items, in team definitions.
 
 ## Team Verification Checklist
 

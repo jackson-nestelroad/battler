@@ -276,7 +276,19 @@
       }
     }
   },
-  "overcoat": { "name": "Overcoat", "flags": [] },
+  "overcoat": {
+    "name": "Overcoat",
+    "flags": [],
+    "effect": {
+      "delegates": ["item:safetygoggles"],
+      "callbacks": {
+        "on_try_hit": [
+          "if func_call(move_has_flag: $move powder) and $target != $source and func_call(check_immunity: $target powder):",
+          ["log_immune: $target from_effect", "return stop"]
+        ]
+      }
+    }
+  },
   "poisontouch": { "name": "Poison Touch", "flags": [] },
   "regenerator": { "name": "Regenerator", "flags": [] },
   "bigpecks": { "name": "Big Pecks", "flags": [] },

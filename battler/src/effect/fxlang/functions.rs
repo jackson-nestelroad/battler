@@ -1373,29 +1373,44 @@ fn cure_status(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn move_has_flag(mut context: FunctionContext) -> Result<Value> {
-    let move_id = context
-        .pop_front()
-        .wrap_expectation("missing move")?
-        .move_id(context.evaluation_context_mut())
-        .wrap_error_with_message("invalid move")?;
+    let value = context.pop_front().wrap_expectation("missing move")?;
     let move_flag = context
         .pop_front()
         .wrap_expectation("missing move flag")?
         .string()
         .wrap_error_with_message("invalid move flag")?;
     let move_flag = MoveFlag::from_str(&move_flag).map_err(general_error)?;
-    Ok(Value::Boolean(
-        context
-            .evaluation_context()
-            .battle_context()
-            .battle()
-            .dex
-            .moves
-            .get_by_id(&move_id)?
-            .data
-            .flags
-            .contains(&move_flag),
-    ))
+
+    if value.is_active_move() {
+        Ok(Value::Boolean(
+            context
+                .battle_context_mut()
+                .active_move(
+                    value
+                        .active_move()
+                        .wrap_error_with_message("invalid move")?,
+                )?
+                .data
+                .flags
+                .contains(&move_flag),
+        ))
+    } else {
+        let move_id = value
+            .move_id(context.evaluation_context_mut())
+            .wrap_error_with_message("invalid move")?;
+        Ok(Value::Boolean(
+            context
+                .evaluation_context()
+                .battle_context()
+                .battle()
+                .dex
+                .moves
+                .get_by_id(&move_id)?
+                .data
+                .flags
+                .contains(&move_flag),
+        ))
+    }
 }
 
 fn item_has_flag(mut context: FunctionContext) -> Result<Value> {

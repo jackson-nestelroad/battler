@@ -492,6 +492,15 @@ impl Value {
         }
     }
 
+    /// Checks if the value is a [`MoveHandle`].
+    pub fn is_active_move(&self) -> bool {
+        match self {
+            Self::Effect(EffectHandle::ActiveMove(_, _)) => true,
+            Self::ActiveMove(_) => true,
+            _ => false,
+        }
+    }
+
     /// Consumes the value into a side index.
     pub fn side_index(self) -> Result<usize> {
         match self {
