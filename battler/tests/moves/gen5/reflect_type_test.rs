@@ -178,7 +178,7 @@ fn reflect_type_fails_on_terastallized_user() {
 }
 
 #[test]
-fn reflect_type_fails_on_typeless_target() {
+fn reflect_type_copies_none_type_from_typeless_target() {
     let mut battle = make_battle(0, starmie_team().unwrap(), tornadus_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
