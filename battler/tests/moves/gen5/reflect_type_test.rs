@@ -20,7 +20,7 @@ fn starmie_team() -> Result<TeamData> {
                 {
                     "name": "Starmie",
                     "species": "Starmie",
-                    "ability": "Illuminate",
+                    "ability": "No Ability",
                     "moves": [
                         "Reflect Type"
                     ],
@@ -60,7 +60,7 @@ fn ferrothorn_team() -> Result<TeamData> {
                 {
                     "name": "Ferrothorn",
                     "species": "Ferrothorn",
-                    "ability": "Iron Barbs",
+                    "ability": "No Ability",
                     "moves": [],
                     "nature": "Hardy",
                     "level": 50
@@ -78,12 +78,12 @@ fn tornadus_team() -> Result<TeamData> {
                 {
                     "name": "Tornadus",
                     "species": "Tornadus",
-                    "ability": "Prankster",
+                    "ability": "No Ability",
                     "moves": [
                         "Roost"
                     ],
                     "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 }
             ]
         }"#,
