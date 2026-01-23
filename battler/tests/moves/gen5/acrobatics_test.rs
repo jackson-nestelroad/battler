@@ -52,9 +52,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn acrobatics_doubles_power_when_user_has_no_item() {
-    let team_1 = team().unwrap();
-    let team_2 = team().unwrap();
-    let mut battle = make_battle(0, team_1, team_2).unwrap();
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
