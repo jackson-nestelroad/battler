@@ -312,7 +312,8 @@
             ["$filtered = func_call(append: $filtered $secondary)"]
           ],
           "return $filtered"
-        ]
+        ],
+        "on_set_status": ["if $effect.id == poisontouch:", ["return false"]]
       }
     }
   },

@@ -996,7 +996,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "return func_call(set_types: $target $source.effective_types)"
+          "return func_call(set_types: $source $target.effective_types)"
         ]
       }
     }

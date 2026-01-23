@@ -289,12 +289,81 @@
       }
     }
   },
-  "poisontouch": { "name": "Poison Touch", "flags": [] },
-  "regenerator": { "name": "Regenerator", "flags": [] },
-  "bigpecks": { "name": "Big Pecks", "flags": [] },
-  "sandrush": { "name": "Sand Rush", "flags": [] },
-  "wonderskin": { "name": "Wonder Skin", "flags": [] },
-  "analytic": { "name": "Analytic", "flags": [] },
+  "poisontouch": {
+    "name": "Poison Touch",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_damaging_hit": [
+          "if func_call(chance: 3 10):",
+          ["set_status: $target psn"]
+        ]
+      }
+    }
+  },
+  "regenerator": {
+    "name": "Regenerator",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_switch_out": ["heal: $mon expr($mon.base_max_hp / 3)"]
+      }
+    }
+  },
+  "bigpecks": {
+    "name": "Big Pecks",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_boost": [
+          "if $target == $source:",
+          ["return"],
+          "if $boosts.def < 0:",
+          [
+            "$boosts.def = 0",
+            "if !$effect.is_move_secondary:",
+            ["log_fail_unboost: $target from_effect def"],
+            "return $boosts"
+          ]
+        ]
+      }
+    }
+  },
+  "sandrush": {
+    "name": "Sand Rush",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": [
+          "if $field.weather == sandstormweather:",
+          ["return $spe * 2"]
+        ],
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
+      }
+    }
+  },
+  "wonderskin": {
+    "name": "Wonder Skin",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_accuracy": ["if $move.category == status:", ["return 50"]]
+      }
+    }
+  },
+  "analytic": {
+    "name": "Analytic",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "foreach $mon in func_call(all_active_mons):",
+          ["if func_call(will_move_this_turn: $mon):", ["return"]],
+          "return $base_power * 13/10"
+        ]
+      }
+    }
+  },
   "illusion": {
     "name": "Illusion",
     "flags": ["NoEntrainment", "NoRolePlay", "NoSkillSwap", "NoTrace"],
@@ -323,7 +392,20 @@
       }
     }
   },
-  "imposter": { "name": "Imposter", "flags": ["NoRolePlay", "NoTrace"] },
+  "imposter": {
+    "name": "Imposter",
+    "flags": ["NoRolePlay", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_switch_in": [
+          "$position = $format.mons_per_side - $mon.position - 1",
+          "$target = func_call(mon_in_position: $target.foe_side $position)",
+          "if $target:",
+          ["transform_into: $source $target"]
+        ]
+      }
+    }
+  },
   "infiltrator": {
     "name": "Infiltrator",
     "flags": [],
@@ -333,11 +415,70 @@
       }
     }
   },
-  "mummy": { "name": "Mummy", "flags": [] },
-  "moxie": { "name": "Moxie", "flags": [] },
-  "justified": { "name": "Justified", "flags": [] },
-  "rattled": { "name": "Rattled", "flags": [] },
-  "magicbounce": { "name": "Magic Bounce", "flags": [] },
+  "mummy": {
+    "name": "Mummy",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(ability_has_flag: $source.ability permanent) or $source.ability == $this.id:",
+          ["return"],
+          "if func_call(move_makes_contact: $move):",
+          ["set_ability: $target $this.id"]
+        ]
+      }
+    }
+  },
+  "moxie": {
+    "name": "Moxie",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_after_faint": [
+          "if $effect.is_move:",
+          ["boost: $source str('atk:{}', $length)"]
+        ]
+      }
+    }
+  },
+  "justified": {
+    "name": "Justified",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.type == dark:",
+          ["boost: $target 'atk:1'"]
+        ]
+      }
+    }
+  },
+  "rattled": {
+    "name": "Rattled",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if [dark, bug, ghost] has $move.type:",
+          ["boost: $target 'spe:1'"]
+        ],
+        "on_after_boost": [
+          "if $effect.id == intimidate and $boosts.atk != 0:",
+          ["boost: $target 'spe:1'"]
+        ]
+      }
+    }
+  },
+  "magicbounce": {
+    "name": "Magic Bounce",
+    "flags": ["Breakable"],
+    "effect": {
+      "delegates": ["movecondition:magiccoat"],
+      "callbacks": {
+        "on_start": ["# No log."]
+      }
+    }
+  },
   "sapsipper": {
     "name": "Sap Sipper",
     "flags": [],
@@ -373,10 +514,93 @@
       }
     }
   },
-  "sandforce": { "name": "Sand Force", "flags": [] },
-  "ironbarbs": { "name": "Iron Barbs", "flags": [] },
-  "zenmode": { "name": "Zen Mode", "flags": ["Permanent"] },
-  "victorystar": { "name": "Victory Star", "flags": [] },
-  "turboblaze": { "name": "Turboblaze", "flags": [] },
-  "teravolt": { "name": "Teravolt", "flags": [] }
+  "sandforce": {
+    "name": "Sand Force",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $field.weather == sandstormweather and [rock, ground, steel] has $move.type:",
+          ["return $base_power * 13/10"]
+        ]
+      }
+    }
+  },
+  "ironbarbs": {
+    "name": "Iron Barbs",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move):",
+          ["damage: $source expr($source.base_max_hp / 8) use_target_as_source"]
+        ]
+      }
+    }
+  },
+  "zenmode": {
+    "name": "Zen Mode",
+    "flags": ["Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if func_call(base_species: $target) != darmanitan or $target.transformed):",
+          ["return"],
+          "if $target.hp <= $target.max_hp / 2:",
+          ["add_volatile: $target $this.id"],
+          "else:",
+          ["remove_volatile: $target $this.id"]
+        ],
+        "on_end": ["remove_volatile: $target $this.id"]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $target.species == darmanitan:",
+          ["forme_change: $target darmanitanzen"],
+          "else if $target.species == darmanitangalar:",
+          ["forme_change: $target darmanitangalarzen"]
+        ],
+        "on_end": [
+          "if $target.species == darmanitanzen:",
+          ["forme_change: $target darmanitan"],
+          "else if $target.species == darmanitangalarzen:",
+          ["forme_change: $target darmanitangalar"]
+        ]
+      }
+    }
+  },
+  "victorystar": {
+    "name": "Victory Star",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_modify_accuracy": [
+          "if func_call(is_ally: $source $effect_state.target):",
+          ["return $acc * 11/10"]
+        ]
+      }
+    }
+  },
+  "turboblaze": {
+    "name": "Turboblaze",
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:moldbreaker"]
+    },
+    "condition": {
+      "delegates": ["abilitycondition:moldbreaker"]
+    }
+  },
+  "teravolt": {
+    "name": "Teravolt",
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:moldbreaker"]
+    },
+    "condition": {
+      "delegates": ["abilitycondition:moldbreaker"]
+    }
+  }
 }
