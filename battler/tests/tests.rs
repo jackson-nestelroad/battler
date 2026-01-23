@@ -394,35 +394,36 @@ mod moves {
         mod after_you_test;
         mod ally_switch_test;
         mod autotomize_test;
+        mod chip_away_test;
+        mod clear_smog_test;
+        mod echoed_voice_test;
         mod electro_ball_test;
         mod entrainment_test;
         mod flame_burst_test;
         mod foul_play_test;
         mod guard_split_test;
+        mod heal_pulse_test;
         mod heavy_slam_test;
+        mod hex_test;
         mod incinerate_test;
         mod magic_room_test;
         mod pledge_test;
         mod power_split_test;
         mod psyshock_test;
         mod quash_test;
+        mod quick_guard_test;
+        mod reflect_type_test;
         mod round_test;
         mod simple_beam_test;
         mod sky_drop_test;
         mod smack_down_test;
         mod soak_test;
+        mod stored_power_test;
+        mod synchronoise_test;
         mod telekinesis_test;
         mod venoshock_test;
         mod wide_guard_test;
         mod wonder_room_test;
-        mod echoed_voice_test;
-        mod heal_pulse_test;
-        mod hex_test;
-        mod chip_away_test;
-        mod clear_smog_test;
-        mod stored_power_test;
-        mod quick_guard_test;
-        mod synchronoise_test;
     }
 
     mod gen7 {
