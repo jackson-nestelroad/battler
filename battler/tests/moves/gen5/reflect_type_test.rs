@@ -13,7 +13,7 @@ use battler_test_utils::{
     static_local_data_store,
 };
 
-fn team_1() -> Result<TeamData> {
+fn starmie_team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -22,12 +22,21 @@ fn team_1() -> Result<TeamData> {
                     "species": "Starmie",
                     "ability": "Illuminate",
                     "moves": [
-                        "Reflect Type",
-                        "Splash"
+                        "Reflect Type"
                     ],
                     "nature": "Hardy",
                     "level": 50
-                },
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn arceus_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
                 {
                     "name": "Arceus",
                     "species": "Arceus",
@@ -44,7 +53,7 @@ fn team_1() -> Result<TeamData> {
     .wrap_error()
 }
 
-fn team_2() -> Result<TeamData> {
+fn ferrothorn_team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
@@ -52,19 +61,26 @@ fn team_2() -> Result<TeamData> {
                     "name": "Ferrothorn",
                     "species": "Ferrothorn",
                     "ability": "Iron Barbs",
-                    "moves": [
-                        "Splash"
-                    ],
+                    "moves": [],
                     "nature": "Hardy",
                     "level": 50
-                },
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn tornadus_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
                 {
                     "name": "Tornadus",
                     "species": "Tornadus",
                     "ability": "Prankster",
                     "moves": [
-                        "Roost",
-                        "Splash"
+                        "Roost"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -92,7 +108,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 
 #[test]
 fn reflect_type_success() {
-    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(0, starmie_team().unwrap(), ferrothorn_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -112,27 +128,18 @@ fn reflect_type_success() {
 
 #[test]
 fn reflect_type_fails_on_arceus() {
-    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(0, arceus_team().unwrap(), ferrothorn_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
-
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["switch", "Arceus"],
-            ["switch", "Arceus"],
-            "residual",
-            "turn|turn:2",
-            "continue",
             "move|mon:Arceus,player-1,1|name:Reflect Type|noanim",
             "fail|mon:Arceus,player-1,1",
             "residual",
-            "turn|turn:3"
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();
@@ -141,14 +148,14 @@ fn reflect_type_fails_on_arceus() {
 
 #[test]
 fn reflect_type_fails_on_terastallized_user() {
-    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(0, starmie_team().unwrap(), ferrothorn_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    // Terastallize player 1.
+    // Starmie uses Reflect Type and Terastallizes.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0, tera"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
-    // Starmie is now Tera Water. Reflect Type should fail.
+    // Starmie is now Tera Water. Reflect Type should fail on the second attempt.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
@@ -172,32 +179,22 @@ fn reflect_type_fails_on_terastallized_user() {
 
 #[test]
 fn reflect_type_fails_on_typeless_target() {
-    let mut battle = make_battle(0, team_1().unwrap(), team_2().unwrap()).unwrap();
+    let mut battle = make_battle(0, starmie_team().unwrap(), tornadus_team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    // Player 2 switches to Tornadus.
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
-
-    // Turn 2: Tornadus uses Roost (becoming typeless), Starmie uses Reflect Type.
+    // Tornadus uses Roost (becoming typeless), Starmie uses Reflect Type.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:1",
-            ["switch", "Tornadus"],
-            ["switch", "Tornadus"],
-            "residual",
-            "turn|turn:2",
-            "continue",
             "move|mon:Tornadus,player-2,1|name:Roost|noanim",
             "fail|mon:Tornadus,player-2,1|what:heal",
             "singleturn|mon:Tornadus,player-2,1|move:Roost",
             "move|mon:Starmie,player-1,1|name:Reflect Type|target:Tornadus,player-2,1",
             "typechange|mon:Starmie,player-1,1|types:None",
             "residual",
-            "turn|turn:3"
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();
