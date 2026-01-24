@@ -394,6 +394,7 @@ mod moves {
         mod after_you_test;
         mod ally_switch_test;
         mod autotomize_test;
+        mod bestow_test;
         mod chip_away_test;
         mod clear_smog_test;
         mod echoed_voice_test;
@@ -413,6 +414,7 @@ mod moves {
         mod quash_test;
         mod quick_guard_test;
         mod reflect_type_test;
+        mod retaliate_test;
         mod round_test;
         mod simple_beam_test;
         mod sky_drop_test;

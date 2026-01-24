@@ -769,6 +769,13 @@ where
                             "can_escape" => ValueRef::Boolean(Player::can_escape(
                                 &context.battle_context_mut().player_context(player)?,
                             )),
+                            "mon_fainted_last_turn" => ValueRef::Boolean(
+                                context
+                                    .battle_context_mut()
+                                    .player_context(player)?
+                                    .player()
+                                    .fainted_last_turn,
+                            ),
                             "team" => ValueRef::TempList(
                                 context
                                     .battle_context_mut()

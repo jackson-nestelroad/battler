@@ -385,6 +385,9 @@ pub struct Player {
     pub escape_attempts: u16,
     pub escaped: bool,
 
+    pub fainted_last_turn: bool,
+    pub fainted_this_turn: bool,
+
     pub bag: HashMap<Id, u16>,
     pub dex: PlayerDex,
     pub caught: Vec<MonHandle>,
@@ -435,6 +438,8 @@ impl Player {
             can_terastallize,
             escape_attempts: 0,
             escaped: false,
+            fainted_last_turn: false,
+            fainted_this_turn: false,
             bag: HashMap::default(),
             dex: player_dex,
             caught: Vec::new(),
@@ -1714,6 +1719,13 @@ impl Player {
     /// Checks if the player has the given species registered in its dex.
     pub fn has_species_registered(context: &PlayerContext, species: &Id) -> bool {
         context.player().dex.species.contains(species.as_ref())
+    }
+
+    /// Resets the player's state for the next turn.
+    pub fn reset_state_for_next_turn(context: &mut PlayerContext) -> Result<()> {
+        context.player_mut().fainted_last_turn = context.player().fainted_this_turn;
+        context.player_mut().fainted_this_turn = false;
+        Ok(())
     }
 }
 

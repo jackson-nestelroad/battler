@@ -1012,7 +1012,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_source_base_power": [
+        "on_base_power": [
           "if $source.player.mon_fainted_last_turn:",
           ["return $base_power * 2"]
         ]
@@ -1057,7 +1057,7 @@
           ["return false"]
         ],
         "on_hit": [
-          "$item = func_call(take_item: $target)",
+          "$item = func_call(take_item: $source)",
           "if !$item:",
           ["return false"],
           "return func_call(set_item: $target $item)"

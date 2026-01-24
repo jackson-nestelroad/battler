@@ -1574,6 +1574,11 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
+        for player in context.battle().player_indices().collect::<Vec<_>>() {
+            let mut context = context.player_context(player)?;
+            Player::reset_state_for_next_turn(&mut context)?;
+        }
+
         for mon_handle in context
             .battle()
             .all_active_mon_handles()
@@ -2157,6 +2162,8 @@ impl<'d> CoreBattle<'d> {
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
+
+            context.player_mut().fainted_this_turn = true;
         }
 
         Self::check_win(context)?;
