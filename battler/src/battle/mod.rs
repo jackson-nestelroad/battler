@@ -36,6 +36,7 @@ pub use action::{
     MonAction,
     MoveAction,
     MoveActionInput,
+    ShiftAction,
     SwitchAction,
     SwitchActionInput,
     SwitchEventsAction,

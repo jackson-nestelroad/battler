@@ -47,6 +47,10 @@
     "name": "Catch",
     "condition_type": "Built-in"
   },
+  "autoshift": {
+    "name": "Auto-Shift",
+    "condition_type": "Built-in"
+  },
   "mon": {
     "name": "Mon",
     "condition_type": "Built-in",

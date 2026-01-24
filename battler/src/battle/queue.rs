@@ -500,6 +500,9 @@ mod queue_test {
                 Action::Escape(action) => format!("escape {}", action.mon_action.mon),
                 Action::Forfeit(action) => format!("forfeit {}", action.player),
                 Action::Item(action) => format!("item {}", action.item),
+                Action::Shift(action) => {
+                    format!("shift {} {}", action.mon_action.mon, action.position)
+                }
             })
             .collect()
     }

@@ -992,6 +992,11 @@ where
                                 .as_ref()
                                 .map(ValueRef::NaturalGiftData)
                                 .unwrap_or(ValueRef::Undefined),
+                            "techno_blast" => special_item_data
+                                .techno_blast
+                                .as_ref()
+                                .map(ValueRef::TechnoBlastData)
+                                .unwrap_or(ValueRef::Undefined),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::FlingData(fling_data) = value {
@@ -1020,6 +1025,11 @@ where
                     } else if let ValueRef::JudgmentData(judgment_data) = value {
                         value = match *member {
                             "type" => ValueRef::Type(judgment_data.typ),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::TechnoBlastData(techno_blast_data) = value {
+                        value = match *member {
+                            "type" => ValueRef::Type(techno_blast_data.typ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::EffectState(connector) = value {

@@ -423,6 +423,7 @@ mod moves {
         mod stored_power_test;
         mod synchronoise_test;
         mod telekinesis_test;
+        mod techno_blast_test;
         mod venoshock_test;
         mod wide_guard_test;
         mod wonder_room_test;

@@ -49,6 +49,7 @@ use serde_string_enum::{
 };
 
 use crate::{
+    BattleType,
     WrapError,
     battle::{
         Action,
@@ -70,6 +71,7 @@ use crate::{
         PlayerContext,
         Request,
         RequestType,
+        ShiftAction,
         Side,
         SwitchAction,
         SwitchActionInput,
@@ -908,6 +910,9 @@ impl Player {
                     }
                     Ok(Choice::Item(choice)) => Self::choose_item(context, choice)
                         .wrap_error_with_message("cannot use item"),
+                    Ok(Choice::Shift) => {
+                        Self::choose_shift(context).wrap_error_with_message("cannot shift")
+                    }
                     Ok(Choice::Random) => {
                         Self::choose_random(context).wrap_error_with_message("random choice failed")
                     }
@@ -1567,6 +1572,40 @@ impl Player {
             .choice
             .actions
             .push(Action::Item(action));
+
+        Ok(())
+    }
+
+    fn choose_shift(context: &mut PlayerContext) -> Result<()> {
+        if context.battle().format.battle_type != BattleType::Triples {
+            return Err(general_error("you can only shift to the center in triples"));
+        }
+
+        match context.player().request_type() {
+            Some(RequestType::Turn) => (),
+            _ => return Err(general_error("you cannot shift to the center out of turn")),
+        }
+        let active_position = Self::get_position_for_next_choice(context, false)?;
+        if active_position >= context.player().active.len() {
+            return Err(general_error("you sent more choices than active mons"));
+        }
+        if active_position == 1 {
+            return Err(general_error(
+                "you can only shift from an edge to the center",
+            ));
+        }
+
+        let mon_handle = context
+            .player()
+            .active_mon_handle(active_position)
+            .wrap_expectation_with_format(format_args!(
+                "expected an active mon in position {active_position}"
+            ))?;
+        context
+            .player_mut()
+            .choice
+            .actions
+            .push(Action::Shift(ShiftAction::new(mon_handle, 1)));
 
         Ok(())
     }

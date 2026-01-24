@@ -5841,6 +5841,10 @@ pub fn swap_position(
     new_position: usize,
     allow_empty_target: bool,
 ) -> Result<bool> {
+    if !context.target().active || context.target().hp == 0 {
+        return Ok(false);
+    }
+
     let ((source, old_position), (target, new_position)) = {
         let context = context.target_context()?;
 

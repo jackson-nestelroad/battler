@@ -43,6 +43,7 @@ use zone_alloc::{
 };
 
 use crate::{
+    BattleType,
     TeamData,
     WrapError,
     battle::{
@@ -1436,6 +1437,18 @@ impl<'d> CoreBattle<'d> {
                     },
                 )?;
             }
+            Action::Shift(action) => {
+                core_battle_actions::swap_position(
+                    &mut context.applying_effect_context(
+                        EffectHandle::Condition(Id::from_known("playerchoice")),
+                        None,
+                        action.mon_action.mon,
+                        None,
+                    )?,
+                    action.position,
+                    true,
+                )?;
+            }
         }
 
         Self::after_action(context)?;
@@ -1565,6 +1578,47 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    fn ensure_active_mons_are_adjacent(context: &mut Context) -> Result<()> {
+        // TODO: This check is currently hard-coded for Triples battles, but it should be extended
+        // for Multi battles and battles with higher number of Mons.
+        //
+        // TODO: adjacency_reach is also a parameter we should consider here.
+        if context.battle().format.battle_type == BattleType::Triples {
+            let mut auto_shift_to_center = false;
+            for side in context.battle().side_indices().collect::<Vec<_>>() {
+                if Side::mons_left(&mut context.side_context(side)?)? == 1 {
+                    auto_shift_to_center = true;
+                }
+            }
+            let active = context
+                .battle()
+                .all_active_mon_handles()
+                .collect::<Vec<_>>();
+            let active_0 = *active
+                .get(0)
+                .wrap_expectation("expected one of two active mons")?;
+            let active_1 = *active
+                .get(1)
+                .wrap_expectation("expected two of two active mons")?;
+            auto_shift_to_center = auto_shift_to_center
+                && !Mon::is_adjacent(&mut context.mon_context(active_0)?, active_1)?;
+            if auto_shift_to_center {
+                let effect = EffectHandle::Condition(Id::from_known("autoshift"));
+                core_battle_actions::swap_position(
+                    &mut context.applying_effect_context(effect.clone(), None, active_0, None)?,
+                    1,
+                    true,
+                )?;
+                core_battle_actions::swap_position(
+                    &mut context.applying_effect_context(effect.clone(), None, active_1, None)?,
+                    1,
+                    true,
+                )?;
+            }
+        }
+        Ok(())
+    }
+
     fn next_turn(context: &mut Context) -> Result<()> {
         context.battle_mut().turn += 1;
 
@@ -1611,6 +1665,8 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().registry.next_turn()?;
 
         // TODO: Endless battle clause.
+
+        Self::ensure_active_mons_are_adjacent(context)?;
 
         let turn_event = battle_log_entry!("turn", ("turn", context.battle().turn));
         context.battle_mut().log(turn_event);

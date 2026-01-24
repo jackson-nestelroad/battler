@@ -208,6 +208,7 @@ pub struct EscapeAction {
 }
 
 impl EscapeAction {
+    /// Creates a new [`EscapeAction`] from [`EscapeActionInput`].
     pub fn new(input: EscapeActionInput) -> Self {
         Self {
             mon_action: MonAction::new(input.mon),
@@ -222,6 +223,7 @@ pub struct SwitchEventsAction {
 }
 
 impl SwitchEventsAction {
+    /// Creates a new [`SwitchEventsAction`].
     pub fn new(mon_handle: MonHandle) -> Self {
         Self {
             mon_action: MonAction::new(mon_handle),
@@ -254,12 +256,30 @@ pub struct ItemAction {
 }
 
 impl ItemAction {
+    /// Creates a new [`ItemAction`] from [`ItemActionInput`].
     pub fn new(input: ItemActionInput) -> Self {
         Self {
             mon_action: MonAction::new(input.mon),
             item: input.item,
             target: input.target,
             move_slot: None,
+        }
+    }
+}
+
+/// A shift action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ShiftAction {
+    pub mon_action: MonAction,
+    pub position: usize,
+}
+
+impl ShiftAction {
+    /// Creates a new [`ShiftAction`].
+    pub fn new(mon_handle: MonHandle, position: usize) -> Self {
+        Self {
+            mon_action: MonAction::new(mon_handle),
+            position,
         }
     }
 }
@@ -292,6 +312,7 @@ pub enum Action {
     Escape(EscapeAction),
     Forfeit(ForfeitAction),
     Item(ItemAction),
+    Shift(ShiftAction),
 }
 
 impl Action {
@@ -308,6 +329,7 @@ impl Action {
             Self::Terastallize(action) => Some(action),
             Self::Escape(action) => Some(&mut action.mon_action),
             Self::Item(action) => Some(&mut action.mon_action),
+            Self::Shift(action) => Some(&mut action.mon_action),
             _ => None,
         }
     }
@@ -342,6 +364,7 @@ impl SpeedOrderable for Action {
             Self::PriorityChargeMove(_) => 107,
             Self::Move(action) => action.order.unwrap_or(200),
             Self::Pass => 200,
+            Self::Shift(_) => 200,
             Self::Residual => 300,
         }
     }
@@ -378,6 +401,7 @@ impl SpeedOrderable for Action {
             Self::Dynamax(action) => action.speed,
             Self::Escape(action) => action.mon_action.speed,
             Self::Item(action) => action.mon_action.speed,
+            Self::Shift(action) => action.mon_action.speed,
             _ => 1,
         }
     }
