@@ -471,7 +471,9 @@
         ],
         "on_start": [
           "log_activate: with_target with_source use_effect_state_source_effect",
-          "$effect_state.divisor = 8"
+          "$effect_state.divisor = 8",
+          "if func_call(has_item: $source bindingband):",
+          ["$effect_state.divisor = 6"]
         ],
         "on_residual": {
           "order": 13,
