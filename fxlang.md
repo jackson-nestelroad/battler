@@ -726,12 +726,12 @@ When the Mon is hit by a move, it has a chance to paralyze the source of the mov
 
 This behavior is largely supplied as a convenience. If we did not use the ability owner as the source Mon by default, it would either look like the attacker (`$source`) paralyzed itself or that the attack has the "Static" ability (which is not necessarily true). For correctness, we would require that all forwarding effects use `use_target_as_source` or `use_effect_state_target_as_source` as applicable, but it is better to generalize for the common case here.
 
-Effect callbacks that trigger _directly_ on the effect (e.g., `Start`, `End`) **do not** use this behavior. Their source Mon is the owner of the source effect (which is always `$source` or `$effect_state.source`). This is because logs for starting conditions typically want to log the true source Mon (which is `$effect_state.source`). Forwarding effects from such direct callbacks _must_ use `use_target_as_source` as appropriate.
+The only exception to this rule is for non-forwarding function calls. For instance, log functions use the actual source Mon (which is typically `$source` or `$effect_state.source`).
 
 The difference can be summarized as follows:
 
-1. Event callbacks that trigger **indirectly** as a result of some event dispatching on the battle use `$effect_state.target` as their default source Mon for forwarded effects.
-1. Event callbacks that trigger **directly** on the effect use `$source/$effect_state.source` as their default source Mon for forwarded effects.
+1. Functions that forward to another effect use `$effect_state.target` as their default source Mon for forwarded effects.
+1. Function that do not forward to another effect (e.g., logging) use `$source`/`$effect_state.source` as their default source Mon for forwarded effects.
 
 #### Examples
 

@@ -588,6 +588,14 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     }
 
     fn source_handle(&mut self) -> Option<MonHandle> {
+        self.source_handle_internal(true)
+    }
+
+    fn source_handle_no_forwarding(&mut self) -> Option<MonHandle> {
+        self.source_handle_internal(false)
+    }
+
+    fn source_handle_internal(&mut self, forwarding: bool) -> Option<MonHandle> {
         if self.no_source() {
             None
         } else if self.use_effect_state_source_as_source() {
@@ -602,10 +610,25 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
                 .target()
         } else if self.use_target_as_source() {
             self.evaluation_context().target_handle()
-        } else if let Some(effect_mon_handle) = self.effect_mon_handle {
+        } else if let Some(effect_mon_handle) = self.effect_mon_handle
+            && forwarding
+        {
             Some(effect_mon_handle)
         } else {
             self.evaluation_context().source_handle()
+        }
+    }
+
+    fn source_handle_positional(&mut self) -> Result<MonHandle> {
+        match self.front().map(|val| val.value_type()) {
+            Some(ValueType::Mon) => self
+                .pop_front()
+                .wrap_expectation("missing source mon")?
+                .mon_handle()
+                .wrap_error_with_message("invalid source mon"),
+            _ => self
+                .source_handle()
+                .wrap_expectation("effect has no target mon"),
         }
     }
 
@@ -756,15 +779,8 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         &'function mut self,
         target_handle: MonHandle,
     ) -> Result<ApplyingEffectContext<'function, 'function, 'battle, 'data>> {
-        let source_handle = self.source_handle();
         let effect_handle = self.effect_handle()?;
-        let source_effect_handle = self.source_effect_handle()?;
-        self.applying_effect_context(
-            effect_handle,
-            source_handle,
-            target_handle,
-            source_effect_handle,
-        )
+        self.forward_to_applying_effect_context_with_effect_and_target(effect_handle, target_handle)
     }
 
     fn forward_to_applying_effect_context_with_effect_and_target<'function>(
@@ -909,7 +925,7 @@ fn log_effect_activation_base(
             None
         },
         source: if context.with_source() {
-            context.source_handle()
+            context.source_handle_no_forwarding()
         } else {
             None
         },
@@ -1094,7 +1110,7 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<()> {
 fn log_cant(mut context: FunctionContext) -> Result<()> {
     let effect = context.effect_handle()?;
     let source = if context.with_source() {
-        context.source_handle()
+        context.source_handle_no_forwarding()
     } else {
         None
     };
@@ -1852,11 +1868,7 @@ fn revive(mut context: FunctionContext) -> Result<Value> {
 
 fn apply_drain(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
-    let source_handle = context
-        .pop_front()
-        .wrap_expectation("missing source")?
-        .mon_handle()
-        .wrap_error_with_message("invalid source")?;
+    let source_handle = context.source_handle_positional()?;
     let damage = context
         .pop_front()
         .wrap_expectation("missing damage")?
@@ -4008,11 +4020,7 @@ fn special_item_data(mut context: FunctionContext) -> Result<Value> {
 
 fn swap_boosts(mut context: FunctionContext) -> Result<()> {
     let target = context.target_handle_positional()?;
-    let source = context
-        .pop_front()
-        .wrap_expectation("missing source")?
-        .mon_handle()
-        .wrap_error_with_message("invalid source")?;
+    let source = context.source_handle_positional()?;
     let mut boosts = Vec::default();
     while let Some(val) = context.pop_front() {
         boosts.push(val.boost().wrap_error_with_message("invalid boost")?);

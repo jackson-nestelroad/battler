@@ -668,7 +668,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": ["set_weather: snowweather use_target_as_source"]
+        "on_start": ["set_weather: snowweather"]
       }
     }
   },
@@ -677,7 +677,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": ["set_weather: hailweather use_target_as_source"]
+        "on_start": ["set_weather: hailweather"]
       }
     }
   },
@@ -689,10 +689,7 @@
       "callbacks": {
         "on_start": [
           "foreach $foe in func_call(all_foes: $target):",
-          [
-            "if $foe.item.is_defined:",
-            ["log_announce_item: $foe use_target_as_source"]
-          ]
+          ["if $foe.item.is_defined:", ["log_announce_item: $foe"]]
         ]
       }
     }

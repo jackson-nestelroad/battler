@@ -614,7 +614,7 @@
     "condition": {
       "callbacks": {
         "suppress_mon_ability": ["if $effect_state.started:", ["return true"]],
-        "on_start": ["end_ability"],
+        "on_start": ["end_ability: use_effect_state_source_as_source"],
         "on_copy_volatile": [
           "if func_call(ability_has_flag: $target.ability permanent):",
           ["return false"]

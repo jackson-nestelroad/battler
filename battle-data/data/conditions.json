@@ -1017,7 +1017,7 @@
       "callbacks": {
         "on_start": [
           "add_volatile: $target twoturnmove use_source_effect link",
-          "add_volatile: $source immobilized use_target_as_source use_source_effect link"
+          "add_volatile: $source immobilized use_source_effect link"
         ],
         "on_drag_out": ["return false"],
         "on_trap_mon": {

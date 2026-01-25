@@ -380,7 +380,7 @@ fn forecast_reverts_due_to_weather_suppressing_move() {
             "continue",
             "move|mon:Ditto,player-2,1|name:Gastro Acid|target:Castform,player-1,1",
             "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Gastro Acid|of:Ditto,player-2,1",
-            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast|of:Ditto,player-2,1",
+            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
             "weather|weather:Rain|residual",
             "residual",
             "turn|turn:3"
@@ -411,7 +411,7 @@ fn forecast_reverts_due_to_losing_ability() {
             "continue",
             "move|mon:Ditto,player-2,1|name:Worry Seed|target:Castform,player-1,1",
             "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Worry Seed|of:Ditto,player-2,1",
-            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast|of:Ditto,player-2,1",
+            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
             "ability|mon:Castform,player-1,1|ability:Insomnia|from:move:Worry Seed|of:Ditto,player-2,1",
             "weather|weather:Rain|residual",
             "residual",

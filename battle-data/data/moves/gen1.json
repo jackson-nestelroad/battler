@@ -1356,7 +1356,7 @@
       "callbacks": {
         "on_hit": [
           "if $target != $source and $move.category != status:",
-          ["boost: $target 'atk:1' use_target_as_source"]
+          ["boost: $target 'atk:1'"]
         ],
         "on_before_move": ["remove_volatile: $user $this.id"]
       }

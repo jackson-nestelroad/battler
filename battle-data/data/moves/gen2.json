@@ -1295,7 +1295,7 @@
         ],
         "on_before_turn": [
           "$side = $mon.foe_side",
-          "add_side_condition: $side $this.id use_target_as_source",
+          "add_side_condition: $side $this.id",
           "$pursuit_state = func_call(side_condition_effect_state: $side $this.id)",
           "if !$pursuit_state.sources:",
           ["$pursuit_state.sources = []"],

@@ -436,7 +436,6 @@ struct CallbackHandle {
     pub applied_effect_handle: AppliedEffectHandle,
     pub event: fxlang::BattleEvent,
     pub modifier: fxlang::BattleEventModifier,
-    pub is_source_effect: bool,
     pub suppressed: bool,
 }
 
@@ -447,31 +446,11 @@ impl CallbackHandle {
         modifier: fxlang::BattleEventModifier,
         location: AppliedEffectLocation,
     ) -> Self {
-        Self::new_internal(effect_handle, event, modifier, location, true)
-    }
-
-    pub fn new_non_source_effect(
-        effect_handle: EffectHandle,
-        event: fxlang::BattleEvent,
-        modifier: fxlang::BattleEventModifier,
-        location: AppliedEffectLocation,
-    ) -> Self {
-        Self::new_internal(effect_handle, event, modifier, location, false)
-    }
-
-    fn new_internal(
-        effect_handle: EffectHandle,
-        event: fxlang::BattleEvent,
-        modifier: fxlang::BattleEventModifier,
-        location: AppliedEffectLocation,
-        is_source_effect: bool,
-    ) -> Self {
         Self {
             applied_effect_handle: AppliedEffectHandle::new(effect_handle, location),
             event,
             modifier,
             suppressed: false,
-            is_source_effect,
         }
     }
 
@@ -501,11 +480,7 @@ fn run_callback_with_errors(
         callback_handle
             .applied_effect_handle
             .effect_state_connector(),
-        if callback_handle.is_source_effect {
-            callback_handle.applied_effect_handle.mon_handle()
-        } else {
-            None
-        },
+        callback_handle.applied_effect_handle.mon_handle(),
         callback_handle.suppressed,
     );
 
@@ -602,7 +577,7 @@ pub fn run_mon_status_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -627,7 +602,7 @@ pub fn run_mon_volatile_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -647,7 +622,7 @@ pub fn run_mon_ability_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             EffectHandle::Ability(ability),
             event,
             fxlang::BattleEventModifier::default(),
@@ -667,7 +642,7 @@ pub fn run_mon_item_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             EffectHandle::Item(item),
             event,
             fxlang::BattleEventModifier::default(),
@@ -686,7 +661,7 @@ pub fn run_mon_inactive_move_event(
     run_callback_under_mon(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             EffectHandle::InactiveMove(mov.clone()),
             event,
             fxlang::BattleEventModifier::default(),
@@ -711,7 +686,7 @@ pub fn run_side_condition_event(
     run_callback_under_side_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -737,7 +712,7 @@ pub fn run_slot_condition_event(
     run_callback_under_side_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -761,7 +736,7 @@ pub fn run_terrain_event(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -785,7 +760,7 @@ pub fn run_weather_event(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -809,7 +784,7 @@ pub fn run_pseudo_weather_event(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new_non_source_effect(
+        CallbackHandle::new(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -829,7 +804,7 @@ pub fn run_applying_effect_event(
         Some(mut context) => run_callback_under_applying_effect(
             &mut context,
             input,
-            CallbackHandle::new_non_source_effect(
+            CallbackHandle::new(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
@@ -839,7 +814,7 @@ pub fn run_applying_effect_event(
         None => run_callback_under_applying_effect(
             context,
             input,
-            CallbackHandle::new_non_source_effect(
+            CallbackHandle::new(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
@@ -860,7 +835,7 @@ pub fn run_effect_event(
         Some(mut context) => run_callback_under_effect(
             &mut context,
             input,
-            CallbackHandle::new_non_source_effect(
+            CallbackHandle::new(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
@@ -870,7 +845,7 @@ pub fn run_effect_event(
         None => run_callback_under_effect(
             context,
             input,
-            CallbackHandle::new_non_source_effect(
+            CallbackHandle::new(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),

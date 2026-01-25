@@ -62,7 +62,7 @@
       "callbacks": {
         "on_start": [
           "$effect_state.active = true",
-          "set_weather: heavyrainweather use_target_as_source"
+          "set_weather: heavyrainweather"
         ],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
@@ -86,7 +86,7 @@
       "callbacks": {
         "on_start": [
           "$effect_state.active = true",
-          "set_weather: extremelyharshsunlight use_target_as_source"
+          "set_weather: extremelyharshsunlight"
         ],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
@@ -108,10 +108,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "$effect_state.active = true",
-          "set_weather: strongwinds use_target_as_source"
-        ],
+        "on_start": ["$effect_state.active = true", "set_weather: strongwinds"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
           "if $field.weather == strongwinds and !($strong_weathers has $weather):",
