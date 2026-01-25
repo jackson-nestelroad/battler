@@ -82,7 +82,7 @@
           "if $target.hp == 0:",
           ["return"],
           "if func_call(move_crit_target: $move $target):",
-          ["boost: $target 'atk:12'"]
+          ["boost: $target 'atk:12' use_target_as_source"]
         ]
       }
     }
@@ -777,7 +777,7 @@
           "if $weather.is_defined and $weather.is_sunny:",
           ["$species = cherrimsunshine"],
           "if $target.species != $species:",
-          ["forme_change: $target $species"]
+          ["forme_change: $target $species use_target_as_source"]
         ],
         "on_ally_modify_atk": [
           "$weather = $target.effective_weather",

@@ -79,8 +79,8 @@ fn skill_swap_swaps_abilities() {
         r#"[
             "move|mon:Plusle,player-1,1|name:Skill Swap|target:Plusle,player-2,1",
             "activate|mon:Plusle,player-2,1|move:Skill Swap|of:Plusle,player-1,1",
-            "abilityend|mon:Plusle,player-1,1|ability:Soundproof|from:move:Skill Swap|of:Plusle,player-2,1",
-            "ability|mon:Plusle,player-1,1|ability:Drizzle|from:move:Skill Swap|of:Plusle,player-2,1",
+            "abilityend|mon:Plusle,player-1,1|ability:Soundproof|from:move:Skill Swap",
+            "ability|mon:Plusle,player-1,1|ability:Drizzle|from:move:Skill Swap",
             "abilityend|mon:Plusle,player-2,1|ability:Drizzle|from:move:Skill Swap|of:Plusle,player-1,1",
             "ability|mon:Plusle,player-2,1|ability:Soundproof|from:move:Skill Swap|of:Plusle,player-1,1",
             "weather|weather:Rain|residual",

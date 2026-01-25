@@ -13872,13 +13872,13 @@
           "if $mon.base_species != $this.id:",
           ["return"],
           "if $mon.status == frz or $field.time == night:",
-          ["forme_change: $target shaymin permanent"]
+          ["forme_change: $target shaymin permanent use_target_as_source"]
         ],
         "on_after_set_status": [
           "if $target.base_species != $this.id:",
           ["return"],
           "if $status.id == frz:",
-          ["forme_change: $target shaymin permanent"]
+          ["forme_change: $target shaymin permanent use_target_as_source"]
         ]
       }
     },

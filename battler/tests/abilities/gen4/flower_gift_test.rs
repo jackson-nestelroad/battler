@@ -372,7 +372,7 @@ fn flower_gift_ends_due_to_gaining_weather_suppressing_item() {
             "move|mon:Luxray,player-2,1|name:Trick|target:Cherrim,player-1,1",
             "itemend|mon:Luxray,player-2,1|item:Utility Umbrella|from:move:Trick",
             "item|mon:Cherrim,player-1,1|item:Utility Umbrella|from:move:Trick|of:Luxray,player-2,1",
-            "formechange|mon:Cherrim,player-1,1|species:Cherrim|from:ability:Flower Gift|of:Luxray,player-2,1",
+            "formechange|mon:Cherrim,player-1,1|species:Cherrim|from:ability:Flower Gift",
             "weather|weather:Harsh Sunlight|residual",
             "residual",
             "turn|turn:3"

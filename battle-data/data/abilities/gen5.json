@@ -14,7 +14,7 @@
           "$item = func_call(take_item: $source use_target_as_source)",
           "if !$item:",
           ["return"],
-          "set_item: $target $item"
+          "set_item: $target $item use_target_as_source"
         ]
       }
     }
@@ -489,7 +489,7 @@
           "program": [
             "if $target == $source or $move.type != grass:",
             ["return"],
-            "if !func_call(boost: $target 'atk:1'):",
+            "if !func_call(boost: $target 'atk:1' use_target_as_source):",
             ["log_immune: $target from_effect"],
             "return stop"
           ]
@@ -497,7 +497,7 @@
         "on_side_try_hit_side": [
           "if $move.source == $effect_state.target or $move.type != grass:",
           ["return"],
-          "boost: $effect_state.target 'atk:1'"
+          "boost: $effect_state.target 'atk:1' use_effect_state_target_as_source"
         ]
       }
     }

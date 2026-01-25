@@ -941,7 +941,7 @@
           "# Make sure we can set the item first.",
           "if !func_call(set_item: $source $target.item dry_run):",
           ["return"],
-          "$item = func_call(take_item: $target)",
+          "$item = func_call(take_item: $target use_target_as_source)",
           "if !$item:",
           ["return"],
           "set_item: $source $item"

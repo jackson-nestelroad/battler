@@ -182,7 +182,7 @@ fn aromatherapy_activates_ally_sap_sipper() {
             "turn|turn:2",
             "continue",
             "move|mon:Miltank,player-1,1|name:Aromatherapy",
-            "boost|mon:Sceptile,player-1,2|stat:atk|by:1|from:ability:Sap Sipper|of:Miltank,player-1,1",
+            "boost|mon:Sceptile,player-1,2|stat:atk|by:1|from:ability:Sap Sipper",
             "activate|move:Aromatherapy|of:Miltank,player-1,1",
             "curestatus|mon:Sceptile,player-1,2|status:Paralysis",
             "residual",

@@ -576,7 +576,7 @@
           ["return false"]
         ],
         "on_hit": [
-          "if !func_call(set_ability: $source $target.ability use_target_as_source):",
+          "if !func_call(set_ability: $source $target.ability):",
           ["return false"]
         ]
       }
@@ -872,7 +872,7 @@
           "$source_ability = $source.ability",
           "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap) or $target.dynamaxed:",
           ["return false"],
-          "if !func_call(set_ability: $source $target_ability use_target_as_source dry_run):",
+          "if !func_call(set_ability: $source $target_ability dry_run):",
           ["return false"],
           "if !func_call(set_ability: $target $source_ability dry_run):",
           ["return false"]
@@ -884,12 +884,12 @@
           "$allies = func_call(is_ally: $target $source)",
           "if $allies:",
           [
-            "set_ability: $source $target_ability use_target_as_source silent",
+            "set_ability: $source $target_ability silent",
             "set_ability: $target $source_ability silent"
           ],
           "else:",
           [
-            "set_ability: $source $target_ability use_target_as_source",
+            "set_ability: $source $target_ability",
             "set_ability: $target $source_ability"
           ]
         ]

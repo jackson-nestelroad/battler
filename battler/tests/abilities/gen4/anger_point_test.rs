@@ -62,7 +62,7 @@ fn anger_point_maximizes_attack_on_crit() {
             "split|side:1",
             "damage|mon:Primeape,player-2,1|health:94/125",
             "damage|mon:Primeape,player-2,1|health:76/100",
-            "boost|mon:Primeape,player-2,1|stat:atk|by:6|max|from:ability:Anger Point|of:Primeape,player-1,1",
+            "boost|mon:Primeape,player-2,1|stat:atk|by:6|max|from:ability:Anger Point",
             "residual",
             "turn|turn:2"
         ]"#,

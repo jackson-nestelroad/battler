@@ -13,16 +13,16 @@ use battler_test_utils::{
     static_local_data_store,
 };
 
-fn banette() -> Result<TeamData> {
+fn weavile() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Banette",
-                    "species": "Banette",
-                    "ability": "No Ability",
+                    "name": "Weavile",
+                    "species": "Weavile",
+                    "ability": "Pickpocket",
                     "moves": [
-                        "Role Play"
+                        "Tackle"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -48,40 +48,24 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn role_play_copies_target_ability() {
-    let mut target = banette().unwrap();
-    target.members[0].ability = "Soundproof".to_owned();
-    let mut battle = make_battle(0, banette().unwrap(), target).unwrap();
+fn pickpocket_steals_attacker_item_on_contact() {
+    let mut team = weavile().unwrap();
+    team.members[0].item = Some("Toxic Orb".to_owned());
+    let mut battle = make_battle(0, team, weavile().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Banette,player-1,1|name:Role Play|target:Banette,player-2,1",
-            "abilityend|mon:Banette,player-1,1|ability:No Ability|from:move:Role Play",
-            "ability|mon:Banette,player-1,1|ability:Soundproof|from:move:Role Play",
-            "residual",
-            "turn|turn:2"
-        ]"#,
-    )
-    .unwrap();
-    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
-}
-
-#[test]
-fn role_play_fails_against_illegal_ability() {
-    let mut target = banette().unwrap();
-    target.members[0].ability = "Wonder Guard".to_owned();
-    let mut battle = make_battle(0, banette().unwrap(), target).unwrap();
-    assert_matches::assert_matches!(battle.start(), Ok(()));
-
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
-        r#"[
-            "move|mon:Banette,player-1,1|name:Role Play|noanim",
-            "fail|mon:Banette,player-1,1",
+            "move|mon:Weavile,player-1,1|name:Tackle|target:Weavile,player-2,1",
+            "split|side:1",
+            "damage|mon:Weavile,player-2,1|health:98/130",
+            "damage|mon:Weavile,player-2,1|health:76/100",
+            "itemend|mon:Weavile,player-1,1|item:Toxic Orb|from:ability:Pickpocket|of:Weavile,player-2,1",
+            "item|mon:Weavile,player-2,1|item:Toxic Orb|from:ability:Pickpocket",
+            "status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb",
             "residual",
             "turn|turn:2"
         ]"#,

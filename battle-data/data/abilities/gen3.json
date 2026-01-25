@@ -915,7 +915,7 @@
           "else:",
           ["$forme = castform"],
           "if $target.species != $forme:",
-          ["forme_change: $target $forme"]
+          ["forme_change: $target $forme use_target_as_source"]
         ],
         "on_end": [
           "if func_call(base_species: $target) != castform or $target.transformed:",
