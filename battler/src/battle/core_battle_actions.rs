@@ -629,6 +629,12 @@ pub fn use_active_move(
         };
     }
 
+    if outcome.success() {
+        context
+            .battle_mut()
+            .set_last_successful_move(Some(active_move_handle));
+    }
+
     core_battle_effects::run_active_move_event_expecting_void(
         &mut context,
         fxlang::BattleEvent::AfterMove,

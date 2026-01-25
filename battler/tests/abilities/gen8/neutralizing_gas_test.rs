@@ -518,10 +518,7 @@ fn neutralizing_gas_does_not_end_when_another_mon_has_ability() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "pass;move 1,1"),
-        Ok(())
-    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1,1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -589,10 +586,7 @@ fn neutralizing_gas_does_not_activate_when_transformed() {
     );
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "pass;move 0,1"),
-        Ok(())
-    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[

@@ -277,6 +277,7 @@ pub struct CoreBattle<'d> {
     next_effect_linked_id: u32,
     last_move_log: Option<usize>,
     last_move: Option<MoveHandle>,
+    last_successful_move: Option<MoveHandle>,
     last_exited: Option<MonHandle>,
 
     input_log: HashMap<usize, HashMap<u64, String>>,
@@ -366,6 +367,7 @@ impl<'d> CoreBattle<'d> {
             next_effect_linked_id: 0,
             last_move_log: None,
             last_move: None,
+            last_successful_move: None,
             last_exited: None,
             input_log,
             _pin: PhantomPinned,
@@ -711,6 +713,14 @@ impl<'d> CoreBattle<'d> {
 
     pub fn set_last_move(&mut self, last_move: Option<MoveHandle>) {
         self.last_move = last_move;
+    }
+
+    pub fn last_successful_move(&self) -> Option<MoveHandle> {
+        self.last_successful_move
+    }
+
+    pub fn set_last_successful_move(&mut self, last_successful_move: Option<MoveHandle>) {
+        self.last_successful_move = last_successful_move;
     }
 
     pub fn started(&self) -> bool {
@@ -1675,6 +1685,13 @@ impl<'d> CoreBattle<'d> {
                 .battle()
                 .registry
                 .save_active_move_from_next_turn(last_move)?;
+        }
+
+        if let Some(last_successful_move) = context.battle().last_successful_move {
+            context
+                .battle()
+                .registry
+                .save_active_move_from_next_turn(last_successful_move)?;
         }
 
         context.battle_mut().registry.next_turn()?;

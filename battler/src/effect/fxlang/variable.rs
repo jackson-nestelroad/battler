@@ -835,6 +835,12 @@ where
                                 .last_move()
                                 .map(|move_handle| ValueRef::ActiveMove(move_handle))
                                 .unwrap_or(ValueRef::Undefined),
+                            "last_successful_move" => context
+                                .battle_context()
+                                .battle()
+                                .last_successful_move()
+                                .map(|move_handle| ValueRef::ActiveMove(move_handle))
+                                .unwrap_or(ValueRef::Undefined),
                             "turn" => {
                                 ValueRef::UFraction(context.battle_context().battle().turn().into())
                             }

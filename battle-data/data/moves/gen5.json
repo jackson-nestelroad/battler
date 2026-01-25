@@ -1869,7 +1869,7 @@
     "effect": {
       "callbacks": {
         "on_base_power": [
-          "if $battle.last_successful_move == fusionbolt:",
+          "if $battle.last_successful_move.is_defined and $battle.last_successful_move.id == fusionbolt:",
           ["return $base_power * 2"]
         ]
       }
@@ -1887,7 +1887,7 @@
     "effect": {
       "callbacks": {
         "on_base_power": [
-          "if $battle.last_successful_move == fusionflare:",
+          "if $battle.last_successful_move.is_defined and $battle.last_successful_move.id == fusionflare:",
           ["return $base_power * 2"]
         ]
       }

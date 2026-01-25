@@ -402,6 +402,7 @@ mod moves {
         mod entrainment_test;
         mod flame_burst_test;
         mod foul_play_test;
+        mod fusion_bolt_flare_test;
         mod guard_split_test;
         mod heal_pulse_test;
         mod heavy_slam_test;
