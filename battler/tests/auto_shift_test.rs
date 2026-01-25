@@ -105,6 +105,73 @@ fn auto_shifts_to_center_in_triples() {
 }
 
 #[test]
+fn does_not_auto_shift_to_center_in_triples_if_already_shifted() {
+    let mut battle = TestBattleBuilder::new()
+        .with_battle_type(BattleType::Triples)
+        .with_seed(0)
+        .with_team_validation(false)
+        .with_pass_allowed(true)
+        .with_bag_items(true)
+        .with_infinite_bags(true)
+        .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
+        .add_player_to_side_1("player-1", "Player 1")
+        .add_player_to_side_2("player-2", "Player 2")
+        .with_team("player-1", scale_team(pikachu().unwrap(), 3))
+        .with_team("player-2", scale_team(pikachu().unwrap(), 3))
+        .build(static_local_data_store())
+        .unwrap();
+
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice(
+            "player-1",
+            "shift;item selfdestructbutton;item selfdestructbutton"
+        ),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice(
+            "player-2",
+            "move 0,2;item selfdestructbutton;item selfdestructbutton"
+        ),
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,2"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "useitem|player:player-1|name:Self-Destruct Button|target:Pikachu,player-1,2",
+            "faint|mon:Pikachu,player-1,2",
+            "useitem|player:player-1|name:Self-Destruct Button|target:Pikachu,player-1,3",
+            "faint|mon:Pikachu,player-1,3",
+            "useitem|player:player-2|name:Self-Destruct Button|target:Pikachu,player-2,2",
+            "faint|mon:Pikachu,player-2,2",
+            "useitem|player:player-2|name:Self-Destruct Button|target:Pikachu,player-2,3",
+            "faint|mon:Pikachu,player-2,3",
+            "swap|mon:Pikachu,player-1,1|position:2|from:Player Choice",
+            "move|mon:Pikachu,player-2,1|name:Tackle|target:Pikachu,player-1,2",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,2|health:71/95",
+            "damage|mon:Pikachu,player-1,2|health:75/100",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Pikachu,player-2,1|name:Tackle|target:Pikachu,player-1,2",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,2|health:49/95",
+            "damage|mon:Pikachu,player-1,2|health:52/100",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
 fn does_not_auto_shift_to_center_in_triples_with_extended_adjacency() {
     let mut battle = TestBattleBuilder::new()
         .with_battle_type(BattleType::Triples)
