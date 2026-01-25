@@ -19,7 +19,7 @@
         "on_try_hit": [
           "if $target != $source and $move.type == electric:",
           [
-            "if !func_call(boost: $target 'spe:1' use_target_as_source):",
+            "if !func_call(boost: $target 'spe:1'):",
             ["log_immune: $target from_effect"],
             "return stop"
           ]
@@ -82,7 +82,7 @@
           "if $target.hp == 0:",
           ["return"],
           "if func_call(move_crit_target: $move $target):",
-          ["boost: $target 'atk:12' use_target_as_source"]
+          ["boost: $target 'atk:12'"]
         ]
       }
     }
@@ -447,9 +447,7 @@
           "order": 1,
           "program": [
             "if $target.hp == 0 and func_call(move_makes_contact: $move):",
-            [
-              "damage: $source expr($source.base_max_hp / 4) use_target_as_source"
-            ]
+            ["damage: $source expr($source.base_max_hp / 4)"]
           ]
         }
       }
@@ -627,7 +625,7 @@
         "on_try_hit": [
           "if $target == $source or $move.type != water:",
           ["return"],
-          "if !func_call(boost: $target 'spa:1' use_target_as_source):",
+          "if !func_call(boost: $target 'spa:1'):",
           ["log_immune: $target from_effect"],
           "return stop"
         ],
@@ -777,7 +775,7 @@
           "if $weather.is_defined and $weather.is_sunny:",
           ["$species = cherrimsunshine"],
           "if $target.species != $species:",
-          ["forme_change: $target $species use_target_as_source"]
+          ["forme_change: $target $species"]
         ],
         "on_ally_modify_atk": [
           "$weather = $target.effective_weather",
@@ -801,12 +799,7 @@
           "if $target.hp == 0:",
           ["return"],
           "foreach $foe in func_call(all_foes: $target):",
-          [
-            "if $target.is_asleep:",
-            [
-              "damage: $foe expr($foe.base_max_hp / 8) use_effect_state_target_as_source"
-            ]
-          ]
+          ["if $target.is_asleep:", ["damage: $foe expr($foe.base_max_hp / 8)"]]
         ]
       }
     }

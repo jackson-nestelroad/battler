@@ -708,7 +708,7 @@
         "on_modify_damage": ["return $damage * 13/10"],
         "on_after_move_secondary_effects_user": [
           "if $target.is_defined and $user != $target and $move.category != status and !$user.force_switch:",
-          ["damage: $user expr($user.base_max_hp / 10) use_target_as_source"]
+          ["damage: $user expr($user.base_max_hp / 10)"]
         ]
       }
     }
@@ -871,7 +871,7 @@
           ["return"],
           "if !$source or $source == $target:",
           ["return"],
-          "add_volatile: $source attract use_target_as_source"
+          "add_volatile: $source attract"
         ]
       }
     }
@@ -941,7 +941,7 @@
           "# Make sure we can set the item first.",
           "if !func_call(set_item: $source $target.item dry_run):",
           ["return"],
-          "$item = func_call(take_item: $target use_target_as_source)",
+          "$item = func_call(take_item: $target)",
           "if !$item:",
           ["return"],
           "set_item: $source $item"
@@ -1523,7 +1523,7 @@
       "callbacks": {
         "on_damaging_hit": [
           "if func_call(move_makes_contact: $move):",
-          ["damage: $source expr($source.hp / 6) use_target_as_source"]
+          ["damage: $source expr($source.hp / 6)"]
         ]
       }
     }
@@ -1536,10 +1536,10 @@
       "callbacks": {
         "on_start": ["log_item"],
         "is_grounded": ["return false"],
-        "on_damaging_hit": ["use_item: $target use_target_as_source"],
+        "on_damaging_hit": ["use_item: $target"],
         "on_after_substitute_damage": [
           "if $effect.is_move:",
-          ["use_item: $target use_target_as_source"]
+          ["use_item: $target"]
         ]
       }
     }
@@ -1557,7 +1557,7 @@
             "if !$source.is_active or !func_call(can_switch: $source.player) or $source.force_switch or $target.force_switch:",
             ["return"],
             "if func_call(use_item: $target):",
-            ["force_switch: $source use_target_as_source"]
+            ["force_switch: $source"]
           ]
         }
       }
@@ -1584,10 +1584,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "callbacks": {
-        "on_damaging_hit": [
-          "if $move.type == water:",
-          ["use_item: $target use_target_as_source"]
-        ],
+        "on_damaging_hit": ["if $move.type == water:", ["use_item: $target"]],
         "on_use": ["boost: $mon 'spa:1'"]
       }
     }
@@ -1600,7 +1597,7 @@
       "callbacks": {
         "on_damaging_hit": [
           "if $move.type == electric and func_call(can_boost: $target 'atk:1'):",
-          ["use_item: $target use_target_as_source"]
+          ["use_item: $target"]
         ],
         "on_use": ["boost: $mon 'atk:1'"]
       }
@@ -1619,7 +1616,7 @@
           ["return"],
           "foreach $mon in func_call(all_active_mons):",
           ["if $mon.needs_switch:", ["return"]],
-          "if func_call(use_item: $target use_target_as_source):",
+          "if func_call(use_item: $target):",
           ["$target.needs_switch = true"]
         ]
       }

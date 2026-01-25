@@ -2640,7 +2640,7 @@ pub fn boost(
             core_battle_logs::boost(context, boost, delta, original_delta)?;
         }
 
-        core_battle_effects::run_applying_effect_event(
+        core_battle_effects::run_event_for_applying_effect(
             context,
             fxlang::BattleEvent::AfterEachBoost,
             fxlang::VariableInput::from_iter([

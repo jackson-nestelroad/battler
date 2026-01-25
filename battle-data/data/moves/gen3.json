@@ -1792,17 +1792,7 @@
       "Protect"
     ],
     "effect": {
-      "callbacks": {
-        "on_after_hit": [
-          "if $source.item.is_defined:",
-          ["return"],
-          "$item = func_call(take_item: $target silent)",
-          "if !$item:",
-          ["return"],
-          "if !func_call(set_item: $source $item use_target_as_source):",
-          ["return"]
-        ]
-      }
+      "delegates": ["move:thief"]
     }
   },
   "volttackle": {

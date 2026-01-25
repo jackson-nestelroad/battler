@@ -164,6 +164,7 @@ fn run_effect_event_with_errors(
     input: fxlang::VariableInput,
     event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
+    effect_mon_handle: Option<MonHandle>,
     suppressed: bool,
 ) -> Result<fxlang::ProgramEvalResult> {
     // Effect was suppressed somewhere up the stack, so we should skip the callback.
@@ -229,6 +230,7 @@ fn run_effect_event_with_errors(
         input,
         event_state,
         effect_state_connector.clone(),
+        effect_mon_handle,
     );
 
     if let Some(effect_state_connector) = &effect_state_connector {
@@ -273,6 +275,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
@@ -283,6 +286,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::Field => run_effect_event_with_errors(
@@ -293,6 +297,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::User => run_effect_event_with_errors(
@@ -305,6 +310,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::UserWithTarget(target) => run_effect_event_with_errors(
@@ -317,6 +323,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::None => run_effect_event_with_errors(
@@ -327,6 +334,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
     };
@@ -372,6 +380,7 @@ fn run_effect_event_by_handle(
     input: fxlang::VariableInput,
     event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
+    effect_mon_handle: Option<MonHandle>,
     suppressed: bool,
 ) -> fxlang::ProgramEvalResult {
     match run_effect_event_with_errors(
@@ -382,6 +391,7 @@ fn run_effect_event_by_handle(
         input,
         event_state,
         effect_state_connector,
+        effect_mon_handle,
         suppressed,
     ) {
         Ok(result) => result,
@@ -426,6 +436,7 @@ struct CallbackHandle {
     pub applied_effect_handle: AppliedEffectHandle,
     pub event: fxlang::BattleEvent,
     pub modifier: fxlang::BattleEventModifier,
+    pub is_source_effect: bool,
     pub suppressed: bool,
 }
 
@@ -436,11 +447,31 @@ impl CallbackHandle {
         modifier: fxlang::BattleEventModifier,
         location: AppliedEffectLocation,
     ) -> Self {
+        Self::new_internal(effect_handle, event, modifier, location, true)
+    }
+
+    pub fn new_non_source_effect(
+        effect_handle: EffectHandle,
+        event: fxlang::BattleEvent,
+        modifier: fxlang::BattleEventModifier,
+        location: AppliedEffectLocation,
+    ) -> Self {
+        Self::new_internal(effect_handle, event, modifier, location, false)
+    }
+
+    fn new_internal(
+        effect_handle: EffectHandle,
+        event: fxlang::BattleEvent,
+        modifier: fxlang::BattleEventModifier,
+        location: AppliedEffectLocation,
+        is_source_effect: bool,
+    ) -> Self {
         Self {
             applied_effect_handle: AppliedEffectHandle::new(effect_handle, location),
             event,
             modifier,
             suppressed: false,
+            is_source_effect,
         }
     }
 
@@ -470,6 +501,11 @@ fn run_callback_with_errors(
         callback_handle
             .applied_effect_handle
             .effect_state_connector(),
+        if callback_handle.is_source_effect {
+            callback_handle.applied_effect_handle.mon_handle()
+        } else {
+            None
+        },
         callback_handle.suppressed,
     );
 
@@ -566,7 +602,7 @@ pub fn run_mon_status_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -591,7 +627,7 @@ pub fn run_mon_volatile_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -611,7 +647,7 @@ pub fn run_mon_ability_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             EffectHandle::Ability(ability),
             event,
             fxlang::BattleEventModifier::default(),
@@ -631,7 +667,7 @@ pub fn run_mon_item_event(
     run_callback_under_applying_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             EffectHandle::Item(item),
             event,
             fxlang::BattleEventModifier::default(),
@@ -650,7 +686,7 @@ pub fn run_mon_inactive_move_event(
     run_callback_under_mon(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             EffectHandle::InactiveMove(mov.clone()),
             event,
             fxlang::BattleEventModifier::default(),
@@ -675,7 +711,7 @@ pub fn run_side_condition_event(
     run_callback_under_side_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -701,7 +737,7 @@ pub fn run_slot_condition_event(
     run_callback_under_side_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -725,7 +761,7 @@ pub fn run_terrain_event(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -749,7 +785,7 @@ pub fn run_weather_event(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -773,7 +809,7 @@ pub fn run_pseudo_weather_event(
     run_callback_under_field_effect(
         context,
         input,
-        CallbackHandle::new(
+        CallbackHandle::new_non_source_effect(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
@@ -793,7 +829,7 @@ pub fn run_applying_effect_event(
         Some(mut context) => run_callback_under_applying_effect(
             &mut context,
             input,
-            CallbackHandle::new(
+            CallbackHandle::new_non_source_effect(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
@@ -803,7 +839,7 @@ pub fn run_applying_effect_event(
         None => run_callback_under_applying_effect(
             context,
             input,
-            CallbackHandle::new(
+            CallbackHandle::new_non_source_effect(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
@@ -824,7 +860,7 @@ pub fn run_effect_event(
         Some(mut context) => run_callback_under_effect(
             &mut context,
             input,
-            CallbackHandle::new(
+            CallbackHandle::new_non_source_effect(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
@@ -834,7 +870,7 @@ pub fn run_effect_event(
         None => run_callback_under_effect(
             context,
             input,
-            CallbackHandle::new(
+            CallbackHandle::new_non_source_effect(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),

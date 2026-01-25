@@ -11,10 +11,10 @@
           ["return"],
           "if !func_call(set_item: $target $source.item dry_run):",
           ["return"],
-          "$item = func_call(take_item: $source use_target_as_source)",
+          "$item = func_call(take_item: $source)",
           "if !$item:",
           ["return"],
-          "set_item: $target $item use_target_as_source"
+          "set_item: $target $item"
         ]
       }
     }
@@ -79,7 +79,7 @@
           "if !$source or func_call(is_ally $target $source):",
           ["return"],
           "if $value < 0:",
-          ["boost: $target 'atk:2' use_target_as_source"]
+          ["boost: $target 'atk:2'"]
         ]
       }
     }
@@ -111,7 +111,7 @@
           "if $move.upgraded or func_call(move_has_flag: $move future) or $move.id == struggle:",
           ["return"],
           "if func_call(chance: 3 10):",
-          ["add_volatile: $source disable use_target_as_source"]
+          ["add_volatile: $source disable"]
         ]
       }
     }
@@ -489,7 +489,7 @@
           "program": [
             "if $target == $source or $move.type != grass:",
             ["return"],
-            "if !func_call(boost: $target 'atk:1' use_target_as_source):",
+            "if !func_call(boost: $target 'atk:1'):",
             ["log_immune: $target from_effect"],
             "return stop"
           ]
@@ -497,7 +497,7 @@
         "on_side_try_hit_side": [
           "if $move.source == $effect_state.target or $move.type != grass:",
           ["return"],
-          "boost: $effect_state.target 'atk:1' use_effect_state_target_as_source"
+          "boost: $effect_state.target 'atk:1'"
         ]
       }
     }
@@ -533,7 +533,7 @@
       "callbacks": {
         "on_damaging_hit": [
           "if func_call(move_makes_contact: $move):",
-          ["damage: $source expr($source.base_max_hp / 8) use_target_as_source"]
+          ["damage: $source expr($source.base_max_hp / 8)"]
         ]
       }
     }

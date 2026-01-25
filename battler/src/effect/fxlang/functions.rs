@@ -102,8 +102,16 @@ pub fn run_function(
     event: BattleEvent,
     event_state: &EventState,
     effect_state: Option<DynamicEffectStateConnector>,
+    effect_mon_handle: Option<MonHandle>,
 ) -> Result<Option<Value>> {
-    let context = FunctionContext::new(context, args, event, event_state, effect_state);
+    let context = FunctionContext::new(
+        context,
+        args,
+        event,
+        event_state,
+        effect_state,
+        effect_mon_handle,
+    );
     // Maintain alphabetical order.
     match function_name {
         "ability_effect_state" => ability_effect_state(context),
@@ -341,6 +349,7 @@ struct FunctionContext<'eval, 'effect, 'context, 'battle, 'data> {
     event: BattleEvent,
     event_state: &'eval EventState,
     effect_state: Option<DynamicEffectStateConnector>,
+    effect_mon_handle: Option<MonHandle>,
     flags: HashMap<String, bool>,
 }
 
@@ -353,6 +362,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         event: BattleEvent,
         event_state: &'eval EventState,
         effect_state: Option<DynamicEffectStateConnector>,
+        effect_mon_handle: Option<MonHandle>,
     ) -> Self {
         Self {
             context,
@@ -360,6 +370,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             event,
             event_state,
             effect_state,
+            effect_mon_handle,
             flags: HashMap::default(),
         }
     }
@@ -591,6 +602,8 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
                 .target()
         } else if self.use_target_as_source() {
             self.evaluation_context().target_handle()
+        } else if let Some(effect_mon_handle) = self.effect_mon_handle {
+            Some(effect_mon_handle)
         } else {
             self.evaluation_context().source_handle()
         }

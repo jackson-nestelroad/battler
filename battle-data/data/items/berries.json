@@ -207,7 +207,7 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_after_set_status": {
           "priority": -1,
-          "program": ["eat_item: $target use_target_as_source"]
+          "program": ["eat_item: $target"]
         },
         "on_update": [
           "if $mon.status.is_defined or func_call(has_volatile: $mon confusion):",
@@ -989,10 +989,8 @@
         "on_damaging_hit": [
           "if $move.category == physical and $source.hp > 0 and $source.active:",
           [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "damage: $source expr($source.base_max_hp / 8) use_target_as_source"
-            ]
+            "if func_call(eat_item: $target):",
+            ["damage: $source expr($source.base_max_hp / 8)"]
           ]
         ]
       }
@@ -1010,10 +1008,8 @@
         "on_damaging_hit": [
           "if $move.category == special and $source.hp > 0 and $source.active:",
           [
-            "if func_call(eat_item: $target use_target_as_source):",
-            [
-              "damage: $source expr($source.base_max_hp / 8) use_target_as_source"
-            ]
+            "if func_call(eat_item: $target):",
+            ["damage: $source expr($source.base_max_hp / 8)"]
           ]
         ]
       }
@@ -1046,7 +1042,7 @@
       "callbacks": {
         "on_after_move_secondary_effects": [
           "if $move.category == physical:",
-          ["eat_item: $target use_target_as_source"]
+          ["eat_item: $target"]
         ],
         "on_eat": ["boost: $mon 'def:1'"]
       }
@@ -1063,7 +1059,7 @@
       "callbacks": {
         "on_after_move_secondary_effects": [
           "if $move.category == special:",
-          ["eat_item: $target use_target_as_source"]
+          ["eat_item: $target"]
         ],
         "on_eat": ["boost: $mon 'spd:1'"]
       }

@@ -859,10 +859,7 @@
           "if !$mon.is_grounded:",
           ["return"],
           "if func_call(has_type: $mon poison):",
-          [
-            "remove_side_condition: $mon.side $this.id use_target_as_source",
-            "return"
-          ],
+          ["remove_side_condition: $mon.side $this.id", "return"],
           "if $mon.is_immune_to_entry_hazards:",
           ["return"],
           "if $effect_state.layers >= 2:",
