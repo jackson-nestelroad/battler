@@ -330,7 +330,7 @@
         "on_immunity": ["if $effect.id == confusion:", ["return false"]],
         "on_add_volatile": ["if $volatile.id == confusion:", ["return false"]],
         "on_try_hit": [
-          "if $move.hit_effect.volatile_status == confusion:",
+          "if $move.hit_effect.is_defined and $move.hit_effect.volatile_status == confusion:",
           ["log_immune: $target from_effect", "return stop"]
         ]
       }

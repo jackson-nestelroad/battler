@@ -387,6 +387,11 @@ where
                                 .as_ref()
                                 .map(ValueRef::HitEffect)
                                 .unwrap_or(ValueRef::Undefined),
+                            "ignore_all_secondary_effects" => ValueRef::Boolean(
+                                context
+                                    .active_move(active_move_handle)?
+                                    .ignore_all_secondary_effects,
+                            ),
                             "secondary_effects" => ValueRef::TempList(
                                 context
                                     .active_move(active_move_handle)?

@@ -414,6 +414,7 @@ mod moves {
         mod quash_test;
         mod quick_guard_test;
         mod reflect_type_test;
+        mod relic_song_test;
         mod retaliate_test;
         mod round_test;
         mod simple_beam_test;

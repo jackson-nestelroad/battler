@@ -6,6 +6,12 @@ trigger: always_on
 
 This rule describes the REQUIRED code style for Rust.
 
+## Imports
+
+Match the style of other code in the repository, similar to the one you are working on, when it comes to imports.
+
+ALWAYS import `anyhow::Result` when using it (DO NOT use `Result<_, anyhow::Error>`).
+
 ## Variables
 
 ALWAYS remove intermediate variables that are defined once and used once, EXCEPT in cases where it improves readability (i.e., the variable is a multi-line definition). ALWAYS inline intermediate variables with a single line definition.

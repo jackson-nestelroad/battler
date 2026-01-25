@@ -1635,6 +1635,14 @@
       "SleepInducing",
       "Sound"
     ],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "slp"
+        }
+      }
+    ],
     "effect": {
       "callbacks": {
         "on_hit": [
