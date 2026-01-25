@@ -1275,3 +1275,16 @@ pub fn swap(context: &mut ApplyingEffectContext, position: usize) -> Result<()> 
         activation,
     )
 }
+
+pub fn swap_player(context: &mut PlayerContext, position: usize) -> Result<()> {
+    let activation = EffectActivationContext {
+        player: Some(context.player().index),
+        additional: Vec::from_iter([format!("position:{position}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swapplayer".to_owned(),
+        activation,
+    )
+}

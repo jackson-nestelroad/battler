@@ -5897,3 +5897,26 @@ pub fn swap_position(
 
     Ok(true)
 }
+
+/// Swaps the positions of two players on the same side.
+///
+/// This functionality only exists for complex Multi- battles. If two Mons remain that cannot be
+/// adjacent to one another due to player positioning, then players may need to shift.
+pub fn swap_player_position(context: &mut PlayerContext, new_position: usize) -> Result<()> {
+    core_battle_logs::swap_player(context, new_position)?;
+
+    let current_position = context.player().position;
+    let target = Side::player_position_to_index(context.as_side_context(), new_position);
+
+    if let Some(target) = target {
+        context
+            .as_battle_context_mut()
+            .player_context(target)?
+            .player_mut()
+            .position = current_position;
+    }
+
+    context.player_mut().position = new_position;
+
+    Ok(())
+}

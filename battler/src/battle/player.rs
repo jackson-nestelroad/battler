@@ -586,7 +586,7 @@ impl Player {
     }
 
     /// Creates an iterator over all positions used by the player with an active or fainted Mon. See
-    /// [`active_or_exited_mon_handles`][`Self::active_or_exited_mon_handles`].
+    /// [`Self::active_or_exited_mon_handles`].
     pub fn field_positions_with_active_or_exited_mon(
         &self,
     ) -> impl Iterator<Item = (usize, &MonHandle)> {

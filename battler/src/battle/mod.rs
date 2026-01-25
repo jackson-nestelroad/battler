@@ -16,6 +16,7 @@ mod player;
 mod queue;
 mod registry;
 mod request;
+mod shift;
 mod side;
 mod speed_order;
 pub mod weather_states;
