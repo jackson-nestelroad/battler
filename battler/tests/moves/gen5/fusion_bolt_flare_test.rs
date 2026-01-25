@@ -1,6 +1,7 @@
 use anyhow::Result;
 use battler::{
     BattleType,
+    CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     PublicCoreBattle,
     TeamData,
@@ -44,7 +45,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
         .with_pass_allowed(true)
         .with_bag_items(true)
         .with_infinite_bags(true)
-        .with_base_damage_randomization(battler::CoreBattleEngineRandomizeBaseDamage::Max)
+        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")

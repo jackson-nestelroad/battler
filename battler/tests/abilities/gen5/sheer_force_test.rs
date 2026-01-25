@@ -1,7 +1,6 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     PublicCoreBattle,
     TeamData,
@@ -14,21 +13,21 @@ use battler_test_utils::{
     static_local_data_store,
 };
 
-fn team() -> Result<TeamData> {
+fn conkeldurr() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Archeops",
-                    "species": "Archeops",
-                    "ability": "No Ability",
+                    "name": "Conkeldurr",
+                    "species": "Conkeldurr",
+                    "ability": "Sheer Force",
                     "moves": [
-                        "Acrobatics",
-                        "Knock Off"
+                        "Low Sweep",
+                        "Recover"
                     ],
                     "nature": "Hardy",
-                    "level": 100,
-                    "item": "Oran Berry"
+                    "level": 50,
+                    "item": "Life Orb"
                 }
             ]
         }"#,
@@ -42,7 +41,6 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
-        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -52,44 +50,40 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn acrobatics_doubles_power_when_user_has_no_item() {
-    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
-
+fn sheer_force_cancels_secondary_effects() {
+    let mut team = conkeldurr().unwrap();
+    team.members[0].ability = "Mummy".to_owned();
+    let mut battle = make_battle(0, conkeldurr().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    // Turn 1: Acrobatics with item.
-    // Player 2 uses Knock Off to remove Player 1's item.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-
-    // Turn 2: Acrobatics without item.
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Archeops,player-1,1|name:Acrobatics|target:Archeops,player-2,1",
-            "resisted|mon:Archeops,player-2,1",
+            "move|mon:Conkeldurr,player-1,1|name:Low Sweep|target:Conkeldurr,player-2,1",
             "split|side:1",
-            "damage|mon:Archeops,player-2,1|health:186/260",
-            "damage|mon:Archeops,player-2,1|health:72/100",
-            "move|mon:Archeops,player-2,1|name:Knock Off|target:Archeops,player-1,1",
-            "split|side:0",
-            "damage|mon:Archeops,player-1,1|health:86/260",
-            "damage|mon:Archeops,player-1,1|health:34/100",
-            "itemend|mon:Archeops,player-1,1|item:Oran Berry|from:move:Knock Off|of:Archeops,player-2,1",
+            "damage|mon:Conkeldurr,player-2,1|health:63/165",
+            "damage|mon:Conkeldurr,player-2,1|health:39/100",
+            "abilityend|mon:Conkeldurr,player-1,1|ability:Sheer Force|from:ability:Mummy|of:Conkeldurr,player-2,1",
+            "ability|mon:Conkeldurr,player-1,1|ability:Mummy|from:ability:Mummy|of:Conkeldurr,player-2,1",
+            "move|mon:Conkeldurr,player-2,1|name:Recover|target:Conkeldurr,player-2,1",
+            "split|side:1",
+            "heal|mon:Conkeldurr,player-2,1|health:146/165",
+            "heal|mon:Conkeldurr,player-2,1|health:89/100",
             "residual",
             "turn|turn:2",
             "continue",
-            "move|mon:Archeops,player-1,1|name:Acrobatics|target:Archeops,player-2,1",
-            "resisted|mon:Archeops,player-2,1",
+            "move|mon:Conkeldurr,player-1,1|name:Low Sweep|target:Conkeldurr,player-2,1",
             "split|side:1",
-            "damage|mon:Archeops,player-2,1|health:39/260",
-            "damage|mon:Archeops,player-2,1|health:15/100",
-            "itemend|mon:Archeops,player-2,1|item:Oran Berry|eat",
-            "split|side:1",
-            "heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:49/260",
-            "heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:19/100",
+            "damage|mon:Conkeldurr,player-2,1|health:72/165",
+            "damage|mon:Conkeldurr,player-2,1|health:44/100",
+            "unboost|mon:Conkeldurr,player-2,1|stat:spe|by:1",
+            "split|side:0",
+            "damage|mon:Conkeldurr,player-1,1|from:item:Life Orb|health:149/165",
+            "damage|mon:Conkeldurr,player-1,1|from:item:Life Orb|health:91/100",
             "residual",
             "turn|turn:3"
         ]"#,

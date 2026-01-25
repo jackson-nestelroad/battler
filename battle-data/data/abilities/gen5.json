@@ -76,7 +76,7 @@
     "effect": {
       "callbacks": {
         "on_after_each_boost": [
-          "if !$source or func_call(is_ally $target $source):",
+          "if !$source or func_call(is_ally: $target $source):",
           ["return"],
           "if $value < 0:",
           ["boost: $target 'atk:2'"]
@@ -424,7 +424,7 @@
           "if func_call(ability_has_flag: $source.ability permanent) or $source.ability == $this.id:",
           ["return"],
           "if func_call(move_makes_contact: $move):",
-          ["set_ability: $target $this.id"]
+          ["set_ability: $source $this.id"]
         ]
       }
     }

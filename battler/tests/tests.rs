@@ -95,9 +95,17 @@ mod abilities {
     }
 
     mod gen5 {
+        mod defiant_test;
+        mod friend_guard_test;
+        mod healer_test;
+        mod heavy_metal_test;
         mod illusion_test;
+        mod multiscale_test;
         mod pickpocket_test;
         mod prankster_test;
+        mod sheer_force_test;
+        mod unnerve_test;
+        mod weak_armor_test;
     }
 
     mod gen8 {
