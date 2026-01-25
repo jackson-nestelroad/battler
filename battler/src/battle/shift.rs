@@ -245,6 +245,7 @@ mod shift_test {
             ([false, true], [true, false]),
             ([true, false], [false, true]),
             ([true, false], [true, false]),
+            ([true, true], [true, false]),
         ] {
             pretty_assertions::assert_eq!(
                 shift_to_ensure_adjacency(

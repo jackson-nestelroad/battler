@@ -898,7 +898,7 @@ impl Player {
                         Self::choose_move(context, choice).wrap_error_with_message("cannot move")
                     }
                     Ok(Choice::Pass) => {
-                        Self::choose_pass(context).wrap_error_with_message("cannot pass")
+                        Self::choose_pass(context, true).wrap_error_with_message("cannot pass")
                     }
                     Ok(Choice::LearnMove(choice)) => Self::choose_learn_move(context, choice)
                         .wrap_error_with_message("cannot learn move"),
@@ -1071,7 +1071,7 @@ impl Player {
                         mon.is_none()
                             || mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| !mon.active))
                     }) {
-                        Self::choose_pass(context)?;
+                        Self::choose_pass(context, false)?;
                         next_mon += 1;
                     }
                 }
@@ -1089,7 +1089,7 @@ impl Player {
                                 })
                         })
                     {
-                        Self::choose_pass(context)?;
+                        Self::choose_pass(context, false)?;
                         next_mon += 1;
                     }
                 }
@@ -1099,7 +1099,7 @@ impl Player {
                             .mon(*mon)
                             .is_ok_and(|mon| mon.learnable_moves.is_empty())
                     }) {
-                        Self::choose_pass(context)?;
+                        Self::choose_pass(context, false)?;
                         next_mon += 1;
                     }
                 }
@@ -1109,8 +1109,8 @@ impl Player {
         Ok(next_mon)
     }
 
-    fn choose_pass(context: &mut PlayerContext) -> Result<()> {
-        let position = Self::get_position_for_next_choice(context, true)?;
+    fn choose_pass(context: &mut PlayerContext, chosen_by_player: bool) -> Result<()> {
+        let position = Self::get_position_for_next_choice(context, !chosen_by_player)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
                 if let Some(mon) = context.player().active_mon_handle(position) {

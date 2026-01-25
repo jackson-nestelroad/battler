@@ -43,7 +43,6 @@ use zone_alloc::{
 };
 
 use crate::{
-    BattleType,
     TeamData,
     WrapError,
     battle::{
@@ -1582,7 +1581,7 @@ impl<'d> CoreBattle<'d> {
     fn snapshot_side_for_shift(&self, side: usize) -> shift::Side {
         let mut players = Vec::new();
         for player in self.players_on_side(side) {
-            players.resize(player.position + 1, None);
+            players.resize(player.position, None);
             players.insert(
                 player.position,
                 Some(shift::Player {
