@@ -222,7 +222,7 @@
           "if !$field.weather or !$field.weather.is_sunny:",
           ["return"],
           "if $target.item.is_defined or !$target.last_item or !func_call(item_has_flag: $target.last_item berry):",
-          ["return false"],
+          ["return"],
           "$item = $target.last_item",
           "$target.last_item = undefined",
           "set_item: $target $item"
@@ -236,7 +236,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $target != source and func_call(is_ally: $target $source):",
+          "if $target != $source and func_call(is_ally: $target $source):",
           ["log_activate: with_target", "return stop"]
         ]
       }
@@ -253,23 +253,23 @@
           [
             "if $stat == acc or $stat == eva:",
             ["continue"],
-            "if func_all(can_boost: $target str('{}:1', $stat):",
+            "if func_call(can_boost: $target str('{}:1', $stat)):",
             ["$possible_boosts = func_call(append: $possible_boosts $stat)"]
           ],
           "$boost = func_call(sample: $possible_boosts)",
-          "foreach $stat in func_call(boostable_stats):",
           "$possible_drops = []",
+          "foreach $stat in func_call(boostable_stats):",
           [
-            "if $stat == acc or $stat == eva:",
+            "if $stat == acc or $stat == eva or $stat == $boost:",
             ["continue"],
-            "if func_all(can_boost: $target str('{}:-1', $stat):",
+            "if func_call(can_boost: $target str('{}:-1', $stat)):",
             ["$possible_drops = func_call(append: $possible_drops $stat)"]
           ],
           "$drop = func_call(sample: $possible_drops)",
           "$boosts = func_call(boost_table)",
-          "if $boost:",
+          "if $boost.is_defined:",
           ["$boosts = func_call(set_boost: $boosts $boost 2)"],
-          "if $drop:",
+          "if $drop.is_defined:",
           ["$boosts = func_call(set_boost: $boosts $drop -1)"],
           "boost: $target $boosts"
         ]
@@ -295,7 +295,7 @@
     "effect": {
       "callbacks": {
         "on_source_damaging_hit": [
-          "if func_call(chance: 3 10):",
+          "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
           ["set_status: $target psn"]
         ]
       }
@@ -314,18 +314,11 @@
     "name": "Big Pecks",
     "flags": ["Breakable"],
     "effect": {
-      "callbacks": {
-        "on_try_boost": [
-          "if $target == $source:",
-          ["return"],
-          "if $boosts.def < 0:",
-          [
-            "$boosts.def = 0",
-            "if !$effect.is_move_secondary:",
-            ["log_fail_unboost: $target from_effect def"],
-            "return $boosts"
-          ]
-        ]
+      "delegates": ["condition:preventstatdropabilitybase"],
+      "local_data": {
+        "values": {
+          "stat": "def"
+        }
       }
     }
   },
@@ -399,9 +392,9 @@
       "callbacks": {
         "on_switch_in": [
           "$position = $format.mons_per_side - $mon.position - 1",
-          "$target = func_call(mon_in_position: $target.foe_side $position)",
-          "if $target:",
-          ["transform_into: $source $target"]
+          "$target = func_call(mon_in_position: $mon.foe_side $position)",
+          "if $target.is_defined:",
+          ["transform_into: $mon $target"]
         ]
       }
     }
@@ -434,9 +427,9 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_source_after_faint": [
+        "on_after_fainted": [
           "if $effect.is_move:",
-          ["boost: $source str('atk:{}', $length)"]
+          ["boost: $mon str('atk:{}', $count)"]
         ]
       }
     }
@@ -544,7 +537,7 @@
     "effect": {
       "callbacks": {
         "on_residual": [
-          "if func_call(base_species: $target) != darmanitan or $target.transformed):",
+          "if func_call(base_species: $target) != darmanitan or $target.transformed:",
           ["return"],
           "if $target.hp <= $target.max_hp / 2:",
           ["add_volatile: $target $this.id"],

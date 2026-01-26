@@ -30,7 +30,7 @@
       "callbacks": {
         "on_source_modify_damage": [
           "$type = func_call(value_from_local_data: type)",
-          "if (!$type or $move.type == $type) and func_call(type_modifier_against_target: $move $target) > 0 and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          "if (!$type or $move.type == $type) and ($move.type == normal or func_call(type_modifier_against_target: $move $target) > 0) and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
           [
             "if func_call(eat_item: $target):",
             [

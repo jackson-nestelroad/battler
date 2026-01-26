@@ -628,7 +628,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
                 .wrap_error_with_message("invalid source mon"),
             _ => self
                 .source_handle()
-                .wrap_expectation("effect has no target mon"),
+                .wrap_expectation("effect has no source mon"),
         }
     }
 
@@ -1298,8 +1298,11 @@ fn damage(mut context: FunctionContext) -> Result<Value> {
     let amount = context
         .pop_front()
         .wrap_expectation("missing damage amount")?
-        .integer_u16()
+        .fraction_u16()
         .wrap_error_with_message("invalid damage amount")?;
+
+    // It is likely never the effect's intent to do zero damage, so we round up.
+    let amount = if amount < 1 { 1 } else { amount.floor() };
 
     let damaging_effect = context.effect_handle_positional()?;
 

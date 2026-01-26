@@ -2650,7 +2650,12 @@ pub fn boost(
         );
     }
 
-    // TODO: AfterBoost event.
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterBoost,
+        fxlang::VariableInput::from_iter([fxlang::Value::BoostTable(boosts.clone())]),
+    );
+
     if success {
         if boosts.values().any(|val| val > 0) {
             context.target_mut().volatile_state.stats_raised_this_turn = true;

@@ -5672,11 +5672,7 @@
     },
     "prevo": "Darumaka",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "formes": [
-      "Darmanitan-Zen",
-      "Darmanitan-Galar-Standard",
-      "Darmanitan-Galar-Zen"
-    ],
+    "formes": ["Darmanitan-Zen", "Darmanitan-Galar", "Darmanitan-Galar-Zen"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -14990,10 +14986,10 @@
     "flags": [],
     "learnset": {}
   },
-  "darmanitangalarstandard": {
-    "name": "Darmanitan-Galar-Standard",
+  "darmanitangalar": {
+    "name": "Darmanitan-Galar",
     "base_species": "Darmanitan",
-    "forme": "Galar-Standard",
+    "forme": "Galar",
     "class": "Blazing",
     "color": "Red",
     "primary_type": "Ice",

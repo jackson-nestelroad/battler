@@ -334,6 +334,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterAddVolatile"]
     AfterAddVolatile,
+    /// Runs after stat boosts are applied.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterBoost"]
+    AfterBoost,
     /// Runs after a Mon's current status is cured.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -344,6 +349,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterEachBoost"]
     AfterEachBoost,
+    /// Runs after a Mon causes one or more Mons to faint.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterFainted"]
+    AfterFainted,
     /// Runs after a Mon hits another Mon with a move.
     ///
     /// Runs on the active move.
@@ -1245,8 +1255,10 @@ impl BattleEvent {
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterCureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterEachBoost => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterFainted => CommonCallbackType::MonVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
@@ -1424,9 +1436,14 @@ impl BattleEvent {
                 &[("pseudo_weather", ValueType::Effect, true)]
             }
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::AfterBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::AfterEachBoost => &[
                 ("boost", ValueType::Boost, true),
                 ("value", ValueType::Fraction, true),
+            ],
+            Self::AfterFainted => &[
+                ("count", ValueType::UFraction, true),
+                ("effect", ValueType::Effect, false),
             ],
             Self::AfterSetItem | Self::AfterTakeItem | Self::AfterUseItem => {
                 &[("item", ValueType::Effect, true)]

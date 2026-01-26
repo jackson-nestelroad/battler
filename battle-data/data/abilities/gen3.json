@@ -765,18 +765,11 @@
     "name": "Keen Eye",
     "flags": ["Breakable"],
     "effect": {
-      "callbacks": {
-        "on_try_boost": [
-          "if $target == $source:",
-          ["return"],
-          "if $boosts.acc < 0:",
-          [
-            "$boosts.acc = 0",
-            "if !$effect.is_move_secondary:",
-            ["log_fail_unboost: $target from_effect acc"],
-            "return $boosts"
-          ]
-        ]
+      "delegates": ["condition:preventstatdropabilitybase"],
+      "local_data": {
+        "values": {
+          "stat": "acc"
+        }
       }
     }
   },
@@ -784,18 +777,11 @@
     "name": "Hyper Cutter",
     "flags": ["Breakable"],
     "effect": {
-      "callbacks": {
-        "on_try_boost": [
-          "if $target == $source:",
-          ["return"],
-          "if $boosts.atk < 0:",
-          [
-            "$boosts.atk = 0",
-            "if !$effect.is_move_secondary:",
-            ["log_fail_unboost: $target from_effect atk"],
-            "return $boosts"
-          ]
-        ]
+      "delegates": ["condition:preventstatdropabilitybase"],
+      "local_data": {
+        "values": {
+          "stat": "atk"
+        }
       }
     }
   },
@@ -1098,24 +1084,7 @@
     "name": "White Smoke",
     "flags": ["Breakable"],
     "effect": {
-      "callbacks": {
-        "on_try_boost": [
-          "if $target == $source:",
-          ["return"],
-          "$cleared = []",
-          "foreach $boost in func_call(boostable_stats):",
-          [
-            "if func_call(get_boost: $boosts $boost) < 0:",
-            [
-              "$boosts = func_call(set_boost: $boosts $boost 0)",
-              "$cleared = func_call(append: $cleared $boost)"
-            ]
-          ],
-          "if !$cleared.is_empty and !$effect.is_move_secondary:",
-          ["log_fail_unboost: $target from_effect $cleared"],
-          "return $boosts"
-        ]
-      }
+      "delegates": ["ability:clearbody"]
     }
   },
   "purepower": {

@@ -2217,10 +2217,17 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
+        let mut fainted_count_by_source = HashMap::new();
         while let Some(entry) = context.battle_mut().faint_queue.pop_front() {
             let mut context = context.mon_context(entry.target)?;
             if !context.mon().active {
                 continue;
+            }
+
+            if let Some(source) = entry.source {
+                *fainted_count_by_source
+                    .entry((source, entry.effect.clone()))
+                    .or_insert(0u64) += 1;
             }
 
             // TODO: BeforeFaint event.
@@ -2255,6 +2262,24 @@ impl<'d> CoreBattle<'d> {
         }
 
         Self::check_win(context)?;
+
+        if !context.battle().ending {
+            for ((mon_handle, effect), count) in fainted_count_by_source {
+                core_battle_effects::run_event_for_mon(
+                    &mut context.mon_context(mon_handle)?,
+                    fxlang::BattleEvent::AfterFainted,
+                    match effect {
+                        Some(effect) => fxlang::VariableInput::from_iter([
+                            fxlang::Value::UFraction(count.into()),
+                            fxlang::Value::Effect(effect),
+                        ]),
+                        None => fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
+                            count.into(),
+                        )]),
+                    },
+                );
+            }
+        }
 
         Ok(())
     }

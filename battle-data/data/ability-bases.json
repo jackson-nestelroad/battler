@@ -14,5 +14,25 @@
         ]
       }
     }
+  },
+  "preventstatdropabilitybase": {
+    "name": "Prevent Stat Drop Ability Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_try_boost": [
+          "$stat = func_call(value_from_local_data: stat)",
+          "if !$stat or $target == $source:",
+          ["return"],
+          "if func_call(get_boost: $boosts $stat) < 0:",
+          [
+            "$boosts = func_call(set_boost: $boosts $stat 0)",
+            "if !$effect.is_move_secondary:",
+            ["log_fail_unboost: $target from_effect $stat"],
+            "return $boosts"
+          ]
+        ]
+      }
+    }
   }
 }

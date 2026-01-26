@@ -95,17 +95,30 @@ mod abilities {
     }
 
     mod gen5 {
+        mod analytic_test;
         mod defiant_test;
         mod friend_guard_test;
+        mod harvest_test;
         mod healer_test;
         mod heavy_metal_test;
         mod illusion_test;
+        mod imposter_test;
+        mod infiltrator_test;
+        mod magic_bounce_test;
+        mod moody_test;
+        mod moxie_test;
         mod multiscale_test;
+        mod overcoat_test;
         mod pickpocket_test;
+        mod poison_touch_test;
         mod prankster_test;
+        mod rattled_test;
+        mod regenerator_test;
         mod sheer_force_test;
+        mod telepathy_test;
         mod unnerve_test;
         mod weak_armor_test;
+        mod zen_mode_test;
     }
 
     mod gen8 {
