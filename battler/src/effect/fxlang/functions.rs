@@ -1587,9 +1587,9 @@ fn run_event(mut context: FunctionContext) -> Result<Value> {
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
 
     match context.evaluation_context_mut() {
-        EvaluationContext::ApplyingEffect(context) => Ok(Value::Boolean(
+        EvaluationContext::ApplyingEffect(_) => Ok(Value::Boolean(
             core_battle_effects::run_event_for_applying_effect(
-                context,
+                &mut context.forward_to_applying_effect_context()?,
                 event,
                 VariableInput::default(),
             ),

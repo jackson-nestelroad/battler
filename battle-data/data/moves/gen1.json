@@ -2402,7 +2402,7 @@
           "apply_recoil_damage: $damage",
           "apply_drain: $source $target $damage",
           "run_event_on_move: AfterSubstituteDamage",
-          "run_event: AfterSubstituteDamage",
+          "run_event: AfterSubstituteDamage use_source_effect",
           "return 0"
         ],
         "on_try_boost": [

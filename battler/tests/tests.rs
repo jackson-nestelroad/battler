@@ -199,6 +199,7 @@ mod items {
     }
 
     mod gen5 {
+        mod air_balloon_test;
         mod cell_battery_test;
         mod gem_test;
     }

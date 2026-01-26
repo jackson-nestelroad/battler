@@ -1534,13 +1534,10 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "callbacks": {
-        "on_start": ["log_item"],
+        "on_start": ["log_announce_item: $target"],
         "is_grounded": ["return false"],
         "on_damaging_hit": ["use_item: $target"],
-        "on_after_substitute_damage": [
-          "if $effect.is_move:",
-          ["use_item: $target"]
-        ]
+        "on_after_substitute_damage": ["use_item: $target"]
       }
     }
   },
