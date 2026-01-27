@@ -190,7 +190,7 @@ impl SpeciesData {
     }
 
     // Is the species not-fully evolved (has an evolution)?
-    pub fn nfe(&self) -> bool {
+    pub fn not_fully_evolved(&self) -> bool {
         !self.evos.is_empty()
     }
 

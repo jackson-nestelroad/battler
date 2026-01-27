@@ -1190,7 +1190,7 @@ fn move_hit_loop(
         move_hit(context, &mut hit_targets_state)?;
 
         // Update the outcome for the target as soon as possible.
-        for (i, _) in hit_targets.iter().enumerate() {
+        for (i, hit_target) in hit_targets.iter().enumerate() {
             let new_outcome = MoveOutcome::from(
                 !hit_targets_state
                     .get(i)
@@ -1201,8 +1201,11 @@ fn move_hit_loop(
                     .failed(),
             );
             targets
-                .get_mut(i)
-                .wrap_expectation_with_format(format_args!("expected target at index {i}"))?
+                .iter_mut()
+                .find(|target| target.handle == *hit_target)
+                .wrap_expectation_with_format(format_args!(
+                    "expected target corresponding to index {i}"
+                ))?
                 .outcome = new_outcome;
         }
 
@@ -1435,7 +1438,7 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
     }
 
     // Force switch out targets that were hit, as necessary.
-    force_switch(context, targets)?;
+    force_switch_from_move(context, targets)?;
 
     for target in targets.iter().filter(|target| target.outcome.damage() > 0) {
         core_battle_effects::run_event_for_applying_effect(
@@ -2820,8 +2823,30 @@ fn apply_secondary_effects(
     Ok(())
 }
 
+/// Forces the target to switch out at the end of the move.
+pub fn force_switch(context: &mut ApplyingEffectContext) -> Result<bool> {
+    let mut context = context.target_context()?;
+    if context.mon().hp == 0 || !Player::can_switch(context.as_player_context()) {
+        return Ok(false);
+    }
+
+    if !core_battle_effects::run_event_for_mon(
+        &mut context,
+        fxlang::BattleEvent::DragOut,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
+
+    context.mon_mut().switch_state.force_switch = Some(SwitchType::Normal);
+    Ok(true)
+}
+
 /// Forces all targets of the move to switch out at the end of the move.
-fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
+fn force_switch_from_move(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<()> {
     if !context
         .hit_effect()
         .is_some_and(|hit_effect| hit_effect.force_switch)
@@ -2831,23 +2856,11 @@ fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState])
 
     for target in targets {
         let mut context = context.target_context(target.handle)?;
-        if !target.outcome.hit_target()
-            || context.target_mon().hp == 0
-            || context.mon().hp == 0
-            || !Player::can_switch(context.target_mon_context()?.as_player_context())
-        {
+        if !target.outcome.hit_target() || context.mon().hp == 0 {
             continue;
         }
 
-        if !core_battle_effects::run_event_for_mon(
-            &mut context.target_mon_context()?,
-            fxlang::BattleEvent::DragOut,
-            fxlang::VariableInput::default(),
-        ) {
-            continue;
-        }
-
-        context.target_mon_mut().switch_state.force_switch = Some(SwitchType::Normal);
+        force_switch(&mut context.applying_effect_context()?)?;
     }
 
     Ok(())

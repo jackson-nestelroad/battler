@@ -25,6 +25,7 @@
       "spd": 45,
       "spe": 38
     },
+    "evos": ["Quilladin"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -139,6 +140,7 @@
       "spe": 57
     },
     "prevo": "Chespin",
+    "evos": ["Chesnaught"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {
@@ -375,6 +377,7 @@
       "spd": 60,
       "spe": 60
     },
+    "evos": ["Braixen"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -461,6 +464,7 @@
       "spe": 73
     },
     "prevo": "Fennekin",
+    "evos": ["Delphox"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {
@@ -667,6 +671,7 @@
       "spd": 44,
       "spe": 71
     },
+    "evos": ["Frogadier"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -758,6 +763,7 @@
       "spe": 97
     },
     "prevo": "Froakie",
+    "evos": ["Greninja"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {
@@ -951,6 +957,7 @@
       "spd": 36,
       "spe": 57
     },
+    "evos": ["Diggersby"],
     "flags": [],
     "learnset": {
       "agility": ["L1"],
@@ -1156,6 +1163,7 @@
       "spd": 38,
       "spe": 62
     },
+    "evos": ["Fletchinder"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L39"],
@@ -1231,6 +1239,7 @@
       "spe": 84
     },
     "prevo": "Fletchling",
+    "evos": ["Talonflame"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -1373,7 +1382,6 @@
   "scatterbug": {
     "name": "Scatterbug",
     "base_species": "Scatterbug",
-    "base_forme": "Icy-Snow",
     "class": "Scatterdust",
     "color": "Black",
     "primary_type": "Bug",
@@ -1397,6 +1405,8 @@
       "spd": 25,
       "spe": 35
     },
+    "evos": ["Spewpa"],
+    "base_forme": "Icy-Snow",
     "cosmetic_formes": [
       "Scatterbug-Polar",
       "Scatterbug-Tundra",
@@ -1431,7 +1441,6 @@
   "spewpa": {
     "name": "Spewpa",
     "base_species": "Spewpa",
-    "base_forme": "Icy-Snow",
     "class": "Scatterdust",
     "color": "Black",
     "primary_type": "Bug",
@@ -1456,7 +1465,9 @@
       "spe": 29
     },
     "prevo": "Scatterbug",
+    "evos": ["Vivillon", "Vivillon-Fancy"],
     "evolution_data": { "method": "L", "condition": "", "level": 9 },
+    "base_forme": "Icy-Snow",
     "cosmetic_formes": [
       "Spewpa-Polar",
       "Spewpa-Tundra",
@@ -1490,7 +1501,6 @@
   "vivillon": {
     "name": "Vivillon",
     "base_species": "Vivillon",
-    "base_forme": "Meadow",
     "class": "Scale",
     "color": "White",
     "primary_type": "Bug",
@@ -1517,6 +1527,7 @@
     },
     "prevo": "Spewpa",
     "evolution_data": { "method": "L", "condition": "", "level": 12 },
+    "base_forme": "Meadow",
     "cosmetic_formes": [
       "Vivillon-Icy-Snow",
       "Vivillon-Polar",
@@ -1625,6 +1636,7 @@
       "spd": 54,
       "spe": 72
     },
+    "evos": ["Pyroar"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -1778,7 +1790,6 @@
   "flabebe": {
     "name": "Flabébé",
     "base_species": "Flabébé",
-    "base_forme": "Red",
     "class": "Single Bloom",
     "color": "White",
     "primary_type": "Fairy",
@@ -1802,6 +1813,8 @@
       "spd": 79,
       "spe": 42
     },
+    "evos": ["Floette"],
+    "base_forme": "Red",
     "cosmetic_formes": [
       "Flabébé-Yellow",
       "Flabébé-Orange",
@@ -1871,7 +1884,6 @@
   "floette": {
     "name": "Floette",
     "base_species": "Floette",
-    "base_forme": "Red",
     "class": "Single Bloom",
     "color": "White",
     "primary_type": "Fairy",
@@ -1896,7 +1908,9 @@
       "spe": 52
     },
     "prevo": "Flabébé",
+    "evos": ["Florges"],
     "evolution_data": { "method": "L", "condition": "", "level": 19 },
+    "base_forme": "Red",
     "formes": ["Floette-Eternal"],
     "cosmetic_formes": [
       "Floette-Yellow",
@@ -1963,7 +1977,6 @@
   "florges": {
     "name": "Florges",
     "base_species": "Florges",
-    "base_forme": "Red",
     "class": "Garden",
     "color": "White",
     "primary_type": "Fairy",
@@ -1993,6 +2006,7 @@
       "condition": "",
       "use_item": "Shiny Stone"
     },
+    "base_forme": "Red",
     "cosmetic_formes": [
       "Florges-Yellow",
       "Florges-Orange",
@@ -2083,6 +2097,7 @@
       "spd": 57,
       "spe": 52
     },
+    "evos": ["Gogoat"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -2259,6 +2274,7 @@
       "spd": 48,
       "spe": 43
     },
+    "evos": ["Pangoro"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -2482,7 +2498,6 @@
   "furfrou": {
     "name": "Furfrou",
     "base_species": "Furfrou",
-    "base_forme": "Natural",
     "class": "Poodle",
     "color": "White",
     "primary_type": "Normal",
@@ -2505,6 +2520,7 @@
       "spd": 90,
       "spe": 102
     },
+    "base_forme": "Natural",
     "cosmetic_formes": [
       "Furfrou-Heart",
       "Furfrou-Star",
@@ -2603,6 +2619,7 @@
       "spd": 60,
       "spe": 68
     },
+    "evos": ["Meowstic", "Meowstic-F"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -2675,7 +2692,6 @@
   "meowstic": {
     "name": "Meowstic",
     "base_species": "Meowstic",
-    "base_forme": "Male",
     "class": "Constraint",
     "color": "Blue",
     "primary_type": "Psychic",
@@ -2701,6 +2717,7 @@
     },
     "prevo": "Espurr",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
+    "base_forme": "Male",
     "formes": ["Meowstic-Female"],
     "flags": [],
     "learnset": {
@@ -2806,6 +2823,7 @@
       "spd": 37,
       "spe": 28
     },
+    "evos": ["Doublade"],
     "flags": [],
     "learnset": {
       "aerialace": ["L22"],
@@ -2885,6 +2903,7 @@
       "spe": 35
     },
     "prevo": "Honedge",
+    "evos": ["Aegislash"],
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
     "flags": [],
     "learnset": {
@@ -2939,7 +2958,6 @@
   "aegislash": {
     "name": "Aegislash",
     "base_species": "Aegislash",
-    "base_forme": "Shield",
     "class": "Royal Sword",
     "color": "Brown",
     "primary_type": "Steel",
@@ -2969,6 +2987,7 @@
       "condition": "",
       "use_item": "Dusk Stone"
     },
+    "base_forme": "Shield",
     "formes": ["Aegislash-Blade"],
     "flags": [],
     "learnset": {
@@ -3052,6 +3071,7 @@
       "spd": 65,
       "spe": 23
     },
+    "evos": ["Aromatisse"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -3238,6 +3258,7 @@
       "spd": 57,
       "spe": 49
     },
+    "evos": ["Slurpuff"],
     "flags": [],
     "learnset": {
       "afteryou": ["E", "T"],
@@ -3410,6 +3431,7 @@
       "spd": 46,
       "spe": 45
     },
+    "evos": ["Malamar"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3606,6 +3628,7 @@
       "spd": 56,
       "spe": 50
     },
+    "evos": ["Barbaracle"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3836,6 +3859,7 @@
       "spd": 60,
       "spe": 30
     },
+    "evos": ["Dragalge"],
     "flags": [],
     "learnset": {
       "acid": ["L15"],
@@ -4002,6 +4026,7 @@
       "spd": 63,
       "spe": 44
     },
+    "evos": ["Clawitzer"],
     "flags": [],
     "learnset": {
       "aquajet": ["L43"],
@@ -4171,6 +4196,7 @@
       "spd": 43,
       "spe": 70
     },
+    "evos": ["Heliolisk"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -4355,6 +4381,7 @@
       "spd": 45,
       "spe": 48
     },
+    "evos": ["Tyrantrum"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -4548,6 +4575,7 @@
       "spd": 63,
       "spe": 46
     },
+    "evos": ["Aurorus"],
     "flags": [],
     "learnset": {
       "ancientpower": ["L26"],
@@ -5137,6 +5165,7 @@
       "spd": 75,
       "spe": 40
     },
+    "evos": ["Sliggoo", "Sliggoo-Hisui"],
     "flags": [],
     "learnset": {
       "absorb": ["L5"],
@@ -5210,6 +5239,7 @@
       "spe": 60
     },
     "prevo": "Goomy",
+    "evos": ["Goodra"],
     "evolution_data": { "method": "L", "condition": "", "level": 40 },
     "formes": ["Sliggoo-Hisui"],
     "flags": [],
@@ -5464,6 +5494,7 @@
       "spd": 60,
       "spe": 38
     },
+    "evos": ["Trevenant"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -5646,7 +5677,6 @@
   "pumpkaboo": {
     "name": "Pumpkaboo",
     "base_species": "Pumpkaboo",
-    "base_forme": "Average",
     "class": "Pumpkin",
     "color": "Brown",
     "primary_type": "Ghost",
@@ -5671,6 +5701,8 @@
       "spd": 55,
       "spe": 51
     },
+    "evos": ["Gourgeist"],
+    "base_forme": "Average",
     "formes": ["Pumpkaboo-Small", "Pumpkaboo-Large", "Pumpkaboo-Super"],
     "flags": [],
     "learnset": {
@@ -5744,7 +5776,6 @@
   "gourgeist": {
     "name": "Gourgeist",
     "base_species": "Gourgeist",
-    "base_forme": "Average",
     "class": "Pumpkin",
     "color": "Brown",
     "primary_type": "Ghost",
@@ -5771,6 +5802,7 @@
     },
     "prevo": "Pumpkaboo",
     "evolution_data": { "method": "T", "condition": "" },
+    "base_forme": "Average",
     "formes": ["Gourgeist-Small", "Gourgeist-Large", "Gourgeist-Super"],
     "flags": [],
     "learnset": {
@@ -5867,6 +5899,7 @@
       "spd": 35,
       "spe": 28
     },
+    "evos": ["Avalugg", "Avalugg-Hisui"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -6045,6 +6078,7 @@
       "spd": 40,
       "spe": 55
     },
+    "evos": ["Noivern"],
     "flags": [],
     "learnset": {
       "absorb": ["L5"],
@@ -6223,7 +6257,6 @@
   "xerneas": {
     "name": "Xerneas",
     "base_species": "Xerneas",
-    "base_forme": "Active",
     "class": "Life",
     "color": "Blue",
     "primary_type": "Fairy",
@@ -6246,6 +6279,7 @@
       "spd": 98,
       "spe": 99
     },
+    "base_forme": "Active",
     "cosmetic_formes": ["Xerneas-Neutral"],
     "battle_only_forme": true,
     "flags": ["Restricted Legendary"],
@@ -6404,7 +6438,6 @@
   "zygarde": {
     "name": "Zygarde",
     "base_species": "Zygarde",
-    "base_forme": "50",
     "class": "Order",
     "color": "Green",
     "primary_type": "Dragon",
@@ -6428,6 +6461,7 @@
       "spd": 95,
       "spe": 95
     },
+    "base_forme": "50",
     "formes": [
       "Zygarde-10-Power-Construct",
       "Zygarde-50-Power-Construct",
@@ -6593,7 +6627,6 @@
   "hoopa": {
     "name": "Hoopa",
     "base_species": "Hoopa",
-    "base_forme": "Confined",
     "class": "Mischief",
     "color": "Purple",
     "primary_type": "Psychic",
@@ -6617,6 +6650,7 @@
       "spd": 130,
       "spe": 70
     },
+    "base_forme": "Confined",
     "formes": ["Hoopa-Unbound"],
     "flags": ["Mythical"],
     "learnset": {
@@ -6886,6 +6920,7 @@
       "spd": 55,
       "spe": 56
     },
+    "evos": ["Gourgeist-Small"],
     "flags": [],
     "learnset": {}
   },
@@ -6917,6 +6952,7 @@
       "spd": 55,
       "spe": 46
     },
+    "evos": ["Gourgeist-Large"],
     "flags": [],
     "learnset": {}
   },
@@ -6948,6 +6984,7 @@
       "spd": 55,
       "spe": 41
     },
+    "evos": ["Gourgeist-Super"],
     "flags": [],
     "learnset": {}
   },
@@ -7390,6 +7427,7 @@
       "spd": 113,
       "spe": 40
     },
+    "evos": ["Goodra-Hisui"],
     "flags": [],
     "learnset": {}
   },

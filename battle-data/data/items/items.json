@@ -1495,11 +1495,11 @@
     "effect": {
       "callbacks": {
         "on_modify_def": [
-          "if func_call(not_fully_evolved: $target):",
+          "if $target.not_fully_evolved:",
           ["return $def * 3/2"]
         ],
         "on_modify_spd": [
-          "if func_call(not_fully_evolved: $target):",
+          "if $target.not_fully_evolved:",
           ["return $spd * 3/2"]
         ]
       }
@@ -1545,18 +1545,18 @@
     "name": "Red Card",
     "flags": [],
     "special_data": {
-      "fling": { "power": 10 },
-      "effect": {
-        "callbacks": {
-          "on_after_move_secondary": [
-            "if $source == $target or $source.hp == 0 or $target.hp == 0 or $move.category == status:",
-            ["return"],
-            "if !$source.is_active or !func_call(can_switch: $source.player) or $source.force_switch or $target.force_switch:",
-            ["return"],
-            "if func_call(use_item: $target):",
-            ["force_switch: $source"]
-          ]
-        }
+      "fling": { "power": 10 }
+    },
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects": [
+          "if $source == $target or $source.hp == 0 or $target.hp == 0 or $move.category == status:",
+          ["return"],
+          "if !$source.active or !func_call(can_switch: $source.player) or $source.force_switch or $target.force_switch:",
+          ["return"],
+          "if func_call(use_item: $target):",
+          ["force_switch: $source"]
+        ]
       }
     }
   },
@@ -1612,9 +1612,12 @@
           "if !func_call(can_switch: $target.player) or $target.force_switch or $target.being_called_back or $target.is_away_from_field:",
           ["return"],
           "foreach $mon in func_call(all_active_mons):",
-          ["if $mon.needs_switch:", ["return"]],
+          ["if $mon.ejecting:", ["return"]],
           "if func_call(use_item: $target):",
-          ["$target.needs_switch = true"]
+          [
+            "set_needs_switch: $target true ejecting",
+            "set_needs_switch: $source false"
+          ]
         ]
       }
     }

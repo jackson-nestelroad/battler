@@ -26,6 +26,7 @@
       "spd": 50,
       "spe": 42
     },
+    "evos": ["Dartrix"],
     "flags": [],
     "learnset": {
       "astonish": ["L11"],
@@ -114,6 +115,7 @@
       "spe": 52
     },
     "prevo": "Rowlet",
+    "evos": ["Decidueye", "Decidueye-Hisui"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -297,6 +299,7 @@
       "spd": 40,
       "spe": 70
     },
+    "evos": ["Torracat"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -382,6 +385,7 @@
       "spe": 90
     },
     "prevo": "Litten",
+    "evos": ["Incineroar"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -572,6 +576,7 @@
       "spd": 56,
       "spe": 40
     },
+    "evos": ["Brionne"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -657,6 +662,7 @@
       "spe": 50
     },
     "prevo": "Popplio",
+    "evos": ["Primarina"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -832,6 +838,7 @@
       "spd": 30,
       "spe": 65
     },
+    "evos": ["Trumbeak"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -912,6 +919,7 @@
       "spe": 75
     },
     "prevo": "Pikipek",
+    "evos": ["Toucannon"],
     "evolution_data": { "method": "L", "condition": "", "level": 14 },
     "flags": [],
     "learnset": {
@@ -1072,6 +1080,7 @@
       "spd": 30,
       "spe": 45
     },
+    "evos": ["Gumshoos"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -1245,6 +1254,7 @@
       "spd": 45,
       "spe": 46
     },
+    "evos": ["Charjabug"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L19"],
@@ -1315,6 +1325,7 @@
       "spe": 36
     },
     "prevo": "Grubbin",
+    "evos": ["Vikavolt"],
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
     "flags": [],
     "learnset": {
@@ -1470,6 +1481,7 @@
       "spd": 47,
       "spe": 63
     },
+    "evos": ["Crabominable"],
     "flags": [],
     "learnset": {
       "amnesia": ["E"],
@@ -1625,7 +1637,6 @@
   "oricorio": {
     "name": "Oricorio",
     "base_species": "Oricorio",
-    "base_forme": "Baile",
     "class": "Dancing",
     "color": "Red",
     "primary_type": "Fire",
@@ -1649,6 +1660,7 @@
       "spd": 70,
       "spe": 93
     },
+    "base_forme": "Baile",
     "formes": ["Oricorio-Pom-Pom", "Oricorio-Pau", "Oricorio-Sensu"],
     "flags": [],
     "learnset": {
@@ -1732,6 +1744,7 @@
       "spd": 40,
       "spe": 84
     },
+    "evos": ["Ribombee"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -1917,6 +1930,7 @@
       "spd": 40,
       "spe": 60
     },
+    "evos": ["Lycanroc", "Lycanroc-Midnight", "Lycanroc-Dusk"],
     "formes": ["Rockruff-Own-Tempo"],
     "flags": [],
     "learnset": {
@@ -1974,7 +1988,6 @@
   "lycanroc": {
     "name": "Lycanroc",
     "base_species": "Lycanroc",
-    "base_forme": "Midday",
     "class": "Wolf",
     "color": "Brown",
     "primary_type": "Rock",
@@ -2005,6 +2018,7 @@
       "level": 25,
       "time_of_day": "day"
     },
+    "base_forme": "Midday",
     "formes": ["Lycanroc-Midnight", "Lycanroc-Dusk"],
     "flags": [],
     "learnset": {
@@ -2064,7 +2078,6 @@
   "wishiwashi": {
     "name": "Wishiwashi",
     "base_species": "Wishiwashi",
-    "base_forme": "Solo",
     "class": "Small Fry",
     "color": "Blue",
     "primary_type": "Water",
@@ -2087,6 +2100,7 @@
       "spd": 25,
       "spe": 40
     },
+    "base_forme": "Solo",
     "formes": ["Wishiwashi-School"],
     "flags": [],
     "learnset": {
@@ -2165,6 +2179,7 @@
       "spd": 52,
       "spe": 45
     },
+    "evos": ["Toxapex"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -2338,6 +2353,7 @@
       "spd": 55,
       "spe": 45
     },
+    "evos": ["Mudsdale"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -2490,6 +2506,7 @@
       "spd": 72,
       "spe": 27
     },
+    "evos": ["Araquanid"],
     "flags": [],
     "learnset": {
       "aquaring": ["L24"],
@@ -2655,6 +2672,7 @@
       "spd": 35,
       "spe": 35
     },
+    "evos": ["Lurantis"],
     "flags": [],
     "learnset": {
       "aromatherapy": ["E"],
@@ -2826,6 +2844,7 @@
       "spd": 75,
       "spe": 15
     },
+    "evos": ["Shiinotic"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -2991,6 +3010,7 @@
       "spd": 40,
       "spe": 77
     },
+    "evos": ["Salazzle"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3172,6 +3192,7 @@
       "spd": 50,
       "spe": 50
     },
+    "evos": ["Bewear"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3347,6 +3368,7 @@
       "spd": 38,
       "spe": 32
     },
+    "evos": ["Steenee"],
     "flags": [],
     "learnset": {
       "acupressure": ["E"],
@@ -3425,6 +3447,7 @@
       "spe": 62
     },
     "prevo": "Bounsweet",
+    "evos": ["Tsareena"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {
@@ -3897,6 +3920,7 @@
       "spd": 30,
       "spe": 80
     },
+    "evos": ["Golisopod"],
     "flags": [],
     "learnset": {
       "aquajet": ["E"],
@@ -4057,6 +4081,7 @@
       "spd": 45,
       "spe": 15
     },
+    "evos": ["Palossand"],
     "flags": ["NoTelekinesis"],
     "learnset": {
       "absorb": ["L1"],
@@ -4293,6 +4318,7 @@
       "spd": 95,
       "spe": 59
     },
+    "evos": ["Silvally"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["L20"],
@@ -4352,7 +4378,6 @@
   "silvally": {
     "name": "Silvally",
     "base_species": "Silvally",
-    "base_forme": "Normal",
     "class": "Synthetic",
     "color": "Gray",
     "primary_type": "Normal",
@@ -4377,6 +4402,7 @@
     },
     "prevo": "Type: Null",
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
+    "base_forme": "Normal",
     "formes": [
       "Silvally-Fighting",
       "Silvally-Flying",
@@ -6369,7 +6395,6 @@
   "minior": {
     "name": "Minior",
     "base_species": "Minior",
-    "base_forme": "Red-Meteor",
     "class": "Meteor",
     "color": "Brown",
     "primary_type": "Rock",
@@ -6393,6 +6418,7 @@
       "spd": 100,
       "spe": 60
     },
+    "base_forme": "Red-Meteor",
     "formes": [
       "Minior-Orange-Meteor",
       "Minior-Yellow-Meteor",
@@ -6754,7 +6780,6 @@
   "mimikyu": {
     "name": "Mimikyu",
     "base_species": "Mimikyu",
-    "base_forme": "Disguised",
     "class": "Disguise",
     "color": "Yellow",
     "primary_type": "Ghost",
@@ -6778,6 +6803,7 @@
       "spd": 105,
       "spe": 96
     },
+    "base_forme": "Disguised",
     "formes": [
       "Mimikyu-Busted",
       "Mimikyu-Totem-Disguised",
@@ -7185,6 +7211,7 @@
       "spd": 45,
       "spe": 45
     },
+    "evos": ["Hakamo-o"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -7274,6 +7301,7 @@
       "spe": 65
     },
     "prevo": "Jangmo-o",
+    "evos": ["Kommo-o"],
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
     "flags": [],
     "learnset": {
@@ -7861,6 +7889,7 @@
       "spd": 31,
       "spe": 37
     },
+    "evos": ["Cosmoem"],
     "flags": ["Restricted Legendary"],
     "learnset": { "splash": ["L1"], "teleport": ["L23"] }
   },
@@ -7890,6 +7919,7 @@
       "spe": 37
     },
     "prevo": "Cosmog",
+    "evos": ["Solgaleo", "Lunala"],
     "evolution_data": { "method": "L", "condition": "", "level": 43 },
     "flags": ["Restricted Legendary"],
     "learnset": { "cosmicpower": ["L1"], "teleport": ["L1"] }
@@ -9025,6 +9055,7 @@
       "spd": 67,
       "spe": 73
     },
+    "evos": ["Naganadel"],
     "flags": ["Sub-Legendary", "Ultra Beast"],
     "learnset": {
       "acid": ["L1"],

@@ -201,7 +201,11 @@ mod items {
     mod gen5 {
         mod air_balloon_test;
         mod cell_battery_test;
+        mod eject_button_test;
+        mod eviolite_test;
         mod gem_test;
+        mod red_card_test;
+        mod ring_target_test;
     }
 
     mod gen7 {

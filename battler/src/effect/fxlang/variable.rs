@@ -578,6 +578,9 @@ where
                                     None => ValueRef::Undefined,
                                 }
                             }
+                            "ejecting" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.switch_state.ejecting)
+                            }
                             "exited" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.exited.is_some())
                             }
@@ -711,6 +714,16 @@ where
                             "newly_switched" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.newly_switched)
                             }
+                            "not_fully_evolved" => ValueRef::Boolean(
+                                context
+                                    .battle_context()
+                                    .battle()
+                                    .dex
+                                    .species
+                                    .get_by_id(&context.mon(mon_handle)?.base_species)?
+                                    .data
+                                    .not_fully_evolved(),
+                            ),
                             "player" => ValueRef::Player(context.mon(mon_handle)?.player),
                             "position" => {
                                 match Mon::position_on_side(&context.mon_context(mon_handle)?) {

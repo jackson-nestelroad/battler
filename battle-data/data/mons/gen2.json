@@ -25,6 +25,7 @@
       "spd": 65,
       "spe": 45
     },
+    "evos": ["Bayleef"],
     "flags": [],
     "learnset": {
       "ancientpower": ["E", "M", "T"],
@@ -123,6 +124,7 @@
       "spe": 60
     },
     "prevo": "Chikorita",
+    "evos": ["Meganium"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {
@@ -317,6 +319,7 @@
       "spd": 50,
       "spe": 65
     },
+    "evos": ["Quilava"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -415,6 +418,7 @@
       "spe": 80
     },
     "prevo": "Cyndaquil",
+    "evos": ["Typhlosion", "Typhlosion-Hisui"],
     "evolution_data": { "method": "L", "condition": "", "level": 14 },
     "flags": [],
     "learnset": {
@@ -628,6 +632,7 @@
       "spd": 48,
       "spe": 43
     },
+    "evos": ["Croconaw"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -747,6 +752,7 @@
       "spe": 58
     },
     "prevo": "Totodile",
+    "evos": ["Feraligatr"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {
@@ -991,6 +997,7 @@
       "spd": 45,
       "spe": 20
     },
+    "evos": ["Furret"],
     "flags": [],
     "learnset": {
       "amnesia": ["L36"],
@@ -1233,6 +1240,7 @@
       "spd": 56,
       "spe": 50
     },
+    "evos": ["Noctowl"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -1444,6 +1452,7 @@
       "spd": 80,
       "spe": 55
     },
+    "evos": ["Ledian"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -1654,6 +1663,7 @@
       "spd": 40,
       "spe": 30
     },
+    "evos": ["Ariados"],
     "flags": [],
     "learnset": {
       "absorb": ["L5"],
@@ -1959,6 +1969,7 @@
       "spd": 56,
       "spe": 67
     },
+    "evos": ["Lanturn"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -2160,6 +2171,7 @@
       "spd": 35,
       "spe": 60
     },
+    "evos": ["Pikachu"],
     "cosmetic_formes": ["Pichu-Spiky-Eared"],
     "flags": [],
     "learnset": {
@@ -2266,6 +2278,7 @@
       "spd": 55,
       "spe": 15
     },
+    "evos": ["Clefairy"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -2392,6 +2405,7 @@
       "spd": 20,
       "spe": 15
     },
+    "evos": ["Jigglypuff"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -2506,6 +2520,7 @@
       "spd": 65,
       "spe": 20
     },
+    "evos": ["Togetic"],
     "flags": [],
     "learnset": {
       "afteryou": ["L53"],
@@ -2631,6 +2646,7 @@
       "spe": 40
     },
     "prevo": "Togepi",
+    "evos": ["Togekiss"],
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
     "flags": [],
     "learnset": {
@@ -2765,6 +2781,7 @@
       "spd": 45,
       "spe": 70
     },
+    "evos": ["Xatu"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3001,6 +3018,7 @@
       "spd": 45,
       "spe": 35
     },
+    "evos": ["Flaaffy"],
     "flags": [],
     "learnset": {
       "afteryou": ["E", "T"],
@@ -3095,6 +3113,7 @@
       "spe": 45
     },
     "prevo": "Mareep",
+    "evos": ["Ampharos"],
     "evolution_data": { "method": "L", "condition": "", "level": 15 },
     "flags": [],
     "learnset": {
@@ -3404,6 +3423,7 @@
       "spe": 40
     },
     "prevo": "Azurill",
+    "evos": ["Azumarill"],
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
     "flags": [],
     "learnset": {
@@ -3846,6 +3866,7 @@
       "spd": 55,
       "spe": 50
     },
+    "evos": ["Skiploom"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -3946,6 +3967,7 @@
       "spe": 80
     },
     "prevo": "Hoppip",
+    "evos": ["Jumpluff"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {
@@ -4130,6 +4152,7 @@
       "spd": 55,
       "spe": 85
     },
+    "evos": ["Ambipom"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -4263,6 +4286,7 @@
       "spd": 30,
       "spe": 30
     },
+    "evos": ["Sunflora"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -4443,6 +4467,7 @@
       "spd": 45,
       "spe": 95
     },
+    "evos": ["Yanmega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -4537,6 +4562,7 @@
       "spd": 25,
       "spe": 15
     },
+    "evos": ["Quagsire"],
     "formes": ["Wooper-Paldea"],
     "flags": [],
     "learnset": {
@@ -4986,6 +5012,7 @@
       "spd": 42,
       "spe": 91
     },
+    "evos": ["Honchkrow"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5239,6 +5266,7 @@
       "spd": 85,
       "spe": 85
     },
+    "evos": ["Mismagius"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5331,7 +5359,6 @@
   "unown": {
     "name": "Unown",
     "base_species": "Unown",
-    "base_forme": "A",
     "class": "Symbol",
     "color": "Black",
     "primary_type": "Psychic",
@@ -5354,6 +5381,7 @@
       "spd": 48,
       "spe": 48
     },
+    "base_forme": "A",
     "cosmetic_formes": [
       "Unown-B",
       "Unown-C",
@@ -5449,6 +5477,7 @@
       "spd": 65,
       "spe": 85
     },
+    "evos": ["Farigiraf"],
     "flags": [],
     "learnset": {
       "agility": ["L23"],
@@ -5577,6 +5606,7 @@
       "spd": 35,
       "spe": 15
     },
+    "evos": ["Forretress"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -5781,6 +5811,7 @@
       "spd": 65,
       "spe": 45
     },
+    "evos": ["Dudunsparce", "Dudunsparce-Three-Segment"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -5902,6 +5933,7 @@
       "spd": 65,
       "spe": 85
     },
+    "evos": ["Gliscor"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L22"],
@@ -6142,6 +6174,7 @@
       "spd": 40,
       "spe": 30
     },
+    "evos": ["Granbull"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -6850,6 +6883,7 @@
       "spd": 75,
       "spe": 115
     },
+    "evos": ["Weavile"],
     "formes": ["Sneasel-Hisui"],
     "flags": [],
     "learnset": {
@@ -6980,6 +7014,7 @@
       "spd": 50,
       "spe": 40
     },
+    "evos": ["Ursaring"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -7105,6 +7140,7 @@
       "spe": 55
     },
     "prevo": "Teddiursa",
+    "evos": ["Ursaluna"],
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
     "flags": [],
     "learnset": {
@@ -7231,6 +7267,7 @@
       "spd": 40,
       "spe": 20
     },
+    "evos": ["Magcargo"],
     "flags": [],
     "learnset": {
       "acidarmor": ["E", "M"],
@@ -7432,6 +7469,7 @@
       "spd": 30,
       "spe": 50
     },
+    "evos": ["Piloswine"],
     "flags": [],
     "learnset": {
       "amnesia": ["L48"],
@@ -7529,6 +7567,7 @@
       "spe": 50
     },
     "prevo": "Swinub",
+    "evos": ["Mamoswine"],
     "evolution_data": { "method": "L", "condition": "", "level": 33 },
     "flags": [],
     "learnset": {
@@ -7746,6 +7785,7 @@
       "spd": 35,
       "spe": 65
     },
+    "evos": ["Octillery"],
     "flags": [],
     "learnset": {
       "acidspray": ["E"],
@@ -8276,6 +8316,7 @@
       "spd": 50,
       "spe": 65
     },
+    "evos": ["Houndoom"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -8595,6 +8636,7 @@
       "spd": 40,
       "spe": 40
     },
+    "evos": ["Donphan"],
     "flags": [],
     "learnset": {
       "ancientpower": ["E", "M", "T"],
@@ -8793,6 +8835,7 @@
       "spe": 60
     },
     "prevo": "Porygon",
+    "evos": ["Porygon-Z"],
     "evolution_data": {
       "method": "T",
       "condition": "",
@@ -8898,6 +8941,7 @@
       "spd": 65,
       "spe": 85
     },
+    "evos": ["Wyrdeer"],
     "flags": [],
     "learnset": {
       "astonish": ["L7"],
@@ -9044,6 +9088,7 @@
       "spd": 35,
       "spe": 35
     },
+    "evos": ["Hitmonlee", "Hitmonchan", "Hitmontop"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -9238,6 +9283,7 @@
       "spd": 65,
       "spe": 65
     },
+    "evos": ["Jynx"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -9356,6 +9402,7 @@
       "spd": 55,
       "spe": 95
     },
+    "evos": ["Electabuzz"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -9460,6 +9507,7 @@
       "spd": 55,
       "spe": 83
     },
+    "evos": ["Magmar"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -10131,6 +10179,7 @@
       "spd": 50,
       "spe": 41
     },
+    "evos": ["Pupitar"],
     "flags": [],
     "learnset": {
       "ancientpower": ["E", "M", "T"],
@@ -10231,6 +10280,7 @@
       "spe": 51
     },
     "prevo": "Larvitar",
+    "evos": ["Tyranitar"],
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
     "flags": [],
     "learnset": {
@@ -11079,6 +11129,7 @@
       "spd": 100,
       "spe": 30
     },
+    "evos": ["Cursola"],
     "flags": [],
     "learnset": {}
   },
@@ -11141,6 +11192,7 @@
       "spd": 55,
       "spe": 85
     },
+    "evos": ["Overqwil"],
     "flags": [],
     "learnset": {}
   },
@@ -11172,6 +11224,7 @@
       "spd": 75,
       "spe": 115
     },
+    "evos": ["Sneasler"],
     "flags": [],
     "learnset": {}
   },
@@ -11203,6 +11256,7 @@
       "spd": 25,
       "spe": 15
     },
+    "evos": ["Clodsire"],
     "flags": [],
     "learnset": {}
   }

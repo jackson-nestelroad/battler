@@ -27,6 +27,7 @@ use battler_data::{
     MoveTarget,
     SecondaryEffectData,
     SpeciesFlag,
+    SwitchType,
     TypeEffectiveness,
 };
 use battler_prng::rand_util;
@@ -48,6 +49,7 @@ use crate::{
         Mon,
         MonContext,
         MonHandle,
+        MonSwitchState,
         MoveAction,
         MoveOutcomeOnTarget,
         MoveSlot,
@@ -179,6 +181,7 @@ pub fn run_function(
         "faint" => faint(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
         "force_fully_heal" => force_fully_heal(context).map(|()| None),
+        "force_switch" => force_switch(context).map(|val| Some(val)),
         "forme_change" => forme_change(context).map(|val| Some(val)),
         "get_all_moves" => get_all_moves(context).map(|val| Some(val)),
         "get_ability" => get_ability(context),
@@ -304,11 +307,12 @@ pub fn run_function(
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_illusion" => set_illusion(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
-        "set_upgraded_to_max_move" => set_upgraded_to_max_move(context).map(|_| None),
+        "set_needs_switch" => set_needs_switch(context).map(|_| None),
         "set_pp" => set_pp(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_terrain" => set_terrain(context).map(|val| Some(val)),
+        "set_upgraded_to_max_move" => set_upgraded_to_max_move(context).map(|_| None),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
@@ -4162,4 +4166,29 @@ fn swap_position(mut context: FunctionContext) -> Result<Value> {
         false,
     )
     .map(Value::Boolean)
+}
+
+fn set_needs_switch(mut context: FunctionContext) -> Result<()> {
+    let target_handle = context.target_handle_positional()?;
+    let ejecting = context.has_flag("ejecting");
+    let value = context
+        .pop_front()
+        .wrap_expectation("missing value")?
+        .boolean()
+        .wrap_error_with_message("invalid value")?;
+    let mut context = context.mon_context(target_handle)?;
+    context.mon_mut().switch_state = MonSwitchState::default();
+    context.mon_mut().switch_state.needs_switch = value.then(|| SwitchType::Normal);
+    if ejecting {
+        context.mon_mut().switch_state.ejecting = ejecting;
+    }
+    Ok(())
+}
+
+fn force_switch(mut context: FunctionContext) -> Result<Value> {
+    let target_handle = context.target_handle_positional()?;
+    core_battle_actions::force_switch(
+        &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+    )
+    .map(|val| Value::Boolean(val))
 }

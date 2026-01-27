@@ -449,6 +449,8 @@ pub struct MonSwitchState {
     pub force_switch: Option<SwitchType>,
     /// The `BeforeSwitchOut` event already ran so it should be skipped.
     pub skip_before_switch_out: bool,
+    /// The Mon is ejecting, so other Mons should not eject.
+    pub ejecting: bool,
 }
 
 /// Volatile state for a Mon.

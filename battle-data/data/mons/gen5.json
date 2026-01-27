@@ -134,6 +134,7 @@
       "spd": 55,
       "spe": 63
     },
+    "evos": ["Servine"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -232,6 +233,7 @@
       "spe": 83
     },
     "prevo": "Snivy",
+    "evos": ["Serperior"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -418,6 +420,7 @@
       "spd": 45,
       "spe": 45
     },
+    "evos": ["Pignite"],
     "flags": [],
     "learnset": {
       "assurance": ["L31"],
@@ -513,6 +516,7 @@
       "spe": 55
     },
     "prevo": "Tepig",
+    "evos": ["Emboar"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -725,6 +729,7 @@
       "spd": 45,
       "spe": 45
     },
+    "evos": ["Dewott"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -819,6 +824,7 @@
       "spe": 60
     },
     "prevo": "Oshawott",
+    "evos": ["Samurott", "Samurott-Hisui"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -1003,6 +1009,7 @@
       "spd": 39,
       "spe": 42
     },
+    "evos": ["Watchog"],
     "flags": [],
     "learnset": {
       "afteryou": ["L23"],
@@ -1205,6 +1212,7 @@
       "spd": 45,
       "spe": 55
     },
+    "evos": ["Herdier"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -1295,6 +1303,7 @@
       "spe": 60
     },
     "prevo": "Lillipup",
+    "evos": ["Stoutland"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {
@@ -1464,6 +1473,7 @@
       "spd": 37,
       "spe": 66
     },
+    "evos": ["Liepard"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -1659,6 +1669,7 @@
       "spd": 48,
       "spe": 64
     },
+    "evos": ["Simisage"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L31"],
@@ -1861,6 +1872,7 @@
       "spd": 48,
       "spe": 64
     },
+    "evos": ["Simisear"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L31"],
@@ -2065,6 +2077,7 @@
       "spd": 48,
       "spe": 64
     },
+    "evos": ["Simipour"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L31"],
@@ -2272,6 +2285,7 @@
       "spd": 55,
       "spe": 24
     },
+    "evos": ["Musharna"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -2466,6 +2480,7 @@
       "spd": 30,
       "spe": 43
     },
+    "evos": ["Tranquill"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -2545,6 +2560,7 @@
       "spe": 65
     },
     "prevo": "Pidove",
+    "evos": ["Unfezant"],
     "evolution_data": { "method": "L", "condition": "", "level": 21 },
     "flags": [],
     "learnset": {
@@ -2694,6 +2710,7 @@
       "spd": 32,
       "spe": 76
     },
+    "evos": ["Zebstrika"],
     "flags": [],
     "learnset": {
       "agility": ["L36"],
@@ -2854,6 +2871,7 @@
       "spd": 25,
       "spe": 15
     },
+    "evos": ["Boldore"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -2932,6 +2950,7 @@
       "spe": 20
     },
     "prevo": "Roggenrola",
+    "evos": ["Gigalith"],
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
     "flags": [],
     "learnset": {
@@ -3087,6 +3106,7 @@
       "spd": 43,
       "spe": 72
     },
+    "evos": ["Swoobat"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -3305,6 +3325,7 @@
       "spd": 45,
       "spe": 68
     },
+    "evos": ["Excadrill"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3607,6 +3628,7 @@
       "spd": 35,
       "spe": 35
     },
+    "evos": ["Gurdurr"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3706,6 +3728,7 @@
       "spe": 40
     },
     "prevo": "Timburr",
+    "evos": ["Conkeldurr"],
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
     "flags": [],
     "learnset": {
@@ -3890,6 +3913,7 @@
       "spd": 40,
       "spe": 64
     },
+    "evos": ["Palpitoad"],
     "flags": [],
     "learnset": {
       "afteryou": ["E", "T"],
@@ -3968,6 +3992,7 @@
       "spe": 69
     },
     "prevo": "Tympole",
+    "evos": ["Seismitoad"],
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
     "flags": [],
     "learnset": {
@@ -4335,6 +4360,7 @@
       "spd": 60,
       "spe": 42
     },
+    "evos": ["Swadloon"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -4422,6 +4448,7 @@
       "spe": 42
     },
     "prevo": "Sewaddle",
+    "evos": ["Leavanny"],
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
     "flags": [],
     "learnset": {
@@ -4592,6 +4619,7 @@
       "spd": 39,
       "spe": 57
     },
+    "evos": ["Whirlipede"],
     "flags": [],
     "learnset": {
       "agility": ["L29"],
@@ -4670,6 +4698,7 @@
       "spe": 47
     },
     "prevo": "Venipede",
+    "evos": ["Scolipede"],
     "evolution_data": { "method": "L", "condition": "", "level": 22 },
     "flags": [],
     "learnset": {
@@ -4837,6 +4866,7 @@
       "spd": 50,
       "spe": 66
     },
+    "evos": ["Whimsicott"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -5011,6 +5041,7 @@
       "spd": 50,
       "spe": 30
     },
+    "evos": ["Lilligant", "Lilligant-Hisui"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -5154,7 +5185,6 @@
   "basculin": {
     "name": "Basculin",
     "base_species": "Basculin",
-    "base_forme": "Red-Striped",
     "class": "Hostile",
     "color": "Green",
     "primary_type": "Water",
@@ -5178,6 +5208,7 @@
       "spd": 55,
       "spe": 98
     },
+    "base_forme": "Red-Striped",
     "formes": ["Basculin-Blue-Striped", "Basculin-White-Striped"],
     "flags": [],
     "learnset": {
@@ -5268,6 +5299,7 @@
       "spd": 35,
       "spe": 65
     },
+    "evos": ["Krokorok"],
     "flags": [],
     "learnset": {
       "aquatail": ["T"],
@@ -5365,6 +5397,7 @@
       "spe": 74
     },
     "prevo": "Sandile",
+    "evos": ["Krookodile"],
     "evolution_data": { "method": "L", "condition": "", "level": 29 },
     "flags": [],
     "learnset": {
@@ -5575,6 +5608,7 @@
       "spd": 45,
       "spe": 50
     },
+    "evos": ["Darmanitan"],
     "formes": ["Darumaka-Galar"],
     "flags": [],
     "learnset": {
@@ -5646,7 +5680,6 @@
   "darmanitan": {
     "name": "Darmanitan",
     "base_species": "Darmanitan",
-    "base_forme": "Standard",
     "class": "Blazing",
     "color": "Red",
     "primary_type": "Fire",
@@ -5672,6 +5705,7 @@
     },
     "prevo": "Darumaka",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "base_forme": "Standard",
     "formes": ["Darmanitan-Zen", "Darmanitan-Galar", "Darmanitan-Galar-Zen"],
     "flags": [],
     "learnset": {
@@ -5860,6 +5894,7 @@
       "spd": 35,
       "spe": 55
     },
+    "evos": ["Crustle"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -6036,6 +6071,7 @@
       "spd": 70,
       "spe": 48
     },
+    "evos": ["Scrafty"],
     "flags": [],
     "learnset": {
       "acidspray": ["E"],
@@ -6358,6 +6394,7 @@
       "spd": 65,
       "spe": 30
     },
+    "evos": ["Cofagrigus"],
     "formes": ["Yamask-Galar"],
     "flags": [],
     "learnset": {
@@ -6554,6 +6591,7 @@
       "spd": 45,
       "spe": 22
     },
+    "evos": ["Carracosta"],
     "flags": [],
     "learnset": {
       "ancientpower": ["L18"],
@@ -6745,6 +6783,7 @@
       "spd": 45,
       "spe": 70
     },
+    "evos": ["Archeops"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L28"],
@@ -6947,6 +6986,7 @@
       "spd": 62,
       "spe": 65
     },
+    "evos": ["Garbodor"],
     "flags": [],
     "learnset": {
       "acidspray": ["L12"],
@@ -7118,6 +7158,7 @@
       "spd": 40,
       "spe": 65
     },
+    "evos": ["Zoroark"],
     "formes": ["Zorua-Hisui"],
     "flags": [],
     "learnset": {
@@ -7318,6 +7359,7 @@
       "spd": 40,
       "spe": 75
     },
+    "evos": ["Cinccino"],
     "flags": [],
     "learnset": {
       "afteryou": ["L49"],
@@ -7498,6 +7540,7 @@
       "spd": 65,
       "spe": 45
     },
+    "evos": ["Gothorita"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -7606,6 +7649,7 @@
       "spe": 55
     },
     "prevo": "Gothita",
+    "evos": ["Gothitelle"],
     "evolution_data": { "method": "L", "condition": "", "level": 32 },
     "flags": [],
     "learnset": {
@@ -7819,6 +7863,7 @@
       "spd": 50,
       "spe": 20
     },
+    "evos": ["Duosion"],
     "flags": [],
     "learnset": {
       "acidarmor": ["E"],
@@ -7916,6 +7961,7 @@
       "spe": 30
     },
     "prevo": "Solosis",
+    "evos": ["Reuniclus"],
     "evolution_data": { "method": "L", "condition": "", "level": 32 },
     "flags": [],
     "learnset": {
@@ -8119,6 +8165,7 @@
       "spd": 50,
       "spe": 55
     },
+    "evos": ["Swanna"],
     "flags": [],
     "learnset": {
       "aerialace": ["L15"],
@@ -8279,6 +8326,7 @@
       "spd": 60,
       "spe": 44
     },
+    "evos": ["Vanillish"],
     "flags": [],
     "learnset": {
       "acidarmor": ["L31"],
@@ -8357,6 +8405,7 @@
       "spe": 59
     },
     "prevo": "Vanillite",
+    "evos": ["Vanilluxe"],
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
     "flags": [],
     "learnset": {
@@ -8485,7 +8534,6 @@
   "deerling": {
     "name": "Deerling",
     "base_species": "Deerling",
-    "base_forme": "Spring",
     "class": "Season",
     "color": "Pink",
     "primary_type": "Normal",
@@ -8510,6 +8558,8 @@
       "spd": 50,
       "spe": 75
     },
+    "evos": ["Sawsbuck"],
+    "base_forme": "Spring",
     "cosmetic_formes": [
       "Deerling-Summer",
       "Deerling-Autumn",
@@ -8578,7 +8628,6 @@
   "sawsbuck": {
     "name": "Sawsbuck",
     "base_species": "Sawsbuck",
-    "base_forme": "Spring",
     "class": "Season",
     "color": "Brown",
     "primary_type": "Normal",
@@ -8605,6 +8654,7 @@
     },
     "prevo": "Deerling",
     "evolution_data": { "method": "L", "condition": "", "level": 34 },
+    "base_forme": "Spring",
     "cosmetic_formes": [
       "Sawsbuck-Summer",
       "Sawsbuck-Autumn",
@@ -8788,6 +8838,7 @@
       "spd": 45,
       "spe": 60
     },
+    "evos": ["Escavalier"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -8873,7 +8924,7 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "trade_species_id": "Shelmet"
+      "trade_for": "Shelmet"
     },
     "flags": [],
     "learnset": {
@@ -8957,6 +9008,7 @@
       "spd": 55,
       "spe": 15
     },
+    "evos": ["Amoonguss"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -9118,6 +9170,7 @@
       "spd": 85,
       "spe": 40
     },
+    "evos": ["Jellicent"],
     "flags": [],
     "learnset": {
       "absorb": ["L5"],
@@ -9394,6 +9447,7 @@
       "spd": 50,
       "spe": 65
     },
+    "evos": ["Galvantula"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -9573,6 +9627,7 @@
       "spd": 86,
       "spe": 10
     },
+    "evos": ["Ferrothorn"],
     "flags": [],
     "learnset": {
       "acidspray": ["E"],
@@ -9753,6 +9808,7 @@
       "spd": 60,
       "spe": 30
     },
+    "evos": ["Klang"],
     "flags": [],
     "learnset": {
       "autotomize": ["L31"],
@@ -9831,6 +9887,7 @@
       "spe": 50
     },
     "prevo": "Klink",
+    "evos": ["Klinklang"],
     "evolution_data": { "method": "L", "condition": "", "level": 38 },
     "flags": [],
     "learnset": {
@@ -9994,6 +10051,7 @@
       "spd": 40,
       "spe": 60
     },
+    "evos": ["Eelektrik"],
     "flags": [],
     "learnset": {
       "chargebeam": ["L1"],
@@ -10029,6 +10087,7 @@
       "spe": 40
     },
     "prevo": "Tynamo",
+    "evos": ["Eelektross"],
     "evolution_data": { "method": "L", "condition": "", "level": 39 },
     "flags": [],
     "learnset": {
@@ -10215,6 +10274,7 @@
       "spd": 55,
       "spe": 30
     },
+    "evos": ["Beheeyem"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -10423,6 +10483,7 @@
       "spd": 55,
       "spe": 20
     },
+    "evos": ["Lampent"],
     "flags": [],
     "learnset": {
       "acid": ["E"],
@@ -10520,6 +10581,7 @@
       "spe": 55
     },
     "prevo": "Litwick",
+    "evos": ["Chandelure"],
     "evolution_data": { "method": "L", "condition": "", "level": 41 },
     "flags": [],
     "learnset": {
@@ -10698,6 +10760,7 @@
       "spd": 40,
       "spe": 57
     },
+    "evos": ["Fraxure"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -10789,6 +10852,7 @@
       "spe": 67
     },
     "prevo": "Axew",
+    "evos": ["Haxorus"],
     "evolution_data": { "method": "L", "condition": "", "level": 38 },
     "flags": [],
     "learnset": {
@@ -10976,6 +11040,7 @@
       "spd": 40,
       "spe": 40
     },
+    "evos": ["Beartic"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -11246,6 +11311,7 @@
       "spd": 65,
       "spe": 25
     },
+    "evos": ["Accelgor"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -11330,7 +11396,7 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "trade_species_id": "Karrablast"
+      "trade_for": "Karrablast"
     },
     "flags": [],
     "learnset": {
@@ -11510,6 +11576,7 @@
       "spd": 50,
       "spe": 65
     },
+    "evos": ["Mienshao"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -11825,6 +11892,7 @@
       "spd": 50,
       "spe": 35
     },
+    "evos": ["Golurk"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -12035,6 +12103,7 @@
       "spd": 40,
       "spe": 60
     },
+    "evos": ["Bisharp"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -12140,6 +12209,7 @@
       "spe": 70
     },
     "prevo": "Pawniard",
+    "evos": ["Kingambit"],
     "evolution_data": { "method": "L", "condition": "", "level": 52 },
     "flags": [],
     "learnset": {
@@ -12340,6 +12410,7 @@
       "spd": 50,
       "spe": 60
     },
+    "evos": ["Braviary", "Braviary-Hisui"],
     "flags": [],
     "learnset": {
       "aerialace": ["L23"],
@@ -12510,6 +12581,7 @@
       "spd": 65,
       "spe": 60
     },
+    "evos": ["Mandibuzz"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -12886,6 +12958,7 @@
       "spd": 50,
       "spe": 38
     },
+    "evos": ["Zweilous"],
     "flags": [],
     "learnset": {
       "aquatail": ["T"],
@@ -12978,6 +13051,7 @@
       "spe": 58
     },
     "prevo": "Deino",
+    "evos": ["Hydreigon"],
     "evolution_data": { "method": "L", "condition": "", "level": 50 },
     "flags": [],
     "learnset": {
@@ -13174,6 +13248,7 @@
       "spd": 55,
       "spe": 60
     },
+    "evos": ["Volcarona"],
     "flags": [],
     "learnset": {
       "absorb": ["L10"],
@@ -13596,7 +13671,6 @@
   "tornadus": {
     "name": "Tornadus",
     "base_species": "Tornadus",
-    "base_forme": "Incarnate",
     "class": "Cyclone",
     "color": "Green",
     "primary_type": "Flying",
@@ -13620,6 +13694,7 @@
       "spd": 80,
       "spe": 111
     },
+    "base_forme": "Incarnate",
     "formes": ["Tornadus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -13693,7 +13768,6 @@
   "thundurus": {
     "name": "Thundurus",
     "base_species": "Thundurus",
-    "base_forme": "Incarnate",
     "class": "Bolt Strike",
     "color": "Blue",
     "primary_type": "Electric",
@@ -13718,6 +13792,7 @@
       "spd": 80,
       "spe": 111
     },
+    "base_forme": "Incarnate",
     "formes": ["Thundurus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -13998,7 +14073,6 @@
   "landorus": {
     "name": "Landorus",
     "base_species": "Landorus",
-    "base_forme": "Incarnate",
     "class": "Abundance",
     "color": "Brown",
     "primary_type": "Ground",
@@ -14023,6 +14097,7 @@
       "spd": 80,
       "spe": 101
     },
+    "base_forme": "Incarnate",
     "formes": ["Landorus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -14188,7 +14263,6 @@
   "keldeo": {
     "name": "Keldeo",
     "base_species": "Keldeo",
-    "base_forme": "Ordinary",
     "class": "Colt",
     "color": "Yellow",
     "primary_type": "Water",
@@ -14212,6 +14286,7 @@
       "spd": 90,
       "spe": 108
     },
+    "base_forme": "Ordinary",
     "formes": ["Keldeo-Resolute"],
     "flags": ["Mythical"],
     "learnset": {
@@ -14280,7 +14355,6 @@
   "meloetta": {
     "name": "Meloetta",
     "base_species": "Meloetta",
-    "base_forme": "Aria",
     "class": "Melody",
     "color": "White",
     "primary_type": "Normal",
@@ -14304,6 +14378,7 @@
       "spd": 128,
       "spe": 90
     },
+    "base_forme": "Aria",
     "formes": ["Meloetta-Pirouette"],
     "flags": ["Mythical"],
     "learnset": {
@@ -14983,6 +15058,7 @@
       "spd": 45,
       "spe": 50
     },
+    "evos": ["Darmanitan-Galar"],
     "flags": [],
     "learnset": {}
   },
@@ -15081,6 +15157,7 @@
       "spd": 65,
       "spe": 30
     },
+    "evos": ["Runerigus"],
     "flags": [],
     "learnset": {}
   },
@@ -15236,6 +15313,7 @@
       "spd": 40,
       "spe": 70
     },
+    "evos": ["Zoroark-Hisui"],
     "flags": [],
     "learnset": {}
   },
@@ -15327,6 +15405,7 @@
       "spd": 55,
       "spe": 98
     },
+    "evos": ["Basculegion", "Basculegion-F"],
     "flags": [],
     "learnset": {}
   }
