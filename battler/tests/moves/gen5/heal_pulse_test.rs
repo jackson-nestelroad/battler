@@ -8,10 +8,10 @@ use battler::{
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
-    static_local_data_store,
     LogMatch,
     TestBattleBuilder,
+    assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn team() -> TeamData {
@@ -54,11 +54,7 @@ fn team() -> TeamData {
     .unwrap()
 }
 
-fn make_battle(
-    seed: u64,
-    team_1: TeamData,
-    team_2: TeamData,
-) -> Result<PublicCoreBattle<'static>> {
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(seed)

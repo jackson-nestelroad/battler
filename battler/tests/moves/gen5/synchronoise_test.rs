@@ -7,10 +7,10 @@ use battler::{
     teams::TeamData,
 };
 use battler_test_utils::{
-    assert_logs_since_turn_eq,
-    static_local_data_store,
     LogMatch,
     TestBattleBuilder,
+    assert_logs_since_turn_eq,
+    static_local_data_store,
 };
 
 fn heatmor_team() -> TeamData {
@@ -35,7 +35,10 @@ fn heatmor_team() -> TeamData {
     .unwrap()
 }
 
-fn make_battle(team_1: TeamData, team_2: TeamData) -> anyhow::Result<battler::PublicCoreBattle<'static>> {
+fn make_battle(
+    team_1: TeamData,
+    team_2: TeamData,
+) -> anyhow::Result<battler::PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)

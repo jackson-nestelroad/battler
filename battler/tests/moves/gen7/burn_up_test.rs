@@ -141,7 +141,10 @@ fn burn_up_terastallized_remains_fire_type() {
     let mut battle = make_battle(BattleType::Singles, team(), team()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1,tera"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1,tera"),
+        Ok(())
+    );
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
