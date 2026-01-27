@@ -14064,6 +14064,7 @@
   "deoxys": {
     "name": "Deoxys",
     "base_species": "Deoxys",
+    "base_forme": "Normal",
     "class": "DNA",
     "color": "Red",
     "primary_type": "Psychic",
@@ -14086,7 +14087,6 @@
       "spd": 50,
       "spe": 150
     },
-    "base_forme": "Normal",
     "formes": ["Deoxys-Attack", "Deoxys-Defense", "Deoxys-Speed"],
     "flags": ["Mythical"],
     "learnset": {

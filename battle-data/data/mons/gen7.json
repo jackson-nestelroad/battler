@@ -1637,6 +1637,7 @@
   "oricorio": {
     "name": "Oricorio",
     "base_species": "Oricorio",
+    "base_forme": "Baile",
     "class": "Dancing",
     "color": "Red",
     "primary_type": "Fire",
@@ -1660,7 +1661,6 @@
       "spd": 70,
       "spe": 93
     },
-    "base_forme": "Baile",
     "formes": ["Oricorio-Pom-Pom", "Oricorio-Pau", "Oricorio-Sensu"],
     "flags": [],
     "learnset": {
@@ -1988,6 +1988,7 @@
   "lycanroc": {
     "name": "Lycanroc",
     "base_species": "Lycanroc",
+    "base_forme": "Midday",
     "class": "Wolf",
     "color": "Brown",
     "primary_type": "Rock",
@@ -2018,7 +2019,6 @@
       "level": 25,
       "time_of_day": "day"
     },
-    "base_forme": "Midday",
     "formes": ["Lycanroc-Midnight", "Lycanroc-Dusk"],
     "flags": [],
     "learnset": {
@@ -2078,6 +2078,7 @@
   "wishiwashi": {
     "name": "Wishiwashi",
     "base_species": "Wishiwashi",
+    "base_forme": "Solo",
     "class": "Small Fry",
     "color": "Blue",
     "primary_type": "Water",
@@ -2100,7 +2101,6 @@
       "spd": 25,
       "spe": 40
     },
-    "base_forme": "Solo",
     "formes": ["Wishiwashi-School"],
     "flags": [],
     "learnset": {
@@ -4378,6 +4378,7 @@
   "silvally": {
     "name": "Silvally",
     "base_species": "Silvally",
+    "base_forme": "Normal",
     "class": "Synthetic",
     "color": "Gray",
     "primary_type": "Normal",
@@ -4402,7 +4403,6 @@
     },
     "prevo": "Type: Null",
     "evolution_data": { "method": "L", "condition": "", "friendship": true },
-    "base_forme": "Normal",
     "formes": [
       "Silvally-Fighting",
       "Silvally-Flying",
@@ -6395,6 +6395,7 @@
   "minior": {
     "name": "Minior",
     "base_species": "Minior",
+    "base_forme": "Red-Meteor",
     "class": "Meteor",
     "color": "Brown",
     "primary_type": "Rock",
@@ -6418,7 +6419,6 @@
       "spd": 100,
       "spe": 60
     },
-    "base_forme": "Red-Meteor",
     "formes": [
       "Minior-Orange-Meteor",
       "Minior-Yellow-Meteor",
@@ -6780,6 +6780,7 @@
   "mimikyu": {
     "name": "Mimikyu",
     "base_species": "Mimikyu",
+    "base_forme": "Disguised",
     "class": "Disguise",
     "color": "Yellow",
     "primary_type": "Ghost",
@@ -6803,7 +6804,6 @@
       "spd": 105,
       "spe": 96
     },
-    "base_forme": "Disguised",
     "formes": [
       "Mimikyu-Busted",
       "Mimikyu-Totem-Disguised",

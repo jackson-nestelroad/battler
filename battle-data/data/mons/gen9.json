@@ -314,6 +314,7 @@
   "oinkologne": {
     "name": "Oinkologne",
     "base_species": "Oinkologne",
+    "base_forme": "Male",
     "class": "Hog",
     "color": "Gray",
     "primary_type": "Normal",
@@ -339,7 +340,6 @@
     },
     "prevo": "Lechonk",
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
-    "base_forme": "Male",
     "formes": ["Oinkologne-Female"],
     "flags": [],
     "learnset": {}
@@ -595,6 +595,7 @@
   "maushold": {
     "name": "Maushold",
     "base_species": "Maushold",
+    "base_forme": "Family-Of-Four",
     "class": "Family",
     "color": "White",
     "primary_type": "Normal",
@@ -620,7 +621,6 @@
     },
     "prevo": "Tandemaus",
     "evolution_data": { "method": "C", "condition": "", "level": 25 },
-    "base_forme": "Family-Of-Four",
     "formes": ["Maushold-Family-Of-Three"],
     "flags": [],
     "learnset": {}
@@ -785,6 +785,7 @@
   "squawkabilly": {
     "name": "Squawkabilly",
     "base_species": "Squawkabilly",
+    "base_forme": "Green-Plumage",
     "class": "Parrot",
     "color": "Green",
     "primary_type": "Normal",
@@ -809,7 +810,6 @@
       "spd": 51,
       "spe": 92
     },
-    "base_forme": "Green-Plumage",
     "formes": [
       "Squawkabilly-Blue-Plumage",
       "Squawkabilly-Yellow-Plumage",
@@ -1829,6 +1829,7 @@
   "palafin": {
     "name": "Palafin",
     "base_species": "Palafin",
+    "base_forme": "Zero",
     "class": "Dolphin",
     "color": "Blue",
     "primary_type": "Water",
@@ -1854,7 +1855,6 @@
     },
     "prevo": "Finizen",
     "evolution_data": { "method": "C", "condition": "", "level": 38 },
-    "base_forme": "Zero",
     "formes": ["Palafin-Hero"],
     "flags": [],
     "learnset": {}
@@ -2267,6 +2267,7 @@
   "tatsugiri": {
     "name": "Tatsugiri",
     "base_species": "Tatsugiri",
+    "base_forme": "Curly",
     "class": "Mimicry",
     "color": "Pink",
     "primary_type": "Dragon",
@@ -2291,7 +2292,6 @@
       "spd": 95,
       "spe": 82
     },
-    "base_forme": "Curly",
     "formes": ["Tatsugiri-Droopy", "Tatsugiri-Stretchy"],
     "flags": [],
     "learnset": {}
@@ -2399,6 +2399,7 @@
   "dudunsparce": {
     "name": "Dudunsparce",
     "base_species": "Dudunsparce",
+    "base_forme": "Two-Segment",
     "class": "Land Snake",
     "color": "Yellow",
     "primary_type": "Normal",
@@ -2428,7 +2429,6 @@
       "condition": "",
       "knows_move": "Hyper Drill"
     },
-    "base_forme": "Two-Segment",
     "formes": ["Dudunsparce-Three-Segment"],
     "flags": [],
     "learnset": {}
@@ -2924,6 +2924,7 @@
   "gimmighoul": {
     "name": "Gimmighoul",
     "base_species": "Gimmighoul",
+    "base_forme": "Chest",
     "class": "Coin Chest",
     "color": "Brown",
     "primary_type": "Ghost",
@@ -2948,7 +2949,6 @@
       "spe": 10
     },
     "evos": ["Gholdengo"],
-    "base_forme": "Chest",
     "formes": ["Gimmighoul-Roaming"],
     "flags": [],
     "learnset": {}
@@ -3168,6 +3168,7 @@
   "koraidon": {
     "name": "Koraidon",
     "base_species": "Koraidon",
+    "base_forme": "Apex-Build",
     "class": "Paradox",
     "color": "Red",
     "primary_type": "Fighting",
@@ -3192,7 +3193,6 @@
       "spd": 100,
       "spe": 135
     },
-    "base_forme": "Apex-Build",
     "formes": [
       "Koraidon-Limited-Build",
       "Koraidon-Sprinting-Build",
@@ -3205,6 +3205,7 @@
   "miraidon": {
     "name": "Miraidon",
     "base_species": "Miraidon",
+    "base_forme": "Ultimate-Mode",
     "class": "Paradox",
     "color": "Blue",
     "primary_type": "Electric",
@@ -3229,7 +3230,6 @@
       "spd": 115,
       "spe": 135
     },
-    "base_forme": "Ultimate-Mode",
     "formes": [
       "Miraidon-Low-Power-Mode",
       "Miraidon-Drive-Mode",
@@ -3333,6 +3333,7 @@
   "poltchageist": {
     "name": "Poltchageist",
     "base_species": "Poltchageist",
+    "base_forme": "Counterfeit",
     "class": "",
     "color": "Green",
     "primary_type": "Grass",
@@ -3358,7 +3359,6 @@
       "spe": 50
     },
     "evos": ["Sinistcha"],
-    "base_forme": "Counterfeit",
     "cosmetic_formes": ["Poltchageist-Artisan"],
     "flags": [],
     "learnset": {}
@@ -3366,6 +3366,7 @@
   "sinistcha": {
     "name": "Sinistcha",
     "base_species": "Sinistcha",
+    "base_forme": "Unremarkable",
     "class": "",
     "color": "Green",
     "primary_type": "Grass",
@@ -3390,7 +3391,6 @@
       "spd": 80,
       "spe": 70
     },
-    "base_forme": "Unremarkable",
     "cosmetic_formes": ["Sinistcha-Masterpiece"],
     "flags": [],
     "learnset": {}

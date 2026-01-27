@@ -2439,6 +2439,7 @@
   "burmy": {
     "name": "Burmy",
     "base_species": "Burmy",
+    "base_forme": "Plant",
     "class": "Bagworm",
     "color": "Green",
     "primary_type": "Bug",
@@ -2463,7 +2464,6 @@
       "spe": 36
     },
     "evos": ["Wormadam", "Wormadam-Sandy", "Wormadam-Trash", "Mothim"],
-    "base_forme": "Plant",
     "cosmetic_formes": ["Burmy-Sandy", "Burmy-Trash"],
     "flags": [],
     "learnset": {
@@ -2479,6 +2479,7 @@
   "wormadam": {
     "name": "Wormadam",
     "base_species": "Wormadam",
+    "base_forme": "Plant",
     "class": "Bagworm",
     "color": "Green",
     "primary_type": "Bug",
@@ -2510,7 +2511,6 @@
       "level": 20,
       "gender": "F"
     },
-    "base_forme": "Plant",
     "formes": ["Wormadam-Sandy", "Wormadam-Trash"],
     "flags": [],
     "learnset": {
@@ -2579,6 +2579,7 @@
   "mothim": {
     "name": "Mothim",
     "base_species": "Mothim",
+    "base_forme": "Plant",
     "class": "Moth",
     "color": "Yellow",
     "primary_type": "Bug",
@@ -2610,7 +2611,6 @@
       "level": 20,
       "gender": "M"
     },
-    "base_forme": "Plant",
     "cosmetic_formes": ["Mothim-Sandy", "Mothim-Trash"],
     "flags": [],
     "learnset": {
@@ -3215,6 +3215,7 @@
   "cherrim": {
     "name": "Cherrim",
     "base_species": "Cherrim",
+    "base_forme": "Overcast",
     "class": "Blossom",
     "color": "Purple",
     "primary_type": "Grass",
@@ -3239,7 +3240,6 @@
     },
     "prevo": "Cherubi",
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
-    "base_forme": "Overcast",
     "cosmetic_formes": ["Cherrim-Sunshine"],
     "flags": [],
     "learnset": {
@@ -3295,6 +3295,7 @@
   "shellos": {
     "name": "Shellos",
     "base_species": "Shellos",
+    "base_forme": "West",
     "class": "Sea Slug",
     "color": "Purple",
     "primary_type": "Water",
@@ -3319,7 +3320,6 @@
       "spe": 34
     },
     "evos": ["Gastrodon"],
-    "base_forme": "West",
     "cosmetic_formes": ["Shellos-East"],
     "flags": [],
     "learnset": {
@@ -3386,6 +3386,7 @@
   "gastrodon": {
     "name": "Gastrodon",
     "base_species": "Gastrodon",
+    "base_forme": "West",
     "class": "Sea Slug",
     "color": "Purple",
     "primary_type": "Water",
@@ -3412,7 +3413,6 @@
     },
     "prevo": "Shellos",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
-    "base_forme": "West",
     "cosmetic_formes": ["Gastrodon-East"],
     "flags": [],
     "learnset": {
@@ -10195,6 +10195,7 @@
   "giratina": {
     "name": "Giratina",
     "base_species": "Giratina",
+    "base_forme": "Altered",
     "class": "Renegade",
     "color": "Black",
     "primary_type": "Ghost",
@@ -10219,7 +10220,6 @@
       "spd": 120,
       "spe": 90
     },
-    "base_forme": "Altered",
     "formes": ["Giratina-Origin"],
     "flags": ["Restricted Legendary"],
     "effect": {
@@ -10709,6 +10709,7 @@
   "shaymin": {
     "name": "Shaymin",
     "base_species": "Shaymin",
+    "base_forme": "Land",
     "class": "Gratitude",
     "color": "Green",
     "primary_type": "Grass",
@@ -10731,7 +10732,6 @@
       "spd": 100,
       "spe": 100
     },
-    "base_forme": "Land",
     "formes": ["Shaymin-Sky"],
     "flags": ["Mythical"],
     "learnset": {
@@ -10798,6 +10798,7 @@
   "arceus": {
     "name": "Arceus",
     "base_species": "Arceus",
+    "base_forme": "Normal",
     "class": "Alpha",
     "color": "White",
     "primary_type": "Normal",
@@ -10820,7 +10821,6 @@
       "spd": 120,
       "spe": 120
     },
-    "base_forme": "Normal",
     "formes": [
       "Arceus-Bug",
       "Arceus-Dark",

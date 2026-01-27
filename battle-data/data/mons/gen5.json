@@ -5185,6 +5185,7 @@
   "basculin": {
     "name": "Basculin",
     "base_species": "Basculin",
+    "base_forme": "Red-Striped",
     "class": "Hostile",
     "color": "Green",
     "primary_type": "Water",
@@ -5208,7 +5209,6 @@
       "spd": 55,
       "spe": 98
     },
-    "base_forme": "Red-Striped",
     "formes": ["Basculin-Blue-Striped", "Basculin-White-Striped"],
     "flags": [],
     "learnset": {
@@ -5680,6 +5680,7 @@
   "darmanitan": {
     "name": "Darmanitan",
     "base_species": "Darmanitan",
+    "base_forme": "Standard",
     "class": "Blazing",
     "color": "Red",
     "primary_type": "Fire",
@@ -5705,7 +5706,6 @@
     },
     "prevo": "Darumaka",
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
-    "base_forme": "Standard",
     "formes": ["Darmanitan-Zen", "Darmanitan-Galar", "Darmanitan-Galar-Zen"],
     "flags": [],
     "learnset": {
@@ -8534,6 +8534,7 @@
   "deerling": {
     "name": "Deerling",
     "base_species": "Deerling",
+    "base_forme": "Spring",
     "class": "Season",
     "color": "Pink",
     "primary_type": "Normal",
@@ -8559,7 +8560,6 @@
       "spe": 75
     },
     "evos": ["Sawsbuck"],
-    "base_forme": "Spring",
     "cosmetic_formes": [
       "Deerling-Summer",
       "Deerling-Autumn",
@@ -8628,6 +8628,7 @@
   "sawsbuck": {
     "name": "Sawsbuck",
     "base_species": "Sawsbuck",
+    "base_forme": "Spring",
     "class": "Season",
     "color": "Brown",
     "primary_type": "Normal",
@@ -8654,7 +8655,6 @@
     },
     "prevo": "Deerling",
     "evolution_data": { "method": "L", "condition": "", "level": 34 },
-    "base_forme": "Spring",
     "cosmetic_formes": [
       "Sawsbuck-Summer",
       "Sawsbuck-Autumn",
@@ -13671,6 +13671,7 @@
   "tornadus": {
     "name": "Tornadus",
     "base_species": "Tornadus",
+    "base_forme": "Incarnate",
     "class": "Cyclone",
     "color": "Green",
     "primary_type": "Flying",
@@ -13694,7 +13695,6 @@
       "spd": 80,
       "spe": 111
     },
-    "base_forme": "Incarnate",
     "formes": ["Tornadus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -13768,6 +13768,7 @@
   "thundurus": {
     "name": "Thundurus",
     "base_species": "Thundurus",
+    "base_forme": "Incarnate",
     "class": "Bolt Strike",
     "color": "Blue",
     "primary_type": "Electric",
@@ -13792,7 +13793,6 @@
       "spd": 80,
       "spe": 111
     },
-    "base_forme": "Incarnate",
     "formes": ["Thundurus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -14073,6 +14073,7 @@
   "landorus": {
     "name": "Landorus",
     "base_species": "Landorus",
+    "base_forme": "Incarnate",
     "class": "Abundance",
     "color": "Brown",
     "primary_type": "Ground",
@@ -14097,7 +14098,6 @@
       "spd": 80,
       "spe": 101
     },
-    "base_forme": "Incarnate",
     "formes": ["Landorus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -14263,6 +14263,7 @@
   "keldeo": {
     "name": "Keldeo",
     "base_species": "Keldeo",
+    "base_forme": "Ordinary",
     "class": "Colt",
     "color": "Yellow",
     "primary_type": "Water",
@@ -14286,7 +14287,6 @@
       "spd": 90,
       "spe": 108
     },
-    "base_forme": "Ordinary",
     "formes": ["Keldeo-Resolute"],
     "flags": ["Mythical"],
     "learnset": {
@@ -14355,6 +14355,7 @@
   "meloetta": {
     "name": "Meloetta",
     "base_species": "Meloetta",
+    "base_forme": "Aria",
     "class": "Melody",
     "color": "White",
     "primary_type": "Normal",
@@ -14378,7 +14379,6 @@
       "spd": 128,
       "spe": 90
     },
-    "base_forme": "Aria",
     "formes": ["Meloetta-Pirouette"],
     "flags": ["Mythical"],
     "learnset": {

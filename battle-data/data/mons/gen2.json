@@ -5359,6 +5359,7 @@
   "unown": {
     "name": "Unown",
     "base_species": "Unown",
+    "base_forme": "A",
     "class": "Symbol",
     "color": "Black",
     "primary_type": "Psychic",
@@ -5381,7 +5382,6 @@
       "spd": 48,
       "spe": 48
     },
-    "base_forme": "A",
     "cosmetic_formes": [
       "Unown-B",
       "Unown-C",

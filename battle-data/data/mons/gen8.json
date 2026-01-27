@@ -1228,6 +1228,7 @@
   "toxtricity": {
     "name": "Toxtricity",
     "base_species": "Toxtricity",
+    "base_forme": "Amped",
     "class": "Punk",
     "color": "Purple",
     "primary_type": "Electric",
@@ -1254,7 +1255,6 @@
     },
     "prevo": "Toxel",
     "evolution_data": { "method": "L", "condition": "", "level": 30 },
-    "base_forme": "Amped",
     "formes": [
       "Toxtricity-Low-Key",
       "Toxtricity-Amped-Gmax",
@@ -1391,6 +1391,7 @@
   "sinistea": {
     "name": "Sinistea",
     "base_species": "Sinistea",
+    "base_forme": "Phony",
     "class": "Black Tea",
     "color": "Purple",
     "primary_type": "Ghost",
@@ -1415,7 +1416,6 @@
       "spe": 50
     },
     "evos": ["Polteageist"],
-    "base_forme": "Phony",
     "cosmetic_formes": ["Sinistea-Antique"],
     "flags": [],
     "learnset": {}
@@ -1423,6 +1423,7 @@
   "polteageist": {
     "name": "Polteageist",
     "base_species": "Polteageist",
+    "base_forme": "Phony",
     "class": "Black Tea",
     "color": "Purple",
     "primary_type": "Ghost",
@@ -1452,7 +1453,6 @@
       "condition": "",
       "use_item": "Cracked Pot"
     },
-    "base_forme": "Phony",
     "cosmetic_formes": ["Polteageist-Antique"],
     "flags": [],
     "learnset": {}
@@ -1875,6 +1875,7 @@
   "alcremie": {
     "name": "Alcremie",
     "base_species": "Alcremie",
+    "base_forme": "Vanilla-Cream",
     "class": "Cream",
     "color": "White",
     "primary_type": "Fairy",
@@ -1900,7 +1901,6 @@
     },
     "prevo": "Milcery",
     "evolution_data": { "method": "C", "condition": "" },
-    "base_forme": "Vanilla-Cream",
     "formes": ["Alcremie-Gmax"],
     "cosmetic_formes": [
       "Alcremie-Ruby-Cream",
@@ -2072,6 +2072,7 @@
   "eiscue": {
     "name": "Eiscue",
     "base_species": "Eiscue",
+    "base_forme": "Ice",
     "class": "Penguin",
     "color": "Blue",
     "primary_type": "Ice",
@@ -2094,7 +2095,6 @@
       "spd": 90,
       "spe": 50
     },
-    "base_forme": "Ice",
     "formes": ["Eiscue-Noice"],
     "flags": [],
     "learnset": {}
@@ -2102,6 +2102,7 @@
   "indeedee": {
     "name": "Indeedee",
     "base_species": "Indeedee",
+    "base_forme": "Male",
     "class": "Emotion",
     "color": "Purple",
     "primary_type": "Psychic",
@@ -2126,7 +2127,6 @@
       "spd": 95,
       "spe": 95
     },
-    "base_forme": "Male",
     "formes": ["Indeedee-Female"],
     "flags": [],
     "learnset": {}
@@ -2134,6 +2134,7 @@
   "morpeko": {
     "name": "Morpeko",
     "base_species": "Morpeko",
+    "base_forme": "Full-Belly",
     "class": "Two-Sided",
     "color": "Yellow",
     "primary_type": "Electric",
@@ -2157,7 +2158,6 @@
       "spd": 58,
       "spe": 97
     },
-    "base_forme": "Full-Belly",
     "formes": ["Morpeko-Hangry"],
     "flags": [],
     "learnset": {}
@@ -2595,6 +2595,7 @@
   "urshifu": {
     "name": "Urshifu",
     "base_species": "Urshifu",
+    "base_forme": "Single-Strike",
     "class": "Wushu",
     "color": "Gray",
     "primary_type": "Fighting",
@@ -2620,7 +2621,6 @@
     },
     "prevo": "Kubfu",
     "evolution_data": { "method": "C", "condition": "" },
-    "base_forme": "Single-Strike",
     "formes": ["Urshifu-Rapid-Strike", "Urshifu-Single-Strike-Gmax"],
     "flags": ["Sub-Legendary"],
     "learnset": {}
@@ -2905,6 +2905,7 @@
   "basculegion": {
     "name": "Basculegion",
     "base_species": "Basculegion",
+    "base_forme": "Male",
     "class": "Big Fish",
     "color": "Green",
     "primary_type": "Water",
@@ -2931,7 +2932,6 @@
     },
     "prevo": "Basculin",
     "evolution_data": { "method": "B", "condition": "" },
-    "base_forme": "Male",
     "formes": ["Basculegion-Female"],
     "flags": [],
     "learnset": {}
@@ -3012,6 +3012,7 @@
   "enamorus": {
     "name": "Enamorus",
     "base_species": "Enamorus",
+    "base_forme": "Incarnate",
     "class": "Love-Hate",
     "color": "Pink",
     "primary_type": "Fairy",
@@ -3036,7 +3037,6 @@
       "spd": 80,
       "spe": 106
     },
-    "base_forme": "Incarnate",
     "formes": ["Enamorus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {}
