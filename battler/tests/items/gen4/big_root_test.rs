@@ -77,7 +77,7 @@ fn big_root_boosts_damage_healed_from_draining_move() {
             "damage|mon:Bibarel,player-1,1|health:33/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Bibarel,player-1,1|name:Mega Drain|target:Bibarel,player-2,1",
             "supereffective|mon:Bibarel,player-2,1",
             "split|side:1",

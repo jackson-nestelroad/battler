@@ -65,7 +65,7 @@ fn imprison_disables_moves_known_by_user() {
             "cant|mon:Baltoy,player-2,1|from:move:Imprison",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Baltoy,player-2,1|name:Struggle|target:Baltoy,player-1,1",
             "crit|mon:Baltoy,player-1,1",
             "split|side:0",

@@ -63,7 +63,7 @@ impl AppliedEffectLocation {
         }
     }
 
-    /// The associated [`MonHandle`] that the callback originates from.
+    /// The associated [`MonHandle`].
     pub fn mon_handle(&self) -> Option<MonHandle> {
         match self {
             Self::Mon(mon)
@@ -97,6 +97,11 @@ impl AppliedEffectHandle {
             effect_handle,
             location,
         }
+    }
+
+    /// The associated [`MonHandle`] that the applied effect originates from.
+    pub fn mon_handle(&self) -> Option<MonHandle> {
+        self.location.mon_handle()
     }
 
     /// Creates a dynamic connector for retrieving the effect state of the applied effect.

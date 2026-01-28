@@ -86,7 +86,7 @@ fn quick_ball_multiples_catch_rate_on_first_turn() {
             "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Quick Ball|shakes:3",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "useitem|player:protagonist|name:Quick Ball|target:Graveler,wild,1",
             "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Quick Ball|shakes:3",
             "residual",

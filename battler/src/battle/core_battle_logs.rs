@@ -310,6 +310,7 @@ pub fn revert_terastallization(context: &mut ApplyingEffectContext) -> Result<()
         activation,
     )
 }
+
 pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,
@@ -442,6 +443,19 @@ pub fn ohko(context: &mut MonContext) -> Result<()> {
 
 pub fn faint(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "faint")
+}
+
+pub fn waiting(context: &mut MonContext, target: MonHandle) -> Result<()> {
+    let event = battle_log_entry!(
+        "waiting",
+        ("mon", Mon::position_details(context)?),
+        (
+            "on",
+            Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?
+        )
+    );
+    context.battle_mut().log(event);
+    Ok(())
 }
 
 pub fn damage(
@@ -1150,6 +1164,20 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
     )
 }
 
+pub fn clear_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "clearboosts".to_owned(),
+        activation,
+    )
+}
+
 pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
@@ -1229,6 +1257,34 @@ pub fn catch(
     effect_activation(
         context.as_battle_context_mut(),
         "catch".to_owned(),
+        activation,
+    )
+}
+
+pub fn swap(context: &mut ApplyingEffectContext, position: usize) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("position:{position}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swap".to_owned(),
+        activation,
+    )
+}
+
+pub fn swap_player(context: &mut PlayerContext, position: usize) -> Result<()> {
+    let activation = EffectActivationContext {
+        player: Some(context.player().index),
+        additional: Vec::from_iter([format!("position:{position}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swapplayer".to_owned(),
         activation,
     )
 }

@@ -92,7 +92,7 @@ fn camouflage_changes_user_type_to_psychic_in_psychic_terrain() {
             "fieldstart|move:Psychic Terrain",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Staryu,player-1,1|name:Camouflage|target:Staryu,player-1,1",
             "typechange|mon:Staryu,player-1,1|types:Psychic",
             "residual",

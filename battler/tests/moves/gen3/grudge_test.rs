@@ -86,7 +86,7 @@ fn grudge_sets_last_move_pp_to_zero_on_faint() {
             "faint|mon:Misdreavus,player-1,1",
             "setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1",
             "residual",
-            ["time"],
+            "continue",
             "split|side:0",
             ["switch", "player-1", "Misdreavus"],
             ["switch", "player-1", "Misdreavus"],

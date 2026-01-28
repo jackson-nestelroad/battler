@@ -152,9 +152,6 @@ pub struct Move {
     pub effect: fxlang::Effect,
     pub condition: fxlang::Effect,
 
-    /// Custom STAB modifier, if any.
-    pub stab_modifier: Option<Fraction<u32>>,
-
     /// The Mon that used the move.
     pub used_by: Option<MonHandle>,
     /// The move was used externally, rather than directly by a Mon through its moveset.
@@ -169,6 +166,8 @@ pub struct Move {
     pub primary_user_effect_applied: bool,
     /// Is the move upgraded?
     pub upgraded: Option<UpgradedMoveSource>,
+    /// Ignore all secondary effects?
+    pub ignore_all_secondary_effects: bool,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -206,13 +205,13 @@ impl Move {
             effect,
             condition,
             used_by: None,
-            stab_modifier: None,
             external: false,
             spread_hit: false,
             hit: 0,
             total_damage: 0,
             primary_user_effect_applied: false,
             upgraded: None,
+            ignore_all_secondary_effects: false,
             effect_state: fxlang::EffectState::default(),
             unlinked,
             secondary_effects: HashMap::default(),

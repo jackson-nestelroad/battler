@@ -84,7 +84,7 @@ fn scrappy_ignores_immunity_for_ghost_types() {
             "damage|mon:Gengar,player-2,1|health:65/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Kangaskhan,player-1,1|name:Brick Break|target:Gengar,player-2,1",
             "resisted|mon:Gengar,player-2,1",
             "split|side:1",

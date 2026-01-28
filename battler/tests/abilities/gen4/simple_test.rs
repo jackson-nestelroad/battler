@@ -64,7 +64,7 @@ fn simple_doubles_stat_boosts() {
             "boost|mon:Bidoof,player-1,1|stat:atk|by:4",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Bidoof,player-1,1|name:Pound|target:Bidoof,player-2,1",
             "split|side:1",
             "damage|mon:Bidoof,player-2,1|health:32/119",

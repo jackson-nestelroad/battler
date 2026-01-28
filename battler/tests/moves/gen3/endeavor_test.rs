@@ -68,7 +68,7 @@ fn endeavor_deals_damage_equal_to_user_hp() {
             "damage|mon:Mudkip,player-1,1|health:79/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Mudkip,player-1,1|name:Endeavor|target:Mudkip,player-2,1",
             "split|side:1",
             "damage|mon:Mudkip,player-2,1|health:86/110",

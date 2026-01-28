@@ -142,7 +142,7 @@ fn disobedient_mon_falls_asleep() {
             "status|mon:Pikachu,protagonist,1|status:Sleep|from:Disobedience",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "cant|mon:Pikachu,protagonist,1|from:status:Sleep",
             "residual",
             "turn|turn:3"

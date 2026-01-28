@@ -69,7 +69,7 @@ fn snatch_steals_beneficial_status_move() {
             "damage|mon:Shuppet,player-1,1|health:34/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Shuppet,player-1,1|name:Snatch|target:Shuppet,player-1,1",
             "singleturn|mon:Shuppet,player-1,1|move:Snatch",
             "move|mon:Shuppet,player-2,1|name:Amnesia|target:Shuppet,player-2,1",

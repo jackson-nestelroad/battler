@@ -25,6 +25,7 @@
       "spd": 45,
       "spe": 65
     },
+    "evos": ["Floragato"],
     "flags": [],
     "learnset": {}
   },
@@ -55,6 +56,7 @@
       "spe": 83
     },
     "prevo": "Sprigatito",
+    "evos": ["Meowscarada"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {}
@@ -117,6 +119,7 @@
       "spd": 40,
       "spe": 36
     },
+    "evos": ["Crocalor"],
     "flags": [],
     "learnset": {}
   },
@@ -147,6 +150,7 @@
       "spe": 49
     },
     "prevo": "Fuecoco",
+    "evos": ["Skeledirge"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {}
@@ -209,6 +213,7 @@
       "spd": 45,
       "spe": 50
     },
+    "evos": ["Quaxwell"],
     "flags": [],
     "learnset": {}
   },
@@ -239,6 +244,7 @@
       "spe": 65
     },
     "prevo": "Quaxly",
+    "evos": ["Quaquaval"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {}
@@ -301,6 +307,7 @@
       "spd": 45,
       "spe": 35
     },
+    "evos": ["Oinkologne", "Oinkologne-F"],
     "flags": [],
     "learnset": {}
   },
@@ -363,6 +370,7 @@
       "spd": 40,
       "spe": 20
     },
+    "evos": ["Spidops"],
     "flags": [],
     "learnset": {}
   },
@@ -423,6 +431,7 @@
       "spd": 25,
       "spe": 45
     },
+    "evos": ["Lokix"],
     "flags": [],
     "learnset": {}
   },
@@ -484,6 +493,7 @@
       "spd": 25,
       "spe": 60
     },
+    "evos": ["Pawmo"],
     "flags": [],
     "learnset": {}
   },
@@ -515,6 +525,7 @@
       "spe": 85
     },
     "prevo": "Pawmi",
+    "evos": ["Pawmot"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {}
@@ -577,6 +588,7 @@
       "spd": 45,
       "spe": 75
     },
+    "evos": ["Maushold", "Maushold-Four"],
     "flags": [],
     "learnset": {}
   },
@@ -639,6 +651,7 @@
       "spd": 55,
       "spe": 65
     },
+    "evos": ["Dachsbun"],
     "flags": [],
     "learnset": {}
   },
@@ -700,6 +713,7 @@
       "spd": 51,
       "spe": 30
     },
+    "evos": ["Dolliv"],
     "flags": [],
     "learnset": {}
   },
@@ -731,6 +745,7 @@
       "spe": 33
     },
     "prevo": "Smoliv",
+    "evos": ["Arboliva"],
     "evolution_data": { "method": "L", "condition": "", "level": 25 },
     "flags": [],
     "learnset": {}
@@ -829,6 +844,7 @@
       "spd": 35,
       "spe": 25
     },
+    "evos": ["Naclstack"],
     "flags": [],
     "learnset": {}
   },
@@ -859,6 +875,7 @@
       "spe": 35
     },
     "prevo": "Nacli",
+    "evos": ["Garganacl"],
     "evolution_data": { "method": "L", "condition": "", "level": 24 },
     "flags": [],
     "learnset": {}
@@ -920,6 +937,7 @@
       "spd": 40,
       "spe": 35
     },
+    "evos": ["Armarouge", "Ceruledge"],
     "flags": [],
     "learnset": {}
   },
@@ -1021,6 +1039,7 @@
       "spd": 35,
       "spe": 45
     },
+    "evos": ["Bellibolt"],
     "flags": [],
     "learnset": {}
   },
@@ -1086,6 +1105,7 @@
       "spd": 40,
       "spe": 70
     },
+    "evos": ["Kilowattrel"],
     "flags": [],
     "learnset": {}
   },
@@ -1147,6 +1167,7 @@
       "spd": 51,
       "spe": 51
     },
+    "evos": ["Mabosstiff"],
     "flags": [],
     "learnset": {}
   },
@@ -1208,6 +1229,7 @@
       "spd": 35,
       "spe": 75
     },
+    "evos": ["Grafaiai"],
     "flags": [],
     "learnset": {}
   },
@@ -1270,6 +1292,7 @@
       "spd": 35,
       "spe": 60
     },
+    "evos": ["Brambleghast"],
     "flags": [],
     "learnset": {}
   },
@@ -1332,6 +1355,7 @@
       "spd": 100,
       "spe": 70
     },
+    "evos": ["Toedscruel"],
     "flags": [],
     "learnset": {}
   },
@@ -1422,6 +1446,7 @@
       "spd": 40,
       "spe": 50
     },
+    "evos": ["Scovillain"],
     "flags": [],
     "learnset": {}
   },
@@ -1487,6 +1512,7 @@
       "spd": 58,
       "spe": 30
     },
+    "evos": ["Rabsca"],
     "flags": [],
     "learnset": {}
   },
@@ -1548,6 +1574,7 @@
       "spd": 30,
       "spe": 75
     },
+    "evos": ["Espathra"],
     "flags": [],
     "learnset": {}
   },
@@ -1609,6 +1636,7 @@
       "spd": 64,
       "spe": 58
     },
+    "evos": ["Tinkatuff"],
     "flags": [],
     "learnset": {}
   },
@@ -1640,6 +1668,7 @@
       "spe": 78
     },
     "prevo": "Tinkatink",
+    "evos": ["Tinkaton"],
     "evolution_data": { "method": "L", "condition": "", "level": 24 },
     "flags": [],
     "learnset": {}
@@ -1702,6 +1731,7 @@
       "spd": 25,
       "spe": 95
     },
+    "evos": ["Wugtrio"],
     "flags": [],
     "learnset": {}
   },
@@ -1792,6 +1822,7 @@
       "spd": 40,
       "spe": 75
     },
+    "evos": ["Palafin"],
     "flags": [],
     "learnset": {}
   },
@@ -1855,6 +1886,7 @@
       "spd": 45,
       "spe": 47
     },
+    "evos": ["Revavroom"],
     "flags": [],
     "learnset": {}
   },
@@ -1976,6 +2008,7 @@
       "spd": 60,
       "spe": 60
     },
+    "evos": ["Glimmora"],
     "flags": [],
     "learnset": {}
   },
@@ -2037,6 +2070,7 @@
       "spd": 55,
       "spe": 34
     },
+    "evos": ["Houndstone"],
     "flags": [],
     "learnset": {}
   },
@@ -2132,6 +2166,7 @@
       "spd": 40,
       "spe": 43
     },
+    "evos": ["Cetitan"],
     "flags": [],
     "learnset": {}
   },
@@ -2817,6 +2852,7 @@
       "spd": 45,
       "spe": 55
     },
+    "evos": ["Arctibax"],
     "flags": [],
     "learnset": {}
   },
@@ -2848,6 +2884,7 @@
       "spe": 62
     },
     "prevo": "Frigibax",
+    "evos": ["Baxcalibur"],
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
     "flags": [],
     "learnset": {}
@@ -2911,6 +2948,7 @@
       "spd": 70,
       "spe": 10
     },
+    "evos": ["Gholdengo"],
     "formes": ["Gimmighoul-Roaming"],
     "flags": [],
     "learnset": {}
@@ -3288,6 +3326,7 @@
       "spd": 80,
       "spe": 40
     },
+    "evos": ["Hydrapple"],
     "flags": [],
     "learnset": {}
   },
@@ -3319,6 +3358,7 @@
       "spd": 54,
       "spe": 50
     },
+    "evos": ["Sinistcha"],
     "cosmetic_formes": ["Poltchageist-Artisan"],
     "flags": [],
     "learnset": {}
@@ -4016,6 +4056,7 @@
       "spd": 45,
       "spe": 80
     },
+    "evos": ["Gholdengo"],
     "flags": [],
     "learnset": {}
   },

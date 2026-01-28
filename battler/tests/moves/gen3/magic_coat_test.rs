@@ -84,7 +84,7 @@ fn magic_coat_reflects_status_moves_for_the_turn() {
             "damage|mon:Seviper,player-2,2|from:status:Burn|health:94/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Grumpig,player-1,1|name:Magic Coat|target:Grumpig,player-1,1",
             "singleturn|mon:Grumpig,player-1,1|move:Magic Coat",
             "move|mon:Seviper,player-2,2|name:Spikes|noanim",

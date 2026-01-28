@@ -64,7 +64,7 @@ fn magnet_rise_adds_ground_type_immunity() {
             "start|mon:Magnezone,player-1,1|move:Magnet Rise",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Magnezone,player-2,1|name:Earthquake|noanim",
             "immune|mon:Magnezone,player-1,1",
             "residual",

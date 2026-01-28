@@ -71,7 +71,7 @@ fn power_herb_removes_charge_turn() {
             "damage|mon:Staraptor,player-2,1|health:30/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Staraptor,player-1,1|name:Fly|noanim",
             "prepare|mon:Staraptor,player-1,1|move:Fly",
             "residual",

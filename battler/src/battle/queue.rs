@@ -9,17 +9,21 @@ use battler_prng::{
     rand_util,
 };
 
-use crate::battle::{
-    Action,
-    BeforeMoveAction,
-    BeforeMoveActionInput,
-    Context,
-    CoreBattle,
-    CoreBattleEngineSpeedSortTieResolution,
-    MonHandle,
-    MoveAction,
-    compare_priority,
-    speed_sort,
+use crate::{
+    battle::{
+        Action,
+        BeforeMoveAction,
+        BeforeMoveActionInput,
+        Context,
+        CoreBattle,
+        CoreBattleEngineSpeedSortTieResolution,
+        MonHandle,
+        MoveAction,
+        SpeedOrderable,
+        compare_priority,
+        speed_sort,
+    },
+    effect::EffectHandle,
 };
 
 /// A queue of [`Action`]s to be run in a [`CoreBattle`][`crate::battle::CoreBattle`].
@@ -181,6 +185,93 @@ impl BattleQueue {
             .cloned()
     }
 
+    /// Prioritizes a move for the given Mon, essentially making it the next action.
+    ///
+    /// The move is moved to the front of the queue, and its order is updated to the front.
+    pub fn prioritize_move(
+        context: &mut Context,
+        mon: MonHandle,
+        source_effect: Option<EffectHandle>,
+    ) -> Result<()> {
+        let index = context
+            .battle_mut()
+            .queue
+            .actions
+            .iter()
+            .position(|action| match action {
+                Action::Move(action) => action.mon_action.mon == mon,
+                _ => false,
+            });
+
+        if let Some(index) = index {
+            // SAFETY: `index` is valid and a MoveAction, since it was searched above.
+            let mut action = context.battle_mut().queue.actions.remove(index).unwrap();
+            if let Action::Move(move_action) = &mut action {
+                move_action.order = Some(6);
+                if let Some(source_effect) = source_effect
+                    && let Some(active_move) = move_action.active_move_handle
+                {
+                    context
+                        .active_move_mut(active_move)?
+                        .effect_state
+                        .set_source_effect(source_effect);
+                }
+            }
+            context.battle_mut().queue.actions.push_front(action);
+        }
+        Ok(())
+    }
+
+    /// Deprioritizes a move for the given Mon, essentially making it the last move action.
+    ///
+    /// The move is moved to the back of the queue, and its order is updated to the back.
+    pub fn deprioritize_move(context: &mut Context, mon: MonHandle) -> Result<()> {
+        const DEPRIORITIZED_MOVE_ORDER: u32 = 201;
+
+        let index = context
+            .battle_mut()
+            .queue
+            .actions
+            .iter()
+            .position(|action| match action {
+                Action::Move(action) => action.mon_action.mon == mon,
+                _ => false,
+            });
+
+        if let Some(index) = index {
+            // SAFETY: `index` is valid and a MoveAction, since it was searched above.
+            let mut action = context.battle_mut().queue.actions.remove(index).unwrap();
+            if let Action::Move(move_action) = &mut action {
+                move_action.order = Some(DEPRIORITIZED_MOVE_ORDER);
+            }
+
+            let insert_index = context
+                .battle_mut()
+                .queue
+                .actions
+                .iter()
+                .position(|action| action.order() > DEPRIORITIZED_MOVE_ORDER)
+                .unwrap_or(context.battle_mut().queue.actions.len());
+            context
+                .battle_mut()
+                .queue
+                .actions
+                .insert(insert_index, action);
+        }
+        Ok(())
+    }
+
+    /// Returns a list of all pending move actions.
+    pub fn pending_move_actions(&self) -> Vec<&MoveAction> {
+        self.actions
+            .iter()
+            .filter_map(|action| match action {
+                Action::Move(action) => Some(action),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// Cancels the move action to be made by the Mon.
     pub fn cancel_move(&mut self, mon: MonHandle) -> bool {
         let before = self.actions.len();
@@ -339,6 +430,7 @@ mod queue_test {
             tera: false,
             priority,
             sub_priority,
+            order: None,
             active_move_handle: None,
         })
     }
@@ -408,6 +500,9 @@ mod queue_test {
                 Action::Escape(action) => format!("escape {}", action.mon_action.mon),
                 Action::Forfeit(action) => format!("forfeit {}", action.player),
                 Action::Item(action) => format!("item {}", action.item),
+                Action::Shift(action) => {
+                    format!("shift {} {}", action.mon_action.mon, action.position)
+                }
             })
             .collect()
     }

@@ -123,7 +123,7 @@ fn mold_breaker_suppresses_breakable_ability() {
             ["switch"],
             "ability|mon:Rampardos,player-1,1|ability:Mold Breaker",
             "turn|turn:1",
-            ["time"],
+            "continue",
             "move|mon:Rampardos,player-1,1|name:Earthquake",
             "resisted|mon:Shedinja,player-2,1",
             "split|side:1",

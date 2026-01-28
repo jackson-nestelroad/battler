@@ -19,7 +19,7 @@
         "on_try_hit": [
           "if $target != $source and $move.type == electric:",
           [
-            "if !func_call(boost: $target 'spe:1' use_target_as_source):",
+            "if !func_call(boost: $target 'spe:1'):",
             ["log_immune: $target from_effect"],
             "return stop"
           ]
@@ -136,7 +136,7 @@
   },
   "simple": {
     "name": "Simple",
-    "flags": ["Breakable"],
+    "flags": ["Breakable", "NoSimpleBeam"],
     "effect": {
       "callbacks": {
         "on_change_boosts": [
@@ -156,7 +156,7 @@
     "effect": {
       "delegates": ["ability:waterabsorb"],
       "callbacks": {
-        "on_source_base_power": [
+        "on_base_power": [
           "if $move.type == fire:",
           ["return $base_power * 5/4"]
         ],
@@ -447,9 +447,7 @@
           "order": 1,
           "program": [
             "if $target.hp == 0 and func_call(move_makes_contact: $move):",
-            [
-              "damage: $source expr($source.base_max_hp / 4) use_target_as_source"
-            ]
+            ["damage: $source expr($source.base_max_hp / 4)"]
           ]
         }
       }
@@ -627,7 +625,7 @@
         "on_try_hit": [
           "if $target == $source or $move.type != water:",
           ["return"],
-          "if !func_call(boost: $target 'spa:1' use_target_as_source):",
+          "if !func_call(boost: $target 'spa:1'):",
           ["log_immune: $target from_effect"],
           "return stop"
         ],
@@ -670,7 +668,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": ["set_weather: snowweather use_target_as_source"]
+        "on_start": ["set_weather: snowweather"]
       }
     }
   },
@@ -679,7 +677,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": ["set_weather: hailweather use_target_as_source"]
+        "on_start": ["set_weather: hailweather"]
       }
     }
   },
@@ -691,10 +689,7 @@
       "callbacks": {
         "on_start": [
           "foreach $foe in func_call(all_foes: $target):",
-          [
-            "if $foe.item.is_defined:",
-            ["log_announce_item: $foe use_target_as_source"]
-          ]
+          ["if $foe.item.is_defined:", ["log_announce_item: $foe"]]
         ]
       }
     }
@@ -765,7 +760,7 @@
   },
   "flowergift": {
     "name": "Flower Gift",
-    "flags": ["NoRolePlay", "NoTrace"],
+    "flags": ["NoEntrainment", "NoRolePlay", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: WeatherChange"],
@@ -801,12 +796,7 @@
           "if $target.hp == 0:",
           ["return"],
           "foreach $foe in func_call(all_foes: $target):",
-          [
-            "if $target.is_asleep:",
-            [
-              "damage: $foe expr($foe.base_max_hp / 8) use_effect_state_target_as_source"
-            ]
-          ]
+          ["if $target.is_asleep:", ["damage: $foe expr($foe.base_max_hp / 8)"]]
         ]
       }
     }

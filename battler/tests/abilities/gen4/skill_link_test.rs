@@ -87,7 +87,7 @@ fn skill_link_makes_move_hit_maximum_number_of_times() {
             "hitcount|hits:5",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Cloyster,player-1,1|name:Icicle Spear|target:Cloyster,player-2,1",
             "resisted|mon:Cloyster,player-2,1",
             "split|side:1",

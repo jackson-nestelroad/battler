@@ -25,6 +25,7 @@
       "spd": 40,
       "spe": 65
     },
+    "evos": ["Thwackey"],
     "flags": [],
     "learnset": {}
   },
@@ -55,6 +56,7 @@
       "spe": 80
     },
     "prevo": "Grookey",
+    "evos": ["Rillaboom"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {}
@@ -117,6 +119,7 @@
       "spd": 40,
       "spe": 69
     },
+    "evos": ["Raboot"],
     "flags": [],
     "learnset": {}
   },
@@ -147,6 +150,7 @@
       "spe": 94
     },
     "prevo": "Scorbunny",
+    "evos": ["Cinderace"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {}
@@ -209,6 +213,7 @@
       "spd": 40,
       "spe": 70
     },
+    "evos": ["Drizzile"],
     "flags": [],
     "learnset": {}
   },
@@ -239,6 +244,7 @@
       "spe": 90
     },
     "prevo": "Sobble",
+    "evos": ["Inteleon"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {}
@@ -301,6 +307,7 @@
       "spd": 35,
       "spe": 25
     },
+    "evos": ["Greedent"],
     "flags": [],
     "learnset": {}
   },
@@ -361,6 +368,7 @@
       "spd": 35,
       "spe": 57
     },
+    "evos": ["Corvisquire"],
     "flags": [],
     "learnset": {}
   },
@@ -391,6 +399,7 @@
       "spe": 77
     },
     "prevo": "Rookidee",
+    "evos": ["Corviknight"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {}
@@ -454,6 +463,7 @@
       "spd": 45,
       "spe": 45
     },
+    "evos": ["Dottler"],
     "flags": [],
     "learnset": {}
   },
@@ -485,6 +495,7 @@
       "spe": 30
     },
     "prevo": "Blipbug",
+    "evos": ["Orbeetle"],
     "evolution_data": { "method": "L", "condition": "", "level": 10 },
     "flags": [],
     "learnset": {}
@@ -548,6 +559,7 @@
       "spd": 52,
       "spe": 50
     },
+    "evos": ["Thievul"],
     "flags": [],
     "learnset": {}
   },
@@ -608,6 +620,7 @@
       "spd": 60,
       "spe": 10
     },
+    "evos": ["Eldegoss"],
     "flags": [],
     "learnset": {}
   },
@@ -668,6 +681,7 @@
       "spd": 45,
       "spe": 48
     },
+    "evos": ["Dubwool"],
     "flags": [],
     "learnset": {}
   },
@@ -728,6 +742,7 @@
       "spd": 38,
       "spe": 44
     },
+    "evos": ["Drednaw"],
     "flags": [],
     "learnset": {}
   },
@@ -790,6 +805,7 @@
       "spd": 50,
       "spe": 26
     },
+    "evos": ["Boltund"],
     "flags": [],
     "learnset": {}
   },
@@ -850,6 +866,7 @@
       "spd": 50,
       "spe": 30
     },
+    "evos": ["Carkol"],
     "flags": [],
     "learnset": {}
   },
@@ -881,6 +898,7 @@
       "spe": 50
     },
     "prevo": "Rolycoly",
+    "evos": ["Coalossal"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {}
@@ -945,6 +963,7 @@
       "spd": 40,
       "spe": 20
     },
+    "evos": ["Flapple", "Appletun", "Dipplin"],
     "flags": [],
     "learnset": {}
   },
@@ -1048,6 +1067,7 @@
       "spd": 50,
       "spe": 46
     },
+    "evos": ["Sandaconda"],
     "flags": [],
     "learnset": {}
   },
@@ -1139,6 +1159,7 @@
       "spd": 30,
       "spe": 66
     },
+    "evos": ["Barraskewda"],
     "flags": [],
     "learnset": {}
   },
@@ -1200,6 +1221,7 @@
       "spd": 35,
       "spe": 40
     },
+    "evos": ["Toxtricity", "Toxtricity-Low-Key"],
     "flags": [],
     "learnset": {}
   },
@@ -1268,6 +1290,7 @@
       "spd": 50,
       "spe": 45
     },
+    "evos": ["Centiskorch"],
     "flags": [],
     "learnset": {}
   },
@@ -1330,6 +1353,7 @@
       "spd": 50,
       "spe": 32
     },
+    "evos": ["Grapploct"],
     "flags": [],
     "learnset": {}
   },
@@ -1391,6 +1415,7 @@
       "spd": 54,
       "spe": 50
     },
+    "evos": ["Polteageist"],
     "cosmetic_formes": ["Sinistea-Antique"],
     "flags": [],
     "learnset": {}
@@ -1458,6 +1483,7 @@
       "spd": 53,
       "spe": 39
     },
+    "evos": ["Hattrem"],
     "flags": [],
     "learnset": {}
   },
@@ -1488,6 +1514,7 @@
       "spe": 49
     },
     "prevo": "Hatenna",
+    "evos": ["Hatterene"],
     "evolution_data": { "method": "L", "condition": "", "level": 32 },
     "flags": [],
     "learnset": {}
@@ -1552,6 +1579,7 @@
       "spd": 40,
       "spe": 50
     },
+    "evos": ["Morgrem"],
     "flags": [],
     "learnset": {}
   },
@@ -1583,6 +1611,7 @@
       "spe": 70
     },
     "prevo": "Impidimp",
+    "evos": ["Grimmsnarl"],
     "evolution_data": { "method": "L", "condition": "", "level": 32 },
     "flags": [],
     "learnset": {}
@@ -1839,6 +1868,7 @@
       "spd": 61,
       "spe": 34
     },
+    "evos": ["Alcremie"],
     "flags": [],
     "learnset": {}
   },
@@ -1970,6 +2000,7 @@
       "spd": 30,
       "spe": 20
     },
+    "evos": ["Frosmoth"],
     "flags": [],
     "learnset": {}
   },
@@ -2157,6 +2188,7 @@
       "spd": 49,
       "spe": 40
     },
+    "evos": ["Copperajah"],
     "flags": [],
     "learnset": {}
   },
@@ -2339,6 +2371,7 @@
       "spd": 50,
       "spe": 85
     },
+    "evos": ["Archaludon"],
     "formes": ["Duraludon-Gmax"],
     "flags": [],
     "learnset": {}
@@ -2370,6 +2403,7 @@
       "spd": 30,
       "spe": 82
     },
+    "evos": ["Drakloak"],
     "flags": [],
     "learnset": {}
   },
@@ -2401,6 +2435,7 @@
       "spe": 102
     },
     "prevo": "Dreepy",
+    "evos": ["Dragapult"],
     "evolution_data": { "method": "L", "condition": "", "level": 50 },
     "flags": [],
     "learnset": {}
@@ -2464,12 +2499,8 @@
     },
     "formes": ["Zacian-Crowned"],
     "flags": ["Restricted Legendary"],
-    "learnset": {},
-    "effect": {
-      "callbacks": {
-        "on_can_dynamax": ["return false"]
-      }
-    }
+    "effect": { "callbacks": { "on_can_dynamax": ["return false"] } },
+    "learnset": {}
   },
   "zamazenta": {
     "name": "Zamazenta",
@@ -2498,12 +2529,8 @@
     },
     "formes": ["Zamazenta-Crowned"],
     "flags": ["Restricted Legendary"],
-    "learnset": {},
-    "effect": {
-      "callbacks": {
-        "on_can_dynamax": ["return false"]
-      }
-    }
+    "effect": { "callbacks": { "on_can_dynamax": ["return false"] } },
+    "learnset": {}
   },
   "eternatus": {
     "name": "Eternatus",
@@ -2533,12 +2560,8 @@
     },
     "formes": ["Eternatus-Eternamax"],
     "flags": ["Restricted Legendary"],
-    "learnset": {},
-    "effect": {
-      "callbacks": {
-        "on_can_dynamax": ["return false"]
-      }
-    }
+    "effect": { "callbacks": { "on_can_dynamax": ["return false"] } },
+    "learnset": {}
   },
   "kubfu": {
     "name": "Kubfu",
@@ -2565,6 +2588,7 @@
       "spd": 50,
       "spe": 72
     },
+    "evos": ["Urshifu", "Urshifu-Rapid-Strike"],
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },

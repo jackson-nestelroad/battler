@@ -71,7 +71,7 @@ fn wish_heals_slot_on_next_turn() {
             "move|mon:Gardevoir,player-1,1|name:Wish|target:Gardevoir,player-1,1",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "split|side:0",
             ["switch", "player-1", "Blaziken"],
             ["switch", "player-1", "Blaziken"],

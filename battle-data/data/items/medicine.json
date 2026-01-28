@@ -273,7 +273,14 @@
   "blackflute": { "name": "Black Flute", "flags": ["Medicine"] },
   "whiteflute": { "name": "White Flute", "flags": ["Medicine"] },
   "ragecandybar": { "name": "Rage Candy Bar", "flags": ["Medicine"] },
-  "sweetheart": { "name": "Sweet Heart", "flags": ["Medicine"] },
+  "sweetheart": {
+    "name": "Sweet Heart",
+    "target": "Party",
+    "flags": ["Medicine"],
+    "effect": {
+      "delegates": ["item:potion"]
+    }
+  },
   "healthwing": { "name": "Health Feather", "flags": ["Medicine"] },
   "musclewing": { "name": "Muscle Feather", "flags": ["Medicine"] },
   "resistwing": { "name": "Resist Feather", "flags": ["Medicine"] },
@@ -281,7 +288,13 @@
   "cleverwing": { "name": "Clever Feather", "flags": ["Medicine"] },
   "swiftwing": { "name": "Swift Feather", "flags": ["Medicine"] },
   "prettywing": { "name": "Pretty Feather", "flags": ["Medicine"] },
-  "casteliacone": { "name": "Casteliacone", "flags": ["Medicine"] },
+  "casteliacone": {
+    "name": "Casteliacone",
+    "flags": ["Medicine"],
+    "effect": {
+      "delegates": ["item:fullheal"]
+    }
+  },
   "lumiosegalette": { "name": "Lumiose Galette", "flags": ["Medicine"] },
   "bigmalasada": { "name": "Big Malasada", "flags": ["Medicine"] },
   "pewtercrunchies": { "name": "Pewter Crunchies", "flags": ["Medicine"] },

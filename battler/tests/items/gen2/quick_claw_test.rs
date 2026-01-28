@@ -64,7 +64,7 @@ fn quick_claw_allows_holder_to_move_first() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "activate|mon:Totodile,player-2,1|item:Quick Claw",
-            ["time"],
+            "continue",
             "move|mon:Totodile,player-2,1|name:Tackle|target:Totodile,player-1,1",
             "split|side:0",
             "damage|mon:Totodile,player-1,1|health:91/110",

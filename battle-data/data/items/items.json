@@ -530,7 +530,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "callbacks": {
-        "on_after_move": [
+        "on_after_move_secondary_effects_user": [
           "if $move.total_damage > 0:",
           ["heal: $user expr($move.total_damage / 8) no_source"]
         ]
@@ -706,9 +706,9 @@
     "effect": {
       "callbacks": {
         "on_modify_damage": ["return $damage * 13/10"],
-        "on_after_move": [
+        "on_after_move_secondary_effects_user": [
           "if $target.is_defined and $user != $target and $move.category != status and !$user.force_switch:",
-          ["damage: $user expr($user.base_max_hp / 10) use_target_as_source"]
+          ["damage: $user expr($user.base_max_hp / 10)"]
         ]
       }
     }
@@ -871,7 +871,7 @@
           ["return"],
           "if !$source or $source == $target:",
           ["return"],
-          "add_volatile: $source attract use_target_as_source"
+          "add_volatile: $source attract"
         ]
       }
     }
@@ -1422,6 +1422,14 @@
     "special_data": {
       "fling": { "power": 70 },
       "techno_blast": { "type": "Water" }
+    },
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "genesect"
+        }
+      }
     }
   },
   "shockdrive": {
@@ -1431,6 +1439,14 @@
     "special_data": {
       "fling": { "power": 70 },
       "techno_blast": { "type": "Electric" }
+    },
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "genesect"
+        }
+      }
     }
   },
   "burndrive": {
@@ -1440,6 +1456,14 @@
     "special_data": {
       "fling": { "power": 70 },
       "techno_blast": { "type": "Fire" }
+    },
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "genesect"
+        }
+      }
     }
   },
   "chilldrive": {
@@ -1449,6 +1473,14 @@
     "special_data": {
       "fling": { "power": 70 },
       "techno_blast": { "type": "Ice" }
+    },
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "genesect"
+        }
+      }
     }
   },
   "prismscale": {
@@ -1459,32 +1491,84 @@
   "eviolite": {
     "name": "Eviolite",
     "flags": [],
-    "special_data": { "fling": { "power": 40 } }
+    "special_data": { "fling": { "power": 40 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_def": [
+          "if $target.not_fully_evolved:",
+          ["return $def * 3/2"]
+        ],
+        "on_modify_spd": [
+          "if $target.not_fully_evolved:",
+          ["return $spd * 3/2"]
+        ]
+      }
+    }
   },
   "floatstone": {
     "name": "Float Stone",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_weight": ["return $weight / 2"]
+      }
+    }
   },
   "rockyhelmet": {
     "name": "Rocky Helmet",
     "flags": [],
-    "special_data": { "fling": { "power": 60 } }
+    "special_data": { "fling": { "power": 60 } },
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move):",
+          ["damage: $source expr($source.hp / 6)"]
+        ]
+      }
+    }
   },
   "airballoon": {
     "name": "Air Balloon",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_announce_item: $target"],
+        "is_grounded": ["return false"],
+        "on_damaging_hit": ["use_item: $target"],
+        "on_after_substitute_damage": ["use_item: $target"]
+      }
+    }
   },
   "redcard": {
     "name": "Red Card",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": { "power": 10 }
+    },
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects": [
+          "if $source == $target or $source.hp == 0 or $target.hp == 0 or $move.category == status:",
+          ["return"],
+          "if !$source.active or !func_call(can_switch: $source.player) or $source.force_switch or $target.force_switch:",
+          ["return"],
+          "if func_call(use_item: $target):",
+          ["force_switch: $source"]
+        ]
+      }
+    }
   },
   "ringtarget": {
     "name": "Ring Target",
     "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": { "fling": { "power": 10 } },
+    "effect": {
+      "callbacks": {
+        "on_negate_immunity": ["return false"]
+      }
+    }
   },
   "bindingband": {
     "name": "Binding Band",
@@ -1494,7 +1578,13 @@
   "absorbbulb": {
     "name": "Absorb Bulb",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": ["if $move.type == water:", ["use_item: $target"]],
+        "on_use": ["boost: $mon 'spa:1'"]
+      }
+    }
   },
   "cellbattery": {
     "name": "Cell Battery",
@@ -1504,7 +1594,7 @@
       "callbacks": {
         "on_damaging_hit": [
           "if $move.type == electric and func_call(can_boost: $target 'atk:1'):",
-          ["use_item: $target use_target_as_source"]
+          ["use_item: $target"]
         ],
         "on_use": ["boost: $mon 'atk:1'"]
       }
@@ -1513,9 +1603,33 @@
   "ejectbutton": {
     "name": "Eject Button",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects": [
+          "if $source == $target or $target.hp == 0 or $move.category == status or func_call(move_has_flag: $move future):",
+          ["return"],
+          "if !func_call(can_switch: $target.player) or $target.force_switch or $target.being_called_back or $target.is_away_from_field:",
+          ["return"],
+          "foreach $mon in func_call(all_active_mons):",
+          ["if $mon.ejecting:", ["return"]],
+          "if func_call(use_item: $target):",
+          [
+            "set_needs_switch: $target true ejecting",
+            "set_needs_switch: $source false"
+          ]
+        ]
+      }
+    }
   },
-  "poketoy": { "name": "Poké Toy", "flags": [] },
+  "poketoy": {
+    "name": "Poké Toy",
+    "target": "Active",
+    "flags": [],
+    "effect": {
+      "delegates": ["item:pokedoll"]
+    }
+  },
   "weaknesspolicy": {
     "name": "Weakness Policy",
     "flags": [],
@@ -1562,7 +1676,7 @@
         "on_immunity": [
           "if [sandstormweather, hailweather] has $effect.id:",
           ["return false"],
-          "if $effect.is_move and func_call(move_has_flag: $effect powder):",
+          "if $effect.id == powder or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
           ["return false"]
         ]
       }

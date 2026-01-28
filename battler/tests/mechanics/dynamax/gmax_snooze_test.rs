@@ -85,7 +85,7 @@ fn gmax_snooze_has_chance_to_inflict_yawn() {
             "damage|mon:Grimmsnarl,player-2,1|health:79/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Grimmsnarl,player-1,1|name:G-Max Snooze|target:Grimmsnarl,player-2,1",
             "resisted|mon:Grimmsnarl,player-2,1",
             "split|side:1",

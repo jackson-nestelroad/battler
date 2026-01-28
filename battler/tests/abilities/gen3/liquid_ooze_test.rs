@@ -68,7 +68,7 @@ fn liquid_ooze_damages_attacker_on_drain() {
             "unboost|mon:Swalot,player-1,1|stat:spe|by:1",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Swalot,player-1,1|name:Giga Drain|target:Swalot,player-2,1",
             "resisted|mon:Swalot,player-2,1",
             "split|side:1",

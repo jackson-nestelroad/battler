@@ -26,6 +26,7 @@
       "spd": 50,
       "spe": 42
     },
+    "evos": ["Dartrix"],
     "flags": [],
     "learnset": {
       "astonish": ["L11"],
@@ -114,6 +115,7 @@
       "spe": 52
     },
     "prevo": "Rowlet",
+    "evos": ["Decidueye", "Decidueye-Hisui"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -297,6 +299,7 @@
       "spd": 40,
       "spe": 70
     },
+    "evos": ["Torracat"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -382,6 +385,7 @@
       "spe": 90
     },
     "prevo": "Litten",
+    "evos": ["Incineroar"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -572,6 +576,7 @@
       "spd": 56,
       "spe": 40
     },
+    "evos": ["Brionne"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -657,6 +662,7 @@
       "spe": 50
     },
     "prevo": "Popplio",
+    "evos": ["Primarina"],
     "evolution_data": { "method": "L", "condition": "", "level": 17 },
     "flags": [],
     "learnset": {
@@ -832,6 +838,7 @@
       "spd": 30,
       "spe": 65
     },
+    "evos": ["Trumbeak"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -912,6 +919,7 @@
       "spe": 75
     },
     "prevo": "Pikipek",
+    "evos": ["Toucannon"],
     "evolution_data": { "method": "L", "condition": "", "level": 14 },
     "flags": [],
     "learnset": {
@@ -1072,6 +1080,7 @@
       "spd": 30,
       "spe": 45
     },
+    "evos": ["Gumshoos"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -1245,6 +1254,7 @@
       "spd": 45,
       "spe": 46
     },
+    "evos": ["Charjabug"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L19"],
@@ -1315,6 +1325,7 @@
       "spe": 36
     },
     "prevo": "Grubbin",
+    "evos": ["Vikavolt"],
     "evolution_data": { "method": "L", "condition": "", "level": 20 },
     "flags": [],
     "learnset": {
@@ -1470,6 +1481,7 @@
       "spd": 47,
       "spe": 63
     },
+    "evos": ["Crabominable"],
     "flags": [],
     "learnset": {
       "amnesia": ["E"],
@@ -1732,6 +1744,7 @@
       "spd": 40,
       "spe": 84
     },
+    "evos": ["Ribombee"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -1917,6 +1930,7 @@
       "spd": 40,
       "spe": 60
     },
+    "evos": ["Lycanroc", "Lycanroc-Midnight", "Lycanroc-Dusk"],
     "formes": ["Rockruff-Own-Tempo"],
     "flags": [],
     "learnset": {
@@ -2165,6 +2179,7 @@
       "spd": 52,
       "spe": 45
     },
+    "evos": ["Toxapex"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -2338,6 +2353,7 @@
       "spd": 55,
       "spe": 45
     },
+    "evos": ["Mudsdale"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -2490,6 +2506,7 @@
       "spd": 72,
       "spe": 27
     },
+    "evos": ["Araquanid"],
     "flags": [],
     "learnset": {
       "aquaring": ["L24"],
@@ -2655,6 +2672,7 @@
       "spd": 35,
       "spe": 35
     },
+    "evos": ["Lurantis"],
     "flags": [],
     "learnset": {
       "aromatherapy": ["E"],
@@ -2826,6 +2844,7 @@
       "spd": 75,
       "spe": 15
     },
+    "evos": ["Shiinotic"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -2991,6 +3010,7 @@
       "spd": 40,
       "spe": 77
     },
+    "evos": ["Salazzle"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3172,6 +3192,7 @@
       "spd": 50,
       "spe": 50
     },
+    "evos": ["Bewear"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3347,6 +3368,7 @@
       "spd": 38,
       "spe": 32
     },
+    "evos": ["Steenee"],
     "flags": [],
     "learnset": {
       "acupressure": ["E"],
@@ -3425,6 +3447,7 @@
       "spe": 62
     },
     "prevo": "Bounsweet",
+    "evos": ["Tsareena"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {
@@ -3897,6 +3920,7 @@
       "spd": 30,
       "spe": 80
     },
+    "evos": ["Golisopod"],
     "flags": [],
     "learnset": {
       "aquajet": ["E"],
@@ -4057,7 +4081,8 @@
       "spd": 45,
       "spe": 15
     },
-    "flags": [],
+    "evos": ["Palossand"],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "absorb": ["L1"],
       "afteryou": ["T"],
@@ -4144,7 +4169,7 @@
     },
     "prevo": "Sandygast",
     "evolution_data": { "method": "L", "condition": "", "level": 42 },
-    "flags": [],
+    "flags": ["NoTelekinesis"],
     "learnset": {
       "absorb": ["L1"],
       "afteryou": ["T"],
@@ -4293,6 +4318,7 @@
       "spd": 95,
       "spe": 59
     },
+    "evos": ["Silvally"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "aerialace": ["L20"],
@@ -7185,6 +7211,7 @@
       "spd": 45,
       "spe": 45
     },
+    "evos": ["Hakamo-o"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -7274,6 +7301,7 @@
       "spe": 65
     },
     "prevo": "Jangmo-o",
+    "evos": ["Kommo-o"],
     "evolution_data": { "method": "L", "condition": "", "level": 35 },
     "flags": [],
     "learnset": {
@@ -7861,6 +7889,7 @@
       "spd": 31,
       "spe": 37
     },
+    "evos": ["Cosmoem"],
     "flags": ["Restricted Legendary"],
     "learnset": { "splash": ["L1"], "teleport": ["L23"] }
   },
@@ -7890,6 +7919,7 @@
       "spe": 37
     },
     "prevo": "Cosmog",
+    "evos": ["Solgaleo", "Lunala"],
     "evolution_data": { "method": "L", "condition": "", "level": 43 },
     "flags": ["Restricted Legendary"],
     "learnset": { "cosmicpower": ["L1"], "teleport": ["L1"] }
@@ -9025,6 +9055,7 @@
       "spd": 67,
       "spe": 73
     },
+    "evos": ["Naganadel"],
     "flags": ["Sub-Legendary", "Ultra Beast"],
     "learnset": {
       "acid": ["L1"],

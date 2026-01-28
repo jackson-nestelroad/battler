@@ -192,7 +192,7 @@ fn embargo_cannot_stop_mega_evolution() {
             "start|mon:Gengar,player-1,1|move:Embargo",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "split|side:0",
             ["specieschange", "player-1", "species:Gengar-Mega"],
             ["specieschange", "player-1", "species:Gengar-Mega"],

@@ -69,7 +69,7 @@ fn punishment_increases_power_based_on_target_positive_boosts() {
             "boost|mon:Weavile,player-2,1|stat:atk|by:2",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Weavile,player-1,1|name:Punishment|target:Weavile,player-2,1",
             "resisted|mon:Weavile,player-2,1",
             "split|side:1",

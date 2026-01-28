@@ -95,8 +95,30 @@ mod abilities {
     }
 
     mod gen5 {
+        mod analytic_test;
+        mod defiant_test;
+        mod friend_guard_test;
+        mod harvest_test;
+        mod healer_test;
+        mod heavy_metal_test;
         mod illusion_test;
+        mod imposter_test;
+        mod infiltrator_test;
+        mod magic_bounce_test;
+        mod moody_test;
+        mod moxie_test;
+        mod multiscale_test;
+        mod overcoat_test;
+        mod pickpocket_test;
+        mod poison_touch_test;
         mod prankster_test;
+        mod rattled_test;
+        mod regenerator_test;
+        mod sheer_force_test;
+        mod telepathy_test;
+        mod unnerve_test;
+        mod weak_armor_test;
+        mod zen_mode_test;
     }
 
     mod gen8 {
@@ -177,8 +199,13 @@ mod items {
     }
 
     mod gen5 {
+        mod air_balloon_test;
         mod cell_battery_test;
+        mod eject_button_test;
+        mod eviolite_test;
         mod gem_test;
+        mod red_card_test;
+        mod ring_target_test;
     }
 
     mod gen7 {
@@ -390,7 +417,49 @@ mod moves {
     }
 
     mod gen5 {
+        mod acrobatics_test;
+        mod after_you_test;
+        mod ally_switch_test;
+        mod autotomize_test;
+        mod bestow_test;
+        mod chip_away_test;
+        mod clear_smog_test;
+        mod echoed_voice_test;
+        mod electro_ball_test;
+        mod entrainment_test;
+        mod flame_burst_test;
+        mod foul_play_test;
+        mod fusion_bolt_flare_test;
+        mod guard_split_test;
+        mod heal_pulse_test;
+        mod heavy_slam_test;
+        mod hex_test;
+        mod incinerate_test;
+        mod magic_room_test;
+        mod pledge_test;
+        mod power_split_test;
+        mod psyshock_test;
+        mod quash_test;
+        mod quick_guard_test;
+        mod reflect_type_test;
+        mod relic_song_test;
+        mod retaliate_test;
+        mod round_test;
+        mod simple_beam_test;
         mod sky_drop_test;
+        mod smack_down_test;
+        mod soak_test;
+        mod stored_power_test;
+        mod synchronoise_test;
+        mod techno_blast_test;
+        mod telekinesis_test;
+        mod venoshock_test;
+        mod wide_guard_test;
+        mod wonder_room_test;
+    }
+
+    mod gen7 {
+        mod burn_up_test;
     }
 }
 

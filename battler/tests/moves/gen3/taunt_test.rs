@@ -76,7 +76,7 @@ fn taunt_disables_status_moves() {
             "cant|mon:Treecko,player-1,1|from:move:Taunt",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Treecko,player-2,1|name:Taunt|noanim",
             "fail|mon:Treecko,player-2,1",
             "move|mon:Treecko,player-1,1|name:Tackle|target:Treecko,player-2,1",

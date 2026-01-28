@@ -72,7 +72,7 @@ fn shaymin_sky_reverts_when_frozen() {
             "split|side:1",
             "specieschange|player:player-2|position:1|name:Shaymin|health:119/160|status:Freeze|species:Shaymin|level:50|gender:U",
             "specieschange|player:player-2|position:1|name:Shaymin|health:75/100|status:Freeze|species:Shaymin|level:50|gender:U",
-            "formechange|mon:Shaymin,player-2,1|species:Shaymin|from:species:Shaymin-Sky|of:Shaymin,player-1,1",
+            "formechange|mon:Shaymin,player-2,1|species:Shaymin|from:species:Shaymin-Sky",
             "residual",
             "turn|turn:2"
         ]"#,

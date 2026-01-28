@@ -89,7 +89,7 @@ fn plus_and_minus_special_attack_boosted_together() {
             "damage|mon:Blaziken,player-2,2|health:85/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "split|side:0",
             ["switch", "player-1", "Minun"],
             ["switch", "player-1", "Minun"],

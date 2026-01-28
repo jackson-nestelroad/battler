@@ -1,0 +1,18 @@
+{
+    "tools": {
+        "allowed": [
+            "run_shell_command(cargo)",
+            "run_shell_command(find)",
+            "run_shell_command(git add)",
+            "run_shell_command(git commit)",
+            "run_shell_command(git diff)",
+            "run_shell_command(git log)",
+            "run_shell_command(git status)",
+            "run_shell_command(grep)",
+            "run_shell_command(head)",
+            "run_shell_command(ls)",
+            "run_shell_command(sed)",
+            "run_shell_command(xargs)"
+        ]
+    }
+}

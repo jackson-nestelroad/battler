@@ -49,6 +49,7 @@ use serde_string_enum::{
 };
 
 use crate::{
+    BattleType,
     WrapError,
     battle::{
         Action,
@@ -70,6 +71,7 @@ use crate::{
         PlayerContext,
         Request,
         RequestType,
+        ShiftAction,
         Side,
         SwitchAction,
         SwitchActionInput,
@@ -385,6 +387,9 @@ pub struct Player {
     pub escape_attempts: u16,
     pub escaped: bool,
 
+    pub fainted_last_turn: bool,
+    pub fainted_this_turn: bool,
+
     pub bag: HashMap<Id, u16>,
     pub dex: PlayerDex,
     pub caught: Vec<MonHandle>,
@@ -435,6 +440,8 @@ impl Player {
             can_terastallize,
             escape_attempts: 0,
             escaped: false,
+            fainted_last_turn: false,
+            fainted_this_turn: false,
             bag: HashMap::default(),
             dex: player_dex,
             caught: Vec::new(),
@@ -579,7 +586,7 @@ impl Player {
     }
 
     /// Creates an iterator over all positions used by the player with an active or fainted Mon. See
-    /// [`active_or_exited_mon_handles`][`Self::active_or_exited_mon_handles`].
+    /// [`Self::active_or_exited_mon_handles`].
     pub fn field_positions_with_active_or_exited_mon(
         &self,
     ) -> impl Iterator<Item = (usize, &MonHandle)> {
@@ -891,7 +898,7 @@ impl Player {
                         Self::choose_move(context, choice).wrap_error_with_message("cannot move")
                     }
                     Ok(Choice::Pass) => {
-                        Self::choose_pass(context).wrap_error_with_message("cannot pass")
+                        Self::choose_pass(context, true).wrap_error_with_message("cannot pass")
                     }
                     Ok(Choice::LearnMove(choice)) => Self::choose_learn_move(context, choice)
                         .wrap_error_with_message("cannot learn move"),
@@ -903,6 +910,9 @@ impl Player {
                     }
                     Ok(Choice::Item(choice)) => Self::choose_item(context, choice)
                         .wrap_error_with_message("cannot use item"),
+                    Ok(Choice::Shift) => {
+                        Self::choose_shift(context).wrap_error_with_message("cannot shift")
+                    }
                     Ok(Choice::Random) => {
                         Self::choose_random(context).wrap_error_with_message("random choice failed")
                     }
@@ -1061,7 +1071,7 @@ impl Player {
                         mon.is_none()
                             || mon.is_some_and(|mon| context.mon(mon).is_ok_and(|mon| !mon.active))
                     }) {
-                        Self::choose_pass(context)?;
+                        Self::choose_pass(context, false)?;
                         next_mon += 1;
                     }
                 }
@@ -1079,7 +1089,7 @@ impl Player {
                                 })
                         })
                     {
-                        Self::choose_pass(context)?;
+                        Self::choose_pass(context, false)?;
                         next_mon += 1;
                     }
                 }
@@ -1089,7 +1099,7 @@ impl Player {
                             .mon(*mon)
                             .is_ok_and(|mon| mon.learnable_moves.is_empty())
                     }) {
-                        Self::choose_pass(context)?;
+                        Self::choose_pass(context, false)?;
                         next_mon += 1;
                     }
                 }
@@ -1099,8 +1109,8 @@ impl Player {
         Ok(next_mon)
     }
 
-    fn choose_pass(context: &mut PlayerContext) -> Result<()> {
-        let position = Self::get_position_for_next_choice(context, true)?;
+    fn choose_pass(context: &mut PlayerContext, chosen_by_player: bool) -> Result<()> {
+        let position = Self::get_position_for_next_choice(context, !chosen_by_player)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
                 if let Some(mon) = context.player().active_mon_handle(position) {
@@ -1566,6 +1576,40 @@ impl Player {
         Ok(())
     }
 
+    fn choose_shift(context: &mut PlayerContext) -> Result<()> {
+        if context.battle().format.battle_type != BattleType::Triples {
+            return Err(general_error("you can only shift to the center in triples"));
+        }
+
+        match context.player().request_type() {
+            Some(RequestType::Turn) => (),
+            _ => return Err(general_error("you cannot shift to the center out of turn")),
+        }
+        let active_position = Self::get_position_for_next_choice(context, false)?;
+        if active_position >= context.player().active.len() {
+            return Err(general_error("you sent more choices than active mons"));
+        }
+        if active_position == 1 {
+            return Err(general_error(
+                "you can only shift from an edge to the center",
+            ));
+        }
+
+        let mon_handle = context
+            .player()
+            .active_mon_handle(active_position)
+            .wrap_expectation_with_format(format_args!(
+                "expected an active mon in position {active_position}"
+            ))?;
+        context
+            .player_mut()
+            .choice
+            .actions
+            .push(Action::Shift(ShiftAction::new(mon_handle, 1)));
+
+        Ok(())
+    }
+
     fn choose_random(context: &mut PlayerContext) -> Result<()> {
         match context.player().request_type() {
             // Do not learn the move.
@@ -1714,6 +1758,13 @@ impl Player {
     /// Checks if the player has the given species registered in its dex.
     pub fn has_species_registered(context: &PlayerContext, species: &Id) -> bool {
         context.player().dex.species.contains(species.as_ref())
+    }
+
+    /// Resets the player's state for the next turn.
+    pub fn reset_state_for_next_turn(context: &mut PlayerContext) -> Result<()> {
+        context.player_mut().fainted_last_turn = context.player().fainted_this_turn;
+        context.player_mut().fainted_this_turn = false;
+        Ok(())
     }
 }
 

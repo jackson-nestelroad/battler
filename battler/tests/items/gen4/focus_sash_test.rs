@@ -92,7 +92,7 @@ fn focus_sash_protects_from_ko_at_full_health() {
             "damage|mon:Pikachu,player-1,1|health:2/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "useitem|player:player-1|name:Full Restore|target:Pikachu,player-1,1",
             "split|side:0",
             "heal|mon:Pikachu,player-1,1|from:item:Full Restore|health:95/95",

@@ -66,7 +66,7 @@ fn stall_makes_mon_go_last_in_priority_bracket() {
             "boost|mon:Sableye,player-1,1|stat:spe|by:2",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Sableye,player-2,1|name:Metal Claw|target:Sableye,player-1,1",
             "split|side:0",
             "damage|mon:Sableye,player-1,1|health:87/110",

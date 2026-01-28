@@ -96,7 +96,7 @@ fn stab_increases_damage() {
             "damage|mon:Pikachu,player-2,1|health:80/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Pikachu,player-2,1|name:Quick Attack|target:Squirtle,player-1,1",
             "split|side:0",
             "damage|mon:Squirtle,player-1,1|health:61/85",

@@ -12,7 +12,22 @@
   "sweetveil": { "name": "Sweet Veil", "flags": [] },
   "stancechange": { "name": "Stance Change", "flags": ["Permanent"] },
   "galewings": { "name": "Gale Wings", "flags": [] },
-  "megalauncher": { "name": "Mega Launcher", "flags": [] },
+  "megalauncher": {
+    "name": "Mega Launcher",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if func_call(move_has_flag: $move pulse):",
+          ["return $base_power * 3/2"]
+        ],
+        "on_prepare_hit": [
+          "if $move.id == healpulse:",
+          ["$move.effect_state.multiplier = 3/4"]
+        ]
+      }
+    }
+  },
   "grasspelt": { "name": "Grass Pelt", "flags": [] },
   "symbiosis": { "name": "Symbiosis", "flags": [] },
   "toughclaws": { "name": "Tough Claws", "flags": [] },
@@ -47,7 +62,7 @@
       "callbacks": {
         "on_start": [
           "$effect_state.active = true",
-          "set_weather: heavyrainweather use_target_as_source"
+          "set_weather: heavyrainweather"
         ],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
@@ -71,7 +86,7 @@
       "callbacks": {
         "on_start": [
           "$effect_state.active = true",
-          "set_weather: extremelyharshsunlight use_target_as_source"
+          "set_weather: extremelyharshsunlight"
         ],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
@@ -93,10 +108,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "$effect_state.active = true",
-          "set_weather: strongwinds use_target_as_source"
-        ],
+        "on_start": ["$effect_state.active = true", "set_weather: strongwinds"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
           "if $field.weather == strongwinds and !($strong_weathers has $weather):",

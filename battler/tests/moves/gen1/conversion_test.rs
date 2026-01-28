@@ -98,7 +98,7 @@ fn conversion_sets_users_type() {
             "fail|mon:Porygon,player-2,1",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Porygon,player-1,1|name:Water Gun|target:Porygon,player-2,1",
             "split|side:1",
             "damage|mon:Porygon,player-2,1|health:94/125",

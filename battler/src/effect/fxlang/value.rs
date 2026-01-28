@@ -40,6 +40,7 @@ use battler_data::{
     SpecialItemData,
     Stat,
     StatTable,
+    TechnoBlastData,
     Type,
 };
 use hashbrown::HashMap;
@@ -117,6 +118,7 @@ pub enum ValueType {
     SpecialItemData,
     Stat,
     StatTable,
+    TechnoBlastData,
     TimeOfDay,
     Type,
     WildEncounterType,
@@ -168,6 +170,7 @@ pub enum Value {
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
 
+    // Maintain alphabetical order of this section.
     Accuracy(Accuracy),
     Boost(Boost),
     BoostTable(BoostTable),
@@ -184,6 +187,7 @@ pub enum Value {
     SpecialItemData(SpecialItemData),
     Stat(Stat),
     StatTable(StatTable),
+    TechnoBlastData(TechnoBlastData),
     TimeOfDay(TimeOfDay),
     Type(Type),
     WildEncounterType(WildEncounterType),
@@ -232,6 +236,7 @@ impl Value {
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TechnoBlastData(_) => ValueType::TechnoBlastData,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
             Self::WildEncounterType(_) => ValueType::WildEncounterType,
@@ -328,6 +333,7 @@ impl Value {
             ValueType::SpecialItemData => self.special_item_data().map(Value::SpecialItemData),
             ValueType::Stat => self.stat().map(Value::Stat),
             ValueType::StatTable => self.stat_table().map(Value::StatTable),
+            ValueType::TechnoBlastData => self.techno_blast_data().map(Value::TechnoBlastData),
             ValueType::TimeOfDay => self.time_of_day().map(Value::TimeOfDay),
             ValueType::Type => self.mon_type().map(Value::Type),
             ValueType::WildEncounterType => {
@@ -488,6 +494,15 @@ impl Value {
     pub fn is_format(&self) -> bool {
         match self {
             Self::Format => true,
+            _ => false,
+        }
+    }
+
+    /// Checks if the value is a [`MoveHandle`].
+    pub fn is_active_move(&self) -> bool {
+        match self {
+            Self::Effect(EffectHandle::ActiveMove(_, _)) => true,
+            Self::ActiveMove(_) => true,
             _ => false,
         }
     }
@@ -824,6 +839,17 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`TechnoBlastData`].
+    pub fn techno_blast_data(self) -> Result<TechnoBlastData> {
+        match self {
+            Self::TechnoBlastData(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::TechnoBlastData,
+            )),
+        }
+    }
+
     /// Consumes the value into a [`TimeOfDay`].
     pub fn time_of_day(self) -> Result<TimeOfDay> {
         match self {
@@ -938,6 +964,7 @@ pub enum MaybeReferenceValue<'eval> {
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
 
+    // Maintain alphabetical order of this section.
     Accuracy(Accuracy),
     Boost(Boost),
     BoostTable(BoostTable),
@@ -954,6 +981,7 @@ pub enum MaybeReferenceValue<'eval> {
     SpecialItemData(SpecialItemData),
     Stat(Stat),
     StatTable(StatTable),
+    TechnoBlastData(TechnoBlastData),
     TimeOfDay(TimeOfDay),
     Type(Type),
     WildEncounterType(WildEncounterType),
@@ -1004,6 +1032,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TechnoBlastData(_) => ValueType::TechnoBlastData,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
             Self::WildEncounterType(_) => ValueType::WildEncounterType,
@@ -1054,6 +1083,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::SpecialItemData(val) => Value::SpecialItemData(val.clone()),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable(val.clone()),
+            Self::TechnoBlastData(val) => Value::TechnoBlastData(val.clone()),
             Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
             Self::WildEncounterType(val) => Value::WildEncounterType(*val),
@@ -1159,6 +1189,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TechnoBlastData(val) => Self::TechnoBlastData(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(val),
             Value::Type(val) => Self::Type(val),
             Value::WildEncounterType(val) => Self::WildEncounterType(val),
@@ -1212,6 +1243,7 @@ pub enum ValueRef<'eval> {
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
 
+    // Maintain alphabetical order of this section.
     Accuracy(Accuracy),
     Boost(Boost),
     BoostTable(&'eval BoostTable),
@@ -1228,6 +1260,7 @@ pub enum ValueRef<'eval> {
     SpecialItemData(&'eval SpecialItemData),
     Stat(Stat),
     StatTable(&'eval StatTable),
+    TechnoBlastData(&'eval TechnoBlastData),
     TimeOfDay(TimeOfDay),
     Type(Type),
     WildEncounterType(WildEncounterType),
@@ -1280,6 +1313,7 @@ impl<'eval> ValueRef<'eval> {
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TechnoBlastData(_) => ValueType::TechnoBlastData,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
             Self::WildEncounterType(_) => ValueType::WildEncounterType,
@@ -1332,6 +1366,7 @@ impl<'eval> ValueRef<'eval> {
             Self::SpecialItemData(val) => Value::SpecialItemData((*val).clone()),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
+            Self::TechnoBlastData(val) => Value::TechnoBlastData((*val).clone()),
             Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
             Self::WildEncounterType(val) => Value::WildEncounterType(*val),
@@ -1448,6 +1483,14 @@ impl<'eval> ValueRef<'eval> {
             _ => None,
         }
     }
+
+    /// Returns the [`TechnoBlastData`] associated with a reference.
+    pub fn techno_blast_data(&self) -> Option<&TechnoBlastData> {
+        match self {
+            Self::TechnoBlastData(data) => Some(data),
+            _ => None,
+        }
+    }
 }
 
 impl<'element, 'value> From<&'element ElementRef<'value, Value>> for ValueRef<'element> {
@@ -1493,6 +1536,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TechnoBlastData(val) => Self::TechnoBlastData(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(*val),
             Value::Type(val) => Self::Type(*val),
             Value::WildEncounterType(val) => Self::WildEncounterType(*val),
@@ -1582,6 +1626,7 @@ pub enum ValueRefMut<'eval> {
     SecondaryHitEffect(&'eval mut SecondaryEffectData),
     SecondaryHitEffectList(&'eval mut Vec<SecondaryEffectData>),
 
+    // Maintain alphabetical order of this section.
     Accuracy(&'eval mut Accuracy),
     Boost(&'eval mut Boost),
     BoostTable(&'eval mut BoostTable),
@@ -1599,7 +1644,9 @@ pub enum ValueRefMut<'eval> {
     Nature(&'eval mut Nature),
     SpecialItemData(&'eval mut SpecialItemData),
     Stat(&'eval mut Stat),
+    OptionalStat(&'eval mut Option<Stat>),
     StatTable(&'eval mut StatTable),
+    TechnoBlastData(&'eval mut TechnoBlastData),
     TimeOfDay(&'eval mut TimeOfDay),
     Type(&'eval mut Type),
     WildEncounterType(&'eval mut WildEncounterType),
@@ -1664,7 +1711,9 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
+            Self::OptionalStat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TechnoBlastData(_) => ValueType::TechnoBlastData,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
             Self::WildEncounterType(_) => ValueType::WildEncounterType,
@@ -1836,8 +1885,14 @@ impl<'eval> ValueRefMut<'eval> {
             ValueRefMut::Stat(var) => {
                 *var = val.stat()?;
             }
+            ValueRefMut::OptionalStat(var) => {
+                *var = (!val.is_undefined()).then(|| val.stat()).transpose()?;
+            }
             ValueRefMut::StatTable(var) => {
                 *var = val.stat_table()?;
+            }
+            ValueRefMut::TechnoBlastData(var) => {
+                *var = val.techno_blast_data()?;
             }
             ValueRefMut::TimeOfDay(var) => {
                 *var = val.time_of_day()?;
@@ -1900,6 +1955,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TechnoBlastData(val) => Self::TechnoBlastData(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(val),
             Value::Type(val) => Self::Type(val),
             Value::WildEncounterType(val) => Self::WildEncounterType(val),
@@ -1945,6 +2001,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
 
+    // Maintain alphabetical order of this section.
     Accuracy(Accuracy),
     Boost(Boost),
     BoostTable(&'eval BoostTable),
@@ -1959,9 +2016,9 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     NaturalGiftData(&'eval NaturalGiftData),
     Nature(Nature),
     SpecialItemData(&'eval SpecialItemData),
-    TempSpecialItemData(SpecialItemData),
     Stat(Stat),
     StatTable(&'eval StatTable),
+    TechnoBlastData(&'eval TechnoBlastData),
     TimeOfDay(TimeOfDay),
     Type(Type),
     WildEncounterType(WildEncounterType),
@@ -2014,9 +2071,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
             Self::SpecialItemData(_) => ValueType::SpecialItemData,
-            Self::TempSpecialItemData(_) => ValueType::SpecialItemData,
             Self::Stat(_) => ValueType::Stat,
             Self::StatTable(_) => ValueType::StatTable,
+            Self::TechnoBlastData(_) => ValueType::TechnoBlastData,
             Self::TimeOfDay(_) => ValueType::TimeOfDay,
             Self::Type(_) => ValueType::Type,
             Self::WildEncounterType(_) => ValueType::WildEncounterType,
@@ -2069,9 +2126,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::NaturalGiftData(val) => Value::NaturalGiftData((*val).clone()),
             Self::Nature(val) => Value::Nature(*val),
             Self::SpecialItemData(val) => Value::SpecialItemData((*val).clone()),
-            Self::TempSpecialItemData(val) => Value::SpecialItemData(val.clone()),
             Self::Stat(val) => Value::Stat(*val),
             Self::StatTable(val) => Value::StatTable((*val).clone()),
+            Self::TechnoBlastData(val) => Value::TechnoBlastData((*val).clone()),
             Self::TimeOfDay(val) => Value::TimeOfDay(*val),
             Self::Type(val) => Value::Type(*val),
             Self::WildEncounterType(val) => Value::WildEncounterType(*val),
@@ -2127,9 +2184,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::NaturalGiftData(_) => 161,
             Self::Nature(_) => 162,
             Self::SpecialItemData(_) => 163,
-            Self::TempSpecialItemData(_) => 164,
-            Self::Stat(_) => 165,
-            Self::StatTable(_) => 166,
+            Self::Stat(_) => 164,
+            Self::StatTable(_) => 165,
+            Self::TechnoBlastData(_) => 166,
             Self::TimeOfDay(_) => 167,
             Self::Type(_) => 168,
             Self::WildEncounterType(_) => 169,
@@ -2611,6 +2668,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::SpecialItemData(lhs), Self::SpecialItemData(rhs)) => lhs.eq(rhs),
             (Self::Stat(lhs), Self::Stat(rhs)) => lhs.eq(rhs),
             (Self::StatTable(lhs), Self::StatTable(rhs)) => lhs.eq(rhs),
+            (Self::TechnoBlastData(lhs), Self::TechnoBlastData(rhs)) => lhs.eq(rhs),
             (Self::TimeOfDay(lhs), Self::TimeOfDay(rhs)) => lhs.eq(rhs),
             (Self::Type(lhs), Self::Type(rhs)) => lhs.eq(rhs),
             (Self::WildEncounterType(lhs), Self::WildEncounterType(rhs)) => lhs.eq(rhs),
@@ -2808,6 +2866,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::SpecialItemData(val) => Self::SpecialItemData(val),
             Value::Stat(val) => Self::Stat(*val),
             Value::StatTable(val) => Self::StatTable(val),
+            Value::TechnoBlastData(val) => Self::TechnoBlastData(val),
             Value::TimeOfDay(val) => Self::TimeOfDay(*val),
             Value::Type(val) => Self::Type(*val),
             Value::WildEncounterType(val) => Self::WildEncounterType(*val),
@@ -2857,6 +2916,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::SpecialItemData(val) => Self::SpecialItemData(val),
             MaybeReferenceValue::Stat(val) => Self::Stat(*val),
             MaybeReferenceValue::StatTable(val) => Self::StatTable(val),
+            MaybeReferenceValue::TechnoBlastData(val) => Self::TechnoBlastData(val),
             MaybeReferenceValue::TimeOfDay(val) => Self::TimeOfDay(*val),
             MaybeReferenceValue::Type(val) => Self::Type(*val),
             MaybeReferenceValue::WildEncounterType(val) => Self::WildEncounterType(*val),
@@ -2911,6 +2971,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::SpecialItemData(val) => Self::SpecialItemData(val),
             ValueRef::Stat(val) => Self::Stat(val),
             ValueRef::StatTable(val) => Self::StatTable(val),
+            ValueRef::TechnoBlastData(val) => Self::TechnoBlastData(val),
             ValueRef::TimeOfDay(val) => Self::TimeOfDay(val),
             ValueRef::Type(val) => Self::Type(val),
             ValueRef::WildEncounterType(val) => Self::WildEncounterType(val),
@@ -2958,16 +3019,17 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             ValueRef::FlingData(val) => Self::FlingData(*val),
             ValueRef::Gender(val) => Self::Gender(*val),
-            ValueRef::JudgmentData(val) => Self::JudgmentData(*val),
+            ValueRef::JudgmentData(val) => Self::JudgmentData(val),
             ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(*val),
             ValueRef::MultihitType(val) => Self::MultihitType(*val),
-            ValueRef::NaturalGiftData(val) => Self::NaturalGiftData(*val),
+            ValueRef::NaturalGiftData(val) => Self::NaturalGiftData(val),
             ValueRef::Nature(val) => Self::Nature(*val),
             ValueRef::SpecialItemData(val) => Self::SpecialItemData(*val),
             ValueRef::Stat(val) => Self::Stat(*val),
             ValueRef::StatTable(val) => Self::StatTable(val),
+            ValueRef::TechnoBlastData(val) => Self::TechnoBlastData(val),
             ValueRef::TimeOfDay(val) => Self::TimeOfDay(*val),
             ValueRef::Type(val) => Self::Type(*val),
             ValueRef::WildEncounterType(val) => Self::WildEncounterType(*val),

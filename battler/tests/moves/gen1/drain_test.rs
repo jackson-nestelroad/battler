@@ -86,7 +86,7 @@ fn drain_moves_heal_a_percent_of_damage_dealt() {
             "damage|mon:Venusaur,player-1,1|health:75/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Venusaur,player-1,1|name:Giga Drain|target:Machamp,player-2,1",
             "split|side:1",
             "damage|mon:Machamp,player-2,1|health:126/290",

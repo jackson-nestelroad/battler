@@ -59,8 +59,8 @@ fn role_play_copies_target_ability() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Banette,player-1,1|name:Role Play|target:Banette,player-2,1",
-            "abilityend|mon:Banette,player-1,1|ability:No Ability|from:move:Role Play|of:Banette,player-2,1",
-            "ability|mon:Banette,player-1,1|ability:Soundproof|from:move:Role Play|of:Banette,player-2,1",
+            "abilityend|mon:Banette,player-1,1|ability:No Ability|from:move:Role Play",
+            "ability|mon:Banette,player-1,1|ability:Soundproof|from:move:Role Play",
             "residual",
             "turn|turn:2"
         ]"#,

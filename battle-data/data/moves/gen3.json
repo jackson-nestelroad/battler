@@ -576,7 +576,7 @@
           ["return false"]
         ],
         "on_hit": [
-          "if !func_call(set_ability: $source $target.ability use_target_as_source):",
+          "if !func_call(set_ability: $source $target.ability):",
           ["return false"]
         ]
       }
@@ -701,11 +701,11 @@
         "on_side_try_hit_side": [
           "if $source.side == $side or $move.effect_state.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
-          "log_activate: with_target use_effect_state_source",
+          "log_activate: with_target use_effect_state_target",
           "do_not_animate_last_move",
           "$reflected_move = func_call(clone_active_move: $move $effect_state.target)",
           "$reflected_move.effect_state.reflected = true",
-          "use_active_move: $effect_state.source $reflected_move $source use_effect_as_source_effect",
+          "use_active_move: $effect_state.target $reflected_move $source use_effect_as_source_effect",
           "return stop"
         ]
       }
@@ -872,7 +872,7 @@
           "$source_ability = $source.ability",
           "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap) or $target.dynamaxed:",
           ["return false"],
-          "if !func_call(set_ability: $source $target_ability use_target_as_source dry_run):",
+          "if !func_call(set_ability: $source $target_ability dry_run):",
           ["return false"],
           "if !func_call(set_ability: $target $source_ability dry_run):",
           ["return false"]
@@ -884,12 +884,12 @@
           "$allies = func_call(is_ally: $target $source)",
           "if $allies:",
           [
-            "set_ability: $source $target_ability use_target_as_source silent",
+            "set_ability: $source $target_ability silent",
             "set_ability: $target $source_ability silent"
           ],
           "else:",
           [
-            "set_ability: $source $target_ability use_target_as_source",
+            "set_ability: $source $target_ability",
             "set_ability: $target $source_ability"
           ]
         ]
@@ -1138,7 +1138,7 @@
           ["$type = grass"],
           "else if $field.environment == volcano:",
           ["$type = fire"],
-          "set_types: $target $type"
+          "set_types: $target [$type]"
         ]
       }
     }
@@ -1792,17 +1792,7 @@
       "Protect"
     ],
     "effect": {
-      "callbacks": {
-        "on_after_hit": [
-          "if $source.item.is_defined:",
-          ["return"],
-          "$item = func_call(take_item: $target silent)",
-          "if !$item:",
-          ["return"],
-          "if !func_call(set_item: $source $item use_target_as_source):",
-          ["return"]
-        ]
-      }
+      "delegates": ["move:thief"]
     }
   },
   "volttackle": {

@@ -66,7 +66,7 @@ fn feint_breaks_protect() {
             "damage|mon:Infernape,player-2,1|health:87/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Infernape,player-2,1|name:Protect|target:Infernape,player-2,1",
             "singleturn|mon:Infernape,player-2,1|move:Protect",
             "move|mon:Infernape,player-1,1|name:Feint|target:Infernape,player-2,1",

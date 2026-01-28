@@ -92,7 +92,7 @@ fn fling_throws_berry() {
             "itemend|mon:Ambipom,player-1,1|item:Pecha Berry|silent|from:move:Fling",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Ambipom,player-2,1|name:Toxic|target:Ambipom,player-1,1",
             "status|mon:Ambipom,player-1,1|status:Bad Poison",
             "split|side:0",

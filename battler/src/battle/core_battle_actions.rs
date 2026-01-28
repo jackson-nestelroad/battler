@@ -629,6 +629,12 @@ pub fn use_active_move(
         };
     }
 
+    if outcome.success() {
+        context
+            .battle_mut()
+            .set_last_successful_move(Some(active_move_handle));
+    }
+
     core_battle_effects::run_active_move_event_expecting_void(
         &mut context,
         fxlang::BattleEvent::AfterMove,
@@ -781,6 +787,20 @@ fn use_active_move_internal(
             context,
             fxlang::BattleEvent::MoveFailed,
             core_battle_effects::MoveTargetForEvent::User,
+            fxlang::VariableInput::default(),
+        );
+    }
+
+    if !context.active_move().ignore_all_secondary_effects {
+        core_battle_effects::run_active_move_event_expecting_void(
+            context,
+            fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
+            core_battle_effects::MoveTargetForEvent::User,
+            fxlang::VariableInput::default(),
+        );
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context.user_applying_effect_context(target)?,
+            fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
             fxlang::VariableInput::default(),
         );
     }
@@ -1170,7 +1190,7 @@ fn move_hit_loop(
         move_hit(context, &mut hit_targets_state)?;
 
         // Update the outcome for the target as soon as possible.
-        for (i, _) in hit_targets.iter().enumerate() {
+        for (i, hit_target) in hit_targets.iter().enumerate() {
             let new_outcome = MoveOutcome::from(
                 !hit_targets_state
                     .get(i)
@@ -1181,8 +1201,11 @@ fn move_hit_loop(
                     .failed(),
             );
             targets
-                .get_mut(i)
-                .wrap_expectation_with_format(format_args!("expected target at index {i}"))?
+                .iter_mut()
+                .find(|target| target.handle == *hit_target)
+                .wrap_expectation_with_format(format_args!(
+                    "expected target corresponding to index {i}"
+                ))?
                 .outcome = new_outcome;
         }
 
@@ -1275,18 +1298,20 @@ fn move_hit_loop(
     // Trigger effects at the end of each move.
     CoreBattle::update(context.as_battle_context_mut())?;
 
-    for target in targets.iter().filter(|target| target.outcome.success()) {
-        core_battle_effects::run_active_move_event_expecting_void(
-            context,
-            fxlang::BattleEvent::AfterMoveSecondaryEffects,
-            core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-            fxlang::VariableInput::default(),
-        );
-        core_battle_effects::run_event_for_applying_effect(
-            &mut context.applying_effect_context_for_target(target.handle)?,
-            fxlang::BattleEvent::AfterMoveSecondaryEffects,
-            fxlang::VariableInput::default(),
-        );
+    if !context.active_move().ignore_all_secondary_effects {
+        for target in targets.iter().filter(|target| target.outcome.success()) {
+            core_battle_effects::run_active_move_event_expecting_void(
+                context,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
+                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+                fxlang::VariableInput::default(),
+            );
+            core_battle_effects::run_event_for_applying_effect(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::AfterMoveSecondaryEffects,
+                fxlang::VariableInput::default(),
+            );
+        }
     }
 
     // At this point, all hits have been applied.
@@ -1413,7 +1438,7 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
     }
 
     // Force switch out targets that were hit, as necessary.
-    force_switch(context, targets)?;
+    force_switch_from_move(context, targets)?;
 
     for target in targets.iter().filter(|target| target.outcome.damage() > 0) {
         core_battle_effects::run_event_for_applying_effect(
@@ -1625,7 +1650,6 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         &mut context.attacker_context()?,
         attack_stat,
         attack_boosts,
-        Fraction::from(1u16),
         Some(move_user),
         Some(CalculateStatContext {
             effect: effect_handle.clone(),
@@ -1636,7 +1660,6 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         &mut context.defender_context()?,
         defense_stat,
         defense_boosts,
-        Fraction::from(1u16),
         Some(move_target),
         Some(CalculateStatContext {
             effect: effect_handle,
@@ -1749,23 +1772,15 @@ fn modify_damage(
 
     // STAB.
     let move_type = context.active_move().data.primary_type;
-    let stab = !context.active_move().data.typeless
-        && (mon_states::has_type(context.as_mon_context_mut(), move_type)
-            || mon_states::has_type_before_forced_types(context.as_mon_context_mut(), move_type));
-    let stab_modifier = if stab {
-        context
-            .active_move()
-            .clone()
-            .stab_modifier
-            .unwrap_or(Fraction::new(3, 2))
-    } else {
-        core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
-            &mut context.user_applying_effect_context()?,
-            fxlang::BattleEvent::ForceStab,
-            0u32.into(),
-        )
-    };
-    if stab_modifier > 0 {
+    let stab = context.active_move().data.force_stab
+        || (!context.active_move().data.typeless
+            && (mon_states::has_type(context.as_mon_context_mut(), move_type)
+                || mon_states::has_type_before_forced_types(
+                    context.as_mon_context_mut(),
+                    move_type,
+                )));
+    if stab {
+        let stab_modifier = Fraction::new(3, 2);
         let stab_modifier =
             core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
                 &mut context.user_applying_effect_context()?,
@@ -2627,9 +2642,23 @@ pub fn boost(
         if delta != 0 || capped || (!is_secondary && !is_self && user_intended && !suppressed) {
             core_battle_logs::boost(context, boost, delta, original_delta)?;
         }
+
+        core_battle_effects::run_event_for_applying_effect(
+            context,
+            fxlang::BattleEvent::AfterEachBoost,
+            fxlang::VariableInput::from_iter([
+                fxlang::Value::Boost(boost),
+                fxlang::Value::Fraction(original_delta.into()),
+            ]),
+        );
     }
 
-    // TODO: AfterBoost event.
+    core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AfterBoost,
+        fxlang::VariableInput::from_iter([fxlang::Value::BoostTable(boosts.clone())]),
+    );
+
     if success {
         if boosts.values().any(|val| val > 0) {
             context.target_mut().volatile_state.stats_raised_this_turn = true;
@@ -2794,8 +2823,30 @@ fn apply_secondary_effects(
     Ok(())
 }
 
+/// Forces the target to switch out at the end of the move.
+pub fn force_switch(context: &mut ApplyingEffectContext) -> Result<bool> {
+    let mut context = context.target_context()?;
+    if context.mon().hp == 0 || !Player::can_switch(context.as_player_context()) {
+        return Ok(false);
+    }
+
+    if !core_battle_effects::run_event_for_mon(
+        &mut context,
+        fxlang::BattleEvent::DragOut,
+        fxlang::VariableInput::default(),
+    ) {
+        return Ok(false);
+    }
+
+    context.mon_mut().switch_state.force_switch = Some(SwitchType::Normal);
+    Ok(true)
+}
+
 /// Forces all targets of the move to switch out at the end of the move.
-fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
+fn force_switch_from_move(
+    context: &mut ActiveMoveContext,
+    targets: &mut [HitTargetState],
+) -> Result<()> {
     if !context
         .hit_effect()
         .is_some_and(|hit_effect| hit_effect.force_switch)
@@ -2805,23 +2856,11 @@ fn force_switch(context: &mut ActiveMoveContext, targets: &mut [HitTargetState])
 
     for target in targets {
         let mut context = context.target_context(target.handle)?;
-        if !target.outcome.hit_target()
-            || context.target_mon().hp == 0
-            || context.mon().hp == 0
-            || !Player::can_switch(context.target_mon_context()?.as_player_context())
-        {
+        if !target.outcome.hit_target() || context.mon().hp == 0 {
             continue;
         }
 
-        if !core_battle_effects::run_event_for_mon(
-            &mut context.target_mon_context()?,
-            fxlang::BattleEvent::DragOut,
-            fxlang::VariableInput::default(),
-        ) {
-            continue;
-        }
-
-        context.target_mon_mut().switch_state.force_switch = Some(SwitchType::Normal);
+        force_switch(&mut context.applying_effect_context()?)?;
     }
 
     Ok(())
@@ -2935,6 +2974,16 @@ pub fn try_set_status(
         fxlang::BattleEvent::AfterSetStatus,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle)]),
     );
+
+    // If the duration is EXPLICITLY zero, then we remove the status immediately.
+    if context
+        .target()
+        .status_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        cure_status(context, false, false)?;
+    }
 
     Ok(ApplyMoveEffectResult::Success)
 }
@@ -3155,6 +3204,19 @@ pub fn add_volatile(
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
     );
 
+    // If the duration is EXPLICITLY zero, then we remove the volatile immediately.
+    if context
+        .target()
+        .volatile_state
+        .volatiles
+        .get(&volatile)
+        .wrap_expectation("expected volatile state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_volatile(context, &volatile, false)?;
+    }
+
     Ok(true)
 }
 
@@ -3170,7 +3232,7 @@ pub fn remove_volatile(
 
     let volatile_status_handle = context
         .battle_mut()
-        .get_effect_handle_by_id(&volatile)?
+        .get_effect_handle_by_id(volatile)?
         .clone();
     let volatile = volatile_status_handle
         .try_id()
@@ -3250,22 +3312,8 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
         .volatile_state
         .boosts
         .get(defense_stat.try_into()?);
-    let attack = Mon::calculate_stat(
-        context,
-        attack_stat,
-        attack_boosts,
-        Fraction::from(1u16),
-        None,
-        None,
-    )?;
-    let defense = Mon::calculate_stat(
-        context,
-        defense_stat,
-        defense_boosts,
-        Fraction::from(1u16),
-        None,
-        None,
-    )?;
+    let attack = Mon::calculate_stat(context, attack_stat, attack_boosts, None, None)?;
+    let defense = Mon::calculate_stat(context, defense_stat, defense_boosts, None, None)?;
     let level = context.mon().level as u32;
     let base_damage = 2 * level / 5 + 2;
     let base_damage = base_damage * base_power;
@@ -3358,6 +3406,18 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(side_condition_handle.clone())]),
     );
 
+    // If the duration is EXPLICITLY zero, then we remove the side condition immediately.
+    if context
+        .side()
+        .conditions
+        .get(&condition)
+        .wrap_expectation("expected side condition state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_side_condition(context, &condition)?;
+    }
+
     Ok(true)
 }
 
@@ -3402,8 +3462,8 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
 }
 
 /// Sets the types of a Mon.
-pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Result<bool> {
-    if types.contains(&Type::None) || types.contains(&Type::Stellar) {
+pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> Result<bool> {
+    if types.contains(&Type::Stellar) {
         return Ok(false);
     }
 
@@ -3418,8 +3478,9 @@ pub fn set_types(context: &mut ApplyingEffectContext, types: Vec<Type>) -> Resul
     }
 
     if types.is_empty() {
-        return Ok(false);
+        types = Vec::from_iter([Type::None]);
     }
+
     context.target_mut().volatile_state.types = types;
     let source = context.source_handle();
     let source_effect = context.source_effect_handle().cloned();
@@ -3827,6 +3888,17 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         fxlang::BattleEvent::WeatherChange,
     )?;
 
+    // If the duration is EXPLICITLY zero, then we remove the weather immediately.
+    if context
+        .battle()
+        .field
+        .weather_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        clear_weather(context)?;
+    }
+
     Ok(true)
 }
 
@@ -3952,6 +4024,17 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
 
     // TODO: TerrainChange event.
 
+    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
+    if context
+        .battle()
+        .field
+        .terrain_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        clear_terrain(context)?;
+    }
+
     Ok(true)
 }
 
@@ -3985,6 +4068,17 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
     }
 
     // TODO: TerrainChange event.
+
+    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
+    if context
+        .battle()
+        .field
+        .terrain_state
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        clear_terrain(context)?;
+    }
 
     Ok(true)
 }
@@ -4087,6 +4181,19 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
         fxlang::BattleEvent::AfterAddPseudoWeather,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
     );
+
+    // If the duration is EXPLICITLY zero, then we remove the pseudo-weather immediately.
+    if context
+        .battle()
+        .field
+        .pseudo_weathers
+        .get(&pseudo_weather)
+        .wrap_expectation("expected pseudo weather state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_pseudo_weather(context, &pseudo_weather)?;
+    }
 
     Ok(true)
 }
@@ -4363,6 +4470,20 @@ pub fn add_slot_condition(
     }
 
     core_battle_logs::add_slot_condition(context, slot, &condition)?;
+
+    // If the duration is EXPLICITLY zero, then we remove the slot condition immediately.
+    if context
+        .side_mut()
+        .slot_conditions
+        .entry(slot)
+        .or_default()
+        .get(&condition)
+        .wrap_expectation("expected slot condition state to exist")?
+        .duration()
+        .is_some_and(|duration| duration == 0)
+    {
+        remove_slot_condition(context, slot, &condition)?;
+    }
 
     Ok(true)
 }
@@ -4969,6 +5090,15 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
     let pp = context.target_mut().set_pp(move_id, pp);
     core_battle_logs::set_pp(context, move_id, pp)?;
     Ok(pp)
+}
+
+/// Clears all boosts on the target Mon.
+pub fn clear_boosts(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    context.target_mut().clear_boosts();
+    if !silent {
+        core_battle_logs::clear_boosts(context)?;
+    }
+    Ok(())
 }
 
 /// Clears all negative boosts on the target Mon.
@@ -5722,5 +5852,95 @@ pub fn end_terastallization(context: &mut ApplyingEffectContext) -> Result<()> {
     context.target_mut().terastallization_state = fxlang::EffectState::default();
 
     core_battle_logs::revert_terastallization(context)?;
+    Ok(())
+}
+
+/// Swaps the positions of two Mons from the same player.
+///
+/// Swapping positions is typically only legal in Doubles and Triples battles, in which all players
+/// are from the same Mon (thus, it appears the Mon switches across Mons on the entire side). Mons
+/// switching positions between players is IMPOSSIBLE.
+pub fn swap_position(
+    context: &mut ApplyingEffectContext,
+    new_position: usize,
+    allow_empty_target: bool,
+) -> Result<bool> {
+    if !context.target().active || context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    let ((source, old_position), (target, new_position)) = {
+        let context = context.target_context()?;
+
+        if new_position > context.player().total_active_positions() {
+            return Ok(false);
+        }
+
+        let source = context.mon_handle();
+        let target = context.player().active_mon_handle(new_position);
+        if target.is_none() && !allow_empty_target {
+            return Ok(false);
+        }
+
+        let old_position = match context.mon().active_position {
+            Some(old_position) => old_position,
+            None => return Ok(false),
+        };
+
+        if new_position == old_position {
+            return Ok(false);
+        }
+
+        ((source, old_position), (target, new_position))
+    };
+
+    // Log before applying the swap, so that the old Mon position is used in the log. Otherwise, the
+    // Mon will appear to have already been swapped, which is confusing for clients.
+    core_battle_logs::swap(context, new_position + 1)?;
+
+    {
+        let mut context = context.target_context()?;
+
+        context
+            .player_mut()
+            .set_active_position(new_position, Some(source))?;
+        context
+            .player_mut()
+            .set_active_position(old_position, target)?;
+
+        context.mon_mut().active_position = Some(new_position);
+        context.mon_mut().effective_team_position = new_position;
+        if let Some(target) = target {
+            let mut context = context.as_player_context_mut().mon_context(target)?;
+            context.mon_mut().active_position = Some(old_position);
+            context.mon_mut().effective_team_position = old_position;
+        }
+
+        // TODO: Swap event on both Mons.
+    }
+
+    Ok(true)
+}
+
+/// Swaps the positions of two players on the same side.
+///
+/// This functionality only exists for complex Multi- battles. If two Mons remain that cannot be
+/// adjacent to one another due to player positioning, then players may need to shift.
+pub fn swap_player_position(context: &mut PlayerContext, new_position: usize) -> Result<()> {
+    core_battle_logs::swap_player(context, new_position)?;
+
+    let current_position = context.player().position;
+    let target = Side::player_position_to_index(context.as_side_context(), new_position);
+
+    if let Some(target) = target {
+        context
+            .as_battle_context_mut()
+            .player_context(target)?
+            .player_mut()
+            .position = current_position;
+    }
+
+    context.player_mut().position = new_position;
+
     Ok(())
 }

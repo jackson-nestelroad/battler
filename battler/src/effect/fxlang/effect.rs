@@ -334,11 +334,26 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterAddVolatile"]
     AfterAddVolatile,
+    /// Runs after stat boosts are applied.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterBoost"]
+    AfterBoost,
     /// Runs after a Mon's current status is cured.
     ///
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterCureStatus"]
     AfterCureStatus,
+    /// Runs after an individual stat boost is applied.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterEachBoost"]
+    AfterEachBoost,
+    /// Runs after a Mon causes one or more Mons to faint.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterFainted"]
+    AfterFainted,
     /// Runs after a Mon hits another Mon with a move.
     ///
     /// Runs on the active move.
@@ -351,11 +366,19 @@ pub enum BattleEvent {
     AfterMove,
     /// Runs after a move's secondary effects have been applied.
     ///
-    /// Should be viewed as the last effect the move needs to apply.
+    /// Should be viewed as the last effect the move needs to apply on the target.
     ///
     /// Runs on the active move and in the context of a move target.
     #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
+    /// Runs after a move's secondary effects have been applied.
+    ///
+    /// Should be viewed as the last effect the move needs to apply on the user. Minimal difference
+    /// with `AfterMove`; the key difference is that Sheer Force prevents this event from running.
+    ///
+    /// Runs on the active move and in the context of a move user.
+    #[string = "AfterMoveSecondaryEffectsUser"]
+    AfterMoveSecondaryEffectsUser,
     /// Runs after a Mon has its ability set.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -467,6 +490,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ChangeBoosts"]
     ChangeBoosts,
+    /// Runs when a Mon's stat is being calculated.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "CalculateStat"]
+    CalculateStat,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
     /// Runs on the active move and in the context of a move user.
@@ -606,11 +634,6 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ForceEscape"]
     ForceEscape,
-    /// Runs when determining if a move gains a STAB multiplier.
-    ///
-    /// Runs in the context of a move user.
-    #[string = "ForceStab"]
-    ForceStab,
     /// Runs when determining the types of a Mon, to force types early.
     ///
     /// Runs in the context of a Mon.
@@ -742,7 +765,7 @@ pub enum BattleEvent {
     ModifyAtk,
     /// Runs when modifying a Mon's stat boosts used for stat calculations.
     ///
-    /// Runs in the context of a Mon.
+    /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyBoosts"]
     ModifyBoosts,
     /// Runs when calculating the modified catch rate of a Mon.
@@ -832,6 +855,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move user.
     #[string = "ModifyTarget"]
     ModifyTarget,
+    /// Runs when calculating a Mon's weight.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ModifyWeight"]
+    ModifyWeight,
     /// Runs when a move is aborted due to failing the BeforeMove event.
     ///
     /// Runs in the context of a move user.
@@ -1220,16 +1248,21 @@ pub enum BattleEvent {
 impl BattleEvent {
     /// Maps the event to the [`CallbackFlag`] flags.
     pub fn callback_type_flags(&self) -> u32 {
+        // Maintain alphabetical order.
         match self {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterCureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterEachBoost => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterFainted => CommonCallbackType::MonVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
+            Self::AfterMoveSecondaryEffectsUser => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterSetAbility => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1245,6 +1278,7 @@ impl BattleEvent {
             Self::BeforeTerastallization => CommonCallbackType::MonResult as u32,
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
+            Self::CalculateStat => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::CanDynamax => CommonCallbackType::MonResult as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
@@ -1276,7 +1310,6 @@ impl BattleEvent {
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::ForceEffectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ForceEscape => CommonCallbackType::MonResult as u32,
-            Self::ForceStab => CommonCallbackType::SourceMoveModifier as u32,
             Self::ForceTypes => CommonCallbackType::MonTypes as u32,
             Self::Hit => CommonCallbackType::MoveResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldResult as u32,
@@ -1318,6 +1351,7 @@ impl BattleEvent {
             Self::ModifySpeciesCatchRate => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyStab => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyTarget => CommonCallbackType::SourceMoveMonModifier as u32,
+            Self::ModifyWeight => CommonCallbackType::MonModifier as u32,
             Self::MoveAborted => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveBasePower => CommonCallbackType::MoveModifier as u32,
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
@@ -1396,20 +1430,34 @@ impl BattleEvent {
 
     /// The name of the input variable by index.
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
+        // Maintain alphabetical order.
         match self {
             Self::AddPseudoWeather | Self::AfterAddPseudoWeather => {
                 &[("pseudo_weather", ValueType::Effect, true)]
             }
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
+            Self::AfterBoost => &[("boosts", ValueType::BoostTable, true)],
+            Self::AfterEachBoost => &[
+                ("boost", ValueType::Boost, true),
+                ("value", ValueType::Fraction, true),
+            ],
+            Self::AfterFainted => &[
+                ("count", ValueType::UFraction, true),
+                ("effect", ValueType::Effect, false),
+            ],
             Self::AfterSetItem | Self::AfterTakeItem | Self::AfterUseItem => {
                 &[("item", ValueType::Effect, true)]
             }
             Self::BasePower => &[("base_power", ValueType::UFraction, true)],
             Self::BerryEatingHealth => &[("hp", ValueType::UFraction, true)],
+            Self::CalculateStat => &[
+                ("stat", ValueType::UFraction, true),
+                ("name", ValueType::Stat, true),
+            ],
             Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::Damage => &[("damage", ValueType::UFraction, true)],
-            Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
+            Self::DeductPp => &[("pp", ValueType::UFraction, true)],
             Self::EatItem => &[("item", ValueType::Effect, true)],
             Self::Effectiveness => &[
                 ("modifier", ValueType::Fraction, true),
@@ -1438,8 +1486,9 @@ impl BattleEvent {
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],
-            Self::ModifyStab | Self::ForceStab => &[("stab", ValueType::UFraction, true)],
+            Self::ModifyStab => &[("stab", ValueType::UFraction, true)],
             Self::ModifyTarget => &[("target", ValueType::Mon, false)],
+            Self::ModifyWeight => &[("weight", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
             Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
             Self::PlayerTryUseItem => &[("input", ValueType::Object, true)],
@@ -1564,6 +1613,7 @@ impl BattleEvent {
     /// an event.
     pub fn run_callback_on_source_effect(&self) -> bool {
         match self {
+            Self::BasePower => true,
             Self::Damage => true,
             Self::ModifyCatchRate => true,
             Self::ModifySpeciesCatchRate => true,

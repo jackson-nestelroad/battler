@@ -98,7 +98,7 @@ fn strong_winds_negate_flying_type_super_effectiveness() {
             ["switch"],
             "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",
             "turn|turn:1",
-            ["time"],
+            "continue",
             "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pidgeot,player-1,2",
             "fieldactivate|weather:Strong Winds",
             "split|side:0",

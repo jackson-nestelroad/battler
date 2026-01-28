@@ -94,7 +94,7 @@ fn love_ball_increases_catch_rate_for_opposite_genders() {
             "catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "useitem|player:protagonist|name:Love Ball|target:Bulbasaur,wild,1",
             "catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Love Ball|shakes:3",
             "residual",

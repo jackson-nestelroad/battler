@@ -74,7 +74,7 @@ fn pain_split_splits_hp() {
             "sethp|mon:Misdreavus,player-2,1|health:71/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Misdreavus,player-1,1|name:Dark Pulse|target:Misdreavus,player-2,1",
             "supereffective|mon:Misdreavus,player-2,1",
             "split|side:1",

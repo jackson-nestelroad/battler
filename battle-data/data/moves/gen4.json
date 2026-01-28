@@ -28,7 +28,11 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_field_start": ["log_field_start"],
+        "on_field_start": [
+          "log_field_start",
+          "foreach $mon in func_call(all_active_mons_in_speed_order):",
+          ["add_volatile: $mon knockdown"]
+        ],
         "on_modify_accuracy": ["return $acc * 5/3"],
         "on_disable_move": [
           "foreach $move_slot in $mon.move_slots:",
@@ -37,7 +41,10 @@
             ["disable_move: $mon $move_slot.id"]
           ]
         ],
-        "is_grounded": { "priority": 1, "program": ["return true"] },
+        "is_grounded": {
+          "priority": 1,
+          "program": ["if $effect_state.started:", ["return true"]]
+        },
         "on_before_move": [
           "if func_call(move_has_flag: $move.id gravity):",
           ["log_cant", "return false"]
@@ -607,7 +614,7 @@
     "condition": {
       "callbacks": {
         "suppress_mon_ability": ["if $effect_state.started:", ["return true"]],
-        "on_start": ["end_ability"],
+        "on_start": ["end_ability: use_effect_state_source_as_source"],
         "on_copy_volatile": [
           "if func_call(ability_has_flag: $target.ability permanent):",
           ["return false"]
@@ -852,10 +859,7 @@
           "if !$mon.is_grounded:",
           ["return"],
           "if func_call(has_type: $mon poison):",
-          [
-            "remove_side_condition: $mon.side $this.id use_target_as_source",
-            "return"
-          ],
+          ["remove_side_condition: $mon.side $this.id", "return"],
           "if $mon.is_immune_to_entry_hazards:",
           ["return"],
           "if $effect_state.layers >= 2:",
@@ -920,11 +924,7 @@
       "callbacks": {
         "on_start": ["log_start"],
         "is_grounded": ["return false"],
-        "on_end": ["log_end"],
-        "on_after_add_pseudo_weather": [
-          "if $pseudo_weather.id == gravity:",
-          ["remove_volatile: $effect_state.target $this.id"]
-        ]
+        "on_end": ["log_end"]
       }
     }
   },

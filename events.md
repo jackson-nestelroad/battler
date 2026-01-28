@@ -133,13 +133,11 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `UpgradeMove`.
 1. `OverrideMove`.
 1. Use active move:
-
    1. `BeforeMove`.
       1. _(extension)_ `Flinch`.
    1. `MoveAborted` if `BeforeMove` failed.
    1. `ModifyTarget`.
    1. Use active move:
-
       1. `ModifyMoveType`.
       1. `UseMove`.
       1. `RedirectTarget`.
@@ -152,13 +150,11 @@ Note that this is not meant to be an exact description of how battles work. Many
          1. `TryHitField` or `TryHitSide`.
          1. Move hit against all targets (see below).
       1. Direct move (one or more Mons):
-
          1. `TryUseMove`.
             1. _(extension)_ `ChargeMove`.
          1. `PrepareHit`.
             1. _(extension)_ `StallMove`.
          1. Move hit loop:
-
             1. Calculate number of hits.
             1. For each hit:
                1. Prepare move for each target. As soon as a step fails, the target is removed from the list.
@@ -183,12 +179,13 @@ Note that this is not meant to be an exact description of how battles work. Many
                      1. `ModifyCritChance`.
                      1. `CriticalHit`.
                      1. Calculate stats:
+                        1. `CalculateStat`.
                         1. `ModifyBoosts`.
                         1. `ModifyAtk`, `ModifyDef`, `ModifySpA`, `ModifySpD`, or `ModifySpe`.
                      1. Apply damage modifiers:
                         1. `WeatherModifyDamage`.
                         1. Randomize base damage.
-                        1. `ForceStab`, `ModifyStab`.
+                        1. `ModifyStab`.
                         1. Type effectiveness: `IgnoreImmunity`, `ForceEffectiveness`, `Effectiveness`.
                         1. `ModifyDamage`.
                   1. Apply damage for each target:
@@ -268,6 +265,7 @@ Note that this is not meant to be an exact description of how battles work. Many
             1. `AfterMoveSecondaryEffects`.
 
          1. `MoveFailed`.
+         1. `AfterMoveSecondaryEffectsUser`.
 
    1. `AfterMove`.
 

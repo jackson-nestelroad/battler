@@ -73,7 +73,7 @@ fn knock_off_increases_power_against_target_with_item() {
             "damage|mon:Sableye,player-1,1|health:64/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Sableye,player-1,1|name:Will-O-Wisp|target:Sableye,player-2,1",
             "status|mon:Sableye,player-2,1|status:Burn",
             "split|side:1",

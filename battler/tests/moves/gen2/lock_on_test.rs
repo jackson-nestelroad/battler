@@ -67,7 +67,7 @@ fn lock_on_removes_accuracy_and_invulnerability() {
             "prepare|mon:Nosepass,player-1,1|move:Dig",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Nosepass,player-2,1|name:Zap Cannon|target:Nosepass,player-1,1",
             "split|side:0",
             "damage|mon:Nosepass,player-1,1|health:64/90",

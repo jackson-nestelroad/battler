@@ -97,7 +97,7 @@ fn tera_blast_changes_to_tera_type() {
             "heal|mon:Eevee,player-2,1|health:100/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "tera|mon:Pikachu,player-1,1|type:Fighting",
             "move|mon:Pikachu,player-1,1|name:Tera Blast|target:Eevee,player-2,1",
             "supereffective|mon:Eevee,player-2,1",

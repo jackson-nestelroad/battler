@@ -68,7 +68,7 @@ fn poison_heal_heals_each_turn_when_poisoned() {
             "status|mon:Gliscor,player-2,1|status:Bad Poison|from:item:Toxic Orb",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Gliscor,player-1,1|name:Tackle|target:Gliscor,player-2,1",
             "split|side:1",
             "damage|mon:Gliscor,player-2,1|health:108/135",

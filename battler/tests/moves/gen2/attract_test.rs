@@ -133,7 +133,7 @@ fn attract_causes_infatuation() {
             "start|mon:Wobbuffet,player-2,1|move:Attract",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "activate|mon:Wobbuffet,player-2,1|move:Attract|of:Wobbuffet,player-1,1",
             "cant|mon:Wobbuffet,player-2,1|from:move:Attract",
             "residual",

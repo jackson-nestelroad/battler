@@ -69,7 +69,7 @@ fn rough_skin_damages_attacker_on_contact() {
             "damage|mon:Sharpedo,player-1,1|from:ability:Rough Skin|of:Sharpedo,player-2,1|health:88/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Sharpedo,player-1,1|name:Bubble",
             "resisted|mon:Sharpedo,player-2,1",
             "split|side:1",

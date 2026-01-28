@@ -74,6 +74,7 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
+        shift,
         speed_sort,
     },
     battle_log_entry,
@@ -276,6 +277,7 @@ pub struct CoreBattle<'d> {
     next_effect_linked_id: u32,
     last_move_log: Option<usize>,
     last_move: Option<MoveHandle>,
+    last_successful_move: Option<MoveHandle>,
     last_exited: Option<MonHandle>,
 
     input_log: HashMap<usize, HashMap<u64, String>>,
@@ -365,6 +367,7 @@ impl<'d> CoreBattle<'d> {
             next_effect_linked_id: 0,
             last_move_log: None,
             last_move: None,
+            last_successful_move: None,
             last_exited: None,
             input_log,
             _pin: PhantomPinned,
@@ -710,6 +713,14 @@ impl<'d> CoreBattle<'d> {
 
     pub fn set_last_move(&mut self, last_move: Option<MoveHandle>) {
         self.last_move = last_move;
+    }
+
+    pub fn last_successful_move(&self) -> Option<MoveHandle> {
+        self.last_successful_move
+    }
+
+    pub fn set_last_successful_move(&mut self, last_successful_move: Option<MoveHandle>) {
+        self.last_successful_move = last_successful_move;
     }
 
     pub fn started(&self) -> bool {
@@ -1436,6 +1447,18 @@ impl<'d> CoreBattle<'d> {
                     },
                 )?;
             }
+            Action::Shift(action) => {
+                core_battle_actions::swap_position(
+                    &mut context.applying_effect_context(
+                        EffectHandle::Condition(Id::from_known("playerchoice")),
+                        None,
+                        action.mon_action.mon,
+                        None,
+                    )?,
+                    action.position,
+                    true,
+                )?;
+            }
         }
 
         Self::after_action(context)?;
@@ -1565,6 +1588,62 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    fn snapshot_side_for_shift(&self, side: usize) -> shift::Side {
+        let mut players = Vec::new();
+        for player in self.players_on_side(side) {
+            players.resize(player.position, None);
+            players.insert(
+                player.position,
+                Some(shift::Player {
+                    active: player
+                        .field_positions()
+                        .map(|(_, mon)| mon.is_some())
+                        .collect(),
+                }),
+            );
+        }
+        shift::Side {
+            index: side,
+            players,
+        }
+    }
+
+    fn ensure_adjacency(context: &mut Context) -> Result<()> {
+        let shifts = shift::shift_to_ensure_adjacency(
+            context.battle().format.battle_type.active_per_player(),
+            context.battle().format.rules.numeric_rules.adjacency_reach as usize,
+            context.battle().snapshot_side_for_shift(0),
+            context.battle().snapshot_side_for_shift(1),
+        );
+        for shift in shifts {
+            let mut context = context.side_context(shift.side)?;
+            let mut context = context.player_context(shift.player)?;
+            if let Some(new_position) = shift.shift_player {
+                core_battle_actions::swap_player_position(&mut context, new_position)?;
+            }
+            if let Some((active_position, new_active_position)) = shift.shift_mon {
+                let mon_handle = context
+                    .player()
+                    .active_mon_handle(active_position)
+                    .wrap_expectation_with_format(format_args!(
+                        "expected active mon in position {}",
+                        active_position
+                    ))?;
+                core_battle_actions::swap_position(
+                    &mut context.as_battle_context_mut().applying_effect_context(
+                        EffectHandle::Condition(Id::from_known("autoshift")),
+                        None,
+                        mon_handle,
+                        None,
+                    )?,
+                    new_active_position,
+                    true,
+                )?;
+            }
+        }
+        Ok(())
+    }
+
     fn next_turn(context: &mut Context) -> Result<()> {
         context.battle_mut().turn += 1;
 
@@ -1572,6 +1651,11 @@ impl<'d> CoreBattle<'d> {
             context.battle_mut().log(battle_log_entry!("turnlimit"));
             Self::schedule_tie(context)?;
             return Ok(());
+        }
+
+        for player in context.battle().player_indices().collect::<Vec<_>>() {
+            let mut context = context.player_context(player)?;
+            Player::reset_state_for_next_turn(&mut context)?;
         }
 
         for mon_handle in context
@@ -1603,9 +1687,18 @@ impl<'d> CoreBattle<'d> {
                 .save_active_move_from_next_turn(last_move)?;
         }
 
+        if let Some(last_successful_move) = context.battle().last_successful_move {
+            context
+                .battle()
+                .registry
+                .save_active_move_from_next_turn(last_successful_move)?;
+        }
+
         context.battle_mut().registry.next_turn()?;
 
         // TODO: Endless battle clause.
+
+        Self::ensure_adjacency(context)?;
 
         let turn_event = battle_log_entry!("turn", ("turn", context.battle().turn));
         context.battle_mut().log(turn_event);
@@ -2124,10 +2217,17 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
+        let mut fainted_count_by_source = HashMap::new();
         while let Some(entry) = context.battle_mut().faint_queue.pop_front() {
             let mut context = context.mon_context(entry.target)?;
             if !context.mon().active {
                 continue;
+            }
+
+            if let Some(source) = entry.source {
+                *fainted_count_by_source
+                    .entry((source, entry.effect.clone()))
+                    .or_insert(0u64) += 1;
             }
 
             // TODO: BeforeFaint event.
@@ -2157,9 +2257,29 @@ impl<'d> CoreBattle<'d> {
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
+
+            context.player_mut().fainted_this_turn = true;
         }
 
         Self::check_win(context)?;
+
+        if !context.battle().ending {
+            for ((mon_handle, effect), count) in fainted_count_by_source {
+                core_battle_effects::run_event_for_mon(
+                    &mut context.mon_context(mon_handle)?,
+                    fxlang::BattleEvent::AfterFainted,
+                    match effect {
+                        Some(effect) => fxlang::VariableInput::from_iter([
+                            fxlang::Value::UFraction(count.into()),
+                            fxlang::Value::Effect(effect),
+                        ]),
+                        None => fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
+                            count.into(),
+                        )]),
+                    },
+                );
+            }
+        }
 
         Ok(())
     }

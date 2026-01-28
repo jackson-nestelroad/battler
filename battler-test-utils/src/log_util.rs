@@ -8,7 +8,7 @@ use battler::PublicCoreBattle;
 use itertools::Itertools;
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[serde(untagged)]
 pub enum LogMatch {
     Exact(String),
@@ -49,6 +49,21 @@ impl PartialEq<&str> for LogMatch {
     }
 }
 
+impl PartialEq for LogMatch {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (LogMatch::Exact(s1), LogMatch::Exact(s2)) => s1 == s2,
+            (LogMatch::Substrings(s1), LogMatch::Substrings(s2)) => {
+                s1.iter().all(|sub| s2.contains(sub)) || s2.iter().all(|sub| s1.contains(sub))
+            }
+            (LogMatch::Exact(s), LogMatch::Substrings(subs))
+            | (LogMatch::Substrings(subs), LogMatch::Exact(s)) => {
+                subs.iter().all(|sub| s.contains(sub))
+            }
+        }
+    }
+}
+
 /// Asserts that new logs in the battle are equal to the given logs.
 #[track_caller]
 pub fn assert_new_logs_eq(battle: &mut PublicCoreBattle, want: &[LogMatch]) {
@@ -77,7 +92,7 @@ pub fn assert_logs_since_turn_eq(battle: &PublicCoreBattle, turn: usize, want: &
     let turn_log_index = got.iter().position(|log| log == &&turn_log).unwrap();
     // Skip turn logs that are always present.
     let mut turn_log_index = turn_log_index + 1;
-    if got[turn_log_index].starts_with("time") {
+    if got[turn_log_index].starts_with("time") || got[turn_log_index].starts_with("continue") {
         turn_log_index = turn_log_index + 1;
     }
     let got = &got[turn_log_index..];

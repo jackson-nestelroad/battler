@@ -178,7 +178,7 @@ fn ally_sleeping_does_not_activate_sleep_clause() {
             ["heal", "Snorlax,player-2,1"],
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Snorlax,player-1,1|name:Spore|target:Snorlax,player-2,2",
             "status|mon:Snorlax,player-2,2|status:Sleep",
             "residual",

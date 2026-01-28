@@ -14,6 +14,7 @@ use crate::{
     battle::{
         Context,
         CoreBattle,
+        MonHandle,
     },
     common::{
         LruCache,
@@ -87,6 +88,7 @@ impl EffectManager {
         input: VariableInput,
         event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
+        effect_mon_handle: Option<MonHandle>,
     ) -> Result<ProgramEvalResult> {
         context
             .battle_context_mut()
@@ -109,6 +111,7 @@ impl EffectManager {
             input,
             event_state,
             effect_state_connector,
+            effect_mon_handle,
         );
 
         context
@@ -234,6 +237,7 @@ impl EffectManager {
         input: VariableInput,
         event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
+        effect_mon_handle: Option<MonHandle>,
     ) -> Result<ProgramEvalResult> {
         let mut evaluator = Evaluator::new(event, event_state);
         let effect = Self::parsed_effect(context.battle_context_mut(), effect_handle)?;
@@ -242,9 +246,13 @@ impl EffectManager {
             .map(|effect| effect.event(event, modifier))
             .flatten()
         {
-            Some(callback) => {
-                evaluator.evaluate_program(context, input, callback, effect_state_connector)
-            }
+            Some(callback) => evaluator.evaluate_program(
+                context,
+                input,
+                callback,
+                effect_state_connector,
+                effect_mon_handle,
+            ),
             None => Ok(ProgramEvalResult::new(None)),
         }
     }

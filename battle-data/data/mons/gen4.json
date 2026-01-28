@@ -25,6 +25,7 @@
       "spd": 55,
       "spe": 31
     },
+    "evos": ["Grotle"],
     "flags": [],
     "learnset": {
       "absorb": ["L9"],
@@ -125,6 +126,7 @@
       "spe": 36
     },
     "prevo": "Turtwig",
+    "evos": ["Torterra"],
     "evolution_data": { "method": "L", "condition": "", "level": 18 },
     "flags": [],
     "learnset": {
@@ -317,6 +319,7 @@
       "spd": 44,
       "spe": 61
     },
+    "evos": ["Monferno"],
     "flags": [],
     "learnset": {
       "acrobatics": ["L39"],
@@ -431,6 +434,7 @@
       "spe": 81
     },
     "prevo": "Chimchar",
+    "evos": ["Infernape"],
     "evolution_data": { "method": "L", "condition": "", "level": 14 },
     "flags": [],
     "learnset": {
@@ -667,6 +671,7 @@
       "spd": 56,
       "spe": 40
     },
+    "evos": ["Prinplup"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -767,6 +772,7 @@
       "spe": 50
     },
     "prevo": "Piplup",
+    "evos": ["Empoleon"],
     "evolution_data": { "method": "L", "condition": "", "level": 16 },
     "flags": [],
     "learnset": {
@@ -979,6 +985,7 @@
       "spd": 30,
       "spe": 60
     },
+    "evos": ["Staravia"],
     "flags": [],
     "learnset": {
       "aerialace": ["L25"],
@@ -1070,6 +1077,7 @@
       "spe": 80
     },
     "prevo": "Starly",
+    "evos": ["Staraptor"],
     "evolution_data": { "method": "L", "condition": "", "level": 14 },
     "flags": [],
     "learnset": {
@@ -1239,6 +1247,7 @@
       "spd": 40,
       "spe": 31
     },
+    "evos": ["Bibarel"],
     "flags": [],
     "learnset": {
       "amnesia": ["L41"],
@@ -1452,6 +1461,7 @@
       "spd": 41,
       "spe": 25
     },
+    "evos": ["Kricketune"],
     "flags": [],
     "learnset": {
       "bide": ["L1"],
@@ -1586,6 +1596,7 @@
       "spd": 34,
       "spe": 45
     },
+    "evos": ["Luxio"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -1677,6 +1688,7 @@
       "spe": 60
     },
     "prevo": "Shinx",
+    "evos": ["Luxray"],
     "evolution_data": { "method": "L", "condition": "", "level": 15 },
     "flags": [],
     "learnset": {
@@ -1847,6 +1859,7 @@
       "spd": 70,
       "spe": 55
     },
+    "evos": ["Roselia"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -2023,6 +2036,7 @@
       "spd": 30,
       "spe": 58
     },
+    "evos": ["Rampardos"],
     "flags": [],
     "learnset": {
       "ancientpower": ["L33"],
@@ -2250,6 +2264,7 @@
       "spd": 88,
       "spe": 30
     },
+    "evos": ["Bastiodon"],
     "flags": [],
     "learnset": {
       "ancientpower": ["L28"],
@@ -2448,6 +2463,7 @@
       "spd": 45,
       "spe": 36
     },
+    "evos": ["Wormadam", "Wormadam-Sandy", "Wormadam-Trash", "Mothim"],
     "cosmetic_formes": ["Burmy-Sandy", "Burmy-Trash"],
     "flags": [],
     "learnset": {
@@ -2690,6 +2706,7 @@
       "spd": 42,
       "spe": 70
     },
+    "evos": ["Vespiquen"],
     "flags": [],
     "learnset": {
       "aircutter": ["T"],
@@ -2936,6 +2953,7 @@
       "spd": 30,
       "spe": 85
     },
+    "evos": ["Floatzel"],
     "flags": [],
     "learnset": {
       "agility": ["L41"],
@@ -3135,6 +3153,7 @@
       "spd": 53,
       "spe": 35
     },
+    "evos": ["Cherrim"],
     "flags": [],
     "learnset": {
       "aromatherapy": ["E"],
@@ -3300,6 +3319,7 @@
       "spd": 62,
       "spe": 34
     },
+    "evos": ["Gastrodon"],
     "cosmetic_formes": ["Shellos-East"],
     "flags": [],
     "learnset": {
@@ -3605,6 +3625,7 @@
       "spd": 44,
       "spe": 70
     },
+    "evos": ["Drifblim"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -3822,6 +3843,7 @@
       "spd": 56,
       "spe": 85
     },
+    "evos": ["Lopunny"],
     "flags": [],
     "learnset": {
       "afteryou": ["L43"],
@@ -4263,6 +4285,7 @@
       "spd": 37,
       "spe": 85
     },
+    "evos": ["Purugly"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -4469,6 +4492,7 @@
       "spd": 50,
       "spe": 45
     },
+    "evos": ["Chimecho"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -4574,6 +4598,7 @@
       "spd": 41,
       "spe": 74
     },
+    "evos": ["Skuntank"],
     "flags": [],
     "learnset": {
       "acidspray": ["L19"],
@@ -4781,6 +4806,7 @@
       "spd": 86,
       "spe": 23
     },
+    "evos": ["Bronzong"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -4984,6 +5010,7 @@
       "spd": 45,
       "spe": 10
     },
+    "evos": ["Sudowoodo"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -5075,6 +5102,7 @@
       "spd": 90,
       "spe": 60
     },
+    "evos": ["Mr. Mime", "Mr. Mime-Galar"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -5191,6 +5219,7 @@
       "spd": 65,
       "spe": 30
     },
+    "evos": ["Chansey"],
     "flags": [],
     "learnset": {
       "aromatherapy": ["E"],
@@ -5477,6 +5506,7 @@
       "spd": 45,
       "spe": 42
     },
+    "evos": ["Gabite"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5575,6 +5605,7 @@
       "spe": 82
     },
     "prevo": "Gible",
+    "evos": ["Garchomp"],
     "evolution_data": { "method": "L", "condition": "", "level": 24 },
     "flags": [],
     "learnset": {
@@ -5777,6 +5808,7 @@
       "spd": 85,
       "spe": 5
     },
+    "evos": ["Snorlax"],
     "flags": [],
     "learnset": {
       "afteryou": ["E", "T"],
@@ -5895,6 +5927,7 @@
       "spd": 40,
       "spe": 60
     },
+    "evos": ["Lucario"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -6131,6 +6164,7 @@
       "spd": 42,
       "spe": 32
     },
+    "evos": ["Hippowdon"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -6301,6 +6335,7 @@
       "spd": 55,
       "spe": 65
     },
+    "evos": ["Drapion"],
     "flags": [],
     "learnset": {
       "acupressure": ["L13"],
@@ -6519,6 +6554,7 @@
       "spd": 40,
       "spe": 50
     },
+    "evos": ["Toxicroak"],
     "flags": [],
     "learnset": {
       "acupressure": ["E"],
@@ -6856,6 +6892,7 @@
       "spd": 61,
       "spe": 66
     },
+    "evos": ["Lumineon"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -7033,6 +7070,7 @@
       "spd": 120,
       "spe": 50
     },
+    "evos": ["Mantine"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -7127,6 +7165,7 @@
       "spd": 60,
       "spe": 40
     },
+    "evos": ["Abomasnow"],
     "flags": [],
     "learnset": {
       "attract": ["M"],

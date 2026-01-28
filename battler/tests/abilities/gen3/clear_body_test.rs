@@ -65,7 +65,7 @@ fn clear_body_resists_stat_drops() {
             "fail|mon:Beldum,player-1,1",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Beldum,player-1,1|name:Growl|noanim",
             "fail|mon:Beldum,player-2,1|what:unboost|boosts:atk|from:ability:Clear Body",
             "fail|mon:Beldum,player-1,1",

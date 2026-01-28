@@ -72,7 +72,7 @@ fn guts_increases_attack_with_status() {
             "damage|mon:Swellow,player-1,1|from:status:Burn|health:95/100",
             "residual",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Swellow,player-1,1|name:Tackle|target:Swellow,player-2,1",
             "split|side:1",
             "damage|mon:Swellow,player-2,1|health:16/120",

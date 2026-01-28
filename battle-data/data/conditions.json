@@ -23,6 +23,10 @@
     "name": "Drain",
     "condition_type": "Built-in"
   },
+  "powder": {
+    "name": "Powder",
+    "condition_type": "Built-in"
+  },
   "recoil": {
     "name": "Recoil",
     "condition_type": "Built-in"
@@ -41,6 +45,10 @@
   },
   "catch": {
     "name": "Catch",
+    "condition_type": "Built-in"
+  },
+  "autoshift": {
+    "name": "Auto-Shift",
     "condition_type": "Built-in"
   },
   "mon": {
@@ -113,7 +121,7 @@
     "condition": {
       "callbacks": {
         "on_immunity": [
-          "if $effect.is_move and func_call(move_has_flag: $effect powder):",
+          "if $effect.id == powder or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
           ["return false"]
         ]
       }
@@ -467,7 +475,9 @@
         ],
         "on_start": [
           "log_activate: with_target with_source use_effect_state_source_effect",
-          "$effect_state.divisor = 8"
+          "$effect_state.divisor = 8",
+          "if func_call(has_item: $source bindingband):",
+          ["$effect_state.divisor = 6"]
         ],
         "on_residual": {
           "order": 13,
@@ -570,7 +580,8 @@
         "on_restart": [
           "if $effect_state.counter < 729:",
           ["$effect_state.counter = $effect_state.counter * 3"],
-          "$effect_state.duration = 2"
+          "$effect_state.duration = 2",
+          "return true"
         ],
         "on_stall_move": [
           "$success = func_call(chance: $effect_state.counter)",
@@ -973,7 +984,7 @@
     "name": "Break Protect",
     "condition_type": "Built-in",
     "condition": {
-      "duration": 1,
+      "duration": 0,
       "callbacks": {
         "on_start": [
           "$activate = false",
@@ -1006,7 +1017,7 @@
       "callbacks": {
         "on_start": [
           "add_volatile: $target twoturnmove use_source_effect link",
-          "add_volatile: $source immobilized use_target_as_source use_source_effect link"
+          "add_volatile: $source immobilized use_source_effect link"
         ],
         "on_drag_out": ["return false"],
         "on_trap_mon": {
@@ -1109,7 +1120,10 @@
           "order": 1,
           "program": ["return false"]
         },
-        "on_force_stab": ["if $user.terastallized == stellar:", ["return 1"]],
+        "on_use_move": [
+          "if $user.terastallized == stellar:",
+          ["$move.force_stab = true"]
+        ],
         "on_modify_stab": {
           "order": 1,
           "program": [
@@ -1127,7 +1141,8 @@
                 ["$stab = 6/5"],
                 "$effect_state.boosted_types = func_call(object_set: $effect_state.boosted_types $move.type.to_string true)",
                 "return $stab"
-              ]
+              ],
+              "return 1"
             ],
             "else if func_call(has_type_before_forced_types: $user $user.terastallized):",
             ["return $stab * 4/3"]
@@ -1136,6 +1151,26 @@
         "on_force_effectiveness": [
           "if $target.terastallized.is_defined and $effect.type == stellar:",
           ["return 1"]
+        ]
+      }
+    }
+  },
+  "knockdown": {
+    "name": "Knock Down",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 0,
+      "callbacks": {
+        "on_start": [
+          "if $target.is_grounded:",
+          ["return false"],
+          "log_activate: with_target use_source_effect",
+          "# During Sky Drop, both the target and user have the Fly volatile.",
+          "# Only the user should have the volatile removed, which cascade removes all other effects.",
+          "if func_call(has_volatile: $target fly) and func_call(has_volatile: $target twoturnmove):",
+          ["remove_volatile: $target fly", "cancel_move: $target"],
+          "remove_volatile: $target magnetrise",
+          "remove_volatile: $target telekinesis"
         ]
       }
     }

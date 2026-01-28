@@ -162,7 +162,7 @@ fn starf_berry_boosts_random_stat() {
             "itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat",
             "boost|mon:Oshawott,player-1,1|stat:spe|by:2|from:item:Starf Berry",
             "turn|turn:2",
-            ["time"],
+            "continue",
             "move|mon:Oshawott,player-1,1|name:Recycle|target:Oshawott,player-1,1",
             "item|mon:Oshawott,player-1,1|item:Starf Berry|from:move:Recycle",
             "itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat",

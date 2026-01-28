@@ -15,9 +15,18 @@ pub enum AbilityFlag {
     /// Raises the user's evasion.
     #[string = "EvasionRaising"]
     EvasionRaising,
+    /// Cannot be passed by Entrainment.
+    #[string = "NoEntrainment"]
+    NoEntrainment,
+    /// Cannot be overwritten by Entrainment.
+    #[string = "NoEntrainmentTarget"]
+    NoEntrainmentTarget,
     /// Cannot be copied by Role Play.
     #[string = "NoRolePlay"]
     NoRolePlay,
+    /// Cannot be overwritten by Simple Beam.
+    #[string = "NoSimpleBeam"]
+    NoSimpleBeam,
     /// Cannot be swapped by Skill Swap.
     #[string = "NoSkillSwap"]
     NoSkillSwap,

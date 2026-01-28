@@ -268,6 +268,8 @@ pub enum Choice {
     Escape,
     /// Forfeit the battle.
     Forfeit,
+    /// Shift to the center (Triples battle only).
+    Shift,
     /// Select team during team preview.
     Team(TeamSelectionChoice),
     /// Switch a Mon in.
@@ -288,6 +290,7 @@ impl Display for Choice {
             Self::RandomAll => write!(f, "randomall"),
             Self::Escape => write!(f, "escape"),
             Self::Forfeit => write!(f, "forfeit"),
+            Self::Shift => write!(f, "shift"),
             Self::Team(choice) => {
                 write!(f, "team {choice}")
             }
@@ -324,6 +327,7 @@ impl FromStr for Choice {
             "randomall" => Ok(Self::RandomAll),
             "escape" => Ok(Self::Escape),
             "forfeit" => Ok(Self::Forfeit),
+            "shift" => Ok(Self::Shift),
             "team" => Ok(Self::Team(TeamSelectionChoice::from_str(data)?)),
             "switch" => Ok(Self::Switch(SwitchChoice::from_str(data)?)),
             "move" => Ok(Self::Move(MoveChoice::from_str(data)?)),
@@ -401,6 +405,7 @@ mod battler_choice_test {
         assert_eq!(Choice::RandomAll.to_string(), "randomall");
         assert_eq!(Choice::Escape.to_string(), "escape");
         assert_eq!(Choice::Forfeit.to_string(), "forfeit");
+        assert_eq!(Choice::Shift.to_string(), "shift");
         assert_eq!(
             Choice::Team(TeamSelectionChoice {
                 mons: Vec::from_iter([0, 2, 4]),
@@ -498,6 +503,7 @@ mod battler_choice_test {
         assert_matches::assert_matches!(Choice::from_str("randomall"), Ok(Choice::RandomAll));
         assert_matches::assert_matches!(Choice::from_str("escape"), Ok(Choice::Escape));
         assert_matches::assert_matches!(Choice::from_str("forfeit"), Ok(Choice::Forfeit));
+        assert_matches::assert_matches!(Choice::from_str("shift"), Ok(Choice::Shift));
         assert_matches::assert_matches!(
             Choice::from_str("team 0 2 4"),
             Ok(Choice::Team(choice)) => {

@@ -1,6 +1,43 @@
 {
-  "pickpocket": { "name": "Pickpocket", "flags": [] },
-  "sheerforce": { "name": "Sheer Force", "flags": [] },
+  "pickpocket": {
+    "name": "Pickpocket",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects": [
+          "if $source == $target or !func_call(move_makes_contact: $move):",
+          ["return"],
+          "if !$source.item or $target.item.is_defined or $target.needs_switch or $target.force_switch or $source.needs_switch:",
+          ["return"],
+          "if !func_call(set_item: $target $source.item dry_run):",
+          ["return"],
+          "$item = func_call(take_item: $source)",
+          "if !$item:",
+          ["return"],
+          "set_item: $target $item"
+        ]
+      }
+    }
+  },
+  "sheerforce": {
+    "name": "Sheer Force",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if $move.secondary_effects.is_empty:",
+          ["return"],
+          "$move.secondary_effects = []",
+          "$move.user_effect = undefined",
+          "$move.ignore_all_secondary_effects = true"
+        ],
+        "on_source_base_power": [
+          "if $move.ignore_all_secondary_effects:",
+          ["return $base_power * 13/10"]
+        ]
+      }
+    }
+  },
   "contrary": {
     "name": "Contrary",
     "flags": ["Breakable"],
@@ -17,31 +54,312 @@
       }
     }
   },
-  "unnerve": { "name": "Unnerve", "flags": [] },
-  "defiant": { "name": "Defiant", "flags": [] },
-  "defeatist": { "name": "Defeatist", "flags": [] },
-  "cursedbody": { "name": "Cursed Body", "flags": [] },
-  "healer": { "name": "Healer", "flags": [] },
-  "friendguard": { "name": "Friend Guard", "flags": [] },
-  "weakarmor": { "name": "Weak Armor", "flags": [] },
-  "heavymetal": { "name": "Heavy Metal", "flags": [] },
-  "lightmetal": { "name": "Light Metal", "flags": [] },
-  "multiscale": { "name": "Multiscale", "flags": [] },
-  "toxicboost": { "name": "Toxic Boost", "flags": [] },
-  "flareboost": { "name": "Flare Boost", "flags": [] },
-  "harvest": { "name": "Harvest", "flags": [] },
-  "telepathy": { "name": "Telepathy", "flags": [] },
-  "moody": { "name": "Moody", "flags": [] },
-  "overcoat": { "name": "Overcoat", "flags": [] },
-  "poisontouch": { "name": "Poison Touch", "flags": [] },
-  "regenerator": { "name": "Regenerator", "flags": [] },
-  "bigpecks": { "name": "Big Pecks", "flags": [] },
-  "sandrush": { "name": "Sand Rush", "flags": [] },
-  "wonderskin": { "name": "Wonder Skin", "flags": [] },
-  "analytic": { "name": "Analytic", "flags": [] },
+  "unnerve": {
+    "name": "Unnerve",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "if $effect_state.unnerved:",
+          ["return"],
+          "log_ability",
+          "$effect_state.unnerved = true"
+        ],
+        "on_end": ["$effect_state.unnerved = false"],
+        "on_foe_try_eat_item": ["return !$effect_state.unnerved"]
+      }
+    }
+  },
+  "defiant": {
+    "name": "Defiant",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_each_boost": [
+          "if !$source or func_call(is_ally: $target $source):",
+          ["return"],
+          "if $value < 0:",
+          ["boost: $target 'atk:2'"]
+        ]
+      }
+    }
+  },
+  "defeatist": {
+    "name": "Defeatist",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $target.hp <= $target.max_hp / 2:",
+          ["return $atk / 2"]
+        ],
+        "on_modify_spa": [
+          "if $target.hp <= $target.max_hp / 2:",
+          ["return $spa / 2"]
+        ]
+      }
+    }
+  },
+  "cursedbody": {
+    "name": "Cursed Body",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(has_volatile: $source disable):",
+          ["return"],
+          "if $move.upgraded or func_call(move_has_flag: $move future) or $move.id == struggle:",
+          ["return"],
+          "if func_call(chance: 3 10):",
+          ["add_volatile: $source disable"]
+        ]
+      }
+    }
+  },
+  "healer": {
+    "name": "Healer",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "foreach $ally in func_call(adjacent_allies: $target):",
+          [
+            "if $ally.status.is_defined and func_call(chance: 3 10):",
+            ["log_activate: with_target", "cure_status: $ally"]
+          ]
+        ]
+      }
+    }
+  },
+  "friendguard": {
+    "name": "Friend Guard",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_modify_damage": [
+          "if $target != $effect_state.target and func_call(is_ally: $target $effect_state.target):",
+          ["return $damage * 3/4"]
+        ]
+      }
+    }
+  },
+  "weakarmor": {
+    "name": "Weak Armor",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.category == physical:",
+          ["boost: $target 'def:-1' 'spe:2'"]
+        ]
+      }
+    }
+  },
+  "heavymetal": {
+    "name": "Heavy Metal",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_weight": {
+          "priority": 1,
+          "program": ["return $weight * 2"]
+        }
+      }
+    }
+  },
+  "lightmetal": {
+    "name": "Light Metal",
+    "flags": [],
+    "callbacks": {
+      "on_modify_weight": {
+        "priority": 1,
+        "program": ["return $weight / 2"]
+      }
+    }
+  },
+  "multiscale": {
+    "name": "Multiscale",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "if $target.hp >= $target.max_hp:",
+          ["return $damage / 2"]
+        ]
+      }
+    }
+  },
+  "toxicboost": {
+    "name": "Toxic Boost",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if ($source.status == psn or $source.status == tox) and $move.category == physical:",
+          ["return $base_power * 3/2"]
+        ]
+      }
+    }
+  },
+  "flareboost": {
+    "name": "Flare Boost",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $source.status == brn and $move.category == physical:",
+          ["return $base_power * 3/2"]
+        ]
+      }
+    }
+  },
+  "harvest": {
+    "name": "Harvest",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if !$field.weather or !$field.weather.is_sunny:",
+          ["return"],
+          "if $target.item.is_defined or !$target.last_item or !func_call(item_has_flag: $target.last_item berry):",
+          ["return"],
+          "$item = $target.last_item",
+          "$target.last_item = undefined",
+          "set_item: $target $item"
+        ]
+      }
+    }
+  },
+  "telepathy": {
+    "name": "Telepathy",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if $target != $source and func_call(is_ally: $target $source):",
+          ["log_activate: with_target", "return stop"]
+        ]
+      }
+    }
+  },
+  "moody": {
+    "name": "Moody",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "$possible_boosts = []",
+          "foreach $stat in func_call(boostable_stats):",
+          [
+            "if $stat == acc or $stat == eva:",
+            ["continue"],
+            "if func_call(can_boost: $target str('{}:1', $stat)):",
+            ["$possible_boosts = func_call(append: $possible_boosts $stat)"]
+          ],
+          "$boost = func_call(sample: $possible_boosts)",
+          "$possible_drops = []",
+          "foreach $stat in func_call(boostable_stats):",
+          [
+            "if $stat == acc or $stat == eva or $stat == $boost:",
+            ["continue"],
+            "if func_call(can_boost: $target str('{}:-1', $stat)):",
+            ["$possible_drops = func_call(append: $possible_drops $stat)"]
+          ],
+          "$drop = func_call(sample: $possible_drops)",
+          "$boosts = func_call(boost_table)",
+          "if $boost.is_defined:",
+          ["$boosts = func_call(set_boost: $boosts $boost 2)"],
+          "if $drop.is_defined:",
+          ["$boosts = func_call(set_boost: $boosts $drop -1)"],
+          "boost: $target $boosts"
+        ]
+      }
+    }
+  },
+  "overcoat": {
+    "name": "Overcoat",
+    "flags": [],
+    "effect": {
+      "delegates": ["item:safetygoggles"],
+      "callbacks": {
+        "on_try_hit": [
+          "if func_call(move_has_flag: $move powder) and $target != $source and func_call(check_immunity: $target powder):",
+          ["log_immune: $target from_effect", "return stop"]
+        ]
+      }
+    }
+  },
+  "poisontouch": {
+    "name": "Poison Touch",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_damaging_hit": [
+          "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
+          ["set_status: $target psn"]
+        ]
+      }
+    }
+  },
+  "regenerator": {
+    "name": "Regenerator",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_switch_out": ["heal: $mon expr($mon.base_max_hp / 3)"]
+      }
+    }
+  },
+  "bigpecks": {
+    "name": "Big Pecks",
+    "flags": ["Breakable"],
+    "effect": {
+      "delegates": ["condition:preventstatdropabilitybase"],
+      "local_data": {
+        "values": {
+          "stat": "def"
+        }
+      }
+    }
+  },
+  "sandrush": {
+    "name": "Sand Rush",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_spe": [
+          "if $field.weather == sandstormweather:",
+          ["return $spe * 2"]
+        ],
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]]
+      }
+    }
+  },
+  "wonderskin": {
+    "name": "Wonder Skin",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_accuracy": ["if $move.category == status:", ["return 50"]]
+      }
+    }
+  },
+  "analytic": {
+    "name": "Analytic",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "foreach $mon in func_call(all_active_mons):",
+          ["if func_call(will_move_this_turn: $mon):", ["return"]],
+          "return $base_power * 13/10"
+        ]
+      }
+    }
+  },
   "illusion": {
     "name": "Illusion",
-    "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "flags": ["NoEntrainment", "NoRolePlay", "NoSkillSwap", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_switching_in": [
@@ -67,7 +385,20 @@
       }
     }
   },
-  "imposter": { "name": "Imposter", "flags": ["NoRolePlay", "NoTrace"] },
+  "imposter": {
+    "name": "Imposter",
+    "flags": ["NoRolePlay", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_switch_in": [
+          "$position = $format.mons_per_side - $mon.position - 1",
+          "$target = func_call(mon_in_position: $mon.foe_side $position)",
+          "if $target.is_defined:",
+          ["transform_into: $mon $target"]
+        ]
+      }
+    }
+  },
   "infiltrator": {
     "name": "Infiltrator",
     "flags": [],
@@ -77,11 +408,70 @@
       }
     }
   },
-  "mummy": { "name": "Mummy", "flags": [] },
-  "moxie": { "name": "Moxie", "flags": [] },
-  "justified": { "name": "Justified", "flags": [] },
-  "rattled": { "name": "Rattled", "flags": [] },
-  "magicbounce": { "name": "Magic Bounce", "flags": [] },
+  "mummy": {
+    "name": "Mummy",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(ability_has_flag: $source.ability permanent) or $source.ability == $this.id:",
+          ["return"],
+          "if func_call(move_makes_contact: $move):",
+          ["set_ability: $source $this.id"]
+        ]
+      }
+    }
+  },
+  "moxie": {
+    "name": "Moxie",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_fainted": [
+          "if $effect.is_move:",
+          ["boost: $mon str('atk:{}', $count)"]
+        ]
+      }
+    }
+  },
+  "justified": {
+    "name": "Justified",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.type == dark:",
+          ["boost: $target 'atk:1'"]
+        ]
+      }
+    }
+  },
+  "rattled": {
+    "name": "Rattled",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if [dark, bug, ghost] has $move.type:",
+          ["boost: $target 'spe:1'"]
+        ],
+        "on_after_boost": [
+          "if $effect.id == intimidate and $boosts.atk != 0:",
+          ["boost: $target 'spe:1'"]
+        ]
+      }
+    }
+  },
+  "magicbounce": {
+    "name": "Magic Bounce",
+    "flags": ["Breakable"],
+    "effect": {
+      "delegates": ["movecondition:magiccoat"],
+      "callbacks": {
+        "on_start": ["# No log."]
+      }
+    }
+  },
   "sapsipper": {
     "name": "Sap Sipper",
     "flags": [],
@@ -117,70 +507,93 @@
       }
     }
   },
-  "sandforce": { "name": "Sand Force", "flags": [] },
-  "ironbarbs": { "name": "Iron Barbs", "flags": [] },
-  "zenmode": { "name": "Zen Mode", "flags": ["Permanent"] },
-  "victorystar": { "name": "Victory Star", "flags": [] },
-  "turboblaze": { "name": "Turboblaze", "flags": [] },
-  "teravolt": { "name": "Teravolt", "flags": [] },
-  "mountaineer": { "name": "Mountaineer", "flags": [] },
-  "waverider": { "name": "Wave Rider", "flags": [] },
-  "skater": { "name": "Skater", "flags": [] },
-  "thrust": { "name": "Thrust", "flags": [] },
-  "perception": { "name": "Perception", "flags": [] },
-  "parry": { "name": "Parry", "flags": [] },
-  "instinct": { "name": "Instinct", "flags": [] },
-  "dodge": { "name": "Dodge", "flags": [] },
-  "jaggededge": { "name": "Jagged Edge", "flags": [] },
-  "frostbite": { "name": "Frostbite", "flags": [] },
-  "tenacity": { "name": "Tenacity", "flags": [] },
-  "pride": { "name": "Pride", "flags": [] },
-  "deepsleep": { "name": "Deep Sleep", "flags": [] },
-  "powernap": { "name": "Power Nap", "flags": [] },
-  "spirit": { "name": "Spirit", "flags": [] },
-  "warmblanket": { "name": "Warm Blanket", "flags": [] },
-  "gulp": { "name": "Gulp", "flags": [] },
-  "herbivore": { "name": "Herbivore", "flags": [] },
-  "sandpit": { "name": "Sandpit", "flags": [] },
-  "hotblooded": { "name": "Hot Blooded", "flags": [] },
-  "medic": { "name": "Medic", "flags": [] },
-  "lifeforce": { "name": "Life Force", "flags": [] },
-  "lunchbox": { "name": "Lunchbox", "flags": [] },
-  "nurse": { "name": "Nurse", "flags": [] },
-  "melee": { "name": "Melee", "flags": [] },
-  "sponge": { "name": "Sponge", "flags": [] },
-  "bodyguard": { "name": "Bodyguard", "flags": [] },
-  "hero": { "name": "Hero", "flags": [] },
-  "lastbastion": { "name": "Last Bastion", "flags": [] },
-  "stealth": { "name": "Stealth", "flags": [] },
-  "vanguard": { "name": "Vanguard", "flags": [] },
-  "nomad": { "name": "Nomad", "flags": [] },
-  "sequence": { "name": "Sequence", "flags": [] },
-  "grasscloak": { "name": "Grass Cloak", "flags": [] },
-  "celebrate": { "name": "Celebrate", "flags": [] },
-  "lullaby": { "name": "Lullaby", "flags": [] },
-  "calming": { "name": "Calming", "flags": [] },
-  "daze": { "name": "Daze", "flags": [] },
-  "frighten": { "name": "Frighten", "flags": [] },
-  "interference": { "name": "Interference", "flags": [] },
-  "moodmaker": { "name": "Mood Maker", "flags": [] },
-  "confidence": { "name": "Confidence", "flags": [] },
-  "fortune": { "name": "Fortune", "flags": [] },
-  "bonanza": { "name": "Bonanza", "flags": [] },
-  "explode": { "name": "Explode", "flags": [] },
-  "omnipotent": { "name": "Omnipotent", "flags": [] },
-  "share": { "name": "Share", "flags": [] },
-  "blackhole": { "name": "Black Hole", "flags": [] },
-  "shadowdash": { "name": "Shadow Dash", "flags": [] },
-  "sprint": { "name": "Sprint", "flags": [] },
-  "disgust": { "name": "Disgust", "flags": [] },
-  "highrise": { "name": "High-rise", "flags": [] },
-  "climber": { "name": "Climber", "flags": [] },
-  "flameboost": { "name": "Flame Boost", "flags": [] },
-  "aquaboost": { "name": "Aqua Boost", "flags": [] },
-  "runup": { "name": "Run Up", "flags": [] },
-  "conqueror": { "name": "Conqueror", "flags": [] },
-  "shackle": { "name": "Shackle", "flags": [] },
-  "decoy": { "name": "Decoy", "flags": [] },
-  "shield": { "name": "Shield", "flags": [] }
+  "sandforce": {
+    "name": "Sand Force",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if $field.weather == sandstormweather and [rock, ground, steel] has $move.type:",
+          ["return $base_power * 13/10"]
+        ]
+      }
+    }
+  },
+  "ironbarbs": {
+    "name": "Iron Barbs",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move):",
+          ["damage: $source expr($source.base_max_hp / 8)"]
+        ]
+      }
+    }
+  },
+  "zenmode": {
+    "name": "Zen Mode",
+    "flags": ["Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if func_call(base_species: $target) != darmanitan or $target.transformed:",
+          ["return"],
+          "if $target.hp <= $target.max_hp / 2:",
+          ["add_volatile: $target $this.id"],
+          "else:",
+          ["remove_volatile: $target $this.id"]
+        ],
+        "on_end": ["remove_volatile: $target $this.id"]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": [
+          "if $target.species == darmanitan:",
+          ["forme_change: $target darmanitanzen"],
+          "else if $target.species == darmanitangalar:",
+          ["forme_change: $target darmanitangalarzen"]
+        ],
+        "on_end": [
+          "if $target.species == darmanitanzen:",
+          ["forme_change: $target darmanitan"],
+          "else if $target.species == darmanitangalarzen:",
+          ["forme_change: $target darmanitangalar"]
+        ]
+      }
+    }
+  },
+  "victorystar": {
+    "name": "Victory Star",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_modify_accuracy": [
+          "if func_call(is_ally: $source $effect_state.target):",
+          ["return $acc * 11/10"]
+        ]
+      }
+    }
+  },
+  "turboblaze": {
+    "name": "Turboblaze",
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:moldbreaker"]
+    },
+    "condition": {
+      "delegates": ["abilitycondition:moldbreaker"]
+    }
+  },
+  "teravolt": {
+    "name": "Teravolt",
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:moldbreaker"]
+    },
+    "condition": {
+      "delegates": ["abilitycondition:moldbreaker"]
+    }
+  }
 }

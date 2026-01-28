@@ -164,6 +164,7 @@ fn run_effect_event_with_errors(
     input: fxlang::VariableInput,
     event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
+    effect_mon_handle: Option<MonHandle>,
     suppressed: bool,
 ) -> Result<fxlang::ProgramEvalResult> {
     // Effect was suppressed somewhere up the stack, so we should skip the callback.
@@ -229,6 +230,7 @@ fn run_effect_event_with_errors(
         input,
         event_state,
         effect_state_connector.clone(),
+        effect_mon_handle,
     );
 
     if let Some(effect_state_connector) = &effect_state_connector {
@@ -273,6 +275,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
@@ -283,6 +286,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::Field => run_effect_event_with_errors(
@@ -293,6 +297,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::User => run_effect_event_with_errors(
@@ -305,6 +310,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::UserWithTarget(target) => run_effect_event_with_errors(
@@ -317,6 +323,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
         MoveTargetForEvent::None => run_effect_event_with_errors(
@@ -327,6 +334,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
+            None,
             false,
         )?,
     };
@@ -372,6 +380,7 @@ fn run_effect_event_by_handle(
     input: fxlang::VariableInput,
     event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
+    effect_mon_handle: Option<MonHandle>,
     suppressed: bool,
 ) -> fxlang::ProgramEvalResult {
     match run_effect_event_with_errors(
@@ -382,6 +391,7 @@ fn run_effect_event_by_handle(
         input,
         event_state,
         effect_state_connector,
+        effect_mon_handle,
         suppressed,
     ) {
         Ok(result) => result,
@@ -470,6 +480,7 @@ fn run_callback_with_errors(
         callback_handle
             .applied_effect_handle
             .effect_state_connector(),
+        callback_handle.applied_effect_handle.mon_handle(),
         callback_handle.suppressed,
     );
 
@@ -3140,11 +3151,14 @@ pub fn run_event_for_mon_expecting_u16(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
     input: u16,
+    other_input: fxlang::VariableInput,
 ) -> u16 {
     match run_event_for_mon_internal(
         context,
         event,
-        fxlang::VariableInput::from_iter([fxlang::Value::UFraction(input.into())]),
+        fxlang::VariableInput::from_iter(
+            iter::once(fxlang::Value::UFraction(input.into())).chain(other_input.into_iter()),
+        ),
         &RunCallbacksOptions::default(),
     ) {
         Some(value) => value.integer_u16().unwrap_or(input),

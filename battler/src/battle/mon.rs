@@ -62,7 +62,6 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
-        modify_32,
         mon_states,
     },
     battle_log_entry,
@@ -450,6 +449,8 @@ pub struct MonSwitchState {
     pub force_switch: Option<SwitchType>,
     /// The `BeforeSwitchOut` event already ran so it should be skipped.
     pub skip_before_switch_out: bool,
+    /// The Mon is ejecting, so other Mons should not eject.
+    pub ejecting: bool,
 }
 
 /// Volatile state for a Mon.
@@ -1169,7 +1170,6 @@ impl Mon {
         unboosted: bool,
         boost: Option<i8>,
         unmodified: bool,
-        modifier: Option<Fraction<u16>>,
         stat_user: Option<MonHandle>,
         calculate_stat_context: Option<CalculateStatContext>,
     ) -> Result<u16> {
@@ -1182,6 +1182,16 @@ impl Mon {
         }
 
         let mut value = context.mon().volatile_state.stats.get(stat);
+
+        if !unmodified {
+            value = core_battle_effects::run_event_for_mon_expecting_u16(
+                context,
+                fxlang::BattleEvent::CalculateStat,
+                value,
+                fxlang::VariableInput::from_iter([fxlang::Value::Stat(stat)]),
+            );
+        }
+
         if !unboosted {
             let mut boosts = context.mon().volatile_state.boosts.clone();
 
@@ -1249,11 +1259,10 @@ impl Mon {
                         context,
                         modify_event,
                         value,
+                        fxlang::VariableInput::default(),
                     ),
                 }
             }
-            let modifier = modifier.unwrap_or(Fraction::from(1u16));
-            value = modify_32(value as u32, modifier.convert()) as u16;
         }
 
         Ok(value)
@@ -1266,7 +1275,6 @@ impl Mon {
         context: &mut MonContext,
         stat: Stat,
         boost: i8,
-        modifier: Fraction<u16>,
         stat_user: Option<MonHandle>,
         calculate_stat_context: Option<CalculateStatContext>,
     ) -> Result<u16> {
@@ -1276,7 +1284,6 @@ impl Mon {
             false,
             Some(boost),
             false,
-            Some(modifier),
             stat_user,
             calculate_stat_context,
         )
@@ -1290,7 +1297,7 @@ impl Mon {
         unboosted: bool,
         unmodified: bool,
     ) -> Result<u16> {
-        Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None, None)
+        Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None)
     }
 
     /// Calculates the speed value to use for battle action ordering.
@@ -1300,6 +1307,7 @@ impl Mon {
             context,
             fxlang::BattleEvent::ModifyActionSpeed,
             speed,
+            fxlang::VariableInput::default(),
         );
         Ok(speed)
     }
@@ -1355,8 +1363,11 @@ impl Mon {
 
     /// Calculates the Mon's weight.
     pub fn get_weight(context: &mut MonContext) -> u32 {
-        // TODO: ModifyWeight event.
-        context.mon().volatile_state.weight
+        core_battle_effects::run_event_for_mon_expecting_u32(
+            context,
+            fxlang::BattleEvent::ModifyWeight,
+            context.mon().volatile_state.weight,
+        )
     }
 
     /// Creates a speed-orderable object for the Mon.
@@ -1913,6 +1924,11 @@ impl Mon {
     /// Clears all stat boosts.
     pub fn clear_boosts(&mut self) {
         self.volatile_state.boosts = BoostTable::new();
+    }
+
+    /// Decreases the weight of the Mon.
+    pub fn decrease_weight(&mut self, delta: u32) {
+        self.volatile_state.weight = self.volatile_state.weight.saturating_sub(delta).max(1);
     }
 
     fn moves_with_locked_move(

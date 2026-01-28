@@ -133,6 +133,9 @@ pub struct MoveData {
     /// Typeless?
     #[serde(default)]
     pub typeless: bool,
+    /// Force STAB?
+    #[serde(default)]
+    pub force_stab: bool,
 
     /// Primary effect applied to the target.
     ///
