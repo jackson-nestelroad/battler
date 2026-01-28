@@ -215,7 +215,7 @@
     "primary_type": "Grass",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "grassyterrain" },
     "condition": {
@@ -251,7 +251,7 @@
     "primary_type": "Fairy",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "mistyterrain" },
     "condition": {
@@ -522,7 +522,7 @@
     "primary_type": "Electric",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "electricterrain" },
     "condition": {

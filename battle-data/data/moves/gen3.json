@@ -186,7 +186,7 @@
     "primary_type": "Ice",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "weather": "hailweather" }
   },
@@ -1217,7 +1217,7 @@
     "primary_type": "Ground",
     "pp": 15,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "pseudo_weather": "mudsport" },
     "condition": {
@@ -1825,7 +1825,7 @@
     "primary_type": "Water",
     "pp": 15,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "pseudo_weather": "watersport" },
     "condition": {

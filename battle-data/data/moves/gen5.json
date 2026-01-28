@@ -96,7 +96,7 @@
     "primary_type": "Psychic",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": ["Mirror"],
     "hit_effect": {
       "pseudo_weather": "wonderroom"
@@ -240,7 +240,7 @@
     "primary_type": "Psychic",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": ["Mirror"],
     "hit_effect": {
       "pseudo_weather": "magicroom"

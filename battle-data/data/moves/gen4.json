@@ -22,7 +22,7 @@
     "primary_type": "Psychic",
     "pp": 5,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "pseudo_weather": "gravity" },
     "condition": {
@@ -1404,7 +1404,7 @@
     "pp": 5,
     "accuracy": "exempt",
     "priority": -7,
-    "target": "All",
+    "target": "Field",
     "flags": ["Mirror"],
     "hit_effect": { "pseudo_weather": "trickroom" },
     "condition": {

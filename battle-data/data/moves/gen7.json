@@ -540,7 +540,7 @@
     "primary_type": "Psychic",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "psychicterrain" },
     "condition": {

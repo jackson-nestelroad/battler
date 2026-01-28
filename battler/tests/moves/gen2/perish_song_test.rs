@@ -82,7 +82,7 @@ fn perish_song_faints_all_active_mons() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Misdreavus,player-1,1|name:Perish Song",
+            "move|mon:Misdreavus,player-1,1|name:Perish Song|spread:Misdreavus,player-1,1;Smoochum,player-1,2;Misdreavus,player-2,1;Smoochum,player-2,2",
             "fieldactivate|move:Perish Song",
             "move|mon:Misdreavus,player-2,1|name:Perish Song|noanim",
             "fail|mon:Misdreavus,player-2,1",
@@ -137,12 +137,12 @@ fn soundproof_resists_perish_song() {
             "split|side:0",
             ["switch", "player-1", "Whismur"],
             ["switch", "player-1", "Whismur"],
-            "move|mon:Misdreavus,player-2,1|name:Perish Song",
+            "move|mon:Misdreavus,player-2,1|name:Perish Song|spread:Misdreavus,player-2,1;Smoochum,player-2,2;Smoochum,player-1,2",
             "immune|mon:Whismur,player-1,1|from:ability:Soundproof",
             "fieldactivate|move:Perish Song",
             "start|mon:Misdreavus,player-2,1|move:Perish Song|perish:3",
-            "start|mon:Smoochum,player-1,2|move:Perish Song|perish:3",
             "start|mon:Smoochum,player-2,2|move:Perish Song|perish:3",
+            "start|mon:Smoochum,player-1,2|move:Perish Song|perish:3",
             "residual",
             "turn|turn:2"
         ]"#,

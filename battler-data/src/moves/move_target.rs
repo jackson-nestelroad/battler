@@ -33,7 +33,7 @@ pub enum MoveTarget {
     /// An adjacent foe.
     #[string = "AdjacentFoe"]
     AdjacentFoe,
-    /// The field or all Mons at once.
+    /// All Mons at once.
     #[string = "All"]
     All,
     /// All adjacent mons (including allies).
@@ -56,6 +56,9 @@ pub enum MoveTarget {
     /// Any other active Mon.
     #[string = "Any"]
     Any,
+    /// The field.
+    #[string = "Field"]
+    Field,
     /// The foe's side.
     #[string = "FoeSide"]
     FoeSide,
@@ -98,6 +101,7 @@ impl MoveTarget {
             | Self::Allies
             | Self::AllySide
             | Self::AllyTeam
+            | Self::Field
             | Self::FoeSide
             | Self::Scripted => false,
             _ => true,
@@ -113,6 +117,7 @@ impl MoveTarget {
             | Self::Allies
             | Self::AllySide
             | Self::AllyTeam
+            | Self::Field
             | Self::FoeSide => false,
             _ => true,
         }
@@ -121,7 +126,7 @@ impl MoveTarget {
     /// Does the move affect Mons directly?
     pub fn affects_mons_directly(&self) -> bool {
         match self {
-            Self::All | Self::FoeSide | Self::AllySide | Self::AllyTeam => false,
+            Self::AllySide | Self::AllyTeam | Self::Field | Self::FoeSide => false,
             _ => true,
         }
     }
@@ -209,6 +214,7 @@ impl MoveTarget {
             Self::Allies => !is_foe && !is_self,
             Self::AllySide | Self::AllyTeam => !is_foe,
             Self::Any => !is_self,
+            Self::Field => true,
             Self::FoeSide => is_foe,
             Self::Normal | Self::RandomNormal | Self::Scripted => is_adjacent,
             Self::User => is_self,

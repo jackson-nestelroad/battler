@@ -127,7 +127,7 @@ fn baton_pass_switches_user_out_and_passes_volatiles() {
             "split|side:0",
             "damage|mon:Espeon,player-1,1|health:88/125",
             "damage|mon:Espeon,player-1,1|health:71/100",
-            "move|mon:Umbreon,player-2,1|name:Perish Song",
+            "move|mon:Umbreon,player-2,1|name:Perish Song|spread:Umbreon,player-2,1;Espeon,player-1,1",
             "fieldactivate|move:Perish Song",
             "start|mon:Espeon,player-1,1|move:Perish Song|perish:3",
             "start|mon:Umbreon,player-2,1|move:Perish Song|perish:3",

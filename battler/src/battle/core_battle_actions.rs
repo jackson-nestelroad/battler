@@ -825,7 +825,7 @@ pub fn get_move_targets(
 ) -> Result<Vec<MonHandle>> {
     let mut targets = Vec::new();
     match context.active_move().data.target {
-        MoveTarget::All => {
+        MoveTarget::All | MoveTarget::Field => {
             targets.extend(
                 context
                     .battle()
@@ -977,7 +977,7 @@ fn try_indirect_move(
 
     let move_target = context.active_move().data.target;
     let try_move_result = match move_target {
-        MoveTarget::All => {
+        MoveTarget::Field => {
             core_battle_effects::run_event_for_field_effect_expecting_move_event_result(
                 &mut context.field_effect_context()?,
                 fxlang::BattleEvent::TryHitField,
@@ -1347,11 +1347,13 @@ fn move_hit(
 fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
     let move_target = context.active_move().data.target.clone();
     let try_move_result = match move_target {
-        MoveTarget::All => core_battle_effects::run_active_move_event_expecting_move_event_result(
-            context,
-            fxlang::BattleEvent::TryHitField,
-            core_battle_effects::MoveTargetForEvent::None,
-        ),
+        MoveTarget::Field => {
+            core_battle_effects::run_active_move_event_expecting_move_event_result(
+                context,
+                fxlang::BattleEvent::TryHitField,
+                core_battle_effects::MoveTargetForEvent::None,
+            )
+        }
         MoveTarget::AllySide | MoveTarget::AllyTeam => {
             core_battle_effects::run_active_move_event_expecting_move_event_result(
                 context,
@@ -2478,7 +2480,7 @@ fn apply_move_effects(
         } else {
             // These event callbacks run regardless of if there is a hit effect defined.
             match move_target {
-                MoveTarget::All => {
+                MoveTarget::Field => {
                     if let Some(hit_result) =
                         core_battle_effects::run_active_move_event_expecting_bool(
                             target_context.as_active_move_context_mut(),

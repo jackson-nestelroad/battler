@@ -580,25 +580,18 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": ["BypassMaxGuard", "BypassSubstitute", "Distance", "Sound"],
+    "hit_effect": {
+      "volatile_status": "perishsong"
+    },
     "effect": {
       "callbacks": {
-        "on_hit_field": [
-          "$success = false",
-          "$activate = false",
-          "$targets = func_call(all_active_mons)",
-          "if $targets.is_empty:",
-          ["return false"],
-          "foreach $target in func_call(prepare_direct_move: $targets):",
-          [
-            "$success = true",
-            "# Activate if at least one Mon did not already have this status.",
-            "$hit_target = func_call(add_volatile: $target $this.id)",
-            "$activate = $activate or $hit_target"
-          ],
-          "if !$success or !$activate:",
-          ["return false"],
-          "if $activate:",
-          ["log_field_activate"]
+        "on_try_hit": [
+          "if func_call(has_volatile: $target $this.id):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "if !$effect_state.activate:",
+          ["$effect_state.activate = true", "log_field_activate"]
         ]
       }
     },
@@ -691,7 +684,7 @@
     "primary_type": "Rock",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": ["Wind"],
     "hit_effect": { "weather": "sandstormweather" }
   },
@@ -1490,7 +1483,7 @@
     "primary_type": "Water",
     "pp": 5,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "weather": "rainweather" }
   },
@@ -1500,7 +1493,7 @@
     "primary_type": "Fire",
     "pp": 5,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": { "weather": "harshsunlight" }
   },

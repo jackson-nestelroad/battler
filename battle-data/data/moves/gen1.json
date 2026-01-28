@@ -1591,7 +1591,7 @@
     "primary_type": "Ice",
     "pp": 30,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": ["BypassSubstitute"],
     "effect": {
       "callbacks": {

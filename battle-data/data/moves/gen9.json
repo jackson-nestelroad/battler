@@ -356,7 +356,7 @@
     "primary_type": "Ice",
     "pp": 10,
     "accuracy": "exempt",
-    "target": "All",
+    "target": "Field",
     "flags": ["NoMetronome"],
     "hit_effect": { "weather": "snowweather" }
   },
