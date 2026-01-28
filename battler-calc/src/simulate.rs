@@ -24,6 +24,7 @@ use battler_data::{
     MoveData,
     MoveFlag,
     MultihitType,
+    RecoilBase,
     SpeciesData,
     Stat,
     Type,
@@ -937,14 +938,16 @@ fn calculate_recoil(
         )));
     }
 
-    let recoil_percent = match context.move_data.recoil_percent {
-        Some(recoil_percent) => recoil_percent,
+    let recoil = match &context.move_data.recoil {
+        Some(recoil) => recoil,
         None => return Ok(None),
     };
-    let recoil = if context.move_data.recoil_from_user_hp {
-        RangeDistribution::from(attacker_max_hp)
-    } else {
-        damage
+    let recoil_percent = recoil.percent;
+    let recoil = match recoil.base {
+        RecoilBase::Damage => damage,
+        RecoilBase::UserMaxHp | RecoilBase::UserBaseMaxHp => {
+            RangeDistribution::from(attacker_max_hp)
+        }
     };
     let recoil = Output::from(recoil);
     let mut recoil = recoil.map(

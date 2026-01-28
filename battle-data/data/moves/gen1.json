@@ -425,7 +425,9 @@
     "base_power": 90,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil_percent": "1/4"
+    "recoil": {
+      "percent": "1/4"
+    }
   },
   "thrash": {
     "name": "Thrash",
@@ -447,7 +449,9 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil_percent": "1/3"
+    "recoil": {
+      "percent": "1/3"
+    }
   },
   "tailwhip": {
     "name": "Tail Whip",
@@ -853,7 +857,9 @@
     "base_power": 80,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil_percent": "1/4"
+    "recoil": {
+      "percent": "1/4"
+    }
   },
   "lowkick": {
     "name": "Low Kick",
@@ -2436,8 +2442,12 @@
       "NoSleepTalk",
       "Protect"
     ],
+    "recoil": {
+      "percent": "1/4",
+      "base": "userbasemaxhp",
+      "struggle": true
+    },
     "no_pp_boosts": true,
-    "struggle_recoil": true,
     "typeless": true
   },
   "recharge": {

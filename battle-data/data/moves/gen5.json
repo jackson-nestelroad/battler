@@ -1340,7 +1340,9 @@
     "base_power": 90,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil_percent": "1/4"
+    "recoil": {
+      "percent": "1/4"
+    }
   },
   "drillrun": {
     "name": "Drill Run",
@@ -1564,7 +1566,9 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil_percent": "1/4"
+    "recoil": {
+      "percent": "1/4"
+    }
   },
   "geargrind": {
     "name": "Gear Grind",

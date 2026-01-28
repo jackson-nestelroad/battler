@@ -327,7 +327,9 @@ where
                             .map(|mov| {
                                 ValueRef::UFraction(
                                     mov.data
-                                        .recoil_percent
+                                        .recoil
+                                        .as_ref()
+                                        .map(|recoil| recoil.percent)
                                         .unwrap_or(Fraction::from(0u16))
                                         .convert(),
                                 )

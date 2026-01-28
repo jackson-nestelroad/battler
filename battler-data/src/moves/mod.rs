@@ -24,6 +24,8 @@ pub use move_data::{
     HitEffect,
     MaxMoveData,
     MoveData,
+    RecoilBase,
+    RecoilData,
     SecondaryEffectData,
 };
 pub use move_flag::MoveFlag;

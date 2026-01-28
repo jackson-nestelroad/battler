@@ -704,7 +704,9 @@
     "base_power": 140,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"],
-    "recoil_percent": "1/2"
+    "recoil": {
+      "percent": "1/2"
+    }
   },
   "originpulse": {
     "name": "Origin Pulse",

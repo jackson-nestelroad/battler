@@ -23,6 +23,7 @@ use battler_data::{
     MoveSource,
     MoveTarget,
     MultihitType,
+    RecoilBase,
     SelfDestructType,
     Stat,
     SwitchType,
@@ -1824,25 +1825,40 @@ fn modify_damage(
 }
 
 /// Calculates recoil damage of a move against the user.
-fn calculate_recoil_damage(context: &ActiveMoveContext, damage_dealt: u64) -> u64 {
-    match context.active_move().data.recoil_percent {
-        Some(recoil_percent) if damage_dealt > 0 => {
-            let recoil_base = if context.active_move().data.recoil_from_user_hp {
-                context.as_mon_context().mon().max_hp as u64
-            } else {
-                damage_dealt
-            };
-            (recoil_percent.convert() * recoil_base).round().max(1)
-        }
-        _ => 0,
-    }
+fn calculate_recoil_damage(context: &ActiveMoveContext, damage_dealt: u64) -> u16 {
+    let recoil = match &context.active_move().data.recoil {
+        Some(recoil) => recoil,
+        None => return 0,
+    };
+    let base = match recoil.base {
+        RecoilBase::Damage => damage_dealt,
+        RecoilBase::UserMaxHp => context.as_mon_context().mon().max_hp as u64,
+        RecoilBase::UserBaseMaxHp => context.as_mon_context().mon().base_max_hp as u64,
+    };
+    ((recoil.percent.convert() * base).round().max(1)).min(u16::MAX as u64) as u16
 }
 
 /// Applies recoil damage to the user of an active move.
 pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -> Result<()> {
+    let recoil = match &context.active_move().data.recoil {
+        Some(recoil) => recoil,
+        None => return Ok(()),
+    };
+
     let recoil_damage = calculate_recoil_damage(context, damage_dealt);
-    if recoil_damage > 0 {
-        let recoil_damage = recoil_damage.min(u16::MAX as u64) as u16;
+    if recoil_damage == 0 {
+        return Ok(());
+    }
+
+    if recoil.struggle {
+        let mon_handle = context.mon_handle();
+        direct_damage(
+            &mut context.as_mon_context_mut(),
+            recoil_damage,
+            Some(mon_handle),
+            Some(&EffectHandle::Condition(Id::from_known("strugglerecoil"))),
+        )?;
+    } else {
         damage(
             &mut context
                 .user_applying_effect_context(None)?
@@ -1850,17 +1866,6 @@ pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -
                     "recoil",
                 )))?,
             recoil_damage,
-        )?;
-    }
-
-    if context.active_move().data.struggle_recoil {
-        let recoil_damage = Fraction::new(context.mon().base_max_hp, 4).round();
-        let mon_handle = context.mon_handle();
-        direct_damage(
-            &mut context.as_mon_context_mut(),
-            recoil_damage,
-            Some(mon_handle),
-            Some(&EffectHandle::Condition(Id::from_known("strugglerecoil"))),
         )?;
     }
 

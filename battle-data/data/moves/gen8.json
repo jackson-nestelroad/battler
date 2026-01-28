@@ -1342,7 +1342,9 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil_percent": "33/100"
+    "recoil": {
+      "percent": "1/3"
+    }
   },
   "chloroblast": {
     "name": "Chloroblast",
@@ -1353,8 +1355,10 @@
     "base_power": 150,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "recoil_percent": "50%",
-    "recoil_from_user_hp": true
+    "recoil": {
+      "percent": "1/2",
+      "base": "usermaxhp"
+    }
   },
   "mountaingale": {
     "name": "Mountain Gale",

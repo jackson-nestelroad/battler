@@ -1804,7 +1804,9 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil_percent": "33%",
+    "recoil": {
+      "percent": "1/3"
+    },
     "secondary_effects": [{ "chance": "10%", "target": { "status": "par" } }]
   },
   "magicalleaf": {

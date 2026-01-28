@@ -8,6 +8,10 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use serde_string_enum::{
+    DeserializeLabeledStringEnum,
+    SerializeLabeledStringEnum,
+};
 
 use crate::{
     Accuracy,
@@ -72,6 +76,34 @@ pub struct MaxMoveData {
     pub base_power: u32,
 }
 
+/// The base number to use for recoil damage calculation.
+#[derive(Debug, Default, Clone, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+pub enum RecoilBase {
+    /// Damage dealt.
+    #[default]
+    #[string = "Damage"]
+    Damage,
+    /// The move user's maximum HP.
+    #[string = "UserMaxHp"]
+    UserMaxHp,
+    /// The move user's base maximum HP.
+    #[string = "UserBaseMaxHp"]
+    UserBaseMaxHp,
+}
+
+/// Data for a move's recoil damage to the user.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct RecoilData {
+    /// The base number to use for recoil damage calculation.
+    #[serde(default)]
+    pub base: RecoilBase,
+    /// Percent of base.
+    pub percent: Fraction<u16>,
+    /// Apply Struggle recoil directly?
+    #[serde(default)]
+    pub struggle: bool,
+}
+
 fn default_crit_ratio() -> Option<u8> {
     Some(1)
 }
@@ -120,11 +152,8 @@ pub struct MoveData {
     pub user_switch: Option<SwitchType>,
     /// How the user self destructs.
     pub self_destruct: Option<SelfDestructType>,
-    /// The percentage of damage dealt for recoil.
-    pub recoil_percent: Option<Fraction<u16>>,
-    /// Calculate recoil damage from user HP?
-    #[serde(default)]
-    pub recoil_from_user_hp: bool,
+    /// Recoil damage to apply.
+    pub recoil: Option<RecoilData>,
     /// The percentage of the target's HP to drain.
     pub drain_percent: Option<Fraction<u16>>,
     /// Apply Struggle recoil?
