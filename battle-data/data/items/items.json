@@ -1611,13 +1611,10 @@
           ["return"],
           "if !func_call(can_switch: $target.player) or $target.force_switch or $target.being_called_back or $target.is_away_from_field:",
           ["return"],
-          "foreach $mon in func_call(all_active_mons):",
-          ["if $mon.ejecting:", ["return"]],
+          "foreach $mon in func_call(all_active_or_exited_mons):",
+          ["if $mon.being_called_back:", ["return"]],
           "if func_call(use_item: $target):",
-          [
-            "set_needs_switch: $target true ejecting",
-            "set_needs_switch: $source false"
-          ]
+          ["switch_out: $target", "set_needs_switch: $source false"]
         ]
       }
     }

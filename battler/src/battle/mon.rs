@@ -449,8 +449,8 @@ pub struct MonSwitchState {
     pub force_switch: Option<SwitchType>,
     /// The `BeforeSwitchOut` event already ran so it should be skipped.
     pub skip_before_switch_out: bool,
-    /// The Mon is ejecting, so other Mons should not eject.
-    pub ejecting: bool,
+    /// The Mon is switched out.
+    pub being_called_back: bool,
 }
 
 /// Volatile state for a Mon.
@@ -577,7 +577,6 @@ pub struct Mon {
     pub max_hp: u16,
     pub exited: Option<MonExitType>,
     pub newly_switched: bool,
-    pub being_called_back: bool,
 
     pub next_turn_state: MonNextTurnState,
     pub switch_state: MonSwitchState,
@@ -685,7 +684,6 @@ impl Mon {
             max_hp: 0,
             exited: None,
             newly_switched: false,
-            being_called_back: false,
             next_turn_state: MonNextTurnState::default(),
             switch_state: MonSwitchState::default(),
             volatile_state: MonVolatileState::default(),

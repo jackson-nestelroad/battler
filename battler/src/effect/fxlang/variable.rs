@@ -509,9 +509,9 @@ where
                             "base_stats" => {
                                 ValueRef::StatTable(&context.mon(mon_handle)?.base_stored_stats)
                             }
-                            "being_called_back" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.being_called_back)
-                            }
+                            "being_called_back" => ValueRef::Boolean(
+                                context.mon(mon_handle)?.switch_state.being_called_back,
+                            ),
                             "berry_eating_health" => ValueRef::UFraction(
                                 mon_states::berry_eating_health(
                                     &mut context.mon_context(mon_handle)?,
@@ -579,9 +579,6 @@ where
                                     ),
                                     None => ValueRef::Undefined,
                                 }
-                            }
-                            "ejecting" => {
-                                ValueRef::Boolean(context.mon(mon_handle)?.switch_state.ejecting)
                             }
                             "exited" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.exited.is_some())

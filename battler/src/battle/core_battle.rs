@@ -505,6 +505,14 @@ impl<'d> CoreBattle<'d> {
             .filter_map(|position| position)
     }
 
+    pub fn active_or_exited_mon_handles_on_side<'b>(
+        &'b self,
+        side: usize,
+    ) -> impl Iterator<Item = MonHandle> + 'b {
+        self.players_on_side(side)
+            .flat_map(|player| player.active_or_exited_mon_handles().map(|mon| *mon))
+    }
+
     pub fn all_active_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
         self.side_indices()
             .map(|side| self.active_mon_handles_on_side(side))
@@ -525,6 +533,12 @@ impl<'d> CoreBattle<'d> {
             .into_iter()
             .map(|mon| mon.mon_handle)
             .collect())
+    }
+
+    pub fn all_active_or_exited_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
+        self.side_indices()
+            .map(|side| self.active_or_exited_mon_handles_on_side(side))
+            .flatten()
     }
 
     pub fn next_effect_order(&mut self) -> u32 {
@@ -1544,8 +1558,11 @@ impl<'d> CoreBattle<'d> {
                         .collect::<Vec<_>>()
                     {
                         let mut context = context.mon_context(mon)?;
-                        if context.mon().switch_state.needs_switch.is_some() {
-                            core_battle_actions::switch_out(&mut context)?;
+                        if let Some(switch_type) = context.mon().switch_state.needs_switch {
+                            core_battle_actions::switch_out(
+                                &mut context,
+                                switch_type == SwitchType::CopyVolatile,
+                            )?;
 
                             // Mon may have fainted here.
                             Self::faint_messages(context.as_battle_context_mut())?;

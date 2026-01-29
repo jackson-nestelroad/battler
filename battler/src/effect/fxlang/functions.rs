@@ -130,6 +130,7 @@ pub fn run_function(
             all_active_mons_in_speed_order(context).map(|val| Some(val))
         }
         "all_active_mons_on_side" => all_active_mons_on_side(context).map(|val| Some(val)),
+        "all_active_or_exited_mons" => all_active_or_exited_mons(context).map(|val| Some(val)),
         "all_foes" => all_foes(context).map(|val| Some(val)),
         "all_mons_in_party" => all_mons_in_party(context).map(|val| Some(val)),
         "all_mons_on_side" => all_mons_on_side(context).map(|val| Some(val)),
@@ -323,6 +324,7 @@ pub fn run_function(
         "status_effect_state" => status_effect_state(context),
         "swap_boosts" => swap_boosts(context).map(|()| None),
         "swap_position" => swap_position(context).map(|val| Some(val)),
+        "switch_out" => switch_out(context).map(|val| Some(val)),
         "take_item" => take_item(context),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
         "transform_into" => transform_into(context).map(|val| Some(val)),
@@ -2373,6 +2375,18 @@ fn all_active_mons_in_speed_order(mut context: FunctionContext) -> Result<Value>
     ))
 }
 
+fn all_active_or_exited_mons(context: FunctionContext) -> Result<Value> {
+    Ok(Value::List(
+        context
+            .evaluation_context()
+            .battle_context()
+            .battle()
+            .all_active_or_exited_mon_handles()
+            .map(|mon_handle| Value::Mon(mon_handle))
+            .collect(),
+    ))
+}
+
 fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value> {
     let side = context.target_side_index_positional()?;
     Ok(Value::List(
@@ -4170,7 +4184,6 @@ fn swap_position(mut context: FunctionContext) -> Result<Value> {
 
 fn set_needs_switch(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
-    let ejecting = context.has_flag("ejecting");
     let value = context
         .pop_front()
         .wrap_expectation("missing value")?
@@ -4179,10 +4192,14 @@ fn set_needs_switch(mut context: FunctionContext) -> Result<()> {
     let mut context = context.mon_context(target_handle)?;
     context.mon_mut().switch_state = MonSwitchState::default();
     context.mon_mut().switch_state.needs_switch = value.then(|| SwitchType::Normal);
-    if ejecting {
-        context.mon_mut().switch_state.ejecting = ejecting;
-    }
     Ok(())
+}
+
+fn switch_out(mut context: FunctionContext) -> Result<Value> {
+    let target_handle = context.target_handle_positional()?;
+    let mut context = context.mon_context(target_handle)?;
+    context.mon_mut().switch_state.needs_switch = Some(SwitchType::Normal);
+    core_battle_actions::switch_out(&mut context, false).map(|val| Value::Boolean(val))
 }
 
 fn force_switch(mut context: FunctionContext) -> Result<Value> {

@@ -114,11 +114,11 @@ fn switch_out_internal(
     context: &mut MonContext,
     being_replaced_immediately: bool,
     run_switch_out_events: bool,
-    preserve_volatiles: bool,
+    preserve_volatile: bool,
 ) -> Result<bool> {
     if context.mon().active {
         if context.mon().hp > 0 {
-            context.mon_mut().being_called_back = true;
+            context.mon_mut().switch_state.being_called_back = true;
 
             if run_switch_out_events {
                 if !context.mon().switch_state.skip_before_switch_out {
@@ -165,19 +165,19 @@ fn switch_out_internal(
         Mon::switch_out(context)?;
     }
 
-    if !preserve_volatiles {
-        Mon::clear_volatile(context, true)?;
+    if !preserve_volatile {
+        Mon::clear_volatile(context, being_replaced_immediately)?;
     }
 
     Ok(true)
 }
 
-/// Switches a Mon out of the given position.
-pub fn switch_out(context: &mut MonContext) -> Result<bool> {
+/// Switches a Mon out immediately.
+pub fn switch_out(context: &mut MonContext, preserve_volatile: bool) -> Result<bool> {
     if context.mon().switch_state.needs_switch.is_none() {
         context.mon_mut().switch_state.needs_switch = Some(SwitchType::Normal);
     }
-    switch_out_internal(context, false, true, true)
+    switch_out_internal(context, false, true, preserve_volatile)
 }
 
 /// Switches a Mon into the given position.
