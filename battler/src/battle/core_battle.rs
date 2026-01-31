@@ -55,9 +55,11 @@ use crate::{
         CoreBattleOptions,
         EndAction,
         Field,
+        FieldEffectCache,
         LearnMoveRequest,
         Mon,
         MonContext,
+        MonEffectCache,
         MonExitType,
         MonHandle,
         MoveHandle,
@@ -2521,5 +2523,16 @@ impl<'d> CoreBattle<'d> {
             &mut context.effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
             fxlang::BattleEvent::Update,
         )
+    }
+
+    /// Invalidates all effect caches.
+    ///
+    /// Any state-based events must be rerun after this call for all Mons.
+    pub fn invalidate_effect_caches(context: &mut Context) -> Result<()> {
+        context.battle_mut().field.effect_cache = FieldEffectCache::default();
+        for mon_handle in context.battle().all_mon_handles().collect::<Vec<_>>() {
+            context.mon_mut(mon_handle)?.volatile_state.effect_cache = MonEffectCache::default();
+        }
+        Ok(())
     }
 }

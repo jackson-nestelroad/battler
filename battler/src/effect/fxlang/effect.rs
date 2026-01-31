@@ -506,6 +506,13 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "CanHeal"]
     CanHeal,
+    /// Runs when determining if a Mon's ability can be suppressed.
+    ///
+    /// Does not run if the Mon's ability is already suppressed.
+    ///
+    /// Runs on the effect.
+    #[string = "CanSuppressMonAbility"]
+    CanSuppressMonAbility,
     /// Runs when a Mon is caught.
     ///
     /// Runs on the item (used to catch the Mon) and in the context of a Mon.
@@ -1311,6 +1318,7 @@ impl BattleEvent {
             Self::CanDynamax => CommonCallbackType::MonResult as u32,
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
+            Self::CanSuppressMonAbility => CommonCallbackType::MonResult as u32,
             Self::Catch => CommonCallbackType::MonVoid as u32,
             Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveResult as u32,

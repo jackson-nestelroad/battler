@@ -192,11 +192,12 @@ fn run_effect_event_with_errors(
                 return Ok(fxlang::ProgramEvalResult::default());
             }
 
-            // If we are ending, set the ending flag, so that nested events don't use this callback.
+            if event.starts_effect() {
+                effect_state_connector.set_starting(context.battle_context_mut())?;
+            }
+            // Ending flag ensures that nested events don't use this callback.
             if event.ends_effect() {
-                effect_state_connector
-                    .get_mut(context.battle_context_mut())?
-                    .set_ending(true);
+                effect_state_connector.set_ending(context.battle_context_mut())?;
             }
         }
     }
@@ -247,18 +248,11 @@ fn run_effect_event_with_errors(
 
     if let Some(effect_state_connector) = &effect_state_connector {
         if event.starts_effect() {
-            effect_state_connector
-                .get_mut(context.battle_context_mut())?
-                .set_started(true);
-            effect_state_connector
-                .get_mut(context.battle_context_mut())?
-                .set_ending(false);
+            effect_state_connector.set_started(context.battle_context_mut())?;
         }
-
+        // Ending flag ensures that nested events don't use this callback.
         if event.ends_effect() {
-            effect_state_connector
-                .get_mut(context.battle_context_mut())?
-                .set_started(false);
+            effect_state_connector.set_ended(context.battle_context_mut())?;
         }
     }
 

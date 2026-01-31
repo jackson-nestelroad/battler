@@ -1966,6 +1966,10 @@
         "suppress_mon_ability": {
           "priority": 1,
           "program": ["return false"]
+        },
+        "can_suppress_mon_ability": {
+          "priority": 1,
+          "program": ["return false"]
         }
       }
     }

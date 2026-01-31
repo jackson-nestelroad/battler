@@ -116,6 +116,10 @@ fn switch_out_internal(
     run_switch_out_events: bool,
     preserve_volatile: bool,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if context.mon().active && !context.mon().switch_state.being_called_back {
         if context.mon().hp > 0 {
             context.mon_mut().switch_state.being_called_back = true;
@@ -199,6 +203,10 @@ pub fn switch_in(
     mut switch_type: Option<SwitchType>,
     is_drag: bool,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if context.mon().active {
         return Ok(false);
     }
@@ -3004,6 +3012,10 @@ pub fn try_set_status(
     status: Id,
     is_primary_move_effect: bool,
 ) -> Result<ApplyMoveEffectResult> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if context.target().hp == 0 {
         return Ok(ApplyMoveEffectResult::Failed);
     }
@@ -3146,6 +3158,10 @@ pub fn cure_status(
     silent: bool,
     log_effect: bool,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if context.target().hp == 0 {
         return Ok(false);
     }
@@ -3195,6 +3211,10 @@ pub fn add_volatile(
     is_primary_move_effect: bool,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
@@ -3339,6 +3359,10 @@ pub fn remove_volatile(
     volatile: &Id,
     no_events: bool,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
@@ -3440,6 +3464,10 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
 
 /// Adds a condition to a side.
 pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let side_condition_handle = context
         .battle_mut()
         .get_effect_handle_by_id(condition)?
@@ -3576,6 +3604,10 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
 
 /// Sets the types of a Mon.
 pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active {
         return Ok(false);
     }
@@ -3925,6 +3957,10 @@ pub fn forfeit(context: &mut PlayerContext) -> Result<()> {
 
 /// Sets the weather on the field.
 pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let weather_handle = context
         .battle_mut()
         .get_effect_handle_by_id(weather)?
@@ -4020,6 +4056,10 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
 
 /// Clears the weather on the field.
 pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if let Some(weather) = context.battle().field.weather.clone() {
         if !core_battle_effects::run_event_for_field_effect(
             context,
@@ -4064,6 +4104,10 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
 
 /// Sets the terrain on the field.
 pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let terrain_handle = context
         .battle_mut()
         .get_effect_handle_by_id(terrain)?
@@ -4156,6 +4200,10 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
 
 /// Clears the terrain on the field.
 pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if let Some(terrain) = context.battle().field.terrain.clone() {
         if !core_battle_effects::run_event_for_field_effect(
             context,
@@ -4201,6 +4249,10 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
 
 /// Adds a pseudo-weather to the field.
 pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let pseudo_weather_handle = context
         .battle_mut()
         .get_effect_handle_by_id(pseudo_weather)?
@@ -4319,6 +4371,10 @@ pub fn remove_pseudo_weather(
     context: &mut FieldEffectContext,
     pseudo_weather: &Id,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let pseudo_weather_handle = context
         .battle_mut()
         .get_effect_handle_by_id(pseudo_weather)?
@@ -4376,6 +4432,10 @@ pub fn end_ability_even_if_exiting(
     context: &mut ApplyingEffectContext,
     silent: bool,
 ) -> Result<()> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context
         .target()
         .volatile_state
@@ -4397,6 +4457,10 @@ pub fn end_ability_even_if_exiting(
 
 /// Starts the target Mon's ability, if it is not already started.
 pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active
         || context.target().hp == 0
         || context
@@ -4429,6 +4493,10 @@ pub fn set_ability(
     force: bool,
     silent: bool,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
@@ -4496,6 +4564,10 @@ pub fn add_slot_condition(
     slot: usize,
     condition: &Id,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let slot_condition_handle = context
         .battle_mut()
         .get_effect_handle_by_id(condition)?
@@ -4611,6 +4683,10 @@ pub fn remove_slot_condition(
     slot: usize,
     condition: &Id,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let slot_condition_handle = context
         .battle_mut()
         .get_effect_handle_by_id(condition)?
@@ -4680,6 +4756,10 @@ fn end_item_internal(
     end_item_type: EndItemType,
     end_item_log: EndItemLog,
 ) -> Result<()> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active || context.target().hp == 0 {
         return Ok(());
     }
@@ -4743,6 +4823,10 @@ pub fn end_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()>
 ///
 /// The Mon still has the item, but it is not considered active.
 pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active
         || context.target().hp == 0
         || context
@@ -4770,6 +4854,10 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
 
 /// Sets the target Mon's item.
 pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
@@ -4890,6 +4978,10 @@ pub fn take_item(
 }
 
 fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let item_handle = context
         .battle_mut()
         .get_effect_handle_by_id(&item)?
@@ -5490,6 +5582,10 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
 ///
 /// Used to implement the move "Transform."
 pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !context.target().active
         || context.target().volatile_state.transformed
         || context.target().volatile_state.illusion.is_some()
@@ -5588,6 +5684,10 @@ pub fn forme_change(
     species: &Id,
     forme_change_type: FormeChangeType,
 ) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if !Mon::set_species(&mut context.target_context()?, species)? {
         return Ok(false);
     }
@@ -5653,6 +5753,10 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
 }
 
 fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if let Some(special_forme_change_type) = context.target().special_forme_change_type {
         let base_species_update = match special_forme_change_type {
             MonSpecialFormeChangeType::MegaEvolution
@@ -5923,6 +6027,10 @@ pub fn can_terastallize(context: &mut MonContext) -> Result<Option<Type>> {
 
 /// Terastallizes the Mon if it is able to do so.
 pub fn terastallize(context: &mut MonContext) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     let tera_type = match can_terastallize(context)? {
         Some(tera_type) => tera_type,
         None => return Ok(false),
@@ -5966,6 +6074,10 @@ pub fn terastallize(context: &mut MonContext) -> Result<bool> {
 
 /// Ends the Mon's Terastallization, if applicable.
 pub fn end_terastallization(context: &mut ApplyingEffectContext) -> Result<()> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
     if context.target().terastallized.is_none() {
         return Ok(());
     }

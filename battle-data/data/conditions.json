@@ -73,6 +73,13 @@
             ["return false"]
           ]
         },
+        "can_suppress_mon_ability": {
+          "priority": 10,
+          "program": [
+            "if func_call(ability_has_flag: $mon.ability permanent):",
+            ["return false"]
+          ]
+        },
         "on_modify_catch_rate": {
           "priority": 1,
           "program": [

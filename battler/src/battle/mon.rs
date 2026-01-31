@@ -455,6 +455,31 @@ pub struct MonSwitchState {
     pub switching_in: bool,
 }
 
+/// Cache for Mon effects.
+#[derive(Debug, Default, Clone)]
+pub struct MonEffectCache {
+    pub effective_types: Option<Vec<Type>>,
+    pub effective_types_before_forced_types: Option<Vec<Type>>,
+
+    pub effective_ability: Option<Option<Id>>,
+    pub effective_item: Option<Option<Id>>,
+
+    pub effective_weather: Option<Option<Id>>,
+    pub effective_terrain: Option<Option<Id>>,
+
+    pub berry_eating_health: Option<u16>,
+    pub can_heal: Option<bool>,
+    pub can_suppress_ability: Option<bool>,
+    pub is_asleep: Option<bool>,
+    pub is_away_from_field: Option<bool>,
+    pub is_behind_substitute: Option<bool>,
+    pub is_contact_proof: Option<bool>,
+    pub is_grounded: Option<bool>,
+    pub is_immune_to_entry_hazards: Option<bool>,
+    pub is_soundproof: Option<bool>,
+    pub is_semi_invulnerable: Option<bool>,
+}
+
 /// Volatile state for a Mon.
 #[derive(Debug, Default, Clone)]
 pub struct MonVolatileState {
@@ -518,6 +543,9 @@ pub struct MonVolatileState {
     pub foes_fought_while_active: HashSet<MonHandle>,
     /// Attacks received by the Mon.
     pub received_attacks: Vec<ReceivedAttackEntry>,
+
+    /// Cache for Mon effects.
+    pub effect_cache: MonEffectCache,
 }
 
 /// A Mon in a battle, which battles against other Mons.
@@ -1674,6 +1702,7 @@ impl Mon {
             switched_out_this_turn: false,
             foes_fought_while_active: HashSet::default(),
             received_attacks: Vec::default(),
+            effect_cache: MonEffectCache::default(),
         })
     }
     /// Clears all volatile effects.

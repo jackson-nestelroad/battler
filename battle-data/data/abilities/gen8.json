@@ -100,10 +100,7 @@
           "# If a Mon's ability is suppressed, end it.",
           "# Note that `end_ability` has no effect if the ability was already ended elsewhere, or never started.",
           "foreach $mon in func_call(all_active_mons_in_speed_order):",
-          [
-            "if func_call(mon_ability_suppressed_by_this_effect: $mon):",
-            ["end_ability: $mon silent"]
-          ]
+          ["if $mon.can_suppress_ability:", ["end_ability: $mon silent"]]
         ],
         "on_field_end": [
           "# Restart abilities.",

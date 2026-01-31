@@ -384,6 +384,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ### Effect
 
+- `CanSuppressMonAbility`.
 - `SuppressFieldTerrain`.
 - `SuppressFieldWeather`.
 - `SuppressMonAbility`.
