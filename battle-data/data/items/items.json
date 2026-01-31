@@ -707,8 +707,11 @@
       "callbacks": {
         "on_modify_damage": ["return $damage * 13/10"],
         "on_after_move_secondary_effects_user": [
-          "if $target.is_defined and $user != $target and $move.category != status and !$user.force_switch:",
-          ["damage: $user expr($user.base_max_hp / 10)"]
+          "if ($target.is_defined and $user == $target) or $targets.is_empty:",
+          ["return"],
+          "if $move.category == status or $user.force_switch:",
+          ["return"],
+          "damage: $user expr($user.base_max_hp / 10)"
         ]
       }
     }

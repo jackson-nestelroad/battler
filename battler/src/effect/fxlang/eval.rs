@@ -18,6 +18,7 @@ use crate::{
         MaybeReferenceValue,
         MaybeReferenceValueForOperation,
         ParsedProgramBlock,
+        ProgramMetadata,
         Value,
         ValueType,
         Variable,
@@ -148,6 +149,7 @@ impl<'event_state> Evaluator<'event_state> {
     fn initialize_vars(
         &self,
         context: &mut EvaluationContext,
+        metadata: &ProgramMetadata,
         mut input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
         effect_mon_handle: Option<MonHandle>,
@@ -270,7 +272,20 @@ impl<'event_state> Evaluator<'event_state> {
 
         // Reverse the input so we can efficiently pop elements out of it.
         input.values.reverse();
-        for (i, (name, value_type, required)) in self.event.input_vars().iter().enumerate() {
+        let parameters = if self.event.allows_custom_input_vars() {
+            metadata
+                .parameters
+                .iter()
+                .map(|name| (name.as_str(), ValueType::Undefined, false))
+                .collect::<Vec<_>>()
+        } else {
+            self.event
+                .input_vars()
+                .iter()
+                .map(|(name, value_type, required)| (*name, *value_type, *required))
+                .collect::<Vec<_>>()
+        };
+        for (i, (name, value_type, required)) in parameters.iter().enumerate() {
             match input.values.pop() {
                 None | Some(Value::Undefined) => {
                     if *required {
@@ -312,7 +327,13 @@ impl<'event_state> Evaluator<'event_state> {
         effect_state_connector: Option<DynamicEffectStateConnector>,
         effect_mon_handle: Option<MonHandle>,
     ) -> Result<ProgramEvalResult> {
-        self.initialize_vars(context, input, effect_state_connector, effect_mon_handle)?;
+        self.initialize_vars(
+            context,
+            &callback.metadata,
+            input,
+            effect_state_connector,
+            effect_mon_handle,
+        )?;
         let root_state = ProgramBlockEvalState::new();
         let value = match self
             .evaluate_program_block(context, &callback.program.block, &root_state)

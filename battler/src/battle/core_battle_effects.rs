@@ -175,17 +175,29 @@ fn run_effect_event_with_errors(
         return Ok(fxlang::ProgramEvalResult::default());
     }
 
-    // Effect state no longer exists, so we should skip the callback.
-    if let Some(effect_state_connector) = &effect_state_connector {
-        if !effect_state_connector.exists(context.battle_context_mut())? {
-            return Ok(fxlang::ProgramEvalResult::default());
+    if !event.state_event() {
+        // Mon must on the field for the callback to run.
+        if let Some(effect_mon_handle) = &effect_mon_handle {
+            let context = context
+                .battle_context_mut()
+                .mon_context(*effect_mon_handle)?;
+            if !context.mon().active && !context.mon().switch_state.switching_in {
+                return Ok(fxlang::ProgramEvalResult::default());
+            }
         }
 
-        // If we are ending, set the ending flag, so that nested events don't use this callback.
-        if event.ends_effect() {
-            effect_state_connector
-                .get_mut(context.battle_context_mut())?
-                .set_ending(true);
+        if let Some(effect_state_connector) = &effect_state_connector {
+            // Effect state no longer exists, so we should skip the callback.
+            if !effect_state_connector.exists(context.battle_context_mut())? {
+                return Ok(fxlang::ProgramEvalResult::default());
+            }
+
+            // If we are ending, set the ending flag, so that nested events don't use this callback.
+            if event.ends_effect() {
+                effect_state_connector
+                    .get_mut(context.battle_context_mut())?
+                    .set_ending(true);
+            }
         }
     }
 
@@ -262,6 +274,7 @@ fn run_active_move_event_with_errors(
 ) -> Result<Option<fxlang::Value>> {
     let effect_state_connector =
         ActiveMoveEffectStateConnector::new(context.active_move_handle()).make_dynamic();
+    let effect_mon_handle = context.mon_handle();
     let effect_handle = context.effect_handle().clone();
 
     let result = match target {
@@ -275,7 +288,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
-            None,
+            Some(effect_mon_handle),
             false,
         )?,
         MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
@@ -286,7 +299,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
-            None,
+            Some(effect_mon_handle),
             false,
         )?,
         MoveTargetForEvent::Field => run_effect_event_with_errors(
@@ -297,7 +310,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
-            None,
+            Some(effect_mon_handle),
             false,
         )?,
         MoveTargetForEvent::User => run_effect_event_with_errors(
@@ -310,7 +323,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
-            None,
+            Some(effect_mon_handle),
             false,
         )?,
         MoveTargetForEvent::UserWithTarget(target) => run_effect_event_with_errors(
@@ -323,7 +336,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
-            None,
+            Some(effect_mon_handle),
             false,
         )?,
         MoveTargetForEvent::None => run_effect_event_with_errors(
@@ -334,7 +347,7 @@ fn run_active_move_event_with_errors(
             input,
             &fxlang::EventState::default(),
             Some(effect_state_connector),
-            None,
+            Some(effect_mon_handle),
             false,
         )?,
     };

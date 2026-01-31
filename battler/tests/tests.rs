@@ -121,6 +121,10 @@ mod abilities {
         mod zen_mode_test;
     }
 
+    mod gen7 {
+        mod emergency_exit_test;
+    }
+
     mod gen8 {
         mod neutralizing_gas_test;
         mod ripen_test;

@@ -1,5 +1,8 @@
 use alloc::{
-    string::String,
+    string::{
+        String,
+        ToString,
+    },
     vec::Vec,
 };
 
@@ -306,6 +309,14 @@ pub enum BattleEvent {
     /// Runs in the context of a move target.
     #[string = "AccuracyExempt"]
     AccuracyExempt,
+    /// Runs when an effect activates.
+    ///
+    /// Runs when activated by a battle effect. Used for shared logic between multiple event
+    /// callbacks.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "Activate"]
+    Activate,
     /// Runs when a pseudo-weather is being added to the field.
     ///
     /// Runs before the pseudo-weather effect is applied. Can be used to fail the pseudo-weather.
@@ -344,6 +355,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AfterCureStatus"]
     AfterCureStatus,
+    /// Runs after a Mon takes damage.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterDamage"]
+    AfterDamage,
     /// Runs after an individual stat boost is applied.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -364,13 +380,23 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move user.
     #[string = "AfterMove"]
     AfterMove,
-    /// Runs after a move's secondary effects have been applied.
+    /// Runs after a move's secondary effects have been applied, for all targets the move was
+    /// successful against.
     ///
     /// Should be viewed as the last effect the move needs to apply on the target.
     ///
     /// Runs on the active move and in the context of a move target.
     #[string = "AfterMoveSecondaryEffects"]
     AfterMoveSecondaryEffects,
+    /// Runs after a move's secondary effects have been applied, for all targets affected by damage.
+    ///
+    /// Should be viewed as the last effect the move needs to apply on the target. Minimal
+    /// difference with `AfterMove`; the key difference is that Sheer Force prevents this event from
+    /// running.
+    ///
+    /// Runs on the active move and in the context of a move target.
+    #[string = "AfterMoveSecondaryEffectsDamage"]
+    AfterMoveSecondaryEffectsDamage,
     /// Runs after a move's secondary effects have been applied.
     ///
     /// Should be viewed as the last effect the move needs to apply on the user. Minimal difference
@@ -1251,17 +1277,20 @@ impl BattleEvent {
         // Maintain alphabetical order.
         match self {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
+            Self::Activate => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterCureStatus => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::AfterDamage => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterEachBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterFainted => CommonCallbackType::MonVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
+            Self::AfterMoveSecondaryEffectsDamage => CommonCallbackType::MoveVoid as u32,
             Self::AfterMoveSecondaryEffectsUser => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterSetAbility => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetItem => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1428,6 +1457,15 @@ impl BattleEvent {
         self.callback_type_flags() & flag != 0
     }
 
+    /// Does the event allow custom input variables?
+    pub fn allows_custom_input_vars(&self) -> bool {
+        // Maintain alphabetical order.
+        match self {
+            Self::Activate => true,
+            _ => false,
+        }
+    }
+
     /// The name of the input variable by index.
     pub fn input_vars(&self) -> &[(&str, ValueType, bool)] {
         // Maintain alphabetical order.
@@ -1437,6 +1475,7 @@ impl BattleEvent {
             }
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
             Self::AfterBoost => &[("boosts", ValueType::BoostTable, true)],
+            Self::AfterDamage => &[("damage", ValueType::UFraction, true)],
             Self::AfterEachBoost => &[
                 ("boost", ValueType::Boost, true),
                 ("value", ValueType::Fraction, true),
@@ -1445,6 +1484,11 @@ impl BattleEvent {
                 ("count", ValueType::UFraction, true),
                 ("effect", ValueType::Effect, false),
             ],
+            Self::AfterMoveSecondaryEffectsDamage => &[
+                ("damage", ValueType::UFraction, true),
+                ("original_hp", ValueType::UFraction, true),
+            ],
+            Self::AfterMoveSecondaryEffectsUser => &[("targets", ValueType::List, true)],
             Self::AfterSetItem | Self::AfterTakeItem | Self::AfterUseItem => {
                 &[("item", ValueType::Effect, true)]
             }
@@ -1643,6 +1687,11 @@ impl BattleEvent {
         }
     }
 
+    /// Whether or not the event represents state rather than an active event.
+    pub fn state_event(&self) -> bool {
+        self.to_string().starts_with("Is")
+    }
+
     /// Whether or not the event is intended to start the associated effect.
     pub fn starts_effect(&self) -> bool {
         match self {
@@ -1695,6 +1744,13 @@ pub enum Program {
     Branch(Vec<Program>),
 }
 
+/// Metadata for an fxlang program.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProgramMetadata {
+    /// Custom parameters, assuming the event supports it.
+    pub parameters: Vec<String>,
+}
+
 /// An fxlang program with priority information for ordering.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProgramWithPriority {
@@ -1702,6 +1758,7 @@ pub struct ProgramWithPriority {
     pub order: Option<u32>,
     pub priority: Option<i32>,
     pub sub_order: Option<u32>,
+    pub metadata: Option<ProgramMetadata>,
 }
 
 /// The input to the [`Callback`] type.
@@ -1732,6 +1789,13 @@ impl Callback {
         match self.0.as_ref()? {
             CallbackInput::Regular(program) => Some(&program),
             CallbackInput::WithPriority(program) => program.program.as_ref(),
+        }
+    }
+
+    pub fn metadata(&self) -> Option<&ProgramMetadata> {
+        match self.0.as_ref()? {
+            CallbackInput::Regular(_) => None,
+            CallbackInput::WithPriority(program) => program.metadata.as_ref(),
         }
     }
 }

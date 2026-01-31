@@ -841,6 +841,9 @@ where
                     } else if let ValueRef::Battle = value {
                         let context = unsafe { context.unsafely_detach_borrow_mut() };
                         value = match *member {
+                            "ending" => {
+                                ValueRef::Boolean(context.battle_context().battle().ending())
+                            }
                             "last_move" => context
                                 .battle_context()
                                 .battle()

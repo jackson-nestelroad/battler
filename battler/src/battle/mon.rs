@@ -451,6 +451,8 @@ pub struct MonSwitchState {
     pub skip_before_switch_out: bool,
     /// The Mon is switched out.
     pub being_called_back: bool,
+    /// The Mon is switching in.
+    pub switching_in: bool,
 }
 
 /// Volatile state for a Mon.
@@ -509,6 +511,8 @@ pub struct MonVolatileState {
     pub stats_lowered_this_turn: bool,
     /// Did the Mon used an item this turn?
     pub item_used_this_turn: bool,
+    /// Did the Mon switch out this turn?
+    pub switched_out_this_turn: bool,
 
     /// Set of foes that appeared while this Mon was active.
     pub foes_fought_while_active: HashSet<MonHandle>,
@@ -1667,6 +1671,7 @@ impl Mon {
             stats_raised_this_turn: false,
             stats_lowered_this_turn: false,
             item_used_this_turn: false,
+            switched_out_this_turn: false,
             foes_fought_while_active: HashSet::default(),
             received_attacks: Vec::default(),
         })
@@ -1986,6 +1991,8 @@ impl Mon {
         context.mon_mut().active_position = Some(position);
         context.mon_mut().newly_switched = true;
         context.mon_mut().effective_team_position = position;
+
+        context.mon_mut().switch_state.switching_in = false;
 
         let mon_handle = context.mon_handle();
         context
@@ -2392,6 +2399,7 @@ impl Mon {
         context.mon_mut().volatile_state.stats_raised_this_turn = false;
         context.mon_mut().volatile_state.stats_lowered_this_turn = false;
         context.mon_mut().volatile_state.item_used_this_turn = false;
+        context.mon_mut().volatile_state.switched_out_this_turn = false;
 
         for move_slot in &mut context.mon_mut().volatile_state.move_slots {
             move_slot.disabled = false;

@@ -116,7 +116,7 @@ fn switch_out_internal(
     run_switch_out_events: bool,
     preserve_volatile: bool,
 ) -> Result<bool> {
-    if context.mon().active {
+    if context.mon().active && !context.mon().switch_state.being_called_back {
         if context.mon().hp > 0 {
             context.mon_mut().switch_state.being_called_back = true;
 
@@ -174,6 +174,18 @@ fn switch_out_internal(
 
 /// Switches a Mon out immediately.
 pub fn switch_out(context: &mut MonContext, preserve_volatile: bool) -> Result<bool> {
+    if !Player::can_switch(context.as_player_context()) {
+        return Ok(false);
+    }
+    if !context.mon().active || context.mon().hp == 0 {
+        return Ok(false);
+    }
+    // Avoid circular dependencies.
+    if context.mon().switch_state.being_called_back
+        || context.mon().volatile_state.switched_out_this_turn
+    {
+        return Ok(false);
+    }
     if context.mon().switch_state.needs_switch.is_none() {
         context.mon_mut().switch_state.needs_switch = Some(SwitchType::Normal);
     }
@@ -228,6 +240,8 @@ pub fn switch_in(
         }
     }
 
+    context.mon_mut().switch_state.switching_in = true;
+
     core_battle_effects::run_event_for_mon(
         context,
         fxlang::BattleEvent::SwitchingIn,
@@ -272,7 +286,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
         fxlang::VariableInput::default(),
     );
 
-    if context.mon().hp == 0 {
+    if !context.mon().active || context.mon().hp == 0 {
         return Ok(());
     }
 
@@ -389,6 +403,10 @@ fn do_move_internal(
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
+    if !context.mon().active {
+        return Ok(());
+    }
+
     let selected_move_id = context
         .as_battle_context()
         .active_move(active_move_handle)?
@@ -793,16 +811,22 @@ fn use_active_move_internal(
     }
 
     if !context.active_move().ignore_all_secondary_effects {
+        let input = fxlang::VariableInput::from_iter([fxlang::Value::List(
+            targets
+                .into_iter()
+                .map(|target| fxlang::Value::Mon(target))
+                .collect(),
+        )]);
         core_battle_effects::run_active_move_event_expecting_void(
             context,
             fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
             core_battle_effects::MoveTargetForEvent::User,
-            fxlang::VariableInput::default(),
+            input.clone(),
         );
         core_battle_effects::run_event_for_applying_effect(
             &mut context.user_applying_effect_context(target)?,
             fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
-            fxlang::VariableInput::default(),
+            input,
         );
     }
 
@@ -1103,36 +1127,11 @@ fn try_direct_move(context: &mut ActiveMoveContext, targets: &[MonHandle]) -> Re
     Ok(outcome)
 }
 
-/// Hits each target for each hit of the move.
-///
-/// Multi-hit moves hit each target multiple times.
-fn move_hit_loop(
+fn move_hit_loop_internal(
     context: &mut ActiveMoveContext,
-    targets: &[MonHandle],
-) -> Result<Vec<MoveStepOutcomeOnTarget>> {
-    context.active_move_mut().total_damage = 0;
-
-    let hits = match context.active_move().data.multihit {
-        None => 1,
-        Some(MultihitType::Static(hits)) => hits,
-        Some(MultihitType::Range(min, max)) => {
-            if min == 2 && max == 5 {
-                // 35-35-15-15 for 2-3-4-5 hits.
-                *rand_util::sample_slice(
-                    context.battle_mut().prng.as_mut(),
-                    &[2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5],
-                )
-                .wrap_expectation("expected sample_slice to produce a value")?
-            } else {
-                rand_util::range(context.battle_mut().prng.as_mut(), min as u64, max as u64) as u8
-            }
-        }
-    };
-
-    let mut targets = targets
-        .iter()
-        .map(|target| MoveStepOutcomeOnTarget::new(*target))
-        .collect::<Vec<_>>();
+    targets: &mut [MoveStepOutcomeOnTarget],
+    hits: u8,
+) -> Result<HashMap<MonHandle, MoveOutcomeOnTarget>> {
     let mut target_hit_results = HashMap::new();
 
     for hit in 0..hits {
@@ -1176,7 +1175,7 @@ fn move_hit_loop(
         // Prepare to directly hit targets.
         //
         // Includes invulnerability, immunity, and accuracy checks.
-        prepare_direct_move_against_targets(context, &mut targets)?;
+        prepare_direct_move_against_targets(context, targets)?;
 
         // Only hit targets that were prepared successfully.
         let hit_targets = targets
@@ -1234,16 +1233,13 @@ fn move_hit_loop(
 
         context.active_move_mut().total_damage += hit_targets_state
             .iter()
-            .filter_map(|target| {
-                if let MoveOutcomeOnTarget::Damage(damage) = target.outcome {
-                    Some(damage as u64)
-                } else {
-                    None
-                }
-            })
+            .map(|target| target.outcome.damage() as u64)
             .sum::<u64>();
 
         for state in hit_targets_state.iter() {
+            context.active_move_mut().hit_data_mut(state.handle).damage =
+                state.outcome.damage() as u64;
+
             match target_hit_results.entry(state.handle) {
                 Entry::Vacant(entry) => {
                     entry.insert(state.outcome);
@@ -1254,7 +1250,65 @@ fn move_hit_loop(
 
         // Run effects between move hits.
         CoreBattle::update(context.as_battle_context_mut())?;
+
+        // User is gone, skip the rest of the move.
+        if !context.mon().active || context.mon().hp == 0 {
+            break;
+        }
     }
+    Ok(target_hit_results)
+}
+
+/// Hits each target for each hit of the move.
+///
+/// Multi-hit moves hit each target multiple times.
+fn move_hit_loop(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+) -> Result<Vec<MoveStepOutcomeOnTarget>> {
+    context.active_move_mut().total_damage = 0;
+
+    let hits = match context.active_move().data.multihit {
+        None => 1,
+        Some(MultihitType::Static(hits)) => hits,
+        Some(MultihitType::Range(min, max)) => {
+            if min == 2 && max == 5 {
+                // 35-35-15-15 for 2-3-4-5 hits.
+                *rand_util::sample_slice(
+                    context.battle_mut().prng.as_mut(),
+                    &[2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5],
+                )
+                .wrap_expectation("expected sample_slice to produce a value")?
+            } else {
+                rand_util::range(context.battle_mut().prng.as_mut(), min as u64, max as u64) as u8
+            }
+        }
+    };
+
+    let original_hps = targets
+        .iter()
+        .map(|target| {
+            Ok((
+                *target,
+                context
+                    .as_battle_context_mut()
+                    .mon_context(*target)?
+                    .mon()
+                    .hp,
+            ))
+        })
+        .collect::<Result<HashMap<_, _>>>()?;
+
+    // List of targets is mutable only so we can modify each outcome.
+    //
+    // Immediately after the move hit loop, mark targets immutable again, as we do not want this
+    // list to be modified.
+    let mut targets = targets
+        .iter()
+        .map(|target| MoveStepOutcomeOnTarget::new(*target))
+        .collect::<Vec<_>>();
+    let target_hit_results = move_hit_loop_internal(context, targets.as_mut_slice(), hits)?;
+    let targets = targets;
 
     // Log OHKOs.
     for target in targets.iter() {
@@ -1311,6 +1365,30 @@ fn move_hit_loop(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::AfterMoveSecondaryEffects,
                 fxlang::VariableInput::default(),
+            );
+        }
+
+        for target in &targets {
+            let total_damage = context.active_move().total_damage(target.handle);
+            let original_hp = *original_hps
+                .get(&target.handle)
+                .wrap_expectation("expected target original hp")?;
+            core_battle_effects::run_active_move_event_expecting_void(
+                context,
+                fxlang::BattleEvent::AfterMoveSecondaryEffectsDamage,
+                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+                fxlang::VariableInput::from_iter([
+                    fxlang::Value::UFraction(total_damage.into()),
+                    fxlang::Value::UFraction(original_hp.into()),
+                ]),
+            );
+            core_battle_effects::run_event_for_applying_effect(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::AfterMoveSecondaryEffectsDamage,
+                fxlang::VariableInput::from_iter([
+                    fxlang::Value::UFraction(total_damage.into()),
+                    fxlang::Value::UFraction(original_hp.into()),
+                ]),
             );
         }
     }
@@ -1415,7 +1493,7 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
 
     // Calculate damage for each target.
     calculate_spread_damage(context, targets)?;
-    for target in targets.iter_mut() {
+    for target in targets.iter() {
         if target.outcome.failed() {
             if !context.is_secondary() && !context.is_self() {
                 core_battle_logs::fail_target(&mut context.target_mon_context(target.handle)?)?;
@@ -1855,10 +1933,14 @@ pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -
     if recoil.struggle {
         let mon_handle = context.mon_handle();
         direct_damage(
-            &mut context.as_mon_context_mut(),
+            &mut context.as_battle_context_mut().applying_effect_context(
+                EffectHandle::Condition(Id::from_known("strugglerecoil")),
+                Some(mon_handle),
+                mon_handle,
+                None,
+            )?,
             recoil_damage,
-            Some(mon_handle),
-            Some(&EffectHandle::Condition(Id::from_known("strugglerecoil"))),
+            true,
         )?;
     } else {
         damage(
@@ -2110,17 +2192,32 @@ mod direct_move_step {
 /// No events are run based on this damage. This type of damage should be an exception, for moves
 /// like "Struggle."
 pub fn direct_damage(
-    context: &mut MonContext,
+    context: &mut ApplyingEffectContext,
     damage: u16,
-    source: Option<MonHandle>,
-    effect: Option<&EffectHandle>,
+    run_after_damage: bool,
 ) -> Result<u16> {
-    if context.mon().hp == 0 || damage == 0 {
+    if context.target().hp == 0 || damage == 0 {
         return Ok(0);
     }
     let damage = damage.max(1);
-    let damage = Mon::damage(context, damage, source, effect)?;
-    core_battle_logs::damage(context, effect.cloned(), source)?;
+    let source = context.source_handle();
+    let effect = context.effect_handle().clone();
+    let damage = Mon::damage(
+        &mut context.target_context()?,
+        damage,
+        source,
+        Some(&effect),
+    )?;
+    core_battle_logs::damage(&mut context.target_context()?, Some(effect), source)?;
+
+    if run_after_damage {
+        core_battle_effects::run_event_for_applying_effect(
+            context,
+            fxlang::BattleEvent::AfterDamage,
+            fxlang::VariableInput::from_iter([fxlang::Value::UFraction(damage.into())]),
+        );
+    }
+
     Ok(damage)
 }
 
@@ -2203,6 +2300,12 @@ fn apply_spread_damage(
         )?;
 
         apply_drain(&mut context, *damage)?;
+
+        core_battle_effects::run_event_for_applying_effect(
+            &mut context,
+            fxlang::BattleEvent::AfterDamage,
+            fxlang::VariableInput::from_iter([fxlang::Value::UFraction((*damage).into())]),
+        );
     }
     Ok(())
 }
@@ -2592,8 +2695,8 @@ fn apply_move_effects(
 
 /// Checks if the given stat boosts can be applied to the Mon.
 pub fn can_boost(context: &mut MonContext, boosts: BoostTable) -> Result<bool> {
-    if context.mon().hp == 0
-        || !context.mon().active
+    if !context.mon().active
+        || context.mon().hp == 0
         || Side::mons_left(context.as_side_context_mut())? == 0
     {
         return Ok(false);
@@ -2615,8 +2718,8 @@ pub fn boost(
     is_secondary: bool,
     is_self: bool,
 ) -> Result<bool> {
-    if context.target().hp == 0
-        || !context.target().active
+    if !context.target().active
+        || context.target().hp == 0
         || Side::mons_left(context.target_context()?.as_side_context_mut())? == 0
     {
         return Ok(false);
@@ -2833,7 +2936,10 @@ fn apply_secondary_effects(
 /// Forces the target to switch out at the end of the move.
 pub fn force_switch(context: &mut ApplyingEffectContext) -> Result<bool> {
     let mut context = context.target_context()?;
-    if context.mon().hp == 0 || !Player::can_switch(context.as_player_context()) {
+    if !context.mon().active
+        || context.mon().hp == 0
+        || !Player::can_switch(context.as_player_context())
+    {
         return Ok(false);
     }
 
@@ -3016,7 +3122,7 @@ fn ignore_type_immunity(context: &mut ActiveTargetContext) -> Result<bool> {
 
 /// Checks the immunity of a Mon from an effect.
 pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool> {
-    if context.target().hp == 0 {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(true);
     }
 
@@ -3089,7 +3195,7 @@ pub fn add_volatile(
     is_primary_move_effect: bool,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    if context.target().hp == 0 {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -3233,7 +3339,7 @@ pub fn remove_volatile(
     volatile: &Id,
     no_events: bool,
 ) -> Result<bool> {
-    if context.target().hp == 0 {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -3470,6 +3576,9 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
 
 /// Sets the types of a Mon.
 pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> Result<bool> {
+    if !context.target().active {
+        return Ok(false);
+    }
     if types.contains(&Type::Stellar) {
         return Ok(false);
     }
@@ -4254,7 +4363,7 @@ pub fn remove_pseudo_weather(
 ///
 /// The Mon still has the ability, but it is not considered active.
 pub fn end_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
-    if context.target().hp == 0 {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(());
     }
     end_ability_even_if_exiting(context, silent)
@@ -4288,7 +4397,8 @@ pub fn end_ability_even_if_exiting(
 
 /// Starts the target Mon's ability, if it is not already started.
 pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
-    if context.target().hp == 0
+    if !context.target().active
+        || context.target().hp == 0
         || context
             .target()
             .volatile_state
@@ -4319,7 +4429,7 @@ pub fn set_ability(
     force: bool,
     silent: bool,
 ) -> Result<bool> {
-    if context.target().hp == 0 {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -4570,7 +4680,7 @@ fn end_item_internal(
     end_item_type: EndItemType,
     end_item_log: EndItemLog,
 ) -> Result<()> {
-    if context.target().hp == 0 {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(());
     }
 
@@ -4633,7 +4743,8 @@ pub fn end_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()>
 ///
 /// The Mon still has the item, but it is not considered active.
 pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
-    if context.target().hp == 0
+    if !context.target().active
+        || context.target().hp == 0
         || context
             .target()
             .item
@@ -4659,7 +4770,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
 
 /// Sets the target Mon's item.
 pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -> Result<bool> {
-    if context.target().hp == 0 || !context.target().active {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -4802,7 +4913,7 @@ fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool>
 
 /// Makes the target Mon eat its held item (berries).
 pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
-    if context.target().hp == 0 || !context.target().active {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -4875,7 +4986,7 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
 
 /// Makes the target Mon use its held item.
 pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
-    if context.target().hp == 0 || !context.target().active {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -4906,7 +5017,7 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
 
 /// Makes the target Mon use the given item.
 pub fn use_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<bool> {
-    if context.target().hp == 0 || !context.target().active {
+    if context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -4921,7 +5032,7 @@ pub fn use_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
 
 /// Makes the target Mon discard its held item, without triggering effects.
 pub fn discard_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<bool> {
-    if context.target().hp == 0 || !context.target().active {
+    if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
 
@@ -5101,6 +5212,9 @@ pub fn set_pp(context: &mut ApplyingEffectContext, move_id: &Id, pp: u8) -> Resu
 
 /// Clears all boosts on the target Mon.
 pub fn clear_boosts(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+    if !context.target().active {
+        return Ok(());
+    }
     context.target_mut().clear_boosts();
     if !silent {
         core_battle_logs::clear_boosts(context)?;
@@ -5110,6 +5224,9 @@ pub fn clear_boosts(context: &mut ApplyingEffectContext, silent: bool) -> Result
 
 /// Clears all negative boosts on the target Mon.
 pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
+    if !context.target().active {
+        return Ok(());
+    }
     context.target_mut().volatile_state.boosts = context
         .target()
         .volatile_state
@@ -5294,7 +5411,7 @@ pub struct MegaEvolution {
 
 /// Checks if the Mon can Mega Evolve.
 pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>> {
-    if !context.player().can_mega_evolve {
+    if !context.player().can_mega_evolve || !context.mon().active {
         return Ok(None);
     }
     let species = context
@@ -5373,7 +5490,8 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
 ///
 /// Used to implement the move "Transform."
 pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<bool> {
-    if context.target().volatile_state.transformed
+    if !context.target().active
+        || context.target().volatile_state.transformed
         || context.target().volatile_state.illusion.is_some()
     {
         return Ok(false);
@@ -5629,10 +5747,7 @@ pub fn primal_reversion(context: &mut ApplyingEffectContext, species: &Id) -> Re
 
 /// Checks if the Mon can Dynamax.
 pub fn can_dynamax(context: &mut MonContext) -> Result<Option<Id>> {
-    if !context.player().can_dynamax {
-        return Ok(None);
-    }
-    if !Mon::can_dynamax(context)? {
+    if !context.player().can_dynamax || !context.mon().active || !Mon::can_dynamax(context)? {
         return Ok(None);
     }
 
@@ -5797,7 +5912,7 @@ pub fn max_move(context: &mut MonContext, move_data: &MoveData) -> Result<Option
 
 /// Checks if the Mon can Terastallize.
 pub fn can_terastallize(context: &mut MonContext) -> Result<Option<Type>> {
-    if !context.player().can_terastallize {
+    if !context.player().can_terastallize || !context.mon().active {
         return Ok(None);
     }
     if context.mon().tera_type == Type::None {

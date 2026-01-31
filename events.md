@@ -192,6 +192,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                      1. Check immunity: `Immunity`.
                      1. `Damage` for final damage modifiers.
                      1. Apply drain.
+                     1. `AfterDamage`.
                   1. Apply move effects:
                      1. Stat boosts:
                         1. `ChangeBoosts`.
@@ -263,6 +264,7 @@ Note that this is not meant to be an exact description of how battles work. Many
             1. Apply recoil damage.
             1. `Update`.
             1. `AfterMoveSecondaryEffects`.
+            1. `AfterMoveSecondaryEffectsDamage`.
 
          1. `MoveFailed`.
          1. `AfterMoveSecondaryEffectsUser`.

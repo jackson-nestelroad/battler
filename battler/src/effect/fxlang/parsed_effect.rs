@@ -14,6 +14,7 @@ use crate::{
         Callbacks,
         ConditionAttributes,
         ParsedProgram,
+        ProgramMetadata,
     },
     error::WrapResultError,
     general_error,
@@ -26,6 +27,7 @@ pub struct ParsedCallback {
     pub order: u32,
     pub priority: i32,
     pub sub_order: u32,
+    pub metadata: ProgramMetadata,
 }
 
 impl SpeedOrderable for ParsedCallback {
@@ -72,6 +74,7 @@ impl ParsedEffect {
                     order: callback.order(),
                     priority: callback.priority(),
                     sub_order: callback.sub_order(),
+                    metadata: callback.metadata().cloned().unwrap_or_default(),
                 },
             );
         }

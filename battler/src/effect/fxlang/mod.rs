@@ -24,6 +24,7 @@ pub use effect::{
     Effect,
     EffectAttributes,
     Program,
+    ProgramMetadata,
     ProgramWithPriority,
 };
 pub use effect_state::{

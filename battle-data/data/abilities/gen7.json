@@ -1,7 +1,51 @@
 {
   "stamina": { "name": "Stamina", "flags": [] },
-  "wimpout": { "name": "Wimp Out", "flags": [] },
-  "emergencyexit": { "name": "Emergency Exit", "flags": [] },
+  "wimpout": {
+    "name": "Wimp Out",
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:emergencyexit"]
+    }
+  },
+  "emergencyexit": {
+    "name": "Emergency Exit",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_damage": [
+          "# Move damage is handled together after secondary effects.",
+          "if $effect.is_move or $effect.id == confusion:",
+          ["return"],
+          "$original_hp = $target.hp + $damage",
+          "activate_ability: $original_hp"
+        ],
+        "on_after_move_secondary_effects_damage": [
+          "if $damage == 0:",
+          ["return"],
+          "activate_ability: $original_hp"
+        ],
+        "on_activate": {
+          "metadata": {
+            "parameters": ["original_hp"]
+          },
+          "program": [
+            "if !$original_hp or $battle.ending or !func_call(can_switch: $target.player):",
+            ["return"],
+            "if $target.hp == 0 or $target.force_switch or $target.needs_switch or $target.is_away_from_field:",
+            ["return"],
+            "$half = $target.max_hp / 2",
+            "if $original_hp > $half and $target.hp <= $half:",
+            [
+              "foreach $mon in func_call(all_active_mons):",
+              ["set_needs_switch: $mon false"],
+              "log_activate: with_target",
+              "switch_out: $target"
+            ]
+          ]
+        }
+      }
+    }
+  },
   "watercompaction": { "name": "Water Compaction", "flags": [] },
   "merciless": { "name": "Merciless", "flags": [] },
   "shieldsdown": { "name": "Shields Down", "flags": ["Permanent"] },

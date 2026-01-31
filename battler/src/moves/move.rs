@@ -36,6 +36,8 @@ pub struct MoveHitData {
     pub crit: bool,
     /// Type modifier on the damage calculation.
     pub type_modifier: i8,
+    /// Damage dealt by the hit.
+    pub damage: u64,
     /// Arbitrary flags that can be set by moves.
     pub flags: HashSet<Id>,
 }
@@ -45,6 +47,7 @@ impl MoveHitData {
         Self {
             crit: false,
             type_modifier: 0,
+            damage: 0,
             flags: HashSet::default(),
         }
     }
@@ -249,6 +252,15 @@ impl Move {
         self.hit_data
             .entry((target, self.hit))
             .or_insert(MoveHitData::new())
+    }
+
+    /// Total damage dealt by this move towards the target.
+    pub fn total_damage(&self, target: MonHandle) -> u64 {
+        self.hit_data
+            .iter()
+            .filter(|((mon, _), _)| *mon == target)
+            .map(|(_, hit_data)| hit_data.damage)
+            .sum()
     }
 
     /// Returns a reference to the hit effect.

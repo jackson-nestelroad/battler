@@ -118,6 +118,7 @@ pub fn run_function(
     match function_name {
         "ability_effect_state" => ability_effect_state(context),
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
+        "activate_ability" => activate_ability(context),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
@@ -452,6 +453,12 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn set_flag(&mut self, flag: &str, val: bool) {
         self.flags.insert(flag.to_owned(), val);
+    }
+
+    fn rest_of_args(&mut self) -> impl Iterator<Item = Value> {
+        let mut args = VecDeque::new();
+        core::mem::swap(&mut args, &mut self.args);
+        args.into_iter()
     }
 
     fn boosts_from_rest_of_args(&mut self) -> Result<BoostTable> {
@@ -1323,8 +1330,6 @@ fn damage(mut context: FunctionContext) -> Result<Value> {
 }
 
 fn direct_damage(mut context: FunctionContext) -> Result<()> {
-    let source_handle = context.source_handle();
-
     let target_handle = context.target_handle_positional()?;
 
     let amount = context
@@ -1336,10 +1341,12 @@ fn direct_damage(mut context: FunctionContext) -> Result<()> {
     let damaging_effect = context.effect_handle_positional()?;
 
     core_battle_actions::direct_damage(
-        &mut context.mon_context(target_handle)?,
+        &mut context.forward_to_applying_effect_context_with_effect_and_target(
+            damaging_effect,
+            target_handle,
+        )?,
         amount,
-        source_handle,
-        Some(&damaging_effect),
+        false,
     )?;
     Ok(())
 }
@@ -4208,4 +4215,16 @@ fn force_switch(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
+    let target_handle = context.target_handle_positional()?;
+    // Parse out any flags early.
+    context.forward_to_applying_effect_context_with_target(target_handle)?;
+    let input = VariableInput::from_iter(context.rest_of_args());
+    Ok(core_battle_effects::run_mon_ability_event(
+        &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        BattleEvent::Activate,
+        input,
+    ))
 }
