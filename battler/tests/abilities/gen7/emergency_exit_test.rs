@@ -1144,3 +1144,38 @@ fn emergency_exit_activates_after_eject_button() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn emergency_exit_activates_before_shell_bell() {
+    let mut golisopod_team = golisopod_team().unwrap();
+    golisopod_team.members[0].item = Some("Shell Bell".to_owned());
+    let mut pikachu_team = pikachu_team().unwrap();
+    pikachu_team.members[0].ability = "Rough Skin".to_owned();
+    let mut battle = make_battle(0, BattleType::Singles, golisopod_team, pikachu_team).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    let rng = get_controlled_rng_for_battle(&mut battle).unwrap();
+    rng.insert_fake_values_relative_to_sequence_count([(3, 99)]);
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Golisopod,player-1,1|name:Double Kick|target:Pikachu,player-2,1",
+            "split|side:1",
+            "damage|mon:Pikachu,player-2,1|health:55/95",
+            "damage|mon:Pikachu,player-2,1|health:58/100",
+            "split|side:0",
+            "damage|mon:Golisopod,player-1,1|from:ability:Rough Skin|of:Pikachu,player-2,1|health:53/135",
+            "damage|mon:Golisopod,player-1,1|from:ability:Rough Skin|of:Pikachu,player-2,1|health:40/100",
+            "activate|mon:Golisopod,player-1,1|ability:Emergency Exit",
+            "switchout|mon:Golisopod,player-1,1",
+            "hitcount|hits:1"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 2, &expected_logs);
+}
