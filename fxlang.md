@@ -288,7 +288,7 @@ The above program loops through all of a Mon's move slots, disabling moves with 
 Below is another example for the move "Haze":
 
 ```json
-["foreach $mon in func_call(all_active_mons):", ["clear_boosts: $mon"]]
+["foreach $mon in func_call(all_active_mons):", ["clear_boosts: $mon silent"]]
 ```
 
 ### Parsing
@@ -508,7 +508,9 @@ Super Fang has a custom damage calculation, where it exactly cuts the target's H
 {
   "effect": {
     "callbacks": {
-      "on_move_damage": ["return func_call(max: expr($target.hp / 2) 1)"]
+      "on_move_damage": [
+        "return func_call(max: expr($target.undynamaxed_hp / 2) 1)"
+      ]
     }
   }
 }
@@ -758,8 +760,8 @@ Pain Split does not deal damage in the traditional sense; instead, it takes the 
   "effect": {
     "callbacks": {
       "on_hit": [
-        "$target_hp = $target.hp",
-        "$average_hp = func_call(max: 1 expr(($target.hp + $source.hp) / 2))",
+        "$target_hp = $target.undynamaxed_hp",
+        "$average_hp = func_call(max: 1 expr(($target_hp + $source.hp) / 2))",
         "$target_diff = $target_hp - $average_hp",
         "set_hp: $target $average_hp",
         "set_hp: $source $average_hp"
@@ -827,7 +829,7 @@ In the callback below, we heal the Mon with `use_target_as_source`. This tag cau
       "on_try_hit": [
         "if $target != $source and $move.type == electric:",
         [
-          "if func_call(heal: $target expr($target.base_max_hp / 4) use_target_as_source) == 0:",
+          "if func_call(heal: $target expr($target.base_max_hp / 4)) == 0:",
           ["log_immune: $target from_effect"],
           "return stop"
         ]
@@ -853,7 +855,7 @@ We include `with_target` in the `log_activate` call in order for the effect acti
         [
           "if !$activated:",
           ["log_activate: with_target", "$activated = true"],
-          "boost: $mon 'atk:-1' use_target_as_source"
+          "boost: $mon 'atk:-1'"
         ]
       ]
     }
@@ -873,7 +875,7 @@ Static has a change to paralyze a move user after a Mon is hit by a move that ma
     "callbacks": {
       "on_damaging_hit": [
         "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
-        ["set_status: $source par use_target_as_source"]
+        ["set_status: $source par"]
       ]
     }
   }
@@ -889,9 +891,12 @@ Life Orb boosts the base power of all moves used by the holder, but it damages t
   "effect": {
     "callbacks": {
       "on_modify_damage": ["return $damage * 13/10"],
-      "on_after_move": [
-        "if $target.is_defined and $user != $target and $move.category != status and !$user.force_switch:",
-        ["damage: $user expr($user.base_max_hp / 10) use_target_as_source"]
+      "on_after_move_secondary_effects_user": [
+        "if ($target.is_defined and $user == $target) or $targets.is_empty:",
+        ["return"],
+        "if $move.category == status or $user.force_switch:",
+        ["return"],
+        "damage: $user expr($user.base_max_hp / 10)"
       ]
     }
   }
@@ -1113,48 +1118,6 @@ Similar to Paralysis, Confusion is also a generic condition applied as a volatil
 }
 ```
 
-##### Move: Perish Song
-
-Perish Song is not _exactly_ a field condition. The move hits the entire field, but it then hits each Mon individually and applies a volatile status to them that causes them to faint after three turns.
-
-The special `prepare_direct_move` function runs all the pre-move logic that is normally run for a move such as accuracy checks and move-modifying effects. While Perish Song does bypass accuracy, some Mons may still be invulnerable to the move, so this filter is important.
-
-The condition itself is simple; after four turns, the condition ends and the Mon faints.
-
-```json
-{
-  "effect": {
-    "callbacks": {
-      "on_hit_field": [
-        "$success = false",
-        "$activate = false",
-        "$targets = func_call(all_active_mons)",
-        "if $targets.is_empty:",
-        ["return false"],
-        "foreach $target in func_call(prepare_direct_move: $targets):",
-        [
-          "$success = true",
-          "# Activate if at least one Mon did not already have this status.",
-          "$hit_target = func_call(add_volatile: $target $this.id)",
-          "$activate = $activate or $hit_target"
-        ],
-        "if !$success or !$activate:",
-        ["return false"],
-        "if $activate:",
-        ["log_field_activate"]
-      ]
-    }
-  },
-  "condition": {
-    "duration": 4,
-    "callbacks": {
-      "on_residual": ["log_start: str('perish:{}', $effect_state.duration)"],
-      "on_end": ["log_start: 'perish:0'", "faint: $target"]
-    }
-  }
-}
-```
-
 ##### Move: Light Screen
 
 Light Screen halves the damage taken by Special moves on the user's side of the battle. This move condition applies to an entire side, so the `SourceModifyDamage` callback will run for every Mon on the side where Light Screen is active.
@@ -1234,7 +1197,11 @@ Note the concept of being grounded, implemented as a state event callback below,
   "condition": {
     "duration": 5,
     "callbacks": {
-      "on_field_start": ["log_field_start"],
+      "on_field_start": [
+        "log_field_start",
+        "foreach $mon in func_call(all_active_mons_in_speed_order):",
+        ["add_volatile: $mon knockdown"]
+      ],
       "on_modify_accuracy": ["return $acc * 5/3"],
       "on_disable_move": [
         "foreach $move_slot in $mon.move_slots:",
@@ -1245,7 +1212,7 @@ Note the concept of being grounded, implemented as a state event callback below,
       ],
       "is_grounded": {
         "priority": 1,
-        "program": ["return true"]
+        "program": ["if $effect_state.started:", ["return true"]]
       },
       "on_before_move": [
         "if func_call(move_has_flag: $move.id gravity):",
@@ -1261,7 +1228,52 @@ Note the concept of being grounded, implemented as a state event callback below,
 }
 ```
 
+The "Knock Down" volatile status is defined as a zero-duration condition (which means it does not really attach to the Mon, it just runs the `Start` event callback).
+
+```json
+{
+  "condition": {
+    "duration": 0,
+    "callbacks": {
+      "on_start": [
+        "if $target.is_grounded:",
+        ["return false"],
+        "log_activate: with_target use_source_effect",
+        "# During Sky Drop, both the target and user have the Fly volatile.",
+        "# Only the user should have the volatile removed, which cascade removes all other effects.",
+        "if func_call(has_volatile: $target fly) and func_call(has_volatile: $target twoturnmove):",
+        ["remove_volatile: $target fly", "cancel_move: $target"],
+        "remove_volatile: $target magnetrise",
+        "remove_volatile: $target telekinesis"
+      ]
+    }
+  }
+}
+```
+
 ## Advanced Topics
+
+### Reacting to Damage
+
+There are many ways to react to damage, depending on the behavior of the effect.
+
+`DamagingHit` is for reacting to a single damaging hit of a move. Multihit moves will trigger this effect multiple times. Nearly all effects that react to move damage should use `DamagingHit`. For example, the "Rocky Helmet" item damages the attacker on each hit of a multihit move.
+
+`AfterDamage` is for reacting to any type of normal damage immediately after it happens. It receives the source effect for additional filtering. It _does not_ run for direct damage that simply sets the Mon's HP to a specific value (i.e., `Pain Split`).
+
+`AfterMoveSecondaryEffectsDamage` is for reacting to all damage from a move after applied from all hits of a multihit move. It is treated as a secondary effect of the move, which means it is suppressed by the "Sheer Force" ability.
+
+### Switching Out
+
+There are multiple types of switch-outs that can be triggered by a move or effect.
+
+The `user_switch` field on move data sets the `$mon.needs_switch` flag, which signals to the battle engine that the Mon must switch out after the move executes before any other action occurs. This is the most normal type of switch-out, which is used for moves like "Teleport" and "U-turn."
+
+The `$hit_effect.force_switch` field sets the `$mon.force_switch` flag, which randomly switches the Mon out for another Mon in the player's team. At the end of the move, before any other action occurs, the Mon is forcibly switched out and a new Mon from the player's team is dragged out in its place. The player does not specify which Mon to switch in.
+
+The `switch_out` function is completely different. Instead of switching out the Mon at the end of the move, it switches out the Mon **immediately**. Unlike the other types, this function allows a Mon to switch out outside of move execution. While the Mon is switched out, it is not affected by effects. The player does not switch in a new Mon until the end of the current action.
+
+Moves should _always_ reach for `user_switch` and `force_switch`, as they are very standardized in the move execution flow. Non-move effects that switch out the user may use `switch_out` if the switch is intended to be immediate and outside of move execution.
 
 ### Effect Handles vs. IDs
 
@@ -1535,6 +1547,74 @@ Then, moves that have side effects based on the presence of rain can easily inte
 ```
 
 The term "effective" is used to look up some property where that property may be suppressed. Abilities, items, weathers, and terrains can all be suppressed by various effects. Effects can choose to honor suppression or not, depending on what they do.
+
+### Effect Lifecycle
+
+Every effect with an effect state (`$effect_state`) roughly has the following lifecycle:
+
+- Ended - The effect is not active.
+- Starting - The effect is starting (`Start` is running).
+- Started - The effect is started and active. `$effect_state.started` is true.
+- Ending - The effect is ending (`End` is running). `$effect_state.ending` is true.
+
+An effect in the "Ending" state is not allowed to run event callbacks. Put more concretely, when the `End` event is running for a specific effect (e.g., a Mon's ability), nested events **do not** use callbacks for that event.
+
+An effect in the "Starting" state **is** included in nested event callbacks. Thus, an effect can apply event callbacks even before its `Start` handler is finished.
+
+#### Suppress Only When Started
+
+These rules can cause complications for effects that implement suppression. Typically, a suppressing event runs the `End` callbacks on suppressed effects. For example, the `Magic Room` pseudo-weather should run the `End` event for suppressed items. However, that `End` event will be suppressed by Magic Room, since it has already started!
+
+To avoid this problem, the suppression event callback simply needs to start suppressing only when the effect has started (i.e., after the `Start` event finishes). This change is achieved simply by checking `$effect_state.started`.
+
+```json
+{
+  "hit_effect": {
+    "pseudo_weather": "magicroom"
+  },
+  "condition": {
+    "duration": 5,
+    "callbacks": {
+      "on_field_start": [
+        "log_field_start",
+        "foreach $mon in func_call(all_active_mons_in_speed_order):",
+        ["end_item: $mon silent"]
+      ],
+      "on_field_restart": ["remove_pseudo_weather: $this.id", "return true"],
+      "suppress_mon_item": ["if $effect_state.started:", ["return true"]],
+      "on_prevent_used_items": ["return true"],
+      "on_field_end": [
+        "log_field_end",
+        "foreach $mon in func_call(all_active_mons_in_speed_order):",
+        ["start_item: $mon silent"]
+      ]
+    }
+  }
+}
+```
+
+Additionally, functions for starting and ending events are designed to be idempotent. If an effect is already ended, ending the effect will not do anything. Likewise, if an effect is already started, starting the effect will not do anything.
+
+### Effect Caching
+
+As mentioned above, state events are special forms of battle events for calculating state that depends on the effects present on a Mon or on the field. Suppression is a great example; the effective ability of a Mon (taking suppressing effects into account) can be determined by many factors.
+
+However, the Mon's effective ability must then go on to impact many other parts of the battle. In fact, the Mon's effective ability must be considered for _all_ battle events, since the ability can hook into an arbitrary event, and a suppressed ability _must not_ be included. Thus, when discovering all callbacks for a given event, the effective ability must be calculated for each Mon. Multiply this for all suppressible effects (e.g., items, types, weather, terrain) and we have a serious inefficiency problem on our hands (note: there are measures in place to avoid infinite recursion).
+
+Running multiple events just to trigger a battle event is incredibly inefficient. Do we really need to recalculate a Mon's effective ability for _every_ event? Given that effects are not chancing between every event, the answer is "no," and this is where **effect caching** comes into play.
+
+State events (including suppression) are cached after evaluation as much as possible. If a new effect is added to the battle, the cache is invalidated, and the battle engine requires state events to be evaluated again when needed. The idea is that the active effects in the battle are not changing as often as we trigger battle events, so caching things like effective abilities, items, terrain, and weather can give a big efficiency increase.
+
+However, we must be very careful. Caching the result of a state event for too long can yield incorrect results. Currently, the battle engine takes a very conservative approach here. There are two scenarios where all effect caches are invalidated:
+
+1. All effect caches are invalidated when an effect starts/ends.
+2. All effect caches are invalidated when an effect _may_ be added to/removed from the battle. In other words, whenever an event callback calls an effect-modifying function (e.g., `add_volatile`, `set_weather`), all effect caches are invalidated, even if that function did not really produce any changes.
+
+Condition 1 is not enough on its own because not all effects have start and end events. Condition 2 is much more conservative and ensures we never cache data beyond a potentially-battle-modifying function.
+
+Effect caching should have no effect (pun intended) on fxlang programs. However, it is important to note that effect caching does impose limitations on what state event callbacks can do. For instance, state event callbacks cannot dynamically return a value based on some property of the Mon. State event callbacks are intended to be extremely simple (i.e., just return a boolean value), so their result is cached as such. Condition 1 allows lifecycle variables, such as `$effect_state.started`, to be used in state event callbacks as needed. Other than that, using properties like the Mon's HP will not work as intended.
+
+The bottom line is that **dynamic state event callbacks will not work due to effect caching.** Dynamic states must be expressed in other ways (e.g., by adding or removing a volatile).
 
 ### Reusing Common Effects
 
@@ -2183,3 +2263,51 @@ All in all, these three effects produce the following behavior:
    1. All linked effects are removed.
 
 Turn 2 simply boils down to removing one effect, which cascade removes all linked effects. This has the benefit that if the move fails at any time between the move is used and the move finishes (such as if the user or target faints), all the volatile statuses from the move are cleaned up.
+
+##### Ability: Emergency Exit
+
+Emergency Exit is an ability that immediately switches out the Mon when its HP dips below 50%. Most types of damage activate this ability. However, move damage is considered _after_ all hits of a multihit move are complete. Thus, we must trigger an activation condition check from two different events.
+
+```json
+"effect": {
+      "callbacks": {
+        "on_after_damage": [
+          "# Move damage is handled together after secondary effects.",
+          "if $effect.is_move or $effect.id == confusion:",
+          ["return"],
+          "$original_hp = $target.hp + $damage",
+          "activate_ability: $original_hp"
+        ],
+        "on_after_move_secondary_effects_damage": [
+          "if $damage == 0:",
+          ["return"],
+          "activate_ability: $original_hp"
+        ],
+        "on_activate": {
+          "metadata": {
+            "parameters": ["original_hp"]
+          },
+          "program": [
+            "if !$original_hp or $battle.ending or !func_call(can_switch: $target.player):",
+            ["return"],
+            "if $target.hp == 0 or $target.force_switch or $target.needs_switch or $target.is_away_from_field:",
+            ["return"],
+            "$half = $target.max_hp / 2",
+            "if $original_hp > $half and $target.hp <= $half:",
+            [
+              "foreach $mon in func_call(all_active_mons):",
+              ["set_needs_switch: $mon false"],
+              "log_activate: with_target",
+              "switch_out: $target"
+            ]
+          ]
+        }
+      }
+    }
+```
+
+1. The `AfterDamage` event callback captures non-move damage directly after it is taken.
+1. The `AfterMoveSecondaryEffectsDamage` event callback captures damage from moves at the end of the move itself, as a secondary effect. The battle engine tracks the Mon's original HP before the move-applied damage. The key here is that this event is treated as a secondary effect of the move, so it is suppressed if the attacker has the "Sheer Force" ability.
+1. `Activate` is a special event callback that is triggered by both `AfterDamage` and `AfterMoveSecondaryEffectsDamage`. It acts as the common function between the two events. It takes `$original_hp` as a custom parameter and checks if the ability should activate and switch the target out.
+
+Note: Emergency Exit is incredibly complex and some nuances of how it works depends largely on how the battle engine is implemented. The approach above gets us as close to mainline game behavior as possible with the current battle engine design.
