@@ -2469,5 +2469,25 @@
       "NoSleepTalk",
       "NoMetronome"
     ]
+  },
+  "pass": {
+    "name": "Pass",
+    "category": "Status",
+    "primary_type": "Normal",
+    "pp": 1,
+    "accuracy": "exempt",
+    "target": "User",
+    "flags": [
+      "FailCopycat",
+      "FailEncore",
+      "FailInstruct",
+      "FailMeFirst",
+      "FailMimic",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "NoMetronome"
+    ]
   }
 }

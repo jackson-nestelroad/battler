@@ -1364,12 +1364,18 @@ impl<'d> CoreBattle<'d> {
                 if !context.mon().active || !context.mon().active {
                     return Ok(());
                 }
+                let mut context = context.applying_effect_context(
+                    EffectHandle::InactiveMove(action.id.clone()),
+                    None,
+                    None,
+                )?;
                 core_battle_effects::run_applying_effect_event(
-                    &mut context.applying_effect_context(
-                        EffectHandle::InactiveMove(action.id.clone()),
-                        None,
-                        None,
-                    )?,
+                    &mut context,
+                    fxlang::BattleEvent::BeforeTurn,
+                    fxlang::VariableInput::default(),
+                );
+                core_battle_effects::run_event_for_applying_effect(
+                    &mut context,
                     fxlang::BattleEvent::BeforeTurn,
                     fxlang::VariableInput::default(),
                 );

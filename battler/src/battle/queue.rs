@@ -272,6 +272,27 @@ impl BattleQueue {
             .collect()
     }
 
+    /// Cancels any action to be made by the Mon.
+    pub fn cancel_action(&mut self, mon: MonHandle) -> bool {
+        let before = self.actions.len();
+
+        let mut actions = VecDeque::new();
+        core::mem::swap(&mut actions, &mut self.actions);
+        actions = actions
+            .into_iter()
+            .filter_map(|mut action| {
+                (!action
+                    .mon_action_mut()
+                    .is_some_and(|action| action.mon == mon))
+                .then_some(action)
+            })
+            .collect();
+        core::mem::swap(&mut actions, &mut self.actions);
+
+        let after = self.actions.len();
+        before > after
+    }
+
     /// Cancels the move action to be made by the Mon.
     pub fn cancel_move(&mut self, mon: MonHandle) -> bool {
         let before = self.actions.len();

@@ -150,6 +150,7 @@ pub fn run_function(
         "can_boost" => can_boost(context).map(|val| Some(val)),
         "can_escape" => can_escape(context).map(|val| Some(val)),
         "can_switch" => can_switch(context).map(|val| Some(val)),
+        "cancel_action" => cancel_action(context).map(|val| Some(val)),
         "cancel_move" => cancel_move(context).map(|val| Some(val)),
         "chance" => chance(context).map(|val| Some(val)),
         "check_immunity" => check_immunity(context).map(|val| Some(val)),
@@ -3332,6 +3333,17 @@ fn cancel_move(mut context: FunctionContext) -> Result<Value> {
             .battle_mut()
             .queue
             .cancel_move(mon),
+    ))
+}
+
+fn cancel_action(mut context: FunctionContext) -> Result<Value> {
+    let mon = context.target_handle_positional()?;
+    Ok(Value::Boolean(
+        context
+            .battle_context_mut()
+            .battle_mut()
+            .queue
+            .cancel_action(mon),
     ))
 }
 

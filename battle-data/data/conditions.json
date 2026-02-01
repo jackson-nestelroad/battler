@@ -1052,7 +1052,7 @@
           "program": ["return false"]
         },
         "on_invulnerability": {
-          "order": 1,
+          "order": 2,
           "program": [
             "# Allow the targeting move to hit on its second turn.",
             "if $move.id == $effect_state.move and $source == $effect_state.source:",
@@ -1172,6 +1172,42 @@
           "remove_volatile: $target magnetrise",
           "remove_volatile: $target telekinesis"
         ]
+      }
+    }
+  },
+  "commanded": {
+    "name": "Commanded",
+    "condition_type": "Built-in",
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "if !$source:",
+          ["return false"],
+          "add_volatile: $source commanding with_source link",
+          "boost: $target use_source_effect use_effect_state_source_as_source 'atk:2' 'spa:2' 'def:2' 'spd:2' 'spe:2'"
+        ],
+        "on_drag_out": ["return false"],
+        "on_trap_mon": ["return true"]
+      }
+    }
+  },
+  "commanding": {
+    "name": "Commanding",
+    "condition_type": "Built-in",
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": ["log_start: with_source", "cancel_action: $target"],
+        "on_end": ["log_end"],
+        "is_away_from_field": ["return true"],
+        "on_before_turn": ["cancel_action: $mon"],
+        "on_drag_out": ["return false"],
+        "on_lock_move": ["return pass"],
+        "on_invulnerability": {
+          "order": 1,
+          "program": ["return false"]
+        }
       }
     }
   }

@@ -1971,11 +1971,20 @@ impl Mon {
         // First, check if the Mon is locked into a certain move.
         if let Some(locked_move) = locked_move {
             let locked_move_id = Id::from(locked_move.as_ref());
-            // Recharge is a special move for moves that require a turn to recharge.
+            // Recharge and Pass are special moves when the Mon cannot really move.
             if locked_move_id.eq("recharge") {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: "Recharge".to_owned(),
                     id: Id::from_known("recharge"),
+                    pp: 0,
+                    max_pp: 0,
+                    target: MoveTarget::User,
+                    disabled: false,
+                }]));
+            } else if locked_move_id.eq("pass") {
+                return Ok(Vec::from_iter([MonMoveSlotData {
+                    name: "Pass".to_owned(),
+                    id: Id::from_known("pass"),
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,

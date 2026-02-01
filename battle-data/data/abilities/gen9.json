@@ -10,7 +10,39 @@
   "rockypayload": { "name": "Rocky Payload", "flags": [] },
   "windpower": { "name": "Wind Power", "flags": [] },
   "zerotohero": { "name": "Zero to Hero", "flags": ["Permanent"] },
-  "commander": { "name": "Commander", "flags": [] },
+  "commander": {
+    "name": "Commander",
+    "flags": ["NoEntrainment", "NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_any_switch_in": ["activate_ability: $effect_state.target"],
+        "on_start": ["activate_ability: $target"],
+        "on_end": ["remove_volatile: $target commanding"],
+        "on_activate": [
+          "if $target.needs_switch:",
+          ["return"],
+          "if func_call(base_species: $target) == tatsugiri:",
+          [
+            "$commanding_state = func_call(volatile_status_state: $target commanding)",
+            "if $commanding_state.is_defined:",
+            ["$ally = $commanding_state.source"],
+            "else:",
+            [
+              "foreach $mon in func_call(adjacent_allies):",
+              [
+                "if !$mon.needs_switch and func_call(base_species: $mon) == dondozo and !func_call(has_volatile: $mon commanded):",
+                ["$ally = $mon"]
+              ]
+            ]
+          ],
+          "if !$ally:",
+          ["remove_volatile: $target commanding", "return"],
+          "if !func_call(has_volatile: $target commanding):",
+          ["log_activate: with_target", "add_volatile: $ally commanded"]
+        ]
+      }
+    }
+  },
   "electromorphosis": { "name": "Electromorphosis", "flags": [] },
   "protosynthesis": { "name": "Protosynthesis", "flags": [] },
   "quarkdrive": { "name": "Quark Drive", "flags": [] },

@@ -129,6 +129,10 @@ mod abilities {
         mod neutralizing_gas_test;
         mod ripen_test;
     }
+
+    mod gen9 {
+        mod commander_test;
+    }
 }
 
 mod clauses {

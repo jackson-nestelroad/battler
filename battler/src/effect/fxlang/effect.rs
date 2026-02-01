@@ -483,7 +483,7 @@ pub enum BattleEvent {
     BeforeTerastallization,
     /// Runs before a turn of a battle.
     ///
-    /// Runs in the context of a Mon.
+    /// Runs on the effect and in the context of an applying effect on a Mon.
     #[string = "BeforeTurn"]
     BeforeTurn,
     /// Runs when determining the health at which the Mon should eat berries.
@@ -493,7 +493,7 @@ pub enum BattleEvent {
     BerryEatingHealth,
     /// Runs when determining if a Mon can Dynamax.
     ///
-    /// Runs in the context of a Mon..
+    /// Runs in the context of a Mon.
     #[string = "CanDynamax"]
     CanDynamax,
     /// Runs when a Mon is attempting to escape from battle.
