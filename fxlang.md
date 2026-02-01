@@ -1261,15 +1261,15 @@ There are many ways to react to damage, depending on the behavior of the effect.
 
 `AfterDamage` is for reacting to any type of normal damage immediately after it happens. It receives the source effect for additional filtering. It _does not_ run for direct damage that simply sets the Mon's HP to a specific value (i.e., `Pain Split`).
 
-`AfterMoveSecondaryEffectsDamage` is for reacting to all damage from a move after applied from all hits of a multihit move. It is treated as a secondary effect of the move, which means it is suppressed by the "Sheer Force" ability.
+`AfterMoveSecondaryEffectsDamage` is for reacting to all damage taken from a move, after all hits of a multihit move. It is treated as a secondary effect of the move, which means it is suppressed by the "Sheer Force" ability.
 
 ### Switching Out
 
 There are multiple types of switch-outs that can be triggered by a move or effect.
 
-The `user_switch` field on move data sets the `$mon.needs_switch` flag, which signals to the battle engine that the Mon must switch out after the move executes before any other action occurs. This is the most normal type of switch-out, which is used for moves like "Teleport" and "U-turn."
+The `$move.user_switch` property sets the `$mon.needs_switch` flag, which signals to the battle engine that the Mon must switch out after the move executes before any other action occurs. This is the most normal type of switch-out, which is used for moves like "Teleport" and "U-turn."
 
-The `$hit_effect.force_switch` field sets the `$mon.force_switch` flag, which randomly switches the Mon out for another Mon in the player's team. At the end of the move, before any other action occurs, the Mon is forcibly switched out and a new Mon from the player's team is dragged out in its place. The player does not specify which Mon to switch in.
+The `$hit_effect.force_switch` property sets the `$mon.force_switch` flag. At the end of the move, before any other action occurs, the Mon is forcibly switched out and a new Mon from the player's team is dragged out in its place. The player does not specify which Mon to switch in.
 
 The `switch_out` function is completely different. Instead of switching out the Mon at the end of the move, it switches out the Mon **immediately**. Unlike the other types, this function allows a Mon to switch out outside of move execution. While the Mon is switched out, it is not affected by effects. The player does not switch in a new Mon until the end of the current action.
 
@@ -1599,9 +1599,9 @@ Additionally, functions for starting and ending events are designed to be idempo
 
 As mentioned above, state events are special forms of battle events for calculating state that depends on the effects present on a Mon or on the field. Suppression is a great example; the effective ability of a Mon (taking suppressing effects into account) can be determined by many factors.
 
-However, the Mon's effective ability must then go on to impact many other parts of the battle. In fact, the Mon's effective ability must be considered for _all_ battle events, since the ability can hook into an arbitrary event, and a suppressed ability _must not_ be included. Thus, when discovering all callbacks for a given event, the effective ability must be calculated for each Mon. Multiply this for all suppressible effects (e.g., items, types, weather, terrain) and we have a serious inefficiency problem on our hands (note: there are measures in place to avoid infinite recursion).
+However, the Mon's effective ability must then go on to impact many other parts of the battle. In fact, the Mon's effective ability must be considered for _all_ battle events, since the ability can hook into an arbitrary event, and a suppressed ability _must not_ be included. Thus, when discovering all callbacks for a given event, the effective ability must be calculated for each Mon. Multiply this for all suppressible effects (e.g., items, types, weather, terrain) and we have a serious inefficiency problem on our hands: we are running multiple events for each battle event! (Note: there are measures in place to avoid infinite recursion).
 
-Running multiple events just to trigger a battle event is incredibly inefficient. Do we really need to recalculate a Mon's effective ability for _every_ event? Given that effects are not chancing between every event, the answer is "no," and this is where **effect caching** comes into play.
+While this design makes the battle engine incredibly dynamic, it also makes the battle engine very inefficient when running events. Do we really need to recalculate a Mon's effective ability for _every_ event? Given that effects are not chancing between every event, the answer is "no," and this is where **effect caching** comes into play.
 
 State events (including suppression) are cached after evaluation as much as possible. If a new effect is added to the battle, the cache is invalidated, and the battle engine requires state events to be evaluated again when needed. The idea is that the active effects in the battle are not changing as often as we trigger battle events, so caching things like effective abilities, items, terrain, and weather can give a big efficiency increase.
 
@@ -1614,7 +1614,7 @@ Condition 1 is not enough on its own because not all effects have start and end 
 
 Effect caching should have no effect (pun intended) on fxlang programs. However, it is important to note that effect caching does impose limitations on what state event callbacks can do. For instance, state event callbacks cannot dynamically return a value based on some property of the Mon. State event callbacks are intended to be extremely simple (i.e., just return a boolean value), so their result is cached as such. Condition 1 allows lifecycle variables, such as `$effect_state.started`, to be used in state event callbacks as needed. Other than that, using properties like the Mon's HP will not work as intended.
 
-The bottom line is that **dynamic state event callbacks will not work due to effect caching.** Dynamic states must be expressed in other ways (e.g., by adding or removing a volatile).
+The bottom line is that **dynamic state event callbacks will not work due to effect caching.** Dynamic states must be expressed in other ways (e.g., by adding or removing a volatile status).
 
 ### Reusing Common Effects
 
@@ -2308,6 +2308,6 @@ Emergency Exit is an ability that immediately switches out the Mon when its HP d
 
 1. The `AfterDamage` event callback captures non-move damage directly after it is taken.
 1. The `AfterMoveSecondaryEffectsDamage` event callback captures damage from moves at the end of the move itself, as a secondary effect. The battle engine tracks the Mon's original HP before the move-applied damage. The key here is that this event is treated as a secondary effect of the move, so it is suppressed if the attacker has the "Sheer Force" ability.
-1. `Activate` is a special event callback that is triggered by both `AfterDamage` and `AfterMoveSecondaryEffectsDamage`. It acts as the common function between the two events. It takes `$original_hp` as a custom parameter and checks if the ability should activate and switch the target out.
+1. `Activate` is a special event that is triggered by both `AfterDamage` and `AfterMoveSecondaryEffectsDamage`. It acts as the common function between the two events. It takes `$original_hp` as a custom parameter and checks if the ability should activate and switch the target out.
 
 Note: Emergency Exit is incredibly complex and some nuances of how it works depends largely on how the battle engine is implemented. The approach above gets us as close to mainline game behavior as possible with the current battle engine design.
