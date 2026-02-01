@@ -398,7 +398,7 @@
           ["return true"]
         ],
         "on_start": [
-          "if !$target.item or func_call(item_has_flag: $target.item noklutz):",
+          "if !$target.item or func_call(item_has_flag: $target.item noklutz) or !$target.can_suppress_item:",
           ["return"],
           "end_item: $target silent"
         ],

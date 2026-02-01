@@ -524,6 +524,16 @@ where
                             "can_heal" => ValueRef::Boolean(mon_states::can_heal(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "can_suppress_ability" => {
+                                ValueRef::Boolean(mon_states::can_suppress_ability(
+                                    &mut context.mon_context(mon_handle)?,
+                                ))
+                            }
+                            "can_suppress_item" => {
+                                ValueRef::Boolean(mon_states::can_suppress_item(
+                                    &mut context.mon_context(mon_handle)?,
+                                ))
+                            }
                             "damaged_this_turn" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.damaged_this_turn,
                             ),

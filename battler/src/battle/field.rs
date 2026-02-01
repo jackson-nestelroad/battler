@@ -88,6 +88,13 @@ pub struct FieldData {
     pub time: TimeOfDay,
 }
 
+/// Cache for field effects.
+#[derive(Debug, Default, Clone)]
+pub struct FieldEffectCache {
+    pub effective_weather: Option<Option<Id>>,
+    pub effective_terrain: Option<Option<Id>>,
+}
+
 /// The battle field, which represents the shared environment that all Mons (from both sides) battle
 /// on.
 ///
@@ -102,6 +109,7 @@ pub struct Field {
     pub terrain: Option<Id>,
     pub terrain_state: fxlang::EffectState,
     pub pseudo_weathers: HashMap<Id, fxlang::EffectState>,
+    pub effect_cache: FieldEffectCache,
 }
 
 impl Field {
@@ -117,6 +125,7 @@ impl Field {
             terrain: None,
             terrain_state: fxlang::EffectState::default(),
             pseudo_weathers: HashMap::default(),
+            effect_cache: FieldEffectCache::default(),
         }
     }
 
@@ -124,25 +133,53 @@ impl Field {
     ///
     /// Terrain can be suppressed for the entire field by abilities.
     pub fn effective_terrain(context: &mut Context) -> Option<Id> {
-        if core_battle_effects::run_event_for_battle_expecting_bool_quick_return(
-            context,
-            fxlang::BattleEvent::SuppressFieldTerrain,
-        ) {
-            return None;
+        if let Some(effective_terrain) = context
+            .battle()
+            .field
+            .effect_cache
+            .effective_terrain
+            .clone()
+        {
+            return effective_terrain;
         }
-        context.battle().field.terrain.clone()
+        let effective_terrain = {
+            if core_battle_effects::run_event_for_battle_expecting_bool_quick_return(
+                context,
+                fxlang::BattleEvent::SuppressFieldTerrain,
+            ) {
+                None
+            } else {
+                context.battle().field.terrain.clone()
+            }
+        };
+        context.battle_mut().field.effect_cache.effective_terrain = Some(effective_terrain.clone());
+        effective_terrain
     }
 
     /// The effective weather for the field.
     ///
     /// Weather can be suppressed for the entire field by abilities.
     pub fn effective_weather(context: &mut Context) -> Option<Id> {
-        if core_battle_effects::run_event_for_battle_expecting_bool_quick_return(
-            context,
-            fxlang::BattleEvent::SuppressFieldWeather,
-        ) {
-            return None;
+        if let Some(effective_weather) = context
+            .battle()
+            .field
+            .effect_cache
+            .effective_weather
+            .clone()
+        {
+            return effective_weather;
         }
-        context.battle().field.weather.clone()
+        let effective_weather = {
+            if core_battle_effects::run_event_for_battle_expecting_bool_quick_return(
+                context,
+                fxlang::BattleEvent::SuppressFieldWeather,
+            ) {
+                None
+            } else {
+                context.battle().field.weather.clone()
+            }
+        };
+        context.battle_mut().field.effect_cache.effective_weather = Some(effective_weather.clone());
+        effective_weather
     }
 }

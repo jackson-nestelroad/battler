@@ -78,6 +78,7 @@ pub use core_battle::{
 pub use field::{
     Field,
     FieldData,
+    FieldEffectCache,
     FieldEnvironment,
     TimeOfDay,
 };
@@ -87,6 +88,7 @@ pub use mon::{
     CalculateStatContext,
     Mon,
     MonBattleData,
+    MonEffectCache,
     MonExitType,
     MonLearnMoveRequest,
     MonMoveRequest,

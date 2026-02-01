@@ -13,6 +13,7 @@ use hashbrown::HashMap;
 use crate::{
     battle::{
         Context,
+        CoreBattle,
         Mon,
         MonHandle,
     },
@@ -27,12 +28,23 @@ use crate::{
     },
 };
 
+/// The activation state of an effect.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+enum EffectActivationState {
+    Starting,
+    Started,
+    Ending,
+    #[default]
+    Ended,
+}
+
 /// The persisted state of an individual [`Effect`][`crate::effect::Effect`].
 ///
 /// Allows fxlang variables to be persisted across multiple callbacks.
 #[derive(Debug, Default, Clone)]
 pub struct EffectState {
     initialized: bool,
+    activation_state: EffectActivationState,
     values: HashMap<String, Value>,
     linked_id: Option<u32>,
     linked_to: Vec<u32>,
@@ -46,8 +58,6 @@ impl EffectState {
     const SOURCE: &'static str = "source";
     const SOURCE_SIDE: &'static str = "source_side";
     const SOURCE_POSITION: &'static str = "source_position";
-    const ENDING: &'static str = "ending";
-    const STARTED: &'static str = "started";
 
     /// Creates an initial effect state for a new effect.
     pub fn initial_effect_state(
@@ -69,6 +79,7 @@ impl EffectState {
         target: Option<MonHandle>,
         source: Option<MonHandle>,
     ) -> Result<()> {
+        self.activation_state = EffectActivationState::Ended;
         self.effect_order = context.battle_mut().next_effect_order();
 
         if let Some(source_effect) = source_effect {
@@ -185,6 +196,12 @@ impl EffectState {
         Ok(())
     }
 
+    fn set_activation_state(&mut self, activation_state: EffectActivationState) {
+        self.activation_state = activation_state;
+        *self.get_mut("started") = Value::Boolean(self.started());
+        *self.get_mut("ending") = Value::Boolean(self.ending());
+    }
+
     /// Whether or not the effect is started.
     ///
     /// An effect is started if any corresponding "Start" event has run. Unlike [`Self::ending`],
@@ -197,17 +214,7 @@ impl EffectState {
     /// reason for this difference is that not all effects "start," so it's not feasible to know
     /// what effects should apply even if they don't have a notion of "being started."
     pub fn started(&self) -> bool {
-        self.get(Self::STARTED)
-            .cloned()
-            .map(|val| val.boolean().ok())
-            .flatten()
-            .unwrap_or(false)
-    }
-
-    /// Sets whether or not the effect is started.
-    pub fn set_started(&mut self, started: bool) {
-        self.values
-            .insert(Self::STARTED.to_owned(), Value::Boolean(started));
+        self.activation_state == EffectActivationState::Started
     }
 
     /// Whether or not the effect is ending and should be ignored.
@@ -216,17 +223,7 @@ impl EffectState {
     /// effect is about to be deleted (or at least suppressed) from the battle field. While an
     /// effect is ending, event callbacks will *not* trigger.
     pub fn ending(&self) -> bool {
-        self.get(Self::ENDING)
-            .cloned()
-            .map(|val| val.boolean().ok())
-            .flatten()
-            .unwrap_or(false)
-    }
-
-    /// Sets whether or not the effect is ending and should be ignored.
-    pub fn set_ending(&mut self, ending: bool) {
-        self.values
-            .insert(Self::ENDING.to_owned(), Value::Boolean(ending));
+        self.activation_state == EffectActivationState::Ending
     }
 
     /// The unique ID for linking this effect to another.
@@ -306,6 +303,36 @@ impl DynamicEffectStateConnector {
     /// The applied effect location.
     pub fn applied_effect_location(&self) -> AppliedEffectLocation {
         self.0.applied_effect_location()
+    }
+
+    fn set_activation_state(
+        &self,
+        context: &mut Context,
+        state: EffectActivationState,
+    ) -> Result<()> {
+        self.get_mut(context)?.set_activation_state(state);
+        CoreBattle::invalidate_effect_caches(context)?;
+        Ok(())
+    }
+
+    /// Sets that the effect is starting.
+    pub fn set_starting(&self, context: &mut Context) -> Result<()> {
+        self.set_activation_state(context, EffectActivationState::Starting)
+    }
+
+    /// Sets that the effect has started.
+    pub fn set_started(&self, context: &mut Context) -> Result<()> {
+        self.set_activation_state(context, EffectActivationState::Started)
+    }
+
+    /// Sets that the effect is ending.
+    pub fn set_ending(&self, context: &mut Context) -> Result<()> {
+        self.set_activation_state(context, EffectActivationState::Ending)
+    }
+
+    /// Sets that the effect has ended.
+    pub fn set_ended(&self, context: &mut Context) -> Result<()> {
+        self.set_activation_state(context, EffectActivationState::Ended)
     }
 }
 
