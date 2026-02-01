@@ -251,7 +251,7 @@
         "on_field_start": [
           "log_field_start",
           "foreach $mon in func_call(all_active_mons_in_speed_order):",
-          ["end_item: $mon silent"]
+          ["if $mon.can_suppress_item:", ["end_item: $mon silent"]]
         ],
         "on_field_restart": ["remove_pseudo_weather: $this.id", "return true"],
         "suppress_mon_item": ["if $effect_state.started:", ["return true"]],

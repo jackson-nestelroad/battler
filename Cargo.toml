@@ -50,6 +50,7 @@ itertools = "0.14"
 num = "0.4"
 rand = "0.9"
 regex = "1.11"
+scopeguard = "1.2"
 unicase = "2.8"
 uuid = { version = "1.16", features = ["fast-rng", "serde", "v4"] }
 

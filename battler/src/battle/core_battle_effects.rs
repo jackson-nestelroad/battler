@@ -192,11 +192,12 @@ fn run_effect_event_with_errors(
                 return Ok(fxlang::ProgramEvalResult::default());
             }
 
-            // If we are ending, set the ending flag, so that nested events don't use this callback.
+            if event.starts_effect() {
+                effect_state_connector.set_starting(context.battle_context_mut())?;
+            }
+            // Ending flag ensures that nested events don't use this callback.
             if event.ends_effect() {
-                effect_state_connector
-                    .get_mut(context.battle_context_mut())?
-                    .set_ending(true);
+                effect_state_connector.set_ending(context.battle_context_mut())?;
             }
         }
     }
@@ -247,18 +248,11 @@ fn run_effect_event_with_errors(
 
     if let Some(effect_state_connector) = &effect_state_connector {
         if event.starts_effect() {
-            effect_state_connector
-                .get_mut(context.battle_context_mut())?
-                .set_started(true);
-            effect_state_connector
-                .get_mut(context.battle_context_mut())?
-                .set_ending(false);
+            effect_state_connector.set_started(context.battle_context_mut())?;
         }
-
+        // Ending flag ensures that nested events don't use this callback.
         if event.ends_effect() {
-            effect_state_connector
-                .get_mut(context.battle_context_mut())?
-                .set_started(false);
+            effect_state_connector.set_ended(context.battle_context_mut())?;
         }
     }
 
@@ -3310,6 +3304,25 @@ pub fn run_event_for_mon_expecting_bool_quick_return(
     .map(|value| value.boolean().ok())
     .flatten()
     .unwrap_or(default)
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
+/// Expects a [`bool`]. Returns the value of the first callback that returns a value.
+pub fn run_event_for_mon_expecting_bool_quick_return_no_default(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
+    )
+    .map(|value| value.boolean().ok())
+    .flatten()
 }
 
 /// Runs an event targeted on the given [`Mon`].
