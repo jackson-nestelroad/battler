@@ -1586,7 +1586,7 @@ To avoid this problem, the suppression event callback simply needs to start supp
       "on_field_end": [
         "log_field_end",
         "foreach $mon in func_call(all_active_mons_in_speed_order):",
-        ["start_item: $mon silent"]
+        ["if $mon.can_suppress_item:", ["end_item: $mon silent"]]
       ]
     }
   }

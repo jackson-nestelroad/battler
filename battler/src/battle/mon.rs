@@ -470,6 +470,7 @@ pub struct MonEffectCache {
     pub berry_eating_health: Option<u16>,
     pub can_heal: Option<bool>,
     pub can_suppress_ability: Option<bool>,
+    pub can_suppress_item: Option<bool>,
     pub is_asleep: Option<bool>,
     pub is_away_from_field: Option<bool>,
     pub is_behind_substitute: Option<bool>,

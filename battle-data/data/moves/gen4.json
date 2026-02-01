@@ -400,7 +400,11 @@
       "callbacks": {
         "suppress_mon_item": ["if $effect_state.started:", ["return true"]],
         "on_prevent_used_items": ["return true"],
-        "on_start": ["log_start", "end_item: silent"],
+        "on_start": [
+          "log_start",
+          "if $target.can_suppress_item:",
+          ["end_item: silent"]
+        ],
         "on_end": ["log_end", "start_item: silent"]
       }
     }

@@ -354,92 +354,105 @@ pub fn effective_terrain(context: &mut MonContext) -> Option<Id> {
     effective_terrain
 }
 
-/// Checks if the [`Mon`][`crate::battle::Mon`]'s ability can be suppressed.
-pub fn can_suppress_ability(context: &mut MonContext) -> bool {
-    if let Some(can_suppress_ability) = context
-        .mon()
-        .volatile_state
-        .effect_cache
-        .can_suppress_ability
-    {
-        return can_suppress_ability;
-    }
-    let can_suppress_ability = if effective_ability(context).is_none() {
-        false
-    } else {
-        core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
-            context,
-            fxlang::BattleEvent::CanSuppressMonAbility,
-            true,
-        )
-    };
-    context
-        .mon_mut()
-        .volatile_state
-        .effect_cache
-        .can_suppress_ability = Some(can_suppress_ability);
-    can_suppress_ability
-}
-
-/// The effective ability of the [`Mon`][`crate::battle::Mon`].
-///
-/// Abilities can be suppressed by other effects and abilities.
-pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
+fn check_ability_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
     if let Some(effective_ability) = context
         .mon()
         .volatile_state
         .effect_cache
         .effective_ability
         .clone()
+        && let Some(can_suppress_ability) = context
+            .mon()
+            .volatile_state
+            .effect_cache
+            .can_suppress_ability
     {
-        return effective_ability;
+        return (effective_ability, can_suppress_ability);
     }
-    let effective_ability = {
-        if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
-            context,
-            fxlang::BattleEvent::SuppressMonAbility,
-            false,
-        ) {
-            None
-        } else {
-            Some(context.mon().volatile_state.ability.id.clone())
+    let ability = context.mon().volatile_state.ability.id.clone();
+    let (effective_ability, can_suppress_ability) = {
+        let suppress_ability =
+            core_battle_effects::run_event_for_mon_expecting_bool_quick_return_no_default(
+                context,
+                fxlang::BattleEvent::SuppressMonAbility,
+            );
+        match suppress_ability {
+            Some(true) => (None, false),
+            Some(false) => (Some(ability), false),
+            None => (Some(ability), true),
         }
     };
     context
         .mon_mut()
         .volatile_state
         .effect_cache
+        .can_suppress_ability = Some(can_suppress_ability);
+    context
+        .mon_mut()
+        .volatile_state
+        .effect_cache
         .effective_ability = Some(effective_ability.clone());
-    effective_ability
+    (effective_ability, can_suppress_ability)
 }
 
-/// The effective item of the [`Mon`][`crate::battle::Mon`].
+/// Checks if the [`Mon`][`crate::battle::Mon`]'s ability can be suppressed.
+pub fn can_suppress_ability(context: &mut MonContext) -> bool {
+    check_ability_suppression(context).1
+}
+
+/// The effective ability of the [`Mon`][`crate::battle::Mon`].
 ///
-/// Items can be suppressed by other effects and abilities.
-pub fn effective_item(context: &mut MonContext) -> Option<Id> {
+/// Abilities can be suppressed by other effects and abilities.
+pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
+    check_ability_suppression(context).0
+}
+
+fn check_item_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
     if let Some(effective_item) = context
         .mon()
         .volatile_state
         .effect_cache
         .effective_item
         .clone()
+        && let Some(can_suppress_item) = context.mon().volatile_state.effect_cache.can_suppress_item
     {
-        return effective_item;
+        return (effective_item, can_suppress_item);
     }
-    let item = context.mon().item.clone()?;
-    let effective_item = {
-        if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
-            context,
-            fxlang::BattleEvent::SuppressMonItem,
-            false,
-        ) {
-            None
-        } else {
-            Some(item)
+    let item = match context.mon().item.clone() {
+        Some(item) => item,
+        None => return (None, false),
+    };
+    let (effective_item, can_suppress_item) = {
+        let suppress_item =
+            core_battle_effects::run_event_for_mon_expecting_bool_quick_return_no_default(
+                context,
+                fxlang::BattleEvent::SuppressMonItem,
+            );
+        match suppress_item {
+            Some(true) => (None, false),
+            Some(false) => (Some(item), false),
+            None => (Some(item), true),
         }
     };
+    context
+        .mon_mut()
+        .volatile_state
+        .effect_cache
+        .can_suppress_item = Some(can_suppress_item);
     context.mon_mut().volatile_state.effect_cache.effective_item = Some(effective_item.clone());
-    effective_item
+    (effective_item, can_suppress_item)
+}
+
+/// Checks if the [`Mon`][`crate::battle::Mon`]'s item can be suppressed.
+pub fn can_suppress_item(context: &mut MonContext) -> bool {
+    check_item_suppression(context).1
+}
+
+/// The effective item of the [`Mon`][`crate::battle::Mon`].
+///
+/// Items can be suppressed by other effects and abilities.
+pub fn effective_item(context: &mut MonContext) -> Option<Id> {
+    check_item_suppression(context).0
 }
 
 /// Checks if the [`Move`][`crate::moves::Move`] makes contact with its targets.

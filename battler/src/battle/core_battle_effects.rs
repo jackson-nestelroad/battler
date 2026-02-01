@@ -3308,6 +3308,25 @@ pub fn run_event_for_mon_expecting_bool_quick_return(
 
 /// Runs an event targeted on the given [`Mon`].
 ///
+/// Expects a [`bool`]. Returns the value of the first callback that returns a value.
+pub fn run_event_for_mon_expecting_bool_quick_return_no_default(
+    context: &mut MonContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_event_for_mon_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions {
+            return_first_value: true,
+        },
+    )
+    .map(|value| value.boolean().ok())
+    .flatten()
+}
+
+/// Runs an event targeted on the given [`Mon`].
+///
 /// Expects an integer that can fit in an [`i32`]. Returns the value of the first callback that
 /// returns a value.
 pub fn run_event_for_mon_expecting_i32_quick_return(
