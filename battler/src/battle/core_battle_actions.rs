@@ -391,8 +391,6 @@ pub fn do_move(
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
-    context.mon_mut().active_move_actions += 1;
-
     do_move_internal(
         context,
         active_move_handle,
@@ -411,9 +409,11 @@ fn do_move_internal(
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
-    if !context.mon().active {
+    if !context.mon().active || context.mon().hp == 0 {
         return Ok(());
     }
+
+    context.mon_mut().active_move_actions += 1;
 
     let selected_move_id = context
         .as_battle_context()
@@ -496,7 +496,13 @@ fn do_move_internal(
     let context = context.as_mon_context_mut();
 
     // Use the move.
-    use_active_move(context, active_move_handle, target, None, false, true)?;
+    use_active_move(
+        context,
+        active_move_handle,
+        target,
+        None,
+        UseActiveMoveOptions::default(),
+    )?;
 
     let this_move_is_the_last_selected = context
         .mon()
@@ -576,9 +582,42 @@ pub fn use_move(
         active_move_handle,
         target,
         source_effect,
-        external,
-        true,
+        UseActiveMoveOptions {
+            external,
+            directly_used: true,
+            ..Default::default()
+        },
     )
+}
+
+/// Options for [`use_active_move`].
+#[derive(Debug, Clone)]
+pub struct UseActiveMoveOptions {
+    /// Is the move called externally from another move?
+    pub external: bool,
+    /// Is the move used directly by the Mon?
+    pub directly_used: bool,
+    /// Is the move preventable?
+    ///
+    /// Under the hood, this property forces the `BeforeMove` event to be checked.
+    pub preventable: Option<bool>,
+}
+
+impl UseActiveMoveOptions {
+    pub fn preventable(&self) -> bool {
+        self.preventable
+            .unwrap_or_else(|| !self.external && self.directly_used)
+    }
+}
+
+impl Default for UseActiveMoveOptions {
+    fn default() -> Self {
+        Self {
+            external: false,
+            directly_used: true,
+            preventable: None,
+        }
+    }
 }
 
 /// Uses a move that was already registered as an active move.
@@ -589,10 +628,13 @@ pub fn use_active_move(
     active_move_handle: MoveHandle,
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
-    external: bool,
-    directly_used: bool,
+    options: UseActiveMoveOptions,
 ) -> Result<bool> {
-    if directly_used {
+    if options.directly_used && (!context.mon().active || context.mon().hp == 0) {
+        return Ok(false);
+    }
+
+    if options.directly_used {
         context.mon_mut().volatile_state.move_this_turn_outcome = None;
         context.mon_mut().set_active_move(active_move_handle);
     }
@@ -604,12 +646,22 @@ pub fn use_active_move(
     effect_state.initialize(context.as_battle_context_mut(), source_effect, target, None)?;
     context.active_move_mut().effect_state = effect_state;
 
-    context.active_move_mut().external = external;
+    context.active_move_mut().external = options.external;
 
     // BeforeMove event handlers can prevent the move from being used.
-    if !external
-        && directly_used
-        && (!core_battle_effects::run_event_for_applying_effect(
+    if options.preventable() {
+        if let Some(locked_move) = context.mon().next_turn_state.locked_move.clone()
+            && context.active_move().id() != locked_move.as_str()
+        {
+            let effect = context
+                .battle_mut()
+                .get_effect_handle_by_id(&Id::from(locked_move.as_str()))?
+                .clone();
+            core_battle_logs::cant(context.as_mon_context_mut(), effect, None)?;
+            return Ok(false);
+        }
+
+        if !core_battle_effects::run_event_for_applying_effect(
             &mut context.user_applying_effect_context(None)?,
             fxlang::BattleEvent::BeforeMove,
             fxlang::VariableInput::default(),
@@ -618,18 +670,19 @@ pub fn use_active_move(
             fxlang::BattleEvent::BeforeMove,
             core_battle_effects::MoveTargetForEvent::User,
         )
-        .unwrap_or(true))
-    {
-        core_battle_effects::run_event_for_applying_effect(
-            &mut context.user_applying_effect_context(None)?,
-            fxlang::BattleEvent::MoveAborted,
-            fxlang::VariableInput::default(),
-        );
-        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
-        return Ok(false);
+        .unwrap_or(true)
+        {
+            core_battle_effects::run_event_for_applying_effect(
+                &mut context.user_applying_effect_context(None)?,
+                fxlang::BattleEvent::MoveAborted,
+                fxlang::VariableInput::default(),
+            );
+            context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
+            return Ok(false);
+        }
     }
 
-    if directly_used {
+    if options.directly_used {
         context.mon_mut().volatile_state.last_move_used = Some(context.active_move_handle());
     }
 
@@ -641,9 +694,9 @@ pub fn use_active_move(
             .unwrap_or_default(),
     );
 
-    let outcome = use_active_move_internal(&mut context, target, directly_used)?;
+    let outcome = use_active_move_internal(&mut context, target, options.directly_used)?;
 
-    if directly_used {
+    if options.directly_used {
         context.mon_mut().volatile_state.move_this_turn_outcome = match (
             context.mon_mut().volatile_state.move_this_turn_outcome,
             outcome,
@@ -666,12 +719,12 @@ pub fn use_active_move(
         &mut context,
         fxlang::BattleEvent::AfterMove,
         core_battle_effects::MoveTargetForEvent::User,
-        fxlang::VariableInput::default(),
+        fxlang::VariableInput::from_iter([fxlang::Value::Boolean(outcome.success())]),
     );
     core_battle_effects::run_event_for_applying_effect(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::AfterMove,
-        fxlang::VariableInput::default(),
+        fxlang::VariableInput::from_iter([fxlang::Value::Boolean(outcome.success())]),
     );
 
     context.battle_mut().set_last_move(Some(active_move_handle));
@@ -901,6 +954,9 @@ pub fn get_move_targets(
             targets.extend(Mon::adjacent_allies_and_self(
                 &mut context.as_mon_context_mut(),
             )?);
+        }
+        MoveTarget::User => {
+            targets.push(context.mon_handle());
         }
         _ => {
             let mut target = match selected_target {

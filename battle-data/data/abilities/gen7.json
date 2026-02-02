@@ -75,7 +75,55 @@
   },
   "queenlymajesty": { "name": "Queenly Majesty", "flags": [] },
   "innardsout": { "name": "Innards Out", "flags": [] },
-  "dancer": { "name": "Dancer", "flags": [] },
+  "dancer": {
+    "name": "Dancer",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["add_pseudo_weather: $this.id"],
+        "on_end": [
+          "# If no other Mons have this ability on the field, remove the pseudo-weather.",
+          "foreach $other in func_call(all_active_mons):",
+          [
+            "if $other != $target and func_call(has_ability: $other $this.id):",
+            ["return"]
+          ],
+          "remove_pseudo_weather: $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_after_move": [
+          "if !func_call(move_has_flag: $move dance) or !$success or $move.external:",
+          ["return"],
+          "$dancers = []",
+          "foreach $mon in func_call(reverse: func_call(all_active_mons_in_speed_order_and_ability_effect_order)):",
+          [
+            "if $mon == $user:",
+            ["continue"],
+            "if func_call(has_ability: $mon $this.id) and !$mon.is_semi_invulnerable:",
+            ["$dancers = func_call(append: $dancers $mon)"]
+          ],
+          "foreach $dancer in $dancers:",
+          [
+            "faint_messages",
+            "if $battle.ending:",
+            ["return"],
+            "if $dancer.fainted:",
+            ["return"],
+            "log_activate: with_target $dancer",
+            "if func_call(is_ally: $dancer $user):",
+            ["$move_target = $target"],
+            "else:",
+            ["$move_target = $user"],
+            "$dancer_move = func_call(new_active_move: $move.id $dancer)",
+            "use_active_move: $dancer $dancer_move $move_target use_effect_as_source_effect preventable"
+          ]
+        ]
+      }
+    }
+  },
   "battery": { "name": "Battery", "flags": [] },
   "fluffy": { "name": "Fluffy", "flags": [] },
   "dazzling": { "name": "Dazzling", "flags": [] },

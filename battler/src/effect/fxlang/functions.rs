@@ -130,6 +130,9 @@ pub fn run_function(
         "all_active_mons_in_speed_order" => {
             all_active_mons_in_speed_order(context).map(|val| Some(val))
         }
+        "all_active_mons_in_speed_order_and_ability_effect_order" => {
+            all_active_mons_in_speed_order_and_ability_effect_order(context).map(|val| Some(val))
+        }
         "all_active_mons_on_side" => all_active_mons_on_side(context).map(|val| Some(val)),
         "all_active_or_exited_mons" => all_active_or_exited_mons(context).map(|val| Some(val)),
         "all_foes" => all_foes(context).map(|val| Some(val)),
@@ -182,6 +185,7 @@ pub fn run_function(
         "end_item" => end_item(context).map(|()| None),
         "escape" => escape(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
+        "faint_messages" => faint_messages(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
         "force_fully_heal" => force_fully_heal(context).map(|()| None),
         "force_switch" => force_switch(context).map(|val| Some(val)),
@@ -2380,6 +2384,19 @@ fn all_active_mons_in_speed_order(mut context: FunctionContext) -> Result<Value>
     ))
 }
 
+fn all_active_mons_in_speed_order_and_ability_effect_order(
+    mut context: FunctionContext,
+) -> Result<Value> {
+    Ok(Value::List(
+        CoreBattle::all_active_mon_handles_in_speed_order_and_ability_effect_order(
+            context.battle_context_mut(),
+        )?
+        .into_iter()
+        .map(|mon_handle| Value::Mon(mon_handle))
+        .collect(),
+    ))
+}
+
 fn all_active_or_exited_mons(context: FunctionContext) -> Result<Value> {
     Ok(Value::List(
         context
@@ -2576,6 +2593,7 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
 
 fn use_active_move(mut context: FunctionContext) -> Result<Value> {
     let indirect = context.has_flag("indirect");
+    let preventable = context.has_flag("preventable");
     let mon_handle = context.target_handle_positional()?;
     let active_move_handle = context
         .pop_front()
@@ -2602,8 +2620,11 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
         active_move_handle,
         target_handle,
         source_effect.as_ref(),
-        true,
-        !indirect,
+        core_battle_actions::UseActiveMoveOptions {
+            external: true,
+            directly_used: !indirect,
+            preventable: preventable.then_some(preventable),
+        },
     )
     .map(|val| Value::Boolean(val))
 }
@@ -4205,4 +4226,8 @@ fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
         BattleEvent::Activate,
         input,
     ))
+}
+
+fn faint_messages(mut context: FunctionContext) -> Result<()> {
+    CoreBattle::faint_messages(context.battle_context_mut())
 }

@@ -153,7 +153,7 @@ fn non_ghost_type_curse_affects_user() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Forretress,player-2,1|name:Curse|target:Gengar,player-1,1",
+            "move|mon:Forretress,player-2,1|name:Curse|target:Forretress,player-2,1",
             "boost|mon:Forretress,player-2,1|stat:atk|by:1",
             "boost|mon:Forretress,player-2,1|stat:def|by:1",
             "unboost|mon:Forretress,player-2,1|stat:spe|by:1",

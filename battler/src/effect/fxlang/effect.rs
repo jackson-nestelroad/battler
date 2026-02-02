@@ -1484,6 +1484,7 @@ impl BattleEvent {
                 ("count", ValueType::UFraction, true),
                 ("effect", ValueType::Effect, false),
             ],
+            Self::AfterMove => &[("success", ValueType::Boolean, true)],
             Self::AfterMoveSecondaryEffectsDamage => &[
                 ("damage", ValueType::UFraction, true),
                 ("original_hp", ValueType::UFraction, true),

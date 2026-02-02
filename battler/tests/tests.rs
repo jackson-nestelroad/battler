@@ -122,6 +122,7 @@ mod abilities {
     }
 
     mod gen7 {
+        mod dancer_test;
         mod emergency_exit_test;
     }
 

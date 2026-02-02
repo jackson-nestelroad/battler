@@ -379,6 +379,9 @@ where
                                 ActiveMoveEffectStateConnector::new(active_move_handle)
                                     .make_dynamic(),
                             ),
+                            "external" => {
+                                ValueRef::Boolean(context.active_move(active_move_handle)?.external)
+                            }
                             "hit" => ValueRef::UFraction(
                                 context.active_move(active_move_handle)?.hit.into(),
                             ),
@@ -616,6 +619,11 @@ where
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
                             )),
+                            "is_away_from_field" => {
+                                ValueRef::Boolean(mon_states::is_away_from_field(
+                                    &mut context.mon_context(mon_handle)?,
+                                ))
+                            }
                             "is_behind_substitute" => {
                                 ValueRef::Boolean(mon_states::is_behind_substitute(
                                     &mut context.mon_context(mon_handle)?,
@@ -624,19 +632,19 @@ where
                             "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
                                 &mut context.mon_context(mon_handle)?,
                             )),
-                            "is_away_from_field" => {
-                                ValueRef::Boolean(mon_states::is_away_from_field(
+                            "is_immune_to_entry_hazards" => {
+                                ValueRef::Boolean(mon_states::is_immune_to_entry_hazards(
+                                    &mut context.mon_context(mon_handle)?,
+                                ))
+                            }
+                            "is_semi_invulnerable" => {
+                                ValueRef::Boolean(mon_states::is_semi_invulnerable(
                                     &mut context.mon_context(mon_handle)?,
                                 ))
                             }
                             "is_soundproof" => ValueRef::Boolean(mon_states::is_soundproof(
                                 &mut context.mon_context(mon_handle)?,
                             )),
-                            "is_immune_to_entry_hazards" => {
-                                ValueRef::Boolean(mon_states::is_immune_to_entry_hazards(
-                                    &mut context.mon_context(mon_handle)?,
-                                ))
-                            }
                             "item" => match context.mon(mon_handle)?.item.as_ref() {
                                 Some(item) => ValueRef::TempString(item.to_string()),
                                 None => ValueRef::Undefined,

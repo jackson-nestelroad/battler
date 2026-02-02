@@ -337,6 +337,7 @@ pub struct MonLearnMoveRequest {
 pub struct SpeedOrderableMon {
     pub mon_handle: MonHandle,
     pub speed: u32,
+    pub ability_effect_order: u32,
 }
 
 impl SpeedOrderable for SpeedOrderableMon {
@@ -357,7 +358,7 @@ impl SpeedOrderable for SpeedOrderableMon {
     }
 
     fn sub_order(&self) -> u32 {
-        0
+        self.ability_effect_order
     }
 }
 
@@ -1406,6 +1407,21 @@ impl Mon {
         SpeedOrderableMon {
             mon_handle: context.mon_handle(),
             speed: context.mon().volatile_state.speed,
+            ability_effect_order: 0,
+        }
+    }
+
+    /// Creates a speed-orderable object for the Mon, with the ability effect order for ties.
+    pub fn speed_orderable_with_ability_effect_order(context: &MonContext) -> SpeedOrderableMon {
+        SpeedOrderableMon {
+            mon_handle: context.mon_handle(),
+            speed: context.mon().volatile_state.speed,
+            ability_effect_order: context
+                .mon()
+                .volatile_state
+                .ability
+                .effect_state
+                .effect_order(),
         }
     }
 }
@@ -1992,26 +2008,16 @@ impl Mon {
                 }]));
             }
 
-            // Look for the locked move in the Mon's moveset.
-            if let Some(locked_move) = context
-                .mon()
-                .volatile_state
-                .move_slots
-                .iter()
-                .find(|move_slot| move_slot.id == locked_move_id)
-            {
-                return Ok(Vec::from_iter([MonMoveSlotData {
-                    name: locked_move.name.clone(),
-                    id: locked_move.id.clone(),
-                    pp: 0,
-                    max_pp: 0,
-                    target: MoveTarget::Scripted,
-                    disabled: false,
-                }]));
-            }
-            return Err(general_error(format!(
-                "Mon's locked move {locked_move} does not exist in its moveset",
-            )));
+            // A Mon can be locked into a move it does not know.
+            let locked_move = context.battle().dex.moves.get_by_id(&locked_move_id)?;
+            return Ok(Vec::from_iter([MonMoveSlotData {
+                name: locked_move.data.name.clone(),
+                id: locked_move.id().clone(),
+                pp: 0,
+                max_pp: 0,
+                target: MoveTarget::Scripted,
+                disabled: false,
+            }]));
         }
 
         // Else, generate move details for each move.

@@ -537,6 +537,26 @@ impl<'d> CoreBattle<'d> {
             .collect())
     }
 
+    pub fn all_active_mon_handles_in_speed_order_and_ability_effect_order(
+        context: &mut Context,
+    ) -> Result<Vec<MonHandle>> {
+        let active_mons = context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>();
+        let mut active_mons_with_speed = Vec::with_capacity(active_mons.len());
+        for mon in active_mons {
+            active_mons_with_speed.push(Mon::speed_orderable_with_ability_effect_order(
+                &context.mon_context(mon)?,
+            ));
+        }
+        Self::speed_sort(context, active_mons_with_speed.as_mut_slice());
+        Ok(active_mons_with_speed
+            .into_iter()
+            .map(|mon| mon.mon_handle)
+            .collect())
+    }
+
     pub fn all_active_or_exited_mon_handles<'b>(&'b self) -> impl Iterator<Item = MonHandle> + 'b {
         self.side_indices()
             .map(|side| self.active_or_exited_mon_handles_on_side(side))

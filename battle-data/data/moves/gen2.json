@@ -173,7 +173,7 @@
           ["return user"]
         ],
         "on_use_move": [
-          "if func_call(has_type: $user ghost):",
+          "if !func_call(has_type: $user ghost):",
           ["$move.target = user"],
           "else if func_call(is_ally: $user $selected_target):",
           ["$move.target = randomnormal"]
