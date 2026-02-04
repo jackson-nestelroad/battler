@@ -707,7 +707,31 @@
     "pp": 15,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "FailInstruct", "NoMetronome", "Protect"]
+    "flags": ["BypassSubstitute", "FailInstruct", "NoMetronome", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_hit": [
+          "$last_move = $target.last_move",
+          "if !$last_move or $target.dynamaxed:",
+          ["return false"],
+          "$index = func_call(move_slot_index: $target $last_move.id)",
+          "if $index.is_undefined:",
+          ["return false"],
+          "$move_slot = func_call(move_slot_at_index: $target $index)",
+          "if !$move_slot or $move_slot.pp == 0:",
+          ["return false"],
+          "if $last_move.upgraded:",
+          ["return false"],
+          "if func_call(move_has_flag: $last_move failinstruct) or func_call(move_has_flag: $last_move charge) or func_call(move_has_flag: $last_move recharge):",
+          ["return false"],
+          "if func_call(has_volatile: $target beakblast) or func_call(has_volatile: $target focuspunch) or func_call(has_volatile: $target shelltrap):",
+          ["return false"],
+          "log_single_turn: with_target $target with_source",
+          "$action_id = func_call(add_move_action: $target $last_move.id $target.last_target_location)",
+          "prioritize_move: $target $action_id $this $source"
+        ]
+      }
+    }
   },
   "beakblast": {
     "name": "Beak Blast",

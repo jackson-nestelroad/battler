@@ -32,6 +32,7 @@ use crate::{
 #[derive(Clone)]
 pub struct BattleQueue {
     actions: VecDeque<Action>,
+    next_added_action_id: usize,
 }
 
 impl BattleQueue {
@@ -39,14 +40,15 @@ impl BattleQueue {
     pub fn new() -> Self {
         Self {
             actions: VecDeque::new(),
+            next_added_action_id: 0,
         }
     }
 
     /// Adds a new [`Action`] to the queue.
-    pub fn add_action(context: &mut Context, action: Action) -> Result<()> {
-        let actions = Self::resolve_action(context, action)?;
+    pub fn add_action(context: &mut Context, action: Action) -> Result<usize> {
+        let (actions, id) = Self::resolve_action(context, action)?;
         context.battle_mut().queue.actions.extend(actions);
-        Ok(())
+        Ok(id)
     }
 
     /// Adds multiple [`Action`]s to the queue.
@@ -91,16 +93,21 @@ impl BattleQueue {
         }
     }
 
-    fn resolve_action(context: &mut Context, action: Action) -> Result<Vec<Action>> {
+    fn resolve_action(context: &mut Context, action: Action) -> Result<(Vec<Action>, usize)> {
         match action {
-            Action::Pass => Ok(Vec::new()),
+            Action::Pass => Ok((Vec::new(), usize::MAX)),
             _ => {
+                let id = context.battle().queue.next_added_action_id;
+                context.battle_mut().queue.next_added_action_id += 1;
                 let mut actions = Self::sub_actions(&action);
                 actions.push(action);
                 for action in &mut actions {
+                    if let Some(action_id) = action.action_id_mut() {
+                        *action_id = id;
+                    }
                     CoreBattle::resolve_action(context, action)?;
                 }
-                Ok(actions)
+                Ok((actions, id))
             }
         }
     }
@@ -191,7 +198,9 @@ impl BattleQueue {
     pub fn prioritize_move(
         context: &mut Context,
         mon: MonHandle,
+        action_id: Option<usize>,
         source_effect: Option<EffectHandle>,
+        source: Option<MonHandle>,
     ) -> Result<()> {
         let index = context
             .battle_mut()
@@ -199,7 +208,10 @@ impl BattleQueue {
             .actions
             .iter()
             .position(|action| match action {
-                Action::Move(action) => action.mon_action.mon == mon,
+                Action::Move(action) => {
+                    action.mon_action.mon == mon
+                        && action_id.is_none_or(|action_id| action.action_id == action_id)
+                }
                 _ => false,
             });
 
@@ -208,13 +220,19 @@ impl BattleQueue {
             let mut action = context.battle_mut().queue.actions.remove(index).unwrap();
             if let Action::Move(move_action) = &mut action {
                 move_action.order = Some(6);
-                if let Some(source_effect) = source_effect
-                    && let Some(active_move) = move_action.active_move_handle
-                {
-                    context
-                        .active_move_mut(active_move)?
-                        .effect_state
-                        .set_source_effect(source_effect);
+                if let Some(active_move) = move_action.active_move_handle {
+                    if let Some(source_effect) = source_effect {
+                        context
+                            .active_move_mut(active_move)?
+                            .effect_state
+                            .set_source_effect(source_effect);
+                    }
+                    if let Some(source) = source {
+                        context
+                            .active_move_mut(active_move)?
+                            .effect_state
+                            .set_source(source);
+                    }
                 }
             }
             context.battle_mut().queue.actions.push_front(action);
@@ -225,7 +243,11 @@ impl BattleQueue {
     /// Deprioritizes a move for the given Mon, essentially making it the last move action.
     ///
     /// The move is moved to the back of the queue, and its order is updated to the back.
-    pub fn deprioritize_move(context: &mut Context, mon: MonHandle) -> Result<()> {
+    pub fn deprioritize_move(
+        context: &mut Context,
+        mon: MonHandle,
+        action_id: Option<usize>,
+    ) -> Result<()> {
         const DEPRIORITIZED_MOVE_ORDER: u32 = 201;
 
         let index = context
@@ -234,7 +256,10 @@ impl BattleQueue {
             .actions
             .iter()
             .position(|action| match action {
-                Action::Move(action) => action.mon_action.mon == mon,
+                Action::Move(action) => {
+                    action.mon_action.mon == mon
+                        && action_id.is_none_or(|action_id| action.action_id == action_id)
+                }
                 _ => false,
             });
 
@@ -319,11 +344,15 @@ impl BattleQueue {
     /// originally.
     ///
     /// Assumes the queue is already sorted.
-    pub fn insert_action_into_sorted_position(context: &mut Context, action: Action) -> Result<()> {
-        for action in Self::resolve_action(context, action)? {
+    pub fn insert_action_into_sorted_position(
+        context: &mut Context,
+        action: Action,
+    ) -> Result<usize> {
+        let (actions, id) = Self::resolve_action(context, action)?;
+        for action in actions {
             Self::insert_resolved_action_into_sorted_position(context, action)?;
         }
-        Ok(())
+        Ok(id)
     }
 
     fn insert_resolved_action_into_sorted_position(
@@ -438,6 +467,7 @@ mod queue_test {
 
     fn move_action(id: Id, priority: i32, speed: u32, sub_priority: i32) -> Action {
         Action::Move(MoveAction {
+            action_id: usize::MAX,
             id,
             upgraded_id: None,
             mon_action: MonAction {

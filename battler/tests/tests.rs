@@ -469,6 +469,7 @@ mod moves {
 
     mod gen7 {
         mod burn_up_test;
+        mod instruct_test;
     }
 }
 

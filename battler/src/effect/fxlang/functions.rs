@@ -39,6 +39,7 @@ use hashbrown::{
 use crate::{
     Type,
     battle::{
+        Action,
         ActiveMoveContext,
         ApplyingEffectContext,
         BattleQueue,
@@ -51,6 +52,7 @@ use crate::{
         MonHandle,
         MonSwitchState,
         MoveAction,
+        MoveActionInput,
         MoveOutcomeOnTarget,
         MoveSlot,
         Player,
@@ -119,6 +121,7 @@ pub fn run_function(
         "ability_effect_state" => ability_effect_state(context),
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
         "activate_ability" => activate_ability(context),
+        "add_move_action" => add_move_action(context).map(|val| Some(val)),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
@@ -3090,6 +3093,10 @@ fn move_action_to_value(move_action: &MoveAction) -> Value {
     Value::Object(HashMap::from_iter([
         ("id".to_owned(), Value::String(move_action.id.to_string())),
         (
+            "action_id".to_owned(),
+            Value::UFraction((move_action.action_id as u64).into()),
+        ),
+        (
             "effective_id".to_owned(),
             Value::String(move_action.effective_move_id().to_string()),
         ),
@@ -3370,18 +3377,89 @@ fn cancel_action(mut context: FunctionContext) -> Result<Value> {
 
 fn prioritize_move(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
-    let source_effect = context
-        .pop_front()
-        .map(|val| val.effect_handle().ok())
-        .flatten();
-    BattleQueue::prioritize_move(context.battle_context_mut(), mon_handle, source_effect)?;
+    let action_id = match context.front().map(|val| val.value_type()) {
+        Some(ValueType::UFraction | ValueType::Fraction) => Some(
+            context
+                .pop_front()
+                .wrap_expectation("missing id")?
+                .integer_usize()
+                .wrap_error_with_message("invalid id")?,
+        ),
+        _ => None,
+    };
+    let source_effect = match context.front().map(|val| val.value_type()) {
+        Some(ValueType::Effect) => Some(
+            context
+                .pop_front()
+                .wrap_expectation("missing source effect")?
+                .effect_handle()
+                .wrap_error_with_message("invalid source effect")?,
+        ),
+        _ => None,
+    };
+    let source = match context.front().map(|val| val.value_type()) {
+        Some(ValueType::Mon) => Some(
+            context
+                .pop_front()
+                .wrap_expectation("missing source")?
+                .mon_handle()
+                .wrap_error_with_message("invalid source")?,
+        ),
+        _ => None,
+    };
+
+    BattleQueue::prioritize_move(
+        context.battle_context_mut(),
+        mon_handle,
+        action_id,
+        source_effect,
+        source,
+    )?;
     Ok(())
 }
 
 fn deprioritize_move(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
-    BattleQueue::deprioritize_move(context.battle_context_mut(), mon_handle)?;
+    let action_id = match context.front().map(|val| val.value_type()) {
+        Some(ValueType::Fraction) => Some(
+            context
+                .pop_front()
+                .wrap_expectation("missing id")?
+                .integer_usize()
+                .wrap_error_with_message("invalid id")?,
+        ),
+        _ => None,
+    };
+
+    BattleQueue::deprioritize_move(context.battle_context_mut(), mon_handle, action_id)?;
     Ok(())
+}
+
+fn add_move_action(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let move_id = context
+        .pop_front()
+        .wrap_expectation("missing move id")?
+        .move_id(context.evaluation_context_mut())
+        .wrap_error_with_message("invalid move id")?;
+    let target = context
+        .pop_front()
+        .map(|val| val.integer_isize().ok())
+        .flatten();
+
+    let id = BattleQueue::add_action(
+        context.battle_context_mut(),
+        Action::Move(MoveAction::new(MoveActionInput {
+            id: move_id,
+            upgraded_id: None,
+            mon: mon_handle,
+            target,
+            mega: false,
+            dyna: false,
+            tera: false,
+        })),
+    )?;
+    Ok(Value::UFraction(TryInto::<u64>::try_into(id)?.into()))
 }
 
 fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {

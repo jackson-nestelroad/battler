@@ -91,6 +91,7 @@ pub struct MoveActionInput {
 /// A move action.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MoveAction {
+    pub action_id: usize,
     pub id: Id,
     pub upgraded_id: Option<Id>,
     pub mon_action: MonAction,
@@ -113,6 +114,7 @@ impl MoveAction {
     /// Creates a new [`MoveAction`] from [`MoveActionInput`].
     pub fn new(input: MoveActionInput) -> Self {
         Self {
+            action_id: usize::MAX,
             id: input.id,
             upgraded_id: input.upgraded_id,
             mon_action: MonAction::new(input.mon),
@@ -316,6 +318,13 @@ pub enum Action {
 }
 
 impl Action {
+    pub fn action_id_mut(&mut self) -> Option<&mut usize> {
+        match self {
+            Self::Move(action) => Some(&mut action.action_id),
+            _ => None,
+        }
+    }
+
     pub fn mon_action_mut(&mut self) -> Option<&mut MonAction> {
         match self {
             Self::Team(action) => Some(&mut action.mon_action),
