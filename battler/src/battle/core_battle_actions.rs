@@ -6277,7 +6277,7 @@ pub fn can_z_move(context: &mut MonContext) -> Result<Vec<Option<Id>>> {
     let mut z_moves = Vec::default();
     let mut no_usable_moves = true;
     for move_slot in context.mon().volatile_state.move_slots.clone() {
-        if move_slot.disabled {
+        if !move_slot.disabled {
             no_usable_moves = false;
         }
         let mov = context.battle().dex.moves.get(&move_slot.name)?;

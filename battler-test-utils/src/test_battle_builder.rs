@@ -283,6 +283,10 @@ impl TestBattleBuilder {
         self.with_boolean_rule("Primal Reversion", primal_reversion)
     }
 
+    pub fn with_z_moves(self, z_moves: bool) -> Self {
+        self.with_boolean_rule("Z-Moves", z_moves)
+    }
+
     pub fn with_dynamax(self, dynamax: bool) -> Self {
         self.with_boolean_rule("Dynamax", dynamax)
     }

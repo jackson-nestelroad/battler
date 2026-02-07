@@ -1751,10 +1751,7 @@
     ],
     "user_effect": {},
     "effect": {
-      "callbacks": {
-        "on_before_move": ["add_pseudo_weather: moldbreaker"],
-        "on_after_move": ["remove_pseudo_weather: moldbreaker"]
-      }
+      "delegates": ["condition:ignoreabilitymovebase"]
     }
   },
   "gmaxfinale": {

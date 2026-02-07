@@ -1197,14 +1197,19 @@ impl Player {
         let mut move_id = move_slot.id.clone();
 
         // Use the upgraded move for some validation checks (e.g., the move target).
-        let (move_name, move_target, upgraded_move_id) = if (choice.z_move)
-            && let Some(Some(move_slot)) = request.z_moves.get(choice.slot)
-        {
-            (
-                move_slot.name.clone(),
-                move_slot.target,
-                Some(move_slot.id.clone()),
-            )
+        let (move_name, move_target, upgraded_move_id) = if choice.z_move {
+            if let Some(Some(move_slot)) = request.z_moves.get(choice.slot) {
+                (
+                    move_slot.name.clone(),
+                    move_slot.target,
+                    Some(move_slot.id.clone()),
+                )
+            } else {
+                return Err(general_error(format!(
+                    "move in slot {} cannot be upgraded to z-move",
+                    choice.slot
+                )));
+            }
         } else if (choice.dyna || context.mon().dynamaxed)
             && let Some(move_slot) = request.max_moves.get(choice.slot)
         {

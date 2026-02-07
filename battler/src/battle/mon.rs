@@ -2517,7 +2517,7 @@ impl Mon {
         }
 
         let z_moves = core_battle_actions::can_z_move(context)?;
-        if !z_moves.is_empty() && z_moves.iter().any(|mov| mov.is_some()) {
+        if z_moves.iter().any(|mov| mov.is_some()) {
             context.mon_mut().next_turn_state.can_z_move = true;
         }
 

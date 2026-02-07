@@ -109,5 +109,15 @@
         ]
       }
     }
+  },
+  "ignoreabilitymovebase": {
+    "name": "Ignore Ability Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_before_move": ["add_pseudo_weather: moldbreaker"],
+        "on_after_move": ["remove_pseudo_weather: moldbreaker"]
+      }
+    }
   }
 }

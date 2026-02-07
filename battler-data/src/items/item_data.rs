@@ -61,7 +61,6 @@ pub struct MegaEvolutionData {
 
 /// Source of a Z-Crystal's power.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
 pub enum ZCrystalSource {
     #[serde(rename = "from")]
     Move(String),

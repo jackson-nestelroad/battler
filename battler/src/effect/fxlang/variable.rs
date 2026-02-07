@@ -15,6 +15,7 @@ use anyhow::{
 use battler_data::{
     Fraction,
     Identifiable,
+    ZPower,
 };
 use zone_alloc::{
     BorrowError,
@@ -355,6 +356,60 @@ where
                             )?
                             .move_effect()
                             .map(|mov| ValueRef::Boolean(mov.data.typeless))
+                            .unwrap_or(ValueRef::Undefined),
+                            "z_move_base_power" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                mov.data
+                                    .z_move
+                                    .as_ref()
+                                    .map(|z_move| z_move.base_power)
+                                    .map(|val| ValueRef::UFraction(val.into()))
+                                    .unwrap_or(ValueRef::Undefined)
+                            })
+                            .unwrap_or(ValueRef::Undefined),
+                            "z_power_boosts" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                mov.data
+                                    .z_move
+                                    .as_ref()
+                                    .map(|z_move| {
+                                        z_move.z_power.as_ref().and_then(|z_power| match z_power {
+                                            ZPower::Boost(boosts) => Some(boosts),
+                                            _ => None,
+                                        })
+                                    })
+                                    .flatten()
+                                    .map(|val| ValueRef::TempBoostTable(val.clone()))
+                                    .unwrap_or(ValueRef::Undefined)
+                            })
+                            .unwrap_or(ValueRef::Undefined),
+                            "z_power_effect" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                mov.data
+                                    .z_move
+                                    .as_ref()
+                                    .map(|z_move| {
+                                        z_move.z_power.as_ref().and_then(|z_power| match z_power {
+                                            ZPower::Effect(effect) => Some(effect),
+                                            _ => None,
+                                        })
+                                    })
+                                    .flatten()
+                                    .map(|val| ValueRef::TempString(val.clone()))
+                                    .unwrap_or(ValueRef::Undefined)
+                            })
                             .unwrap_or(ValueRef::Undefined),
                             _ => {
                                 if effect_handle.is_active_move() {

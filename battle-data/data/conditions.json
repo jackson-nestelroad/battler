@@ -1252,10 +1252,10 @@
           "return $z_move"
         ],
         "on_pre_move_effect": [
-          "if $move.z_move_boosts.is_defined:",
+          "if $move.z_power_boosts.is_defined:",
           ["boost: $target $move.z_power_boosts"],
-          "else if $move.z_power.is_defined:",
-          ["activate_applying_effect: $z_power"]
+          "else if $move.z_power_effect.is_defined:",
+          ["activate_applying_effect: $move.z_power_effect"]
         ]
       }
     }
