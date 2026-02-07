@@ -934,6 +934,13 @@ pub enum BattleEvent {
     /// Runs on the item.
     #[string = "PlayerUse"]
     PlayerUse,
+    /// Runs when applying any pre-move effect.
+    ///
+    /// Very similar to `UseMove`, except it runs after the move is announced.
+    ///
+    /// Runs in the context of a move user.
+    #[string = "PreMoveEffect"]
+    PreMoveEffect,
     /// Runs when a Mon is preparing to hit all of its targets with a move.
     ///
     /// Can fail the move.
@@ -1236,7 +1243,7 @@ pub enum BattleEvent {
     ///
     /// Can be used to modify a move when it is used.
     ///
-    /// Runs on the active move.
+    /// Runs on the active move and in the context of a move user.
     #[string = "UseMove"]
     UseMove,
     /// Runs when a custom message should be displayed when a Mon uses a move.
@@ -1390,6 +1397,7 @@ impl BattleEvent {
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
             Self::PlayerUse => CommonCallbackType::MonVoid as u32,
+            Self::PreMoveEffect => CommonCallbackType::SourceMoveVoid as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::PreventUsedItems => CommonCallbackType::MonResult as u32,
             Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,

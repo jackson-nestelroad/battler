@@ -7,11 +7,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "gengar"
-        }
-      }
+      "local_data": { "values": { "species": "gengar" } }
     }
   },
   "gardevoirite": {
@@ -22,11 +18,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "gardevoir"
-        }
-      }
+      "local_data": { "values": { "species": "gardevoir" } }
     }
   },
   "ampharosite": {
@@ -37,11 +29,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "ampharos"
-        }
-      }
+      "local_data": { "values": { "species": "ampharos" } }
     }
   },
   "venusaurite": {
@@ -52,11 +40,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "venusaur"
-        }
-      }
+      "local_data": { "values": { "species": "venusaur" } }
     }
   },
   "charizarditex": {
@@ -67,11 +51,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "charizard"
-        }
-      }
+      "local_data": { "values": { "species": "charizard" } }
     }
   },
   "blastoisinite": {
@@ -82,11 +62,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "blastoise"
-        }
-      }
+      "local_data": { "values": { "species": "blastoise" } }
     }
   },
   "mewtwonitex": {
@@ -97,11 +73,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "mewtwo"
-        }
-      }
+      "local_data": { "values": { "species": "mewtwo" } }
     }
   },
   "mewtwonitey": {
@@ -112,11 +84,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "mewtwo"
-        }
-      }
+      "local_data": { "values": { "species": "mewtwo" } }
     }
   },
   "blazikenite": {
@@ -127,11 +95,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "blaziken"
-        }
-      }
+      "local_data": { "values": { "species": "blaziken" } }
     }
   },
   "medichamite": {
@@ -142,11 +106,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "medicham"
-        }
-      }
+      "local_data": { "values": { "species": "medicham" } }
     }
   },
   "houndoominite": {
@@ -157,11 +117,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "houndoom"
-        }
-      }
+      "local_data": { "values": { "species": "houndoom" } }
     }
   },
   "aggronite": {
@@ -172,11 +128,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "aggron"
-        }
-      }
+      "local_data": { "values": { "species": "aggron" } }
     }
   },
   "banettite": {
@@ -187,11 +139,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "bannett"
-        }
-      }
+      "local_data": { "values": { "species": "bannett" } }
     }
   },
   "tyranitarite": {
@@ -202,11 +150,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "tyranitar"
-        }
-      }
+      "local_data": { "values": { "species": "tyranitar" } }
     }
   },
   "scizorite": {
@@ -217,11 +161,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "scizor"
-        }
-      }
+      "local_data": { "values": { "species": "scizor" } }
     }
   },
   "pinsirite": {
@@ -232,11 +172,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "pinsir"
-        }
-      }
+      "local_data": { "values": { "species": "pinsir" } }
     }
   },
   "aerodactylite": {
@@ -247,11 +183,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "aerodactyl"
-        }
-      }
+      "local_data": { "values": { "species": "aerodactyl" } }
     }
   },
   "lucarionite": {
@@ -262,11 +194,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "lucario"
-        }
-      }
+      "local_data": { "values": { "species": "lucario" } }
     }
   },
   "abomasite": {
@@ -277,11 +205,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "abomasnow"
-        }
-      }
+      "local_data": { "values": { "species": "abomasnow" } }
     }
   },
   "kangaskhanite": {
@@ -292,11 +216,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "kangaskhan"
-        }
-      }
+      "local_data": { "values": { "species": "kangaskhan" } }
     }
   },
   "gyaradosite": {
@@ -307,11 +227,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "gyarados"
-        }
-      }
+      "local_data": { "values": { "species": "gyarados" } }
     }
   },
   "absolite": {
@@ -322,11 +238,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "absol"
-        }
-      }
+      "local_data": { "values": { "species": "absol" } }
     }
   },
   "charizarditey": {
@@ -337,11 +249,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "charizard"
-        }
-      }
+      "local_data": { "values": { "species": "charizard" } }
     }
   },
   "alakazite": {
@@ -352,11 +260,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "alakazam"
-        }
-      }
+      "local_data": { "values": { "species": "alakazam" } }
     }
   },
   "heracronite": {
@@ -367,11 +271,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "heracross"
-        }
-      }
+      "local_data": { "values": { "species": "heracross" } }
     }
   },
   "mawilite": {
@@ -382,11 +282,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "mawile"
-        }
-      }
+      "local_data": { "values": { "species": "mawile" } }
     }
   },
   "manectite": {
@@ -397,11 +293,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "manectric"
-        }
-      }
+      "local_data": { "values": { "species": "manectric" } }
     }
   },
   "garchompite": {
@@ -412,11 +304,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "garchomp"
-        }
-      }
+      "local_data": { "values": { "species": "garchomp" } }
     }
   },
   "latiasite": {
@@ -427,11 +315,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "latias"
-        }
-      }
+      "local_data": { "values": { "species": "latias" } }
     }
   },
   "latiosite": {
@@ -442,11 +326,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "latios"
-        }
-      }
+      "local_data": { "values": { "species": "latios" } }
     }
   },
   "swampertite": {
@@ -457,11 +337,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "swampert"
-        }
-      }
+      "local_data": { "values": { "species": "swampert" } }
     }
   },
   "sceptilite": {
@@ -472,11 +348,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "sceptile"
-        }
-      }
+      "local_data": { "values": { "species": "sceptile" } }
     }
   },
   "sablenite": {
@@ -487,11 +359,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "sableye"
-        }
-      }
+      "local_data": { "values": { "species": "sableye" } }
     }
   },
   "altarianite": {
@@ -502,11 +370,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "altaria"
-        }
-      }
+      "local_data": { "values": { "species": "altaria" } }
     }
   },
   "galladite": {
@@ -517,11 +381,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "gallade"
-        }
-      }
+      "local_data": { "values": { "species": "gallade" } }
     }
   },
   "audinite": {
@@ -532,11 +392,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "audino"
-        }
-      }
+      "local_data": { "values": { "species": "audino" } }
     }
   },
   "metagrossite": {
@@ -547,11 +403,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "metagross"
-        }
-      }
+      "local_data": { "values": { "species": "metagross" } }
     }
   },
   "sharpedonite": {
@@ -562,11 +414,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "sharpedo"
-        }
-      }
+      "local_data": { "values": { "species": "sharpedo" } }
     }
   },
   "slowbronite": {
@@ -577,11 +425,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "slowbro"
-        }
-      }
+      "local_data": { "values": { "species": "slowbro" } }
     }
   },
   "steelixite": {
@@ -592,11 +436,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "steelix"
-        }
-      }
+      "local_data": { "values": { "species": "steelix" } }
     }
   },
   "pidgeotite": {
@@ -607,11 +447,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "pidgeot"
-        }
-      }
+      "local_data": { "values": { "species": "pidgeot" } }
     }
   },
   "glalitite": {
@@ -622,11 +458,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "glalie"
-        }
-      }
+      "local_data": { "values": { "species": "glalie" } }
     }
   },
   "diancite": {
@@ -637,11 +469,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "diancie"
-        }
-      }
+      "local_data": { "values": { "species": "diancie" } }
     }
   },
   "cameruptite": {
@@ -652,11 +480,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "camerupt"
-        }
-      }
+      "local_data": { "values": { "species": "camerupt" } }
     }
   },
   "lopunnite": {
@@ -667,11 +491,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "lopunny"
-        }
-      }
+      "local_data": { "values": { "species": "lopunny" } }
     }
   },
   "salamencite": {
@@ -682,11 +502,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "salamence"
-        }
-      }
+      "local_data": { "values": { "species": "salamence" } }
     }
   },
   "beedrillite": {
@@ -697,11 +513,7 @@
     "special_data": { "fling": { "power": 80 } },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "beedrill"
-        }
-      }
+      "local_data": { "values": { "species": "beedrill" } }
     }
   }
 }

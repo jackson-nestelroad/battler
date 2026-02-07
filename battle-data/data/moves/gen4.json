@@ -8,6 +8,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "hit_effect": { "heal_percent": "50%", "volatile_status": "roost" },
+    "z_move": { "effect": "zpowerboostcritratio" },
     "condition": {
       "duration": 1,
       "callbacks": {
@@ -25,6 +26,7 @@
     "target": "Field",
     "flags": [],
     "hit_effect": { "pseudo_weather": "gravity" },
+    "z_move": { "boosts": { "spa": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -66,6 +68,7 @@
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "miracleeye" },
+    "z_move": { "boosts": { "spa": 1 } },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -264,6 +267,7 @@
     "target": "AllySide",
     "flags": ["Snatch", "Wind"],
     "hit_effect": { "side_condition": "tailwind" },
+    "z_move": { "effect": "zpowerboostcritratio" },
     "condition": {
       "duration": 4,
       "callbacks": {
@@ -281,6 +285,7 @@
     "accuracy": "exempt",
     "target": "AdjacentAllyOrUser",
     "flags": ["BypassMaxGuard"],
+    "z_move": { "effect": "zpowerboostcritratio" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -395,6 +400,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "embargo" },
+    "z_move": { "boosts": { "spa": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -468,6 +474,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "hit_effect": {},
+    "z_move": { "boosts": { "spa": 2 } },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -525,6 +532,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "healblock" },
+    "z_move": { "boosts": { "spa": 2 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -575,6 +583,7 @@
     "target": "User",
     "flags": ["BypassMaxGuard", "Snatch"],
     "hit_effect": { "volatile_status": "powertrick" },
+    "z_move": { "boosts": { "atk": 1 } },
     "condition": {
       "callbacks": {
         "on_start": [
@@ -607,6 +616,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "gastroacid" },
+    "z_move": { "boosts": { "spe": 1 } },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -643,6 +653,7 @@
     "target": "AllySide",
     "flags": ["Snatch"],
     "hit_effect": { "side_condition": "luckychant" },
+    "z_move": { "boosts": { "evasion": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -672,6 +683,7 @@
       "NoSleepTalk",
       "Protect"
     ],
+    "z_move": { "boosts": { "spe": 2 } },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -710,6 +722,7 @@
       "NoMetronome",
       "NoSleepTalk"
     ],
+    "z_move": { "boosts": { "accuracy": 1 } },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -734,6 +747,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "z_move": { "boosts": { "spe": 1 } },
     "effect": {
       "callbacks": { "on_hit": ["swap_boosts: $target $source atk spa"] }
     }
@@ -746,6 +760,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "z_move": { "boosts": { "spe": 1 } },
     "effect": {
       "callbacks": { "on_hit": ["swap_boosts: $target $source def spd"] }
     }
@@ -804,6 +819,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "spe": 1 } },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -849,6 +865,7 @@
     "target": "FoeSide",
     "flags": ["MustPressure", "Reflectable"],
     "hit_effect": { "side_condition": "toxicspikes" },
+    "z_move": { "boosts": { "def": 1 } },
     "condition": {
       "callbacks": {
         "on_side_start": [
@@ -891,6 +908,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "z_move": { "effect": "zpowerboostcritratio" },
     "effect": { "callbacks": { "on_hit": ["swap_boosts: $target $source"] } }
   },
   "aquaring": {
@@ -902,6 +920,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "volatile_status": "aquaring" },
+    "z_move": { "boosts": { "def": 1 } },
     "condition": {
       "callbacks": {
         "on_start": ["log_start"],
@@ -918,6 +937,7 @@
     "target": "User",
     "flags": ["Gravity", "Snatch"],
     "hit_effect": { "volatile_status": "magnetrise" },
+    "z_move": { "boosts": { "evasion": 1 } },
     "effect": {
       "callbacks": {
         "on_try_move": [
@@ -944,9 +964,7 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Thawing"],
-    "recoil": {
-      "percent": "1/3"
-    },
+    "recoil": { "percent": "1/3" },
     "secondary_effects": [{ "chance": "10%", "target": { "status": "brn" } }]
   },
   "forcepalm": {
@@ -978,7 +996,8 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "boosts": { "spe": 2 } }
+    "hit_effect": { "boosts": { "spe": 2 } },
+    "z_move": { "effect": "zpowerboostcritratio" }
   },
   "poisonjab": {
     "name": "Poison Jab",
@@ -1161,9 +1180,7 @@
     "base_power": 120,
     "target": "Any",
     "flags": ["Contact", "Distance", "Mirror", "Protect"],
-    "recoil": {
-      "percent": "1/3"
-    }
+    "recoil": { "percent": "1/3" }
   },
   "earthpower": {
     "name": "Earth Power",
@@ -1186,6 +1203,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome", "Protect"],
+    "z_move": { "boosts": { "spe": 2 } },
     "effect": { "delegates": ["move:trick"] }
   },
   "gigaimpact": {
@@ -1207,7 +1225,8 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "boosts": { "spa": 2 } }
+    "hit_effect": { "boosts": { "spa": 2 } },
+    "z_move": { "effect": "zpowerboostcritratio" }
   },
   "bulletpunch": {
     "name": "Bullet Punch",
@@ -1400,9 +1419,8 @@
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
     "hit_effect": { "boosts": { "eva": -1 } },
-    "effect": {
-      "delegates": ["condition:defogmovebase"]
-    }
+    "z_move": { "boosts": { "accuracy": 1 } },
+    "effect": { "delegates": ["condition:defogmovebase"] }
   },
   "trickroom": {
     "name": "Trick Room",
@@ -1414,6 +1432,7 @@
     "target": "Field",
     "flags": ["Mirror"],
     "hit_effect": { "pseudo_weather": "trickroom" },
+    "z_move": { "boosts": { "accuracy": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -1560,6 +1579,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": { "boosts": { "spa": -2 } },
+    "z_move": { "boosts": { "spd": 2 } },
     "effect": {
       "callbacks": {
         "on_try_immunity": [
@@ -1577,6 +1597,7 @@
     "target": "FoeSide",
     "flags": ["MustPressure", "Reflectable"],
     "hit_effect": { "side_condition": "stealthrock" },
+    "z_move": { "boosts": { "def": 1 } },
     "condition": {
       "callbacks": {
         "on_side_start": ["log_side_start"],
@@ -1681,9 +1702,7 @@
     "base_power": 120,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil": {
-      "percent": "1/3"
-    }
+    "recoil": { "percent": "1/3" }
   },
   "aquajet": {
     "name": "Aqua Jet",
@@ -1715,7 +1734,8 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "boosts": { "def": 1, "spd": 1 } }
+    "hit_effect": { "boosts": { "def": 1, "spd": 1 } },
+    "z_move": { "boosts": { "def": 1 } }
   },
   "healorder": {
     "name": "Heal Order",
@@ -1725,7 +1745,8 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "hit_effect": { "heal_percent": "50%" }
+    "hit_effect": { "heal_percent": "50%" },
+    "z_move": { "effect": "zpowerboostcritratio" }
   },
   "headsmash": {
     "name": "Head Smash",
@@ -1736,9 +1757,7 @@
     "base_power": 150,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil": {
-      "percent": "1/2"
-    }
+    "recoil": { "percent": "1/2" }
   },
   "doublehit": {
     "name": "Double Hit",
@@ -1844,6 +1863,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoSketch", "Protect", "Reflectable", "SleepInducing"],
     "hit_effect": { "status": "slp" },
+    "z_move": { "effect": "zpowerboostcritratio" },
     "effect": {
       "callbacks": {
         "on_try_use_move": [

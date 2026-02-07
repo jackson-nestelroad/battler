@@ -140,6 +140,7 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. Use active move:
       1. `ModifyMoveType`.
       1. `UseMove`.
+      1. `PreMoveEffect`.
       1. `RedirectTarget`.
       1. `TryMove`.
       1. `UseMoveMessage`.

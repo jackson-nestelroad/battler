@@ -52,9 +52,39 @@ pub struct MultiAttackData {
     pub typ: Type,
 }
 
-/// Data for special item effects; namely, item data associated with individual moves.
+/// Data for Mega Evolution.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MegaEvolutionData {
+    pub from: String,
+    pub into: String,
+}
+
+/// Source of a Z-Crystal's power.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ZCrystalSource {
+    #[serde(rename = "from")]
+    Move(String),
+    #[serde(rename = "type")]
+    Type(Type),
+}
+
+/// Data for Z-Crystals.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ZCrystalData {
+    #[serde(flatten)]
+    pub source: Option<ZCrystalSource>,
+    pub into: String,
+    #[serde(default)]
+    pub users: HashSet<String>,
+}
+
+/// Data for special item effects; namely, item data associated with moves and effects.
 #[derive(Debug, Default, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct SpecialItemData {
+    pub mega_evolution: Option<MegaEvolutionData>,
+    pub z_crystal: Option<ZCrystalData>,
+
     pub fling: Option<FlingData>,
     pub natural_gift: Option<NaturalGiftData>,
     pub judgment: Option<JudgmentData>,
@@ -74,13 +104,9 @@ pub struct ItemData {
     pub target: Option<ItemTarget>,
     /// Type of input received alongside the item.
     pub input: Option<ItemInput>,
-    /// Data for special item effects associated with individual moves.
+    /// Data for special item effects associated with moves and effects.
     #[serde(default)]
     pub special_data: SpecialItemData,
-    /// The species that this item allows Mega Evolution from.
-    pub mega_evolves_from: Option<String>,
-    /// The species that this item allows Mega Evolution into.
-    pub mega_evolves_into: Option<String>,
     /// The forme this item forces a Mon into.
     pub force_forme: Option<String>,
     /// Item flags.

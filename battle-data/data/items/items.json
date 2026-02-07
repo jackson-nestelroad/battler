@@ -176,11 +176,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Bug"
-        }
-      }
+      "local_data": { "values": { "type": "Bug" } }
     }
   },
   "amuletcoin": { "name": "Amulet Coin", "flags": [] },
@@ -272,11 +268,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Steel"
-        }
-      }
+      "local_data": { "values": { "type": "Steel" } }
     }
   },
   "berryjuice": {
@@ -333,11 +325,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ground"
-        }
-      }
+      "local_data": { "values": { "type": "Ground" } }
     }
   },
   "hardstone": {
@@ -346,11 +334,7 @@
     "special_data": { "fling": { "power": 100 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Rock"
-        }
-      }
+      "local_data": { "values": { "type": "Rock" } }
     }
   },
   "miracleseed": {
@@ -359,11 +343,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Grass"
-        }
-      }
+      "local_data": { "values": { "type": "Grass" } }
     }
   },
   "blackglasses": {
@@ -372,11 +352,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Dark"
-        }
-      }
+      "local_data": { "values": { "type": "Dark" } }
     }
   },
   "blackbelt": {
@@ -385,11 +361,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fighting"
-        }
-      }
+      "local_data": { "values": { "type": "Fighting" } }
     }
   },
   "magnet": {
@@ -398,11 +370,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Electric"
-        }
-      }
+      "local_data": { "values": { "type": "Electric" } }
     }
   },
   "mysticwater": {
@@ -411,11 +379,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Water"
-        }
-      }
+      "local_data": { "values": { "type": "Water" } }
     }
   },
   "sharpbeak": {
@@ -424,11 +388,7 @@
     "special_data": { "fling": { "power": 50 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Flying"
-        }
-      }
+      "local_data": { "values": { "type": "Flying" } }
     }
   },
   "poisonbarb": {
@@ -439,11 +399,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Poison"
-        }
-      }
+      "local_data": { "values": { "type": "Poison" } }
     }
   },
   "nevermeltice": {
@@ -452,11 +408,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ice"
-        }
-      }
+      "local_data": { "values": { "type": "Ice" } }
     }
   },
   "spelltag": {
@@ -465,11 +417,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ghost"
-        }
-      }
+      "local_data": { "values": { "type": "Ghost" } }
     }
   },
   "twistedspoon": {
@@ -478,11 +426,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Psychic"
-        }
-      }
+      "local_data": { "values": { "type": "Psychic" } }
     }
   },
   "charcoal": {
@@ -491,11 +435,7 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fire"
-        }
-      }
+      "local_data": { "values": { "type": "Fire" } }
     }
   },
   "dragonfang": {
@@ -504,11 +444,7 @@
     "special_data": { "fling": { "power": 70 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Dragon"
-        }
-      }
+      "local_data": { "values": { "type": "Dragon" } }
     }
   },
   "silkscarf": {
@@ -517,11 +453,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Normal"
-        }
-      }
+      "local_data": { "values": { "type": "Normal" } }
     }
   },
   "shellbell": {
@@ -543,11 +475,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Water"
-        }
-      }
+      "local_data": { "values": { "type": "Water" } }
     }
   },
   "laxincense": {
@@ -565,10 +493,7 @@
         "condition:primalreversionitembase"
       ],
       "local_data": {
-        "values": {
-          "species": "groudon",
-          "primalforme": "groudonprimal"
-        }
+        "values": { "species": "groudon", "primalforme": "groudonprimal" }
       }
     }
   },
@@ -581,10 +506,7 @@
         "condition:primalreversionitembase"
       ],
       "local_data": {
-        "values": {
-          "species": "kyogre",
-          "primalforme": "kyogreprimal"
-        }
+        "values": { "species": "kyogre", "primalforme": "kyogreprimal" }
       }
     }
   },
@@ -650,9 +572,7 @@
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
     "effect": {
-      "callbacks": {
-        "on_source_modify_accuracy": ["return $acc * 11/10"]
-      }
+      "callbacks": { "on_source_modify_accuracy": ["return $acc * 11/10"] }
     }
   },
   "muscleband": {
@@ -739,22 +659,14 @@
     "special_data": {
       "fling": { "power": 30, "hit_effect": { "status": "tox" } }
     },
-    "effect": {
-      "callbacks": {
-        "on_residual": ["set_status: $target tox"]
-      }
-    }
+    "effect": { "callbacks": { "on_residual": ["set_status: $target tox"] } }
   },
   "flameorb": {
     "name": "Flame Orb",
     "flags": [],
     "special_data": {
       "fling": { "power": 30, "hit_effect": { "status": "brn" } },
-      "effect": {
-        "callbacks": {
-          "on_residual": ["set_status: $target brn"]
-        }
-      }
+      "effect": { "callbacks": { "on_residual": ["set_status: $target brn"] } }
     }
   },
   "quickpowder": {
@@ -857,11 +769,7 @@
     "name": "Lagging Tail",
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
-    "effect": {
-      "callbacks": {
-        "on_sub_priority": ["return -1"]
-      }
-    }
+    "effect": { "callbacks": { "on_sub_priority": ["return -1"] } }
   },
   "destinyknot": {
     "name": "Destiny Knot",
@@ -1024,10 +932,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "callbacks": {
-        "on_trap_mon": {
-          "priority": 1,
-          "program": ["return false"]
-        }
+        "on_trap_mon": { "priority": 1, "program": ["return false"] }
       }
     }
   },
@@ -1067,11 +972,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fire"
-        }
-      }
+      "local_data": { "values": { "type": "Fire" } }
     }
   },
   "splashplate": {
@@ -1084,11 +985,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Water"
-        }
-      }
+      "local_data": { "values": { "type": "Water" } }
     }
   },
   "zapplate": {
@@ -1101,11 +998,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Electric"
-        }
-      }
+      "local_data": { "values": { "type": "Electric" } }
     }
   },
   "meadowplate": {
@@ -1118,11 +1011,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Grass"
-        }
-      }
+      "local_data": { "values": { "type": "Grass" } }
     }
   },
   "icicleplate": {
@@ -1132,11 +1021,7 @@
     "special_data": { "fling": { "power": 90 }, "judgment": { "type": "Ice" } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ice"
-        }
-      }
+      "local_data": { "values": { "type": "Ice" } }
     }
   },
   "fistplate": {
@@ -1149,11 +1034,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fighting"
-        }
-      }
+      "local_data": { "values": { "type": "Fighting" } }
     }
   },
   "toxicplate": {
@@ -1166,11 +1047,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Poison"
-        }
-      }
+      "local_data": { "values": { "type": "Poison" } }
     }
   },
   "earthplate": {
@@ -1183,11 +1060,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ground"
-        }
-      }
+      "local_data": { "values": { "type": "Ground" } }
     }
   },
   "skyplate": {
@@ -1200,11 +1073,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Flying"
-        }
-      }
+      "local_data": { "values": { "type": "Flying" } }
     }
   },
   "mindplate": {
@@ -1217,11 +1086,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Psychic"
-        }
-      }
+      "local_data": { "values": { "type": "Psychic" } }
     }
   },
   "insectplate": {
@@ -1231,11 +1096,7 @@
     "special_data": { "fling": { "power": 90 }, "judgment": { "type": "Bug" } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Bug"
-        }
-      }
+      "local_data": { "values": { "type": "Bug" } }
     }
   },
   "stoneplate": {
@@ -1248,11 +1109,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Rock"
-        }
-      }
+      "local_data": { "values": { "type": "Rock" } }
     }
   },
   "spookyplate": {
@@ -1265,11 +1122,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ghost"
-        }
-      }
+      "local_data": { "values": { "type": "Ghost" } }
     }
   },
   "dracoplate": {
@@ -1282,11 +1135,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Dragon"
-        }
-      }
+      "local_data": { "values": { "type": "Dragon" } }
     }
   },
   "dreadplate": {
@@ -1299,11 +1148,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Dark"
-        }
-      }
+      "local_data": { "values": { "type": "Dark" } }
     }
   },
   "ironplate": {
@@ -1321,11 +1166,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Psychic"
-        }
-      }
+      "local_data": { "values": { "type": "Psychic" } }
     }
   },
   "rockincense": {
@@ -1334,20 +1175,14 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Rock"
-        }
-      }
+      "local_data": { "values": { "type": "Rock" } }
     }
   },
   "fullincense": {
     "name": "Full Incense",
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
-    "effect": {
-      "delegates": ["item:laggingtail"]
-    }
+    "effect": { "delegates": ["item:laggingtail"] }
   },
   "waveincense": {
     "name": "Wave Incense",
@@ -1355,11 +1190,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Water"
-        }
-      }
+      "local_data": { "values": { "type": "Water" } }
     }
   },
   "roseincense": {
@@ -1368,11 +1199,7 @@
     "special_data": { "fling": { "power": 10 } },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Grass"
-        }
-      }
+      "local_data": { "values": { "type": "Grass" } }
     }
   },
   "luckincense": { "name": "Luck Incense", "flags": [] },
@@ -1382,9 +1209,7 @@
     "flags": [],
     "special_data": { "fling": { "power": 80 } },
     "effect": {
-      "callbacks": {
-        "on_modify_crit_ratio": ["return $crit_ratio + 1"]
-      }
+      "callbacks": { "on_modify_crit_ratio": ["return $crit_ratio + 1"] }
     }
   },
   "razorfang": {
@@ -1392,9 +1217,7 @@
     "flags": [],
     "special_data": {
       "fling": { "power": 30, "hit_effect": { "volatile_status": "flinch" } },
-      "effect": {
-        "delegates": ["item:kingsrock"]
-      }
+      "effect": { "delegates": ["item:kingsrock"] }
     }
   },
   "griseousorb": {
@@ -1411,11 +1234,7 @@
           ["return $base_power * 6/5"]
         ]
       },
-      "local_data": {
-        "values": {
-          "species": "giratina"
-        }
-      }
+      "local_data": { "values": { "species": "giratina" } }
     }
   },
   "dousedrive": {
@@ -1428,11 +1247,7 @@
     },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "genesect"
-        }
-      }
+      "local_data": { "values": { "species": "genesect" } }
     }
   },
   "shockdrive": {
@@ -1445,11 +1260,7 @@
     },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "genesect"
-        }
-      }
+      "local_data": { "values": { "species": "genesect" } }
     }
   },
   "burndrive": {
@@ -1462,11 +1273,7 @@
     },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "genesect"
-        }
-      }
+      "local_data": { "values": { "species": "genesect" } }
     }
   },
   "chilldrive": {
@@ -1479,11 +1286,7 @@
     },
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": {
-        "values": {
-          "species": "genesect"
-        }
-      }
+      "local_data": { "values": { "species": "genesect" } }
     }
   },
   "prismscale": {
@@ -1512,11 +1315,7 @@
     "name": "Float Stone",
     "flags": [],
     "special_data": { "fling": { "power": 30 } },
-    "effect": {
-      "callbacks": {
-        "on_modify_weight": ["return $weight / 2"]
-      }
-    }
+    "effect": { "callbacks": { "on_modify_weight": ["return $weight / 2"] } }
   },
   "rockyhelmet": {
     "name": "Rocky Helmet",
@@ -1547,9 +1346,7 @@
   "redcard": {
     "name": "Red Card",
     "flags": [],
-    "special_data": {
-      "fling": { "power": 10 }
-    },
+    "special_data": { "fling": { "power": 10 } },
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects": [
@@ -1567,11 +1364,7 @@
     "name": "Ring Target",
     "flags": [],
     "special_data": { "fling": { "power": 10 } },
-    "effect": {
-      "callbacks": {
-        "on_negate_immunity": ["return false"]
-      }
-    }
+    "effect": { "callbacks": { "on_negate_immunity": ["return false"] } }
   },
   "bindingband": {
     "name": "Binding Band",
@@ -1626,9 +1419,7 @@
     "name": "Poké Toy",
     "target": "Active",
     "flags": [],
-    "effect": {
-      "delegates": ["item:pokedoll"]
-    }
+    "effect": { "delegates": ["item:pokedoll"] }
   },
   "weaknesspolicy": {
     "name": "Weakness Policy",
@@ -1650,11 +1441,7 @@
     },
     "effect": {
       "delegates": ["condition:boosttypepowerby20percentitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fairy"
-        }
-      }
+      "local_data": { "values": { "type": "Fairy" } }
     }
   },
   "luminousmoss": {
@@ -1926,9 +1713,7 @@
     "name": "Griseous Core",
     "force_forme": "Giratina-Origin",
     "flags": [],
-    "effect": {
-      "delegates": ["item:griseousorb"]
-    }
+    "effect": { "delegates": ["item:griseousorb"] }
   },
   "boosterenergy": {
     "name": "Booster Energy",
@@ -1963,10 +1748,7 @@
     },
     "condition": {
       "callbacks": {
-        "suppress_mon_ability": {
-          "priority": 1,
-          "program": ["return false"]
-        }
+        "suppress_mon_ability": { "priority": 1, "program": ["return false"] }
       }
     }
   },

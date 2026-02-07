@@ -3,10 +3,6 @@
     "name": "Self-Destruct Button",
     "target": "Active",
     "flags": [],
-    "effect": {
-      "callbacks": {
-        "on_player_use": ["faint: $mon"]
-      }
-    }
+    "effect": { "callbacks": { "on_player_use": ["faint: $mon"] } }
   }
 }

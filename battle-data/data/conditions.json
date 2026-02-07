@@ -1210,5 +1210,101 @@
         }
       }
     }
+  },
+  "healreplacement": {
+    "name": "Heal Replacement",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_activate: with_target use_source"],
+        "on_switch_in": [
+          "if !$mon.fainted:",
+          [
+            "heal: $mon $mon.max_hp",
+            "remove_slot_condition: $mon.side $mon.position $this.id"
+          ]
+        ]
+      }
+    }
+  },
+  "zpower": {
+    "name": "Z-Power",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 1,
+      "no_copy": true,
+      "callbacks": {
+        "on_start": ["log_single_turn: with_target"],
+        "on_upgrade_move": [
+          "modify_move_type: $move",
+          "$z_move_id = func_call(z_move: $user $move)",
+          "if !$z_move_id:",
+          ["return"],
+          "$z_move = func_call(new_active_move: $z_move_id $user)",
+          "set_upgraded_to_z_move: $z_move $move.id",
+          "if !$user.item:",
+          ["return"],
+          "if $move.z_move_base_power.is_defined and !$z_move.base_power:",
+          ["$z_move.base_power = $move.z_move_base_power"],
+          "$z_move.category = $move.category",
+          "# Move is already being used, but priority can affect other things as the move runs.",
+          "$z_move.priority = $move.priority",
+          "return $z_move"
+        ],
+        "on_pre_move_effect": [
+          "if $move.z_move_boosts.is_defined:",
+          ["boost: $target $move.z_power_boosts"],
+          "else if $move.z_power.is_defined:",
+          ["activate_applying_effect: $z_power"]
+        ]
+      }
+    }
+  },
+  "zpowerboostcritratio": {
+    "name": "Z-Power Boost Critical Hit Ratio",
+    "condition_type": "Z-Power",
+    "condition": {
+      "callbacks": {
+        "on_activate": ["add_volatile: $target focusenergy use_source_effect"]
+      }
+    }
+  },
+  "zpowerclearnegativeboosts": {
+    "name": "Z-Power Clear Negative Boosts",
+    "condition_type": "Z-Power",
+    "condition": {
+      "callbacks": {
+        "on_activate": ["clear_negative_boosts: $target use_source_effect"]
+      }
+    }
+  },
+  "zpowerheal": {
+    "name": "Z-Power Heal",
+    "condition_type": "Z-Power",
+    "condition": {
+      "callbacks": {
+        "on_activate": ["heal: $target $target.max_hp use_source_effect"]
+      }
+    }
+  },
+  "zpowerhealreplacement": {
+    "name": "Z-Power Heal Replacement",
+    "condition_type": "Z-Power",
+    "condition": {
+      "callbacks": {
+        "on_activate": [
+          "add_slot_condition: $target.side $target.position healreplacement use_source_effect"
+        ]
+      }
+    }
+  },
+  "zpowerredirect": {
+    "name": "Z-Power Redirect",
+    "condition_type": "Z-Power",
+    "condition": {
+      "callbacks": {
+        "on_activate": ["add_volatile: $target followme use_source_effect"]
+      }
+    }
   }
 }

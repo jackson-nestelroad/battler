@@ -7,7 +7,8 @@
     "accuracy": 95,
     "base_power": 100,
     "target": "Any",
-    "flags": ["Contact", "Distance", "Gravity", "Mirror", "Protect"]
+    "flags": ["Contact", "Distance", "Gravity", "Mirror", "Protect"],
+    "z_move": { "base_power": 170 }
   },
   "matblock": {
     "name": "Mat Block",
@@ -16,7 +17,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Snatch", "Stalling"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Snatch", "Stalling"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "belch": {
     "name": "Belch",
@@ -44,7 +46,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Distance"]
+    "flags": ["Distance"],
+    "z_move": { "boosts": { "atk": 1 } }
   },
   "stickyweb": {
     "name": "Sticky Web",
@@ -53,7 +56,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "FoeSide",
-    "flags": ["Reflectable"]
+    "flags": ["Reflectable"],
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "fellstinger": {
     "name": "Fell Stinger",
@@ -90,7 +94,8 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
   },
   "nobleroar": {
     "name": "Noble Roar",
@@ -99,7 +104,8 @@
     "pp": 30,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "iondeluge": {
     "name": "Ion Deluge",
@@ -109,7 +115,8 @@
     "accuracy": "exempt",
     "priority": 1,
     "target": "All",
-    "flags": []
+    "flags": [],
+    "z_move": { "boosts": { "spa": 1 } }
   },
   "paraboliccharge": {
     "name": "Parabolic Charge",
@@ -129,7 +136,8 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
   },
   "petalblizzard": {
     "name": "Petal Blizzard",
@@ -168,7 +176,8 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"],
+    "z_move": { "effect": "zpowerboostcritratio" }
   },
   "topsyturvy": {
     "name": "Topsy-Turvy",
@@ -177,7 +186,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "atk": 1 } }
   },
   "drainingkiss": {
     "name": "Draining Kiss",
@@ -198,7 +208,8 @@
     "accuracy": "exempt",
     "priority": 3,
     "target": "AllySide",
-    "flags": ["NoMetronome"]
+    "flags": ["NoMetronome"],
+    "z_move": { "boosts": { "spd": 1 } }
   },
   "flowershield": {
     "name": "Flower Shield",
@@ -207,7 +218,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["Distance"]
+    "flags": ["Distance"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "grassyterrain": {
     "name": "Grassy Terrain",
@@ -218,6 +230,7 @@
     "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "grassyterrain" },
+    "z_move": { "boosts": { "def": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -254,6 +267,7 @@
     "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "mistyterrain" },
+    "z_move": { "boosts": { "spd": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -297,7 +311,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "z_move": { "boosts": { "spa": 1 } }
   },
   "playrough": {
     "name": "Play Rough",
@@ -346,7 +361,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "All",
-    "flags": ["BypassSubstitute", "Mirror"]
+    "flags": ["BypassSubstitute", "Mirror"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "kingsshield": {
     "name": "King's Shield",
@@ -362,7 +378,8 @@
       "NoAssist",
       "NoMetronome",
       "Stalling"
-    ]
+    ],
+    "z_move": { "effect": "zpowerboostcritratio" }
   },
   "playnice": {
     "name": "Play Nice",
@@ -371,7 +388,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassMaxGuard", "BypassSubstitute", "Mirror", "Reflectable"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Mirror", "Reflectable"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "confide": {
     "name": "Confide",
@@ -386,7 +404,8 @@
       "Mirror",
       "Reflectable",
       "Sound"
-    ]
+    ],
+    "z_move": { "boosts": { "spd": 1 } }
   },
   "diamondstorm": {
     "name": "Diamond Storm",
@@ -449,7 +468,8 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "aromaticmist": {
     "name": "Aromatic Mist",
@@ -459,7 +479,8 @@
     "accuracy": "exempt",
     "target": "AdjacentAlly",
     "flags": ["BypassMaxGuard", "BypassSubstitute"],
-    "hit_effect": { "boosts": { "spd": 1 } }
+    "hit_effect": { "boosts": { "spd": 1 } },
+    "z_move": { "boosts": { "spd": 2 } }
   },
   "eerieimpulse": {
     "name": "Eerie Impulse",
@@ -468,7 +489,8 @@
     "pp": 15,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "spd": 1 } }
   },
   "venomdrench": {
     "name": "Venom Drench",
@@ -477,7 +499,8 @@
     "pp": 20,
     "accuracy": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "powder": {
     "name": "Powder",
@@ -487,7 +510,8 @@
     "accuracy": 100,
     "priority": 1,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Powder", "Protect", "Reflectable"]
+    "flags": ["BypassSubstitute", "Mirror", "Powder", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "spd": 2 } }
   },
   "geomancy": {
     "name": "Geomancy",
@@ -496,7 +520,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Charge", "FailInstruct", "NoSleepTalk"]
+    "flags": ["Charge", "FailInstruct", "NoSleepTalk"],
+    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
   },
   "magneticflux": {
     "name": "Magnetic Flux",
@@ -505,7 +530,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["BypassSubstitute", "Distance", "Snatch"]
+    "flags": ["BypassSubstitute", "Distance", "Snatch"],
+    "z_move": { "boosts": { "spd": 1 } }
   },
   "happyhour": {
     "name": "Happy Hour",
@@ -514,7 +540,8 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": []
+    "flags": [],
+    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
   },
   "electricterrain": {
     "name": "Electric Terrain",
@@ -525,6 +552,7 @@
     "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "electricterrain" },
+    "z_move": { "boosts": { "spe": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -584,7 +612,8 @@
       "NoAssist",
       "NoMetronome",
       "NoSleepTalk"
-    ]
+    ],
+    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
   },
   "holdhands": {
     "name": "Hold Hands",
@@ -602,7 +631,8 @@
       "NoAssist",
       "NoMetronome",
       "NoSleepTalk"
-    ]
+    ],
+    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
   },
   "babydolleyes": {
     "name": "Baby-Doll Eyes",
@@ -612,7 +642,8 @@
     "accuracy": 100,
     "priority": 1,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "nuzzle": {
     "name": "Nuzzle",
@@ -704,9 +735,7 @@
     "base_power": 140,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"],
-    "recoil": {
-      "percent": "1/2"
-    }
+    "recoil": { "percent": "1/2" }
   },
   "originpulse": {
     "name": "Origin Pulse",

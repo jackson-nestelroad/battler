@@ -147,6 +147,9 @@ pub enum MoveFlag {
     /// A wind move.
     #[string = "Wind"]
     Wind,
+    /// A Z-Move.
+    #[string = "Z"]
+    Z,
 }
 
 #[cfg(test)]

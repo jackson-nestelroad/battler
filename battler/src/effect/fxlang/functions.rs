@@ -121,6 +121,7 @@ pub fn run_function(
         "ability_effect_state" => ability_effect_state(context),
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
         "activate_ability" => activate_ability(context),
+        "activate_applying_effect" => activate_applying_effect(context),
         "add_move_action" => add_move_action(context).map(|val| Some(val)),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
@@ -320,6 +321,7 @@ pub fn run_function(
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_terrain" => set_terrain(context).map(|val| Some(val)),
         "set_upgraded_to_max_move" => set_upgraded_to_max_move(context).map(|_| None),
+        "set_upgraded_to_z_move" => set_upgraded_to_z_move(context).map(|_| None),
         "set_weather" => set_weather(context).map(|val| Some(val)),
         "side_condition_effect_state" => side_condition_effect_state(context),
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
@@ -349,6 +351,7 @@ pub fn run_function(
         "value_from_local_data" => value_from_local_data(context),
         "volatile_status_state" => volatile_status_state(context),
         "will_move_this_turn" => will_move_this_turn(context).map(|val| Some(val)),
+        "z_move" => z_move(context),
         _ => Err(general_error(format!(
             "undefined function: {function_name}"
         ))),
@@ -3201,6 +3204,22 @@ fn modify_move_type(mut context: FunctionContext) -> Result<()> {
     Ok(())
 }
 
+fn z_move(mut context: FunctionContext) -> Result<Option<Value>> {
+    let target = context.target_handle_positional()?;
+    let move_handle = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let mut context = context.mon_context(target)?;
+    let (move_id, move_data) = {
+        let context = context.as_battle_context().active_move(move_handle)?;
+        (context.id().clone(), context.data.clone())
+    };
+    core_battle_actions::z_move_by_move_data(&mut context, &move_id, &move_data)
+        .map(|move_id| move_id.map(|val| Value::String(val.to_string())))
+}
+
 fn max_move(mut context: FunctionContext) -> Result<Option<Value>> {
     let target = context.target_handle_positional()?;
     let move_handle = context
@@ -3455,6 +3474,7 @@ fn add_move_action(mut context: FunctionContext) -> Result<Value> {
             mon: mon_handle,
             target,
             mega: false,
+            z_move: false,
             dyna: false,
             tera: false,
         })),
@@ -4202,6 +4222,24 @@ fn force_fully_heal(mut context: FunctionContext) -> Result<()> {
     Mon::force_fully_heal(&mut context.mon_context(target)?)
 }
 
+fn set_upgraded_to_z_move(mut context: FunctionContext) -> Result<()> {
+    let active_move = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let base_move = context
+        .pop_front()
+        .wrap_expectation("missing base move")?
+        .move_id(context.evaluation_context_mut())
+        .wrap_error_with_message("invalid base move")?;
+    context
+        .battle_context_mut()
+        .active_move_mut(active_move)?
+        .upgraded = Some(UpgradedMoveSource::ZMove { base_move });
+    Ok(())
+}
+
 fn set_upgraded_to_max_move(mut context: FunctionContext) -> Result<()> {
     let active_move = context
         .pop_front()
@@ -4303,6 +4341,26 @@ fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
         &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
         BattleEvent::Activate,
         input,
+    ))
+}
+
+fn activate_applying_effect(mut context: FunctionContext) -> Result<Option<Value>> {
+    let target_handle = context.target_handle_positional()?;
+    let effect = context
+        .pop_front()
+        .wrap_expectation("missing effect")?
+        .effect_id()
+        .wrap_error_with_message("invalid effect")?;
+    let effect = context
+        .battle_context_mut()
+        .battle_mut()
+        .get_effect_handle_by_id(&effect)?
+        .clone();
+    Ok(core_battle_effects::run_applying_effect_event(
+        &mut context
+            .forward_to_applying_effect_context_with_effect_and_target(effect, target_handle)?,
+        BattleEvent::Activate,
+        VariableInput::default(),
     ))
 }
 

@@ -354,6 +354,10 @@
     "name": "Primal Reversion",
     "description": "Allows Primal Reversion."
   },
+  "zmoves": {
+    "name": "Z-Moves",
+    "description": "Allows Z-Moves."
+  },
   "dynamax": {
     "name": "Dynamax",
     "description": "Allows Dynamax."

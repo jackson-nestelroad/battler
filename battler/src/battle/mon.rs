@@ -312,11 +312,15 @@ pub struct MonMoveRequest {
     pub team_position: usize,
     pub moves: Vec<MonMoveSlotData>,
     #[serde(default)]
+    pub z_moves: Vec<Option<MonMoveSlotData>>,
+    #[serde(default)]
     pub max_moves: Vec<MonMoveSlotData>,
     #[serde(default)]
     pub trapped: bool,
     #[serde(default)]
     pub can_mega_evolve: bool,
+    #[serde(default)]
+    pub can_z_move: bool,
     #[serde(default)]
     pub can_dynamax: bool,
     #[serde(default)]
@@ -437,6 +441,7 @@ pub struct MonNextTurnState {
     pub trapped: bool,
     pub cannot_receive_items: bool,
     pub can_mega_evolve: bool,
+    pub can_z_move: bool,
     pub can_dynamax: bool,
     pub can_terastallize: bool,
 }
@@ -966,6 +971,27 @@ impl Mon {
     /// viewed as the Mon's available move options.
     pub fn moves(context: &mut MonContext) -> Result<Vec<MonMoveSlotData>> {
         Self::moves_and_locked_move(context).map(|(moves, _)| moves)
+    }
+
+    /// Looks up all Z-Move slot data.
+    ///
+    /// Does not account for locked moves.
+    fn z_moves(context: &mut MonContext) -> Result<Vec<Option<MoveSlot>>> {
+        let mut z_moves = Vec::default();
+        for mut move_slot in context.mon().volatile_state.move_slots.clone() {
+            let move_slot =
+                if let Some(z_move) = core_battle_actions::z_move_by_id(context, &move_slot.id)? {
+                    let mov = context.battle().dex.moves.get_by_id(&z_move)?;
+                    move_slot.id = mov.id().clone();
+                    move_slot.name = mov.data.name.clone();
+                    move_slot.target = mov.data.target;
+                    Some(move_slot)
+                } else {
+                    None
+                };
+            z_moves.push(move_slot);
+        }
+        Ok(z_moves)
     }
 
     /// Looks up all Max Move slot data.
@@ -1591,9 +1617,11 @@ impl Mon {
         let mut request = MonMoveRequest {
             team_position: context.mon().team_position,
             moves,
+            z_moves: Vec::default(),
             max_moves: Vec::default(),
             trapped: false,
             can_mega_evolve: false,
+            can_z_move: false,
             can_dynamax: false,
             can_terastallize: false,
             locked_into_move: false,
@@ -1606,8 +1634,22 @@ impl Mon {
 
         if locked_move.is_none() {
             request.can_mega_evolve = context.mon().next_turn_state.can_mega_evolve;
+            request.can_z_move = context.mon().next_turn_state.can_z_move;
             request.can_dynamax = context.mon().next_turn_state.can_dynamax;
             request.can_terastallize = context.mon().next_turn_state.can_terastallize;
+
+            // Communicate Z-Moves, mostly for player's convenience.
+            //
+            // The actual Z-Move is decided immediately when the move is used.
+            if request.can_z_move {
+                request.z_moves = Self::z_moves(context)?
+                    .into_iter()
+                    .map(|move_slot| match move_slot {
+                        Some(move_slot) => Ok(Some(MonMoveSlotData::from(context, &move_slot)?)),
+                        None => Ok(None),
+                    })
+                    .collect::<Result<_>>()?;
+            }
 
             // Communicate Max Moves, mostly for the player's convenience.
             //
@@ -2472,6 +2514,11 @@ impl Mon {
 
         if core_battle_actions::can_mega_evolve(context)?.is_some() {
             context.mon_mut().next_turn_state.can_mega_evolve = true;
+        }
+
+        let z_moves = core_battle_actions::can_z_move(context)?;
+        if !z_moves.is_empty() && z_moves.iter().any(|mov| mov.is_some()) {
+            context.mon_mut().next_turn_state.can_z_move = true;
         }
 
         if core_battle_actions::can_dynamax(context)?.is_some() {

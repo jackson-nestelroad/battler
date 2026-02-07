@@ -477,6 +477,7 @@ mod queue_test {
             target: None,
             original_target: None,
             mega: false,
+            z_move: false,
             dyna: false,
             tera: false,
             priority,

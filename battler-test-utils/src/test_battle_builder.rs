@@ -186,6 +186,7 @@ impl TestBattleBuilder {
                 has_strict_bag: true,
                 mons_caught: 151,
                 cannot_mega_evolve: false,
+                cannot_z_move: false,
                 cannot_dynamax: false,
                 cannot_terastallize: false,
             },

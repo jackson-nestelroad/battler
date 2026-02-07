@@ -1,105 +1,363 @@
 {
-  "normaliumz": { "name": "Normalium Z", "flags": [] },
+  "normaliumz": {
+    "name": "Normalium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Normal", "into": "Breackneck Blitz" },
+      "judgment": { "type": "Normal" }
+    }
+  },
   "firiumz": {
     "name": "Firium Z",
     "force_forme": "Arceus-Fire",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Fire", "into": "Inferno Overdrive" },
+      "judgment": { "type": "Fire" }
+    }
   },
   "wateriumz": {
     "name": "Waterium Z",
     "force_forme": "Arceus-Water",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Water", "into": "Hydro Vortex" },
+      "judgment": { "type": "Water" }
+    }
   },
   "electriumz": {
     "name": "Electrium Z",
     "force_forme": "Arceus-Electric",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Electric", "into": "Gigavolt Havoc" },
+      "judgment": { "type": "Electric" }
+    }
   },
   "grassiumz": {
     "name": "Grassium Z",
     "force_forme": "Arceus-Grass",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Grass", "into": "Bloom Doom" },
+      "judgment": { "type": "Grass" }
+    }
   },
   "iciumz": {
     "name": "Icium Z",
     "force_forme": "Arceus-Ice",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Ice", "into": "Subzero Slammer" },
+      "judgment": { "type": "Ice" }
+    }
   },
   "fightiniumz": {
     "name": "Fightinium Z",
     "force_forme": "Arceus-Fighting",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Fighting", "into": "All-Out Pummeling" },
+      "judgment": { "type": "Fighting" }
+    }
   },
   "poisoniumz": {
     "name": "Poisonium Z",
     "force_forme": "Arceus-Poison",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Poison", "into": "Acid Downpour" },
+      "judgment": { "type": "Poison" }
+    }
   },
   "groundiumz": {
     "name": "Groundium Z",
     "force_forme": "Arceus-Ground",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Ground", "into": "Tectonic Rage" },
+      "judgment": { "type": "Ground" }
+    }
   },
   "flyiniumz": {
     "name": "Flyinium Z",
     "force_forme": "Arceus-Flying",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Flying", "into": "Supersonic Skystrike" },
+      "judgment": { "type": "Flying" }
+    }
   },
   "psychiumz": {
     "name": "Psychium Z",
     "force_forme": "Arceus-Psychic",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Psychic", "into": "Shattered Psyche" },
+      "judgment": { "type": "Psychic" }
+    }
   },
   "buginiumz": {
     "name": "Buginium Z",
     "force_forme": "Arceus-Bug",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Bug", "into": "Savage Spin-Out" },
+      "judgment": { "type": "Bug" }
+    }
   },
   "rockiumz": {
     "name": "Rockium Z",
     "force_forme": "Arceus-Rock",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Rock", "into": "Continental Crush" },
+      "judgment": { "type": "Rock" }
+    }
   },
   "ghostiumz": {
     "name": "Ghostium Z",
     "force_forme": "Arceus-Ghost",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Ghost", "into": "Never-Ending Nightmare" },
+      "judgment": { "type": "Ghost" }
+    }
   },
   "dragoniumz": {
     "name": "Dragonium Z",
     "force_forme": "Arceus-Dragon",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Dragon", "into": "Devastating Drake" },
+      "judgment": { "type": "Dragon" }
+    }
   },
   "darkiniumz": {
     "name": "Darkinium Z",
     "force_forme": "Arceus-Dark",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Dark", "into": "Black Hole Eclipse" },
+      "judgment": { "type": "Dark" }
+    }
   },
   "steeliumz": {
     "name": "Steelium Z",
     "force_forme": "Arceus-Steel",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Steel", "into": "Corkscrew Crash" },
+      "judgment": { "type": "Steel" }
+    }
   },
   "fairiumz": {
     "name": "Fairium Z",
     "force_forme": "Arceus-Fairy",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Fairy", "into": "Twinkle Tackle" },
+      "judgment": { "type": "Fairy" }
+    }
   },
-  "pikaniumz": { "name": "Pikanium Z", "flags": [] },
-  "decidiumz": { "name": "Decidium Z", "flags": [] },
-  "inciniumz": { "name": "Incinium Z", "flags": [] },
-  "primariumz": { "name": "Primarium Z", "flags": [] },
-  "tapuniumz": { "name": "Tapunium Z", "flags": [] },
-  "marshadiumz": { "name": "Marshadium Z", "flags": [] },
-  "aloraichiumz": { "name": "Aloraichium Z", "flags": [] },
-  "snorliumz": { "name": "Snorlium Z", "flags": [] },
-  "eeviumz": { "name": "Eevium Z", "flags": [] },
-  "mewniumz": { "name": "Mewnium Z", "flags": [] },
-  "pikashuniumz": { "name": "Pikashunium Z", "flags": [] },
-  "solganiumz": { "name": "Solganium Z", "flags": [] },
-  "lunaliumz": { "name": "Lunalium Z", "flags": [] },
-  "ultranecroziumz": { "name": "Ultranecrozium Z", "flags": [] },
-  "mimikiumz": { "name": "Mimikium Z", "flags": [] },
-  "lycaniumz": { "name": "Lycanium Z", "flags": [] },
-  "kommoniumz": { "name": "Kommonium Z", "flags": [] }
+  "pikaniumz": {
+    "name": "Pikanium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Volt Tackle",
+        "into": "Catastropika",
+        "users": ["Pikachu"]
+      }
+    }
+  },
+  "decidiumz": {
+    "name": "Decidium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Spirit Shackle",
+        "into": "Sinister Arrow Raid",
+        "users": ["Decidueye"]
+      }
+    }
+  },
+  "inciniumz": {
+    "name": "Incinium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Darkest Lariat",
+        "into": "Malicious Moonsault",
+        "users": ["Incineroar"]
+      }
+    }
+  },
+  "primariumz": {
+    "name": "Primarium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Sparkling Aria",
+        "into": "Oceanic Operetta",
+        "users": ["Primarina"]
+      }
+    }
+  },
+  "tapuniumz": {
+    "name": "Tapunium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Nature's Madness",
+        "into": "Guardian of Alola",
+        "users": ["Tapu Koko", "Tapu Lele", "Tapu Bulu", "Tapu Fini"]
+      }
+    }
+  },
+  "marshadiumz": {
+    "name": "Marshadium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Spectral Thief",
+        "into": "Soul-Stealing 7-Star Strike",
+        "users": ["Marshadow"]
+      }
+    }
+  },
+  "aloraichiumz": {
+    "name": "Aloraichium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Thunderbolt",
+        "into": "Stoked Sparksurfer",
+        "users": ["Raichu-Alola"]
+      }
+    }
+  },
+  "snorliumz": {
+    "name": "Snorlium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Giga Impact",
+        "into": "Pulverizing Pancake",
+        "users": ["Snorlax"]
+      }
+    }
+  },
+  "eeviumz": {
+    "name": "Eevium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Last Resort",
+        "into": "Extreme Evoboost",
+        "users": ["Eevee"]
+      }
+    }
+  },
+  "mewniumz": {
+    "name": "Mewnium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Psychic",
+        "into": "Genesis Supernova",
+        "users": ["Mew"]
+      }
+    }
+  },
+  "pikashuniumz": {
+    "name": "Pikashunium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Thunderbolt",
+        "into": "10,000,000 Volt Thunderbolt",
+        "users": [
+          "Pikachu-Original",
+          "Pikachu-Hoenn",
+          "Pikachu-Sinnoh",
+          "Pikachu-Unova",
+          "Pikachu-Kalos",
+          "Pikachu-Alola",
+          "Pikachu-Partner"
+        ]
+      }
+    }
+  },
+  "solganiumz": {
+    "name": "Solganium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Sunsteel Strike",
+        "into": "Searing Sunraze Smash",
+        "users": ["Solgaleo", "Necrozma-Dusk-Mane"]
+      }
+    }
+  },
+  "lunaliumz": {
+    "name": "Lunalium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Moongeist Beam",
+        "into": "Menacing Moonraze Maelstrom",
+        "users": ["Lunala", "Necrozma-Dawn-Wings"]
+      }
+    }
+  },
+  "ultranecroziumz": {
+    "name": "Ultranecrozium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Photon Geyser",
+        "into": "Light That Burns the Sky",
+        "users": ["Necrozma-Ultra"]
+      }
+    }
+  },
+  "mimikiumz": {
+    "name": "Mimikium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Play Rough",
+        "into": "Let's Snuggle Forever",
+        "users": [
+          "Mimikyu",
+          "Mimikyu-Busted",
+          "Mimikyu-Totem",
+          "Mimikyu-Busted-Totem"
+        ]
+      }
+    }
+  },
+  "lycaniumz": {
+    "name": "Lycanium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Stone Edge",
+        "into": "Splintered Stormshards",
+        "users": ["Lycanroc", "Lycanroc-Midnight", "Lycanroc-Dusk"]
+      }
+    }
+  },
+  "kommoniumz": {
+    "name": "Kommonium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Clanging Scales",
+        "into": "Clangorous Soulblaze",
+        "users": ["Kommo-o", "Kommo-o-Totem"]
+      }
+    }
+  }
 }

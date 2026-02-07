@@ -28,6 +28,8 @@ use battler_data::{
     Stat,
     SwitchType,
     Type,
+    ZCrystalData,
+    ZCrystalSource,
 };
 use battler_prng::rand_util;
 use hashbrown::{
@@ -384,8 +386,36 @@ pub fn do_move_by_id(
     )
 }
 
-/// Executes the given move selected by a Mon.
-pub fn do_move(
+/// Executes the given move action selected by a Mon.
+pub fn do_move_action(
+    context: &mut MonContext,
+    active_move_handle: MoveHandle,
+    target_location: Option<isize>,
+    original_target: Option<MonHandle>,
+    z_move: bool,
+) -> Result<()> {
+    if z_move {
+        add_volatile(
+            &mut context.applying_effect_context(
+                EffectHandle::Condition(Id::from_known("playerchoice")),
+                None,
+                None,
+            )?,
+            &Id::from_known("zpower"),
+            false,
+            None,
+        )?;
+    }
+
+    do_move(
+        context,
+        active_move_handle,
+        target_location,
+        original_target,
+    )
+}
+
+fn do_move(
     context: &mut MonContext,
     active_move_handle: MoveHandle,
     target_location: Option<isize>,
@@ -421,7 +451,7 @@ fn do_move_internal(
         .id()
         .clone();
 
-    // Upgrade the move if applicable (e.g., Max Moves).
+    // Upgrade the move if applicable (e.g., Z-Moves, Max Moves).
     if let Some(upgraded_move_handle) =
         core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
             &mut context
@@ -792,6 +822,12 @@ fn use_active_move_internal(
         source_effect.as_ref(),
         !directly_used,
     )?;
+
+    core_battle_effects::run_event_for_applying_effect(
+        &mut context.user_applying_effect_context(target)?,
+        fxlang::BattleEvent::PreMoveEffect,
+        fxlang::VariableInput::default(),
+    );
 
     if context.active_move().data.target.requires_target() && target.is_none() {
         core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
@@ -5615,22 +5651,16 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
     };
 
     let item = context.battle().dex.items.get_by_id(&item)?;
-    let can_mega_evolve_with_item = item
-        .data
-        .mega_evolves_from
-        .as_ref()
-        .is_some_and(|from| &Id::from(from.as_ref()) == species.id());
-    if !can_mega_evolve_with_item {
+    let mega_evolution_data = match item.data.special_data.mega_evolution.clone() {
+        Some(data) => data,
+        None => return Ok(None),
+    };
+    if Id::from(mega_evolution_data.from) != *species.id() {
         return Ok(None);
     }
-    let mega_evolves_into = item
-        .data
-        .mega_evolves_into
-        .as_ref()
-        .map(|s| Id::from(s.as_ref()));
-    return Ok(mega_evolves_into.map(|mega_evolves_into| MegaEvolution {
+    return Ok(Some(MegaEvolution {
         source_effect: EffectHandle::Item(item.id().clone()),
-        species: mega_evolves_into,
+        species: Id::from(mega_evolution_data.into),
     }));
 }
 
@@ -6233,4 +6263,116 @@ pub fn swap_player_position(context: &mut PlayerContext, new_position: usize) ->
     context.player_mut().position = new_position;
 
     Ok(())
+}
+
+/// Checks if the Mon can Z-Move.
+///
+/// Returns a set of Z-Moves that map to the Mon's move slots.
+pub fn can_z_move(context: &mut MonContext) -> Result<Vec<Option<Id>>> {
+    let z_crystal = match usable_z_crystal(context)? {
+        Some(z_crystal) => z_crystal,
+        None => return Ok(Vec::default()),
+    };
+
+    let mut z_moves = Vec::default();
+    let mut no_usable_moves = true;
+    for move_slot in context.mon().volatile_state.move_slots.clone() {
+        if move_slot.disabled {
+            no_usable_moves = false;
+        }
+        let mov = context.battle().dex.moves.get(&move_slot.name)?;
+        z_moves.push(z_move(context, mov.id(), &mov.data, &z_crystal)?);
+    }
+    if z_moves.iter().all(|z_move| z_move.is_none()) || no_usable_moves {
+        return Ok(Vec::default());
+    }
+    Ok(z_moves)
+}
+
+/// Looks up the Z-Move for the given move ID.
+pub fn z_move_by_id(context: &mut MonContext, move_id: &Id) -> Result<Option<Id>> {
+    let mov = context.battle().dex.moves.get_by_id(&move_id)?;
+    let move_data = mov.data.clone();
+    z_move_by_move_data(context, move_id, &move_data)
+}
+
+/// Looks up the Z-Move for the given move data.
+pub fn z_move_by_move_data(
+    context: &mut MonContext,
+    move_id: &Id,
+    move_data: &MoveData,
+) -> Result<Option<Id>> {
+    let z_crystal = match usable_z_crystal(context)? {
+        Some(z_crystal) => z_crystal,
+        None => return Ok(None),
+    };
+    z_move(context, move_id, move_data, &z_crystal)
+}
+
+/// Looks up the Z-Move for the given move data and Z-Crystal.
+fn z_move(
+    context: &MonContext,
+    move_id: &Id,
+    move_data: &MoveData,
+    z_crystal: &ZCrystalData,
+) -> Result<Option<Id>> {
+    let index = match context.mon().move_slot_index(move_id) {
+        Some(index) => index,
+        None => return Ok(None),
+    };
+    let move_slot = context
+        .mon()
+        .volatile_state
+        .move_slots
+        .get(index)
+        .wrap_expectation_with_format(format_args!("expected move slot at index {index}"))?;
+    if move_slot.pp == 0 {
+        return Ok(None);
+    }
+
+    let z_move = match &z_crystal.source {
+        Some(ZCrystalSource::Move(from)) if Id::from(from.as_str()) == *move_id => {
+            Some(Id::from(z_crystal.into.as_str()))
+        }
+        Some(ZCrystalSource::Type(move_type)) if move_data.primary_type == *move_type => {
+            if move_data.category == MoveCategory::Status {
+                Some(move_id.clone())
+            } else {
+                Some(Id::from(z_crystal.into.as_str()))
+            }
+        }
+        _ => None,
+    };
+    Ok(z_move)
+}
+
+/// Looks up the Z-Crystal data for the given Mon.
+fn usable_z_crystal(context: &mut MonContext) -> Result<Option<ZCrystalData>> {
+    if !context.player().can_z_move || !context.mon().active {
+        return Ok(None);
+    }
+
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.mon().volatile_state.species)?;
+    let item = match context.mon().item.clone() {
+        Some(item) => item,
+        None => return Ok(None),
+    };
+    let item = context.battle().dex.items.get_by_id(&item)?;
+    let z_crystal = match item.data.special_data.z_crystal.clone() {
+        Some(z_crystal) => z_crystal,
+        None => return Ok(None),
+    };
+    if !z_crystal.users.is_empty()
+        && z_crystal
+            .users
+            .iter()
+            .any(|user| Id::from(user.as_str()) != *species.id())
+    {
+        return Ok(None);
+    }
+    Ok(Some(z_crystal))
 }

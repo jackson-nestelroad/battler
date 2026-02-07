@@ -34,6 +34,7 @@ impl Condition {
             ConditionType::Type => "type",
             ConditionType::Volatile => "",
             ConditionType::Weather => "weather",
+            ConditionType::ZPower => "zpower",
         }
     }
 

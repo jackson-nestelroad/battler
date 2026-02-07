@@ -84,6 +84,7 @@ pub struct MoveActionInput {
     pub mon: MonHandle,
     pub target: Option<isize>,
     pub mega: bool,
+    pub z_move: bool,
     pub dyna: bool,
     pub tera: bool,
 }
@@ -98,6 +99,7 @@ pub struct MoveAction {
     pub target: Option<isize>,
     pub original_target: Option<MonHandle>,
     pub mega: bool,
+    pub z_move: bool,
     pub dyna: bool,
     pub tera: bool,
     pub order: Option<u32>,
@@ -121,6 +123,7 @@ impl MoveAction {
             target: input.target,
             original_target: None,
             mega: input.mega,
+            z_move: input.z_move,
             dyna: input.dyna,
             tera: input.tera,
             order: None,

@@ -340,7 +340,8 @@
     "pp": 5,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "z_move": { "effect": "zpowerboostcritratio" }
   },
   "firstimpression": {
     "name": "First Impression",
@@ -361,7 +362,8 @@
     "accuracy": "exempt",
     "priority": 4,
     "target": "User",
-    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"]
+    "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "spiritshackle": {
     "name": "Spirit Shackle",
@@ -412,7 +414,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Heal", "Protect", "Reflectable"]
+    "flags": ["Heal", "Protect", "Reflectable"],
+    "z_move": { "effect": "zpowerboostcritratio" }
   },
   "highhorsepower": {
     "name": "High Horsepower",
@@ -431,7 +434,8 @@
     "pp": 10,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Heal", "Mirror", "Protect", "Reflectable"]
+    "flags": ["Heal", "Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "solarblade": {
     "name": "Solar Blade",
@@ -475,7 +479,8 @@
       "NoMetronome",
       "Protect",
       "Reflectable"
-    ]
+    ],
+    "z_move": { "boosts": { "spd": 1 } }
   },
   "toxicthread": {
     "name": "Toxic Thread",
@@ -484,7 +489,8 @@
     "pp": 20,
     "accuracy": 100,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "laserfocus": {
     "name": "Laser Focus",
@@ -493,7 +499,8 @@
     "pp": 30,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "z_move": { "boosts": { "atk": 1 } }
   },
   "gearup": {
     "name": "Gear Up",
@@ -502,7 +509,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["BypassSubstitute", "Snatch"]
+    "flags": ["BypassSubstitute", "Snatch"],
+    "z_move": { "boosts": { "spa": 1 } }
   },
   "throatchop": {
     "name": "Throat Chop",
@@ -543,6 +551,7 @@
     "target": "Field",
     "flags": [],
     "hit_effect": { "terrain": "psychicterrain" },
+    "z_move": { "boosts": { "spa": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -649,7 +658,8 @@
     "pp": 10,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "smartstrike": {
     "name": "Smart Strike",
@@ -668,7 +678,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["Heal", "Protect", "Reflectable"]
+    "flags": ["Heal", "Protect", "Reflectable"],
+    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
   },
   "revelationdance": {
     "name": "Revelation Dance",
@@ -688,7 +699,8 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "z_move": { "base_power": 140 }
   },
   "tropkick": {
     "name": "Trop Kick",
@@ -708,6 +720,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute", "FailInstruct", "NoMetronome", "Protect"],
+    "z_move": { "boosts": { "spa": 1 } },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -790,7 +803,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "AllySide",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "sinisterarrowraid": {
     "name": "Sinister Arrow Raid",
@@ -1007,7 +1021,8 @@
     "pp": 20,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["BypassMaxGuard", "Mirror", "Reflectable"]
+    "flags": ["BypassMaxGuard", "Mirror", "Reflectable"],
+    "z_move": { "boosts": { "def": 1 } }
   },
   "zingzap": {
     "name": "Zing Zap",
