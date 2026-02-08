@@ -607,7 +607,7 @@ mod battler_choice_test {
                     target: None,
                     mega: true,
                     z_move: true,
-                    ultra: false,
+                    ultra: true,
                     dyna: true,
                     tera: true,
                     random_target: false,
