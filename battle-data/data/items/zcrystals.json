@@ -7,7 +7,7 @@
       "judgment": { "type": "Normal" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "firiumz": {
@@ -19,7 +19,7 @@
       "judgment": { "type": "Fire" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "wateriumz": {
@@ -31,7 +31,7 @@
       "judgment": { "type": "Water" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "electriumz": {
@@ -43,7 +43,7 @@
       "judgment": { "type": "Electric" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "grassiumz": {
@@ -55,7 +55,7 @@
       "judgment": { "type": "Grass" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "iciumz": {
@@ -67,7 +67,7 @@
       "judgment": { "type": "Ice" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "fightiniumz": {
@@ -79,7 +79,7 @@
       "judgment": { "type": "Fighting" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "poisoniumz": {
@@ -91,7 +91,7 @@
       "judgment": { "type": "Poison" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "groundiumz": {
@@ -103,7 +103,7 @@
       "judgment": { "type": "Ground" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "flyiniumz": {
@@ -115,7 +115,7 @@
       "judgment": { "type": "Flying" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "psychiumz": {
@@ -127,7 +127,7 @@
       "judgment": { "type": "Psychic" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "buginiumz": {
@@ -139,7 +139,7 @@
       "judgment": { "type": "Bug" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "rockiumz": {
@@ -151,7 +151,7 @@
       "judgment": { "type": "Rock" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "ghostiumz": {
@@ -163,7 +163,7 @@
       "judgment": { "type": "Ghost" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "dragoniumz": {
@@ -175,7 +175,7 @@
       "judgment": { "type": "Dragon" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "darkiniumz": {
@@ -187,7 +187,7 @@
       "judgment": { "type": "Dark" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "steeliumz": {
@@ -199,7 +199,7 @@
       "judgment": { "type": "Steel" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "fairiumz": {
@@ -211,7 +211,7 @@
       "judgment": { "type": "Fairy" }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "pikaniumz": {
@@ -225,7 +225,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "decidiumz": {
@@ -239,7 +239,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "inciniumz": {
@@ -253,7 +253,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "primariumz": {
@@ -267,7 +267,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "tapuniumz": {
@@ -281,7 +281,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "marshadiumz": {
@@ -295,7 +295,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "aloraichiumz": {
@@ -309,7 +309,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "snorliumz": {
@@ -323,7 +323,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "eeviumz": {
@@ -337,7 +337,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "mewniumz": {
@@ -351,7 +351,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "pikashuniumz": {
@@ -373,7 +373,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "solganiumz": {
@@ -387,7 +387,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "lunaliumz": {
@@ -401,7 +401,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "ultranecroziumz": {
@@ -415,7 +415,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "mimikiumz": {
@@ -434,7 +434,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "lycaniumz": {
@@ -448,7 +448,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   },
   "kommoniumz": {
@@ -462,7 +462,7 @@
       }
     },
     "effect": {
-      "delegates": ["condition:untakabletembase"]
+      "delegates": ["condition:untakableitembase"]
     }
   }
 }
