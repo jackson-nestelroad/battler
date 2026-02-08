@@ -16,6 +16,7 @@ use battler_data::{
     MoveFlag,
     SecondaryEffectData,
     Type,
+    ZMoveData,
 };
 use hashbrown::{
     HashMap,
@@ -87,6 +88,7 @@ impl SecondaryEffect {
 /// The source of an upgraded move.
 #[derive(Debug, Clone)]
 pub enum UpgradedMoveSource {
+    ZMove { base_move: Id },
     MaxMove { base_move: Id },
 }
 
@@ -94,9 +96,53 @@ impl UpgradedMoveSource {
     /// The base move of the upgraded move.
     pub fn base_move(&self) -> Option<Id> {
         match self {
+            Self::ZMove { base_move, .. } => Some(base_move.clone()),
             Self::MaxMove { base_move, .. } => Some(base_move.clone()),
         }
     }
+}
+
+fn default_z_move(
+    id: &Id,
+    category: MoveCategory,
+    multihit: bool,
+    mut base_power: u32,
+) -> Option<ZMoveData> {
+    if category == MoveCategory::Status || id == "struggle" {
+        return None;
+    }
+
+    if multihit {
+        base_power *= 3;
+    }
+
+    let base_power = if base_power == 0 {
+        100
+    } else if base_power >= 140 {
+        200
+    } else if base_power >= 130 {
+        195
+    } else if base_power >= 120 {
+        190
+    } else if base_power >= 110 {
+        185
+    } else if base_power >= 100 {
+        180
+    } else if base_power >= 90 {
+        175
+    } else if base_power >= 80 {
+        160
+    } else if base_power >= 70 {
+        140
+    } else if base_power >= 60 {
+        120
+    } else {
+        100
+    };
+    Some(ZMoveData {
+        base_power,
+        ..Default::default()
+    })
 }
 
 fn default_max_move(
@@ -109,39 +155,40 @@ fn default_max_move(
         return None;
     }
 
-    if primary_type == Type::Fighting || primary_type == Type::Poison {
+    let base_power = if primary_type == Type::Fighting || primary_type == Type::Poison {
         if base_power >= 150 {
-            Some(MaxMoveData { base_power: 100 })
+            100
         } else if base_power >= 110 {
-            Some(MaxMoveData { base_power: 95 })
+            95
         } else if base_power >= 75 {
-            Some(MaxMoveData { base_power: 90 })
+            90
         } else if base_power >= 65 {
-            Some(MaxMoveData { base_power: 85 })
+            85
         } else if base_power >= 55 {
-            Some(MaxMoveData { base_power: 80 })
+            80
         } else if base_power >= 45 {
-            Some(MaxMoveData { base_power: 75 })
+            75
         } else {
-            Some(MaxMoveData { base_power: 70 })
+            70
         }
     } else {
         if base_power >= 150 {
-            Some(MaxMoveData { base_power: 150 })
+            150
         } else if base_power >= 110 {
-            Some(MaxMoveData { base_power: 140 })
+            140
         } else if base_power >= 75 {
-            Some(MaxMoveData { base_power: 130 })
+            130
         } else if base_power >= 65 {
-            Some(MaxMoveData { base_power: 120 })
+            120
         } else if base_power >= 55 {
-            Some(MaxMoveData { base_power: 110 })
+            110
         } else if base_power >= 45 {
-            Some(MaxMoveData { base_power: 100 })
+            100
         } else {
-            Some(MaxMoveData { base_power: 90 })
+            90
         }
-    }
+    };
+    Some(MaxMoveData { base_power })
 }
 
 /// An individual move, which can be used by a Mon in battle.
@@ -192,6 +239,10 @@ pub struct Move {
 
 impl Move {
     fn apply_defaults_to_data(mut data: MoveData, id: &Id) -> MoveData {
+        if data.z_move.is_none() && !data.flags.contains(&MoveFlag::Z) {
+            data.z_move =
+                default_z_move(id, data.category, data.multihit.is_some(), data.base_power);
+        }
         if data.max_move.is_none() && !data.flags.contains(&MoveFlag::Max) {
             data.max_move = default_max_move(id, data.category, data.primary_type, data.base_power);
         }

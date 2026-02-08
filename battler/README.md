@@ -74,5 +74,8 @@ All moves, abilities, and items through **Generation 5** have been implemented a
 - Horde battle support.
 - Auto-shifting.
 - Mega Evolution.
+- Primal Reversion.
+- Z-Moves.
+- Ultra Burst.
 - Dynamax and Gigantamax.
 - Terastallization.

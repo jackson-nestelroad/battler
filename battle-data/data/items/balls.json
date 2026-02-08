@@ -232,11 +232,7 @@
     "name": "Friend Ball",
     "target": "IsolatedFoe",
     "flags": ["Ball"],
-    "effect": {
-      "callbacks": {
-        "on_catch": ["set_friendship: $mon 150"]
-      }
-    }
+    "effect": { "callbacks": { "on_catch": ["set_friendship: $mon 150"] } }
   },
   "loveball": {
     "name": "Love Ball",

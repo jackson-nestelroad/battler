@@ -1,105 +1,472 @@
 {
-  "normaliumz": { "name": "Normalium Z", "flags": [] },
+  "normaliumz": {
+    "name": "Normalium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Normal", "into": "Breakneck Blitz" },
+      "judgment": { "type": "Normal" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
   "firiumz": {
     "name": "Firium Z",
     "force_forme": "Arceus-Fire",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Fire", "into": "Inferno Overdrive" },
+      "judgment": { "type": "Fire" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "wateriumz": {
     "name": "Waterium Z",
     "force_forme": "Arceus-Water",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Water", "into": "Hydro Vortex" },
+      "judgment": { "type": "Water" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "electriumz": {
     "name": "Electrium Z",
     "force_forme": "Arceus-Electric",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Electric", "into": "Gigavolt Havoc" },
+      "judgment": { "type": "Electric" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "grassiumz": {
     "name": "Grassium Z",
     "force_forme": "Arceus-Grass",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Grass", "into": "Bloom Doom" },
+      "judgment": { "type": "Grass" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "iciumz": {
     "name": "Icium Z",
     "force_forme": "Arceus-Ice",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Ice", "into": "Subzero Slammer" },
+      "judgment": { "type": "Ice" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "fightiniumz": {
     "name": "Fightinium Z",
     "force_forme": "Arceus-Fighting",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Fighting", "into": "All-Out Pummeling" },
+      "judgment": { "type": "Fighting" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "poisoniumz": {
     "name": "Poisonium Z",
     "force_forme": "Arceus-Poison",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Poison", "into": "Acid Downpour" },
+      "judgment": { "type": "Poison" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "groundiumz": {
     "name": "Groundium Z",
     "force_forme": "Arceus-Ground",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Ground", "into": "Tectonic Rage" },
+      "judgment": { "type": "Ground" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "flyiniumz": {
     "name": "Flyinium Z",
     "force_forme": "Arceus-Flying",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Flying", "into": "Supersonic Skystrike" },
+      "judgment": { "type": "Flying" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "psychiumz": {
     "name": "Psychium Z",
     "force_forme": "Arceus-Psychic",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Psychic", "into": "Shattered Psyche" },
+      "judgment": { "type": "Psychic" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "buginiumz": {
     "name": "Buginium Z",
     "force_forme": "Arceus-Bug",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Bug", "into": "Savage Spin-Out" },
+      "judgment": { "type": "Bug" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "rockiumz": {
     "name": "Rockium Z",
     "force_forme": "Arceus-Rock",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Rock", "into": "Continental Crush" },
+      "judgment": { "type": "Rock" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "ghostiumz": {
     "name": "Ghostium Z",
     "force_forme": "Arceus-Ghost",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Ghost", "into": "Never-Ending Nightmare" },
+      "judgment": { "type": "Ghost" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "dragoniumz": {
     "name": "Dragonium Z",
     "force_forme": "Arceus-Dragon",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Dragon", "into": "Devastating Drake" },
+      "judgment": { "type": "Dragon" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "darkiniumz": {
     "name": "Darkinium Z",
     "force_forme": "Arceus-Dark",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Dark", "into": "Black Hole Eclipse" },
+      "judgment": { "type": "Dark" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "steeliumz": {
     "name": "Steelium Z",
     "force_forme": "Arceus-Steel",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Steel", "into": "Corkscrew Crash" },
+      "judgment": { "type": "Steel" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
   "fairiumz": {
     "name": "Fairium Z",
     "force_forme": "Arceus-Fairy",
-    "flags": []
+    "flags": [],
+    "special_data": {
+      "z_crystal": { "type": "Fairy", "into": "Twinkle Tackle" },
+      "judgment": { "type": "Fairy" }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
   },
-  "pikaniumz": { "name": "Pikanium Z", "flags": [] },
-  "decidiumz": { "name": "Decidium Z", "flags": [] },
-  "inciniumz": { "name": "Incinium Z", "flags": [] },
-  "primariumz": { "name": "Primarium Z", "flags": [] },
-  "tapuniumz": { "name": "Tapunium Z", "flags": [] },
-  "marshadiumz": { "name": "Marshadium Z", "flags": [] },
-  "aloraichiumz": { "name": "Aloraichium Z", "flags": [] },
-  "snorliumz": { "name": "Snorlium Z", "flags": [] },
-  "eeviumz": { "name": "Eevium Z", "flags": [] },
-  "mewniumz": { "name": "Mewnium Z", "flags": [] },
-  "pikashuniumz": { "name": "Pikashunium Z", "flags": [] },
-  "solganiumz": { "name": "Solganium Z", "flags": [] },
-  "lunaliumz": { "name": "Lunalium Z", "flags": [] },
-  "ultranecroziumz": { "name": "Ultranecrozium Z", "flags": [] },
-  "mimikiumz": { "name": "Mimikium Z", "flags": [] },
-  "lycaniumz": { "name": "Lycanium Z", "flags": [] },
-  "kommoniumz": { "name": "Kommonium Z", "flags": [] }
+  "pikaniumz": {
+    "name": "Pikanium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Volt Tackle",
+        "into": "Catastropika",
+        "users": ["Pikachu"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "decidiumz": {
+    "name": "Decidium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Spirit Shackle",
+        "into": "Sinister Arrow Raid",
+        "users": ["Decidueye"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "inciniumz": {
+    "name": "Incinium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Darkest Lariat",
+        "into": "Malicious Moonsault",
+        "users": ["Incineroar"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "primariumz": {
+    "name": "Primarium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Sparkling Aria",
+        "into": "Oceanic Operetta",
+        "users": ["Primarina"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "tapuniumz": {
+    "name": "Tapunium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Nature's Madness",
+        "into": "Guardian of Alola",
+        "users": ["Tapu Koko", "Tapu Lele", "Tapu Bulu", "Tapu Fini"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "marshadiumz": {
+    "name": "Marshadium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Spectral Thief",
+        "into": "Soul-Stealing 7-Star Strike",
+        "users": ["Marshadow"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "aloraichiumz": {
+    "name": "Aloraichium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Thunderbolt",
+        "into": "Stoked Sparksurfer",
+        "users": ["Raichu-Alola"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "snorliumz": {
+    "name": "Snorlium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Giga Impact",
+        "into": "Pulverizing Pancake",
+        "users": ["Snorlax"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "eeviumz": {
+    "name": "Eevium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Last Resort",
+        "into": "Extreme Evoboost",
+        "users": ["Eevee"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "mewniumz": {
+    "name": "Mewnium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Psychic",
+        "into": "Genesis Supernova",
+        "users": ["Mew"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "pikashuniumz": {
+    "name": "Pikashunium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Thunderbolt",
+        "into": "10,000,000 Volt Thunderbolt",
+        "users": [
+          "Pikachu-Original",
+          "Pikachu-Hoenn",
+          "Pikachu-Sinnoh",
+          "Pikachu-Unova",
+          "Pikachu-Kalos",
+          "Pikachu-Alola",
+          "Pikachu-Partner"
+        ]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "solganiumz": {
+    "name": "Solganium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Sunsteel Strike",
+        "into": "Searing Sunraze Smash",
+        "users": ["Solgaleo", "Necrozma-Dusk-Mane"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "lunaliumz": {
+    "name": "Lunalium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Moongeist Beam",
+        "into": "Menacing Moonraze Maelstrom",
+        "users": ["Lunala", "Necrozma-Dawn-Wings"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "ultranecroziumz": {
+    "name": "Ultranecrozium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Photon Geyser",
+        "into": "Light That Burns the Sky",
+        "users": ["Necrozma-Ultra"]
+      },
+      "ultra_burst": {
+        "from": ["Necrozma-Dawn-Wings", "Necrozma-Dusk-Mane"],
+        "into": "Necrozma-Ultra"
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "mimikiumz": {
+    "name": "Mimikium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Play Rough",
+        "into": "Let's Snuggle Forever",
+        "users": [
+          "Mimikyu",
+          "Mimikyu-Busted",
+          "Mimikyu-Totem",
+          "Mimikyu-Busted-Totem"
+        ]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "lycaniumz": {
+    "name": "Lycanium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Stone Edge",
+        "into": "Splintered Stormshards",
+        "users": ["Lycanroc", "Lycanroc-Midnight", "Lycanroc-Dusk"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  },
+  "kommoniumz": {
+    "name": "Kommonium Z",
+    "flags": [],
+    "special_data": {
+      "z_crystal": {
+        "from": "Clanging Scales",
+        "into": "Clangorous Soulblaze",
+        "users": ["Kommo-o", "Kommo-o-Totem"]
+      }
+    },
+    "effect": {
+      "delegates": ["condition:untakableitembase"]
+    }
+  }
 }

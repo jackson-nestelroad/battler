@@ -1370,13 +1370,14 @@ impl<'d> CoreBattle<'d> {
                 if !context.mon().active || !context.mon().active {
                     return Ok(());
                 }
-                core_battle_actions::do_move(
+                core_battle_actions::do_move_action(
                     &mut context,
                     action
                         .active_move_handle
                         .wrap_expectation("expected move action to have an active move")?,
                     action.target,
                     action.original_target,
+                    action.z_move,
                 )?;
             }
             Action::BeforeTurnMove(action) => {
@@ -1418,6 +1419,10 @@ impl<'d> CoreBattle<'d> {
             Action::MegaEvo(action) => {
                 let mut context = context.mon_context(action.mon)?;
                 core_battle_actions::mega_evolve(&mut context)?;
+            }
+            Action::UltraBurst(action) => {
+                let mut context = context.mon_context(action.mon)?;
+                core_battle_actions::ultra_burst(&mut context)?;
             }
             Action::Dynamax(action) => {
                 let mut context = context.mon_context(action.mon)?;

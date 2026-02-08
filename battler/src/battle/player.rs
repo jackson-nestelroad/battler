@@ -242,6 +242,10 @@ pub struct PlayerOptions {
     #[serde(default)]
     pub cannot_mega_evolve: bool,
 
+    /// If the player cannot use Z-Moves, assuming Z-Moves are allowed.
+    #[serde(default)]
+    pub cannot_z_move: bool,
+
     /// If the player cannot Dynamax, assuming Dynamax is allowed.
     #[serde(default)]
     pub cannot_dynamax: bool,
@@ -309,6 +313,10 @@ pub struct ChoiceState {
     pub switch_ins: HashSet<usize>,
     /// Did the Player choose to Mega Evolve?
     pub mega: bool,
+    /// Did the Player choose to Z-Move?
+    pub z_move: bool,
+    /// Did the Player choose to Ultra Burst?
+    pub ultra: bool,
     /// Did the Player choose to Dynamax?
     pub dyna: bool,
     /// Did the Player choose to Terastallize?
@@ -328,6 +336,8 @@ impl ChoiceState {
             forced_passes_left: 0,
             switch_ins: HashSet::default(),
             mega: false,
+            z_move: false,
+            ultra: false,
             dyna: false,
             tera: false,
             forfeiting: false,
@@ -381,6 +391,8 @@ pub struct Player {
     active_or_exited: Vec<Option<MonHandle>>,
 
     pub can_mega_evolve: bool,
+    pub can_z_move: bool,
+    pub can_ultra_burst: bool,
     pub can_dynamax: bool,
     pub can_terastallize: bool,
 
@@ -417,6 +429,10 @@ impl Player {
         };
         let can_mega_evolve = !data.player_options.cannot_mega_evolve
             && format.rules.has_rule(&Id::from_known("megaevolution"));
+        let can_z_move =
+            !data.player_options.cannot_z_move && format.rules.has_rule(&Id::from_known("zmoves"));
+        let can_ultra_burst = !data.player_options.cannot_mega_evolve
+            && format.rules.has_rule(&Id::from_known("ultraburst"));
         let can_dynamax = !data.player_options.cannot_dynamax
             && format.rules.has_rule(&Id::from_known("dynamax"));
         let can_terastallize = !data.player_options.cannot_terastallize
@@ -436,6 +452,8 @@ impl Player {
             active_or_exited: active,
             request: None,
             can_mega_evolve,
+            can_z_move,
+            can_ultra_burst,
             can_dynamax,
             can_terastallize,
             escape_attempts: 0,
@@ -1185,8 +1203,71 @@ impl Player {
 
         let mut move_id = move_slot.id.clone();
 
+        if choice.mega && !context.mon().next_turn_state.can_mega_evolve {
+            return Err(general_error(format!(
+                "{} cannot mega evolve",
+                context.mon().name
+            )));
+        }
+        if choice.mega && context.player().choice.mega {
+            return Err(general_error("you can only mega evolve once per battle"));
+        }
+
+        if choice.z_move && !context.mon().next_turn_state.can_z_move {
+            return Err(general_error(format!(
+                "{} cannot z-move",
+                context.mon().name
+            )));
+        }
+        if choice.z_move && context.player().choice.z_move {
+            return Err(general_error("you can only z-move once per battle"));
+        }
+
+        if choice.ultra && !context.mon().next_turn_state.can_ultra_burst {
+            return Err(general_error(format!(
+                "{} cannot ultra burst",
+                context.mon().name
+            )));
+        }
+        if choice.ultra && context.player().choice.ultra {
+            return Err(general_error("you can only ultra burst once per battle"));
+        }
+
+        if choice.dyna && !context.mon().next_turn_state.can_dynamax {
+            return Err(general_error(format!(
+                "{} cannot dynamax",
+                context.mon().name
+            )));
+        }
+        if choice.dyna && context.player().choice.dyna {
+            return Err(general_error("you can only dynamax once per battle"));
+        }
+
+        if choice.tera && !context.mon().next_turn_state.can_terastallize {
+            return Err(general_error(format!(
+                "{} cannot terastallize",
+                context.mon().name
+            )));
+        }
+        if choice.tera && context.player().choice.tera {
+            return Err(general_error("you can only terastallize once per battle"));
+        }
+
         // Use the upgraded move for some validation checks (e.g., the move target).
-        let (move_name, move_target, upgraded_move_id) = if (choice.dyna || context.mon().dynamaxed)
+        let (move_name, move_target, upgraded_move_id) = if choice.z_move {
+            if let Some(Some(move_slot)) = request.z_moves.get(choice.slot) {
+                (
+                    move_slot.name.clone(),
+                    move_slot.target,
+                    Some(move_slot.id.clone()),
+                )
+            } else {
+                return Err(general_error(format!(
+                    "move in slot {} cannot be upgraded to z-move",
+                    choice.slot
+                )));
+            }
+        } else if (choice.dyna || context.mon().dynamaxed)
             && let Some(move_slot) = request.max_moves.get(choice.slot)
         {
             (
@@ -1210,6 +1291,8 @@ impl Player {
                     mon: mon_handle,
                     target: locked_move_target,
                     mega: false,
+                    z_move: false,
+                    ultra: false,
                     dyna: false,
                     tera: false,
                 })));
@@ -1270,36 +1353,6 @@ impl Player {
             _ => (),
         }
 
-        if choice.mega && !context.mon().next_turn_state.can_mega_evolve {
-            return Err(general_error(format!(
-                "{} cannot mega evolve",
-                context.mon().name
-            )));
-        }
-        if choice.mega && context.player().choice.mega {
-            return Err(general_error("you can only mega evolve once per battle"));
-        }
-
-        if choice.dyna && !context.mon().next_turn_state.can_dynamax {
-            return Err(general_error(format!(
-                "{} cannot dynamax",
-                context.mon().name
-            )));
-        }
-        if choice.dyna && context.player().choice.dyna {
-            return Err(general_error("you can only dynamax once per battle"));
-        }
-
-        if choice.tera && !context.mon().next_turn_state.can_terastallize {
-            return Err(general_error(format!(
-                "{} cannot terastallize",
-                context.mon().name
-            )));
-        }
-        if choice.tera && context.player().choice.tera {
-            return Err(general_error("you can only terastallize once per battle"));
-        }
-
         context
             .player_mut()
             .choice
@@ -1310,12 +1363,20 @@ impl Player {
                 mon: mon_handle,
                 target: choice.target,
                 mega: choice.mega,
+                z_move: choice.z_move,
+                ultra: choice.ultra,
                 dyna: choice.dyna,
                 tera: choice.tera,
             })));
 
         if choice.mega {
             context.player_mut().choice.mega = true;
+        }
+        if choice.z_move {
+            context.player_mut().choice.z_move = true;
+        }
+        if choice.ultra {
+            context.player_mut().choice.ultra = true;
         }
         if choice.dyna {
             context.player_mut().choice.dyna = true;

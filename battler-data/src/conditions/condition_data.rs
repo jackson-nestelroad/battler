@@ -32,6 +32,10 @@ pub enum ConditionType {
     /// Volatile, which is applied to a single Mon for a finite amount of time.
     #[string = "Volatile"]
     Volatile,
+    /// Z-Power, which is applied to the user of a Z-Move.
+    #[string = "ZPower"]
+    #[alias = "Z-Power"]
+    ZPower,
 }
 
 /// Data about a particular condition.

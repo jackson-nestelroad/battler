@@ -328,7 +328,8 @@
     "accuracy": "exempt",
     "base_power": 0,
     "target": "User",
-    "flags": ["NoMetronome"]
+    "flags": ["NoMetronome"],
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "chillyreception": {
     "name": "Chilly Reception",

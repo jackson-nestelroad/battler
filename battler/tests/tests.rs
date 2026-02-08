@@ -260,6 +260,11 @@ mod mechanics {
         mod tera_blast_test;
         mod terastallization_test;
     }
+
+    mod zmove {
+        mod ultra_burst_test;
+        mod z_move_test;
+    }
 }
 
 mod moves {

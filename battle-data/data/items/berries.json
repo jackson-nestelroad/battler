@@ -259,11 +259,7 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": {
-        "values": {
-          "stat": "atk"
-        }
-      }
+      "local_data": { "values": { "stat": "atk" } }
     }
   },
   "wikiberry": {
@@ -287,11 +283,7 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": {
-        "values": {
-          "stat": "spa"
-        }
-      }
+      "local_data": { "values": { "stat": "spa" } }
     }
   },
   "magoberry": {
@@ -315,11 +307,7 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": {
-        "values": {
-          "stat": "spe"
-        }
-      }
+      "local_data": { "values": { "stat": "spe" } }
     }
   },
   "aguavberry": {
@@ -343,11 +331,7 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": {
-        "values": {
-          "stat": "spd"
-        }
-      }
+      "local_data": { "values": { "stat": "spd" } }
     }
   },
   "iapapaberry": {
@@ -371,11 +355,7 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": {
-        "values": {
-          "stat": "def"
-        }
-      }
+      "local_data": { "values": { "stat": "def" } }
     }
   },
   "razzberry": {
@@ -547,11 +527,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fire"
-        }
-      }
+      "local_data": { "values": { "type": "Fire" } }
     }
   },
   "passhoberry": {
@@ -563,11 +539,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Water"
-        }
-      }
+      "local_data": { "values": { "type": "Water" } }
     }
   },
   "wacanberry": {
@@ -579,11 +551,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Electric"
-        }
-      }
+      "local_data": { "values": { "type": "Electric" } }
     }
   },
   "rindoberry": {
@@ -595,11 +563,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Grass"
-        }
-      }
+      "local_data": { "values": { "type": "Grass" } }
     }
   },
   "yacheberry": {
@@ -611,11 +575,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ice"
-        }
-      }
+      "local_data": { "values": { "type": "Ice" } }
     }
   },
   "chopleberry": {
@@ -627,11 +587,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fighting"
-        }
-      }
+      "local_data": { "values": { "type": "Fighting" } }
     }
   },
   "kebiaberry": {
@@ -643,11 +599,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Poison"
-        }
-      }
+      "local_data": { "values": { "type": "Poison" } }
     }
   },
   "shucaberry": {
@@ -659,11 +611,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ground"
-        }
-      }
+      "local_data": { "values": { "type": "Ground" } }
     }
   },
   "cobaberry": {
@@ -675,11 +623,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Flying"
-        }
-      }
+      "local_data": { "values": { "type": "Flying" } }
     }
   },
   "payapaberry": {
@@ -691,11 +635,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Psychic"
-        }
-      }
+      "local_data": { "values": { "type": "Psychic" } }
     }
   },
   "tangaberry": {
@@ -707,11 +647,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Bug"
-        }
-      }
+      "local_data": { "values": { "type": "Bug" } }
     }
   },
   "chartiberry": {
@@ -723,11 +659,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Rock"
-        }
-      }
+      "local_data": { "values": { "type": "Rock" } }
     }
   },
   "kasibberry": {
@@ -739,11 +671,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Ghost"
-        }
-      }
+      "local_data": { "values": { "type": "Ghost" } }
     }
   },
   "habanberry": {
@@ -755,11 +683,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Dragon"
-        }
-      }
+      "local_data": { "values": { "type": "Dragon" } }
     }
   },
   "colburberry": {
@@ -771,11 +695,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Dark"
-        }
-      }
+      "local_data": { "values": { "type": "Dark" } }
     }
   },
   "babiriberry": {
@@ -787,11 +707,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Steel"
-        }
-      }
+      "local_data": { "values": { "type": "Steel" } }
     }
   },
   "chilanberry": {
@@ -803,11 +719,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Normal"
-        }
-      }
+      "local_data": { "values": { "type": "Normal" } }
     }
   },
   "liechiberry": {
@@ -819,9 +731,7 @@
     },
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": {
-        "on_eat": ["boost: $mon 'atk:1'"]
-      }
+      "callbacks": { "on_eat": ["boost: $mon 'atk:1'"] }
     }
   },
   "ganlonberry": {
@@ -833,9 +743,7 @@
     },
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": {
-        "on_eat": ["boost: $mon 'def:1'"]
-      }
+      "callbacks": { "on_eat": ["boost: $mon 'def:1'"] }
     }
   },
   "salacberry": {
@@ -847,9 +755,7 @@
     },
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": {
-        "on_eat": ["boost: $mon 'spe:1'"]
-      }
+      "callbacks": { "on_eat": ["boost: $mon 'spe:1'"] }
     }
   },
   "petayaberry": {
@@ -861,9 +767,7 @@
     },
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": {
-        "on_eat": ["boost: $mon 'spa:1'"]
-      }
+      "callbacks": { "on_eat": ["boost: $mon 'spa:1'"] }
     }
   },
   "apicotberry": {
@@ -875,9 +779,7 @@
     },
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": {
-        "on_eat": ["boost: $mon 'spd:1'"]
-      }
+      "callbacks": { "on_eat": ["boost: $mon 'spd:1'"] }
     }
   },
   "lansatberry": {
@@ -889,9 +791,7 @@
     },
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": {
-        "on_eat": ["add_volatile: $mon focusenergy"]
-      }
+      "callbacks": { "on_eat": ["add_volatile: $mon focusenergy"] }
     }
   },
   "starfberry": {
@@ -928,9 +828,7 @@
       "fling": { "power": 10 },
       "natural_gift": { "power": 100, "type": "Bug" }
     },
-    "effect": {
-      "delegates": ["condition:damagereducingberryitembase"]
-    }
+    "effect": { "delegates": ["condition:damagereducingberryitembase"] }
   },
   "micleberry": {
     "name": "Micle Berry",
@@ -941,9 +839,7 @@
     },
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": {
-        "on_eat": ["add_volatile: $mon $this.id"]
-      }
+      "callbacks": { "on_eat": ["add_volatile: $mon $this.id"] }
     },
     "condition": {
       "callbacks": {
@@ -1024,11 +920,7 @@
     },
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": {
-        "values": {
-          "type": "Fairy"
-        }
-      }
+      "local_data": { "values": { "type": "Fairy" } }
     }
   },
   "keeberry": {

@@ -78,6 +78,9 @@ impl BattleQueue {
                 if action.mega {
                     actions.push(Action::MegaEvo(action.mon_action.clone()));
                 }
+                if action.ultra {
+                    actions.push(Action::UltraBurst(action.mon_action.clone()));
+                }
                 if action.dyna {
                     actions.push(Action::Dynamax(action.mon_action.clone()));
                 }
@@ -477,6 +480,8 @@ mod queue_test {
             target: None,
             original_target: None,
             mega: false,
+            z_move: false,
+            ultra: false,
             dyna: false,
             tera: false,
             priority,
@@ -543,6 +548,7 @@ mod queue_test {
                     format!("prioritychargemove {}", action.mon_action.mon)
                 }
                 Action::MegaEvo(action) => format!("megaevo {}", action.mon),
+                Action::UltraBurst(action) => format!("ultra {}", action.mon),
                 Action::Dynamax(action) => format!("dynamax {}", action.mon),
                 Action::Terastallize(action) => format!("tera {}", action.mon),
                 Action::Experience(action) => format!("experience {}", action.mon),

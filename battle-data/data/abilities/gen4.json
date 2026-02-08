@@ -413,10 +413,9 @@
     "name": "Mold Breaker",
     "flags": [],
     "effect": {
+      "delegates": ["condition:ignoreabilitymovebase"],
       "callbacks": {
-        "on_start": ["log_ability"],
-        "on_before_move": ["add_pseudo_weather: $this.id"],
-        "on_after_move": ["remove_pseudo_weather: $this.id"]
+        "on_start": ["log_ability"]
       }
     },
     "condition": {

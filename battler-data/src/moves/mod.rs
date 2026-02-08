@@ -27,6 +27,8 @@ pub use move_data::{
     RecoilBase,
     RecoilData,
     SecondaryEffectData,
+    ZMoveData,
+    ZPower,
 };
 pub use move_flag::MoveFlag;
 pub use move_target::MoveTarget;

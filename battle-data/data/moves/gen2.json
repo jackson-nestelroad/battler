@@ -18,6 +18,9 @@
       "NoSleepTalk"
     ],
     "no_pp_boosts": true,
+    "z_move": {
+      "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 }
+    },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -88,7 +91,8 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "volatile_status": "trapped" }
+    "hit_effect": { "volatile_status": "trapped" },
+    "z_move": { "boosts": { "def": 1 } }
   },
   "mindreader": {
     "name": "Mind Reader",
@@ -98,6 +102,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
+    "z_move": { "boosts": { "spa": 1 } },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -116,6 +121,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "hit_effect": { "volatile_status": "nightmare" },
+    "z_move": { "boosts": { "spa": 1 } },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -166,6 +172,7 @@
     "target": "Normal",
     "flags": ["BypassMaxGuard", "BypassSubstitute"],
     "hit_effect": { "volatile_status": "curse" },
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_move_target_override": [
@@ -174,7 +181,10 @@
         ],
         "on_use_move": [
           "if !func_call(has_type: $user ghost):",
-          ["$move.target = user"],
+          [
+            "$move.target = user",
+            "set_z_power_boosts: $move func_call(boost_table: 'atk:1')"
+          ],
           "else if func_call(is_ally: $user $selected_target):",
           ["$move.target = randomnormal"]
         ],
@@ -238,6 +248,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute"],
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -279,7 +290,8 @@
     "accuracy": 100,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Powder", "Protect", "Reflectable"],
-    "hit_effect": { "boosts": { "spe": -2 } }
+    "hit_effect": { "boosts": { "spe": -2 } },
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "reversal": {
     "name": "Reversal",
@@ -317,6 +329,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -353,6 +366,7 @@
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
     "hit_effect": { "volatile_status": "protect" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
@@ -397,7 +411,8 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "boosts": { "spe": -2 } }
+    "hit_effect": { "boosts": { "spe": -2 } },
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "feintattack": {
     "name": "Feint Attack",
@@ -417,7 +432,8 @@
     "accuracy": 75,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "volatile_status": "confusion" }
+    "hit_effect": { "volatile_status": "confusion" },
+    "z_move": { "boosts": { "spa": 1 } }
   },
   "bellydrum": {
     "name": "Belly Drum",
@@ -427,6 +443,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Snatch"],
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -482,6 +499,7 @@
     "target": "FoeSide",
     "flags": ["MustPressure", "Reflectable"],
     "hit_effect": { "side_condition": "spikes" },
+    "z_move": { "boosts": { "def": 1 } },
     "condition": {
       "callbacks": {
         "on_side_start": [
@@ -535,6 +553,7 @@
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "foresight" },
+    "z_move": { "effect": "zpowerboostcritratio" },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -556,6 +575,7 @@
     "target": "User",
     "flags": ["BypassSubstitute", "FailCopycat", "NoAssist", "NoMetronome"],
     "hit_effect": { "volatile_status": "destinybond" },
+    "z_move": { "effect": "zpowerredirect" },
     "condition": {
       "callbacks": {
         "on_start": ["log_single_move: with_target"],
@@ -580,9 +600,8 @@
     "accuracy": "exempt",
     "target": "All",
     "flags": ["BypassMaxGuard", "BypassSubstitute", "Distance", "Sound"],
-    "hit_effect": {
-      "volatile_status": "perishsong"
-    },
+    "hit_effect": { "volatile_status": "perishsong" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -624,6 +643,7 @@
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
     "hit_effect": { "volatile_status": "protect" },
+    "z_move": { "boosts": { "evasion": 1 } },
     "effect": { "delegates": ["move:protect"] }
   },
   "bonerush": {
@@ -646,6 +666,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
+    "z_move": { "boosts": { "spe": 1 } },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -686,7 +707,8 @@
     "accuracy": "exempt",
     "target": "Field",
     "flags": ["Wind"],
-    "hit_effect": { "weather": "sandstormweather" }
+    "hit_effect": { "weather": "sandstormweather" },
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "gigadrain": {
     "name": "Giga Drain",
@@ -709,6 +731,7 @@
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
     "hit_effect": { "volatile_status": "endure" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
@@ -739,7 +762,8 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "boosts": { "atk": -2 } }
+    "hit_effect": { "boosts": { "atk": -2 } },
+    "z_move": { "boosts": { "def": 1 } }
   },
   "rollout": {
     "name": "Rollout",
@@ -810,7 +834,8 @@
     "accuracy": 85,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "status": "confusion", "boosts": { "atk": 2 } }
+    "hit_effect": { "status": "confusion", "boosts": { "atk": 2 } },
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "milkdrink": {
     "name": "Milk Drink",
@@ -820,7 +845,8 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "hit_effect": { "heal_percent": "50%" }
+    "hit_effect": { "heal_percent": "50%" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "spark": {
     "name": "Spark",
@@ -885,7 +911,8 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassMaxGuard", "Mirror", "Reflectable"],
-    "hit_effect": { "volatile_status": "trapped" }
+    "hit_effect": { "volatile_status": "trapped" },
+    "z_move": { "boosts": { "spd": 1 } }
   },
   "attract": {
     "name": "Attract",
@@ -896,6 +923,7 @@
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "attract" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -941,6 +969,7 @@
       "NoSleepTalk",
       "SleepUsable"
     ],
+    "z_move": { "effect": "zpowerboostcritratio" },
     "effect": {
       "callbacks": {
         "on_try_use_move": ["return $user.is_asleep"],
@@ -974,6 +1003,7 @@
       "Snatch",
       "Sound"
     ],
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit_side": [
@@ -1063,6 +1093,7 @@
     "target": "AllySide",
     "flags": ["Snatch"],
     "hit_effect": { "side_condition": "safeguard" },
+    "z_move": { "boosts": { "spe": 1 } },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -1099,6 +1130,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
+    "z_move": { "boosts": { "def": 1 } },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -1197,6 +1229,7 @@
     "target": "User",
     "flags": [],
     "user_switch": "copyvolatile",
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -1223,6 +1256,7 @@
       "Reflectable"
     ],
     "hit_effect": { "volatile_status": "encore" },
+    "z_move": { "boosts": { "spe": 1 } },
     "condition": {
       "duration": 3,
       "no_copy": true,
@@ -1357,7 +1391,8 @@
     "accuracy": 100,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "boosts": { "eva": -2 } }
+    "hit_effect": { "boosts": { "eva": -2 } },
+    "z_move": { "boosts": { "accuracy": 1 } }
   },
   "irontail": {
     "name": "Iron Tail",
@@ -1404,6 +1439,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -1428,6 +1464,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": { "delegates": ["move:morningsun"] }
   },
   "moonlight": {
@@ -1438,6 +1475,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": { "delegates": ["move:morningsun"] }
   },
   "hiddenpower": {
@@ -1485,7 +1523,8 @@
     "accuracy": "exempt",
     "target": "Field",
     "flags": [],
-    "hit_effect": { "weather": "rainweather" }
+    "hit_effect": { "weather": "rainweather" },
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "sunnyday": {
     "name": "Sunny Day",
@@ -1495,7 +1534,8 @@
     "accuracy": "exempt",
     "target": "Field",
     "flags": [],
-    "hit_effect": { "weather": "harshsunlight" }
+    "hit_effect": { "weather": "harshsunlight" },
+    "z_move": { "boosts": { "spe": 1 } }
   },
   "crunch": {
     "name": "Crunch",
@@ -1566,6 +1606,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["BypassSubstitute"],
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit": [

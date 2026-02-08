@@ -69,13 +69,32 @@ pub struct SecondaryEffectData {
     pub effect: serde_json::Value,
 }
 
+/// Data for the Z-Power of a Z-Move.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ZPower {
+    #[serde(rename = "boosts")]
+    Boosts(BoostTable),
+    #[serde(rename = "effect")]
+    Effect(String),
+}
+
+/// Data about how a move affects Z-Moves.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct ZMoveData {
+    /// Base power.
+    #[serde(default)]
+    pub base_power: u32,
+    /// Z-Power.
+    #[serde(flatten)]
+    pub z_power: Option<ZPower>,
+}
+
 /// Data about how a move affects Max Moves.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct MaxMoveData {
     /// Base power.
     pub base_power: u32,
 }
-
 /// The base number to use for recoil damage calculation.
 #[derive(Debug, Default, Clone, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
 pub enum RecoilBase {
@@ -226,6 +245,9 @@ pub struct MoveData {
     /// Does the move avoid random targets?
     #[serde(default)]
     pub no_random_target: bool,
+
+    /// Data about how the move affects Z-Moves.
+    pub z_move: Option<ZMoveData>,
     /// Data about how the move affects Max Moves.
     pub max_move: Option<MaxMoveData>,
 

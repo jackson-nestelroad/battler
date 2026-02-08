@@ -354,6 +354,14 @@
     "name": "Primal Reversion",
     "description": "Allows Primal Reversion."
   },
+  "zmoves": {
+    "name": "Z-Moves",
+    "description": "Allows Z-Moves."
+  },
+  "ultraburst": {
+    "name": "Ultra Burst",
+    "description": "Allows Ultra Burst."
+  },
   "dynamax": {
     "name": "Dynamax",
     "description": "Allows Dynamax."

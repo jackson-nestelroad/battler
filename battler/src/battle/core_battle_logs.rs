@@ -250,6 +250,14 @@ pub fn revert_primal_reversion(context: &mut ApplyingEffectContext) -> Result<()
     forme_change_internal(context, "revertprimal".to_owned(), true)
 }
 
+pub fn ultra_burst(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "ultra".to_owned(), true)
+}
+
+pub fn revert_ultra_burst(context: &mut ApplyingEffectContext) -> Result<()> {
+    forme_change_internal(context, "revertultra".to_owned(), true)
+}
+
 pub fn dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),

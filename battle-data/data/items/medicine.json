@@ -263,9 +263,7 @@
   "oldgateau": {
     "name": "Old Gateau",
     "flags": ["Medicine"],
-    "effect": {
-      "delegates": ["item:fullheal"]
-    }
+    "effect": { "delegates": ["item:fullheal"] }
   },
   "blueflute": { "name": "Blue Flute", "flags": ["Medicine"] },
   "yellowflute": { "name": "Yellow Flute", "flags": ["Medicine"] },
@@ -277,9 +275,7 @@
     "name": "Sweet Heart",
     "target": "Party",
     "flags": ["Medicine"],
-    "effect": {
-      "delegates": ["item:potion"]
-    }
+    "effect": { "delegates": ["item:potion"] }
   },
   "healthwing": { "name": "Health Feather", "flags": ["Medicine"] },
   "musclewing": { "name": "Muscle Feather", "flags": ["Medicine"] },
@@ -291,9 +287,7 @@
   "casteliacone": {
     "name": "Casteliacone",
     "flags": ["Medicine"],
-    "effect": {
-      "delegates": ["item:fullheal"]
-    }
+    "effect": { "delegates": ["item:fullheal"] }
   },
   "lumiosegalette": { "name": "Lumiose Galette", "flags": ["Medicine"] },
   "bigmalasada": { "name": "Big Malasada", "flags": ["Medicine"] },

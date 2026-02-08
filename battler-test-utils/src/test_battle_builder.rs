@@ -186,6 +186,7 @@ impl TestBattleBuilder {
                 has_strict_bag: true,
                 mons_caught: 151,
                 cannot_mega_evolve: false,
+                cannot_z_move: false,
                 cannot_dynamax: false,
                 cannot_terastallize: false,
             },
@@ -280,6 +281,14 @@ impl TestBattleBuilder {
 
     pub fn with_primal_reversion(self, primal_reversion: bool) -> Self {
         self.with_boolean_rule("Primal Reversion", primal_reversion)
+    }
+
+    pub fn with_z_moves(self, z_moves: bool) -> Self {
+        self.with_boolean_rule("Z-Moves", z_moves)
+    }
+
+    pub fn with_ultra_burst(self, ultra_burst: bool) -> Self {
+        self.with_boolean_rule("Ultra Burst", ultra_burst)
     }
 
     pub fn with_dynamax(self, dynamax: bool) -> Self {
