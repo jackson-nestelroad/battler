@@ -1750,9 +1750,7 @@
       "WeakenThroughProtection"
     ],
     "user_effect": {},
-    "effect": {
-      "delegates": ["condition:ignoreabilitymovebase"]
-    }
+    "effect": { "delegates": ["condition:ignoreabilitymovebase"] }
   },
   "gmaxfinale": {
     "name": "G-Max Finale",

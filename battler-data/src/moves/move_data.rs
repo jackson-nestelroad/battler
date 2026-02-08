@@ -71,9 +71,10 @@ pub struct SecondaryEffectData {
 
 /// Data for the Z-Power of a Z-Move.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
 pub enum ZPower {
-    Boost(BoostTable),
+    #[serde(rename = "boosts")]
+    Boosts(BoostTable),
+    #[serde(rename = "effect")]
     Effect(String),
 }
 

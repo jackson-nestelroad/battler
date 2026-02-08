@@ -67,7 +67,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "volatile_status": "stockpile" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_try_use_move": [
@@ -149,7 +149,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_use_move": ["return func_call(has_volatile: $user stockpile)"],
@@ -247,7 +247,7 @@
     "flags": ["Mirror", "Protect"],
     "self_destruct": "ifhit",
     "hit_effect": { "boosts": { "atk": -2, "spa": -2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerhealreplacement" }
   },
   "facade": {
     "name": "Facade",
@@ -341,7 +341,7 @@
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome"],
     "hit_effect": { "volatile_status": "followme" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": { "on_try_use_move": ["return $format.mons_per_side > 1"] }
     },
@@ -500,7 +500,7 @@
     "target": "AdjacentAlly",
     "flags": ["BypassSubstitute", "FailCopycat", "NoAssist", "NoMetronome"],
     "hit_effect": { "volatile_status": "helpinghand" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -951,7 +951,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Snatch"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -971,7 +971,7 @@
     "target": "User",
     "flags": ["BypassSubstitute"],
     "hit_effect": { "volatile_status": "grudge" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerredirect" },
     "condition": {
       "callbacks": {
         "on_start": ["log_single_move: with_target"],
@@ -1176,7 +1176,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "spa": 3 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "lusterpurge": {
     "name": "Luster Purge",
@@ -1301,7 +1301,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "hit_effect": { "heal_percent": "50%" },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "hypervoice": {
     "name": "Hyper Voice",
@@ -1394,7 +1394,6 @@
     "base_power": 50,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
-    "z_move": { "base_power": 160 },
     "max_move": { "base_power": 130 },
     "effect": {
       "callbacks": {
@@ -1426,7 +1425,7 @@
     "accuracy": "exempt",
     "target": "AllyTeam",
     "flags": ["BypassMaxGuard", "Distance", "Snatch"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit_side": [
@@ -1713,7 +1712,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "def": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "block": {
     "name": "Block",
@@ -1884,7 +1883,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "spa": 1, "spd": 1 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "leafblade": {
     "name": "Leaf Blade",
@@ -1906,7 +1905,7 @@
     "target": "User",
     "flags": ["Dance", "Snatch"],
     "hit_effect": { "boosts": { "atk": 1, "spe": 1 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "rockblast": {
     "name": "Rock Blast",

@@ -8,7 +8,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "hit_effect": { "heal_percent": "50%", "volatile_status": "roost" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "condition": {
       "duration": 1,
       "callbacks": {
@@ -997,7 +997,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "spe": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "poisonjab": {
     "name": "Poison Jab",
@@ -1226,7 +1226,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "spa": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "bulletpunch": {
     "name": "Bullet Punch",
@@ -1746,7 +1746,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "hit_effect": { "heal_percent": "50%" },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "headsmash": {
     "name": "Head Smash",
@@ -1863,7 +1863,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoSketch", "Protect", "Reflectable", "SleepInducing"],
     "hit_effect": { "status": "slp" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_use_move": [

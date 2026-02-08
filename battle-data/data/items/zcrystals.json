@@ -3,8 +3,11 @@
     "name": "Normalium Z",
     "flags": [],
     "special_data": {
-      "z_crystal": { "type": "Normal", "into": "Breackneck Blitz" },
+      "z_crystal": { "type": "Normal", "into": "Breakneck Blitz" },
       "judgment": { "type": "Normal" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "firiumz": {
@@ -14,6 +17,9 @@
     "special_data": {
       "z_crystal": { "type": "Fire", "into": "Inferno Overdrive" },
       "judgment": { "type": "Fire" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "wateriumz": {
@@ -23,6 +29,9 @@
     "special_data": {
       "z_crystal": { "type": "Water", "into": "Hydro Vortex" },
       "judgment": { "type": "Water" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "electriumz": {
@@ -32,6 +41,9 @@
     "special_data": {
       "z_crystal": { "type": "Electric", "into": "Gigavolt Havoc" },
       "judgment": { "type": "Electric" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "grassiumz": {
@@ -41,6 +53,9 @@
     "special_data": {
       "z_crystal": { "type": "Grass", "into": "Bloom Doom" },
       "judgment": { "type": "Grass" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "iciumz": {
@@ -50,6 +65,9 @@
     "special_data": {
       "z_crystal": { "type": "Ice", "into": "Subzero Slammer" },
       "judgment": { "type": "Ice" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "fightiniumz": {
@@ -59,6 +77,9 @@
     "special_data": {
       "z_crystal": { "type": "Fighting", "into": "All-Out Pummeling" },
       "judgment": { "type": "Fighting" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "poisoniumz": {
@@ -68,6 +89,9 @@
     "special_data": {
       "z_crystal": { "type": "Poison", "into": "Acid Downpour" },
       "judgment": { "type": "Poison" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "groundiumz": {
@@ -77,6 +101,9 @@
     "special_data": {
       "z_crystal": { "type": "Ground", "into": "Tectonic Rage" },
       "judgment": { "type": "Ground" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "flyiniumz": {
@@ -86,6 +113,9 @@
     "special_data": {
       "z_crystal": { "type": "Flying", "into": "Supersonic Skystrike" },
       "judgment": { "type": "Flying" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "psychiumz": {
@@ -95,6 +125,9 @@
     "special_data": {
       "z_crystal": { "type": "Psychic", "into": "Shattered Psyche" },
       "judgment": { "type": "Psychic" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "buginiumz": {
@@ -104,6 +137,9 @@
     "special_data": {
       "z_crystal": { "type": "Bug", "into": "Savage Spin-Out" },
       "judgment": { "type": "Bug" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "rockiumz": {
@@ -113,6 +149,9 @@
     "special_data": {
       "z_crystal": { "type": "Rock", "into": "Continental Crush" },
       "judgment": { "type": "Rock" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "ghostiumz": {
@@ -122,6 +161,9 @@
     "special_data": {
       "z_crystal": { "type": "Ghost", "into": "Never-Ending Nightmare" },
       "judgment": { "type": "Ghost" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "dragoniumz": {
@@ -131,6 +173,9 @@
     "special_data": {
       "z_crystal": { "type": "Dragon", "into": "Devastating Drake" },
       "judgment": { "type": "Dragon" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "darkiniumz": {
@@ -140,6 +185,9 @@
     "special_data": {
       "z_crystal": { "type": "Dark", "into": "Black Hole Eclipse" },
       "judgment": { "type": "Dark" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "steeliumz": {
@@ -149,6 +197,9 @@
     "special_data": {
       "z_crystal": { "type": "Steel", "into": "Corkscrew Crash" },
       "judgment": { "type": "Steel" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "fairiumz": {
@@ -158,6 +209,9 @@
     "special_data": {
       "z_crystal": { "type": "Fairy", "into": "Twinkle Tackle" },
       "judgment": { "type": "Fairy" }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "pikaniumz": {
@@ -169,6 +223,9 @@
         "into": "Catastropika",
         "users": ["Pikachu"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "decidiumz": {
@@ -180,6 +237,9 @@
         "into": "Sinister Arrow Raid",
         "users": ["Decidueye"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "inciniumz": {
@@ -191,6 +251,9 @@
         "into": "Malicious Moonsault",
         "users": ["Incineroar"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "primariumz": {
@@ -202,6 +265,9 @@
         "into": "Oceanic Operetta",
         "users": ["Primarina"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "tapuniumz": {
@@ -213,6 +279,9 @@
         "into": "Guardian of Alola",
         "users": ["Tapu Koko", "Tapu Lele", "Tapu Bulu", "Tapu Fini"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "marshadiumz": {
@@ -224,6 +293,9 @@
         "into": "Soul-Stealing 7-Star Strike",
         "users": ["Marshadow"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "aloraichiumz": {
@@ -235,6 +307,9 @@
         "into": "Stoked Sparksurfer",
         "users": ["Raichu-Alola"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "snorliumz": {
@@ -246,6 +321,9 @@
         "into": "Pulverizing Pancake",
         "users": ["Snorlax"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "eeviumz": {
@@ -257,6 +335,9 @@
         "into": "Extreme Evoboost",
         "users": ["Eevee"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "mewniumz": {
@@ -268,6 +349,9 @@
         "into": "Genesis Supernova",
         "users": ["Mew"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "pikashuniumz": {
@@ -287,6 +371,9 @@
           "Pikachu-Partner"
         ]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "solganiumz": {
@@ -298,6 +385,9 @@
         "into": "Searing Sunraze Smash",
         "users": ["Solgaleo", "Necrozma-Dusk-Mane"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "lunaliumz": {
@@ -309,6 +399,9 @@
         "into": "Menacing Moonraze Maelstrom",
         "users": ["Lunala", "Necrozma-Dawn-Wings"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "ultranecroziumz": {
@@ -320,6 +413,9 @@
         "into": "Light That Burns the Sky",
         "users": ["Necrozma-Ultra"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "mimikiumz": {
@@ -336,6 +432,9 @@
           "Mimikyu-Busted-Totem"
         ]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "lycaniumz": {
@@ -347,6 +446,9 @@
         "into": "Splintered Stormshards",
         "users": ["Lycanroc", "Lycanroc-Midnight", "Lycanroc-Dusk"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   },
   "kommoniumz": {
@@ -358,6 +460,9 @@
         "into": "Clangorous Soulblaze",
         "users": ["Kommo-o", "Kommo-o-Totem"]
       }
+    },
+    "effect": {
+      "delegates": ["condition:untakabletembase"]
     }
   }
 }

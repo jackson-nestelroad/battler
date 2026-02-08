@@ -29,6 +29,8 @@ use battler_data::{
     SpeciesFlag,
     SwitchType,
     TypeEffectiveness,
+    ZMoveData,
+    ZPower,
 };
 use battler_prng::rand_util;
 use hashbrown::{
@@ -122,6 +124,7 @@ pub fn run_function(
         "ability_has_flag" => ability_has_flag(context).map(|val| Some(val)),
         "activate_ability" => activate_ability(context),
         "activate_applying_effect" => activate_applying_effect(context),
+        "add_attribute_to_last_move" => add_attribute_to_last_move(context).map(|()| None),
         "add_move_action" => add_move_action(context).map(|val| Some(val)),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
@@ -246,12 +249,13 @@ pub fn run_function(
         "log_single_turn" => log_single_turn(context).map(|()| None),
         "log_start" => log_start(context).map(|()| None),
         "log_status" => log_status(context).map(|()| None),
+        "log_use_move" => log_use_move(context).map(|()| None),
         "log_waiting" => log_waiting(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
         "max" => max(context).map(|val| Some(val)),
         "max_move" => max_move(context),
         "min" => min(context).map(|val| Some(val)),
-        "modify_move_type" => modify_move_type(context).map(|_| None),
+        "modify_move_type" => modify_move_type(context).map(|()| None),
         "mon_at_target_location" => mon_at_target_location(context),
         "mon_in_position" => mon_in_position(context),
         "move_at_move_slot_index" => move_at_move_slot_index(context),
@@ -315,14 +319,15 @@ pub fn run_function(
         "set_hp" => set_hp(context).map(|val| Some(val)),
         "set_illusion" => set_illusion(context).map(|val| Some(val)),
         "set_item" => set_item(context).map(|val| Some(val)),
-        "set_needs_switch" => set_needs_switch(context).map(|_| None),
+        "set_needs_switch" => set_needs_switch(context).map(|()| None),
         "set_pp" => set_pp(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_terrain" => set_terrain(context).map(|val| Some(val)),
-        "set_upgraded_to_max_move" => set_upgraded_to_max_move(context).map(|_| None),
-        "set_upgraded_to_z_move" => set_upgraded_to_z_move(context).map(|_| None),
+        "set_upgraded_to_max_move" => set_upgraded_to_max_move(context).map(|()| None),
+        "set_upgraded_to_z_move" => set_upgraded_to_z_move(context).map(|()| None),
         "set_weather" => set_weather(context).map(|val| Some(val)),
+        "set_z_power_boosts" => set_z_power_boosts(context).map(|()| None),
         "side_condition_effect_state" => side_condition_effect_state(context),
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
         "special_item_data" => special_item_data(context).map(|val| Some(val)),
@@ -1024,7 +1029,7 @@ fn log_single_move(context: FunctionContext) -> Result<()> {
     )
 }
 
-fn log_animate_move(mut context: FunctionContext) -> Result<()> {
+fn log_move_internal(mut context: FunctionContext, animate_only: bool) -> Result<()> {
     let source_effect = context.source_effect_handle()?;
     let user_handle = context
         .pop_front()
@@ -1049,8 +1054,16 @@ fn log_animate_move(mut context: FunctionContext) -> Result<()> {
         &move_name,
         target_handle,
         source_effect.as_ref(),
-        true,
+        animate_only,
     )
+}
+
+fn log_animate_move(context: FunctionContext) -> Result<()> {
+    log_move_internal(context, true)
+}
+
+fn log_use_move(context: FunctionContext) -> Result<()> {
+    log_move_internal(context, false)
 }
 
 fn log_start(mut context: FunctionContext) -> Result<()> {
@@ -3216,7 +3229,7 @@ fn z_move(mut context: FunctionContext) -> Result<Option<Value>> {
         let context = context.as_battle_context().active_move(move_handle)?;
         (context.id().clone(), context.data.clone())
     };
-    core_battle_actions::z_move_by_move_data(&mut context, &move_id, &move_data)
+    core_battle_actions::z_move_by_move_data(&mut context, &move_id, &move_data, true)
         .map(|move_id| move_id.map(|val| Value::String(val.to_string())))
 }
 
@@ -4366,4 +4379,39 @@ fn activate_applying_effect(mut context: FunctionContext) -> Result<Option<Value
 
 fn faint_messages(mut context: FunctionContext) -> Result<()> {
     CoreBattle::faint_messages(context.battle_context_mut())
+}
+
+fn add_attribute_to_last_move(mut context: FunctionContext) -> Result<()> {
+    let attribute = context
+        .pop_front()
+        .wrap_expectation("missing attribute")?
+        .string()
+        .wrap_error_with_message("invalid attribute")?;
+    context
+        .battle_context_mut()
+        .battle_mut()
+        .add_attribute_to_last_move(&attribute);
+    Ok(())
+}
+
+fn set_z_power_boosts(mut context: FunctionContext) -> Result<()> {
+    let mov = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let boost_table = context
+        .pop_front()
+        .wrap_expectation("missing boost table")?
+        .boost_table()
+        .wrap_error_with_message("invalid boost table")?;
+    context
+        .evaluation_context_mut()
+        .active_move_mut(mov)?
+        .data
+        .z_move = Some(ZMoveData {
+        z_power: Some(ZPower::Boosts(boost_table)),
+        ..Default::default()
+    });
+    Ok(())
 }

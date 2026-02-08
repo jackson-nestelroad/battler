@@ -7,8 +7,7 @@
     "accuracy": 95,
     "base_power": 100,
     "target": "Any",
-    "flags": ["Contact", "Distance", "Gravity", "Mirror", "Protect"],
-    "z_move": { "base_power": 170 }
+    "flags": ["Contact", "Distance", "Gravity", "Mirror", "Protect"]
   },
   "matblock": {
     "name": "Mat Block",
@@ -177,7 +176,7 @@
     "accuracy": 100,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"],
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerhealreplacement" }
   },
   "topsyturvy": {
     "name": "Topsy-Turvy",
@@ -379,7 +378,7 @@
       "NoMetronome",
       "Stalling"
     ],
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "playnice": {
     "name": "Play Nice",

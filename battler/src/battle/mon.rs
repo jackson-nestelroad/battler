@@ -2540,6 +2540,7 @@ impl Mon {
             context.mon_mut().next_turn_state.trapped = true;
             context.mon_mut().next_turn_state.cannot_receive_items = true;
             context.mon_mut().next_turn_state.can_mega_evolve = false;
+            context.mon_mut().next_turn_state.can_z_move = false;
             context.mon_mut().next_turn_state.can_dynamax = false;
             context.mon_mut().next_turn_state.can_terastallize = false;
         }

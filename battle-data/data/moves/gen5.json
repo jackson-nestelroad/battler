@@ -161,7 +161,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "spe": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_hit": ["return func_call(can_boost: $target 'spe:2')"],
@@ -178,7 +178,7 @@
     "priority": 2,
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Powder"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": { "delegates": "move:followme" },
     "condition": { "delegates": "movecondition:followme" }
   },
@@ -328,7 +328,7 @@
     "target": "User",
     "flags": ["Dance", "Snatch"],
     "hit_effect": { "boosts": { "spa": 1, "spd": 1, "spe": 1 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "heavyslam": {
     "name": "Heavy Slam",
@@ -446,7 +446,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "atk": 1, "def": 1, "acc": 1 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "lowsweep": {
     "name": "Low Sweep",
@@ -746,7 +746,7 @@
     "hit_effect": {
       "boosts": { "def": -1, "spd": -1, "atk": 2, "spa": 2, "spe": 2 }
     },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "healpulse": {
     "name": "Heal Pulse",
@@ -756,7 +756,7 @@
     "accuracy": "exempt",
     "target": "Any",
     "flags": ["Distance", "Heal", "Protect", "Pulse", "Reflectable"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -777,7 +777,6 @@
     "base_power": 65,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "z_move": { "base_power": 160 },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -856,7 +855,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "atk": 2, "spe": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "circlethrow": {
     "name": "Circle Throw",
@@ -1366,7 +1365,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "def": 3 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "nightdaze": {
     "name": "Night Daze",
@@ -1638,8 +1637,7 @@
     "base_power": 180,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
-    "user_effect": { "boosts": { "def": -1, "spd": -1, "spe": -1 } },
-    "z_move": { "base_power": 220 }
+    "user_effect": { "boosts": { "def": -1, "spd": -1, "spe": -1 } }
   },
   "fusionflare": {
     "name": "Fusion Flare",

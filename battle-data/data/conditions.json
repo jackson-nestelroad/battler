@@ -1236,10 +1236,24 @@
       "callbacks": {
         "on_start": ["log_single_turn: with_target"],
         "on_upgrade_move": [
-          "modify_move_type: $move",
           "$z_move_id = func_call(z_move: $user $move)",
           "if !$z_move_id:",
           ["return"],
+          "$type = $move.type",
+          "modify_move_type: $move",
+          "if $type != $move.type:",
+          [
+            "$new_z_move_id = func_call(z_move: $user $move)",
+            "if $new_z_move_id.is_defined and $new_z_move_id != $z_move_id:",
+            [
+              "$old_z_move = func_call(get_move: $z_move_id)",
+              "if !$old_z_move:",
+              ["return"],
+              "log_use_move: $user $old_z_move.name no_source_effect",
+              "do_not_animate_last_move",
+              "$z_move_id = $new_z_move_id"
+            ]
+          ],
           "$z_move = func_call(new_active_move: $z_move_id $user)",
           "set_upgraded_to_z_move: $z_move $move.id",
           "if !$user.item:",
@@ -1252,6 +1266,8 @@
           "return $z_move"
         ],
         "on_pre_move_effect": [
+          "if $move.category == status:",
+          ["add_attribute_to_last_move: zpower"],
           "if $move.z_power_boosts.is_defined:",
           ["boost: $target $move.z_power_boosts"],
           "else if $move.z_power_effect.is_defined:",

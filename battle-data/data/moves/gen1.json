@@ -148,7 +148,7 @@
     "target": "User",
     "flags": ["Dance", "Snatch"],
     "hit_effect": { "boosts": { "atk": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "cut": {
     "name": "Cut",
@@ -602,7 +602,7 @@
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "disable" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -697,7 +697,7 @@
     "target": "AllySide",
     "flags": ["Snatch"],
     "hit_effect": { "side_condition": "mist" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerheal" },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -991,8 +991,7 @@
     "base_power": 40,
     "target": "Normal",
     "flags": ["Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2",
-    "z_move": { "base_power": 120 }
+    "drain_percent": "1/2"
   },
   "leechseed": {
     "name": "Leech Seed",
@@ -1003,7 +1002,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": { "volatile_status": "leechseed" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_immunity": ["return !func_call(has_type: $target grass)"]
@@ -1352,7 +1351,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "spe": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "quickattack": {
     "name": "Quick Attack",
@@ -1395,7 +1394,7 @@
     "target": "User",
     "flags": [],
     "user_switch": true,
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_try_use_move": [
@@ -1474,7 +1473,7 @@
     "target": "User",
     "flags": ["EvasionRaising", "Snatch"],
     "hit_effect": { "boosts": { "eva": 1 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "recover": {
     "name": "Recover",
@@ -1485,7 +1484,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "hit_effect": { "heal_percent": "50%" },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "harden": {
     "name": "Harden",
@@ -1507,7 +1506,7 @@
     "target": "User",
     "flags": ["EvasionRaising", "Snatch"],
     "hit_effect": { "boosts": { "eva": 2 }, "volatile_status": "minimize" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -1582,7 +1581,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "def": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "lightscreen": {
     "name": "Light Screen",
@@ -1623,7 +1622,7 @@
     "accuracy": "exempt",
     "target": "Field",
     "flags": ["BypassSubstitute"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit_field": [
@@ -1973,7 +1972,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "spd": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "kinesis": {
     "name": "Kinesis",
@@ -1995,7 +1994,7 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "hit_effect": { "heal_percent": "50%" },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "highjumpkick": {
     "name": "High Jump Kick",
@@ -2120,7 +2119,7 @@
       "NoAssist",
       "NoMetronome"
     ],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerheal" },
     "effect": {
       "callbacks": {
         "on_hit": ["return func_call(transform_into: $source $target)"]
@@ -2162,7 +2161,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Powder", "Protect", "Reflectable", "SleepInducing"],
     "hit_effect": { "status": "slp" },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "flash": {
     "name": "Flash",
@@ -2211,7 +2210,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "boosts": { "def": 2 } },
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "crabhammer": {
     "name": "Crabhammer",
@@ -2267,7 +2266,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_use_move": [
@@ -2414,7 +2413,7 @@
     "target": "User",
     "flags": ["Snatch"],
     "hit_effect": { "volatile_status": "substitute" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": { "effect": "zpowerclearnegativeboosts" },
     "effect": {
       "callbacks": {
         "on_try_hit": [

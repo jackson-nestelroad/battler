@@ -412,7 +412,13 @@ pub fn do_move_action(
         active_move_handle,
         target_location,
         original_target,
-    )
+    )?;
+
+    if z_move {
+        context.player_mut().can_z_move = false;
+    }
+
+    Ok(())
 }
 
 fn do_move(
@@ -6281,7 +6287,7 @@ pub fn can_z_move(context: &mut MonContext) -> Result<Vec<Option<Id>>> {
             no_usable_moves = false;
         }
         let mov = context.battle().dex.moves.get(&move_slot.name)?;
-        z_moves.push(z_move(context, mov.id(), &mov.data, &z_crystal)?);
+        z_moves.push(z_move(context, mov.id(), &mov.data, &z_crystal, false)?);
     }
     if z_moves.iter().all(|z_move| z_move.is_none()) || no_usable_moves {
         return Ok(Vec::default());
@@ -6293,7 +6299,7 @@ pub fn can_z_move(context: &mut MonContext) -> Result<Vec<Option<Id>>> {
 pub fn z_move_by_id(context: &mut MonContext, move_id: &Id) -> Result<Option<Id>> {
     let mov = context.battle().dex.moves.get_by_id(&move_id)?;
     let move_data = mov.data.clone();
-    z_move_by_move_data(context, move_id, &move_data)
+    z_move_by_move_data(context, move_id, &move_data, false)
 }
 
 /// Looks up the Z-Move for the given move data.
@@ -6301,12 +6307,13 @@ pub fn z_move_by_move_data(
     context: &mut MonContext,
     move_id: &Id,
     move_data: &MoveData,
+    allow_type_change: bool,
 ) -> Result<Option<Id>> {
     let z_crystal = match usable_z_crystal(context)? {
         Some(z_crystal) => z_crystal,
         None => return Ok(None),
     };
-    z_move(context, move_id, move_data, &z_crystal)
+    z_move(context, move_id, move_data, &z_crystal, allow_type_change)
 }
 
 /// Looks up the Z-Move for the given move data and Z-Crystal.
@@ -6315,6 +6322,7 @@ fn z_move(
     move_id: &Id,
     move_data: &MoveData,
     z_crystal: &ZCrystalData,
+    allow_type_change: bool,
 ) -> Result<Option<Id>> {
     let index = match context.mon().move_slot_index(move_id) {
         Some(index) => index,
@@ -6340,6 +6348,29 @@ fn z_move(
             } else {
                 Some(Id::from(z_crystal.into.as_str()))
             }
+        }
+        Some(ZCrystalSource::Type(move_type)) if allow_type_change => {
+            let id = match move_data.primary_type {
+                Type::Flying => "supersonicskystrike",
+                Type::Dark => "blackholeeclipse",
+                Type::Fire => "infernooverdrive",
+                Type::Bug => "savagespinout",
+                Type::Water => "hydrovortex",
+                Type::Ice => "subzeroslammer",
+                Type::Fighting => "alloutpummeling",
+                Type::Electric => "gigavolthavoc",
+                Type::Psychic => "shatteredpsyche",
+                Type::Poison => "aciddownpour",
+                Type::Grass => "bloomdoom",
+                Type::Ghost => "neverendingnightmare",
+                Type::Ground => "tectonicrage",
+                Type::Rock => "continentalcrush",
+                Type::Fairy => "twinkletackle",
+                Type::Steel => "corkscrewcrash",
+                Type::Normal | Type::None | Type::Stellar => "breakneckblitz",
+                Type::Dragon => "devastatingdrake",
+            };
+            Some(Id::from(id))
         }
         _ => None,
     };

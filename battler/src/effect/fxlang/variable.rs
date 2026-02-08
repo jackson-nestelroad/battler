@@ -382,7 +382,7 @@ where
                                     .as_ref()
                                     .map(|z_move| {
                                         z_move.z_power.as_ref().and_then(|z_power| match z_power {
-                                            ZPower::Boost(boosts) => Some(boosts),
+                                            ZPower::Boosts(boosts) => Some(boosts),
                                             _ => None,
                                         })
                                     })

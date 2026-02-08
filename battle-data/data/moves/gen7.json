@@ -6,7 +6,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "alloutpummeling": {
     "name": "All-Out Pummeling",
@@ -15,7 +26,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "supersonicskystrike": {
     "name": "Supersonic Skystrike",
@@ -24,7 +46,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "aciddownpour": {
     "name": "Acid Downpour",
@@ -33,7 +66,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "tectonicrage": {
     "name": "Tectonic Rage",
@@ -42,7 +86,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "continentalcrush": {
     "name": "Continental Crush",
@@ -51,7 +106,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "savagespinout": {
     "name": "Savage Spin-Out",
@@ -60,7 +126,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "neverendingnightmare": {
     "name": "Never-Ending Nightmare",
@@ -69,7 +146,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "corkscrewcrash": {
     "name": "Corkscrew Crash",
@@ -78,7 +166,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "infernooverdrive": {
     "name": "Inferno Overdrive",
@@ -87,7 +186,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "hydrovortex": {
     "name": "Hydro Vortex",
@@ -96,7 +206,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "bloomdoomp": {
     "name": "Bloom Doom",
@@ -105,7 +226,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "gigavolthavoc": {
     "name": "Gigavolt Havoc",
@@ -114,7 +246,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "shatteredpsyche": {
     "name": "Shattered Psyche",
@@ -123,7 +266,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "subzeroslammer": {
     "name": "Subzero Slammer",
@@ -132,7 +286,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "devastatingdrake": {
     "name": "Devastating Drake",
@@ -141,7 +306,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "blackholeeclipse": {
     "name": "Black Hole Eclipse",
@@ -150,7 +326,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "twinkletackle": {
     "name": "Twinkle Tackle",
@@ -159,9 +346,19 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
-
   "catastropika": {
     "name": "Catastropika",
     "category": "Physical",
@@ -170,7 +367,19 @@
     "accuracy": "exempt",
     "base_power": 210,
     "target": "Normal",
-    "flags": ["Contact", "NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "shoreup": {
     "name": "Shore Up",
@@ -180,7 +389,7 @@
     "accuracy": "exempt",
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "firstimpression": {
     "name": "First Impression",
@@ -254,7 +463,7 @@
     "accuracy": "exempt",
     "target": "Normal",
     "flags": ["Heal", "Protect", "Reflectable"],
-    "z_move": { "effect": "zpowerboostcritratio" }
+    "z_move": { "effect": "zpowerclearnegativeboosts" }
   },
   "highhorsepower": {
     "name": "High Horsepower",
@@ -538,8 +747,7 @@
     "accuracy": 100,
     "base_power": 100,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"],
-    "z_move": { "base_power": 140 }
+    "flags": ["Mirror", "Protect"]
   },
   "tropkick": {
     "name": "Trop Kick",
@@ -653,7 +861,18 @@
     "accuracy": "exempt",
     "base_power": 180,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "maliciousmoonsault": {
     "name": "Malicious Moonsault",
@@ -663,7 +882,19 @@
     "accuracy": "exempt",
     "base_power": 180,
     "target": "Normal",
-    "flags": ["Contact", "NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "oceanicoperetta": {
     "name": "Oceanic Operetta",
@@ -673,7 +904,18 @@
     "accuracy": "exempt",
     "base_power": 195,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "guardianofalola": {
     "name": "Guardian of Alola",
@@ -682,7 +924,18 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
     "effect": {
       "callbacks": {
         "on_move_damage": [
@@ -700,7 +953,19 @@
     "accuracy": "exempt",
     "base_power": 195,
     "target": "Normal",
-    "flags": ["Contact", "NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "stokedsparksurfer": {
     "name": "Stoked Sparksurfer",
@@ -710,14 +975,19 @@
     "accuracy": "exempt",
     "base_power": 175,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"],
-    "secondary_effects": [
-      {
-        "target": {
-          "status": "par"
-        }
-      }
-    ]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
+    "secondary_effects": [{ "target": { "status": "par" } }]
   },
   "pulverizingpancake": {
     "name": "Pulverizing Pancake",
@@ -727,7 +997,19 @@
     "accuracy": "exempt",
     "base_power": 210,
     "target": "Normal",
-    "flags": ["Contact", "NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "extremeevoboost": {
     "name": "Extreme Evoboost",
@@ -736,15 +1018,19 @@
     "pp": 1,
     "accuracy": "exempt",
     "target": "User",
-    "flags": ["NoMetronome", "Z"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "Z"
+    ],
     "hit_effect": {
-      "boosts": {
-        "atk": 1,
-        "def": 2,
-        "spa": 2,
-        "spd": 2,
-        "spe": 2
-      }
+      "boosts": { "atk": 1, "def": 2, "spa": 2, "spd": 2, "spe": 2 }
     }
   },
   "genesissupernova": {
@@ -755,14 +1041,19 @@
     "accuracy": "exempt",
     "base_power": 185,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"],
-    "secondary_effects": [
-      {
-        "user": {
-          "terrain": "psychicterrain"
-        }
-      }
-    ]
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
+    "secondary_effects": [{ "user": { "terrain": "psychicterrain" } }]
   },
   "shelltrap": {
     "name": "Shell Trap",
@@ -932,7 +1223,18 @@
     "accuracy": "exempt",
     "base_power": 195,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
     "crit_ratio": 3
   },
   "mindblown": {
@@ -973,7 +1275,18 @@
     "accuracy": "exempt",
     "base_power": 200,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
     "effect": {
       "delegates": ["condition:ignoreabilitymovebase"],
       "callbacks": {
@@ -992,10 +1305,20 @@
     "accuracy": "exempt",
     "base_power": 200,
     "target": "Normal",
-    "flags": ["Contact", "NoMetronome", "WeakenThroughProtection", "Z"],
-    "effect": {
-      "delegates": ["condition:ignoreabilitymovebase"]
-    }
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
+    "effect": { "delegates": ["condition:ignoreabilitymovebase"] }
   },
   "menacingmoonrazemaelstrom": {
     "name": "Menacing Moonraze Maelstrom",
@@ -1005,10 +1328,19 @@
     "accuracy": "exempt",
     "base_power": 200,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"],
-    "effect": {
-      "delegates": ["condition:ignoreabilitymovebase"]
-    }
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
+    "effect": { "delegates": ["condition:ignoreabilitymovebase"] }
   },
   "letssnuggleforever": {
     "name": "Let's Snuggle Forever",
@@ -1018,7 +1350,19 @@
     "accuracy": "exempt",
     "base_power": 190,
     "target": "Normal",
-    "flags": ["Contact", "NoMetronome", "WeakenThroughProtection", "Z"]
+    "flags": [
+      "Contact",
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ]
   },
   "splinteredstormshards": {
     "name": "Splintered Stormshards",
@@ -1028,7 +1372,18 @@
     "accuracy": "exempt",
     "base_power": 190,
     "target": "Normal",
-    "flags": ["NoMetronome", "WeakenThroughProtection", "Z"],
+    "flags": [
+      "FailCopycat",
+      "FailMeFirst",
+      "FailMimic",
+      "Max",
+      "NoAssist",
+      "NoMetronome",
+      "NoSketch",
+      "NoSleepTalk",
+      "WeakenThroughProtection",
+      "Z"
+    ],
     "effect": {
       "callbacks": {
         "on_hit": ["clear_terrain"],
@@ -1054,13 +1409,7 @@
     "secondary_effects": [
       {
         "user": {
-          "boosts": {
-            "atk": 1,
-            "def": 1,
-            "spa": 1,
-            "spd": 1,
-            "spe": 1
-          }
+          "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 }
         }
       }
     ]

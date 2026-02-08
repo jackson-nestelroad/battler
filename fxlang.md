@@ -625,6 +625,8 @@ Effects may also wish to reveal themselves on the battle log, in order for clien
 - `log_single_turn` - An effect has activated and is active for the rest of the turn.
 - `log_start` - An effect applying to a Mon has started.
 - `log_status` - A non-volatile status condition has been applied to a Mon.
+- `log_use_move` - A move was used. Reserved for exceptional cases where it must look like the Mon used another move.
+- `log_waiting` - A Mon is waiting to use its move.
 - `log_weather` - A weather effect has been applied to the field.
 
 #### Modifying Forwarded Effects
