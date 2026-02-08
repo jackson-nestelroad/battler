@@ -5594,6 +5594,7 @@ pub fn end_battle(context: &mut Context) -> Result<()> {
     Ok(())
 }
 
+/// Result of Mega Evolution.
 pub struct MegaEvolution {
     pub source_effect: EffectHandle,
     pub species: Id,
@@ -5667,6 +5668,47 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
     return Ok(Some(MegaEvolution {
         source_effect: EffectHandle::Item(item.id().clone()),
         species: Id::from(mega_evolution_data.into),
+    }));
+}
+
+/// Result of Ultra Burst.
+pub struct UltraBurst {
+    pub source_effect: EffectHandle,
+    pub species: Id,
+}
+
+/// Checks if the Mon can Ultra Burst.
+pub fn can_ultra_burst(context: &mut MonContext) -> Result<Option<UltraBurst>> {
+    if !context.player().can_ultra_burst || !context.mon().active {
+        return Ok(None);
+    }
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.mon().base_species)?;
+
+    // Check if the item triggers Ultra Burst.
+    let item = match context.mon().item.clone() {
+        Some(item) => item,
+        None => return Ok(None),
+    };
+
+    let item = context.battle().dex.items.get_by_id(&item)?;
+    let ultra_burst_data = match item.data.special_data.ultra_burst.clone() {
+        Some(data) => data,
+        None => return Ok(None),
+    };
+    if !ultra_burst_data
+        .from
+        .iter()
+        .any(|from| Id::from(from.as_str()) == *species.id())
+    {
+        return Ok(None);
+    }
+    return Ok(Some(UltraBurst {
+        source_effect: EffectHandle::Item(item.id().clone()),
+        species: Id::from(ultra_burst_data.into),
     }));
 }
 
@@ -5758,6 +5800,7 @@ pub enum FormeChangeType {
     Permanent,
     MegaEvolution,
     PrimalReversion,
+    UltraBurst,
     Gigantamax,
 }
 
@@ -5765,7 +5808,9 @@ impl FormeChangeType {
     pub fn permanent(&self) -> bool {
         match self {
             Self::Temporary | Self::Gigantamax => false,
-            Self::Permanent | Self::MegaEvolution | Self::PrimalReversion => true,
+            Self::Permanent | Self::MegaEvolution | Self::PrimalReversion | Self::UltraBurst => {
+                true
+            }
         }
     }
 }
@@ -5812,6 +5857,9 @@ pub fn forme_change(
         FormeChangeType::PrimalReversion => {
             core_battle_logs::primal_reversion(context)?;
         }
+        FormeChangeType::UltraBurst => {
+            core_battle_logs::ultra_burst(context)?;
+        }
         FormeChangeType::Gigantamax => {
             core_battle_logs::gigantamax(context)?;
         }
@@ -5831,10 +5879,13 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
     let needs_mechanic_revert =
         context.target().dynamaxed || context.target().terastallized.is_some();
     let needs_forme_change_revert = match context.target().special_forme_change_type {
-        Some(MonSpecialFormeChangeType::MegaEvolution | MonSpecialFormeChangeType::Gigantamax) => {
-            true
-        }
-        Some(MonSpecialFormeChangeType::PrimalReversion) | None => false,
+        Some(
+            MonSpecialFormeChangeType::MegaEvolution
+            | MonSpecialFormeChangeType::PrimalReversion
+            | MonSpecialFormeChangeType::UltraBurst
+            | MonSpecialFormeChangeType::Gigantamax,
+        ) => true,
+        None => false,
     };
     let needs_revert = needs_mechanic_revert || needs_forme_change_revert;
     if !needs_revert {
@@ -5852,7 +5903,8 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
     if let Some(special_forme_change_type) = context.target().special_forme_change_type {
         let base_species_update = match special_forme_change_type {
             MonSpecialFormeChangeType::MegaEvolution
-            | MonSpecialFormeChangeType::PrimalReversion => true,
+            | MonSpecialFormeChangeType::PrimalReversion
+            | MonSpecialFormeChangeType::UltraBurst => true,
             MonSpecialFormeChangeType::Gigantamax => false,
         };
 
@@ -5874,6 +5926,9 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
             }
             MonSpecialFormeChangeType::PrimalReversion => {
                 core_battle_logs::revert_primal_reversion(context)?;
+            }
+            MonSpecialFormeChangeType::UltraBurst => {
+                core_battle_logs::revert_ultra_burst(context)?;
             }
             MonSpecialFormeChangeType::Gigantamax => {
                 core_battle_logs::revert_gigantamax(context)?;
@@ -5938,6 +5993,34 @@ pub fn primal_reversion(context: &mut ApplyingEffectContext, species: &Id) -> Re
     }
     context.target_mut().special_forme_change_type =
         Some(MonSpecialFormeChangeType::PrimalReversion);
+    Ok(true)
+}
+
+/// Ultra Bursts the Mon if it is able to do so.
+pub fn ultra_burst(context: &mut MonContext) -> Result<bool> {
+    let ultra_burst = match can_ultra_burst(context)? {
+        Some(ultra_burst) => ultra_burst,
+        None => return Ok(false),
+    };
+
+    let target = context.mon_handle();
+    if !forme_change(
+        &mut context.as_battle_context_mut().applying_effect_context(
+            ultra_burst.source_effect,
+            None,
+            target,
+            None,
+        )?,
+        &ultra_burst.species,
+        FormeChangeType::UltraBurst,
+    )? {
+        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
+        return Ok(false);
+    }
+
+    context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::UltraBurst);
+    context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Success);
+    context.player_mut().can_ultra_burst = false;
     Ok(true)
 }
 

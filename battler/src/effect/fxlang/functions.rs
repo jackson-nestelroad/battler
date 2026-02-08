@@ -3488,6 +3488,7 @@ fn add_move_action(mut context: FunctionContext) -> Result<Value> {
             target,
             mega: false,
             z_move: false,
+            ultra: false,
             dyna: false,
             tera: false,
         })),

@@ -315,6 +315,8 @@ pub struct ChoiceState {
     pub mega: bool,
     /// Did the Player choose to Z-Move?
     pub z_move: bool,
+    /// Did the Player choose to Ultra Burst?
+    pub ultra: bool,
     /// Did the Player choose to Dynamax?
     pub dyna: bool,
     /// Did the Player choose to Terastallize?
@@ -335,6 +337,7 @@ impl ChoiceState {
             switch_ins: HashSet::default(),
             mega: false,
             z_move: false,
+            ultra: false,
             dyna: false,
             tera: false,
             forfeiting: false,
@@ -389,6 +392,7 @@ pub struct Player {
 
     pub can_mega_evolve: bool,
     pub can_z_move: bool,
+    pub can_ultra_burst: bool,
     pub can_dynamax: bool,
     pub can_terastallize: bool,
 
@@ -427,6 +431,8 @@ impl Player {
             && format.rules.has_rule(&Id::from_known("megaevolution"));
         let can_z_move =
             !data.player_options.cannot_z_move && format.rules.has_rule(&Id::from_known("zmoves"));
+        let can_ultra_burst = !data.player_options.cannot_mega_evolve
+            && format.rules.has_rule(&Id::from_known("ultraburst"));
         let can_dynamax = !data.player_options.cannot_dynamax
             && format.rules.has_rule(&Id::from_known("dynamax"));
         let can_terastallize = !data.player_options.cannot_terastallize
@@ -447,6 +453,7 @@ impl Player {
             request: None,
             can_mega_evolve,
             can_z_move,
+            can_ultra_burst,
             can_dynamax,
             can_terastallize,
             escape_attempts: 0,
@@ -1216,6 +1223,16 @@ impl Player {
             return Err(general_error("you can only z-move once per battle"));
         }
 
+        if choice.ultra && !context.mon().next_turn_state.can_ultra_burst {
+            return Err(general_error(format!(
+                "{} cannot ultra burst",
+                context.mon().name
+            )));
+        }
+        if choice.ultra && context.player().choice.ultra {
+            return Err(general_error("you can only ultra burst once per battle"));
+        }
+
         if choice.dyna && !context.mon().next_turn_state.can_dynamax {
             return Err(general_error(format!(
                 "{} cannot dynamax",
@@ -1275,6 +1292,7 @@ impl Player {
                     target: locked_move_target,
                     mega: false,
                     z_move: false,
+                    ultra: false,
                     dyna: false,
                     tera: false,
                 })));
@@ -1346,6 +1364,7 @@ impl Player {
                 target: choice.target,
                 mega: choice.mega,
                 z_move: choice.z_move,
+                ultra: choice.ultra,
                 dyna: choice.dyna,
                 tera: choice.tera,
             })));
@@ -1355,6 +1374,9 @@ impl Player {
         }
         if choice.z_move {
             context.player_mut().choice.z_move = true;
+        }
+        if choice.ultra {
+            context.player_mut().choice.ultra = true;
         }
         if choice.dyna {
             context.player_mut().choice.dyna = true;

@@ -322,6 +322,8 @@ pub struct MonMoveRequest {
     #[serde(default)]
     pub can_z_move: bool,
     #[serde(default)]
+    pub can_ultra_burst: bool,
+    #[serde(default)]
     pub can_dynamax: bool,
     #[serde(default)]
     pub can_terastallize: bool,
@@ -431,6 +433,7 @@ impl RecalculateBaseStatsHpPolicy {
 pub enum MonSpecialFormeChangeType {
     MegaEvolution,
     PrimalReversion,
+    UltraBurst,
     Gigantamax,
 }
 
@@ -442,6 +445,7 @@ pub struct MonNextTurnState {
     pub cannot_receive_items: bool,
     pub can_mega_evolve: bool,
     pub can_z_move: bool,
+    pub can_ultra_burst: bool,
     pub can_dynamax: bool,
     pub can_terastallize: bool,
 }
@@ -1622,6 +1626,7 @@ impl Mon {
             trapped: false,
             can_mega_evolve: false,
             can_z_move: false,
+            can_ultra_burst: false,
             can_dynamax: false,
             can_terastallize: false,
             locked_into_move: false,
@@ -1635,6 +1640,7 @@ impl Mon {
         if locked_move.is_none() {
             request.can_mega_evolve = context.mon().next_turn_state.can_mega_evolve;
             request.can_z_move = context.mon().next_turn_state.can_z_move;
+            request.can_ultra_burst = context.mon().next_turn_state.can_ultra_burst;
             request.can_dynamax = context.mon().next_turn_state.can_dynamax;
             request.can_terastallize = context.mon().next_turn_state.can_terastallize;
 
@@ -2521,6 +2527,10 @@ impl Mon {
             context.mon_mut().next_turn_state.can_z_move = true;
         }
 
+        if core_battle_actions::can_ultra_burst(context)?.is_some() {
+            context.mon_mut().next_turn_state.can_ultra_burst = true;
+        }
+
         if core_battle_actions::can_dynamax(context)?.is_some() {
             context.mon_mut().next_turn_state.can_dynamax = true;
         }
@@ -2541,6 +2551,7 @@ impl Mon {
             context.mon_mut().next_turn_state.cannot_receive_items = true;
             context.mon_mut().next_turn_state.can_mega_evolve = false;
             context.mon_mut().next_turn_state.can_z_move = false;
+            context.mon_mut().next_turn_state.can_ultra_burst = false;
             context.mon_mut().next_turn_state.can_dynamax = false;
             context.mon_mut().next_turn_state.can_terastallize = false;
         }

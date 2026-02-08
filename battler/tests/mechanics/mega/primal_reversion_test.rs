@@ -140,7 +140,7 @@ fn kyogre_undergoes_primal_reversion_on_switch_with_blue_orb() {
 }
 
 #[test]
-fn primal_reversion_not_reverted_on_faint_and_revive() {
+fn primal_reversion_reverted_on_faint_and_redone_on_revive() {
     let mut team_1 = kyogre().unwrap();
     team_1.members[0].level = 1;
     let mut team_2 = kyogre().unwrap();
@@ -167,6 +167,10 @@ fn primal_reversion_not_reverted_on_faint_and_revive() {
             "damage|mon:Kyogre,player-1,1|health:0",
             "faint|mon:Kyogre,player-1,1",
             "clearweather",
+            "split|side:0",
+            ["specieschange", "player-1", "species:Kyogre"],
+            ["specieschange", "player-1", "species:Kyogre"],
+            "revertprimal|mon:Kyogre,player-1,1|species:Kyogre|from:Faint",
             "residual",
             "continue",
             "split|side:0",
@@ -183,8 +187,12 @@ fn primal_reversion_not_reverted_on_faint_and_revive() {
             "turn|turn:3",
             "continue",
             "split|side:0",
-            ["switch", "player-1", "species:Kyogre-Primal"],
-            ["switch", "player-1", "species:Kyogre-Primal"],
+            ["switch", "player-1", "species:Kyogre"],
+            ["switch", "player-1", "species:Kyogre"],
+            "split|side:0",
+            ["specieschange", "player-1", "species:Kyogre-Primal"],
+            ["specieschange", "player-1", "species:Kyogre-Primal"],
+            "primal|mon:Kyogre,player-1,1|species:Kyogre-Primal|from:item:Blue Orb",
             "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
             "weather|weather:Heavy Rain|residual",
             "residual",

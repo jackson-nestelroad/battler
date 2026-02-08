@@ -412,6 +412,10 @@
         "from": "Photon Geyser",
         "into": "Light That Burns the Sky",
         "users": ["Necrozma-Ultra"]
+      },
+      "ultra_burst": {
+        "from": ["Necrozma-Dawn-Wings", "Necrozma-Dusk-Mane"],
+        "into": "Necrozma-Ultra"
       }
     },
     "effect": {

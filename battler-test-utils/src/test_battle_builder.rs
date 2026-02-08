@@ -287,6 +287,10 @@ impl TestBattleBuilder {
         self.with_boolean_rule("Z-Moves", z_moves)
     }
 
+    pub fn with_ultra_burst(self, ultra_burst: bool) -> Self {
+        self.with_boolean_rule("Ultra Burst", ultra_burst)
+    }
+
     pub fn with_dynamax(self, dynamax: bool) -> Self {
         self.with_boolean_rule("Dynamax", dynamax)
     }

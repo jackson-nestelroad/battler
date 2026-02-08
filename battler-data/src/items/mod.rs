@@ -12,6 +12,7 @@ pub use item_data::{
     NaturalGiftData,
     SpecialItemData,
     TechnoBlastData,
+    UltraBurstData,
     ZCrystalData,
     ZCrystalSource,
 };

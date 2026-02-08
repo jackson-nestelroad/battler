@@ -8760,7 +8760,7 @@
       "spd": 89,
       "spe": 79
     },
-    "formes": ["Necrozma-Dusk", "Necrozma-Dawn", "Necrozma-Ultra"],
+    "formes": ["Necrozma-Dusk-Mane", "Necrozma-Dawn-Wings", "Necrozma-Ultra"],
     "flags": ["Restricted Legendary"],
     "learnset": {
       "aerialace": ["M"],
@@ -11133,10 +11133,10 @@
       "zingzap": ["L33"]
     }
   },
-  "necrozmadusk": {
-    "name": "Necrozma-Dusk",
+  "necrozmaduskmane": {
+    "name": "Necrozma-Dusk-Mane",
     "base_species": "Necrozma",
-    "forme": "Dusk",
+    "forme": "Dusk-Mane",
     "class": "Prism",
     "color": "Black",
     "primary_type": "Psychic",
@@ -11164,10 +11164,10 @@
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },
-  "necrozmadawn": {
-    "name": "Necrozma-Dawn",
+  "necrozmadawnwings": {
+    "name": "Necrozma-Dawn-Wings",
     "base_species": "Necrozma",
-    "forme": "Dawn",
+    "forme": "Dawn-Wings",
     "class": "Prism",
     "color": "Black",
     "primary_type": "Psychic",

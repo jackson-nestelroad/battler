@@ -68,6 +68,13 @@ pub enum ZCrystalSource {
     Type(Type),
 }
 
+/// Data for Ultra Burst.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UltraBurstData {
+    pub from: HashSet<String>,
+    pub into: String,
+}
+
 /// Data for Z-Crystals.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ZCrystalData {
@@ -83,6 +90,7 @@ pub struct ZCrystalData {
 pub struct SpecialItemData {
     pub mega_evolution: Option<MegaEvolutionData>,
     pub z_crystal: Option<ZCrystalData>,
+    pub ultra_burst: Option<UltraBurstData>,
 
     pub fling: Option<FlingData>,
     pub natural_gift: Option<NaturalGiftData>,

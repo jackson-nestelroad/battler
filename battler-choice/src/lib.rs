@@ -44,6 +44,8 @@ pub struct MoveChoice {
     pub mega: bool,
     /// Z-Move?
     pub z_move: bool,
+    /// Ultra Burst?
+    pub ultra: bool,
     /// Dynamax?
     pub dyna: bool,
     /// Terastallize?
@@ -63,6 +65,9 @@ impl Display for MoveChoice {
         }
         if self.z_move {
             write!(f, ",zmove")?;
+        }
+        if self.ultra {
+            write!(f, ",ultra")?;
         }
         if self.dyna {
             write!(f, ",dyna")?;
@@ -94,6 +99,7 @@ impl FromStr for MoveChoice {
             target: None,
             mega: false,
             z_move: false,
+            ultra: false,
             dyna: false,
             tera: false,
             random_target: false,
@@ -115,6 +121,9 @@ impl FromStr for MoveChoice {
                 }
                 "zmove" => {
                     choice.z_move = true;
+                }
+                "ultra" => {
+                    choice.ultra = true;
                 }
                 "dyna" => {
                     choice.dyna = true;
@@ -436,6 +445,7 @@ mod battler_choice_test {
                 target: None,
                 mega: false,
                 z_move: false,
+                ultra: false,
                 dyna: false,
                 tera: false,
                 random_target: false,
@@ -449,6 +459,7 @@ mod battler_choice_test {
                 target: Some(-1),
                 mega: false,
                 z_move: false,
+                ultra: false,
                 dyna: false,
                 tera: false,
                 random_target: false,
@@ -462,6 +473,7 @@ mod battler_choice_test {
                 target: Some(2),
                 mega: true,
                 z_move: false,
+                ultra: false,
                 dyna: false,
                 tera: false,
                 random_target: false,
@@ -475,12 +487,13 @@ mod battler_choice_test {
                 target: None,
                 mega: true,
                 z_move: true,
+                ultra: true,
                 dyna: true,
                 tera: true,
                 random_target: false,
             })
             .to_string(),
-            "move 3,mega,zmove,dyna,tera"
+            "move 3,mega,zmove,ultra,dyna,tera"
         );
         assert_eq!(
             Choice::Item(ItemChoice {
@@ -549,6 +562,7 @@ mod battler_choice_test {
                     target: None,
                     mega: false,
                     z_move: false,
+                    ultra: false,
                     dyna: false,
                     tera: false,
                     random_target: false,
@@ -563,6 +577,7 @@ mod battler_choice_test {
                     target: Some(-1),
                     mega: false,
                     z_move: false,
+                    ultra: false,
                     dyna: false,
                     tera: false,
                     random_target: false,
@@ -577,6 +592,7 @@ mod battler_choice_test {
                     target: Some(2),
                     mega: true,
                     z_move: false,
+                    ultra: false,
                     dyna: false,
                     tera: false,
                     random_target: false,
@@ -584,13 +600,14 @@ mod battler_choice_test {
             }
         );
         assert_matches::assert_matches!(
-            Choice::from_str("move 3,mega,zmove,dyna,tera"),
+            Choice::from_str("move 3,mega,zmove,ultra,dyna,tera"),
             Ok(Choice::Move(choice)) => {
                 assert_eq!(choice, MoveChoice {
                     slot: 3,
                     target: None,
                     mega: true,
                     z_move: true,
+                    ultra: false,
                     dyna: true,
                     tera: true,
                     random_target: false,

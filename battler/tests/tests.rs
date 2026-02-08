@@ -262,6 +262,7 @@ mod mechanics {
     }
 
     mod zmove {
+        mod ultra_burst_test;
         mod z_move_test;
     }
 }
