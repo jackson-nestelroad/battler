@@ -89,7 +89,8 @@ fn eevee() -> Result<TeamData> {
                         "Mimic",
                         "Sketch",
                         "Spite",
-                        "Me First"
+                        "Me First",
+                        "Thief"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -821,4 +822,42 @@ fn curse_applies_heal_for_ghost_user() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);
+}
+
+#[test]
+fn cannot_take_z_crystal() {
+    let mut pikachu = pikachu().unwrap();
+    pikachu.members[0].item = Some("Normalium Z".to_owned());
+    let mut battle = make_battle(100, BattleType::Singles, pikachu, eevee().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 9"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,zmove"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 9"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Eevee,player-2,1|name:Thief|target:Pikachu,player-1,1",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,1|health:58/95",
+            "damage|mon:Pikachu,player-1,1|health:62/100",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|target:Eevee,player-2,1",
+            "split|side:1",
+            "damage|mon:Eevee,player-2,1|health:65/115",
+            "damage|mon:Eevee,player-2,1|health:57/100",
+            "move|mon:Eevee,player-2,1|name:Thief|target:Pikachu,player-1,1",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,1|health:21/95",
+            "damage|mon:Pikachu,player-1,1|health:23/100",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
