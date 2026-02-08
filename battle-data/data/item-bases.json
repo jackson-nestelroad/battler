@@ -86,7 +86,7 @@
       }
     }
   },
-  "untakabletembase": {
+  "untakableitembase": {
     "name": "Untakable Item Base",
     "condition_type": "Built-in",
     "condition": {
