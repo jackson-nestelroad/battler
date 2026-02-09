@@ -198,6 +198,8 @@ Note that this is not meant to be an exact description of how battles work. Many
                      1. Stat boosts:
                         1. `ChangeBoosts`.
                         1. `TryBoost`.
+                        1. `AfterEachBoost`.
+                        1. `AfterBoost`.
                      1. Heal:
                         1. `CanHeal`.
                         1. `TryHeal`.
@@ -262,6 +264,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                1. `Exit`.
                1. Clear volatile effects.
                1. Switch out.
+               1. `AfterFainted`.
             1. Apply recoil damage.
             1. `Update`.
             1. `AfterMoveSecondaryEffects`.
@@ -326,6 +329,10 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. `RestorePp`.
 
+## Calculate Weight
+
+1. `ModifyWeight`.
+
 ## Giving Experience
 
 1. Gain EVs.
@@ -366,6 +373,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 ### Mons
 
+- `BerryEatingHealth`.
 - `ForceTypes`.
 - `IsAsleep`.
 - `IsAwayFromField`.
