@@ -304,7 +304,6 @@
         },
         "on_source_try_hit": [
           "if $move.effect_state.source_effect.is_defined and $move.effect_state.source_effect.id == sleeptalk:",
-
           ["return"],
           "if !func_call(move_has_flag: $move.id sleepusable):",
           ["return false"]
