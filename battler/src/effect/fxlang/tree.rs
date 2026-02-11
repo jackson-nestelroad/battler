@@ -26,7 +26,7 @@ pub enum NumberLiteral {
 ///
 /// QuotedChar -> [^'] | "\\'"
 ///
-/// UnquotedString -> [a-zA-Z0-9_\-:]+
+/// UnquotedString -> Identifier
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct StringLiteral(pub String);
