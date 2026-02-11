@@ -3,6 +3,7 @@ use battler_data::Id;
 use crate::battle::{
     MonHandle,
     MoveHandle,
+    OutsideEffect,
     SpeedOrderable,
 };
 
@@ -292,6 +293,20 @@ impl ShiftAction {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct OutsideEffectAction {
+    pub outside_effect: OutsideEffect,
+    pub order: u32,
+}
+
+impl PartialEq for OutsideEffectAction {
+    fn eq(&self, other: &Self) -> bool {
+        self.order == other.order
+    }
+}
+
+impl Eq for OutsideEffectAction {}
+
 /// An action during a battle.
 ///
 /// Actions are the core of a battle. A turn of a battle consists of several actions running
@@ -322,6 +337,7 @@ pub enum Action {
     Forfeit(ForfeitAction),
     Item(ItemAction),
     Shift(ShiftAction),
+    OutsideEffect(OutsideEffectAction),
 }
 
 impl Action {
@@ -360,18 +376,19 @@ impl SpeedOrderable for Action {
             Self::LearnMove(_) => 3,
             Self::LevelUp(_) => 4,
             Self::Experience(_) => 5,
+            Self::OutsideEffect(_) => 6,
             Self::Switch(action) => {
                 if action.instant {
-                    6
+                    7
                 } else {
                     100
                 }
             }
-            Self::End(_) => 7,
-            Self::Forfeit(_) => 8,
-            Self::BeforeTurn => 9,
-            Self::Item(_) => 10,
-            Self::BeforeTurnMove(_) => 11,
+            Self::End(_) => 8,
+            Self::Forfeit(_) => 9,
+            Self::BeforeTurn => 10,
+            Self::Item(_) => 11,
+            Self::BeforeTurnMove(_) => 12,
             Self::BeforeSwitchEvents(_) => 99,
             Self::Escape(_) => 101,
             Self::SwitchEvents(_) => 103,
@@ -436,6 +453,7 @@ impl SpeedOrderable for Action {
                 }
             }
             Self::Forfeit(action) => action.order,
+            Self::OutsideEffect(action) => action.order,
             _ => 0,
         }
     }

@@ -208,6 +208,11 @@ enum CommonCallbackType {
 
     PlayerValidator = CallbackFlag::TakesPlayer | CallbackFlag::ReturnsStrings,
 
+    PlayerEffectVoid = CallbackFlag::TakesPlayer
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsVoid,
+
     SideVoid = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesSourceEffect
@@ -216,6 +221,11 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesSourceEffect
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+
+    SideEffectVoid = CallbackFlag::TakesSide
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsVoid,
 
     MoveSideResult = CallbackFlag::TakesSide
@@ -317,6 +327,30 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "Activate"]
     Activate,
+    /// Runs when an effect activates.
+    ///
+    /// Runs when activated by a battle effect. Used for shared logic between multiple event
+    /// callbacks.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "ActivateField"]
+    ActivateField,
+    /// Runs when an effect activates.
+    ///
+    /// Runs when activated by a battle effect. Used for shared logic between multiple event
+    /// callbacks.
+    ///
+    /// Runs in the context of an applying effect on a player.
+    #[string = "ActivatePlayer"]
+    ActivatePlayer,
+    /// Runs when an effect activates.
+    ///
+    /// Runs when activated by a battle effect. Used for shared logic between multiple event
+    /// callbacks.
+    ///
+    /// Runs in the context of an applying effect on a side.
+    #[string = "ActivateSide"]
+    ActivateSide,
     /// Runs when a pseudo-weather is being added to the field.
     ///
     /// Runs before the pseudo-weather effect is applied. Can be used to fail the pseudo-weather.
@@ -1285,6 +1319,9 @@ impl BattleEvent {
         match self {
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::Activate => CommonCallbackType::ApplyingEffectVoid as u32,
+            Self::ActivateField => CommonCallbackType::FieldEffectVoid as u32,
+            Self::ActivatePlayer => CommonCallbackType::PlayerEffectVoid as u32,
+            Self::ActivateSide => CommonCallbackType::SideEffectVoid as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,

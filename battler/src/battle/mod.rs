@@ -12,6 +12,7 @@ mod field;
 mod mon;
 pub mod mon_states;
 mod move_outcome;
+mod outside_effect;
 mod player;
 mod queue;
 mod registry;
@@ -37,6 +38,7 @@ pub use action::{
     MonAction,
     MoveAction,
     MoveActionInput,
+    OutsideEffectAction,
     ShiftAction,
     SwitchAction,
     SwitchActionInput,
@@ -110,6 +112,11 @@ pub use move_outcome::{
     MoveEventResult,
     MoveOutcome,
     MoveOutcomeOnTarget,
+};
+pub use outside_effect::{
+    OutsideEffect,
+    OutsideEffectTarget,
+    evaluate_outside_effect,
 };
 pub use player::{
     Player,

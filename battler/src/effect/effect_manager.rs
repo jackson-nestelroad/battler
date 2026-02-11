@@ -30,8 +30,12 @@ use crate::{
             EvaluationContext,
             Evaluator,
             EventState,
+            ParsedCallback,
             ParsedEffect,
+            ParsedProgram,
+            Program,
             ProgramEvalResult,
+            ProgramMetadata,
             VariableInput,
         },
     },
@@ -255,5 +259,29 @@ impl EffectManager {
             ),
             None => Ok(ProgramEvalResult::new(None)),
         }
+    }
+
+    /// Evaluates a program from an outside effect.
+    pub fn evaluate_outside_effect(
+        context: &mut EvaluationContext,
+        event: BattleEvent,
+        program: &Program,
+    ) -> Result<ProgramEvalResult> {
+        let event_state = EventState::default();
+        let mut evaluator = Evaluator::new(event, &event_state);
+        evaluator.evaluate_program(
+            context,
+            VariableInput::default(),
+            &ParsedCallback {
+                program: ParsedProgram::from(program)
+                    .wrap_error_with_format(format_args!("error parsing outside effect program"))?,
+                order: 0,
+                priority: 0,
+                sub_order: 0,
+                metadata: ProgramMetadata::default(),
+            },
+            None,
+            None,
+        )
     }
 }

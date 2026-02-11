@@ -32,6 +32,7 @@ use crate::{
     effect::{
         Effect,
         EffectHandle,
+        NonExistentEffect,
         fxlang,
     },
     general_error,
@@ -364,7 +365,9 @@ pub fn fail_unboost(
 ) -> Result<()> {
     let mut activation = EffectActivationContext {
         effect_flag_name: Some("what".to_owned()),
-        effect: Some(EffectHandle::NonExistent(Id::from_known("unboost"))),
+        effect: Some(EffectHandle::NonExistent(NonExistentEffect::new(
+            Id::from_known("unboost"),
+        ))),
         target: Some(context.mon_handle()),
         ignore_active_move_source_effect: true,
         source_effect: from,
@@ -388,7 +391,9 @@ pub fn fail_unboost(
 pub fn fail_heal(context: &mut MonContext) -> Result<()> {
     let activation = EffectActivationContext {
         effect_flag_name: Some("what".to_owned()),
-        effect: Some(EffectHandle::NonExistent(Id::from_known("heal"))),
+        effect: Some(EffectHandle::NonExistent(NonExistentEffect::new(
+            Id::from_known("heal"),
+        ))),
         target: Some(context.mon_handle()),
         ..Default::default()
     };

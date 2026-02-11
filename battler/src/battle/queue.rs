@@ -560,6 +560,7 @@ mod queue_test {
                 Action::Shift(action) => {
                     format!("shift {} {}", action.mon_action.mon, action.position)
                 }
+                Action::OutsideEffect(action) => format!("outsideeffect {}", action.order),
             })
             .collect()
     }

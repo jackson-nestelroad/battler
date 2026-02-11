@@ -1487,7 +1487,7 @@ impl Player {
 
         let action = Action::Forfeit(ForfeitAction {
             player: context.player().index,
-            order: context.battle_mut().next_forfeit_order(),
+            order: context.battle_mut().next_effect_order(),
         });
         context.player_mut().choice.actions.push(action);
         context.player_mut().choice.forfeiting = true;

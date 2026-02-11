@@ -63,6 +63,8 @@ use crate::{
         MonExitType,
         MonHandle,
         MoveHandle,
+        OutsideEffect,
+        OutsideEffectAction,
         Player,
         PlayerBattleData,
         PlayerContext,
@@ -76,6 +78,7 @@ use crate::{
         core_battle_actions,
         core_battle_effects,
         core_battle_logs,
+        evaluate_outside_effect,
         shift,
         speed_sort,
     },
@@ -91,6 +94,7 @@ use crate::{
         EffectHandle,
         EffectManager,
         LinkedEffectsManager,
+        NonExistentEffect,
         fxlang,
     },
     error::{
@@ -214,6 +218,16 @@ impl<'d> PublicCoreBattle<'d> {
     pub fn auto_end(&mut self) -> Result<()> {
         self.internal.auto_end()
     }
+
+    /// Pushes an outside effect to the battle, which will evaluate at the start of the next turn.
+    ///
+    /// This method is intended for one-off effects. Continual effects should be written as proper
+    /// conditions (e.g., weather, pseudo-weather, volatile status, etc.).
+    ///
+    /// Unlike regular effects, the given effect program is not cached and is re-parsed each time.
+    pub fn push_outside_effect(&mut self, outside_effect: OutsideEffect) -> Result<()> {
+        self.internal.push_outside_effect(outside_effect)
+    }
 }
 
 /// An entry in the faint queue.
@@ -275,7 +289,6 @@ pub struct CoreBattle<'d> {
     ending: bool,
     ended: bool,
     next_effect_order: u32,
-    next_forfeit_order: u32,
     next_effect_linked_id: u32,
     last_move_log: Option<usize>,
     last_move: Option<MoveHandle>,
@@ -365,7 +378,6 @@ impl<'d> CoreBattle<'d> {
             ending: false,
             ended: false,
             next_effect_order: 0,
-            next_forfeit_order: 0,
             next_effect_linked_id: 0,
             last_move_log: None,
             last_move: None,
@@ -446,7 +458,7 @@ impl<'d> CoreBattle<'d> {
         self.players().filter(move |player| player.side == side)
     }
 
-    fn player_index_by_id(&self, player_id: &str) -> Result<usize> {
+    pub fn player_index_by_id(&self, player_id: &str) -> Result<usize> {
         self.player_ids
             .get(player_id)
             .wrap_not_found_error_with_format(format_args!("player {player_id}"))
@@ -569,12 +581,6 @@ impl<'d> CoreBattle<'d> {
         next
     }
 
-    pub fn next_forfeit_order(&mut self) -> u32 {
-        let next = self.next_forfeit_order;
-        self.next_forfeit_order += 1;
-        next
-    }
-
     pub fn next_effect_linked_id(&mut self) -> u32 {
         let next = self.next_effect_linked_id;
         self.next_effect_linked_id += 1;
@@ -651,6 +657,10 @@ impl<'d> CoreBattle<'d> {
 
     fn auto_end(&mut self) -> Result<()> {
         Self::end_battle_deciding_winner(&mut self.context())
+    }
+
+    fn push_outside_effect(&mut self, outside_effect: OutsideEffect) -> Result<()> {
+        Self::push_outside_effect_internal(&mut self.context(), outside_effect)
     }
 }
 
@@ -1505,6 +1515,14 @@ impl<'d> CoreBattle<'d> {
                     action.position,
                     true,
                 )?;
+            }
+            Action::OutsideEffect(action) => {
+                // NOTE: The battle owner can pass in an outside effect with an invalid target
+                // (e.g., player or Mon does not exist). This will error out the battle, as we don't
+                // know if it's OK to skip this effect or not.
+                //
+                // The user sending the outside effect must ensure it is correct.
+                evaluate_outside_effect(context, &action.outside_effect)?;
             }
         }
 
@@ -2415,7 +2433,11 @@ impl<'d> CoreBattle<'d> {
 
     /// Gets an [`EffectHandle`] by name.
     pub fn get_effect_handle(&mut self, name: &str) -> Result<&EffectHandle> {
-        self.get_effect_handle_by_id(&Id::from(name))
+        let effect_handle = self.get_effect_handle_mut_by_id(&Id::from(name))?;
+        if let EffectHandle::NonExistent(effect) = effect_handle {
+            effect.name = name.to_owned();
+        }
+        Ok(effect_handle)
     }
 
     /// Gets an [`EffectHandle`] by ID.
@@ -2424,17 +2446,22 @@ impl<'d> CoreBattle<'d> {
     /// For the duration of a battle, an ID will map to a single [`EffectHandle`]. This method
     /// handles the caching of this translation.
     pub fn get_effect_handle_by_id(&mut self, id: &Id) -> Result<&EffectHandle> {
+        self.get_effect_handle_mut_by_id(id)
+            .map(|effect_handle| &*effect_handle)
+    }
+
+    fn get_effect_handle_mut_by_id(&mut self, id: &Id) -> Result<&mut EffectHandle> {
         if self.effect_handle_cache.contains_key(id) {
             return self
                 .effect_handle_cache
-                .get(id)
+                .get_mut(id)
                 .wrap_expectation("effect handle not found in cache after its key was found");
         }
 
         let effect_handle = self.lookup_effect_in_dex(id.clone());
         self.effect_handle_cache.insert(id.clone(), effect_handle);
         self.effect_handle_cache
-            .get(id)
+            .get_mut(id)
             .wrap_expectation("effect handle not found in cache after insertion")
     }
 
@@ -2457,7 +2484,7 @@ impl<'d> CoreBattle<'d> {
         if self.dex.species.get_by_id(&id).is_ok() {
             return EffectHandle::Species(id);
         }
-        EffectHandle::NonExistent(id)
+        EffectHandle::NonExistent(NonExistentEffect::new(id))
     }
 
     /// Resolve an effect's ID if it an alias by performing an effect lookup.
@@ -2506,7 +2533,7 @@ impl<'d> CoreBattle<'d> {
             EffectHandle::Species(id) => Ok(Effect::for_species(
                 context.battle().dex.species.get_by_id(id)?,
             )),
-            EffectHandle::NonExistent(id) => Ok(Effect::for_non_existent(id.clone())),
+            EffectHandle::NonExistent(effect) => Ok(Effect::for_non_existent(effect.clone())),
         }
     }
 
@@ -2564,6 +2591,21 @@ impl<'d> CoreBattle<'d> {
         for mon_handle in context.battle().all_mon_handles().collect::<Vec<_>>() {
             context.mon_mut(mon_handle)?.volatile_state.effect_cache = MonEffectCache::default();
         }
+        Ok(())
+    }
+
+    fn push_outside_effect_internal(
+        context: &mut Context,
+        outside_effect: OutsideEffect,
+    ) -> Result<()> {
+        let order = context.battle_mut().next_effect_order();
+        BattleQueue::add_action(
+            context,
+            Action::OutsideEffect(OutsideEffectAction {
+                outside_effect,
+                order,
+            }),
+        )?;
         Ok(())
     }
 }

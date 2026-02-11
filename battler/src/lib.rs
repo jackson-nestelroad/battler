@@ -43,6 +43,8 @@ pub use battle::{
     MonPersistentMoveData,
     MonPositionDetails,
     MonSummaryData,
+    OutsideEffect,
+    OutsideEffectTarget,
     PlayerBattleData,
     PlayerData,
     PlayerDex,

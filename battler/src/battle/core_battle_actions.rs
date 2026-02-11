@@ -79,6 +79,7 @@ use crate::{
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
+        NonExistentEffect,
         fxlang,
     },
     error::{
@@ -516,7 +517,7 @@ fn do_move_internal(
         // No PP, so this move action cannot be carried through.
         core_battle_logs::cant(
             context.as_mon_context_mut(),
-            EffectHandle::NonExistent(Id::from_known("nopp")),
+            EffectHandle::NonExistent(NonExistentEffect::new(Id::from_known("nopp"))),
             None,
         )?;
         return Ok(());
@@ -5310,7 +5311,9 @@ pub fn player_use_item_internal(
             core_battle_logs::fail_use_item(
                 context.as_player_context_mut(),
                 &item_id,
-                Some(EffectHandle::NonExistent(Id::from_known("unusable"))),
+                Some(EffectHandle::NonExistent(NonExistentEffect::new(
+                    Id::from_known("unusable"),
+                ))),
             )?;
             return Ok(false);
         }
@@ -5320,7 +5323,9 @@ pub fn player_use_item_internal(
         core_battle_logs::fail_use_item(
             context.as_player_context_mut(),
             &item_id,
-            Some(EffectHandle::NonExistent(Id::from_known("unavailable"))),
+            Some(EffectHandle::NonExistent(NonExistentEffect::new(
+                Id::from_known("unavailable"),
+            ))),
         )?;
     }
 

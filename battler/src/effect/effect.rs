@@ -1,7 +1,10 @@
 use alloc::{
     borrow::ToOwned,
     format,
-    string::String,
+    string::{
+        String,
+        ToString,
+    },
 };
 use core::ops::{
     Deref,
@@ -35,6 +38,29 @@ use crate::{
         MoveHitEffectType,
     },
 };
+
+/// A non-existent effect.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct NonExistentEffect {
+    pub name: String,
+    pub id: Id,
+}
+
+impl NonExistentEffect {
+    /// Creates a new non-existent effect, whose name matches its ID.
+    pub fn new(id: Id) -> Self {
+        Self {
+            name: id.to_string(),
+            id,
+        }
+    }
+}
+
+impl Identifiable for NonExistentEffect {
+    fn id(&self) -> &Id {
+        &self.id
+    }
+}
 
 /// Similar to [`MaybeOwned`][`crate::common::MaybeOwned`], but for an optional mutable reference
 /// backed by a [`ElementRefMut`].
@@ -124,7 +150,7 @@ pub enum EffectHandle {
     /// A species.
     Species(Id),
     /// Any effect that is applied to some part of the battle that does not really exist.
-    NonExistent(Id),
+    NonExistent(NonExistentEffect),
 }
 
 impl EffectHandle {
@@ -194,7 +220,7 @@ impl EffectHandle {
             Self::ItemCondition(id) => Some(&id),
             Self::Clause(id) => Some(&id),
             Self::Species(id) => Some(&id),
-            Self::NonExistent(id) => Some(&id),
+            Self::NonExistent(effect) => Some(&effect.id),
         }
     }
 
@@ -278,7 +304,7 @@ pub enum Effect<'borrow> {
     /// A species.
     Species(ElementRef<'borrow, Species>),
     /// A non-existent effect, which does nothing.
-    NonExistent(Id),
+    NonExistent(NonExistentEffect),
 }
 
 impl<'borrow> Effect<'borrow> {
@@ -336,8 +362,8 @@ impl<'borrow> Effect<'borrow> {
     }
 
     /// Creates a new effect for some non-existent effect.
-    pub fn for_non_existent(id: Id) -> Self {
-        Self::NonExistent(id)
+    pub fn for_non_existent(effect: NonExistentEffect) -> Self {
+        Self::NonExistent(effect)
     }
 
     /// The name of the effect.
@@ -350,7 +376,7 @@ impl<'borrow> Effect<'borrow> {
             Self::Item(item) | Self::ItemCondition(item) => &item.data.name,
             Self::Clause(clause) => &clause.data.name,
             Self::Species(species) => &species.data.name,
-            Self::NonExistent(id) => id.as_ref(),
+            Self::NonExistent(effect) => &effect.name,
         }
     }
 
@@ -476,7 +502,7 @@ impl Identifiable for Effect<'_> {
             Self::Item(item) | Self::ItemCondition(item) => item.id(),
             Self::Clause(clause) => clause.id(),
             Self::Species(species) => species.id(),
-            Self::NonExistent(id) => id,
+            Self::NonExistent(effect) => effect.id(),
         }
     }
 }

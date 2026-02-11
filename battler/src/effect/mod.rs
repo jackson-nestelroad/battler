@@ -13,6 +13,7 @@ pub use effect::{
     Effect,
     EffectHandle,
     EffectType,
+    NonExistentEffect,
 };
 pub use effect_manager::EffectManager;
 pub use effect_state_connectors::{

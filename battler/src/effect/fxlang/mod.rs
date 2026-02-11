@@ -40,7 +40,10 @@ pub use eval::{
 pub use event_state::EventState;
 pub use functions::run_function;
 pub use local_data::LocalData;
-pub use parsed_effect::ParsedEffect;
+pub use parsed_effect::{
+    ParsedCallback,
+    ParsedEffect,
+};
 pub use program_parser::{
     ParsedProgram,
     ParsedProgramBlock,

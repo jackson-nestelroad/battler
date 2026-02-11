@@ -1577,6 +1577,15 @@ impl<'context, 'battle, 'data> EffectContext<'context, 'battle, 'data> {
         ApplyingEffectContext::new(self.into(), source_handle, target_handle)
     }
 
+    /// Creates a new [`PlayerEffectContext`], scoped to the lifetime of this context.
+    pub fn player_effect_context<'effect>(
+        &'effect mut self,
+        player: usize,
+        source_handle: Option<MonHandle>,
+    ) -> Result<PlayerEffectContext<'effect, 'context, 'battle, 'data>> {
+        PlayerEffectContext::new(self.into(), player, source_handle)
+    }
+
     /// Creates a new [`SideEffectContext`], scoped to the lifetime of this context.
     pub fn side_effect_context<'effect>(
         &'effect mut self,
