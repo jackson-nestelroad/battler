@@ -237,7 +237,7 @@ pub struct ContinueStatement;
 pub struct BreakStatement;
 
 /// Statement -> Empty | FunctionCall | Assignment | IfStatement | ElseIfStatement |
-/// ForEachStatement | ReturnStatement
+/// ForEachStatement | ReturnStatement | ContinueStatement | BreakStatement
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Statement {
     Empty,
