@@ -759,6 +759,27 @@ pub fn type_change(
     )
 }
 
+pub fn added_type(
+    context: &mut MonContext,
+    typ: Type,
+    effect: Option<EffectHandle>,
+    source: Option<MonHandle>,
+) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.mon_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: effect,
+        source,
+        additional: Vec::from_iter([format!("type:{typ}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "addedtype".to_owned(),
+        activation,
+    )
+}
+
 pub fn transform(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<()> {
     let species = context
         .battle()
@@ -1022,6 +1043,19 @@ pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Res
     effect_activation(
         context.as_battle_context_mut(),
         "swapboosts".to_owned(),
+        activation,
+    )
+}
+pub fn invert_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "invertboosts".to_owned(),
         activation,
     )
 }

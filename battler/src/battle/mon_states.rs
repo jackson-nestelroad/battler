@@ -30,6 +30,34 @@ pub fn effective_types(context: &mut MonContext) -> Vec<Type> {
         return effective_types;
     }
     let effective_types = {
+        let mut types = effective_types_no_added_type(context);
+        if let Some(added_type) = context.mon().volatile_state.added_type {
+            types.push(added_type);
+        }
+        types
+    };
+    context
+        .mon_mut()
+        .volatile_state
+        .effect_cache
+        .effective_types = Some(effective_types.clone());
+    effective_types
+}
+
+/// The effective types for the Mon, disregarding the added type.
+///
+/// Non-empty. [`Type::None`] is returned when the Mon has no types
+pub fn effective_types_no_added_type(context: &mut MonContext) -> Vec<Type> {
+    if let Some(effective_types_no_added_type) = context
+        .mon()
+        .volatile_state
+        .effect_cache
+        .effective_types_no_added_type
+        .clone()
+    {
+        return effective_types_no_added_type;
+    }
+    let effective_types_no_added_type = {
         let types = core_battle_effects::run_event_for_mon_expecting_types(
             context,
             fxlang::BattleEvent::ForceTypes,
@@ -45,8 +73,8 @@ pub fn effective_types(context: &mut MonContext) -> Vec<Type> {
         .mon_mut()
         .volatile_state
         .effect_cache
-        .effective_types = Some(effective_types.clone());
-    effective_types
+        .effective_types_no_added_type = Some(effective_types_no_added_type.clone());
+    effective_types_no_added_type
 }
 
 /// The effective types for the Mon, before forced types (e.g., Terastallization).
@@ -62,11 +90,15 @@ fn effective_types_before_forced_types(context: &mut MonContext) -> Vec<Type> {
     {
         return effective_types_before_forced_types;
     }
+    let mut types = context.mon().volatile_state.types.clone();
+    if let Some(added_type) = context.mon().volatile_state.added_type {
+        types.push(added_type);
+    }
     let effective_types_before_forced_types = {
         let types = core_battle_effects::run_event_for_mon_expecting_types(
             context,
             fxlang::BattleEvent::Types,
-            context.mon().volatile_state.types.clone(),
+            types,
         );
         if !types.is_empty() {
             types

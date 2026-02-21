@@ -358,6 +358,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the field.
     #[string = "AddPseudoWeather"]
     AddPseudoWeather,
+    /// Runs when a type is being added to a Mon.
+    ///
+    /// Runs before the type addition is applied. Can be used to fail the type addition.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AddType"]
+    AddType,
     /// Runs after a volatile effect is added to a Mon.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -603,12 +610,12 @@ pub enum BattleEvent {
     DamagingHit,
     /// Runs after a move is used that should have PP deducted.
     ///
-    /// Runs in the context a move user.
+    /// Runs in the context of a move user.
     #[string = "DeductPp"]
     DeductPp,
     /// Runs when determining which moves are disabled.
     ///
-    /// Runs in the context a Mon.
+    /// Runs in the context of a Mon and on the move.
     #[string = "DisableMove"]
     DisableMove,
     /// Runs before a Mon is dragged out of battle.
@@ -1323,6 +1330,7 @@ impl BattleEvent {
             Self::ActivatePlayer => CommonCallbackType::PlayerEffectVoid as u32,
             Self::ActivateSide => CommonCallbackType::SideEffectVoid as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
+            Self::AddType => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1518,6 +1526,7 @@ impl BattleEvent {
             Self::AddPseudoWeather | Self::AfterAddPseudoWeather => {
                 &[("pseudo_weather", ValueType::Effect, true)]
             }
+            Self::AddType => &[("type", ValueType::Type, true)],
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
             Self::AfterBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::AfterDamage => &[("damage", ValueType::UFraction, true)],

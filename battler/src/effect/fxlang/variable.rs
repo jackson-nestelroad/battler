@@ -555,9 +555,16 @@ where
                             "active_turns" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.active_turns.into())
                             }
+                            "added_type" => context
+                                .mon(mon_handle)?
+                                .volatile_state
+                                .added_type
+                                .map(|typ| ValueRef::Type(typ))
+                                .unwrap_or(ValueRef::Undefined),
                             "affection_level" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.affection_level().into(),
                             ),
+                            "ate_item" => ValueRef::Boolean(context.mon(mon_handle)?.ate_item),
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                             }
@@ -621,6 +628,14 @@ where
                                         ValueRefToStoredValue::new(None, ValueRef::Type(*val))
                                     })
                                     .collect(),
+                            ),
+                            "effective_types_no_added_type" => ValueRef::TempList(
+                                mon_states::effective_types_no_added_type(
+                                    &mut context.mon_context(mon_handle)?,
+                                )
+                                .iter()
+                                .map(|val| ValueRefToStoredValue::new(None, ValueRef::Type(*val)))
+                                .collect(),
                             ),
                             "effective_weather" => {
                                 match mon_states::effective_weather(

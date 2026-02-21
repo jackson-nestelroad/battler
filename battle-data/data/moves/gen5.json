@@ -940,7 +940,10 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "return func_call(set_types: $source $target.effective_types)"
+          "if !func_call(set_types: $source $target.effective_types_no_added_type):",
+          ["return false"],
+          "if $target.added_type.is_defined:",
+          ["add_type: $source $target.added_type"]
         ]
       }
     }

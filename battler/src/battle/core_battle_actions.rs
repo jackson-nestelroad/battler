@@ -771,6 +771,10 @@ pub fn use_active_move(
 
 /// Modifies the active move's type.
 pub fn modify_move_type(context: &mut ActiveMoveContext, target: Option<MonHandle>) -> Result<()> {
+    if context.active_move().data.typeless {
+        return Ok(());
+    }
+
     let move_type = context.active_move().data.primary_type;
     let move_type = core_battle_effects::run_active_move_event_expecting_type(
         context,
@@ -2769,7 +2773,9 @@ fn apply_move_effects(
                     }
                 }
             }
-            if context.active_move().data.user_switch.is_some() {
+            if let Some(switch_type) = context.active_move().data.user_switch
+                && (!switch_type.if_hit() || target.outcome.hit())
+            {
                 let outcome = if Player::can_switch(context.as_player_context()) {
                     MoveOutcomeOnTarget::Success
                 } else {
@@ -2927,6 +2933,29 @@ pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Res
     core_battle_logs::swap_boosts(context, boosts)?;
 
     Ok(())
+}
+
+/// Inverts boosts on the target.
+pub fn invert_boosts(context: &mut ApplyingEffectContext) -> Result<bool> {
+    if context
+        .target()
+        .volatile_state
+        .boosts
+        .values()
+        .all(|val| val == 0)
+    {
+        return Ok(false);
+    }
+
+    let mut boosts = BoostTable::default();
+    for (boost, val) in context.target().volatile_state.boosts.iter() {
+        boosts.set(boost, -val);
+    }
+
+    Mon::set_boosts(&mut context.target_context()?, &boosts);
+    core_battle_logs::invert_boosts(context)?;
+
+    Ok(true)
 }
 
 /// Applies an effect on the user of a move.
@@ -3734,6 +3763,32 @@ pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> R
     let mut context = context.target_context()?;
     let types = context.mon().volatile_state.types.clone();
     core_battle_logs::type_change(&mut context, &types, source_effect, source)?;
+    Ok(true)
+}
+
+/// Adds a type to a Mon.
+pub fn add_type(context: &mut ApplyingEffectContext, typ: Type) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    if !context.target().active {
+        return Ok(false);
+    }
+
+    if !core_battle_effects::run_event_for_applying_effect(
+        context,
+        fxlang::BattleEvent::AddType,
+        fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+    ) {
+        return Ok(false);
+    }
+
+    context.target_mut().volatile_state.added_type = Some(typ);
+    let source = context.source_handle();
+    let source_effect = context.source_effect_handle().cloned();
+    let mut context = context.target_context()?;
+    core_battle_logs::added_type(&mut context, typ, source_effect, source)?;
     Ok(true)
 }
 
@@ -5143,6 +5198,8 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         fxlang::BattleEvent::EatItem,
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
     );
+
+    context.target_mut().ate_item = true;
 
     after_use_item(context, item_id)
 }

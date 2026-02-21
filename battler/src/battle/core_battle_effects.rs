@@ -807,6 +807,7 @@ pub fn run_applying_effect_event(
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
     let effect = context.effect_handle().clone();
+    let target = context.target_handle();
     match context.source_applying_effect_context().ok()? {
         Some(mut context) => run_callback_under_applying_effect(
             &mut context,
@@ -815,7 +816,7 @@ pub fn run_applying_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
-                AppliedEffectLocation::None,
+                AppliedEffectLocation::Mon(target),
             ),
         ),
         None => run_callback_under_applying_effect(
@@ -825,10 +826,33 @@ pub fn run_applying_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
-                AppliedEffectLocation::None,
+                AppliedEffectLocation::Mon(target),
             ),
         ),
     }
+}
+
+/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+pub fn run_applying_effect_event_expecting_u64(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<u64> {
+    run_applying_effect_event(context, event, input)?
+        .integer_u64()
+        .ok()
+}
+
+/// Runs an event on the [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`bool`].
+pub fn run_effect_event_expecting_bool(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+) -> Option<bool> {
+    run_effect_event(context, event, fxlang::VariableInput::default())?
+        .boolean()
+        .ok()
 }
 
 /// Runs an event on the [`Effect`][`crate::effect::Effect`].
@@ -2769,29 +2793,6 @@ pub fn run_applying_effect_event_expecting_bool(
     input: fxlang::VariableInput,
 ) -> Option<bool> {
     run_applying_effect_event(context, event, input)?
-        .boolean()
-        .ok()
-}
-
-/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
-pub fn run_applying_effect_event_expecting_u64(
-    context: &mut ApplyingEffectContext,
-    event: fxlang::BattleEvent,
-    input: fxlang::VariableInput,
-) -> Option<u64> {
-    run_applying_effect_event(context, event, input)?
-        .integer_u64()
-        .ok()
-}
-
-/// Runs an event on the [`Effect`][`crate::effect::Effect`].
-///
-/// Expects a [`bool`].
-pub fn run_effect_event_expecting_bool(
-    context: &mut EffectContext,
-    event: fxlang::BattleEvent,
-) -> Option<bool> {
-    run_effect_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
 }

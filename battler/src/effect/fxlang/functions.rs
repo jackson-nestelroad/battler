@@ -221,6 +221,7 @@ pub fn run_function(
         "hit_effect" => hit_effect().map(|val| Some(val)),
         "increase_friendship" => increase_friendship(context).map(|()| None),
         "index" => index(context),
+        "invert_boosts" => invert_boosts(context).map(|_| None),
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
         "is_ally" => is_ally(context).map(|val| Some(val)),
         "item_has_flag" => item_has_flag(context).map(|val| Some(val)),
@@ -525,6 +526,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("no_events")
     }
 
+    fn no_forward(&mut self) -> bool {
+        self.has_flag("no_forward")
+    }
+
     fn no_source(&mut self) -> bool {
         self.has_flag("no_source")
     }
@@ -638,6 +643,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             self.evaluation_context().target_handle()
         } else if let Some(effect_mon_handle) = self.effect_mon_handle
             && forwarding
+            && !self.no_forward()
         {
             Some(effect_mon_handle)
         } else {
@@ -4170,6 +4176,15 @@ fn swap_boosts(mut context: FunctionContext) -> Result<()> {
             .forward_to_applying_effect_context_with_source_and_target(Some(source), target)?,
         &boosts,
     )
+}
+
+fn invert_boosts(mut context: FunctionContext) -> Result<Value> {
+    let target = context.target_handle_positional()?;
+
+    core_battle_actions::invert_boosts(
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
+    )
+    .map(|val| Value::Boolean(val))
 }
 
 fn base_species(mut context: FunctionContext) -> Result<Value> {

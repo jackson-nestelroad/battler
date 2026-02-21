@@ -469,6 +469,7 @@ pub struct MonSwitchState {
 #[derive(Debug, Default, Clone)]
 pub struct MonEffectCache {
     pub effective_types: Option<Vec<Type>>,
+    pub effective_types_no_added_type: Option<Vec<Type>>,
     pub effective_types_before_forced_types: Option<Vec<Type>>,
 
     pub effective_ability: Option<Option<Id>>,
@@ -510,6 +511,8 @@ pub struct MonVolatileState {
     pub move_slots: Vec<MoveSlot>,
     /// Current types.
     pub types: Vec<Type>,
+    /// Added type.
+    pub added_type: Option<Type>,
     /// The current ability.
     pub ability: AbilitySlot,
     /// Effect state for the item.
@@ -620,6 +623,7 @@ pub struct Mon {
     pub max_hp: u16,
     pub exited: Option<MonExitType>,
     pub newly_switched: bool,
+    pub ate_item: bool,
 
     pub next_turn_state: MonNextTurnState,
     pub switch_state: MonSwitchState,
@@ -727,6 +731,7 @@ impl Mon {
             max_hp: 0,
             exited: None,
             newly_switched: false,
+            ate_item: false,
             next_turn_state: MonNextTurnState::default(),
             switch_state: MonSwitchState::default(),
             volatile_state: MonVolatileState::default(),
@@ -1727,6 +1732,7 @@ impl Mon {
             speed: 0, // Updated by set_species.
             move_slots: context.mon().base_move_slots.clone(),
             types: Vec::default(), // Updated by set_species.
+            added_type: None,
             ability: AbilitySlot {
                 id: context.mon().base_ability.clone(),
                 effect_state: fxlang::EffectState::initial_effect_state(
@@ -2503,6 +2509,18 @@ impl Mon {
             fxlang::BattleEvent::DisableMove,
             fxlang::VariableInput::default(),
         );
+
+        for move_slot in context.mon_mut().volatile_state.move_slots.clone() {
+            core_battle_effects::run_applying_effect_event_expecting_void(
+                &mut context.applying_effect_context(
+                    EffectHandle::InactiveMove(move_slot.id.clone()),
+                    None,
+                    None,
+                )?,
+                fxlang::BattleEvent::DisableMove,
+                fxlang::VariableInput::default(),
+            );
+        }
 
         context.mon_mut().next_turn_state = MonNextTurnState::default();
 
