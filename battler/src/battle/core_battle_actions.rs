@@ -3772,7 +3772,7 @@ pub fn add_type(context: &mut ApplyingEffectContext, typ: Type) -> Result<bool> 
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
 
-    if !context.target().active {
+    if !context.target().active || Mon::has_type(&mut context.target_context()?, typ) {
         return Ok(false);
     }
 

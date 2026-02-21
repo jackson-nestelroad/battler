@@ -187,11 +187,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_hit": [
-          "if func_call(has_type: $target ghost):",
-          ["return false"],
-          "return func_call(add_type: $target ghost)"
-        ]
+        "on_hit": ["return func_call(add_type: $target ghost)"]
       }
     }
   },
@@ -256,11 +252,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_hit": [
-          "if func_call(has_type: $target grass):",
-          ["return false"],
-          "return func_call(add_type: $target grass)"
-        ]
+        "on_hit": ["return func_call(add_type: $target grass)"]
       }
     }
   },
