@@ -1342,6 +1342,11 @@ fn move_hit_loop_internal(
             )?;
         }
 
+        context.active_move_mut().damaged_targets = hit_targets_state
+            .iter()
+            .filter_map(|target| (target.outcome.damage() > 0).then(|| target.handle))
+            .collect();
+
         context.active_move_mut().total_damage += hit_targets_state
             .iter()
             .map(|target| target.outcome.damage() as u64)
