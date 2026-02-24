@@ -177,11 +177,6 @@ impl ParsedEffect {
     pub fn condition(&self) -> &ConditionAttributes {
         &self.condition
     }
-
-    /// The associated condition attributes.
-    pub fn condition_mut(&mut self) -> &mut ConditionAttributes {
-        &mut self.condition
-    }
 }
 
 #[cfg(test)]

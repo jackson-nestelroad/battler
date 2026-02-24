@@ -186,6 +186,7 @@ pub fn run_function(
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
+        "effect_has_event_callback" => effect_has_event_callback(context).map(|val| Some(val)),
         "end_ability" => end_ability(context).map(|()| None),
         "end_dynamax" => end_dynamax(context).map(|()| None),
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
@@ -4430,4 +4431,24 @@ fn set_z_power_boosts(mut context: FunctionContext) -> Result<()> {
         ..Default::default()
     });
     Ok(())
+}
+
+fn effect_has_event_callback(mut context: FunctionContext) -> Result<Value> {
+    let effect = context
+        .pop_front()
+        .wrap_expectation("missing effect")?
+        .effect_handle()
+        .wrap_error_with_message("invalid effect")?;
+    let event = context
+        .pop_front()
+        .wrap_expectation("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
+    CoreBattle::effect_has_event_callback(
+        context.evaluation_context_mut().battle_context_mut(),
+        &effect,
+        event,
+    )
+    .map(|val| Value::Boolean(val))
 }

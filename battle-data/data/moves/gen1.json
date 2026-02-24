@@ -2464,7 +2464,7 @@
         "on_try_boost": [
           "if $target == $source or $effect != intimidate:",
           ["return"],
-          "log_fail_unboost: $target from_effect",
+          "log_fail_unboost: from_effect",
           "return func_call(boost_table)"
         ],
         "on_end": ["log_end"]

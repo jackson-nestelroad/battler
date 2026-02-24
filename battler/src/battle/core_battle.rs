@@ -2608,4 +2608,19 @@ impl<'d> CoreBattle<'d> {
         )?;
         Ok(())
     }
+
+    /// Checks if the effect has the given event callback.
+    pub fn effect_has_event_callback(
+        context: &mut Context,
+        effect_handle: &EffectHandle,
+        event: fxlang::BattleEvent,
+    ) -> Result<bool> {
+        Ok(Self::get_parsed_effect_by_handle(context, effect_handle)?
+            .map(|effect| {
+                effect
+                    .event(event, fxlang::BattleEventModifier::None)
+                    .is_some()
+            })
+            .unwrap_or(false))
+    }
 }

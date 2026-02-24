@@ -8,7 +8,7 @@
           "if !([attract, disable, encore, healblock, truant, torment] has $volatile.id):",
           ["return"],
           "if $effect.is_move:",
-          ["log_block: with_target from_effect"],
+          ["log_block: with_target"],
           "return false"
         ]
       }
@@ -32,14 +32,14 @@
             ]
           ],
           "if !$cleared.is_empty and !$effect.is_move_secondary:",
-          ["log_fail_unboost: $target from_effect $cleared"],
+          ["log_fail_unboost: from_effect $cleared"],
           "return $boosts"
         ],
         "on_ally_set_status": [
           "if ($source.is_defined and $target == $source) or !func_call(has_type: $target grass):",
           ["return"],
           "if $effect.id == yawn or ($effect.is_move and !$effect.is_move_secondary):",
-          ["log_activate: with_target"],
+          ["log_block: with_target"],
           "return false"
         ],
         "on_ally_add_volatile": [
@@ -48,7 +48,7 @@
           "if $volatile.id == yawn:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
-            ["log_activate: with_target"],
+            ["log_block: with_target"],
             "return false"
           ]
         ]
@@ -167,12 +167,71 @@
     "name": "Refrigerate",
     "flags": [],
     "effect": {
-      "callbacks": {}
+      "delegates": ["condition:modifynormaltypemoveabilitybase"],
+      "local_data": {
+        "values": {
+          "type": "ice"
+        }
+      }
     }
   },
-  "sweetveil": { "name": "Sweet Veil", "flags": [] },
-  "stancechange": { "name": "Stance Change", "flags": ["Permanent"] },
-  "galewings": { "name": "Gale Wings", "flags": [] },
+  "sweetveil": {
+    "name": "Sweet Veil",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_ally_set_status": [
+          "if $status.id == slp:",
+          ["log_block: with_target", "return false"]
+        ],
+        "on_ally_add_volatile": [
+          "if $volatile.id == yawn:",
+          [
+            "if $effect.is_move and !$effect.is_move_secondary:",
+            ["log_block: with_target"],
+            "return false"
+          ]
+        ]
+      }
+    }
+  },
+  "stancechange": {
+    "name": "Stance Change",
+    "flags": [
+      "NoEntrainment",
+      "NoRolePlay",
+      "NoTrace",
+      "NoSkillSwap",
+      "Permanent"
+    ],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if func_call(base_species: $user) != aegislash or $user.transformed:",
+          ["return"],
+          "if $move.category == status and $move.id != kingsshield:",
+          ["return"],
+          "$species = aegislashblade",
+          "if $move.id == kingsshield:",
+          ["$species = aegislash"],
+          "if $user.species != $species:",
+          ["forme_change: $user $species"]
+        ]
+      }
+    }
+  },
+  "galewings": {
+    "name": "Gale Wings",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_priority": [
+          "if $move.type == flying and $user.hp == $user.max_hp:",
+          ["return $priority + 1"]
+        ]
+      }
+    }
+  },
   "megalauncher": {
     "name": "Mega Launcher",
     "flags": [],
@@ -189,12 +248,86 @@
       }
     }
   },
-  "grasspelt": { "name": "Grass Pelt", "flags": [] },
-  "symbiosis": { "name": "Symbiosis", "flags": [] },
-  "toughclaws": { "name": "Tough Claws", "flags": [] },
-  "pixilate": { "name": "Pixilate", "flags": [] },
-  "gooey": { "name": "Gooey", "flags": [] },
-  "aerilate": { "name": "Aerilate", "flags": [] },
+  "grasspelt": {
+    "name": "Grass Pelt",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_modify_def": [
+          "if $target.effective_terrain == grassyterrain:",
+          ["return $def * 3/2"]
+        ]
+      }
+    }
+  },
+  "symbiosis": {
+    "name": "Symbiosis",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_ally_after_use_item": [
+          "if $target.needs_switch:",
+          ["return"],
+          "$source = $effect_state.target",
+          "$item = func_call(take_item: $source dry_run)",
+          "if !$item or !func_call(set_item: $target $item dry_run):",
+          ["return"],
+          "$item = func_call(take_item: $source)",
+          "if !$item:",
+          ["return"],
+          "set_item: $target $item"
+        ]
+      }
+    }
+  },
+  "toughclaws": {
+    "name": "Tough Claws",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if func_call(move_has_flag: $move contact):",
+          ["return $base_power * 13/10"]
+        ]
+      }
+    }
+  },
+  "pixilate": {
+    "name": "Pixilate",
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:modifynormaltypemoveabilitybase"],
+      "local_data": {
+        "values": {
+          "type": "fairy"
+        }
+      }
+    }
+  },
+  "gooey": {
+    "name": "Gooey",
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move):",
+          ["log_ability", "boost: $source 'spe:-1'"]
+        ]
+      }
+    }
+  },
+  "aerilate": {
+    "name": "Aerilate",
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:modifynormaltypemoveabilitybase"],
+      "local_data": {
+        "values": {
+          "type": "flying"
+        }
+      }
+    }
+  },
   "parentalbond": {
     "name": "Parental Bond",
     "flags": [],
@@ -213,9 +346,40 @@
       }
     }
   },
-  "darkaura": { "name": "Dark Aura", "flags": [] },
-  "fairyaura": { "name": "Fairy Aura", "flags": [] },
-  "aurabreak": { "name": "Aura Break", "flags": [] },
+  "darkaura": {
+    "name": "Dark Aura",
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:auraabilitybase"],
+      "local_data": {
+        "values": {
+          "type": "dark"
+        }
+      }
+    }
+  },
+  "fairyaura": {
+    "name": "Fairy Aura",
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:auraabilitybase"],
+      "local_data": {
+        "values": {
+          "type": "fairy"
+        }
+      }
+    }
+  },
+  "aurabreak": {
+    "name": "Aura Break",
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_any_try_primary_hit": ["$move.effect_state.aura_break = true"]
+      }
+    }
+  },
   "primordialsea": {
     "name": "Primordial Sea",
     "flags": [],

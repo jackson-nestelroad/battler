@@ -470,7 +470,7 @@
             ]
           ],
           "if !$cleared.is_empty and !$effect.is_move_secondary:",
-          ["log_fail_unboost: $target from_effect $cleared"],
+          ["log_fail_unboost: from_effect $cleared"],
           "return $boosts"
         ]
       }
