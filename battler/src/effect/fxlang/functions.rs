@@ -2562,7 +2562,7 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid user")?;
     let active_move_handle =
         CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
-    Ok(Value::ActiveMove(active_move_handle))
+    Ok(Value::Effect(active_move_handle.into()))
 }
 
 fn new_active_move(mut context: FunctionContext) -> Result<Value> {
@@ -2578,7 +2578,7 @@ fn new_active_move(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid user")?;
     let active_move_handle =
         CoreBattle::register_active_move_by_id(context.battle_context_mut(), &move_id, mon_handle)?;
-    Ok(Value::ActiveMove(active_move_handle))
+    Ok(Value::Effect(active_move_handle.into()))
 }
 
 fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value> {
@@ -2614,7 +2614,7 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
         .wrap_error_with_message("invalid user")?;
     let active_move_handle =
         CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
-    Ok(Value::ActiveMove(active_move_handle))
+    Ok(Value::Effect(active_move_handle.into()))
 }
 
 fn use_active_move(mut context: FunctionContext) -> Result<Value> {

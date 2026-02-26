@@ -539,7 +539,7 @@ where
                             "active_move" => context
                                 .mon(mon_handle)?
                                 .active_move
-                                .map(|active_move| ValueRef::ActiveMove(active_move))
+                                .map(|active_move| ValueRef::TempEffect(active_move.into()))
                                 .unwrap_or(ValueRef::Undefined),
                             "active_move_actions" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.active_move_actions.into(),
@@ -730,13 +730,15 @@ where
                             }
                             "last_move" => {
                                 match context.mon(mon_handle)?.volatile_state.last_move {
-                                    Some(last_move) => ValueRef::ActiveMove(last_move),
+                                    Some(last_move) => ValueRef::TempEffect(last_move.into()),
                                     _ => ValueRef::Undefined,
                                 }
                             }
                             "last_move_used" => {
                                 match context.mon(mon_handle)?.volatile_state.last_move_used {
-                                    Some(last_move_used) => ValueRef::ActiveMove(last_move_used),
+                                    Some(last_move_used) => {
+                                        ValueRef::TempEffect(last_move_used.into())
+                                    }
                                     _ => ValueRef::Undefined,
                                 }
                             }
@@ -936,13 +938,13 @@ where
                                 .battle_context()
                                 .battle()
                                 .last_move()
-                                .map(|move_handle| ValueRef::ActiveMove(move_handle))
+                                .map(|move_handle| ValueRef::TempEffect(move_handle.into()))
                                 .unwrap_or(ValueRef::Undefined),
                             "last_successful_move" => context
                                 .battle_context()
                                 .battle()
                                 .last_successful_move()
-                                .map(|move_handle| ValueRef::ActiveMove(move_handle))
+                                .map(|move_handle| ValueRef::TempEffect(move_handle.into()))
                                 .unwrap_or(ValueRef::Undefined),
                             "turn" => {
                                 ValueRef::UFraction(context.battle_context().battle().turn().into())
@@ -1257,8 +1259,7 @@ where
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
-                ValueRefMut::ActiveMove(active_move_handle)
-                | ValueRefMut::Effect(EffectHandle::ActiveMove(active_move_handle, _)) => {
+                ValueRefMut::Effect(EffectHandle::ActiveMove(active_move_handle, _)) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
                         "accuracy" => ValueRefMut::Accuracy(

@@ -74,7 +74,6 @@ use crate::{
         general_error,
         integer_overflow_error,
     },
-    moves::MoveHitEffectType,
 };
 
 /// The type of an fxlang value.
@@ -166,7 +165,6 @@ pub enum Value {
     Mon(MonHandle),
 
     Effect(EffectHandle),
-    ActiveMove(MoveHandle),
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
 
@@ -215,8 +213,8 @@ impl Value {
             Self::Player(_) => ValueType::Player,
             Self::Mon(_) => ValueType::Mon,
 
+            Self::Effect(EffectHandle::ActiveMove(_, _)) => ValueType::ActiveMove,
             Self::Effect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
 
@@ -312,7 +310,7 @@ impl Value {
             ValueType::Player => self.player_index().map(Value::Player),
             ValueType::Mon => self.mon_handle().map(Value::Mon),
             ValueType::Effect => self.effect_handle().map(Value::Effect),
-            ValueType::ActiveMove => self.active_move().map(Value::ActiveMove),
+            ValueType::ActiveMove => self.active_move().map(|val| Value::Effect(val.into())),
             ValueType::HitEffect => self.hit_effect().map(Value::HitEffect),
             ValueType::SecondaryHitEffect => {
                 self.secondary_hit_effect().map(Value::SecondaryHitEffect)
@@ -502,7 +500,6 @@ impl Value {
     pub fn is_active_move(&self) -> bool {
         match self {
             Self::Effect(EffectHandle::ActiveMove(_, _)) => true,
-            Self::ActiveMove(_) => true,
             _ => false,
         }
     }
@@ -556,7 +553,7 @@ impl Value {
         match self {
             Self::String(val) => Ok(Id::from(val)),
             Self::Effect(EffectHandle::InactiveMove(val)) => Ok(val),
-            Self::ActiveMove(val) | Self::Effect(EffectHandle::ActiveMove(val, _)) => {
+            Self::Effect(EffectHandle::ActiveMove(val, _)) => {
                 Ok(context.active_move(val)?.id().clone())
             }
             val @ _ => Err(general_error(format!(
@@ -618,7 +615,6 @@ impl Value {
     pub fn active_move(self) -> Result<MoveHandle> {
         match self {
             Self::Effect(EffectHandle::ActiveMove(val, _)) => Ok(val),
-            Self::ActiveMove(val) => Ok(val),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::ActiveMove)),
         }
     }
@@ -960,7 +956,6 @@ pub enum MaybeReferenceValue<'eval> {
     Mon(MonHandle),
 
     Effect(EffectHandle),
-    ActiveMove(MoveHandle),
     HitEffect(HitEffect),
     SecondaryHitEffect(SecondaryEffectData),
 
@@ -1012,7 +1007,6 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Mon(_) => ValueType::Mon,
 
             Self::Effect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
 
@@ -1063,7 +1057,6 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Mon(val) => Value::Mon(*val),
 
             Self::Effect(val) => Value::Effect(val.clone()),
-            Self::ActiveMove(val) => Value::ActiveMove(*val),
             Self::HitEffect(val) => Value::HitEffect(val.clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect(val.clone()),
 
@@ -1169,7 +1162,6 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::Mon(val) => Self::Mon(val),
 
             Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
 
@@ -1239,7 +1231,6 @@ pub enum ValueRef<'eval> {
 
     Effect(&'eval EffectHandle),
     TempEffect(EffectHandle),
-    ActiveMove(MoveHandle),
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
 
@@ -1294,7 +1285,6 @@ impl<'eval> ValueRef<'eval> {
 
             Self::Effect(_) => ValueType::Effect,
             Self::TempEffect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
 
@@ -1348,7 +1338,6 @@ impl<'eval> ValueRef<'eval> {
 
             Self::Effect(val) => Value::Effect((*val).clone()),
             Self::TempEffect(val) => Value::Effect(val.clone()),
-            Self::ActiveMove(val) => Value::ActiveMove(*val),
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect((*val).clone()),
 
@@ -1459,10 +1448,6 @@ impl<'eval> ValueRef<'eval> {
     /// Returns the [`EffectHandle`] associated with an effect reference.
     pub fn effect_handle(&self) -> Option<EffectHandle> {
         match self {
-            Self::ActiveMove(move_handle) => Some(EffectHandle::ActiveMove(
-                *move_handle,
-                MoveHitEffectType::PrimaryEffect,
-            )),
             Self::Effect(effect_handle) => Some((*effect_handle).clone()),
             Self::TempEffect(effect_handle) => Some((*effect_handle).clone()),
             _ => None,
@@ -1472,7 +1457,6 @@ impl<'eval> ValueRef<'eval> {
     /// Returns the [`MoveHandle`] associated with an active move reference.
     pub fn active_move_handle(&self) -> Option<MoveHandle> {
         match self {
-            Self::ActiveMove(move_handle) => Some(*move_handle),
             Self::Effect(EffectHandle::ActiveMove(move_handle, _)) => Some(*move_handle),
             Self::TempEffect(EffectHandle::ActiveMove(move_handle, _)) => Some(*move_handle),
             _ => None,
@@ -1519,7 +1503,6 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::Mon(val) => Self::Mon(*val),
 
             Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(*val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
 
@@ -1623,7 +1606,6 @@ pub enum ValueRefMut<'eval> {
     OptionalMon(&'eval mut Option<MonHandle>),
 
     Effect(&'eval mut EffectHandle),
-    ActiveMove(&'eval mut MoveHandle),
     HitEffect(&'eval mut HitEffect),
     OptionalHitEffect(&'eval mut Option<HitEffect>),
     SecondaryHitEffect(&'eval mut SecondaryEffectData),
@@ -1691,7 +1673,6 @@ impl<'eval> ValueRefMut<'eval> {
             Self::OptionalMon(_) => ValueType::Mon,
 
             Self::Effect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::OptionalHitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
@@ -1816,9 +1797,6 @@ impl<'eval> ValueRefMut<'eval> {
             ValueRefMut::Effect(var) => {
                 *var = val.effect_handle()?;
             }
-            ValueRefMut::ActiveMove(var) => {
-                *var = val.active_move()?;
-            }
             ValueRefMut::HitEffect(var) => {
                 *var = val.hit_effect()?;
             }
@@ -1938,7 +1916,6 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::Mon(val) => Self::Mon(val),
 
             Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
 
@@ -2000,7 +1977,6 @@ pub enum MaybeReferenceValueForOperation<'eval> {
 
     Effect(&'eval EffectHandle),
     TempEffect(EffectHandle),
-    ActiveMove(MoveHandle),
     HitEffect(&'eval HitEffect),
     SecondaryHitEffect(&'eval SecondaryEffectData),
 
@@ -2057,7 +2033,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
             Self::Effect(_) => ValueType::Effect,
             Self::TempEffect(_) => ValueType::Effect,
-            Self::ActiveMove(_) => ValueType::ActiveMove,
             Self::HitEffect(_) => ValueType::HitEffect,
             Self::SecondaryHitEffect(_) => ValueType::SecondaryHitEffect,
 
@@ -2113,7 +2088,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
             Self::Effect(val) => Value::Effect((*val).clone()),
             Self::TempEffect(val) => Value::Effect(val.clone()),
-            Self::ActiveMove(val) => Value::ActiveMove(*val),
             Self::HitEffect(val) => Value::HitEffect((*val).clone()),
             Self::SecondaryHitEffect(val) => Value::SecondaryHitEffect((*val).clone()),
 
@@ -2172,9 +2146,8 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
             Self::Effect(_) => 116,
             Self::TempEffect(_) => 117,
-            Self::ActiveMove(_) => 118,
-            Self::HitEffect(_) => 119,
-            Self::SecondaryHitEffect(_) => 120,
+            Self::HitEffect(_) => 118,
+            Self::SecondaryHitEffect(_) => 119,
 
             Self::Accuracy(_) => 150,
             Self::Boost(_) => 151,
@@ -2657,7 +2630,6 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Effect(lhs), Self::Effect(rhs)) => lhs.eq(rhs),
             (Self::Effect(lhs), Self::TempEffect(rhs)) => lhs.eq(&rhs),
             (Self::TempEffect(lhs), Self::TempEffect(rhs)) => lhs.eq(rhs),
-            (Self::ActiveMove(lhs), Self::ActiveMove(rhs)) => lhs.eq(rhs),
             (Self::HitEffect(lhs), Self::HitEffect(rhs)) => lhs.eq(rhs),
             (Self::Accuracy(lhs), Self::Accuracy(rhs)) => lhs.eq(rhs),
             (Self::Boost(lhs), Self::Boost(rhs)) => lhs.eq(rhs),
@@ -2856,7 +2828,6 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::Mon(val) => Self::Mon(*val),
 
             Value::Effect(val) => Self::Effect(val),
-            Value::ActiveMove(val) => Self::ActiveMove(*val),
             Value::HitEffect(val) => Self::HitEffect(val),
             Value::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
 
@@ -2906,7 +2877,6 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::Mon(val) => Self::Mon(*val),
 
             MaybeReferenceValue::Effect(val) => Self::Effect(val),
-            MaybeReferenceValue::ActiveMove(val) => Self::ActiveMove(*val),
             MaybeReferenceValue::HitEffect(val) => Self::HitEffect(val),
             MaybeReferenceValue::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
 
@@ -2961,7 +2931,6 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
 
             ValueRef::Effect(val) => Self::Effect(val),
             ValueRef::TempEffect(val) => Self::TempEffect(val),
-            ValueRef::ActiveMove(val) => Self::ActiveMove(val),
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
 
@@ -3020,7 +2989,6 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
 
             ValueRef::Effect(val) => Self::Effect(val),
             ValueRef::TempEffect(val) => Self::Effect(val),
-            ValueRef::ActiveMove(val) => Self::ActiveMove(*val),
             ValueRef::HitEffect(val) => Self::HitEffect(val),
             ValueRef::SecondaryHitEffect(val) => Self::SecondaryHitEffect(val),
 
