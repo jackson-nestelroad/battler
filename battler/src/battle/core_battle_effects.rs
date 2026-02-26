@@ -807,7 +807,11 @@ pub fn run_applying_effect_event(
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
     let effect = context.effect_handle().clone();
-    let target = context.target_handle();
+    let source = context.source_handle();
+    let location = match source {
+        Some(source) => AppliedEffectLocation::Mon(source),
+        None => AppliedEffectLocation::None,
+    };
     match context.source_applying_effect_context().ok()? {
         Some(mut context) => run_callback_under_applying_effect(
             &mut context,
@@ -816,7 +820,7 @@ pub fn run_applying_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
-                AppliedEffectLocation::Mon(target),
+                location,
             ),
         ),
         None => run_callback_under_applying_effect(
@@ -826,7 +830,7 @@ pub fn run_applying_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
-                AppliedEffectLocation::Mon(target),
+                location,
             ),
         ),
     }
