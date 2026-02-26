@@ -496,6 +496,14 @@ impl Value {
         }
     }
 
+    /// Checks if the value is an [`EffectHandle`].
+    pub fn is_effect(&self) -> bool {
+        match self {
+            Self::Effect(_) => true,
+            _ => false,
+        }
+    }
+
     /// Checks if the value is a [`MoveHandle`].
     pub fn is_active_move(&self) -> bool {
         match self {

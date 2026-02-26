@@ -735,13 +735,13 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     }
 
     fn effect_handle_positional(&mut self) -> Result<EffectHandle> {
-        match self.front().map(|val| val.value_type()) {
-            Some(ValueType::Effect) => self
-                .pop_front()
+        if self.front().map(|val| val.is_effect()).unwrap_or(false) {
+            self.pop_front()
                 .wrap_expectation("missing effect")?
                 .effect_handle()
-                .wrap_error_with_message("invalid effect"),
-            _ => self.effect_handle(),
+                .wrap_error_with_message("invalid effect")
+        } else {
+            self.effect_handle()
         }
     }
 
@@ -3426,15 +3426,16 @@ fn prioritize_move(mut context: FunctionContext) -> Result<()> {
         ),
         _ => None,
     };
-    let source_effect = match context.front().map(|val| val.value_type()) {
-        Some(ValueType::Effect) => Some(
+    let source_effect = if context.front().map(|val| val.is_effect()).unwrap_or(false) {
+        Some(
             context
                 .pop_front()
                 .wrap_expectation("missing source effect")?
                 .effect_handle()
                 .wrap_error_with_message("invalid source effect")?,
-        ),
-        _ => None,
+        )
+    } else {
+        None
     };
     let source = match context.front().map(|val| val.value_type()) {
         Some(ValueType::Mon) => Some(
