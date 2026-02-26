@@ -1377,7 +1377,10 @@
     "special_data": { "fling": { "power": 30 } },
     "effect": {
       "callbacks": {
-        "on_damaging_hit": ["if $move.type == water:", ["use_item: $target"]],
+        "on_damaging_hit": [
+          "if $move.type == water and func_call(can_boost: $target 'spa:1'):",
+          ["use_item: $target"]
+        ],
         "on_use": ["boost: $mon 'spa:1'"]
       }
     }
@@ -1424,12 +1427,36 @@
   "weaknesspolicy": {
     "name": "Weakness Policy",
     "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": { "fling": { "power": 80 } },
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.damage.is_defined or func_call(effect_has_event_callback: $move MoveDamage):",
+          ["return"],
+          "if func_call(type_modifier_against_target: $move $target) > 0 and func_call(can_boost: $target 'atk:2' 'spa:2'):",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'atk:2' 'spa:2'"]
+      }
+    }
   },
   "assaultvest": {
     "name": "Assault Vest",
     "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": { "fling": { "power": 80 } },
+    "effect": {
+      "callbacks": {
+        "on_modify_spd": ["return $spd * 3/2"],
+        "on_disable_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "$move = func_call(get_move: $move_slot.id)",
+            "if $move.is_defined and $move.category == status and $move.id != mefirst:",
+            ["disable_move: $mon $move.id"]
+          ]
+        ]
+      }
+    }
   },
   "pixieplate": {
     "name": "Pixie Plate",
@@ -1447,12 +1474,32 @@
   "luminousmoss": {
     "name": "Luminous Moss",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": { "fling": { "power": 30 } },
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.type == water and func_call(can_boost: $target 'spd:1'):",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'spd:1'"]
+      }
+    }
   },
   "snowball": {
     "name": "Snowball",
     "flags": [],
-    "special_data": { "fling": { "power": 30 } }
+    "special_data": {
+      "fling": { "power": 30 },
+      "effect": {
+        "callbacks": {
+          "on_damaging_hit": [
+            "if $move.type == ice and func_call(can_boost: $target 'atk:1'):",
+            ["use_item: $target"]
+          ],
+          "on_use": ["boost: $mon 'atk:1'"]
+        }
+      }
+    }
   },
   "safetygoggles": {
     "name": "Safety Goggles",
