@@ -430,10 +430,6 @@ fn move_event_on_target(context: &mut MonContext, event: &str) -> Result<()> {
     )
 }
 
-pub fn fail_target(context: &mut MonContext) -> Result<()> {
-    move_event_on_target(context, "fail")
-}
-
 pub fn miss(context: &mut MonContext) -> Result<()> {
     move_event_on_target(context, "miss")
 }

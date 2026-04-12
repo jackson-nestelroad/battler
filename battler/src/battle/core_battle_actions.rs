@@ -1563,20 +1563,36 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
             )
         }
         _ => {
-            let mut result = MoveEventResult::Advance;
-            for target in targets.iter() {
-                let next_result =
+            let mut result: Option<MoveEventResult> = None;
+            for target in targets.iter_mut() {
+                if !target.outcome.hit() {
+                    continue;
+                }
+                let target_result =
                     core_battle_effects::run_active_move_event_expecting_move_event_result(
                         context,
                         fxlang::BattleEvent::TryHit,
                         core_battle_effects::MoveTargetForEvent::Mon(target.handle),
                     );
-                result = result.combine(next_result);
-                if !result.advance() {
-                    break;
+                if !target_result.advance() {
+                    target.outcome = if target_result.failed() {
+                        MoveOutcomeOnTarget::Failure
+                    } else {
+                        MoveOutcomeOnTarget::Unknown
+                    };
                 }
+
+                // First result sets the default. Afterwards, combine the result for multitarget
+                // moves.
+                result = match result {
+                    Some(result) => Some(result.combine(target_result)),
+                    None => Some(target_result),
+                };
             }
-            result
+            // Default applies when the move failed (all targets are not hit) prior to this check.
+            // We could use `Fail` if we want an extra fail message, but for now, we trust the
+            // failure reason has already been logged.
+            result.unwrap_or(MoveEventResult::Stop)
         }
     };
 
@@ -1609,13 +1625,6 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
 
     // Calculate damage for each target.
     calculate_spread_damage(context, targets)?;
-    for target in targets.iter() {
-        if target.outcome.failed() {
-            if !context.is_secondary() && !context.is_self() {
-                core_battle_logs::fail_target(&mut context.target_mon_context(target.handle)?)?;
-            }
-        }
-    }
 
     // Apply damage for the move to all targets.
     let mon_handle = context.mon_handle();
