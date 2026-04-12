@@ -92,10 +92,7 @@
     "effect": {
       "callbacks": {
         "on_ignore_immunity": ["return false"],
-        "on_try_hit": [
-          "if !func_call(has_type: $target grass):",
-          ["return stop"]
-        ]
+        "on_try_hit": ["return func_call(has_type: $target grass)"]
       }
     }
   },
