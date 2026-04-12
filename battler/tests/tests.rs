@@ -475,6 +475,7 @@ mod moves {
     mod gen6 {
         mod flying_press_test;
         mod mat_block_test;
+        mod rototiller_test;
     }
 
     mod gen7 {
