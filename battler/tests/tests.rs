@@ -472,6 +472,11 @@ mod moves {
         mod wonder_room_test;
     }
 
+    mod gen6 {
+        mod flying_press_test;
+        mod mat_block_test;
+    }
+
     mod gen7 {
         mod burn_up_test;
         mod instruct_test;

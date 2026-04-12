@@ -11,7 +11,7 @@
     "effect": {
       "callbacks": {
         "on_effectiveness": [
-          "return $modifier + func_call(type_chart_effectiveness: flying $type)"
+          "return $modifier + func_call(type_chart_effectiveness: flying [$type])"
         ]
       }
     }
@@ -29,7 +29,7 @@
     "effect": {
       "callbacks": {
         "on_try_use_move": [
-          "return $target.active_move_actions <= 1 and func_call(any_mon_will_move_this_turn)"
+          "return $user.active_turns <= 1 and func_call(any_mon_will_move_this_turn)"
         ]
       }
     },
@@ -92,7 +92,10 @@
     "effect": {
       "callbacks": {
         "on_ignore_immunity": ["return false"],
-        "on_try_hit": ["return func_call(has_type: $target grass)"]
+        "on_try_hit": [
+          "if !func_call(has_type: $target grass):",
+          ["return stop"]
+        ]
       }
     }
   },
