@@ -473,11 +473,16 @@ mod moves {
     }
 
     mod gen6 {
+        mod crafty_shield_test;
         mod fell_stinger_test;
         mod flying_press_test;
+        mod freeze_dry_test;
+        mod ion_deluge_test;
         mod mat_block_test;
+        mod parting_shot_test;
         mod rototiller_test;
         mod sticky_web_test;
+        mod topsy_turvy_test;
         mod trick_or_treat_test;
     }
 

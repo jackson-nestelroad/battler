@@ -2859,7 +2859,7 @@ fn apply_move_effects(
                 }
             }
             if let Some(switch_type) = context.active_move().data.user_switch
-                && (!switch_type.if_hit() || target.outcome.hit())
+                && (!switch_type.if_hit() || (target.outcome.hit() && hit_effect_outcome.hit()))
             {
                 let outcome = if Player::can_switch(context.as_player_context()) {
                     MoveOutcomeOnTarget::Success

@@ -223,7 +223,7 @@ pub fn run_function(
         "hit_effect" => hit_effect().map(|val| Some(val)),
         "increase_friendship" => increase_friendship(context).map(|()| None),
         "index" => index(context),
-        "invert_boosts" => invert_boosts(context).map(|_| None),
+        "invert_boosts" => invert_boosts(context).map(|val| Some(val)),
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
         "is_ally" => is_ally(context).map(|val| Some(val)),
         "item_has_flag" => item_has_flag(context).map(|val| Some(val)),
