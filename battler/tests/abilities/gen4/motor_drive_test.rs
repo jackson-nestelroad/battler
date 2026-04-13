@@ -57,7 +57,7 @@ fn motor_drive_boosts_speed_on_electric_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Electivire,player-1,1|name:Thunderbolt|target:Electivire,player-2,1",
+            "move|mon:Electivire,player-1,1|name:Thunderbolt|noanim",
             "boost|mon:Electivire,player-2,1|stat:spe|by:1|from:ability:Motor Drive",
             "residual",
             "turn|turn:2"

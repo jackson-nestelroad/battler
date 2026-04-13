@@ -193,7 +193,7 @@ fn flame_burst_blocked_by_protect() {
         r#"[
             "move|mon:Pansear,player-2,1|name:Protect|target:Pansear,player-2,1",
             "singleturn|mon:Pansear,player-2,1|move:Protect",
-            "move|mon:Pansear,player-1,1|name:Flame Burst|target:Pansear,player-2,1",
+            "move|mon:Pansear,player-1,1|name:Flame Burst|noanim",
             "activate|mon:Pansear,player-2,1|move:Protect",
             "residual",
             "turn|turn:2"

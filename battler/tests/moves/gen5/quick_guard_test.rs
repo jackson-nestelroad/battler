@@ -97,7 +97,7 @@ fn quick_guard_blocks_priority_moves() {
         r#"[
             "move|mon:Hitmonchan,player-1,1|name:Quick Guard",
             "singleturn|mon:Hitmonchan,player-1,1|move:Quick Guard",
-            "move|mon:Samurott,player-2,1|name:Aqua Jet|target:Hitmonchan,player-1,1",
+            "move|mon:Samurott,player-2,1|name:Aqua Jet|noanim",
             "activate|mon:Hitmonchan,player-1,1|move:Quick Guard",
             "residual",
             "turn|turn:2"
@@ -171,21 +171,21 @@ fn quick_guard_succeeds_consecutively() {
         r#"[
             "move|mon:Hitmonchan,player-1,1|name:Quick Guard",
             "singleturn|mon:Hitmonchan,player-1,1|move:Quick Guard",
-            "move|mon:Samurott,player-2,1|name:Aqua Jet|target:Hitmonchan,player-1,1",
+            "move|mon:Samurott,player-2,1|name:Aqua Jet|noanim",
             "activate|mon:Hitmonchan,player-1,1|move:Quick Guard",
             "residual",
             "turn|turn:2",
             "continue",
             "move|mon:Hitmonchan,player-1,1|name:Quick Guard",
             "singleturn|mon:Hitmonchan,player-1,1|move:Quick Guard",
-            "move|mon:Samurott,player-2,1|name:Aqua Jet|target:Hitmonchan,player-1,1",
+            "move|mon:Samurott,player-2,1|name:Aqua Jet|noanim",
             "activate|mon:Hitmonchan,player-1,1|move:Quick Guard",
             "residual",
             "turn|turn:3",
             "continue",
             "move|mon:Hitmonchan,player-1,1|name:Quick Guard",
             "singleturn|mon:Hitmonchan,player-1,1|move:Quick Guard",
-            "move|mon:Samurott,player-2,1|name:Aqua Jet|target:Hitmonchan,player-1,1",
+            "move|mon:Samurott,player-2,1|name:Aqua Jet|noanim",
             "activate|mon:Hitmonchan,player-1,1|move:Quick Guard",
             "residual",
             "turn|turn:4"
@@ -218,7 +218,7 @@ fn protect_can_fail_after_quick_guard() {
         r#"[
             "move|mon:Hitmonchan,player-1,1|name:Quick Guard",
             "singleturn|mon:Hitmonchan,player-1,1|move:Quick Guard",
-            "move|mon:Samurott,player-2,1|name:Aqua Jet|target:Hitmonchan,player-1,1",
+            "move|mon:Samurott,player-2,1|name:Aqua Jet|noanim",
             "activate|mon:Hitmonchan,player-1,1|move:Quick Guard",
             "residual",
             "turn|turn:2",

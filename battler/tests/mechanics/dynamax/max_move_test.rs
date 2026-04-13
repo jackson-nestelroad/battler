@@ -245,7 +245,7 @@ fn status_move_changes_to_max_guard() {
             "sethp|mon:Pikachu,player-1,1|health:100/100",
             "move|mon:Pikachu,player-1,1|name:Max Guard|target:Pikachu,player-1,1",
             "singleturn|mon:Pikachu,player-1,1|move:Max Guard",
-            "move|mon:Pikachu,player-2,1|name:Quick Attack|target:Pikachu,player-1,1",
+            "move|mon:Pikachu,player-2,1|name:Quick Attack|noanim",
             "activate|mon:Pikachu,player-1,1|move:Max Guard",
             "residual",
             "turn|turn:2",

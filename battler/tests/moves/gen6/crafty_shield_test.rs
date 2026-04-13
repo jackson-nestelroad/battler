@@ -78,7 +78,7 @@ fn crafty_shield_protects_side_against_status_moves() {
             "split|side:0",
             "damage|mon:Sylveon,player-1,2|health:259/300",
             "damage|mon:Sylveon,player-1,2|health:87/100",
-            "move|mon:Sylveon,player-2,2|name:Thunder Wave|target:Klefki,player-1,1",
+            "move|mon:Sylveon,player-2,2|name:Thunder Wave|noanim",
             "activate|mon:Klefki,player-1,1|move:Crafty Shield",
             "residual",
             "turn|turn:2"

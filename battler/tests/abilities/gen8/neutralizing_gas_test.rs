@@ -298,7 +298,7 @@ fn neutralizing_gas_ends_ability_on_appearance() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ninetales,player-1,1|name:Flamethrower|target:Ninetales,player-2,1",
+            "move|mon:Ninetales,player-1,1|name:Flamethrower|noanim",
             "start|mon:Ninetales,player-2,1|ability:Flash Fire",
             "residual",
             "turn|turn:2",
@@ -331,7 +331,7 @@ fn neutralizing_gas_does_not_end_ability_on_appearance_with_ability_shield() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ninetales,player-1,1|name:Flamethrower|target:Ninetales,player-2,1",
+            "move|mon:Ninetales,player-1,1|name:Flamethrower|noanim",
             "start|mon:Ninetales,player-2,1|ability:Flash Fire",
             "residual",
             "turn|turn:2",

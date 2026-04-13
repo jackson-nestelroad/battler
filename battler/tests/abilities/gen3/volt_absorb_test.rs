@@ -64,14 +64,14 @@ fn volt_absorb_heals_when_hit_by_electric_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pikachu,player-1,1",
+            "move|mon:Pikachu,player-2,1|name:Thunderbolt|noanim",
             "split|side:0",
             "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:95/95",
             "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:100/100",
             "residual",
             "turn|turn:3",
             "continue",
-            "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pikachu,player-1,1",
+            "move|mon:Pikachu,player-2,1|name:Thunderbolt|noanim",
             "immune|mon:Pikachu,player-1,1|from:ability:Volt Absorb",
             "residual",
             "turn|turn:4"

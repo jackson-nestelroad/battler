@@ -63,12 +63,12 @@ fn wonder_guard_resists_non_super_effective_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Shedinja,player-1,1|name:Surf",
+            "move|mon:Shedinja,player-1,1|name:Surf|noanim",
             "immune|mon:Shedinja,player-2,1|from:ability:Wonder Guard",
             "residual",
             "turn|turn:2",
             "continue",
-            "move|mon:Shedinja,player-1,1|name:Vine Whip|target:Shedinja,player-2,1",
+            "move|mon:Shedinja,player-1,1|name:Vine Whip|noanim",
             "immune|mon:Shedinja,player-2,1|from:ability:Wonder Guard",
             "residual",
             "turn|turn:3",

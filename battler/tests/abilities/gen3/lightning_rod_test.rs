@@ -73,7 +73,7 @@ fn lightning_rod_redirects_electric_moves() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "activate|mon:Pikachu,player-1,1|ability:Lightning Rod",
-            "move|mon:Pikachu,player-1,1|name:Thunderbolt|target:Pikachu,player-2,1",
+            "move|mon:Pikachu,player-1,1|name:Thunderbolt|noanim",
             "boost|mon:Pikachu,player-2,1|stat:spa|by:1|from:ability:Lightning Rod",
             "residual",
             "turn|turn:2"

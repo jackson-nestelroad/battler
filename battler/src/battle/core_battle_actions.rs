@@ -1654,8 +1654,18 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
     if !try_move_result.advance() {
         if try_move_result.failed() {
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
+        }
 
-            // At this point, we should not animate the move because we did not hit any targets.
+        // At this point, we should not animate the move because we did not hit any targets.
+        //
+        // If the move did not explicitly fail but calls another move, it should still be animated.
+        if try_move_result.failed()
+            || !context
+                .active_move()
+                .data
+                .flags
+                .contains(&MoveFlag::CallsMove)
+        {
             core_battle_logs::do_not_animate_last_move(context);
         }
 

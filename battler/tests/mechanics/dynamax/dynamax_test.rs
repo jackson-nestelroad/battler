@@ -190,7 +190,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             "continue",
             "move|mon:Venusaur,player-1,1|name:Max Guard|target:Venusaur,player-1,1",
             "singleturn|mon:Venusaur,player-1,1|move:Max Guard",
-            "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
+            "move|mon:Venusaur,player-2,1|name:Tackle|noanim",
             "activate|mon:Venusaur,player-1,1|move:Max Guard",
             "residual",
             "turn|turn:3"

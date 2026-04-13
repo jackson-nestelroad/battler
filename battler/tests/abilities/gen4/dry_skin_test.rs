@@ -60,7 +60,7 @@ fn dry_skin_resists_water_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Toxicroak,player-1,1|name:Water Gun|target:Toxicroak,player-2,1",
+            "move|mon:Toxicroak,player-1,1|name:Water Gun|noanim",
             "immune|mon:Toxicroak,player-2,1|from:ability:Dry Skin",
             "residual",
             "turn|turn:2"
@@ -82,7 +82,7 @@ fn dry_skin_heals_when_hit_by_water_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Toxicroak,player-1,1|name:Water Gun|target:Toxicroak,player-2,1",
+            "move|mon:Toxicroak,player-1,1|name:Water Gun|noanim",
             "split|side:1",
             "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:143/143",
             "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:100/100",
