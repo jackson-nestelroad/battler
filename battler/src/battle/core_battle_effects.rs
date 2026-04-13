@@ -658,18 +658,19 @@ pub fn run_mon_item_event(
     )
 }
 
-pub fn run_mon_inactive_move_event(
+/// Runs an event on the target [`Mon`]'s effect.
+pub fn run_mon_effect_event(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
-    mov: &Id,
+    effect: &EffectHandle,
 ) -> Option<fxlang::Value> {
     let mon_handle = context.mon_handle();
     run_callback_under_mon(
         context,
         input,
         CallbackHandle::new(
-            EffectHandle::InactiveMove(mov.clone()),
+            effect.clone(),
             event,
             fxlang::BattleEventModifier::default(),
             AppliedEffectLocation::MonInactiveMove(mon_handle),
@@ -2554,15 +2555,15 @@ pub fn run_mon_item_event_expecting_bool(
         .ok()
 }
 
-/// Runs an event on the target [`Mon`]'s inactive move.
+/// Runs an event on the target [`Mon`]'s effect.
 ///
 /// Expects a [`MoveTarget`].
-pub fn run_mon_inactive_move_event_expecting_move_target(
+pub fn run_mon_effect_event_expecting_move_target(
     context: &mut MonContext,
     event: fxlang::BattleEvent,
-    mov: &Id,
+    effect: &EffectHandle,
 ) -> Option<MoveTarget> {
-    run_mon_inactive_move_event(context, event, fxlang::VariableInput::default(), mov)?
+    run_mon_effect_event(context, event, fxlang::VariableInput::default(), effect)?
         .move_target()
         .ok()
 }
@@ -2791,6 +2792,8 @@ pub fn run_applying_effect_event_expecting_void(
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`bool`].
 pub fn run_applying_effect_event_expecting_bool(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
@@ -2798,6 +2801,19 @@ pub fn run_applying_effect_event_expecting_bool(
 ) -> Option<bool> {
     run_applying_effect_event(context, event, input)?
         .boolean()
+        .ok()
+}
+
+/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`bool`].
+pub fn run_applying_effect_event_expecting_type(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<Type> {
+    run_applying_effect_event(context, event, input)?
+        .mon_type()
         .ok()
 }
 

@@ -9,6 +9,7 @@ use battler::{
     PublicCoreBattle,
     Request,
     TeamData,
+    Type,
     WrapResultError,
 };
 use battler_test_utils::{
@@ -120,6 +121,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 35,
                 max_pp: 35,
                 target: MoveTarget::Normal,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -128,6 +130,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::Normal,
+                typ: Type::Poison,
                 disabled: false,
             },
         ]));
@@ -138,6 +141,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 35,
                 max_pp: 35,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -146,6 +150,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::User,
+                typ: Type::Normal,
                 disabled: false,
             },
         ]));
@@ -203,6 +208,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 34,
                 max_pp: 35,
                 target: MoveTarget::Normal,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -211,6 +217,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 9,
                 max_pp: 10,
                 target: MoveTarget::Normal,
+                typ: Type::Poison,
                 disabled: false,
             },
         ]));
@@ -221,6 +228,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 34,
                 max_pp: 35,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -229,6 +237,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 pp: 9,
                 max_pp: 10,
                 target: MoveTarget::User,
+                typ: Type::Normal,
                 disabled: false,
             },
         ]));

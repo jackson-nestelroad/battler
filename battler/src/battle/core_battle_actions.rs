@@ -769,32 +769,101 @@ pub fn use_active_move(
     Ok(outcome.success())
 }
 
-/// Modifies the active move's type.
-pub fn modify_move_type(context: &mut ActiveMoveContext, target: Option<MonHandle>) -> Result<()> {
-    if context.active_move().data.typeless {
-        return Ok(());
+fn effective_move_type(
+    context: &mut MonContext,
+    effect: &EffectHandle,
+    target: Option<MonHandle>,
+    source_effect: Option<&EffectHandle>,
+    use_cache: bool,
+) -> Result<Type> {
+    let stable_effect = effect.stable_effect_handle(context.as_battle_context())?;
+    let typ = if let Some(id) = stable_effect.try_id()
+        && let Ok(mov) = context.battle().dex.moves.get_by_id(id)
+    {
+        if use_cache
+            && let Some(slot) = context
+                .mon()
+                .volatile_state
+                .effect_cache
+                .move_slot_effects
+                .get(id)
+            && let Some(typ) = slot.typ
+        {
+            return Ok(typ);
+        }
+        let typ = mov.data.primary_type;
+        if mov.data.typeless {
+            return Ok(typ);
+        }
+        typ
+    } else {
+        return Err(general_error(format!(
+            "{} is not a move",
+            stable_effect
+                .try_id()
+                .map(|id| id.as_ref())
+                .unwrap_or_else(|| "[unidentified effect]")
+        )));
+    };
+    let mut context =
+        context.applying_effect_context(stable_effect, target, source_effect.cloned())?;
+    let typ = core_battle_effects::run_applying_effect_event_expecting_type(
+        &mut context,
+        fxlang::BattleEvent::ModifyMoveType,
+        fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+    )
+    .unwrap_or(typ);
+    let typ = core_battle_effects::run_event_for_applying_effect_expecting_type(
+        &mut context,
+        fxlang::BattleEvent::ModifyMoveType,
+        typ,
+    );
+
+    if use_cache {
+        let id = context.effect().id().clone();
+        context
+            .target_mut()
+            .volatile_state
+            .effect_cache
+            .move_slot_effects
+            .entry(id)
+            .or_default()
+            .typ = Some(typ);
     }
 
-    let move_type = context.active_move().data.primary_type;
-    let move_type = core_battle_effects::run_active_move_event_expecting_type(
+    Ok(typ)
+}
+
+/// The effective type of a move, if it were to be used right now.
+pub fn move_type_for_display(context: &mut MonContext, mov: &Id) -> Result<Type> {
+    effective_move_type(
         context,
-        fxlang::BattleEvent::ModifyMoveType,
-        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
-        move_type,
+        &EffectHandle::InactiveMove(mov.clone()),
+        None,
+        None,
+        true,
     )
-    .unwrap_or(move_type);
-    let move_type = core_battle_effects::run_event_for_applying_effect_expecting_type(
-        &mut context.user_applying_effect_context(target)?,
-        fxlang::BattleEvent::ModifyMoveType,
-        move_type,
-    );
-    context.active_move_mut().data.primary_type = move_type;
+}
+
+/// Modifies the active move's type.
+pub fn modify_move_type(context: &mut ActiveMoveContext, target: Option<MonHandle>) -> Result<()> {
+    let effect = context.effect_handle();
+    let source_effect = context.source_effect_handle();
+    let typ = effective_move_type(
+        context.as_mon_context_mut(),
+        &effect,
+        target,
+        source_effect.as_ref(),
+        false,
+    )
+    .unwrap_or(context.active_move().data.primary_type);
+    context.active_move_mut().data.primary_type = typ;
     Ok(())
 }
 
 fn use_active_move_internal(
     context: &mut ActiveMoveContext,
-    mut target: Option<MonHandle>,
+    target: Option<MonHandle>,
     directly_used: bool,
 ) -> Result<MoveOutcome> {
     modify_move_type(context, target)?;
@@ -817,11 +886,13 @@ fn use_active_move_internal(
     );
 
     let targets = get_move_targets(context, target)?;
-    if context.active_move().data.target.has_single_target() {
-        target = targets.first().cloned();
+    let target = if context.active_move().data.target.has_single_target() {
+        targets.first().cloned()
     } else if !context.active_move().data.target.affects_mons_directly() {
-        target = None;
-    }
+        None
+    } else {
+        target
+    };
 
     // Log that the move is being used.
     let move_name = context.active_move().data.name.clone();
@@ -928,7 +999,7 @@ fn use_active_move_internal(
         core_battle_effects::run_active_move_event_expecting_void(
             context,
             fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
-            core_battle_effects::MoveTargetForEvent::User,
+            core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
             input.clone(),
         );
         core_battle_effects::run_event_for_applying_effect(

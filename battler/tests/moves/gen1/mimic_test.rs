@@ -8,6 +8,7 @@ use battler::{
     PublicCoreBattle,
     Request,
     TeamData,
+    Type,
     WrapResultError,
 };
 use battler_test_utils::{
@@ -104,6 +105,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     pp: 30,
                     max_pp: 30,
                     target: MoveTarget::Normal,
+                    typ: Type::Normal,
                     disabled: false,
                 })
             );
@@ -129,6 +131,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     pp: 29,
                     max_pp: 30,
                     target: MoveTarget::Normal,
+                    typ: Type::Normal,
                     disabled: false,
                 })
             );
@@ -160,6 +163,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     pp: 8,
                     max_pp: 10,
                     target: MoveTarget::Normal,
+                    typ: Type::Normal,
                     disabled: false,
                 })
             );
@@ -182,6 +186,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
+                    typ: Type::Fire,
                     disabled: false,
                 })
             );

@@ -473,9 +473,12 @@ mod moves {
     }
 
     mod gen6 {
+        mod fell_stinger_test;
         mod flying_press_test;
         mod mat_block_test;
         mod rototiller_test;
+        mod sticky_web_test;
+        mod trick_or_treat_test;
     }
 
     mod gen7 {

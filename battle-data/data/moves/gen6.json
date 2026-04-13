@@ -224,7 +224,7 @@
       "duration": 1,
       "callbacks": {
         "on_field_start": ["log_field_start"],
-        "on_modify_move_type": ["if $move.type == normal:", ["return electric"]]
+        "on_modify_move_type": ["if $type == normal:", ["return electric"]]
       }
     }
   },

@@ -172,6 +172,7 @@ pub struct MoveSlot {
     pub pp: u8,
     pub max_pp: u8,
     pub target: MoveTarget,
+    pub typ: Type,
     pub disabled: bool,
     pub used: bool,
     pub simulated: bool,
@@ -179,13 +180,14 @@ pub struct MoveSlot {
 
 impl MoveSlot {
     /// Creates a new move slot.
-    pub fn new(id: Id, name: String, pp: u8, max_pp: u8, target: MoveTarget) -> Self {
+    pub fn new(id: Id, name: String, pp: u8, max_pp: u8, target: MoveTarget, typ: Type) -> Self {
         Self {
             id,
             name,
             pp,
             max_pp,
             target,
+            typ,
             disabled: false,
             used: false,
             simulated: false,
@@ -193,10 +195,18 @@ impl MoveSlot {
     }
 
     /// Creates a new simulated move slot.
-    pub fn new_simulated(id: Id, name: String, pp: u8, max_pp: u8, target: MoveTarget) -> Self {
+    pub fn new_simulated(
+        id: Id,
+        name: String,
+        pp: u8,
+        max_pp: u8,
+        target: MoveTarget,
+        typ: Type,
+    ) -> Self {
         Self {
             id,
             name,
+            typ,
             pp,
             max_pp,
             target,
@@ -224,6 +234,8 @@ pub struct MonMoveSlotData {
     pub pp: u8,
     pub max_pp: u8,
     pub target: MoveTarget,
+    #[serde(rename = "type")]
+    pub typ: Type,
     pub disabled: bool,
 }
 
@@ -233,12 +245,13 @@ impl MonMoveSlotData {
         let name = mov.data.name.clone();
         let id = mov.id().clone();
         // Some moves may have a special target, depending on the user's type (e.g., Curse).
-        let target = core_battle_effects::run_mon_inactive_move_event_expecting_move_target(
+        let target = core_battle_effects::run_mon_effect_event_expecting_move_target(
             context,
             fxlang::BattleEvent::MoveTargetOverride,
-            &move_slot.id,
+            &EffectHandle::InactiveMove(move_slot.id.clone()),
         )
         .unwrap_or(move_slot.target);
+        let typ = core_battle_actions::move_type_for_display(context, &id).unwrap_or(move_slot.typ);
         let mut disabled = move_slot.disabled;
         if move_slot.pp == 0 {
             disabled = true;
@@ -249,6 +262,7 @@ impl MonMoveSlotData {
             pp: move_slot.pp,
             max_pp: move_slot.max_pp,
             target,
+            typ,
             disabled,
         })
     }
@@ -465,6 +479,12 @@ pub struct MonSwitchState {
     pub switching_in: bool,
 }
 
+/// Cache for move slot effects.
+#[derive(Debug, Default, Clone)]
+pub struct MoveSlotEffectCache {
+    pub typ: Option<Type>,
+}
+
 /// Cache for Mon effects.
 #[derive(Debug, Default, Clone)]
 pub struct MonEffectCache {
@@ -490,6 +510,8 @@ pub struct MonEffectCache {
     pub is_immune_to_entry_hazards: Option<bool>,
     pub is_soundproof: Option<bool>,
     pub is_semi_invulnerable: Option<bool>,
+
+    pub move_slot_effects: HashMap<Id, MoveSlotEffectCache>,
 }
 
 /// Volatile state for a Mon.
@@ -669,6 +691,7 @@ impl Mon {
                 pp,
                 max_pp,
                 mov.data.target.clone(),
+                mov.data.primary_type,
             ));
         }
 
@@ -1616,9 +1639,10 @@ impl Mon {
             moves = Vec::from_iter([MonMoveSlotData {
                 name: "Struggle".to_owned(),
                 id: Id::from_known("struggle"),
-                target: MoveTarget::RandomNormal,
                 pp: 1,
                 max_pp: 1,
+                target: MoveTarget::RandomNormal,
+                typ: Type::None,
                 disabled: false,
             }]);
         }
@@ -2049,6 +2073,7 @@ impl Mon {
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,
+                    typ: Type::None,
                     disabled: false,
                 }]));
             } else if locked_move_id.eq("pass") {
@@ -2058,6 +2083,7 @@ impl Mon {
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,
+                    typ: Type::None,
                     disabled: false,
                 }]));
             }
@@ -2070,6 +2096,7 @@ impl Mon {
                 pp: 0,
                 max_pp: 0,
                 target: MoveTarget::Scripted,
+                typ: locked_move.data.primary_type,
                 disabled: false,
             }]));
         }
@@ -2638,6 +2665,7 @@ impl Mon {
                         0,
                         0,
                         MoveTarget::Normal,
+                        Type::Normal,
                     ));
                     let index = context.mon().base_move_slots.len() - 1;
                     (
@@ -2655,6 +2683,7 @@ impl Mon {
             mov.data.pp,
             mov.data.pp,
             mov.data.target.clone(),
+            mov.data.primary_type,
         );
 
         let old_name = forget_move_slot.name.clone();

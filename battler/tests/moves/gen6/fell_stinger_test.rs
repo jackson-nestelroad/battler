@@ -18,29 +18,24 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Chesnaught",
-                    "species": "Chesnaught",
+                    "name": "Genesect",
+                    "species": "Genesect",
                     "ability": "No Ability",
                     "moves": [
-                        "Rototiller"
+                        "Fell Stinger"
                     ],
                     "nature": "Hardy",
-                    "level": 100
+                    "level": 100,
+                    "persistent_battle_data": {
+                        "hp": 50
+                    }
                 },
                 {
-                    "name": "Delphox",
-                    "species": "Delphox",
-                    "ability": "No Ability",
-                    "moves": [],
-                    "nature": "Hardy",
-                    "level": 100
-                },
-                {
-                    "name": "Gogoat",
-                    "species": "Gogoat",
+                    "name": "Genesect",
+                    "species": "Genesect",
                     "ability": "No Ability",
                     "moves": [
-                        "Magnet Rise"
+                        "Fell Stinger"
                     ],
                     "nature": "Hardy",
                     "level": 100
@@ -53,7 +48,7 @@ fn team() -> Result<TeamData> {
 
 fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
-        .with_battle_type(BattleType::Triples)
+        .with_battle_type(BattleType::Singles)
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
@@ -66,33 +61,33 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn rototiller_boosts_attack_of_grounded_grass_types() {
+fn fell_stinger_boosts_attack_if_target_faints() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-1", "move 0;pass;move 0"),
-        Ok(())
-    );
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "pass;pass;pass"),
-        Ok(())
-    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Gogoat,player-1,3|name:Magnet Rise|target:Gogoat,player-1,3",
-            "start|mon:Gogoat,player-1,3|move:Magnet Rise",
-            "move|mon:Chesnaught,player-1,1|name:Rototiller|spread:Chesnaught,player-1,1;Chesnaught,player-2,1;Gogoat,player-2,3",
-            "immune|mon:Gogoat,player-1,3",
-            "boost|mon:Chesnaught,player-1,1|stat:atk|by:1",
-            "boost|mon:Chesnaught,player-1,1|stat:spa|by:1",
-            "boost|mon:Chesnaught,player-2,1|stat:atk|by:1",
-            "boost|mon:Chesnaught,player-2,1|stat:spa|by:1",
-            "boost|mon:Gogoat,player-2,3|stat:atk|by:1",
-            "boost|mon:Gogoat,player-2,3|stat:spa|by:1",
+            "move|mon:Genesect,player-1,1|name:Fell Stinger|target:Genesect,player-2,1",
+            "resisted|mon:Genesect,player-2,1",
+            "split|side:1",
+            "damage|mon:Genesect,player-2,1|health:11/252",
+            "damage|mon:Genesect,player-2,1|health:5/100",
             "residual",
-            "turn|turn:2"
+            "turn|turn:2",
+            "continue",
+            "move|mon:Genesect,player-1,1|name:Fell Stinger|target:Genesect,player-2,1",
+            "resisted|mon:Genesect,player-2,1",
+            "split|side:1",
+            "damage|mon:Genesect,player-2,1|health:0",
+            "damage|mon:Genesect,player-2,1|health:0",
+            "faint|mon:Genesect,player-2,1",
+            "boost|mon:Genesect,player-1,1|stat:atk|by:3",
+            "residual"
         ]"#,
     )
     .unwrap();

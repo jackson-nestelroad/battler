@@ -43,10 +43,11 @@
         "on_modify_move_type": {
           "priority": -1,
           "program": [
-            "if $move.typeless or $type != normal or $type != $move.type:",
+            "if $effect.typeless or $type != normal or $type != $effect.type:",
             ["return"],
-            "$move.type = func_call(value_from_local_data: type)",
-            "$move.effect_state.type_change_boosted = true"
+            "$effect.type = func_call(value_from_local_data: type)",
+            "if $effect.effect_state.is_defined:",
+            ["$effect.effect_state.type_change_boosted = true"]
           ],
           "on_source_base_power": [
             "if $move.effect_state.type_change_boosted:",

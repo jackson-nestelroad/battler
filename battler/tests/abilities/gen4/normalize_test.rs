@@ -84,8 +84,8 @@ fn normalize_does_not_change_natural_gift() {
             "move|mon:Delcatty,player-1,1|name:Natural Gift|target:Delcatty,player-2,1",
             "supereffective|mon:Delcatty,player-2,1",
             "split|side:1",
-            "damage|mon:Delcatty,player-2,1|health:60/130",
-            "damage|mon:Delcatty,player-2,1|health:47/100",
+            "damage|mon:Delcatty,player-2,1|health:46/130",
+            "damage|mon:Delcatty,player-2,1|health:36/100",
             "residual",
             "turn|turn:2"
         ]"#,

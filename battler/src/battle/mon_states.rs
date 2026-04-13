@@ -66,7 +66,7 @@ pub fn effective_types_no_added_type(context: &mut MonContext) -> Vec<Type> {
         if !types.is_empty() {
             types
         } else {
-            effective_types_before_forced_types(context)
+            effective_types_before_forced_types(context, false)
         }
     };
     context
@@ -80,7 +80,7 @@ pub fn effective_types_no_added_type(context: &mut MonContext) -> Vec<Type> {
 /// The effective types for the Mon, before forced types (e.g., Terastallization).
 ///
 /// Non-empty. [`Type::None`] is returned when the Mon has no types
-fn effective_types_before_forced_types(context: &mut MonContext) -> Vec<Type> {
+fn effective_types_before_forced_types(context: &mut MonContext, added_type: bool) -> Vec<Type> {
     if let Some(effective_types_before_forced_types) = context
         .mon()
         .volatile_state
@@ -91,7 +91,7 @@ fn effective_types_before_forced_types(context: &mut MonContext) -> Vec<Type> {
         return effective_types_before_forced_types;
     }
     let mut types = context.mon().volatile_state.types.clone();
-    if let Some(added_type) = context.mon().volatile_state.added_type {
+    if added_type && let Some(added_type) = context.mon().volatile_state.added_type {
         types.push(added_type);
     }
     let effective_types_before_forced_types = {
@@ -122,7 +122,7 @@ pub fn has_type(context: &mut MonContext, typ: Type) -> bool {
 
 /// Checks if the Mon has the given type, before forced types (e.g., Terastallization).
 pub fn has_type_before_forced_types(context: &mut MonContext, typ: Type) -> bool {
-    let types = effective_types_before_forced_types(context);
+    let types = effective_types_before_forced_types(context, true);
     types.contains(&typ)
 }
 

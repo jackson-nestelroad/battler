@@ -145,16 +145,17 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMon
         | CallbackFlag::ReturnsVoid,
-    SourceMoveType = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesSourceTargetMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsType
-        | CallbackFlag::ReturnsString
-        | CallbackFlag::ReturnsVoid,
     SourceMoveActiveMove = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsActiveMove
+        | CallbackFlag::ReturnsVoid,
+
+    SourceEffectType = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsType
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
 
     MoveModifier = CallbackFlag::TakesTargetMon
@@ -879,7 +880,7 @@ pub enum BattleEvent {
     ModifyFriendshipIncrease,
     /// Runs when modifying the type of a move.
     ///
-    /// Runs on the active move and in the context of a move user.
+    /// Runs on the move and in the context of a move user.
     #[string = "ModifyMoveType"]
     ModifyMoveType,
     /// Runs when determining the priority of a move.
@@ -1423,7 +1424,7 @@ impl BattleEvent {
             Self::ModifyEvYield => CommonCallbackType::MonStatTableModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
             Self::ModifyFriendshipIncrease => CommonCallbackType::MonModifier as u32,
-            Self::ModifyMoveType => CommonCallbackType::SourceMoveType as u32,
+            Self::ModifyMoveType => CommonCallbackType::SourceEffectType as u32,
             Self::ModifyPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,

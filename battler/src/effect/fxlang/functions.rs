@@ -130,6 +130,7 @@ pub fn run_function(
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context).map(|val| Some(val)),
+        "add_type" => add_type(context).map(|val| Some(val)),
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
         "adjacent_allies" => adjacent_allies(context).map(|val| Some(val)),
         "adjacent_foes" => adjacent_foes(context).map(|val| Some(val)),
@@ -2272,6 +2273,7 @@ fn move_slot(mut context: FunctionContext) -> Result<Value> {
         active_move.data.pp,
         active_move.data.pp,
         active_move.data.target,
+        active_move.data.primary_type,
     );
     Ok(Value::MoveSlot(move_slot))
 }
@@ -2884,6 +2886,17 @@ fn set_types(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid types")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     core_battle_actions::set_types(&mut context, types).map(|val| Value::Boolean(val))
+}
+
+fn add_type(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let typ = context
+        .pop_front()
+        .wrap_expectation("missing type")?
+        .mon_type()
+        .wrap_error_with_message("invalid type")?;
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
+    core_battle_actions::add_type(&mut context, typ).map(|val| Value::Boolean(val))
 }
 
 fn set_weather(mut context: FunctionContext) -> Result<Value> {

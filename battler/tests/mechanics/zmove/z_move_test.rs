@@ -9,6 +9,7 @@ use battler::{
     PublicCoreBattle,
     Request,
     TeamData,
+    Type,
     WrapResultError,
 };
 use battler_test_utils::{
@@ -141,6 +142,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
+                    typ: Type::Electric,
                     disabled: false,
                 }
             );
@@ -154,6 +156,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
+                    typ: Type::Electric,
                     disabled: false,
                 }
             );
@@ -179,6 +182,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                     pp: 25,
                     max_pp: 25,
                     target: MoveTarget::Normal,
+                    typ: Type::Water,
                     disabled: false,
                 }
             );
@@ -244,6 +248,7 @@ fn species_based_z_crystal_only_allows_single_move_and_user() {
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
+                    typ: Type::Electric,
                     disabled: false,
                 }
             );

@@ -99,6 +99,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "Normal",
+                                "type": "Normal",
                                 "disabled": false
                             },
                             {
@@ -107,6 +108,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "Any",
+                                "type": "Flying",
                                 "disabled": false
                             },
                             {
@@ -115,6 +117,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "User",
+                                "type": "Normal",
                                 "disabled": false
                             },
                             {
@@ -123,6 +126,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "User",
+                                "type": "Normal",
                                 "disabled": false
                             }
                         ]
@@ -227,6 +231,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "Normal",
+                                "type": "Normal",
                                 "disabled": false
                             },
                             {
@@ -235,6 +240,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "Any",
+                                "type": "Flying",
                                 "disabled": false
                             },
                             {
@@ -243,6 +249,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "User",
+                                "type": "Normal",
                                 "disabled": false
                             },
                             {
@@ -251,6 +258,7 @@ fn transform_transforms_into_target() {
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "User",
+                                "type": "Normal",
                                 "disabled": false
                             }
                         ],

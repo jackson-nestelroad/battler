@@ -1119,6 +1119,10 @@
           "order": 1,
           "program": ["return false"]
         },
+        "on_add_type": {
+          "order": 1,
+          "program": ["return false"]
+        },
         "on_use_move": [
           "if $user.terastallized == stellar:",
           ["$move.force_stab = true"]
