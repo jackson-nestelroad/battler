@@ -772,6 +772,28 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.evaluation_context_mut().source_active_move_context()
     }
 
+    fn source_active_move_context_positional<'function>(
+        &'function mut self,
+    ) -> Result<Option<ActiveMoveContext<'function, 'function, 'function, 'function, 'battle, 'data>>>
+    {
+        if self
+            .front()
+            .map(|val| val.is_active_move())
+            .unwrap_or(false)
+        {
+            let mov = self
+                .pop_front()
+                .wrap_expectation("missing move")?
+                .active_move()
+                .wrap_error_with_message("invalid move")?;
+            Ok(Some(
+                self.evaluation_context_mut().active_move_context(mov)?,
+            ))
+        } else {
+            self.source_active_move_context()
+        }
+    }
+
     fn mon_context<'function>(
         &'function mut self,
         mon_handle: MonHandle,
@@ -1038,17 +1060,11 @@ fn log_single_move(context: FunctionContext) -> Result<()> {
 }
 
 fn log_move_internal(mut context: FunctionContext, animate_only: bool) -> Result<()> {
-    let source_effect = context.source_effect_handle()?;
-    let user_handle = context
+    let mov = context
         .pop_front()
-        .wrap_expectation("missing user")?
-        .mon_handle()
-        .wrap_error_with_message("invalid user")?;
-    let move_name = context
-        .pop_front()
-        .wrap_expectation("missing move name")?
-        .string()
-        .wrap_error_with_message("invalid move name")?;
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
     let target_handle = match context.pop_front() {
         Some(Value::Undefined) | None => None,
         Some(value) => Some(
@@ -1057,13 +1073,8 @@ fn log_move_internal(mut context: FunctionContext, animate_only: bool) -> Result
                 .wrap_error_with_message("invalid target")?,
         ),
     };
-    core_battle_logs::use_move(
-        &mut context.mon_context(user_handle)?,
-        &move_name,
-        target_handle,
-        source_effect.as_ref(),
-        animate_only,
-    )
+    let mut context = context.evaluation_context_mut().active_move_context(mov)?;
+    core_battle_logs::use_move(&mut context, target_handle, animate_only)
 }
 
 fn log_animate_move(context: FunctionContext) -> Result<()> {
@@ -1778,7 +1789,13 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {
-    core_battle_logs::do_not_animate_last_move(context.battle_context_mut());
+    core_battle_logs::do_not_animate_last_move(
+        &mut context
+            .source_active_move_context_positional()?
+            .wrap_expectation(
+                "source effect is not an active move or active move is not provided",
+            )?,
+    );
     Ok(())
 }
 
@@ -4418,10 +4435,14 @@ fn add_attribute_to_last_move(mut context: FunctionContext) -> Result<()> {
         .wrap_expectation("missing attribute")?
         .string()
         .wrap_error_with_message("invalid attribute")?;
-    context
-        .battle_context_mut()
-        .battle_mut()
-        .add_attribute_to_last_move(&attribute);
+    core_battle_logs::add_attribute_to_last_move(
+        &mut context
+            .source_active_move_context_positional()?
+            .wrap_expectation(
+                "source effect is not an active move or active move is not provided",
+            )?,
+        &attribute,
+    );
     Ok(())
 }
 

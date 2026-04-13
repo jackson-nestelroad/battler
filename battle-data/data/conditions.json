@@ -1252,8 +1252,9 @@
               "$old_z_move = func_call(get_move: $z_move_id)",
               "if !$old_z_move:",
               ["return"],
-              "log_use_move: $user $old_z_move.name no_source_effect",
-              "do_not_animate_last_move",
+              "$old_z_move_active_move = func_call(new_active_move: $old_z_move.id $user)",
+              "log_use_move: $old_z_move_active_move",
+              "do_not_animate_last_move: $old_z_move_active_move",
               "$z_move_id = $new_z_move_id"
             ]
           ],

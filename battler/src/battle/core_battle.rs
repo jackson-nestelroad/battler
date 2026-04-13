@@ -290,7 +290,6 @@ pub struct CoreBattle<'d> {
     ended: bool,
     next_effect_order: u32,
     next_effect_linked_id: u32,
-    last_move_log: Option<usize>,
     last_move: Option<MoveHandle>,
     last_successful_move: Option<MoveHandle>,
     last_exited: Option<MonHandle>,
@@ -379,7 +378,6 @@ impl<'d> CoreBattle<'d> {
             ended: false,
             next_effect_order: 0,
             next_effect_linked_id: 0,
-            last_move_log: None,
             last_move: None,
             last_successful_move: None,
             last_exited: None,
@@ -709,8 +707,10 @@ impl<'d> CoreBattle<'d> {
             .push_extend([battle_log_entry!("split", ("side", side)), private, public])
     }
 
-    pub fn log(&mut self, event: UncommittedBattleLogEntry) {
-        self.log.push(event)
+    pub fn log(&mut self, event: UncommittedBattleLogEntry) -> usize {
+        let index = self.log.len();
+        self.log.push(event);
+        index
     }
 
     pub fn log_many<I>(&mut self, events: I)
@@ -720,35 +720,20 @@ impl<'d> CoreBattle<'d> {
         self.log.push_extend(events)
     }
 
-    pub fn log_move(&mut self, event: UncommittedBattleLogEntry) {
-        self.last_move_log = Some(self.log.len());
-        self.log(event)
-    }
-
-    pub fn add_attribute_to_last_move(&mut self, attribute: &str) {
-        if let Some(BattleLogEntryMut::Uncommitted(event)) =
-            self.last_move_log.and_then(|index| self.log.get_mut(index))
-        {
+    pub fn add_attribute_to_log(&mut self, index: usize, attribute: &str) {
+        if let Some(BattleLogEntryMut::Uncommitted(event)) = self.log.get_mut(index) {
             event.add_flag(attribute);
-            if attribute == "noanim" {
-                event.remove("target");
-                event.remove("spread");
-            }
         }
     }
 
-    pub fn add_attribute_value_to_last_move(&mut self, attribute: &str, value: String) {
-        if let Some(BattleLogEntryMut::Uncommitted(event)) =
-            self.last_move_log.and_then(|index| self.log.get_mut(index))
-        {
+    pub fn add_attribute_value_to_log(&mut self, index: usize, attribute: &str, value: String) {
+        if let Some(BattleLogEntryMut::Uncommitted(event)) = self.log.get_mut(index) {
             event.set(attribute, value);
         }
     }
 
-    pub fn remove_attribute_from_last_move(&mut self, attribute: &str) {
-        if let Some(BattleLogEntryMut::Uncommitted(event)) =
-            self.last_move_log.and_then(|index| self.log.get_mut(index))
-        {
+    pub fn remove_attribute_from_log(&mut self, index: usize, attribute: &str) {
+        if let Some(BattleLogEntryMut::Uncommitted(event)) = self.log.get_mut(index) {
             event.remove(attribute);
         }
     }
@@ -1057,7 +1042,7 @@ impl<'d> CoreBattle<'d> {
                 .battle_mut()
                 .log(battle_log_entry!("teampreview", ("pick", picked_team_size))),
             None => context.battle_mut().log(battle_log_entry!("teampreview")),
-        }
+        };
         Self::make_request(context, RequestType::TeamPreview)?;
         Ok(())
     }

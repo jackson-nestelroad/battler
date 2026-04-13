@@ -220,6 +220,8 @@ pub struct Move {
     pub upgraded: Option<UpgradedMoveSource>,
     /// Ignore all secondary effects?
     pub ignore_all_secondary_effects: bool,
+    /// The index of the last move log associated with this move.
+    pub last_move_log: Option<usize>,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -269,6 +271,7 @@ impl Move {
             primary_user_effect_applied: false,
             upgraded: None,
             ignore_all_secondary_effects: false,
+            last_move_log: None,
             effect_state: fxlang::EffectState::default(),
             unlinked,
             secondary_effects: HashMap::default(),

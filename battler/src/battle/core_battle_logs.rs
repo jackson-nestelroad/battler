@@ -19,6 +19,7 @@ use itertools::Itertools;
 
 use crate::{
     battle::{
+        ActiveMoveContext,
         ApplyingEffectContext,
         Context,
         CoreBattle,
@@ -925,17 +926,15 @@ pub fn item_end(
 }
 
 pub fn use_move(
-    context: &mut MonContext,
-    move_name: &str,
+    context: &mut ActiveMoveContext,
     target: Option<MonHandle>,
-    from: Option<&EffectHandle>,
     animate_only: bool,
 ) -> Result<()> {
     let title = if animate_only { "animatemove" } else { "move" };
     let mut event = battle_log_entry!(
         title,
-        ("mon", Mon::position_details(context)?),
-        ("name", move_name)
+        ("mon", Mon::position_details(context.as_mon_context())?),
+        ("name", &context.active_move().data.name)
     );
     if let Some(target) = target {
         event.extend(&(
@@ -944,7 +943,7 @@ pub fn use_move(
         ));
     }
     if !animate_only {
-        if let Some(from) = from {
+        if let Some(from) = context.source_effect_handle() {
             add_effect_to_log_entry(
                 context.as_battle_context_mut(),
                 &mut event,
@@ -953,19 +952,47 @@ pub fn use_move(
             )?
         }
     }
-    context.battle_mut().log_move(event);
+    context.active_move_mut().last_move_log = Some(context.battle_mut().log(event));
     Ok(())
 }
 
-pub fn last_move_had_no_target(context: &mut Context) {
-    context.battle_mut().add_attribute_to_last_move("notarget");
+pub fn add_attribute_to_last_move(context: &mut ActiveMoveContext, attribute: &str) {
+    if let Some(index) = context.active_move().last_move_log {
+        context.battle_mut().add_attribute_to_log(index, attribute);
+    }
 }
 
-pub fn do_not_animate_last_move(context: &mut Context) {
-    context.battle_mut().add_attribute_to_last_move("noanim");
+fn add_attribute_value_to_last_move(
+    context: &mut ActiveMoveContext,
+    attribute: &str,
+    value: String,
+) {
+    if let Some(index) = context.active_move().last_move_log {
+        context
+            .battle_mut()
+            .add_attribute_value_to_log(index, attribute, value);
+    }
 }
 
-pub fn last_move_spread_targets<I>(context: &mut Context, targets: I) -> Result<()>
+fn remove_attribute_from_last_move(context: &mut ActiveMoveContext, attribute: &str) {
+    if let Some(index) = context.active_move().last_move_log {
+        context
+            .battle_mut()
+            .remove_attribute_from_log(index, attribute);
+    }
+}
+
+pub fn last_move_had_no_target(context: &mut ActiveMoveContext) {
+    add_attribute_to_last_move(context, "notarget");
+}
+
+pub fn do_not_animate_last_move(context: &mut ActiveMoveContext) {
+    add_attribute_to_last_move(context, "noanim");
+    remove_attribute_from_last_move(context, "target");
+    remove_attribute_from_last_move(context, "spread");
+}
+
+pub fn last_move_spread_targets<I>(context: &mut ActiveMoveContext, targets: I) -> Result<()>
 where
     I: IntoIterator<Item = MonHandle>,
 {
@@ -973,12 +1000,13 @@ where
     for target in targets {
         target_positions.push(format!(
             "{}",
-            Mon::position_details_or_previous(&context.mon_context(target)?)?
+            Mon::position_details_or_previous(
+                &context.as_battle_context_mut().mon_context(target)?
+            )?
         ));
     }
-    context
-        .battle_mut()
-        .add_attribute_value_to_last_move("spread", target_positions.into_iter().join(";"));
+    add_attribute_value_to_last_move(context, "spread", target_positions.into_iter().join(";"));
+    remove_attribute_from_last_move(context, "target");
     Ok(())
 }
 
@@ -1133,7 +1161,7 @@ pub fn use_item(context: &mut PlayerContext, item: &Id, target: Option<MonHandle
             Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?,
         ));
     }
-    context.battle_mut().log_move(event);
+    context.battle_mut().log(event);
     Ok(())
 }
 

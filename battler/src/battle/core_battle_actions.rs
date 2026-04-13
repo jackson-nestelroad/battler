@@ -895,15 +895,7 @@ fn use_active_move_internal(
     };
 
     // Log that the move is being used.
-    let move_name = context.active_move().data.name.clone();
-    let source_effect = context.source_effect_handle();
-    core_battle_logs::use_move(
-        context.as_mon_context_mut(),
-        &move_name,
-        target,
-        source_effect.as_ref(),
-        !directly_used,
-    )?;
+    core_battle_logs::use_move(context, target, !directly_used)?;
 
     core_battle_effects::run_event_for_applying_effect(
         &mut context.user_applying_effect_context(target)?,
@@ -912,7 +904,7 @@ fn use_active_move_internal(
     );
 
     if context.active_move().data.target.requires_target() && target.is_none() {
-        core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+        core_battle_logs::last_move_had_no_target(context);
         core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         return Ok(MoveOutcome::Failed);
     }
@@ -934,7 +926,7 @@ fn use_active_move_internal(
     };
     if !try_move_result.advance() {
         if try_move_result.failed() {
-            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+            core_battle_logs::do_not_animate_last_move(context);
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         }
         return Ok(MoveOutcome::from(try_move_result));
@@ -961,7 +953,7 @@ fn use_active_move_internal(
         try_indirect_move(context, &targets)?
     } else {
         if targets.is_empty() {
-            core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+            core_battle_logs::last_move_had_no_target(context);
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             return Ok(MoveOutcome::Failed);
         }
@@ -979,7 +971,7 @@ fn use_active_move_internal(
     }
 
     if outcome.failed() {
-        core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+        core_battle_logs::do_not_animate_last_move(context);
 
         core_battle_effects::run_active_move_event_expecting_void(
             context,
@@ -1343,15 +1335,7 @@ fn move_hit_loop_internal(
             } else {
                 None
             };
-            let move_name = context.active_move().data.name.clone();
-            let source_effect = context.source_effect_handle();
-            core_battle_logs::use_move(
-                context.as_mon_context_mut(),
-                &move_name,
-                target,
-                source_effect.as_ref(),
-                true,
-            )?;
+            core_battle_logs::use_move(context, target, true)?;
         }
 
         // Prepare to directly hit targets.
@@ -1402,7 +1386,7 @@ fn move_hit_loop_internal(
 
         if context.active_move().spread_hit {
             core_battle_logs::last_move_spread_targets(
-                context.as_battle_context_mut(),
+                context,
                 hit_targets_state.iter().filter_map(|target| {
                     if target.outcome.hit() {
                         Some(target.handle)
@@ -1670,8 +1654,11 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
     if !try_move_result.advance() {
         if try_move_result.failed() {
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
-            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+
+            // At this point, we should not animate the move because we did not hit any targets.
+            core_battle_logs::do_not_animate_last_move(context);
         }
+
         for target in targets {
             target.outcome = if try_move_result.failed() {
                 MoveOutcomeOnTarget::Failure
@@ -2657,7 +2644,7 @@ fn apply_move_effects(
                         if target_context.target_mon().hp >= target_context.target_mon().max_hp {
                             core_battle_logs::fail_heal(&mut target_context.target_mon_context()?)?;
                             core_battle_logs::do_not_animate_last_move(
-                                target_context.as_battle_context_mut(),
+                                target_context.as_active_move_context_mut(),
                             );
                         } else {
                             let damage = heal_percent * target_context.mon().max_hp;
@@ -2879,7 +2866,7 @@ fn apply_move_effects(
         if !is_self && !is_secondary {
             // This is the primary hit of the move, and it failed to do anything, so the move failed
             // as a whole.
-            core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+            core_battle_logs::do_not_animate_last_move(context);
             if log_failure {
                 core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             }
@@ -5424,7 +5411,7 @@ pub fn player_use_item(
     let target = CoreBattle::get_item_target(context, item, target)?;
     core_battle_logs::use_item(context.as_player_context_mut(), item, target)?;
     if !player_use_item_internal(context, item, target, input)? {
-        core_battle_logs::do_not_animate_last_move(context.as_battle_context_mut());
+        // TODO: Some sort of additional attribute to the item log?
         return Ok(false);
     }
 
@@ -5445,7 +5432,7 @@ pub fn player_use_item_internal(
     match item_target {
         Some(item_target) => {
             if target.is_none() && item_target.requires_target() {
-                core_battle_logs::last_move_had_no_target(context.as_battle_context_mut());
+                // TODO: Some sort of additional attribute to the item log?
                 return Ok(false);
             }
         }
