@@ -185,6 +185,14 @@ pub struct CoreBattleEngineOptions {
     #[serde(default)]
     pub log_slot_conditions: bool,
 
+    /// Should pseudo-weathers be logged?
+    ///
+    /// By default, pseudo-weather conditions are invisible to Mons unless explicitly logged. It
+    /// may be helpful, especially for debugging purposes, to view all pseudo-weathers added to
+    /// and removed from the field through the course of a battle.
+    #[serde(default)]
+    pub log_pseudo_weathers: bool,
+
     /// Should identical Mon names for a single player be disambiguated?
     ///
     /// If set to true, Mons with the same name for a single player will have a disambiguation
@@ -221,6 +229,7 @@ impl Default for CoreBattleEngineOptions {
             log_volatile_statuses: false,
             log_side_conditions: false,
             log_slot_conditions: false,
+            log_pseudo_weathers: false,
             disambiguate_identical_names: false,
             log_catch_rate: false,
             log_time: true,

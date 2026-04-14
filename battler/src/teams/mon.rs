@@ -21,6 +21,7 @@ use serde::{
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonPersistentBattleData {
     pub hp: Option<u16>,
+    #[serde(default)]
     pub move_pp: Vec<u8>,
     pub status: Option<String>,
 }

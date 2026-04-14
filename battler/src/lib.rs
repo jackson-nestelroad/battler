@@ -1,6 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(const_trait_impl)]
-#![feature(hasher_prefixfree_extras)]
 #![feature(pattern)]
 #![feature(try_trait_v2)]
 

@@ -99,6 +99,7 @@ fn max_move_changes_based_on_type() {
                 pp: 30,
                 max_pp: 30,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -107,6 +108,7 @@ fn max_move_changes_based_on_type() {
                 pp: 15,
                 max_pp: 15,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Electric,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -115,6 +117,7 @@ fn max_move_changes_based_on_type() {
                 pp: 20,
                 max_pp: 20,
                 target: MoveTarget::User,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -123,6 +126,7 @@ fn max_move_changes_based_on_type() {
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Water,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -131,6 +135,7 @@ fn max_move_changes_based_on_type() {
                 pp: 25,
                 max_pp: 25,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Water,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -139,6 +144,7 @@ fn max_move_changes_based_on_type() {
                 pp: 15,
                 max_pp: 15,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Flying,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -147,6 +153,7 @@ fn max_move_changes_based_on_type() {
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Psychic,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -155,6 +162,7 @@ fn max_move_changes_based_on_type() {
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Ground,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -163,6 +171,7 @@ fn max_move_changes_based_on_type() {
                 pp: 20,
                 max_pp: 20,
                 target: MoveTarget::User,
+                typ: Type::Normal,
                 disabled: false,
             },
         ]));
@@ -236,7 +245,7 @@ fn status_move_changes_to_max_guard() {
             "sethp|mon:Pikachu,player-1,1|health:100/100",
             "move|mon:Pikachu,player-1,1|name:Max Guard|target:Pikachu,player-1,1",
             "singleturn|mon:Pikachu,player-1,1|move:Max Guard",
-            "move|mon:Pikachu,player-2,1|name:Quick Attack|target:Pikachu,player-1,1",
+            "move|mon:Pikachu,player-2,1|name:Quick Attack|noanim",
             "activate|mon:Pikachu,player-1,1|move:Max Guard",
             "residual",
             "turn|turn:2",
@@ -442,6 +451,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::User,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -450,6 +460,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Normal,
                 disabled: false,
             },
             MonMoveSlotData {
@@ -458,6 +469,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
                 pp: 15,
                 max_pp: 15,
                 target: MoveTarget::AdjacentFoe,
+                typ: Type::Fire,
                 disabled: false,
             },
         ]));

@@ -170,7 +170,6 @@
 //! matching **cannot** use the `generator` attribute. You may, however, create your own generator
 //! structs manually.
 
-#![feature(slice_concat_trait)]
 use battler_wamp::core::{
     error::WampError,
     match_style::MatchStyle,

@@ -60,7 +60,7 @@ fn overcoat_resists_sandstorm_and_powder() {
         r#"[
             "move|mon:Reuniclus,player-1,1|name:Sandstorm",
             "weather|weather:Sandstorm",
-            "move|mon:Reuniclus,player-2,1|name:Sleep Powder|target:Reuniclus,player-1,1",
+            "move|mon:Reuniclus,player-2,1|name:Sleep Powder|noanim",
             "immune|mon:Reuniclus,player-1,1|from:ability:Overcoat",
             "weather|weather:Sandstorm|residual",
             "residual",

@@ -162,10 +162,10 @@ impl MoveEventResult {
     /// Combines two results into one.
     pub fn combine(&self, other: Self) -> Self {
         match (*self, other) {
+            (Self::Advance, _) => Self::Advance,
+            (_, Self::Advance) => Self::Advance,
             (Self::Fail, _) => Self::Fail,
-            (Self::Stop, _) => Self::Stop,
-            (Self::Advance, Self::Advance) => Self::Advance,
-            (Self::Advance, right @ _) => right,
+            (Self::Stop, right @ _) => right,
         }
     }
 }

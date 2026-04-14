@@ -220,6 +220,22 @@ where
                                 None => ValueRef::Undefined,
                             })
                             .unwrap_or(ValueRef::Undefined),
+                            "damaged_targets" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                ValueRef::TempList(
+                                    mov.damaged_targets
+                                        .iter()
+                                        .map(|mon| {
+                                            ValueRefToStoredValue::new(None, ValueRef::Mon(*mon))
+                                        })
+                                        .collect(),
+                                )
+                            })
+                            .unwrap_or(ValueRef::Undefined),
                             "drain_percent" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -452,6 +468,26 @@ where
                                     .active_move(active_move_handle)?
                                     .ignore_all_secondary_effects,
                             ),
+                            "override_defensive_stat" => {
+                                match context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .override_defensive_stat
+                                {
+                                    Some(stat) => ValueRef::Stat(stat),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
+                            "override_offensive_stat" => {
+                                match context
+                                    .active_move(active_move_handle)?
+                                    .data
+                                    .override_offensive_stat
+                                {
+                                    Some(stat) => ValueRef::Stat(stat),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "secondary_effects" => ValueRef::TempList(
                                 context
                                     .active_move(active_move_handle)?
@@ -502,26 +538,6 @@ where
                                 .user_effect_chance
                                 .map(|val| ValueRef::UFraction(val.convert()))
                                 .unwrap_or(ValueRef::Undefined),
-                            "override_offensive_stat" => {
-                                match context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .override_offensive_stat
-                                {
-                                    Some(stat) => ValueRef::Stat(stat),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
-                            "override_defensive_stat" => {
-                                match context
-                                    .active_move(active_move_handle)?
-                                    .data
-                                    .override_defensive_stat
-                                {
-                                    Some(stat) => ValueRef::Stat(stat),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let Some(mon_handle) = value.mon_handle() {
@@ -539,7 +555,7 @@ where
                             "active_move" => context
                                 .mon(mon_handle)?
                                 .active_move
-                                .map(|active_move| ValueRef::ActiveMove(active_move))
+                                .map(|active_move| ValueRef::TempEffect(active_move.into()))
                                 .unwrap_or(ValueRef::Undefined),
                             "active_move_actions" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.active_move_actions.into(),
@@ -555,9 +571,16 @@ where
                             "active_turns" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.active_turns.into())
                             }
+                            "added_type" => context
+                                .mon(mon_handle)?
+                                .volatile_state
+                                .added_type
+                                .map(|typ| ValueRef::Type(typ))
+                                .unwrap_or(ValueRef::Undefined),
                             "affection_level" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.affection_level().into(),
                             ),
+                            "ate_item" => ValueRef::Boolean(context.mon(mon_handle)?.ate_item),
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                             }
@@ -621,6 +644,14 @@ where
                                         ValueRefToStoredValue::new(None, ValueRef::Type(*val))
                                     })
                                     .collect(),
+                            ),
+                            "effective_types_no_added_type" => ValueRef::TempList(
+                                mon_states::effective_types_no_added_type(
+                                    &mut context.mon_context(mon_handle)?,
+                                )
+                                .iter()
+                                .map(|val| ValueRefToStoredValue::new(None, ValueRef::Type(*val)))
+                                .collect(),
                             ),
                             "effective_weather" => {
                                 match mon_states::effective_weather(
@@ -715,13 +746,15 @@ where
                             }
                             "last_move" => {
                                 match context.mon(mon_handle)?.volatile_state.last_move {
-                                    Some(last_move) => ValueRef::ActiveMove(last_move),
+                                    Some(last_move) => ValueRef::TempEffect(last_move.into()),
                                     _ => ValueRef::Undefined,
                                 }
                             }
                             "last_move_used" => {
                                 match context.mon(mon_handle)?.volatile_state.last_move_used {
-                                    Some(last_move_used) => ValueRef::ActiveMove(last_move_used),
+                                    Some(last_move_used) => {
+                                        ValueRef::TempEffect(last_move_used.into())
+                                    }
                                     _ => ValueRef::Undefined,
                                 }
                             }
@@ -921,13 +954,13 @@ where
                                 .battle_context()
                                 .battle()
                                 .last_move()
-                                .map(|move_handle| ValueRef::ActiveMove(move_handle))
+                                .map(|move_handle| ValueRef::TempEffect(move_handle.into()))
                                 .unwrap_or(ValueRef::Undefined),
                             "last_successful_move" => context
                                 .battle_context()
                                 .battle()
                                 .last_successful_move()
-                                .map(|move_handle| ValueRef::ActiveMove(move_handle))
+                                .map(|move_handle| ValueRef::TempEffect(move_handle.into()))
                                 .unwrap_or(ValueRef::Undefined),
                             "turn" => {
                                 ValueRef::UFraction(context.battle_context().battle().turn().into())
@@ -1242,96 +1275,95 @@ where
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }
                 }
-                ValueRefMut::ActiveMove(ref active_move_handle) => {
+                ValueRefMut::Effect(EffectHandle::ActiveMove(active_move_handle, _)) => {
                     let context = unsafe { context.unsafely_detach_borrow_mut() };
                     value = match *member {
                         "accuracy" => ValueRefMut::Accuracy(
-                            &mut context.active_move_mut(**active_move_handle)?.data.accuracy,
+                            &mut context.active_move_mut(*active_move_handle)?.data.accuracy,
                         ),
                         "base_power" => ValueRefMut::U32(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .base_power,
                         ),
                         "category" => ValueRefMut::MoveCategory(
-                            &mut context.active_move_mut(**active_move_handle)?.data.category,
+                            &mut context.active_move_mut(*active_move_handle)?.data.category,
                         ),
                         "damage" => ValueRefMut::OptionalU16(
-                            &mut context.active_move_mut(**active_move_handle)?.data.damage,
+                            &mut context.active_move_mut(*active_move_handle)?.data.damage,
                         ),
                         "effect_state" => ValueRefMut::TempEffectState(
-                            ActiveMoveEffectStateConnector::new(**active_move_handle)
-                                .make_dynamic(),
+                            ActiveMoveEffectStateConnector::new(*active_move_handle).make_dynamic(),
                         ),
                         "force_stab" => ValueRefMut::Boolean(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .force_stab,
                         ),
                         "hit_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .hit_effect,
                         ),
                         "ignore_all_secondary_effects" => ValueRefMut::Boolean(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .ignore_all_secondary_effects,
                         ),
                         "multiaccuracy" => ValueRefMut::Boolean(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .multiaccuracy,
                         ),
                         "multihit" => ValueRefMut::OptionalMultihitType(
-                            &mut context.active_move_mut(**active_move_handle)?.data.multihit,
+                            &mut context.active_move_mut(*active_move_handle)?.data.multihit,
                         ),
                         "priority" => ValueRefMut::I8(
-                            &mut context.active_move_mut(**active_move_handle)?.data.priority,
+                            &mut context.active_move_mut(*active_move_handle)?.data.priority,
                         ),
                         "secondary_effects" => ValueRefMut::SecondaryHitEffectList(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .secondary_effects,
                         ),
                         "target" => ValueRefMut::MoveTarget(
-                            &mut context.active_move_mut(**active_move_handle)?.data.target,
+                            &mut context.active_move_mut(*active_move_handle)?.data.target,
                         ),
                         "total_damage" => ValueRefMut::U64(
-                            &mut context.active_move_mut(**active_move_handle)?.total_damage,
+                            &mut context.active_move_mut(*active_move_handle)?.total_damage,
                         ),
                         "type" => ValueRefMut::Type(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .primary_type,
                         ),
                         "user_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .user_effect,
                         ),
                         "user_effect_chance" => ValueRefMut::OptionalFractionU16(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .user_effect_chance,
                         ),
                         "override_offensive_stat" => ValueRefMut::OptionalStat(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .override_offensive_stat,
                         ),
                         "override_defensive_stat" => ValueRefMut::OptionalStat(
                             &mut context
-                                .active_move_mut(**active_move_handle)?
+                                .active_move_mut(*active_move_handle)?
                                 .data
                                 .override_defensive_stat,
                         ),

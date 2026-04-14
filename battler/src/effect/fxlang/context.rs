@@ -374,14 +374,6 @@ impl<'effect, 'context, 'battle, 'data> EvaluationContext<'effect, 'context, 'ba
         }
     }
 
-    pub fn source_active_move_handle(&self) -> Option<MoveHandle> {
-        if let Some(EffectHandle::ActiveMove(active_move_handle, _)) = self.source_effect_handle() {
-            Some(*active_move_handle)
-        } else {
-            None
-        }
-    }
-
     pub fn side_index(&self) -> Option<usize> {
         match self {
             Self::ApplyingEffect(context) => Some(context.target().side),

@@ -69,7 +69,7 @@ fn storm_drain_redirects_water_moves_and_boosts_special_attack() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "activate|mon:Gastrodon,player-1,1|ability:Storm Drain",
-            "move|mon:Gastrodon,player-1,1|name:Water Gun|target:Gastrodon,player-2,1",
+            "move|mon:Gastrodon,player-1,1|name:Water Gun|noanim",
             "boost|mon:Gastrodon,player-2,1|stat:spa|by:1|from:ability:Storm Drain",
             "residual",
             "turn|turn:2"

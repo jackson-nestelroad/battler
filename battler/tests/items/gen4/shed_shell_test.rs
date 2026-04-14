@@ -74,8 +74,8 @@ fn shed_shell_allows_holder_to_switch_out_when_trapped() {
             "turn|turn:2",
             "continue",
             "split|side:0",
-            "switch|player:player-1|position:1|name:Eevee|health:115/115|species:Eevee|level:50|gender:U",
-            "switch|player:player-1|position:1|name:Eevee|health:100/100|species:Eevee|level:50|gender:U",
+            ["switch", "player-1", "Eevee"],
+            ["switch", "player-1", "Eevee"],
             "residual",
             "turn|turn:3"
         ]"#,

@@ -77,7 +77,7 @@ fn own_tempo_prevents_confusion() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Spinda,player-2,1|name:Confuse Ray|target:Spinda,player-1,1",
+            "move|mon:Spinda,player-2,1|name:Confuse Ray|noanim",
             "immune|mon:Spinda,player-1,1|from:ability:Own Tempo",
             "residual",
             "turn|turn:2"

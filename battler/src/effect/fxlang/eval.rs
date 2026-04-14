@@ -234,14 +234,14 @@ impl<'event_state> Evaluator<'event_state> {
             )?;
         }
         if self.event.has_flag(CallbackFlag::TakesActiveMove) {
-            self.vars.set(
-                "move",
-                Value::ActiveMove(
-                    context
-                        .source_active_move_handle()
-                        .wrap_expectation("context has no active move")?,
-                ),
-            )?;
+            let source_effect = context
+                .source_effect_handle()
+                .cloned()
+                .wrap_expectation("context has no source effect")?;
+            if !source_effect.is_active_move() {
+                return Err(general_error("source effect is not an active move"));
+            }
+            self.vars.set("move", Value::Effect(source_effect))?;
         }
         if self.event.has_flag(CallbackFlag::TakesOptionalEffect) {
             if let Some(source_effect_handle) = context.source_effect_handle().cloned() {

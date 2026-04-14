@@ -212,12 +212,16 @@ pub struct Move {
     pub hit: u8,
     /// Total damage dealt by the move.
     pub total_damage: u64,
+    /// All targets with non-zero damage applied.
+    pub damaged_targets: Vec<MonHandle>,
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
     /// Is the move upgraded?
     pub upgraded: Option<UpgradedMoveSource>,
     /// Ignore all secondary effects?
     pub ignore_all_secondary_effects: bool,
+    /// The index of the last move log associated with this move.
+    pub last_move_log: Option<usize>,
 
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
@@ -263,9 +267,11 @@ impl Move {
             spread_hit: false,
             hit: 0,
             total_damage: 0,
+            damaged_targets: Vec::default(),
             primary_user_effect_applied: false,
             upgraded: None,
             ignore_all_secondary_effects: false,
+            last_move_log: None,
             effect_state: fxlang::EffectState::default(),
             unlinked,
             secondary_effects: HashMap::default(),

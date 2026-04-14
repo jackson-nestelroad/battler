@@ -173,6 +173,7 @@ impl ParsedEffect {
         self.callbacks.remove(&(event, modifier))
     }
 
+    /// The associated condition attributes.
     pub fn condition(&self) -> &ConditionAttributes {
         &self.condition
     }

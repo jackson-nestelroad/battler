@@ -8,6 +8,39 @@
       }
     }
   },
+  "protectmovebase": {
+    "name": "Protect Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_prepare_hit": [
+          "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
+        ],
+        "on_hit": ["add_volatile: $target stall"]
+      }
+    }
+  },
+  "protectmoveconditionbase": {
+    "name": "Protect Move Condition Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 1,
+      "delegates": ["condition:weakenthroughprotectionmovebase"],
+      "callbacks": {
+        "on_start": ["log_single_turn: with_target"],
+        "on_try_hit": {
+          "priority": 3,
+          "program": [
+            "if !func_call(move_has_flag: $move protect):",
+            ["return"],
+            "log_activate: with_target",
+            "activate_applying_effect: $this no_forward",
+            "return stop"
+          ]
+        }
+      }
+    }
+  },
   "chargemovebase": {
     "name": "Charge Move Base",
     "condition_type": "Built-in",
@@ -21,13 +54,13 @@
           "if $charge_move.is_defined and !$charge_move:",
           [
             "do_not_animate_last_move",
-            "log_animate_move: $user $this.name $target",
+            "log_animate_move: $move $target",
             "return"
           ],
           "if !func_call(run_event: ChargeMove):",
           [
             "do_not_animate_last_move",
-            "log_animate_move: $user $this.name $target",
+            "log_animate_move: $move $target",
             "return"
           ],
           "add_volatile: $user twoturnmove link",

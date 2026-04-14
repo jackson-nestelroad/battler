@@ -130,6 +130,7 @@ pub fn run_function(
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context).map(|val| Some(val)),
+        "add_type" => add_type(context).map(|val| Some(val)),
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
         "adjacent_allies" => adjacent_allies(context).map(|val| Some(val)),
         "adjacent_foes" => adjacent_foes(context).map(|val| Some(val)),
@@ -186,6 +187,7 @@ pub fn run_function(
         "do_not_animate_last_move" => do_not_animate_last_move(context).map(|()| None),
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
+        "effect_has_event_callback" => effect_has_event_callback(context).map(|val| Some(val)),
         "end_ability" => end_ability(context).map(|()| None),
         "end_dynamax" => end_dynamax(context).map(|()| None),
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
@@ -221,6 +223,7 @@ pub fn run_function(
         "hit_effect" => hit_effect().map(|val| Some(val)),
         "increase_friendship" => increase_friendship(context).map(|()| None),
         "index" => index(context),
+        "invert_boosts" => invert_boosts(context).map(|val| Some(val)),
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
         "is_ally" => is_ally(context).map(|val| Some(val)),
         "item_has_flag" => item_has_flag(context).map(|val| Some(val)),
@@ -332,6 +335,7 @@ pub fn run_function(
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
         "special_item_data" => special_item_data(context).map(|val| Some(val)),
         "species_has_flag" => species_has_flag(context).map(|val| Some(val)),
+        "speed_sort_mons" => speed_sort_mons(context).map(|val| Some(val)),
         "start_ability" => start_ability(context).map(|()| None),
         "start_item" => start_item(context).map(|()| None),
         "status_effect_state" => status_effect_state(context),
@@ -525,6 +529,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("no_events")
     }
 
+    fn no_forward(&mut self) -> bool {
+        self.has_flag("no_forward")
+    }
+
     fn no_source(&mut self) -> bool {
         self.has_flag("no_source")
     }
@@ -638,6 +646,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             self.evaluation_context().target_handle()
         } else if let Some(effect_mon_handle) = self.effect_mon_handle
             && forwarding
+            && !self.no_forward()
         {
             Some(effect_mon_handle)
         } else {
@@ -728,13 +737,13 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     }
 
     fn effect_handle_positional(&mut self) -> Result<EffectHandle> {
-        match self.front().map(|val| val.value_type()) {
-            Some(ValueType::Effect) => self
-                .pop_front()
+        if self.front().map(|val| val.is_effect()).unwrap_or(false) {
+            self.pop_front()
                 .wrap_expectation("missing effect")?
                 .effect_handle()
-                .wrap_error_with_message("invalid effect"),
-            _ => self.effect_handle(),
+                .wrap_error_with_message("invalid effect")
+        } else {
+            self.effect_handle()
         }
     }
 
@@ -762,6 +771,28 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
     ) -> Result<Option<ActiveMoveContext<'function, 'function, 'function, 'function, 'battle, 'data>>>
     {
         self.evaluation_context_mut().source_active_move_context()
+    }
+
+    fn source_active_move_context_positional<'function>(
+        &'function mut self,
+    ) -> Result<Option<ActiveMoveContext<'function, 'function, 'function, 'function, 'battle, 'data>>>
+    {
+        if self
+            .front()
+            .map(|val| val.is_active_move())
+            .unwrap_or(false)
+        {
+            let mov = self
+                .pop_front()
+                .wrap_expectation("missing move")?
+                .active_move()
+                .wrap_error_with_message("invalid move")?;
+            Ok(Some(
+                self.evaluation_context_mut().active_move_context(mov)?,
+            ))
+        } else {
+            self.source_active_move_context()
+        }
     }
 
     fn mon_context<'function>(
@@ -1030,17 +1061,11 @@ fn log_single_move(context: FunctionContext) -> Result<()> {
 }
 
 fn log_move_internal(mut context: FunctionContext, animate_only: bool) -> Result<()> {
-    let source_effect = context.source_effect_handle()?;
-    let user_handle = context
+    let mov = context
         .pop_front()
-        .wrap_expectation("missing user")?
-        .mon_handle()
-        .wrap_error_with_message("invalid user")?;
-    let move_name = context
-        .pop_front()
-        .wrap_expectation("missing move name")?
-        .string()
-        .wrap_error_with_message("invalid move name")?;
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
     let target_handle = match context.pop_front() {
         Some(Value::Undefined) | None => None,
         Some(value) => Some(
@@ -1049,13 +1074,8 @@ fn log_move_internal(mut context: FunctionContext, animate_only: bool) -> Result
                 .wrap_error_with_message("invalid target")?,
         ),
     };
-    core_battle_logs::use_move(
-        &mut context.mon_context(user_handle)?,
-        &move_name,
-        target_handle,
-        source_effect.as_ref(),
-        animate_only,
-    )
+    let mut context = context.evaluation_context_mut().active_move_context(mov)?;
+    core_battle_logs::use_move(&mut context, target_handle, animate_only)
 }
 
 fn log_animate_move(context: FunctionContext) -> Result<()> {
@@ -1586,13 +1606,13 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile = Id::from(volatile);
-    let link_to = context.link_handle()?;
+    let link_handle = context.link_handle()?;
 
     core_battle_actions::add_volatile(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         &volatile,
         false,
-        link_to.as_ref(),
+        link_handle.as_ref(),
     )
     .map(|val| Value::Boolean(val))
 }
@@ -1770,7 +1790,13 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {
-    core_battle_logs::do_not_animate_last_move(context.battle_context_mut());
+    core_battle_logs::do_not_animate_last_move(
+        &mut context
+            .source_active_move_context_positional()?
+            .wrap_expectation(
+                "source effect is not an active move or active move is not provided",
+            )?,
+    );
     Ok(())
 }
 
@@ -2265,6 +2291,7 @@ fn move_slot(mut context: FunctionContext) -> Result<Value> {
         active_move.data.pp,
         active_move.data.pp,
         active_move.data.target,
+        active_move.data.primary_type,
     );
     Ok(Value::MoveSlot(move_slot))
 }
@@ -2555,7 +2582,7 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid user")?;
     let active_move_handle =
         CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
-    Ok(Value::ActiveMove(active_move_handle))
+    Ok(Value::Effect(active_move_handle.into()))
 }
 
 fn new_active_move(mut context: FunctionContext) -> Result<Value> {
@@ -2571,7 +2598,7 @@ fn new_active_move(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid user")?;
     let active_move_handle =
         CoreBattle::register_active_move_by_id(context.battle_context_mut(), &move_id, mon_handle)?;
-    Ok(Value::ActiveMove(active_move_handle))
+    Ok(Value::Effect(active_move_handle.into()))
 }
 
 fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value> {
@@ -2607,7 +2634,7 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
         .wrap_error_with_message("invalid user")?;
     let active_move_handle =
         CoreBattle::register_active_move(context.battle_context_mut(), active_move, mon_handle)?;
-    Ok(Value::ActiveMove(active_move_handle))
+    Ok(Value::Effect(active_move_handle.into()))
 }
 
 fn use_active_move(mut context: FunctionContext) -> Result<Value> {
@@ -2877,6 +2904,17 @@ fn set_types(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid types")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     core_battle_actions::set_types(&mut context, types).map(|val| Value::Boolean(val))
+}
+
+fn add_type(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let typ = context
+        .pop_front()
+        .wrap_expectation("missing type")?
+        .mon_type()
+        .wrap_error_with_message("invalid type")?;
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
+    core_battle_actions::add_type(&mut context, typ).map(|val| Value::Boolean(val))
 }
 
 fn set_weather(mut context: FunctionContext) -> Result<Value> {
@@ -3337,9 +3375,15 @@ fn add_slot_condition(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid condition id")?;
     let condition = Id::from(condition);
+    let link_handle = context.link_handle()?;
 
     let mut context = context.forward_to_side_effect(side_index)?;
-    let value = core_battle_actions::add_slot_condition(&mut context, slot, &condition);
+    let value = core_battle_actions::add_slot_condition(
+        &mut context,
+        slot,
+        &condition,
+        link_handle.as_ref(),
+    );
     value.map(|val| Value::Boolean(val))
 }
 fn remove_slot_condition(mut context: FunctionContext) -> Result<Value> {
@@ -3369,9 +3413,11 @@ fn add_side_condition(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid condition id")?;
     let condition = Id::from(condition);
+    let link_handle = context.link_handle()?;
 
     let mut context = context.forward_to_side_effect(side_index)?;
-    let value = core_battle_actions::add_side_condition(&mut context, &condition);
+    let value =
+        core_battle_actions::add_side_condition(&mut context, &condition, link_handle.as_ref());
     value.map(|val| Value::Boolean(val))
 }
 
@@ -3419,15 +3465,16 @@ fn prioritize_move(mut context: FunctionContext) -> Result<()> {
         ),
         _ => None,
     };
-    let source_effect = match context.front().map(|val| val.value_type()) {
-        Some(ValueType::Effect) => Some(
+    let source_effect = if context.front().map(|val| val.is_effect()).unwrap_or(false) {
+        Some(
             context
                 .pop_front()
                 .wrap_expectation("missing source effect")?
                 .effect_handle()
                 .wrap_error_with_message("invalid source effect")?,
-        ),
-        _ => None,
+        )
+    } else {
+        None
     };
     let source = match context.front().map(|val| val.value_type()) {
         Some(ValueType::Mon) => Some(
@@ -4041,10 +4088,12 @@ fn add_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid pseudo weather")?;
     let pseudo_weather = Id::from(pseudo_weather);
+    let link_handle = context.link_handle()?;
 
     core_battle_actions::add_pseudo_weather(
         &mut context.forward_to_field_effect()?,
         &pseudo_weather,
+        link_handle.as_ref(),
     )
     .map(|val| Value::Boolean(val))
 }
@@ -4170,6 +4219,15 @@ fn swap_boosts(mut context: FunctionContext) -> Result<()> {
             .forward_to_applying_effect_context_with_source_and_target(Some(source), target)?,
         &boosts,
     )
+}
+
+fn invert_boosts(mut context: FunctionContext) -> Result<Value> {
+    let target = context.target_handle_positional()?;
+
+    core_battle_actions::invert_boosts(
+        &mut context.forward_to_applying_effect_context_with_target(target)?,
+    )
+    .map(|val| Value::Boolean(val))
 }
 
 fn base_species(mut context: FunctionContext) -> Result<Value> {
@@ -4388,10 +4446,14 @@ fn add_attribute_to_last_move(mut context: FunctionContext) -> Result<()> {
         .wrap_expectation("missing attribute")?
         .string()
         .wrap_error_with_message("invalid attribute")?;
-    context
-        .battle_context_mut()
-        .battle_mut()
-        .add_attribute_to_last_move(&attribute);
+    core_battle_logs::add_attribute_to_last_move(
+        &mut context
+            .source_active_move_context_positional()?
+            .wrap_expectation(
+                "source effect is not an active move or active move is not provided",
+            )?,
+        &attribute,
+    );
     Ok(())
 }
 
@@ -4415,4 +4477,34 @@ fn set_z_power_boosts(mut context: FunctionContext) -> Result<()> {
         ..Default::default()
     });
     Ok(())
+}
+
+fn effect_has_event_callback(mut context: FunctionContext) -> Result<Value> {
+    let effect = context
+        .pop_front()
+        .wrap_expectation("missing effect")?
+        .effect_handle()
+        .wrap_error_with_message("invalid effect")?;
+    let event = context
+        .pop_front()
+        .wrap_expectation("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
+    CoreBattle::effect_has_event_callback(
+        context.evaluation_context_mut().battle_context_mut(),
+        &effect,
+        event,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+fn speed_sort_mons(mut context: FunctionContext) -> Result<Value> {
+    let mons = context
+        .pop_front()
+        .wrap_expectation("missing mons list")?
+        .mons_list()
+        .wrap_error_with_message("invalid mons list")?;
+    CoreBattle::speed_sort_mons(context.battle_context_mut(), &mons, false)
+        .map(|mons| Value::List(mons.into_iter().map(|mon| Value::Mon(mon)).collect()))
 }

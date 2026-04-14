@@ -24,6 +24,18 @@ pub enum SwitchType {
     Normal,
     /// Switch out that copies all volatile effects to the replacement Mon.
     CopyVolatile,
+    /// Normal switch out if the move hit.
+    IfHit,
+}
+
+impl SwitchType {
+    /// Does the switch depend on hitting the target?
+    pub fn if_hit(&self) -> bool {
+        match self {
+            Self::IfHit => true,
+            _ => false,
+        }
+    }
 }
 
 impl Display for SwitchType {
@@ -31,6 +43,7 @@ impl Display for SwitchType {
         match self {
             Self::Normal => write!(f, "{}", true),
             Self::CopyVolatile => write!(f, "copyvolatile"),
+            Self::IfHit => write!(f, "ifhit"),
         }
     }
 }
@@ -40,6 +53,7 @@ impl FromStr for SwitchType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "copyvolatile" => Ok(Self::CopyVolatile),
+            "ifhit" => Ok(Self::IfHit),
             _ => Err(Error::msg(format!("invalid user switch type: \"{s}\""))),
         }
     }
@@ -53,6 +67,7 @@ impl Serialize for SwitchType {
         match self {
             Self::Normal => serializer.serialize_bool(true),
             Self::CopyVolatile => serializer.serialize_str("copyvolatile"),
+            Self::IfHit => serializer.serialize_str("ifhit"),
         }
     }
 }
@@ -63,7 +78,7 @@ impl<'de> Visitor<'de> for UserSwitchTypeVisitor {
     type Value = SwitchType;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "true or \"copyvolatile\"")
+        write!(formatter, "true, \"copyvolatile\", or \"ifhit\"")
     }
 
     fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
@@ -105,5 +120,6 @@ mod user_switch_type_test {
     fn serializes_to_string() {
         test_serialization(SwitchType::Normal, true);
         test_serialization(SwitchType::CopyVolatile, "\"copyvolatile\"");
+        test_serialization(SwitchType::IfHit, "\"ifhit\"");
     }
 }

@@ -102,7 +102,7 @@ fn sturdy_resists_ohko_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Swampert,player-2,1|name:Guillotine|target:Geodude,player-1,1",
+            "move|mon:Swampert,player-2,1|name:Guillotine|noanim",
             "immune|mon:Geodude,player-1,1|from:ability:Sturdy",
             "residual",
             "turn|turn:2"

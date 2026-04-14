@@ -298,14 +298,14 @@ fn neutralizing_gas_ends_ability_on_appearance() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ninetales,player-1,1|name:Flamethrower|target:Ninetales,player-2,1",
+            "move|mon:Ninetales,player-1,1|name:Flamethrower|noanim",
             "start|mon:Ninetales,player-2,1|ability:Flash Fire",
             "residual",
             "turn|turn:2",
             "continue",
             "split|side:0",
-            "switch|player:player-1|position:1|name:Weezing|health:125/125|species:Weezing|level:50|gender:U",
-            "switch|player:player-1|position:1|name:Weezing|health:100/100|species:Weezing|level:50|gender:U",
+            ["switch", "player-1", "Weezing"],
+            ["switch", "player-1", "Weezing"],
             "ability|mon:Weezing,player-1,1|ability:Neutralizing Gas",
             "end|mon:Ninetales,player-2,1|ability:Flash Fire|silent",
             "residual",
@@ -331,14 +331,14 @@ fn neutralizing_gas_does_not_end_ability_on_appearance_with_ability_shield() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ninetales,player-1,1|name:Flamethrower|target:Ninetales,player-2,1",
+            "move|mon:Ninetales,player-1,1|name:Flamethrower|noanim",
             "start|mon:Ninetales,player-2,1|ability:Flash Fire",
             "residual",
             "turn|turn:2",
             "continue",
             "split|side:0",
-            "switch|player:player-1|position:1|name:Weezing|health:125/125|species:Weezing|level:50|gender:U",
-            "switch|player:player-1|position:1|name:Weezing|health:100/100|species:Weezing|level:50|gender:U",
+            ["switch", "player-1", "Weezing"],
+            ["switch", "player-1", "Weezing"],
             "ability|mon:Weezing,player-1,1|ability:Neutralizing Gas",
             "residual",
             "turn|turn:3"

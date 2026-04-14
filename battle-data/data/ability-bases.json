@@ -8,7 +8,7 @@
           "if $effect.id == intimidate and $boosts.atk != 0:",
           [
             "$boosts.atk = 0",
-            "log_fail_unboost: $target from_effect atk",
+            "log_fail_unboost: from_effect atk",
             "return $boosts"
           ]
         ]
@@ -28,9 +28,52 @@
           [
             "$boosts = func_call(set_boost: $boosts $stat 0)",
             "if !$effect.is_move_secondary:",
-            ["log_fail_unboost: $target from_effect $stat"],
+            ["log_fail_unboost: from_effect $stat"],
             "return $boosts"
           ]
+        ]
+      }
+    }
+  },
+  "modifynormaltypemoveabilitybase": {
+    "name": "Modify Normal Type Move Ability Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_modify_move_type": {
+          "priority": -1,
+          "program": [
+            "if $effect.typeless or $type != normal or $type != $effect.type:",
+            ["return"],
+            "if $effect.is_move:",
+            ["$effect.effect_state.type_change_boosted = true"],
+            "return func_call(value_from_local_data: type)"
+          ],
+          "on_source_base_power": [
+            "if $move.effect_state.type_change_boosted:",
+            ["return $base_power * 6/5"]
+          ]
+        }
+      }
+    }
+  },
+  "auraabilitybase": {
+    "name": "Aura Ability Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_any_base_power": [
+          "$type = func_call(value_from_local_data: type)",
+          "if $move.type != $type:",
+          ["return"],
+          "$aura_booster = $move.effect_state.aura_booster",
+          "if $aura_booster.is_defined:",
+          ["return"],
+          "$move.effect_state.aura_booster = $effect_state.target",
+          "if $move.effect_state.aura_break:",
+          ["return $base_power * 3/4"],
+          "return $base_power * 4/3"
         ]
       }
     }

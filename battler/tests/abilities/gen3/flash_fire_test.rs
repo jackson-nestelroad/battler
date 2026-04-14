@@ -110,7 +110,7 @@ fn flash_fire_boosts_attack_after_hit_by_fire_move() {
             "residual",
             "turn|turn:2",
             "continue",
-            "move|mon:Blastoise,player-2,1|name:Ember|target:Ninetales,player-1,1",
+            "move|mon:Blastoise,player-2,1|name:Ember|noanim",
             "start|mon:Ninetales,player-1,1|ability:Flash Fire",
             "residual",
             "turn|turn:3",
@@ -120,7 +120,7 @@ fn flash_fire_boosts_attack_after_hit_by_fire_move() {
             "split|side:1",
             "damage|mon:Blastoise,player-2,1|health:79/139",
             "damage|mon:Blastoise,player-2,1|health:57/100",
-            "move|mon:Blastoise,player-2,1|name:Ember|target:Ninetales,player-1,1",
+            "move|mon:Blastoise,player-2,1|name:Ember|noanim",
             "immune|mon:Ninetales,player-1,1|from:ability:Flash Fire",
             "residual",
             "turn|turn:4"
@@ -152,14 +152,14 @@ fn flash_fire_gets_suppressed_and_reactivates() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Blastoise,player-2,1|name:Ember|target:Ninetales,player-1,1",
+            "move|mon:Blastoise,player-2,1|name:Ember|noanim",
             "start|mon:Ninetales,player-1,1|ability:Flash Fire",
             "residual",
             "turn|turn:2",
             "continue",
             "split|side:1",
-            "switch|player:player-2|position:1|name:Blastoise|health:139/139|species:Blastoise|level:50|gender:U",
-            "switch|player:player-2|position:1|name:Blastoise|health:100/100|species:Blastoise|level:50|gender:U",
+            ["switch", "player-2", "Blastoise"],
+            ["switch", "player-2", "Blastoise"],
             "ability|mon:Blastoise,player-2,1|ability:Neutralizing Gas",
             "end|mon:Ninetales,player-1,1|ability:Flash Fire|silent",
             "move|mon:Ninetales,player-1,1|name:Flamethrower|target:Blastoise,player-2,1",

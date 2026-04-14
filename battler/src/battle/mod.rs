@@ -103,6 +103,7 @@ pub use mon::{
     MonSwitchState,
     MonVolatileState,
     MoveSlot,
+    MoveSlotEffectCache,
     PhysicalMonDetails,
     PublicMonDetails,
     RecalculateBaseStatsHpPolicy,

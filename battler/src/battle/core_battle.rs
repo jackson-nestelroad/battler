@@ -290,7 +290,6 @@ pub struct CoreBattle<'d> {
     ended: bool,
     next_effect_order: u32,
     next_effect_linked_id: u32,
-    last_move_log: Option<usize>,
     last_move: Option<MoveHandle>,
     last_successful_move: Option<MoveHandle>,
     last_exited: Option<MonHandle>,
@@ -379,7 +378,6 @@ impl<'d> CoreBattle<'d> {
             ended: false,
             next_effect_order: 0,
             next_effect_linked_id: 0,
-            last_move_log: None,
             last_move: None,
             last_successful_move: None,
             last_exited: None,
@@ -538,15 +536,7 @@ impl<'d> CoreBattle<'d> {
             .battle()
             .all_active_mon_handles()
             .collect::<Vec<_>>();
-        let mut active_mons_with_speed = Vec::with_capacity(active_mons.len());
-        for mon in active_mons {
-            active_mons_with_speed.push(Mon::speed_orderable(&context.mon_context(mon)?));
-        }
-        Self::speed_sort(context, active_mons_with_speed.as_mut_slice());
-        Ok(active_mons_with_speed
-            .into_iter()
-            .map(|mon| mon.mon_handle)
-            .collect())
+        Self::speed_sort_mons(context, &active_mons, false)
     }
 
     pub fn all_active_mon_handles_in_speed_order_and_ability_effect_order(
@@ -556,11 +546,22 @@ impl<'d> CoreBattle<'d> {
             .battle()
             .all_active_mon_handles()
             .collect::<Vec<_>>();
-        let mut active_mons_with_speed = Vec::with_capacity(active_mons.len());
-        for mon in active_mons {
-            active_mons_with_speed.push(Mon::speed_orderable_with_ability_effect_order(
-                &context.mon_context(mon)?,
-            ));
+        Self::speed_sort_mons(context, &active_mons, true)
+    }
+
+    pub fn speed_sort_mons(
+        context: &mut Context,
+        mons: &[MonHandle],
+        with_ability_effect_order: bool,
+    ) -> Result<Vec<MonHandle>> {
+        let mut active_mons_with_speed = Vec::with_capacity(mons.len());
+        for mon in mons {
+            let context = context.mon_context(*mon)?;
+            active_mons_with_speed.push(if with_ability_effect_order {
+                Mon::speed_orderable_with_ability_effect_order(&context)
+            } else {
+                Mon::speed_orderable(&context)
+            });
         }
         Self::speed_sort(context, active_mons_with_speed.as_mut_slice());
         Ok(active_mons_with_speed
@@ -709,8 +710,10 @@ impl<'d> CoreBattle<'d> {
             .push_extend([battle_log_entry!("split", ("side", side)), private, public])
     }
 
-    pub fn log(&mut self, event: UncommittedBattleLogEntry) {
-        self.log.push(event)
+    pub fn log(&mut self, event: UncommittedBattleLogEntry) -> usize {
+        let index = self.log.len();
+        self.log.push(event);
+        index
     }
 
     pub fn log_many<I>(&mut self, events: I)
@@ -720,35 +723,20 @@ impl<'d> CoreBattle<'d> {
         self.log.push_extend(events)
     }
 
-    pub fn log_move(&mut self, event: UncommittedBattleLogEntry) {
-        self.last_move_log = Some(self.log.len());
-        self.log(event)
-    }
-
-    pub fn add_attribute_to_last_move(&mut self, attribute: &str) {
-        if let Some(BattleLogEntryMut::Uncommitted(event)) =
-            self.last_move_log.and_then(|index| self.log.get_mut(index))
-        {
+    pub fn add_attribute_to_log(&mut self, index: usize, attribute: &str) {
+        if let Some(BattleLogEntryMut::Uncommitted(event)) = self.log.get_mut(index) {
             event.add_flag(attribute);
-            if attribute == "noanim" {
-                event.remove("target");
-                event.remove("spread");
-            }
         }
     }
 
-    pub fn add_attribute_value_to_last_move(&mut self, attribute: &str, value: String) {
-        if let Some(BattleLogEntryMut::Uncommitted(event)) =
-            self.last_move_log.and_then(|index| self.log.get_mut(index))
-        {
+    pub fn add_attribute_value_to_log(&mut self, index: usize, attribute: &str, value: String) {
+        if let Some(BattleLogEntryMut::Uncommitted(event)) = self.log.get_mut(index) {
             event.set(attribute, value);
         }
     }
 
-    pub fn remove_attribute_from_last_move(&mut self, attribute: &str) {
-        if let Some(BattleLogEntryMut::Uncommitted(event)) =
-            self.last_move_log.and_then(|index| self.log.get_mut(index))
-        {
+    pub fn remove_attribute_from_log(&mut self, index: usize, attribute: &str) {
+        if let Some(BattleLogEntryMut::Uncommitted(event)) = self.log.get_mut(index) {
             event.remove(attribute);
         }
     }
@@ -1057,7 +1045,7 @@ impl<'d> CoreBattle<'d> {
                 .battle_mut()
                 .log(battle_log_entry!("teampreview", ("pick", picked_team_size))),
             None => context.battle_mut().log(battle_log_entry!("teampreview")),
-        }
+        };
         Self::make_request(context, RequestType::TeamPreview)?;
         Ok(())
     }
@@ -2607,5 +2595,20 @@ impl<'d> CoreBattle<'d> {
             }),
         )?;
         Ok(())
+    }
+
+    /// Checks if the effect has the given event callback.
+    pub fn effect_has_event_callback(
+        context: &mut Context,
+        effect_handle: &EffectHandle,
+        event: fxlang::BattleEvent,
+    ) -> Result<bool> {
+        Ok(Self::get_parsed_effect_by_handle(context, effect_handle)?
+            .map(|effect| {
+                effect
+                    .event(event, fxlang::BattleEventModifier::None)
+                    .is_some()
+            })
+            .unwrap_or(false))
     }
 }

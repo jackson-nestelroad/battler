@@ -23,8 +23,8 @@
     "name": "Drain",
     "condition_type": "Built-in"
   },
-  "powder": {
-    "name": "Powder",
+  "powderdust": {
+    "name": "Powder Dust",
     "condition_type": "Built-in"
   },
   "recoil": {
@@ -121,7 +121,7 @@
     "condition": {
       "callbacks": {
         "on_immunity": [
-          "if $effect.id == powder or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
+          "if $effect.id == powderdust or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
           ["return false"]
         ]
       }
@@ -1119,6 +1119,10 @@
           "order": 1,
           "program": ["return false"]
         },
+        "on_add_type": {
+          "order": 1,
+          "program": ["return false"]
+        },
         "on_use_move": [
           "if $user.terastallized == stellar:",
           ["$move.force_stab = true"]
@@ -1248,8 +1252,9 @@
               "$old_z_move = func_call(get_move: $z_move_id)",
               "if !$old_z_move:",
               ["return"],
-              "log_use_move: $user $old_z_move.name no_source_effect",
-              "do_not_animate_last_move",
+              "$old_z_move_active_move = func_call(new_active_move: $old_z_move.id $user)",
+              "log_use_move: $old_z_move_active_move",
+              "do_not_animate_last_move: $old_z_move_active_move",
               "$z_move_id = $new_z_move_id"
             ]
           ],

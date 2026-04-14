@@ -183,7 +183,7 @@ fn clear_smog_is_blocked_by_protect() {
             "continue",
             "move|mon:Amoonguss,player-2,1|name:Protect|target:Amoonguss,player-2,1",
             "singleturn|mon:Amoonguss,player-2,1|move:Protect",
-            "move|mon:Amoonguss,player-1,1|name:Clear Smog|target:Amoonguss,player-2,1",
+            "move|mon:Amoonguss,player-1,1|name:Clear Smog|noanim",
             "activate|mon:Amoonguss,player-2,1|move:Protect",
             "residual",
             "turn|turn:3"

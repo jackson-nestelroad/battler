@@ -279,6 +279,12 @@ impl EffectHandle {
     }
 }
 
+impl From<MoveHandle> for EffectHandle {
+    fn from(value: MoveHandle) -> Self {
+        Self::ActiveMove(value, MoveHitEffectType::PrimaryEffect)
+    }
+}
+
 /// A battle effect.
 ///
 /// Contains the borrowed data for the effect.

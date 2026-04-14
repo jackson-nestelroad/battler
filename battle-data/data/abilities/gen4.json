@@ -283,13 +283,16 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_modify_move_type": [
-          "$exempt = [hiddenpower, judgment, multiattack, naturalgift, revelationdance, struggle, technoblast, terrainpulse, weatherball]",
-          "if $exempt has $move.id:",
-          ["return"],
-          "$effect_state.normalized = true",
-          "return normal"
-        ],
+        "on_modify_move_type": {
+          "priority": 1,
+          "program": [
+            "if $effect.typeless or func_call(effect_has_event_callback: $effect ModifyMoveType):",
+            ["return"],
+            "if $effect_state.is_defined:",
+            ["$effect_state.normalized = true"],
+            "return normal"
+          ]
+        },
         "on_source_base_power": [
           "if $effect_state.normalized:",
           ["return $base_power * 6/5"]

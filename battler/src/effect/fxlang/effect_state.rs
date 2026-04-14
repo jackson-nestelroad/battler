@@ -237,13 +237,18 @@ impl EffectState {
     }
 
     /// The unique IDs of effects this effect is linked to.
-    pub fn linked_to(&self) -> &[u32] {
-        &self.linked_to
+    pub fn linked_to(&self) -> impl Iterator<Item = &u32> {
+        self.linked_to.iter()
     }
 
     /// Adds the unique ID of a linked effect.
     pub fn add_link(&mut self, linked_id: u32) {
         self.linked_to.push(linked_id);
+    }
+
+    /// Removes a linked effect.
+    pub fn remove_link(&mut self, linked_id: u32) {
+        self.linked_to.retain(|id| *id != linked_id);
     }
 
     /// The effect order.

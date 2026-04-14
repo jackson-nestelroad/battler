@@ -145,16 +145,17 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsMon
         | CallbackFlag::ReturnsVoid,
-    SourceMoveType = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesSourceTargetMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsType
-        | CallbackFlag::ReturnsString
-        | CallbackFlag::ReturnsVoid,
     SourceMoveActiveMove = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsActiveMove
+        | CallbackFlag::ReturnsVoid,
+
+    SourceEffectType = CallbackFlag::TakesUserMon
+        | CallbackFlag::TakesSourceTargetMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsType
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
 
     MoveModifier = CallbackFlag::TakesTargetMon
@@ -358,6 +359,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on the field.
     #[string = "AddPseudoWeather"]
     AddPseudoWeather,
+    /// Runs when a type is being added to a Mon.
+    ///
+    /// Runs before the type addition is applied. Can be used to fail the type addition.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AddType"]
+    AddType,
     /// Runs after a volatile effect is added to a Mon.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -409,6 +417,11 @@ pub enum BattleEvent {
     /// Runs on the active move.
     #[string = "AfterHit"]
     AfterHit,
+    /// Runs after a Mon Mega Evolves.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterMegaEvolution"]
+    AfterMegaEvolution,
     /// Runs after a Mon finishes using a move.
     ///
     /// Runs on the active move and in the context of a move user.
@@ -603,12 +616,12 @@ pub enum BattleEvent {
     DamagingHit,
     /// Runs after a move is used that should have PP deducted.
     ///
-    /// Runs in the context a move user.
+    /// Runs in the context of a move user.
     #[string = "DeductPp"]
     DeductPp,
     /// Runs when determining which moves are disabled.
     ///
-    /// Runs in the context a Mon.
+    /// Runs in the context of a Mon and on the move.
     #[string = "DisableMove"]
     DisableMove,
     /// Runs before a Mon is dragged out of battle.
@@ -872,7 +885,7 @@ pub enum BattleEvent {
     ModifyFriendshipIncrease,
     /// Runs when modifying the type of a move.
     ///
-    /// Runs on the active move and in the context of a move user.
+    /// Runs on the move and in the context of a move user.
     #[string = "ModifyMoveType"]
     ModifyMoveType,
     /// Runs when determining the priority of a move.
@@ -1323,6 +1336,7 @@ impl BattleEvent {
             Self::ActivatePlayer => CommonCallbackType::PlayerEffectVoid as u32,
             Self::ActivateSide => CommonCallbackType::SideEffectVoid as u32,
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
+            Self::AddType => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1332,6 +1346,7 @@ impl BattleEvent {
             Self::AfterEachBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterFainted => CommonCallbackType::MonVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
+            Self::AfterMegaEvolution => CommonCallbackType::MonVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterMoveSecondaryEffectsDamage => CommonCallbackType::MoveVoid as u32,
@@ -1415,7 +1430,7 @@ impl BattleEvent {
             Self::ModifyEvYield => CommonCallbackType::MonStatTableModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
             Self::ModifyFriendshipIncrease => CommonCallbackType::MonModifier as u32,
-            Self::ModifyMoveType => CommonCallbackType::SourceMoveType as u32,
+            Self::ModifyMoveType => CommonCallbackType::SourceEffectType as u32,
             Self::ModifyPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1518,6 +1533,7 @@ impl BattleEvent {
             Self::AddPseudoWeather | Self::AfterAddPseudoWeather => {
                 &[("pseudo_weather", ValueType::Effect, true)]
             }
+            Self::AddType => &[("type", ValueType::Type, true)],
             Self::AddVolatile | Self::AfterAddVolatile => &[("volatile", ValueType::Effect, true)],
             Self::AfterBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::AfterDamage => &[("damage", ValueType::UFraction, true)],

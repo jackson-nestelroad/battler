@@ -7,7 +7,7 @@ use ahash::HashSet;
 use anyhow::Result;
 use battler_wamp_uri::WildcardUri;
 use futures_util::lock::Mutex;
-use rand::Rng;
+use rand::RngExt;
 use tokio::sync::RwLock;
 
 use crate::{

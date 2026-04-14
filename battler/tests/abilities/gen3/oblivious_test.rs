@@ -79,7 +79,7 @@ fn oblivious_resists_attraction() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Wailmer,player-1,1|name:Attract|target:Wailmer,player-2,1",
+            "move|mon:Wailmer,player-1,1|name:Attract|noanim",
             "immune|mon:Wailmer,player-2,1|from:ability:Oblivious",
             "residual",
             "turn|turn:2"

@@ -122,7 +122,7 @@ fn dancer_does_not_copy_unsuccessful_move() {
         r#"[
             "move|mon:Oricorio,player-1,1|name:Protect|target:Oricorio,player-1,1",
             "singleturn|mon:Oricorio,player-1,1|move:Protect",
-            "move|mon:Oricorio,player-2,1|name:Fiery Dance|target:Oricorio,player-1,1",
+            "move|mon:Oricorio,player-2,1|name:Fiery Dance|noanim",
             "activate|mon:Oricorio,player-1,1|move:Protect",
             "residual",
             "turn|turn:2",

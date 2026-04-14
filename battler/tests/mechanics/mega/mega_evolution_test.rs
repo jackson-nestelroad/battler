@@ -117,8 +117,8 @@ fn one_mon_can_mega_evolve() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "split|side:1",
-            "switch|player:player-2|position:1|name:Charizard|health:138/138|species:Charizard|level:50|gender:U",
-            "switch|player:player-2|position:1|name:Charizard|health:100/100|species:Charizard|level:50|gender:U",
+            ["switch", "player-2", "Charizard"],
+            ["switch", "player-2", "Charizard"],
             "residual",
             "turn|turn:2",
             "continue",

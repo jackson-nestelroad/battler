@@ -229,7 +229,7 @@ fn dark_void_can_be_reflected() {
             "singleturn|mon:Giratina,player-2,1|move:Magic Coat",
             "move|mon:Darkrai,player-1,1|name:Dark Void|noanim",
             "activate|mon:Giratina,player-2,1|move:Magic Coat",
-            "move|mon:Giratina,player-2,1|name:Dark Void|from:move:Magic Coat|noanim",
+            "move|mon:Giratina,player-2,1|name:Dark Void|from:move:Magic Coat|spread:Darkrai,player-1,1;Ditto,player-1,2",
             "status|mon:Darkrai,player-1,1|status:Sleep",
             "status|mon:Ditto,player-1,2|status:Sleep",
             "residual",

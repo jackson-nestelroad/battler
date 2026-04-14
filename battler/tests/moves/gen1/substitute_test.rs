@@ -171,7 +171,7 @@ fn shedinja_cant_substitute() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Shedinja,player-1,1|name:Substitute|target:Shedinja,player-1,1",
+            "move|mon:Shedinja,player-1,1|name:Substitute|noanim",
             "fail|mon:Shedinja,player-1,1",
             "residual",
             "turn|turn:2"
