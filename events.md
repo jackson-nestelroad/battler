@@ -293,6 +293,10 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. `SetTypes`.
 
+## Add Type
+
+1. `AddType`.
+
 ## Set Ability
 
 1. `SetAbility`.
