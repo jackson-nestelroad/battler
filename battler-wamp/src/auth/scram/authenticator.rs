@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use base64::Engine;
 use futures_util::lock::Mutex;
 use password_hash::Salt;
-use rand::Rng;
+use rand::RngExt;
 
 use crate::{
     auth::{

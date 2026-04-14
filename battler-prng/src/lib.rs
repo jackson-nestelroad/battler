@@ -8,7 +8,7 @@ pub mod rand_util;
 use core::any::Any;
 
 #[cfg(feature = "std")]
-use rand::Rng;
+use rand::RngExt;
 
 /// A pseudo-random number generator, created with the intention of using a random number generator
 /// that can be deterministically "replayed" for battle simulations.

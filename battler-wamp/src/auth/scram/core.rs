@@ -3,7 +3,10 @@ use anyhow::{
     Result,
 };
 use base64::Engine;
-use hmac::Mac;
+use hmac::{
+    KeyInit,
+    Mac,
+};
 use password_hash::{
     PasswordHashString,
     Salt,
