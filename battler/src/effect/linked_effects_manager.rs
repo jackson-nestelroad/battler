@@ -106,34 +106,51 @@ impl LinkedEffectsManager {
             return Ok(());
         }
 
-        if let Some(linked_id) = connector
+        let linked_id = match connector
             .get_mut(context.as_battle_context_mut())?
             .linked_id()
         {
-            context
-                .battle_mut()
-                .linked_effects_manager
-                .effects
-                .remove(&linked_id);
-        }
+            Some(linked_id) => linked_id,
+            None => return Ok(()),
+        };
+
+        context
+            .battle_mut()
+            .linked_effects_manager
+            .effects
+            .remove(&linked_id);
 
         let mut context = context.forward_effect_context(effect.effect_handle.clone())?;
         for link in connector
             .get_mut(context.as_battle_context_mut())?
             .linked_to()
-            .iter()
             .cloned()
             .collect::<Vec<_>>()
         {
-            if let Some(effect) = context
-                .battle_mut()
-                .linked_effects_manager
-                .effects
-                .remove(&link)
-            {
-                effect.end(&mut context)?;
-            }
+            Self::remove_link(&mut context, link, linked_id)?;
         }
+
+        Ok(())
+    }
+
+    fn remove_link(context: &mut EffectContext, link: u32, remove: u32) -> Result<()> {
+        let linked_effect = match context.battle().linked_effects_manager.effects.get(&link) {
+            Some(effect) => effect.clone(),
+            None => return Ok(()),
+        };
+        let connector = match linked_effect.effect_state_connector() {
+            Some(connector) => connector,
+            None => return Ok(()),
+        };
+
+        if !connector.exists(context.as_battle_context_mut())? {
+            return Ok(());
+        }
+
+        let effect_state = connector.get_mut(context.as_battle_context_mut())?;
+        effect_state.remove_link(remove);
+
+        linked_effect.end(context)?;
 
         Ok(())
     }

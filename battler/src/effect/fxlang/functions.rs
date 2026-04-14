@@ -1605,13 +1605,13 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid volatile")?;
     let volatile = Id::from(volatile);
-    let link_to = context.link_handle()?;
+    let link_handle = context.link_handle()?;
 
     core_battle_actions::add_volatile(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         &volatile,
         false,
-        link_to.as_ref(),
+        link_handle.as_ref(),
     )
     .map(|val| Value::Boolean(val))
 }
@@ -3374,9 +3374,15 @@ fn add_slot_condition(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid condition id")?;
     let condition = Id::from(condition);
+    let link_handle = context.link_handle()?;
 
     let mut context = context.forward_to_side_effect(side_index)?;
-    let value = core_battle_actions::add_slot_condition(&mut context, slot, &condition);
+    let value = core_battle_actions::add_slot_condition(
+        &mut context,
+        slot,
+        &condition,
+        link_handle.as_ref(),
+    );
     value.map(|val| Value::Boolean(val))
 }
 fn remove_slot_condition(mut context: FunctionContext) -> Result<Value> {
@@ -3406,9 +3412,11 @@ fn add_side_condition(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid condition id")?;
     let condition = Id::from(condition);
+    let link_handle = context.link_handle()?;
 
     let mut context = context.forward_to_side_effect(side_index)?;
-    let value = core_battle_actions::add_side_condition(&mut context, &condition);
+    let value =
+        core_battle_actions::add_side_condition(&mut context, &condition, link_handle.as_ref());
     value.map(|val| Value::Boolean(val))
 }
 
@@ -4079,10 +4087,12 @@ fn add_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid pseudo weather")?;
     let pseudo_weather = Id::from(pseudo_weather);
+    let link_handle = context.link_handle()?;
 
     core_battle_actions::add_pseudo_weather(
         &mut context.forward_to_field_effect()?,
         &pseudo_weather,
+        link_handle.as_ref(),
     )
     .map(|val| Value::Boolean(val))
 }

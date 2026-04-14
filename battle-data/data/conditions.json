@@ -23,8 +23,8 @@
     "name": "Drain",
     "condition_type": "Built-in"
   },
-  "powder": {
-    "name": "Powder",
+  "powderdust": {
+    "name": "Powder Dust",
     "condition_type": "Built-in"
   },
   "recoil": {
@@ -121,7 +121,7 @@
     "condition": {
       "callbacks": {
         "on_immunity": [
-          "if $effect.id == powder or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
+          "if $effect.id == powderdust or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
           ["return false"]
         ]
       }

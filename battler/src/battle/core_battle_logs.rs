@@ -23,6 +23,7 @@ use crate::{
         ApplyingEffectContext,
         Context,
         CoreBattle,
+        FieldEffectContext,
         Mon,
         MonContext,
         MonHandle,
@@ -730,6 +731,46 @@ pub fn remove_slot_condition(
     effect_activation(
         context.as_battle_context_mut(),
         "removeslotcondition".to_owned(),
+        activation,
+    )
+}
+
+pub fn add_pseudo_weather(context: &mut FieldEffectContext, condition: &Id) -> Result<()> {
+    if !context.battle().engine_options.log_pseudo_weathers {
+        return Ok(());
+    }
+    let condition = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
+        .name()
+        .to_owned();
+    let activation = EffectActivationContext {
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("condition:{condition}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "addpseudoweather".to_owned(),
+        activation,
+    )
+}
+
+pub fn remove_pseudo_weather(context: &mut FieldEffectContext, condition: &Id) -> Result<()> {
+    if !context.battle().engine_options.log_pseudo_weathers {
+        return Ok(());
+    }
+    let condition = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
+        .name()
+        .to_owned();
+    let activation = EffectActivationContext {
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("condition:{condition}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "removepseudoweather".to_owned(),
         activation,
     )
 }

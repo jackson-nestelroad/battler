@@ -283,7 +283,7 @@
       "delegates": ["item:safetygoggles"],
       "callbacks": {
         "on_try_hit": [
-          "if func_call(move_has_flag: $move powder) and $target != $source and func_call(check_immunity: $target powder):",
+          "if func_call(move_has_flag: $move powder) and $target != $source and func_call(check_immunity: $target powderdust):",
           ["log_immune: $target from_effect", "return stop"]
         ]
       }

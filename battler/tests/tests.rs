@@ -474,16 +474,26 @@ mod moves {
 
     mod gen6 {
         mod crafty_shield_test;
+        mod electrify_test;
+        mod fairy_lock_test;
         mod fell_stinger_test;
         mod flying_press_test;
         mod freeze_dry_test;
+        mod geomancy_test;
         mod ion_deluge_test;
+        mod kings_shield_test;
+        mod magnetic_flux_test;
         mod mat_block_test;
         mod parting_shot_test;
+        mod powder_test;
         mod rototiller_test;
+        mod spiky_shield_test;
         mod sticky_web_test;
+        mod thousand_arrows_test;
         mod topsy_turvy_test;
         mod trick_or_treat_test;
+        mod venom_drench_test;
+        mod water_shuriken_test;
     }
 
     mod gen7 {

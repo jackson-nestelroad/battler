@@ -362,13 +362,13 @@
         "from": "Thunderbolt",
         "into": "10,000,000 Volt Thunderbolt",
         "users": [
-          "Pikachu-Original",
-          "Pikachu-Hoenn",
-          "Pikachu-Sinnoh",
-          "Pikachu-Unova",
-          "Pikachu-Kalos",
-          "Pikachu-Alola",
-          "Pikachu-Partner"
+          "Pikachu-Original-Cap",
+          "Pikachu-Hoenn-Cap",
+          "Pikachu-Sinnoh-Cap",
+          "Pikachu-Unova-Cap",
+          "Pikachu-Kalos-Cap",
+          "Pikachu-Alola-Cap",
+          "Pikachu-Partner-Cap"
         ]
       }
     },

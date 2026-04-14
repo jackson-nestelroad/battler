@@ -254,13 +254,13 @@ fn can_hit_allies() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Venusaur,test-player,1|name:Test Move|spread:Venusaur,test-player,2;Venusaur,test-player,1",
-            "split|side:0",
-            "damage|mon:Venusaur,test-player,2|health:139/140",
-            "damage|mon:Venusaur,test-player,2|health:99/100",
+            "move|mon:Venusaur,test-player,1|name:Test Move|spread:Venusaur,test-player,1;Venusaur,test-player,2",
             "split|side:0",
             "damage|mon:Venusaur,test-player,1|health:139/140",
             "damage|mon:Venusaur,test-player,1|health:99/100",
+            "split|side:0",
+            "damage|mon:Venusaur,test-player,2|health:139/140",
+            "damage|mon:Venusaur,test-player,2|health:99/100",
             "residual",
             "turn|turn:2"
         ]"#,

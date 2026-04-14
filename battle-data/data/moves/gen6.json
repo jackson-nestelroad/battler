@@ -603,7 +603,7 @@
       "delegates": ["condition:protectmoveconditionbase"],
       "callbacks": {
         "on_activate": [
-          "if func_call(move_makes_contact: $move):",
+          "if func_call(move_makes_contact: $effect):",
           ["boost: $source 'atk:-1'"]
         ]
       }
@@ -743,7 +743,7 @@
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
     "hit_effect": {
-      "volatile_status": "kingsshield"
+      "volatile_status": "spikyshield"
     },
     "z_move": { "boosts": { "def": 1 } },
     "effect": {
@@ -753,7 +753,7 @@
       "delegates": ["condition:protectmoveconditionbase"],
       "callbacks": {
         "on_activate": [
-          "if func_call(move_makes_contact: $move):",
+          "if func_call(move_makes_contact: $effect):",
           ["damage: $source expr($source.base_max_hp / 8)"]
         ],
         "on_hit": [
@@ -878,7 +878,7 @@
     "z_move": { "boosts": { "spd": 1 } },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return func_call(has_ability: $target [plus, mins])"]
+        "on_try_hit": ["return func_call(has_ability: $target [plus, minus])"]
       }
     }
   },
@@ -1096,12 +1096,7 @@
     "hit_effect": { "volatile_status": "smackdown" },
     "effect": {
       "callbacks": {
-        "on_effectiveness": [
-          "if $move.type != ground:",
-          ["return"],
-          "if !$target.is_grounded and func_call(has_type: $target flying):",
-          ["return 0"]
-        ]
+        "on_ignore_immunity": ["return true"]
       }
     }
   },

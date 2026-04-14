@@ -1510,7 +1510,7 @@
         "on_immunity": [
           "if [sandstormweather, hailweather] has $effect.id:",
           ["return false"],
-          "if $effect.id == powder or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
+          "if $effect.id == powderdust or ($effect.is_move and func_call(move_has_flag: $effect powder)):",
           ["return false"]
         ]
       }

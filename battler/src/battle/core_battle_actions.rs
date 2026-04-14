@@ -1039,7 +1039,7 @@ pub fn get_move_targets(
                     .active_mon_handles_on_side(context.foe_side().index),
             );
         }
-        MoveTarget::AllySide => {
+        MoveTarget::AllySide | MoveTarget::Allies => {
             targets.extend(
                 context
                     .battle()
@@ -1059,11 +1059,6 @@ pub fn get_move_targets(
         }
         MoveTarget::AllAdjacentFoes => {
             targets.extend(Mon::adjacent_foes(&mut context.as_mon_context_mut())?);
-        }
-        MoveTarget::Allies => {
-            targets.extend(Mon::adjacent_allies_and_self(
-                &mut context.as_mon_context_mut(),
-            )?);
         }
         MoveTarget::User => {
             targets.push(context.mon_handle());
@@ -2696,6 +2691,7 @@ fn apply_move_effects(
                             .applying_effect_context()?
                             .side_effect_context()?,
                         &Id::from(side_condition),
+                        None,
                     )?;
                     let outcome = MoveOutcomeOnTarget::from(added_side_condition);
                     hit_effect_outcome = hit_effect_outcome.combine(outcome);
@@ -2710,6 +2706,7 @@ fn apply_move_effects(
                             .side_effect_context()?,
                         slot,
                         &Id::from(slot_condition),
+                        None,
                     )?;
                     let outcome = MoveOutcomeOnTarget::from(added_slot_condition);
                     hit_effect_outcome = hit_effect_outcome.combine(outcome);
@@ -2743,6 +2740,7 @@ fn apply_move_effects(
                             .applying_effect_context()?
                             .field_effect_context()?,
                         &Id::from(pseudo_weather),
+                        None,
                     )?;
                     let outcome = MoveOutcomeOnTarget::from(add_pseudo_weather_success);
                     hit_effect_outcome = hit_effect_outcome.combine(outcome);
@@ -3444,12 +3442,28 @@ pub fn add_volatile(
         .volatiles
         .contains_key(&volatile)
     {
-        return Ok(core_battle_effects::run_mon_volatile_event_expecting_bool(
+        if !core_battle_effects::run_mon_volatile_event_expecting_bool(
             context,
             fxlang::BattleEvent::Restart,
             &volatile,
         )
-        .unwrap_or(false));
+        .unwrap_or(false)
+        {
+            return Ok(false);
+        }
+
+        if let Some(link_to) = link_to {
+            let target_handle = context.target_handle();
+            LinkedEffectsManager::link(
+                context.as_battle_context_mut(),
+                link_to,
+                &AppliedEffectHandle::new(
+                    volatile_status_handle,
+                    AppliedEffectLocation::MonVolatile(target_handle),
+                ),
+            )?;
+        }
+        return Ok(true);
     }
 
     if check_immunity(
@@ -3673,7 +3687,11 @@ pub fn calculate_confusion_damage(context: &mut MonContext, base_power: u32) -> 
 }
 
 /// Adds a condition to a side.
-pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<bool> {
+pub fn add_side_condition(
+    context: &mut SideEffectContext,
+    condition: &Id,
+    link_to: Option<&AppliedEffectHandle>,
+) -> Result<bool> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
@@ -3688,14 +3706,28 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
         .clone();
 
     if context.side().conditions.contains_key(&condition) {
-        return Ok(
-            core_battle_effects::run_side_condition_event_expecting_bool(
-                context,
-                fxlang::BattleEvent::SideRestart,
-                &condition,
-            )
-            .unwrap_or(false),
-        );
+        if !core_battle_effects::run_side_condition_event_expecting_bool(
+            context,
+            fxlang::BattleEvent::SideRestart,
+            &condition,
+        )
+        .unwrap_or(false)
+        {
+            return Ok(false);
+        }
+
+        if let Some(link_to) = link_to {
+            let side = context.side().index;
+            LinkedEffectsManager::link(
+                context.as_battle_context_mut(),
+                link_to,
+                &AppliedEffectHandle::new(
+                    side_condition_handle,
+                    AppliedEffectLocation::SideCondition(side),
+                ),
+            )?;
+        }
+        return Ok(true);
     }
 
     let effect_handle = context.effect_handle().clone();
@@ -3747,6 +3779,18 @@ pub fn add_side_condition(context: &mut SideEffectContext, condition: &Id) -> Re
     {
         context.side_mut().conditions.remove(&condition);
         return Ok(false);
+    }
+
+    if let Some(link_to) = link_to {
+        let side = context.side().index;
+        LinkedEffectsManager::link(
+            context.as_battle_context_mut(),
+            link_to,
+            &AppliedEffectHandle::new(
+                side_condition_handle.clone(),
+                AppliedEffectLocation::SideCondition(side),
+            ),
+        )?;
     }
 
     core_battle_logs::add_side_condition(context, &condition)?;
@@ -4484,7 +4528,11 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
 }
 
 /// Adds a pseudo-weather to the field.
-pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id) -> Result<bool> {
+pub fn add_pseudo_weather(
+    context: &mut FieldEffectContext,
+    pseudo_weather: &Id,
+    link_to: Option<&AppliedEffectHandle>,
+) -> Result<bool> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
@@ -4504,14 +4552,27 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
         .pseudo_weathers
         .contains_key(&pseudo_weather)
     {
-        return Ok(
-            core_battle_effects::run_pseudo_weather_event_expecting_bool(
-                context,
-                fxlang::BattleEvent::FieldRestart,
-                &pseudo_weather,
-            )
-            .unwrap_or(false),
-        );
+        let restart = core_battle_effects::run_pseudo_weather_event_expecting_bool(
+            context,
+            fxlang::BattleEvent::FieldRestart,
+            &pseudo_weather,
+        )
+        .unwrap_or(false);
+        if !restart {
+            return Ok(false);
+        }
+
+        if let Some(link_to) = link_to {
+            LinkedEffectsManager::link(
+                context.as_battle_context_mut(),
+                link_to,
+                &AppliedEffectHandle::new(
+                    pseudo_weather_handle,
+                    AppliedEffectLocation::PseudoWeather,
+                ),
+            )?;
+        }
+        return Ok(true);
     }
 
     if !core_battle_effects::run_event_for_field_effect(
@@ -4586,6 +4647,16 @@ pub fn add_pseudo_weather(context: &mut FieldEffectContext, pseudo_weather: &Id)
         fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
     );
 
+    if let Some(link_to) = link_to {
+        LinkedEffectsManager::link(
+            context.as_battle_context_mut(),
+            link_to,
+            &AppliedEffectHandle::new(pseudo_weather_handle, AppliedEffectLocation::PseudoWeather),
+        )?;
+    }
+
+    core_battle_logs::add_pseudo_weather(context, &pseudo_weather)?;
+
     // If the duration is EXPLICITLY zero, then we remove the pseudo-weather immediately.
     if context
         .battle()
@@ -4647,6 +4718,8 @@ pub fn remove_pseudo_weather(
         .field
         .pseudo_weathers
         .remove(&pseudo_weather);
+
+    core_battle_logs::remove_pseudo_weather(context, &pseudo_weather)?;
 
     Ok(true)
 }
@@ -4799,6 +4872,7 @@ pub fn add_slot_condition(
     context: &mut SideEffectContext,
     slot: usize,
     condition: &Id,
+    link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
@@ -4819,15 +4893,29 @@ pub fn add_slot_condition(
         .get(&slot)
         .is_some_and(|conditions| conditions.contains_key(&condition))
     {
-        return Ok(
-            core_battle_effects::run_slot_condition_event_expecting_bool(
-                context,
-                fxlang::BattleEvent::SlotRestart,
-                slot,
-                &condition,
-            )
-            .unwrap_or(false),
-        );
+        if !core_battle_effects::run_slot_condition_event_expecting_bool(
+            context,
+            fxlang::BattleEvent::SlotRestart,
+            slot,
+            &condition,
+        )
+        .unwrap_or(false)
+        {
+            return Ok(false);
+        }
+
+        if let Some(link_to) = link_to {
+            let side = context.side().index;
+            LinkedEffectsManager::link(
+                context.as_battle_context_mut(),
+                link_to,
+                &AppliedEffectHandle::new(
+                    slot_condition_handle,
+                    AppliedEffectLocation::SlotCondition(side, slot),
+                ),
+            )?;
+        }
+        return Ok(true);
     }
 
     let effect_handle = context.effect_handle().clone();
@@ -4892,6 +4980,18 @@ pub fn add_slot_condition(
             .or_default()
             .remove(&condition);
         return Ok(false);
+    }
+
+    if let Some(link_to) = link_to {
+        let side = context.side().index;
+        LinkedEffectsManager::link(
+            context.as_battle_context_mut(),
+            link_to,
+            &AppliedEffectHandle::new(
+                slot_condition_handle,
+                AppliedEffectLocation::SlotCondition(side, slot),
+            ),
+        )?;
     }
 
     core_battle_logs::add_slot_condition(context, slot, &condition)?;
@@ -6615,6 +6715,7 @@ fn usable_z_crystal(context: &mut MonContext) -> Result<Option<ZCrystalData>> {
         .dex
         .species
         .get_by_id(&context.mon().volatile_state.species)?;
+
     let item = match context.mon().item.clone() {
         Some(item) => item,
         None => return Ok(None),
@@ -6628,7 +6729,7 @@ fn usable_z_crystal(context: &mut MonContext) -> Result<Option<ZCrystalData>> {
         && z_crystal
             .users
             .iter()
-            .any(|user| Id::from(user.as_str()) != *species.id())
+            .all(|user| Id::from(user.as_str()) != *species.id())
     {
         return Ok(None);
     }
