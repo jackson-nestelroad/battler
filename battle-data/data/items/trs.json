@@ -1,503 +1,906 @@
 {
   "tr00": {
     "name": "TR00",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr01": {
     "name": "TR01",
-    "flags": [],
-    "special_data": { "fling": { "power": 85 } }
+    "special_data": {
+      "fling": {
+        "power": 85
+      }
+    },
+    "flags": []
   },
   "tr02": {
     "name": "TR02",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr03": {
     "name": "TR03",
-    "flags": [],
-    "special_data": { "fling": { "power": 110 } }
+    "special_data": {
+      "fling": {
+        "power": 110
+      }
+    },
+    "flags": []
   },
   "tr04": {
     "name": "TR04",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr05": {
     "name": "TR05",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr06": {
     "name": "TR06",
-    "flags": [],
-    "special_data": { "fling": { "power": 110 } }
+    "special_data": {
+      "fling": {
+        "power": 110
+      }
+    },
+    "flags": []
   },
   "tr07": {
     "name": "TR07",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr08": {
     "name": "TR08",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr09": {
     "name": "TR09",
-    "flags": [],
-    "special_data": { "fling": { "power": 110 } }
+    "special_data": {
+      "fling": {
+        "power": 110
+      }
+    },
+    "flags": []
   },
   "tr10": {
     "name": "TR10",
-    "flags": [],
-    "special_data": { "fling": { "power": 100 } }
+    "special_data": {
+      "fling": {
+        "power": 100
+      }
+    },
+    "flags": []
   },
   "tr11": {
     "name": "TR11",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr12": {
     "name": "TR12",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr13": {
     "name": "TR13",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr14": {
     "name": "TR14",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr15": {
     "name": "TR15",
-    "flags": [],
-    "special_data": { "fling": { "power": 110 } }
+    "special_data": {
+      "fling": {
+        "power": 110
+      }
+    },
+    "flags": []
   },
   "tr16": {
     "name": "TR16",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr17": {
     "name": "TR17",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr18": {
     "name": "TR18",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr19": {
     "name": "TR19",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr20": {
     "name": "TR20",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr21": {
     "name": "TR21",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr22": {
     "name": "TR22",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr23": {
     "name": "TR23",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr24": {
     "name": "TR24",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr25": {
     "name": "TR25",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr26": {
     "name": "TR26",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr27": {
     "name": "TR27",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr28": {
     "name": "TR28",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr29": {
     "name": "TR29",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr30": {
     "name": "TR30",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr31": {
     "name": "TR31",
-    "flags": [],
-    "special_data": { "fling": { "power": 100 } }
+    "special_data": {
+      "fling": {
+        "power": 100
+      }
+    },
+    "flags": []
   },
   "tr32": {
     "name": "TR32",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr33": {
     "name": "TR33",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr34": {
     "name": "TR34",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr35": {
     "name": "TR35",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr36": {
     "name": "TR36",
-    "flags": [],
-    "special_data": { "fling": { "power": 95 } }
+    "special_data": {
+      "fling": {
+        "power": 95
+      }
+    },
+    "flags": []
   },
   "tr37": {
     "name": "TR37",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr38": {
     "name": "TR38",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr39": {
     "name": "TR39",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr40": {
     "name": "TR40",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr41": {
     "name": "TR41",
-    "flags": [],
-    "special_data": { "fling": { "power": 85 } }
+    "special_data": {
+      "fling": {
+        "power": 85
+      }
+    },
+    "flags": []
   },
   "tr42": {
     "name": "TR42",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr43": {
     "name": "TR43",
-    "flags": [],
-    "special_data": { "fling": { "power": 130 } }
+    "special_data": {
+      "fling": {
+        "power": 130
+      }
+    },
+    "flags": []
   },
   "tr44": {
     "name": "TR44",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr45": {
     "name": "TR45",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr46": {
     "name": "TR46",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr47": {
     "name": "TR47",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr48": {
     "name": "TR48",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr49": {
     "name": "TR49",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr50": {
     "name": "TR50",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr51": {
     "name": "TR51",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr52": {
     "name": "TR52",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr53": {
     "name": "TR53",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr54": {
     "name": "TR54",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr55": {
     "name": "TR55",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr56": {
     "name": "TR56",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr57": {
     "name": "TR57",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr58": {
     "name": "TR58",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr59": {
     "name": "TR59",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr60": {
     "name": "TR60",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr61": {
     "name": "TR61",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr62": {
     "name": "TR62",
-    "flags": [],
-    "special_data": { "fling": { "power": 85 } }
+    "special_data": {
+      "fling": {
+        "power": 85
+      }
+    },
+    "flags": []
   },
   "tr63": {
     "name": "TR63",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr64": {
     "name": "TR64",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr65": {
     "name": "TR65",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr66": {
     "name": "TR66",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr67": {
     "name": "TR67",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr68": {
     "name": "TR68",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr69": {
     "name": "TR69",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr70": {
     "name": "TR70",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr71": {
     "name": "TR71",
-    "flags": [],
-    "special_data": { "fling": { "power": 130 } }
+    "special_data": {
+      "fling": {
+        "power": 130
+      }
+    },
+    "flags": []
   },
   "tr72": {
     "name": "TR72",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr73": {
     "name": "TR73",
-    "flags": [],
-    "special_data": { "fling": { "power": 120 } }
+    "special_data": {
+      "fling": {
+        "power": 120
+      }
+    },
+    "flags": []
   },
   "tr74": {
     "name": "TR74",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr75": {
     "name": "TR75",
-    "flags": [],
-    "special_data": { "fling": { "power": 100 } }
+    "special_data": {
+      "fling": {
+        "power": 100
+      }
+    },
+    "flags": []
   },
   "tr76": {
     "name": "TR76",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr77": {
     "name": "TR77",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr78": {
     "name": "TR78",
-    "flags": [],
-    "special_data": { "fling": { "power": 95 } }
+    "special_data": {
+      "fling": {
+        "power": 95
+      }
+    },
+    "flags": []
   },
   "tr79": {
     "name": "TR79",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr80": {
     "name": "TR80",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr81": {
     "name": "TR81",
-    "flags": [],
-    "special_data": { "fling": { "power": 95 } }
+    "special_data": {
+      "fling": {
+        "power": 95
+      }
+    },
+    "flags": []
   },
   "tr82": {
     "name": "TR82",
-    "flags": [],
-    "special_data": { "fling": { "power": 20 } }
+    "special_data": {
+      "fling": {
+        "power": 20
+      }
+    },
+    "flags": []
   },
   "tr83": {
     "name": "TR83",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr84": {
     "name": "TR84",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr85": {
     "name": "TR85",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr86": {
     "name": "TR86",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr87": {
     "name": "TR87",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr88": {
     "name": "TR88",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr89": {
     "name": "TR89",
-    "flags": [],
-    "special_data": { "fling": { "power": 110 } }
+    "special_data": {
+      "fling": {
+        "power": 110
+      }
+    },
+    "flags": []
   },
   "tr90": {
     "name": "TR90",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr91": {
     "name": "TR91",
-    "flags": [],
-    "special_data": { "fling": { "power": 10 } }
+    "special_data": {
+      "fling": {
+        "power": 10
+      }
+    },
+    "flags": []
   },
   "tr92": {
     "name": "TR92",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr93": {
     "name": "TR93",
-    "flags": [],
-    "special_data": { "fling": { "power": 85 } }
+    "special_data": {
+      "fling": {
+        "power": 85
+      }
+    },
+    "flags": []
   },
   "tr94": {
     "name": "TR94",
-    "flags": [],
-    "special_data": { "fling": { "power": 95 } }
+    "special_data": {
+      "fling": {
+        "power": 95
+      }
+    },
+    "flags": []
   },
   "tr95": {
     "name": "TR95",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
   "tr96": {
     "name": "TR96",
-    "flags": [],
-    "special_data": { "fling": { "power": 90 } }
+    "special_data": {
+      "fling": {
+        "power": 90
+      }
+    },
+    "flags": []
   },
   "tr97": {
     "name": "TR97",
-    "flags": [],
-    "special_data": { "fling": { "power": 85 } }
+    "special_data": {
+      "fling": {
+        "power": 85
+      }
+    },
+    "flags": []
   },
   "tr98": {
     "name": "TR98",
-    "flags": [],
-    "special_data": { "fling": { "power": 85 } }
+    "special_data": {
+      "fling": {
+        "power": 85
+      }
+    },
+    "flags": []
   },
   "tr99": {
     "name": "TR99",
-    "flags": [],
-    "special_data": { "fling": { "power": 80 } }
+    "special_data": {
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": []
   },
-  "tm00": { "name": "TM00", "flags": [] }
+  "tm00": {
+    "name": "TM00",
+    "flags": []
+  }
 }

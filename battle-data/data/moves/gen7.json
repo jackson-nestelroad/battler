@@ -363,9 +363,9 @@
     "name": "Catastropika",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 210,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -385,19 +385,21 @@
     "name": "Shore Up",
     "category": "Status",
     "primary_type": "Ground",
-    "pp": 5,
     "accuracy": "exempt",
+    "pp": 5,
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "z_move": { "effect": "zpowerclearnegativeboosts" }
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
+    }
   },
   "firstimpression": {
     "name": "First Impression",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "priority": 2,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
@@ -406,20 +408,24 @@
     "name": "Baneful Bunker",
     "category": "Status",
     "primary_type": "Poison",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "priority": 4,
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
-    "z_move": { "boosts": { "def": 1 } }
+    "z_move": {
+      "boosts": {
+        "def": 1
+      }
+    }
   },
   "spiritshackle": {
     "name": "Spirit Shackle",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -427,9 +433,9 @@
     "name": "Darkest Lariat",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 85,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "ignore_defensive": true,
@@ -439,9 +445,9 @@
     "name": "Sparkling Aria",
     "category": "Special",
     "primary_type": "Water",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "AllAdjacent",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
   },
@@ -449,9 +455,9 @@
     "name": "Ice Hammer",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 100,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"]
   },
@@ -459,19 +465,21 @@
     "name": "Floral Healing",
     "category": "Status",
     "primary_type": "Fairy",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Normal",
     "flags": ["Heal", "Protect", "Reflectable"],
-    "z_move": { "effect": "zpowerclearnegativeboosts" }
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
+    }
   },
   "highhorsepower": {
     "name": "High Horsepower",
     "category": "Physical",
     "primary_type": "Ground",
-    "pp": 10,
-    "accuracy": 95,
     "base_power": 95,
+    "accuracy": 95,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -479,19 +487,23 @@
     "name": "Strength Sap",
     "category": "Status",
     "primary_type": "Grass",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Heal", "Mirror", "Protect", "Reflectable"],
-    "z_move": { "boosts": { "def": 1 } }
+    "z_move": {
+      "boosts": {
+        "def": 1
+      }
+    }
   },
   "solarblade": {
     "name": "Solar Blade",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 125,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": [
       "Charge",
@@ -507,9 +519,9 @@
     "name": "Leafage",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 40,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 40,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -517,8 +529,8 @@
     "name": "Spotlight",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 15,
     "accuracy": "exempt",
+    "pp": 15,
     "priority": 3,
     "target": "Normal",
     "flags": [
@@ -528,45 +540,61 @@
       "Protect",
       "Reflectable"
     ],
-    "z_move": { "boosts": { "spd": 1 } }
+    "z_move": {
+      "boosts": {
+        "spd": 1
+      }
+    }
   },
   "toxicthread": {
     "name": "Toxic Thread",
     "category": "Status",
     "primary_type": "Poison",
-    "pp": 20,
     "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "z_move": { "boosts": { "spe": 1 } }
+    "z_move": {
+      "boosts": {
+        "spe": 1
+      }
+    }
   },
   "laserfocus": {
     "name": "Laser Focus",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 30,
     "accuracy": "exempt",
+    "pp": 30,
     "target": "User",
     "flags": ["Snatch"],
-    "z_move": { "boosts": { "atk": 1 } }
+    "z_move": {
+      "boosts": {
+        "atk": 1
+      }
+    }
   },
   "gearup": {
     "name": "Gear Up",
     "category": "Status",
     "primary_type": "Steel",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "AllySide",
     "flags": ["BypassSubstitute", "Snatch"],
-    "z_move": { "boosts": { "spa": 1 } }
+    "z_move": {
+      "boosts": {
+        "spa": 1
+      }
+    }
   },
   "throatchop": {
     "name": "Throat Chop",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -574,9 +602,9 @@
     "name": "Pollen Puff",
     "category": "Special",
     "primary_type": "Bug",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"]
   },
@@ -584,9 +612,9 @@
     "name": "Anchor Shot",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -594,12 +622,18 @@
     "name": "Psychic Terrain",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Field",
     "flags": [],
-    "hit_effect": { "terrain": "psychicterrain" },
-    "z_move": { "boosts": { "spa": 1 } },
+    "hit_effect": {
+      "terrain": "psychicterrain"
+    },
+    "z_move": {
+      "boosts": {
+        "spa": 1
+      }
+    },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -638,9 +672,9 @@
     "name": "Lunge",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -648,9 +682,9 @@
     "name": "Fire Lash",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -658,20 +692,22 @@
     "name": "Power Trip",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 20,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 130 }
+    "max_move": {
+      "base_power": 130
+    }
   },
   "burnup": {
     "name": "Burn Up",
     "category": "Special",
     "primary_type": "Fire",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 130,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Thawing"],
     "user_effect": {},
@@ -703,19 +739,23 @@
     "name": "Speed Swap",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
-    "z_move": { "boosts": { "spe": 1 } }
+    "z_move": {
+      "boosts": {
+        "spe": 1
+      }
+    }
   },
   "smartstrike": {
     "name": "Smart Strike",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 10,
-    "accuracy": "exempt",
     "base_power": 70,
+    "accuracy": "exempt",
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -723,19 +763,27 @@
     "name": "Purify",
     "category": "Status",
     "primary_type": "Poison",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "Normal",
     "flags": ["Heal", "Protect", "Reflectable"],
-    "z_move": { "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 } }
+    "z_move": {
+      "boosts": {
+        "atk": 1,
+        "def": 1,
+        "spa": 1,
+        "spd": 1,
+        "spe": 1
+      }
+    }
   },
   "revelationdance": {
     "name": "Revelation Dance",
     "category": "Special",
     "primary_type": "Normal",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Dance", "Mirror", "Protect"]
   },
@@ -743,9 +791,9 @@
     "name": "Core Enforcer",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 10,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect"]
   },
@@ -753,9 +801,9 @@
     "name": "Trop Kick",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -763,11 +811,15 @@
     "name": "Instruct",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 15,
     "accuracy": "exempt",
+    "pp": 15,
     "target": "Normal",
     "flags": ["BypassSubstitute", "FailInstruct", "NoMetronome", "Protect"],
-    "z_move": { "boosts": { "spa": 1 } },
+    "z_move": {
+      "boosts": {
+        "spa": 1
+      }
+    },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -797,9 +849,9 @@
     "name": "Beak Blast",
     "category": "Physical",
     "primary_type": "Flying",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 15,
     "priority": -3,
     "target": "Normal",
     "flags": [
@@ -817,9 +869,9 @@
     "name": "Clanging Scales",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 110,
+    "accuracy": 100,
+    "pp": 5,
     "target": "AllAdjacentFoes",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
   },
@@ -827,9 +879,9 @@
     "name": "Dragon Hammer",
     "category": "Physical",
     "primary_type": "Dragon",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -837,9 +889,9 @@
     "name": "Brutal Swing",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 20,
     "target": "AllAdjacent",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -847,19 +899,23 @@
     "name": "Aurora Veil",
     "category": "Status",
     "primary_type": "Ice",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "AllySide",
     "flags": ["Snatch"],
-    "z_move": { "boosts": { "spe": 1 } }
+    "z_move": {
+      "boosts": {
+        "spe": 1
+      }
+    }
   },
   "sinisterarrowraid": {
     "name": "Sinister Arrow Raid",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 180,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -878,9 +934,9 @@
     "name": "Malicious Moonsault",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 180,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -900,9 +956,9 @@
     "name": "Oceanic Operetta",
     "category": "Special",
     "primary_type": "Water",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 195,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -921,8 +977,8 @@
     "name": "Guardian of Alola",
     "category": "Special",
     "primary_type": "Fairy",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -949,9 +1005,9 @@
     "name": "Soul-Stealing 7-Star Strike",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 195,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -971,9 +1027,9 @@
     "name": "Stoked Sparksurfer",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 175,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -987,15 +1043,21 @@
       "WeakenThroughProtection",
       "Z"
     ],
-    "secondary_effects": [{ "target": { "status": "par" } }]
+    "secondary_effects": [
+      {
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "pulverizingpancake": {
     "name": "Pulverizing Pancake",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 210,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -1015,8 +1077,8 @@
     "name": "Extreme Evoboost",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "User",
     "flags": [
       "FailCopycat",
@@ -1030,16 +1092,22 @@
       "Z"
     ],
     "hit_effect": {
-      "boosts": { "atk": 1, "def": 2, "spa": 2, "spd": 2, "spe": 2 }
+      "boosts": {
+        "atk": 1,
+        "def": 2,
+        "spa": 2,
+        "spd": 2,
+        "spe": 2
+      }
     }
   },
   "genesissupernova": {
     "name": "Genesis Supernova",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 185,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -1053,15 +1121,21 @@
       "WeakenThroughProtection",
       "Z"
     ],
-    "secondary_effects": [{ "user": { "terrain": "psychicterrain" } }]
+    "secondary_effects": [
+      {
+        "user": {
+          "terrain": "psychicterrain"
+        }
+      }
+    ]
   },
   "shelltrap": {
     "name": "Shell Trap",
     "category": "Special",
     "primary_type": "Fire",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 150,
+    "accuracy": 100,
+    "pp": 5,
     "priority": -3,
     "target": "AllAdjacentFoes",
     "flags": [
@@ -1078,9 +1152,9 @@
     "name": "Fleur Cannon",
     "category": "Special",
     "primary_type": "Fairy",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 130,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1088,9 +1162,9 @@
     "name": "Psychic Fangs",
     "category": "Physical",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 85,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Bite", "Contact", "Mirror", "Protect"]
   },
@@ -1098,9 +1172,9 @@
     "name": "Stomping Tantrum",
     "category": "Physical",
     "primary_type": "Ground",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 75,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1108,9 +1182,9 @@
     "name": "Shadow Bone",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 85,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1118,9 +1192,9 @@
     "name": "Accelerock",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 20,
     "priority": 1,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
@@ -1129,9 +1203,9 @@
     "name": "Liquidation",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 85,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1139,9 +1213,9 @@
     "name": "Prismatic Laser",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 160,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Recharge"]
   },
@@ -1149,9 +1223,9 @@
     "name": "Spectral Thief",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -1159,9 +1233,9 @@
     "name": "Sunsteel Strike",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -1169,9 +1243,9 @@
     "name": "Moongeist Beam",
     "category": "Special",
     "primary_type": "Ghost",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1179,19 +1253,23 @@
     "name": "Tearful Look",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "Normal",
     "flags": ["BypassMaxGuard", "Mirror", "Reflectable"],
-    "z_move": { "boosts": { "def": 1 } }
+    "z_move": {
+      "boosts": {
+        "def": 1
+      }
+    }
   },
   "zingzap": {
     "name": "Zing Zap",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1199,8 +1277,8 @@
     "name": "Nature's Madness",
     "category": "Special",
     "primary_type": "Fairy",
-    "pp": 10,
     "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1208,20 +1286,22 @@
     "name": "Multi-Attack",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 95 }
+    "max_move": {
+      "base_power": 95
+    }
   },
   "10000000voltthunderbolt": {
     "name": "10,000,000 Volt Thunderbolt",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 195,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -1241,9 +1321,9 @@
     "name": "Mind Blown",
     "category": "Special",
     "primary_type": "Fire",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 150,
+    "accuracy": 100,
+    "pp": 5,
     "target": "AllAdjacent",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1251,9 +1331,9 @@
     "name": "Plasma Fists",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"]
   },
@@ -1261,9 +1341,9 @@
     "name": "Photon Geyser",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1271,9 +1351,9 @@
     "name": "Light That Burns the Sky",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 200,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -1301,9 +1381,9 @@
     "name": "Searing Sunraze Smash",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 200,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -1318,15 +1398,17 @@
       "WeakenThroughProtection",
       "Z"
     ],
-    "effect": { "delegates": ["condition:ignoreabilitymovebase"] }
+    "effect": {
+      "delegates": ["condition:ignoreabilitymovebase"]
+    }
   },
   "menacingmoonrazemaelstrom": {
     "name": "Menacing Moonraze Maelstrom",
     "category": "Special",
     "primary_type": "Ghost",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 200,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -1340,15 +1422,17 @@
       "WeakenThroughProtection",
       "Z"
     ],
-    "effect": { "delegates": ["condition:ignoreabilitymovebase"] }
+    "effect": {
+      "delegates": ["condition:ignoreabilitymovebase"]
+    }
   },
   "letssnuggleforever": {
     "name": "Let's Snuggle Forever",
     "category": "Physical",
     "primary_type": "Fairy",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 190,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -1368,9 +1452,9 @@
     "name": "Splintered Stormshards",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 190,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -1395,9 +1479,9 @@
     "name": "Clangorous Soulblaze",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 1,
-    "accuracy": "exempt",
     "base_power": 185,
+    "accuracy": "exempt",
+    "pp": 1,
     "target": "AllAdjacentFoes",
     "flags": [
       "BypassSubstitute",
@@ -1409,7 +1493,13 @@
     "secondary_effects": [
       {
         "user": {
-          "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 }
+          "boosts": {
+            "atk": 1,
+            "def": 1,
+            "spa": 1,
+            "spd": 1,
+            "spe": 1
+          }
         }
       }
     ]
@@ -1418,9 +1508,9 @@
     "name": "Zippy Zap",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "priority": 2,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
@@ -1429,9 +1519,9 @@
     "name": "Splishy Splash",
     "category": "Special",
     "primary_type": "Water",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 15,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1439,9 +1529,9 @@
     "name": "Floaty Fall",
     "category": "Physical",
     "primary_type": "Flying",
-    "pp": 15,
-    "accuracy": 95,
     "base_power": 90,
+    "accuracy": 95,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Gravity", "Mirror", "NoMetronome", "Protect"]
   },
@@ -1449,8 +1539,8 @@
     "name": "Pika Papow",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1458,9 +1548,9 @@
     "name": "Bouncy Bubble",
     "category": "Special",
     "primary_type": "Water",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Heal", "Mirror", "NoMetronome", "Protect"],
     "drain_percent": "1/2"
@@ -1469,9 +1559,9 @@
     "name": "Buzzy Buzz",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1479,9 +1569,9 @@
     "name": "Sizzly Slide",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Thawing"]
   },
@@ -1489,9 +1579,9 @@
     "name": "Glitzy Glow",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 15,
-    "accuracy": 95,
     "base_power": 80,
+    "accuracy": 95,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1499,9 +1589,9 @@
     "name": "Baddy Bad",
     "category": "Special",
     "primary_type": "Dark",
-    "pp": 15,
-    "accuracy": 95,
     "base_power": 80,
+    "accuracy": 95,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1509,9 +1599,9 @@
     "name": "Sappy Seed",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 100,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect", "Reflectable"]
   },
@@ -1519,9 +1609,9 @@
     "name": "Freezy Frost",
     "category": "Special",
     "primary_type": "Ice",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 100,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1529,9 +1619,9 @@
     "name": "Sparkly Swirl",
     "category": "Special",
     "primary_type": "Fairy",
-    "pp": 5,
-    "accuracy": 85,
     "base_power": 120,
+    "accuracy": 85,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1539,8 +1629,8 @@
     "name": "Veevee Volley",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -1548,12 +1638,338 @@
     "name": "Double Iron Bash",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "multihit": 2,
-    "max_move": { "base_power": 140 }
+    "max_move": {
+      "base_power": 140
+    }
+  },
+  "breakneckblitzphysical": {
+    "name": "Breakneck Blitz",
+    "category": "Physical",
+    "primary_type": "Normal",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "breakneckblitzspecial": {
+    "name": "Breakneck Blitz",
+    "category": "Special",
+    "primary_type": "Normal",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "alloutpummelingphysical": {
+    "name": "All-Out Pummeling",
+    "category": "Physical",
+    "primary_type": "Fighting",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "alloutpummelingspecial": {
+    "name": "All-Out Pummeling",
+    "category": "Special",
+    "primary_type": "Fighting",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "supersonicskystrikephysical": {
+    "name": "Supersonic Skystrike",
+    "category": "Physical",
+    "primary_type": "Flying",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "supersonicskystrikespecial": {
+    "name": "Supersonic Skystrike",
+    "category": "Special",
+    "primary_type": "Flying",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "aciddownpourphysical": {
+    "name": "Acid Downpour",
+    "category": "Physical",
+    "primary_type": "Poison",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "aciddownpourspecial": {
+    "name": "Acid Downpour",
+    "category": "Special",
+    "primary_type": "Poison",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "tectonicragephysical": {
+    "name": "Tectonic Rage",
+    "category": "Physical",
+    "primary_type": "Ground",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "tectonicragespecial": {
+    "name": "Tectonic Rage",
+    "category": "Special",
+    "primary_type": "Ground",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "continentalcrushphysical": {
+    "name": "Continental Crush",
+    "category": "Physical",
+    "primary_type": "Rock",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "continentalcrushspecial": {
+    "name": "Continental Crush",
+    "category": "Special",
+    "primary_type": "Rock",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "savagespinoutphysical": {
+    "name": "Savage Spin-Out",
+    "category": "Physical",
+    "primary_type": "Bug",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "savagespinoutspecial": {
+    "name": "Savage Spin-Out",
+    "category": "Special",
+    "primary_type": "Bug",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "neverendingnightmarephysical": {
+    "name": "Never-Ending Nightmare",
+    "category": "Physical",
+    "primary_type": "Ghost",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "neverendingnightmarespecial": {
+    "name": "Never-Ending Nightmare",
+    "category": "Special",
+    "primary_type": "Ghost",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "corkscrewcrashphysical": {
+    "name": "Corkscrew Crash",
+    "category": "Physical",
+    "primary_type": "Steel",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "corkscrewcrashspecial": {
+    "name": "Corkscrew Crash",
+    "category": "Special",
+    "primary_type": "Steel",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "infernooverdrivephysical": {
+    "name": "Inferno Overdrive",
+    "category": "Physical",
+    "primary_type": "Fire",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "infernooverdrivespecial": {
+    "name": "Inferno Overdrive",
+    "category": "Special",
+    "primary_type": "Fire",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "hydrovortexphysical": {
+    "name": "Hydro Vortex",
+    "category": "Physical",
+    "primary_type": "Water",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "hydrovortexspecial": {
+    "name": "Hydro Vortex",
+    "category": "Special",
+    "primary_type": "Water",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "bloomdoomphysical": {
+    "name": "Bloom Doom",
+    "category": "Physical",
+    "primary_type": "Grass",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "bloomdoomspecial": {
+    "name": "Bloom Doom",
+    "category": "Special",
+    "primary_type": "Grass",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "gigavolthavocphysical": {
+    "name": "Gigavolt Havoc",
+    "category": "Physical",
+    "primary_type": "Electric",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "gigavolthavocspecial": {
+    "name": "Gigavolt Havoc",
+    "category": "Special",
+    "primary_type": "Electric",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "shatteredpsychephysical": {
+    "name": "Shattered Psyche",
+    "category": "Physical",
+    "primary_type": "Psychic",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "shatteredpsychespecial": {
+    "name": "Shattered Psyche",
+    "category": "Special",
+    "primary_type": "Psychic",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "subzeroslammerphysical": {
+    "name": "Subzero Slammer",
+    "category": "Physical",
+    "primary_type": "Ice",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "subzeroslammerspecial": {
+    "name": "Subzero Slammer",
+    "category": "Special",
+    "primary_type": "Ice",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "devastatingdrakephysical": {
+    "name": "Devastating Drake",
+    "category": "Physical",
+    "primary_type": "Dragon",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "devastatingdrakespecial": {
+    "name": "Devastating Drake",
+    "category": "Special",
+    "primary_type": "Dragon",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "blackholeeclipsephysical": {
+    "name": "Black Hole Eclipse",
+    "category": "Physical",
+    "primary_type": "Dark",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "blackholeeclipsespecial": {
+    "name": "Black Hole Eclipse",
+    "category": "Special",
+    "primary_type": "Dark",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "twinkletacklephysical": {
+    "name": "Twinkle Tackle",
+    "category": "Physical",
+    "primary_type": "Fairy",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
+  },
+  "twinkletacklespecial": {
+    "name": "Twinkle Tackle",
+    "category": "Special",
+    "primary_type": "Fairy",
+    "accuracy": "exempt",
+    "pp": 1,
+    "target": "Normal",
+    "flags": ["NoMetronome"]
   }
 }

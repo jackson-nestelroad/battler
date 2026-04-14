@@ -139,8 +139,9 @@ fn lunar_dance_faints_user_and_heals_slot() {
 
     // PP was restored.
     assert_matches::assert_matches!(battle.request_for_player("player-1"),
-    Ok(Some(Request::Turn(request))) => {     assert_eq!(request.active[0].moves[1].pp,
-    request.active[0].moves[1].max_pp); });
+    Ok(Some(Request::Turn(request))) => {
+        assert_eq!(request.active[0].moves[1].pp, request.active[0].moves[1].max_pp);
+    });
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));

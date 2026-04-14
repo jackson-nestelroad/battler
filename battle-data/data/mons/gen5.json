@@ -13,9 +13,11 @@
     "hatch_time": 120,
     "height": 4,
     "weight": 40,
-    "base_exp_yield": 300,
+    "base_exp_yield": 270,
     "leveling_rate": "Slow",
-    "ev_yield": { "hp": 3 },
+    "ev_yield": {
+      "hp": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 100,
@@ -124,7 +126,9 @@
     "weight": 81,
     "base_exp_yield": 62,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -222,7 +226,9 @@
     "weight": 160,
     "base_exp_yield": 145,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -234,7 +240,11 @@
     },
     "prevo": "Snivy",
     "evos": ["Serperior"],
-    "evolution_data": { "method": "L", "condition": "", "level": 17 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 17
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -312,7 +322,9 @@
     "weight": 630,
     "base_exp_yield": 238,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spe": 3 },
+    "ev_yield": {
+      "spe": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -323,7 +335,11 @@
       "spe": 113
     },
     "prevo": "Servine",
-    "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 36
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -410,7 +426,9 @@
     "weight": 99,
     "base_exp_yield": 62,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "hp": 1 },
+    "ev_yield": {
+      "hp": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -505,7 +523,9 @@
     "weight": 555,
     "base_exp_yield": 146,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 90,
@@ -517,7 +537,11 @@
     },
     "prevo": "Tepig",
     "evos": ["Emboar"],
-    "evolution_data": { "method": "L", "condition": "", "level": 17 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 17
+    },
     "flags": [],
     "learnset": {
       "armthrust": ["L1"],
@@ -608,7 +632,9 @@
     "weight": 1500,
     "base_exp_yield": 238,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 110,
@@ -619,7 +645,11 @@
       "spe": 65
     },
     "prevo": "Pignite",
-    "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 36
+    },
     "flags": [],
     "learnset": {
       "armthrust": ["L1"],
@@ -719,7 +749,9 @@
     "weight": 59,
     "base_exp_yield": 62,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -813,7 +845,9 @@
     "weight": 245,
     "base_exp_yield": 145,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -825,7 +859,11 @@
     },
     "prevo": "Oshawott",
     "evos": ["Samurott", "Samurott-Hisui"],
-    "evolution_data": { "method": "L", "condition": "", "level": 17 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 17
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -900,7 +938,9 @@
     "weight": 946,
     "base_exp_yield": 238,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 95,
@@ -911,7 +951,11 @@
       "spe": 70
     },
     "prevo": "Dewott",
-    "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 36
+    },
     "formes": ["Samurott-Hisui"],
     "flags": [],
     "learnset": {
@@ -999,7 +1043,9 @@
     "weight": 116,
     "base_exp_yield": 51,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -1093,7 +1139,9 @@
     "weight": 270,
     "base_exp_yield": 147,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -1104,7 +1152,11 @@
       "spe": 77
     },
     "prevo": "Patrat",
-    "evolution_data": { "method": "L", "condition": "", "level": 20 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 20
+    },
     "flags": [],
     "learnset": {
       "afteryou": ["L25"],
@@ -1202,7 +1254,9 @@
     "weight": 41,
     "base_exp_yield": 55,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -1292,7 +1346,9 @@
     "weight": 147,
     "base_exp_yield": 130,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -1304,7 +1360,11 @@
     },
     "prevo": "Lillipup",
     "evos": ["Stoutland"],
-    "evolution_data": { "method": "L", "condition": "", "level": 16 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 16
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -1372,9 +1432,11 @@
     "hatch_time": 15,
     "height": 12,
     "weight": 610,
-    "base_exp_yield": 250,
+    "base_exp_yield": 225,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 85,
@@ -1385,7 +1447,11 @@
       "spe": 80
     },
     "prevo": "Herdier",
-    "evolution_data": { "method": "L", "condition": "", "level": 32 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 32
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -1463,7 +1529,9 @@
     "weight": 101,
     "base_exp_yield": 56,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 41,
@@ -1562,7 +1630,9 @@
     "weight": 375,
     "base_exp_yield": 156,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 64,
@@ -1573,7 +1643,11 @@
       "spe": 106
     },
     "prevo": "Purrloin",
-    "evolution_data": { "method": "L", "condition": "", "level": 20 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 20
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -1659,7 +1733,9 @@
     "weight": 105,
     "base_exp_yield": 63,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -1762,7 +1838,9 @@
     "weight": 305,
     "base_exp_yield": 174,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -1862,7 +1940,9 @@
     "weight": 110,
     "base_exp_yield": 63,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -1965,7 +2045,9 @@
     "weight": 280,
     "base_exp_yield": 174,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -2067,7 +2149,9 @@
     "weight": 135,
     "base_exp_yield": 63,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -2172,7 +2256,9 @@
     "weight": 290,
     "base_exp_yield": 174,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -2275,7 +2361,9 @@
     "weight": 233,
     "base_exp_yield": 58,
     "leveling_rate": "Fast",
-    "ev_yield": { "hp": 1 },
+    "ev_yield": {
+      "hp": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 76,
@@ -2375,7 +2463,9 @@
     "weight": 605,
     "base_exp_yield": 170,
     "leveling_rate": "Fast",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 116,
@@ -2470,7 +2560,9 @@
     "weight": 21,
     "base_exp_yield": 53,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -2549,7 +2641,9 @@
     "weight": 150,
     "base_exp_yield": 125,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 62,
@@ -2561,7 +2655,11 @@
     },
     "prevo": "Pidove",
     "evos": ["Unfezant"],
-    "evolution_data": { "method": "L", "condition": "", "level": 21 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 21
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -2622,9 +2720,11 @@
     "hatch_time": 15,
     "height": 12,
     "weight": 290,
-    "base_exp_yield": 244,
+    "base_exp_yield": 220,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 80,
@@ -2635,7 +2735,11 @@
       "spe": 93
     },
     "prevo": "Tranquill",
-    "evolution_data": { "method": "L", "condition": "", "level": 32 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 32
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -2700,7 +2804,9 @@
     "weight": 298,
     "base_exp_yield": 59,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -2781,7 +2887,9 @@
     "weight": 795,
     "base_exp_yield": 174,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -2792,7 +2900,11 @@
       "spe": 116
     },
     "prevo": "Blitzle",
-    "evolution_data": { "method": "L", "condition": "", "level": 27 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 27
+    },
     "flags": [],
     "learnset": {
       "agility": ["L42"],
@@ -2861,7 +2973,9 @@
     "weight": 180,
     "base_exp_yield": 56,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -2939,7 +3053,10 @@
     "weight": 1020,
     "base_exp_yield": 137,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1, "def": 1 },
+    "ev_yield": {
+      "atk": 1,
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -2951,7 +3068,11 @@
     },
     "prevo": "Roggenrola",
     "evos": ["Gigalith"],
-    "evolution_data": { "method": "L", "condition": "", "level": 25 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 25
+    },
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3012,9 +3133,11 @@
     "hatch_time": 15,
     "height": 17,
     "weight": 2600,
-    "base_exp_yield": 258,
+    "base_exp_yield": 232,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 85,
@@ -3025,7 +3148,10 @@
       "spe": 25
     },
     "prevo": "Boldore",
-    "evolution_data": { "method": "T", "condition": "" },
+    "evolution_data": {
+      "method": "T",
+      "condition": ""
+    },
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3096,7 +3222,9 @@
     "weight": 21,
     "base_exp_yield": 65,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -3208,7 +3336,9 @@
     "weight": 105,
     "base_exp_yield": 149,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 67,
@@ -3219,7 +3349,11 @@
       "spe": 114
     },
     "prevo": "Woobat",
-    "evolution_data": { "method": "L", "condition": "", "friendship": true },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "friendship": true
+    },
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -3315,7 +3449,9 @@
     "weight": 85,
     "base_exp_yield": 66,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -3398,7 +3534,9 @@
     "weight": 404,
     "base_exp_yield": 178,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 110,
@@ -3409,7 +3547,11 @@
       "spe": 88
     },
     "prevo": "Drilbur",
-    "evolution_data": { "method": "L", "condition": "", "level": 31 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 31
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3486,7 +3628,9 @@
     "weight": 310,
     "base_exp_yield": 390,
     "leveling_rate": "Fast",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 103,
@@ -3618,7 +3762,9 @@
     "weight": 125,
     "base_exp_yield": 61,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -3717,7 +3863,9 @@
     "weight": 400,
     "base_exp_yield": 142,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 85,
@@ -3729,7 +3877,11 @@
     },
     "prevo": "Timburr",
     "evos": ["Conkeldurr"],
-    "evolution_data": { "method": "L", "condition": "", "level": 25 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 25
+    },
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3806,9 +3958,11 @@
     "hatch_time": 20,
     "height": 14,
     "weight": 870,
-    "base_exp_yield": 253,
+    "base_exp_yield": 227,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 105,
@@ -3819,7 +3973,10 @@
       "spe": 45
     },
     "prevo": "Gurdurr",
-    "evolution_data": { "method": "T", "condition": "" },
+    "evolution_data": {
+      "method": "T",
+      "condition": ""
+    },
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3903,7 +4060,9 @@
     "weight": 45,
     "base_exp_yield": 59,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -3981,7 +4140,9 @@
     "weight": 170,
     "base_exp_yield": 134,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -3993,7 +4154,11 @@
     },
     "prevo": "Tympole",
     "evos": ["Seismitoad"],
-    "evolution_data": { "method": "L", "condition": "", "level": 25 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 25
+    },
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -4059,9 +4224,11 @@
     "hatch_time": 20,
     "height": 15,
     "weight": 620,
-    "base_exp_yield": 255,
+    "base_exp_yield": 229,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "hp": 3 },
+    "ev_yield": {
+      "hp": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 105,
@@ -4072,7 +4239,11 @@
       "spe": 74
     },
     "prevo": "Palpitoad",
-    "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 36
+    },
     "flags": [],
     "learnset": {
       "acid": ["L1"],
@@ -4160,7 +4331,9 @@
     "weight": 555,
     "base_exp_yield": 163,
     "leveling_rate": "Medium",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 120,
@@ -4256,7 +4429,9 @@
     "weight": 510,
     "base_exp_yield": 163,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -4350,7 +4525,9 @@
     "weight": 25,
     "base_exp_yield": 62,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -4437,7 +4614,9 @@
     "weight": 73,
     "base_exp_yield": 133,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -4449,7 +4628,11 @@
     },
     "prevo": "Sewaddle",
     "evos": ["Leavanny"],
-    "evolution_data": { "method": "L", "condition": "", "level": 20 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 20
+    },
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -4513,7 +4696,9 @@
     "weight": 205,
     "base_exp_yield": 225,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -4524,7 +4709,11 @@
       "spe": 92
     },
     "prevo": "Swadloon",
-    "evolution_data": { "method": "L", "condition": "", "friendship": true },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "friendship": true
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -4609,7 +4798,9 @@
     "weight": 53,
     "base_exp_yield": 52,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 30,
@@ -4687,7 +4878,9 @@
     "weight": 585,
     "base_exp_yield": 126,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 40,
@@ -4699,7 +4892,11 @@
     },
     "prevo": "Venipede",
     "evos": ["Scolipede"],
-    "evolution_data": { "method": "L", "condition": "", "level": 22 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 22
+    },
     "flags": [],
     "learnset": {
       "agility": ["L32"],
@@ -4760,9 +4957,11 @@
     "hatch_time": 20,
     "height": 25,
     "weight": 2005,
-    "base_exp_yield": 243,
+    "base_exp_yield": 218,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spe": 3 },
+    "ev_yield": {
+      "spe": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -4773,7 +4972,11 @@
       "spe": 112
     },
     "prevo": "Whirlipede",
-    "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 30
+    },
     "flags": [],
     "learnset": {
       "agility": ["L33"],
@@ -4856,7 +5059,9 @@
     "weight": 6,
     "base_exp_yield": 56,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 40,
@@ -4944,7 +5149,9 @@
     "weight": 66,
     "base_exp_yield": 168,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -5031,7 +5238,9 @@
     "weight": 66,
     "base_exp_yield": 56,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -5115,7 +5324,9 @@
     "weight": 163,
     "base_exp_yield": 168,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -5185,7 +5396,6 @@
   "basculin": {
     "name": "Basculin",
     "base_species": "Basculin",
-    "base_forme": "Red-Striped",
     "class": "Hostile",
     "color": "Green",
     "primary_type": "Water",
@@ -5199,7 +5409,9 @@
     "weight": 180,
     "base_exp_yield": 161,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -5209,6 +5421,7 @@
       "spd": 55,
       "spe": 98
     },
+    "base_forme": "Red-Striped",
     "formes": ["Basculin-Blue-Striped", "Basculin-White-Striped"],
     "flags": [],
     "learnset": {
@@ -5289,7 +5502,9 @@
     "weight": 152,
     "base_exp_yield": 58,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -5386,7 +5601,9 @@
     "weight": 334,
     "base_exp_yield": 123,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -5398,7 +5615,11 @@
     },
     "prevo": "Sandile",
     "evos": ["Krookodile"],
-    "evolution_data": { "method": "L", "condition": "", "level": 29 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 29
+    },
     "flags": [],
     "learnset": {
       "aquatail": ["T"],
@@ -5484,9 +5705,11 @@
     "hatch_time": 20,
     "height": 15,
     "weight": 963,
-    "base_exp_yield": 260,
+    "base_exp_yield": 234,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 95,
@@ -5497,7 +5720,11 @@
       "spe": 92
     },
     "prevo": "Krokorok",
-    "evolution_data": { "method": "L", "condition": "", "level": 40 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 40
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -5598,7 +5825,9 @@
     "weight": 375,
     "base_exp_yield": 63,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -5680,7 +5909,6 @@
   "darmanitan": {
     "name": "Darmanitan",
     "base_species": "Darmanitan",
-    "base_forme": "Standard",
     "class": "Blazing",
     "color": "Red",
     "primary_type": "Fire",
@@ -5694,7 +5922,9 @@
     "weight": 929,
     "base_exp_yield": 168,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 105,
@@ -5705,7 +5935,12 @@
       "spe": 95
     },
     "prevo": "Darumaka",
-    "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 35
+    },
+    "base_forme": "Standard",
     "formes": ["Darmanitan-Zen", "Darmanitan-Galar", "Darmanitan-Galar-Zen"],
     "flags": [],
     "learnset": {
@@ -5795,7 +6030,9 @@
     "weight": 280,
     "base_exp_yield": 161,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -5884,7 +6121,9 @@
     "weight": 145,
     "base_exp_yield": 65,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -5975,7 +6214,9 @@
     "weight": 2000,
     "base_exp_yield": 170,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -5986,7 +6227,11 @@
       "spe": 45
     },
     "prevo": "Dwebble",
-    "evolution_data": { "method": "L", "condition": "", "level": 34 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 34
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -6061,7 +6306,9 @@
     "weight": 118,
     "base_exp_yield": 70,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -6172,7 +6419,10 @@
     "weight": 300,
     "base_exp_yield": 171,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 1, "spd": 1 },
+    "ev_yield": {
+      "def": 1,
+      "spd": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -6183,7 +6433,11 @@
       "spe": 58
     },
     "prevo": "Scraggy",
-    "evolution_data": { "method": "L", "condition": "", "level": 39 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 39
+    },
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -6282,7 +6536,9 @@
     "weight": 140,
     "base_exp_yield": 172,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 72,
@@ -6384,7 +6640,9 @@
     "weight": 15,
     "base_exp_yield": 61,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 38,
@@ -6484,7 +6742,9 @@
     "weight": 765,
     "base_exp_yield": 169,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 58,
@@ -6495,7 +6755,11 @@
       "spe": 30
     },
     "prevo": "Yamask",
-    "evolution_data": { "method": "L", "condition": "", "level": 34 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 34
+    },
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -6581,7 +6845,9 @@
     "weight": 165,
     "base_exp_yield": 71,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 54,
@@ -6677,7 +6943,9 @@
     "weight": 810,
     "base_exp_yield": 173,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 74,
@@ -6688,7 +6956,11 @@
       "spe": 32
     },
     "prevo": "Tirtouga",
-    "evolution_data": { "method": "L", "condition": "", "level": 37 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 37
+    },
     "flags": [],
     "learnset": {
       "ancientpower": ["L18"],
@@ -6773,7 +7045,9 @@
     "weight": 95,
     "base_exp_yield": 71,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -6872,7 +7146,9 @@
     "weight": 320,
     "base_exp_yield": 177,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -6883,7 +7159,11 @@
       "spe": 110
     },
     "prevo": "Archen",
-    "evolution_data": { "method": "L", "condition": "", "level": 37 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 37
+    },
     "flags": [],
     "learnset": {
       "acrobatics": ["L28"],
@@ -6976,7 +7256,9 @@
     "weight": 310,
     "base_exp_yield": 66,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -7061,7 +7343,9 @@
     "weight": 1073,
     "base_exp_yield": 166,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 80,
@@ -7072,7 +7356,11 @@
       "spe": 75
     },
     "prevo": "Trubbish",
-    "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 36
+    },
     "formes": ["Garbodor-Gmax"],
     "flags": [],
     "learnset": {
@@ -7148,7 +7436,9 @@
     "weight": 125,
     "base_exp_yield": 66,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 40,
@@ -7246,7 +7536,9 @@
     "weight": 811,
     "base_exp_yield": 179,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -7257,7 +7549,11 @@
       "spe": 105
     },
     "prevo": "Zorua",
-    "evolution_data": { "method": "L", "condition": "", "level": 30 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 30
+    },
     "formes": ["Zoroark-Hisui"],
     "flags": [],
     "learnset": {
@@ -7349,7 +7645,9 @@
     "weight": 58,
     "base_exp_yield": 60,
     "leveling_rate": "Fast",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -7440,7 +7738,9 @@
     "weight": 75,
     "base_exp_yield": 165,
     "leveling_rate": "Fast",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -7530,7 +7830,9 @@
     "weight": 58,
     "base_exp_yield": 58,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spd": 1 },
+    "ev_yield": {
+      "spd": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -7638,7 +7940,9 @@
     "weight": 180,
     "base_exp_yield": 137,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spd": 2 },
+    "ev_yield": {
+      "spd": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -7650,7 +7954,11 @@
     },
     "prevo": "Gothita",
     "evos": ["Gothitelle"],
-    "evolution_data": { "method": "L", "condition": "", "level": 32 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 32
+    },
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -7741,9 +8049,11 @@
     "hatch_time": 20,
     "height": 15,
     "weight": 440,
-    "base_exp_yield": 245,
+    "base_exp_yield": 221,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spd": 3 },
+    "ev_yield": {
+      "spd": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -7754,7 +8064,11 @@
       "spe": 65
     },
     "prevo": "Gothorita",
-    "evolution_data": { "method": "L", "condition": "", "level": 41 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 41
+    },
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -7853,7 +8167,9 @@
     "weight": 10,
     "base_exp_yield": 58,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -7950,7 +8266,9 @@
     "weight": 80,
     "base_exp_yield": 130,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -7962,7 +8280,11 @@
     },
     "prevo": "Solosis",
     "evos": ["Reuniclus"],
-    "evolution_data": { "method": "L", "condition": "", "level": 32 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 32
+    },
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -8042,9 +8364,11 @@
     "hatch_time": 20,
     "height": 10,
     "weight": 201,
-    "base_exp_yield": 245,
+    "base_exp_yield": 221,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 110,
@@ -8055,7 +8379,11 @@
       "spe": 30
     },
     "prevo": "Duosion",
-    "evolution_data": { "method": "L", "condition": "", "level": 41 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 41
+    },
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -8155,7 +8483,9 @@
     "weight": 55,
     "base_exp_yield": 61,
     "leveling_rate": "Medium",
-    "ev_yield": { "hp": 1 },
+    "ev_yield": {
+      "hp": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 62,
@@ -8238,7 +8568,9 @@
     "weight": 242,
     "base_exp_yield": 166,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -8249,7 +8581,11 @@
       "spe": 98
     },
     "prevo": "Ducklett",
-    "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 35
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["L15"],
@@ -8316,7 +8652,9 @@
     "weight": 57,
     "base_exp_yield": 61,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 36,
@@ -8394,7 +8732,9 @@
     "weight": 410,
     "base_exp_yield": 138,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 51,
@@ -8406,7 +8746,11 @@
     },
     "prevo": "Vanillite",
     "evos": ["Vanilluxe"],
-    "evolution_data": { "method": "L", "condition": "", "level": 35 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 35
+    },
     "flags": [],
     "learnset": {
       "acidarmor": ["L31"],
@@ -8467,9 +8811,11 @@
     "hatch_time": 20,
     "height": 13,
     "weight": 575,
-    "base_exp_yield": 268,
+    "base_exp_yield": 241,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 71,
@@ -8480,7 +8826,11 @@
       "spe": 79
     },
     "prevo": "Vanillish",
-    "evolution_data": { "method": "L", "condition": "", "level": 47 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 47
+    },
     "flags": [],
     "learnset": {
       "acidarmor": ["L31"],
@@ -8534,7 +8884,6 @@
   "deerling": {
     "name": "Deerling",
     "base_species": "Deerling",
-    "base_forme": "Spring",
     "class": "Season",
     "color": "Pink",
     "primary_type": "Normal",
@@ -8549,7 +8898,9 @@
     "weight": 195,
     "base_exp_yield": 67,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -8560,6 +8911,7 @@
       "spe": 75
     },
     "evos": ["Sawsbuck"],
+    "base_forme": "Spring",
     "cosmetic_formes": [
       "Deerling-Summer",
       "Deerling-Autumn",
@@ -8628,7 +8980,6 @@
   "sawsbuck": {
     "name": "Sawsbuck",
     "base_species": "Sawsbuck",
-    "base_forme": "Spring",
     "class": "Season",
     "color": "Brown",
     "primary_type": "Normal",
@@ -8643,7 +8994,9 @@
     "weight": 925,
     "base_exp_yield": 166,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 80,
@@ -8654,7 +9007,12 @@
       "spe": 95
     },
     "prevo": "Deerling",
-    "evolution_data": { "method": "L", "condition": "", "level": 34 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 34
+    },
+    "base_forme": "Spring",
     "cosmetic_formes": [
       "Sawsbuck-Summer",
       "Sawsbuck-Autumn",
@@ -8738,7 +9096,9 @@
     "weight": 50,
     "base_exp_yield": 150,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -8828,7 +9188,9 @@
     "weight": 59,
     "base_exp_yield": 63,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -8910,7 +9272,9 @@
     "weight": 330,
     "base_exp_yield": 173,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -8924,7 +9288,7 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "trade_for": "Shelmet"
+      "trade_species_id": "Shelmet"
     },
     "flags": [],
     "learnset": {
@@ -8998,7 +9362,9 @@
     "weight": 10,
     "base_exp_yield": 59,
     "leveling_rate": "Medium",
-    "ev_yield": { "hp": 1 },
+    "ev_yield": {
+      "hp": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 69,
@@ -9080,7 +9446,9 @@
     "weight": 105,
     "base_exp_yield": 162,
     "leveling_rate": "Medium",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 114,
@@ -9091,7 +9459,11 @@
       "spe": 30
     },
     "prevo": "Foongus",
-    "evolution_data": { "method": "L", "condition": "", "level": 39 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 39
+    },
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -9160,7 +9532,9 @@
     "weight": 330,
     "base_exp_yield": 67,
     "leveling_rate": "Medium",
-    "ev_yield": { "spd": 1 },
+    "ev_yield": {
+      "spd": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -9171,6 +9545,8 @@
       "spe": 40
     },
     "evos": ["Jellicent"],
+    "base_forme": "Male",
+    "cosmetic_formes": ["Frillish-Female"],
     "flags": [],
     "learnset": {
       "absorb": ["L5"],
@@ -9255,7 +9631,9 @@
     "weight": 1350,
     "base_exp_yield": 168,
     "leveling_rate": "Medium",
-    "ev_yield": { "spd": 2 },
+    "ev_yield": {
+      "spd": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 100,
@@ -9266,7 +9644,13 @@
       "spe": 60
     },
     "prevo": "Frillish",
-    "evolution_data": { "method": "L", "condition": "", "level": 40 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 40
+    },
+    "base_forme": "Male",
+    "cosmetic_formes": ["Jellicent-Female"],
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -9348,7 +9732,9 @@
     "weight": 316,
     "base_exp_yield": 165,
     "leveling_rate": "Fast",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 165,
@@ -9437,7 +9823,9 @@
     "weight": 6,
     "base_exp_yield": 64,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -9529,7 +9917,9 @@
     "weight": 143,
     "base_exp_yield": 165,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -9540,7 +9930,11 @@
       "spe": 108
     },
     "prevo": "Joltik",
-    "evolution_data": { "method": "L", "condition": "", "level": 36 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 36
+    },
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -9617,7 +10011,9 @@
     "weight": 188,
     "base_exp_yield": 61,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 44,
@@ -9703,7 +10099,9 @@
     "weight": 1100,
     "base_exp_yield": 171,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 74,
@@ -9714,7 +10112,11 @@
       "spe": 20
     },
     "prevo": "Ferroseed",
-    "evolution_data": { "method": "L", "condition": "", "level": 40 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 40
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -9798,7 +10200,9 @@
     "weight": 210,
     "base_exp_yield": 60,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 40,
@@ -9876,7 +10280,9 @@
     "weight": 510,
     "base_exp_yield": 154,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -9888,7 +10294,11 @@
     },
     "prevo": "Klink",
     "evos": ["Klinklang"],
-    "evolution_data": { "method": "L", "condition": "", "level": 38 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 38
+    },
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -9955,9 +10365,11 @@
     "hatch_time": 20,
     "height": 6,
     "weight": 810,
-    "base_exp_yield": 260,
+    "base_exp_yield": 234,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "def": 3 },
+    "ev_yield": {
+      "def": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -9968,7 +10380,11 @@
       "spe": 90
     },
     "prevo": "Klang",
-    "evolution_data": { "method": "L", "condition": "", "level": 49 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 49
+    },
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -10041,7 +10457,9 @@
     "weight": 3,
     "base_exp_yield": 55,
     "leveling_rate": "Slow",
-    "ev_yield": { "spe": 1 },
+    "ev_yield": {
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 35,
@@ -10076,7 +10494,9 @@
     "weight": 220,
     "base_exp_yield": 142,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -10088,7 +10508,11 @@
     },
     "prevo": "Tynamo",
     "evos": ["Eelektross"],
-    "evolution_data": { "method": "L", "condition": "", "level": 39 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 39
+    },
     "flags": [],
     "learnset": {
       "acid": ["L19"],
@@ -10157,7 +10581,9 @@
     "weight": 805,
     "base_exp_yield": 232,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 85,
@@ -10264,7 +10690,9 @@
     "weight": 90,
     "base_exp_yield": 67,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -10370,7 +10798,9 @@
     "weight": 345,
     "base_exp_yield": 170,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 75,
@@ -10381,7 +10811,11 @@
       "spe": 40
     },
     "prevo": "Elgyem",
-    "evolution_data": { "method": "L", "condition": "", "level": 42 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 42
+    },
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -10473,7 +10907,9 @@
     "weight": 31,
     "base_exp_yield": 55,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -10570,7 +11006,9 @@
     "weight": 130,
     "base_exp_yield": 130,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -10582,7 +11020,11 @@
     },
     "prevo": "Litwick",
     "evos": ["Chandelure"],
-    "evolution_data": { "method": "L", "condition": "", "level": 41 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 41
+    },
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -10660,9 +11102,11 @@
     "hatch_time": 20,
     "height": 10,
     "weight": 343,
-    "base_exp_yield": 260,
+    "base_exp_yield": 234,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 60,
@@ -10750,7 +11194,9 @@
     "weight": 180,
     "base_exp_yield": 64,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 46,
@@ -10841,7 +11287,9 @@
     "weight": 360,
     "base_exp_yield": 144,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 66,
@@ -10853,7 +11301,11 @@
     },
     "prevo": "Axew",
     "evos": ["Haxorus"],
-    "evolution_data": { "method": "L", "condition": "", "level": 38 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 38
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -10929,9 +11381,11 @@
     "hatch_time": 40,
     "height": 18,
     "weight": 1055,
-    "base_exp_yield": 270,
+    "base_exp_yield": 243,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 76,
@@ -10942,7 +11396,11 @@
       "spe": 97
     },
     "prevo": "Fraxure",
-    "evolution_data": { "method": "L", "condition": "", "level": 48 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 48
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -11030,7 +11488,9 @@
     "weight": 85,
     "base_exp_yield": 61,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -11120,7 +11580,9 @@
     "weight": 2600,
     "base_exp_yield": 177,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 95,
@@ -11131,7 +11593,11 @@
       "spe": 50
     },
     "prevo": "Cubchoo",
-    "evolution_data": { "method": "L", "condition": "", "level": 37 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 37
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -11218,7 +11684,9 @@
     "weight": 1480,
     "base_exp_yield": 180,
     "leveling_rate": "Medium",
-    "ev_yield": { "spd": 2 },
+    "ev_yield": {
+      "spd": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 80,
@@ -11301,7 +11769,9 @@
     "weight": 77,
     "base_exp_yield": 61,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 50,
@@ -11382,7 +11852,9 @@
     "weight": 253,
     "base_exp_yield": 173,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 80,
@@ -11396,7 +11868,7 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "trade_for": "Karrablast"
+      "trade_species_id": "Karrablast"
     },
     "flags": [],
     "learnset": {
@@ -11465,7 +11937,9 @@
     "weight": 110,
     "base_exp_yield": 165,
     "leveling_rate": "Medium",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 109,
@@ -11566,7 +12040,9 @@
     "weight": 200,
     "base_exp_yield": 70,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -11667,7 +12143,9 @@
     "weight": 355,
     "base_exp_yield": 179,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -11678,7 +12156,11 @@
       "spe": 105
     },
     "prevo": "Mienfoo",
-    "evolution_data": { "method": "L", "condition": "", "level": 50 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 50
+    },
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -11766,7 +12248,9 @@
     "weight": 1390,
     "base_exp_yield": 170,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 77,
@@ -11882,7 +12366,9 @@
     "weight": 920,
     "base_exp_yield": 61,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 59,
@@ -11981,7 +12467,9 @@
     "weight": 3300,
     "base_exp_yield": 169,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 89,
@@ -11992,7 +12480,11 @@
       "spe": 55
     },
     "prevo": "Golett",
-    "evolution_data": { "method": "L", "condition": "", "level": 43 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 43
+    },
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -12093,7 +12585,9 @@
     "weight": 102,
     "base_exp_yield": 68,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 45,
@@ -12198,7 +12692,9 @@
     "weight": 700,
     "base_exp_yield": 172,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 65,
@@ -12210,7 +12706,11 @@
     },
     "prevo": "Pawniard",
     "evos": ["Kingambit"],
-    "evolution_data": { "method": "L", "condition": "", "level": 52 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 52
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -12304,7 +12804,9 @@
     "weight": 946,
     "base_exp_yield": 172,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 95,
@@ -12400,7 +12902,9 @@
     "weight": 105,
     "base_exp_yield": 70,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -12482,7 +12986,9 @@
     "weight": 410,
     "base_exp_yield": 179,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 100,
@@ -12493,7 +12999,11 @@
       "spe": 80
     },
     "prevo": "Rufflet",
-    "evolution_data": { "method": "L", "condition": "", "level": 54 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 54
+    },
     "formes": ["Braviary-Hisui"],
     "flags": [],
     "learnset": {
@@ -12571,7 +13081,9 @@
     "weight": 90,
     "base_exp_yield": 74,
     "leveling_rate": "Slow",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -12663,7 +13175,9 @@
     "weight": 395,
     "base_exp_yield": 179,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 110,
@@ -12674,7 +13188,11 @@
       "spe": 80
     },
     "prevo": "Vullaby",
-    "evolution_data": { "method": "L", "condition": "", "level": 54 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 54
+    },
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -12756,7 +13274,9 @@
     "weight": 580,
     "base_exp_yield": 169,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 85,
@@ -12862,7 +13382,9 @@
     "weight": 330,
     "base_exp_yield": 169,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 2 },
+    "ev_yield": {
+      "def": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 58,
@@ -12948,7 +13470,9 @@
     "weight": 173,
     "base_exp_yield": 60,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 52,
@@ -13040,7 +13564,9 @@
     "weight": 500,
     "base_exp_yield": 147,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 72,
@@ -13052,7 +13578,11 @@
     },
     "prevo": "Deino",
     "evos": ["Hydreigon"],
-    "evolution_data": { "method": "L", "condition": "", "level": 50 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 50
+    },
     "flags": [],
     "learnset": {
       "aquatail": ["T"],
@@ -13123,9 +13653,11 @@
     "hatch_time": 40,
     "height": 18,
     "weight": 1600,
-    "base_exp_yield": 300,
+    "base_exp_yield": 270,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 92,
@@ -13136,7 +13668,11 @@
       "spe": 98
     },
     "prevo": "Zweilous",
-    "evolution_data": { "method": "L", "condition": "", "level": 64 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 64
+    },
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -13238,7 +13774,9 @@
     "weight": 288,
     "base_exp_yield": 72,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -13320,9 +13858,11 @@
     "hatch_time": 40,
     "height": 16,
     "weight": 460,
-    "base_exp_yield": 275,
+    "base_exp_yield": 248,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 85,
@@ -13333,7 +13873,11 @@
       "spe": 100
     },
     "prevo": "Larvesta",
-    "evolution_data": { "method": "L", "condition": "", "level": 59 },
+    "evolution_data": {
+      "method": "L",
+      "condition": "",
+      "level": 59
+    },
     "flags": [],
     "learnset": {
       "absorb": ["L1"],
@@ -13414,9 +13958,11 @@
     "hatch_time": 80,
     "height": 21,
     "weight": 2500,
-    "base_exp_yield": 290,
+    "base_exp_yield": 261,
     "leveling_rate": "Slow",
-    "ev_yield": { "def": 3 },
+    "ev_yield": {
+      "def": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 91,
@@ -13504,9 +14050,11 @@
     "hatch_time": 80,
     "height": 19,
     "weight": 2600,
-    "base_exp_yield": 290,
+    "base_exp_yield": 261,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 91,
@@ -13592,9 +14140,11 @@
     "hatch_time": 80,
     "height": 20,
     "weight": 2000,
-    "base_exp_yield": 290,
+    "base_exp_yield": 261,
     "leveling_rate": "Slow",
-    "ev_yield": { "spd": 3 },
+    "ev_yield": {
+      "spd": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 91,
@@ -13671,7 +14221,6 @@
   "tornadus": {
     "name": "Tornadus",
     "base_species": "Tornadus",
-    "base_forme": "Incarnate",
     "class": "Cyclone",
     "color": "Green",
     "primary_type": "Flying",
@@ -13683,9 +14232,11 @@
     "hatch_time": 120,
     "height": 15,
     "weight": 630,
-    "base_exp_yield": 290,
+    "base_exp_yield": 261,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 79,
@@ -13695,6 +14246,7 @@
       "spd": 80,
       "spe": 111
     },
+    "base_forme": "Incarnate",
     "formes": ["Tornadus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -13768,7 +14320,6 @@
   "thundurus": {
     "name": "Thundurus",
     "base_species": "Thundurus",
-    "base_forme": "Incarnate",
     "class": "Bolt Strike",
     "color": "Blue",
     "primary_type": "Electric",
@@ -13781,9 +14332,11 @@
     "hatch_time": 120,
     "height": 15,
     "weight": 610,
-    "base_exp_yield": 290,
+    "base_exp_yield": 261,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 79,
@@ -13793,6 +14346,7 @@
       "spd": 80,
       "spe": 111
     },
+    "base_forme": "Incarnate",
     "formes": ["Thundurus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -13883,9 +14437,11 @@
     "hatch_time": 120,
     "height": 32,
     "weight": 3300,
-    "base_exp_yield": 340,
+    "base_exp_yield": 306,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 100,
@@ -13982,9 +14538,11 @@
     "hatch_time": 120,
     "height": 29,
     "weight": 3450,
-    "base_exp_yield": 340,
+    "base_exp_yield": 306,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 100,
@@ -14073,7 +14631,6 @@
   "landorus": {
     "name": "Landorus",
     "base_species": "Landorus",
-    "base_forme": "Incarnate",
     "class": "Abundance",
     "color": "Brown",
     "primary_type": "Ground",
@@ -14086,9 +14643,11 @@
     "hatch_time": 120,
     "height": 15,
     "weight": 680,
-    "base_exp_yield": 300,
+    "base_exp_yield": 270,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 89,
@@ -14098,6 +14657,7 @@
       "spd": 80,
       "spe": 101
     },
+    "base_forme": "Incarnate",
     "formes": ["Landorus-Therian"],
     "flags": ["Sub-Legendary"],
     "learnset": {
@@ -14178,9 +14738,13 @@
     "hatch_time": 120,
     "height": 30,
     "weight": 3250,
-    "base_exp_yield": 330,
+    "base_exp_yield": 297,
     "leveling_rate": "Slow",
-    "ev_yield": { "hp": 1, "atk": 1, "spa": 1 },
+    "ev_yield": {
+      "hp": 1,
+      "atk": 1,
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 125,
@@ -14263,7 +14827,6 @@
   "keldeo": {
     "name": "Keldeo",
     "base_species": "Keldeo",
-    "base_forme": "Ordinary",
     "class": "Colt",
     "color": "Yellow",
     "primary_type": "Water",
@@ -14275,9 +14838,11 @@
     "hatch_time": 80,
     "height": 14,
     "weight": 485,
-    "base_exp_yield": 290,
+    "base_exp_yield": 261,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 91,
@@ -14287,6 +14852,7 @@
       "spd": 90,
       "spe": 108
     },
+    "base_forme": "Ordinary",
     "formes": ["Keldeo-Resolute"],
     "flags": ["Mythical"],
     "learnset": {
@@ -14355,7 +14921,6 @@
   "meloetta": {
     "name": "Meloetta",
     "base_species": "Meloetta",
-    "base_forme": "Aria",
     "class": "Melody",
     "color": "White",
     "primary_type": "Normal",
@@ -14369,7 +14934,11 @@
     "weight": 65,
     "base_exp_yield": 270,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 1, "spd": 1, "spe": 1 },
+    "ev_yield": {
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 100,
@@ -14379,6 +14948,7 @@
       "spd": 128,
       "spe": 90
     },
+    "base_forme": "Aria",
     "formes": ["Meloetta-Pirouette"],
     "flags": ["Mythical"],
     "learnset": {
@@ -14489,9 +15059,13 @@
     "hatch_time": 120,
     "height": 15,
     "weight": 825,
-    "base_exp_yield": 300,
+    "base_exp_yield": 270,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 1, "spa": 1, "spe": 1 },
+    "ev_yield": {
+      "atk": 1,
+      "spa": 1,
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 71,
@@ -14602,7 +15176,9 @@
     "weight": 180,
     "base_exp_yield": 161,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -14633,7 +15209,9 @@
     "weight": 929,
     "base_exp_yield": 189,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 105,
@@ -14665,7 +15243,11 @@
     "weight": 65,
     "base_exp_yield": 270,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 1, "def": 1, "spe": 1 },
+    "ev_yield": {
+      "atk": 1,
+      "def": 1,
+      "spe": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 100,
@@ -14696,7 +15278,9 @@
     "weight": 630,
     "base_exp_yield": 290,
     "leveling_rate": "Slow",
-    "ev_yield": { "spe": 3 },
+    "ev_yield": {
+      "spe": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 79,
@@ -14727,7 +15311,9 @@
     "weight": 610,
     "base_exp_yield": 290,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 79,
@@ -14758,7 +15344,9 @@
     "weight": 680,
     "base_exp_yield": 300,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 89,
@@ -14789,7 +15377,9 @@
     "weight": 3250,
     "base_exp_yield": 350,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 3 },
+    "ev_yield": {
+      "atk": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 125,
@@ -14886,7 +15476,9 @@
     "weight": 3250,
     "base_exp_yield": 350,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 125,
@@ -14983,7 +15575,9 @@
     "weight": 485,
     "base_exp_yield": 290,
     "leveling_rate": "Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 91,
@@ -15015,7 +15609,9 @@
     "weight": 320,
     "base_exp_yield": 425,
     "leveling_rate": "Fast",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 103,
@@ -15048,7 +15644,9 @@
     "weight": 400,
     "base_exp_yield": 63,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 1 },
+    "ev_yield": {
+      "atk": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -15079,7 +15677,9 @@
     "weight": 1200,
     "base_exp_yield": 168,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 105,
@@ -15116,7 +15716,9 @@
     "weight": 1200,
     "base_exp_yield": 189,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 105,
@@ -15126,6 +15728,7 @@
       "spd": 55,
       "spe": 135
     },
+    "battle_only_forme": true,
     "changes_from": "Darmanitan-Galar",
     "flags": [],
     "learnset": {}
@@ -15147,7 +15750,9 @@
     "weight": 15,
     "base_exp_yield": 61,
     "leveling_rate": "Medium",
-    "ev_yield": { "def": 1 },
+    "ev_yield": {
+      "def": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 38,
@@ -15178,7 +15783,9 @@
     "weight": 205,
     "base_exp_yield": 165,
     "leveling_rate": "Medium",
-    "ev_yield": { "hp": 2 },
+    "ev_yield": {
+      "hp": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 109,
@@ -15208,7 +15815,9 @@
     "weight": 10000,
     "base_exp_yield": 166,
     "leveling_rate": "Medium",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 80,
@@ -15240,9 +15849,11 @@
     "hatch_time": 20,
     "height": 15,
     "weight": 582,
-    "base_exp_yield": 0,
+    "base_exp_yield": 238,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 3 },
+    "ev_yield": {
+      "spa": 3
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 90,
@@ -15271,9 +15882,11 @@
     "hatch_time": 20,
     "height": 12,
     "weight": 192,
-    "base_exp_yield": 0,
+    "base_exp_yield": 168,
     "leveling_rate": "Medium",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -15301,9 +15914,11 @@
     "hatch_time": 25,
     "height": 7,
     "weight": 125,
-    "base_exp_yield": 0,
+    "base_exp_yield": 66,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 1 },
+    "ev_yield": {
+      "spa": 1
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 35,
@@ -15332,9 +15947,11 @@
     "hatch_time": 20,
     "height": 16,
     "weight": 730,
-    "base_exp_yield": 0,
+    "base_exp_yield": 179,
     "leveling_rate": "Medium Slow",
-    "ev_yield": { "spa": 2 },
+    "ev_yield": {
+      "spa": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 55,
@@ -15363,9 +15980,11 @@
     "hatch_time": 20,
     "height": 17,
     "weight": 434,
-    "base_exp_yield": 0,
+    "base_exp_yield": 179,
     "leveling_rate": "Slow",
-    "ev_yield": { "atk": 2 },
+    "ev_yield": {
+      "atk": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 110,
@@ -15393,9 +16012,11 @@
     "hatch_time": 40,
     "height": 10,
     "weight": 180,
-    "base_exp_yield": 0,
+    "base_exp_yield": 161,
     "leveling_rate": "Medium",
-    "ev_yield": { "spe": 2 },
+    "ev_yield": {
+      "spe": 2
+    },
     "base_friendship": 0,
     "base_stats": {
       "hp": 70,
@@ -15406,6 +16027,260 @@
       "spe": 98
     },
     "evos": ["Basculegion", "Basculegion-F"],
+    "flags": [],
+    "learnset": {}
+  },
+  "darmanitangalarstandard": {
+    "name": "Darmanitan-Galar-Standard",
+    "base_species": "Darmanitan",
+    "forme": "Galar-Standard",
+    "class": "Blazing",
+    "color": "Red",
+    "primary_type": "Ice",
+    "abilities": ["Gorilla Tactics"],
+    "hidden_ability": "Zen Mode",
+    "gender_ratio": 127,
+    "catch_rate": 60,
+    "egg_groups": ["Field"],
+    "hatch_time": 20,
+    "height": 17,
+    "weight": 1200,
+    "base_exp_yield": 168,
+    "leveling_rate": "Medium Slow",
+    "ev_yield": {
+      "atk": 2
+    },
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 105,
+      "atk": 140,
+      "def": 55,
+      "spa": 30,
+      "spd": 55,
+      "spe": 95
+    },
+    "prevo": "Darumaka",
+    "evolution_data": {
+      "method": "I",
+      "condition": "",
+      "use_item": "Ice Stone"
+    },
+    "flags": [],
+    "learnset": {}
+  },
+  "emboarmega": {
+    "name": "Emboar-Mega",
+    "base_species": "Emboar",
+    "forme": "Mega",
+    "class": "Mega Fire Pig",
+    "color": "Red",
+    "primary_type": "Fire",
+    "secondary_type": "Fighting",
+    "abilities": ["Mold Breaker"],
+    "gender_ratio": 31,
+    "catch_rate": 45,
+    "egg_groups": ["Field"],
+    "hatch_time": 20,
+    "height": 18,
+    "weight": 1803,
+    "base_exp_yield": 0,
+    "leveling_rate": "Medium Slow",
+    "ev_yield": {},
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 110,
+      "atk": 148,
+      "def": 75,
+      "spa": 110,
+      "spd": 110,
+      "spe": 75
+    },
+    "battle_only_forme": true,
+    "flags": [],
+    "learnset": {}
+  },
+  "excadrillmega": {
+    "name": "Excadrill-Mega",
+    "base_species": "Excadrill",
+    "forme": "Mega",
+    "class": "Subterrene",
+    "color": "Gray",
+    "primary_type": "Ground",
+    "secondary_type": "Steel",
+    "abilities": ["Piercing Drill"],
+    "gender_ratio": 127,
+    "catch_rate": 60,
+    "egg_groups": ["Field"],
+    "hatch_time": 20,
+    "height": 9,
+    "weight": 600,
+    "base_exp_yield": 0,
+    "leveling_rate": "Medium",
+    "ev_yield": {},
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 110,
+      "atk": 165,
+      "def": 100,
+      "spa": 65,
+      "spd": 65,
+      "spe": 103
+    },
+    "battle_only_forme": true,
+    "flags": [],
+    "learnset": {}
+  },
+  "scolipedemega": {
+    "name": "Scolipede-Mega",
+    "base_species": "Scolipede",
+    "forme": "Mega",
+    "class": "Megapede",
+    "color": "Red",
+    "primary_type": "Bug",
+    "secondary_type": "Poison",
+    "abilities": [],
+    "gender_ratio": 127,
+    "catch_rate": 45,
+    "egg_groups": ["Bug"],
+    "hatch_time": 20,
+    "height": 32,
+    "weight": 2305,
+    "base_exp_yield": 0,
+    "leveling_rate": "Medium Slow",
+    "ev_yield": {},
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 60,
+      "atk": 140,
+      "def": 149,
+      "spa": 75,
+      "spd": 99,
+      "spe": 62
+    },
+    "battle_only_forme": true,
+    "flags": [],
+    "learnset": {}
+  },
+  "scraftymega": {
+    "name": "Scrafty-Mega",
+    "base_species": "Scrafty",
+    "forme": "Mega",
+    "class": "Hoodlum",
+    "color": "Red",
+    "primary_type": "Dark",
+    "secondary_type": "Fighting",
+    "abilities": [],
+    "gender_ratio": 127,
+    "catch_rate": 90,
+    "egg_groups": ["Field", "Dragon"],
+    "hatch_time": 15,
+    "height": 11,
+    "weight": 310,
+    "base_exp_yield": 0,
+    "leveling_rate": "Medium",
+    "ev_yield": {},
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 65,
+      "atk": 130,
+      "def": 135,
+      "spa": 55,
+      "spd": 135,
+      "spe": 68
+    },
+    "battle_only_forme": true,
+    "flags": [],
+    "learnset": {}
+  },
+  "eelektrossmega": {
+    "name": "Eelektross-Mega",
+    "base_species": "Eelektross",
+    "forme": "Mega",
+    "class": "EleFish",
+    "color": "Blue",
+    "primary_type": "Electric",
+    "abilities": [],
+    "gender_ratio": 127,
+    "catch_rate": 30,
+    "egg_groups": ["Amorphous"],
+    "hatch_time": 20,
+    "height": 30,
+    "weight": 1800,
+    "base_exp_yield": 0,
+    "leveling_rate": "Slow",
+    "ev_yield": {},
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 85,
+      "atk": 145,
+      "def": 80,
+      "spa": 135,
+      "spd": 90,
+      "spe": 80
+    },
+    "battle_only_forme": true,
+    "flags": [],
+    "learnset": {}
+  },
+  "chandeluremega": {
+    "name": "Chandelure-Mega",
+    "base_species": "Chandelure",
+    "forme": "Mega",
+    "class": "Luring",
+    "color": "Black",
+    "primary_type": "Ghost",
+    "secondary_type": "Fire",
+    "abilities": ["Infiltrator"],
+    "gender_ratio": 127,
+    "catch_rate": 45,
+    "egg_groups": ["Amorphous"],
+    "hatch_time": 20,
+    "height": 25,
+    "weight": 696,
+    "base_exp_yield": 0,
+    "leveling_rate": "Medium Slow",
+    "ev_yield": {},
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 60,
+      "atk": 75,
+      "def": 110,
+      "spa": 175,
+      "spd": 110,
+      "spe": 90
+    },
+    "battle_only_forme": true,
+    "flags": [],
+    "learnset": {}
+  },
+  "golurkmega": {
+    "name": "Golurk-Mega",
+    "base_species": "Golurk",
+    "forme": "Mega",
+    "class": "Automaton",
+    "color": "Green",
+    "primary_type": "Ground",
+    "secondary_type": "Ghost",
+    "abilities": ["Unseen Fist"],
+    "gender_ratio": 255,
+    "catch_rate": 90,
+    "egg_groups": ["Mineral"],
+    "hatch_time": 25,
+    "height": 40,
+    "weight": 3300,
+    "base_exp_yield": 0,
+    "leveling_rate": "Medium",
+    "ev_yield": {},
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 89,
+      "atk": 159,
+      "def": 105,
+      "spa": 70,
+      "spd": 105,
+      "spe": 55
+    },
+    "battle_only_forme": true,
     "flags": [],
     "learnset": {}
   }

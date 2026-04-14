@@ -683,7 +683,10 @@
       }
     }
   },
-  "honeygather": { "name": "Honey Gather", "flags": [] },
+  "honeygather": {
+    "name": "Honey Gather",
+    "flags": []
+  },
   "frisk": {
     "name": "Frisk",
     "flags": [],

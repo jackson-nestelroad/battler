@@ -3,12 +3,17 @@
     "name": "Roost",
     "category": "Status",
     "primary_type": "Flying",
-    "pp": 5,
     "accuracy": "exempt",
+    "pp": 5,
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "hit_effect": { "heal_percent": "50%", "volatile_status": "roost" },
-    "z_move": { "effect": "zpowerclearnegativeboosts" },
+    "hit_effect": {
+      "heal_percent": "50%",
+      "volatile_status": "roost"
+    },
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
+    },
     "condition": {
       "duration": 1,
       "callbacks": {
@@ -21,12 +26,18 @@
     "name": "Gravity",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 5,
     "accuracy": "exempt",
+    "pp": 5,
     "target": "Field",
     "flags": [],
-    "hit_effect": { "pseudo_weather": "gravity" },
-    "z_move": { "boosts": { "spa": 1 } },
+    "hit_effect": {
+      "pseudo_weather": "gravity"
+    },
+    "z_move": {
+      "boosts": {
+        "spa": 1
+      }
+    },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -63,12 +74,18 @@
     "name": "Miracle Eye",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 40,
     "accuracy": "exempt",
+    "pp": 40,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "volatile_status": "miracleeye" },
-    "z_move": { "boosts": { "spa": 1 } },
+    "hit_effect": {
+      "volatile_status": "miracleeye"
+    },
+    "z_move": {
+      "boosts": {
+        "spa": 1
+      }
+    },
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -85,9 +102,9 @@
     "name": "Wake-Up Slap",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
@@ -104,22 +121,28 @@
     "name": "Hammer Arm",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 100,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"],
-    "user_effect": { "boosts": { "spe": -1 } }
+    "user_effect": {
+      "boosts": {
+        "spe": -1
+      }
+    }
   },
   "gyroball": {
     "name": "Gyro Ball",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 5,
     "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Bullet", "Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 130 },
+    "max_move": {
+      "base_power": 130
+    },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -139,12 +162,14 @@
     "name": "Healing Wish",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "self_destruct": "ifhit",
-    "hit_effect": { "slot_condition": "healingwish" },
+    "hit_effect": {
+      "slot_condition": "healingwish"
+    },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -170,9 +195,9 @@
     "name": "Brine",
     "category": "Special",
     "primary_type": "Water",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 65,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "effect": {
@@ -188,11 +213,13 @@
     "name": "Natural Gift",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 15,
     "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "max_move": { "base_power": 130 },
+    "max_move": {
+      "base_power": 130
+    },
     "effect": {
       "callbacks": {
         "on_modify_move_type": [
@@ -221,9 +248,9 @@
     "name": "Feint",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 30,
+    "accuracy": 100,
+    "pp": 10,
     "priority": 2,
     "target": "Normal",
     "flags": [
@@ -233,15 +260,17 @@
       "NoAssist",
       "NoMetronome"
     ],
-    "effect": { "delegates": ["condition:breakprotectmovebase"] }
+    "effect": {
+      "delegates": ["condition:breakprotectmovebase"]
+    }
   },
   "pluck": {
     "name": "Pluck",
     "category": "Physical",
     "primary_type": "Flying",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Any",
     "flags": ["Contact", "Distance", "Mirror", "Protect"],
     "effect": {
@@ -262,12 +291,16 @@
     "name": "Tailwind",
     "category": "Status",
     "primary_type": "Flying",
-    "pp": 15,
     "accuracy": "exempt",
+    "pp": 15,
     "target": "AllySide",
     "flags": ["Snatch", "Wind"],
-    "hit_effect": { "side_condition": "tailwind" },
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "hit_effect": {
+      "side_condition": "tailwind"
+    },
+    "z_move": {
+      "effect": "zpowerboostcritratio"
+    },
     "condition": {
       "duration": 4,
       "callbacks": {
@@ -281,11 +314,13 @@
     "name": "Acupressure",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 30,
     "accuracy": "exempt",
+    "pp": 30,
     "target": "AdjacentAllyOrUser",
     "flags": ["BypassMaxGuard"],
-    "z_move": { "effect": "zpowerboostcritratio" },
+    "z_move": {
+      "effect": "zpowerboostcritratio"
+    },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -309,8 +344,8 @@
     "name": "Metal Burst",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "Scripted",
     "flags": ["FailMeFirst", "Mirror", "Protect"],
     "effect": {
@@ -337,9 +372,9 @@
     "name": "U-turn",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "user_switch": true
@@ -348,20 +383,25 @@
     "name": "Close Combat",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "user_effect": { "boosts": { "def": -1, "spa": -1 } }
+    "user_effect": {
+      "boosts": {
+        "def": -1,
+        "spa": -1
+      }
+    }
   },
   "payback": {
     "name": "Payback",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 50,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
@@ -377,9 +417,9 @@
     "name": "Assurance",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
@@ -395,12 +435,18 @@
     "name": "Embargo",
     "category": "Status",
     "primary_type": "Dark",
-    "pp": 15,
     "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "volatile_status": "embargo" },
-    "z_move": { "boosts": { "spa": 1 } },
+    "hit_effect": {
+      "volatile_status": "embargo"
+    },
+    "z_move": {
+      "boosts": {
+        "spa": 1
+      }
+    },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -419,8 +465,8 @@
     "name": "Fling",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoParentalBond", "Protect"],
     "effect": {
@@ -469,12 +515,16 @@
     "name": "Psycho Shift",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "hit_effect": {},
-    "z_move": { "boosts": { "spa": 2 } },
+    "z_move": {
+      "boosts": {
+        "spa": 2
+      }
+    },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -492,12 +542,14 @@
     "name": "Trump Card",
     "category": "Special",
     "primary_type": "Normal",
-    "pp": 5,
     "accuracy": "exempt",
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "no_pp_boosts": true,
-    "max_move": { "base_power": 130 },
+    "max_move": {
+      "base_power": 130
+    },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -527,12 +579,18 @@
     "name": "Heal Block",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 15,
     "accuracy": 100,
+    "pp": 15,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "volatile_status": "healblock" },
-    "z_move": { "boosts": { "spa": 2 } },
+    "hit_effect": {
+      "volatile_status": "healblock"
+    },
+    "z_move": {
+      "boosts": {
+        "spa": 2
+      }
+    },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -561,11 +619,13 @@
     "name": "Wring Out",
     "category": "Special",
     "primary_type": "Normal",
-    "pp": 5,
     "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 140 },
+    "max_move": {
+      "base_power": 140
+    },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -578,12 +638,18 @@
     "name": "Power Trick",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["BypassMaxGuard", "Snatch"],
-    "hit_effect": { "volatile_status": "powertrick" },
-    "z_move": { "boosts": { "atk": 1 } },
+    "hit_effect": {
+      "volatile_status": "powertrick"
+    },
+    "z_move": {
+      "boosts": {
+        "atk": 1
+      }
+    },
     "condition": {
       "callbacks": {
         "on_start": [
@@ -611,12 +677,18 @@
     "name": "Gastro Acid",
     "category": "Status",
     "primary_type": "Poison",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "volatile_status": "gastroacid" },
-    "z_move": { "boosts": { "spe": 1 } },
+    "hit_effect": {
+      "volatile_status": "gastroacid"
+    },
+    "z_move": {
+      "boosts": {
+        "spe": 1
+      }
+    },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -648,12 +720,18 @@
     "name": "Lucky Chant",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 30,
     "accuracy": "exempt",
+    "pp": 30,
     "target": "AllySide",
     "flags": ["Snatch"],
-    "hit_effect": { "side_condition": "luckychant" },
-    "z_move": { "boosts": { "evasion": 1 } },
+    "hit_effect": {
+      "side_condition": "luckychant"
+    },
+    "z_move": {
+      "boosts": {
+        "evasion": 1
+      }
+    },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -667,8 +745,8 @@
     "name": "Me First",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "AdjacentFoe",
     "flags": [
       "BypassSubstitute",
@@ -683,7 +761,11 @@
       "NoSleepTalk",
       "Protect"
     ],
-    "z_move": { "boosts": { "spe": 2 } },
+    "z_move": {
+      "boosts": {
+        "spe": 2
+      }
+    },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -701,15 +783,17 @@
     },
     "condition": {
       "duration": 1,
-      "callbacks": { "on_source_base_power": ["return $base_power * 3/2"] }
+      "callbacks": {
+        "on_source_base_power": ["return $base_power * 3/2"]
+      }
     }
   },
   "copycat": {
     "name": "Copycat",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "User",
     "flags": [
       "BypassMaxGuard",
@@ -722,7 +806,11 @@
       "NoMetronome",
       "NoSleepTalk"
     ],
-    "z_move": { "boosts": { "accuracy": 1 } },
+    "z_move": {
+      "boosts": {
+        "accuracy": 1
+      }
+    },
     "effect": {
       "callbacks": {
         "on_hit": [
@@ -743,37 +831,51 @@
     "name": "Power Swap",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
-    "z_move": { "boosts": { "spe": 1 } },
+    "z_move": {
+      "boosts": {
+        "spe": 1
+      }
+    },
     "effect": {
-      "callbacks": { "on_hit": ["swap_boosts: $target $source atk spa"] }
+      "callbacks": {
+        "on_hit": ["swap_boosts: $target $source atk spa"]
+      }
     }
   },
   "guardswap": {
     "name": "Guard Swap",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
-    "z_move": { "boosts": { "spe": 1 } },
+    "z_move": {
+      "boosts": {
+        "spe": 1
+      }
+    },
     "effect": {
-      "callbacks": { "on_hit": ["swap_boosts: $target $source def spd"] }
+      "callbacks": {
+        "on_hit": ["swap_boosts: $target $source def spd"]
+      }
     }
   },
   "punishment": {
     "name": "Punishment",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 5,
     "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 130 },
+    "max_move": {
+      "base_power": 130
+    },
     "effect": {
       "callbacks": {
         "on_move_base_power": [
@@ -786,9 +888,9 @@
     "name": "Last Resort",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 140,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
@@ -815,11 +917,15 @@
     "name": "Worry Seed",
     "category": "Status",
     "primary_type": "Grass",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "z_move": { "boosts": { "spe": 1 } },
+    "z_move": {
+      "boosts": {
+        "spe": 1
+      }
+    },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -837,9 +943,9 @@
     "name": "Sucker Punch",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 5,
     "priority": 1,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
@@ -860,12 +966,18 @@
     "name": "Toxic Spikes",
     "category": "Status",
     "primary_type": "Poison",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "FoeSide",
     "flags": ["MustPressure", "Reflectable"],
-    "hit_effect": { "side_condition": "toxicspikes" },
-    "z_move": { "boosts": { "def": 1 } },
+    "hit_effect": {
+      "side_condition": "toxicspikes"
+    },
+    "z_move": {
+      "boosts": {
+        "def": 1
+      }
+    },
     "condition": {
       "callbacks": {
         "on_side_start": [
@@ -904,23 +1016,35 @@
     "name": "Heart Swap",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
-    "z_move": { "effect": "zpowerboostcritratio" },
-    "effect": { "callbacks": { "on_hit": ["swap_boosts: $target $source"] } }
+    "z_move": {
+      "effect": "zpowerboostcritratio"
+    },
+    "effect": {
+      "callbacks": {
+        "on_hit": ["swap_boosts: $target $source"]
+      }
+    }
   },
   "aquaring": {
     "name": "Aqua Ring",
     "category": "Status",
     "primary_type": "Water",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "volatile_status": "aquaring" },
-    "z_move": { "boosts": { "def": 1 } },
+    "hit_effect": {
+      "volatile_status": "aquaring"
+    },
+    "z_move": {
+      "boosts": {
+        "def": 1
+      }
+    },
     "condition": {
       "callbacks": {
         "on_start": ["log_start"],
@@ -932,12 +1056,18 @@
     "name": "Magnet Rise",
     "category": "Status",
     "primary_type": "Electric",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Gravity", "Snatch"],
-    "hit_effect": { "volatile_status": "magnetrise" },
-    "z_move": { "boosts": { "evasion": 1 } },
+    "hit_effect": {
+      "volatile_status": "magnetrise"
+    },
+    "z_move": {
+      "boosts": {
+        "evasion": 1
+      }
+    },
     "effect": {
       "callbacks": {
         "on_try_move": [
@@ -959,32 +1089,48 @@
     "name": "Flare Blitz",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Thawing"],
-    "recoil": { "percent": "1/3" },
-    "secondary_effects": [{ "chance": "10%", "target": { "status": "brn" } }]
+    "recoil": {
+      "percent": "1/3"
+    },
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "forcepalm": {
     "name": "Force Palm",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "secondary_effects": [{ "chance": "33%", "target": { "status": "par" } }]
+    "secondary_effects": [
+      {
+        "chance": "33%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "aurasphere": {
     "name": "Aura Sphere",
     "category": "Special",
     "primary_type": "Fighting",
-    "pp": 20,
-    "accuracy": "exempt",
     "base_power": 80,
+    "accuracy": "exempt",
+    "pp": 20,
     "target": "Any",
     "flags": ["Bullet", "Distance", "Mirror", "Protect", "Pulse"]
   },
@@ -992,44 +1138,62 @@
     "name": "Rock Polish",
     "category": "Status",
     "primary_type": "Rock",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "boosts": { "spe": 2 } },
-    "z_move": { "effect": "zpowerclearnegativeboosts" }
+    "hit_effect": {
+      "boosts": {
+        "spe": 2
+      }
+    },
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
+    }
   },
   "poisonjab": {
     "name": "Poison Jab",
     "category": "Physical",
     "primary_type": "Poison",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "secondary_effects": [{ "chance": "30%", "target": { "status": "psn" } }]
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ]
   },
   "darkpulse": {
     "name": "Dark Pulse",
     "category": "Special",
     "primary_type": "Dark",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Any",
     "flags": ["Distance", "Mirror", "Protect", "Pulse"],
     "secondary_effects": [
-      { "chance": "20%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "nightslash": {
     "name": "Night Slash",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Slicing"],
     "crit_ratio": 2
@@ -1038,9 +1202,9 @@
     "name": "Aqua Tail",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 90,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1048,9 +1212,9 @@
     "name": "Seed Bomb",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"]
   },
@@ -1058,22 +1222,27 @@
     "name": "Air Slash",
     "category": "Special",
     "primary_type": "Flying",
-    "pp": 15,
-    "accuracy": 95,
     "base_power": 75,
+    "accuracy": 95,
+    "pp": 15,
     "target": "Any",
     "flags": ["Distance", "Mirror", "Protect", "Slicing"],
     "secondary_effects": [
-      { "chance": "30%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "xscissor": {
     "name": "X-Scissor",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
@@ -1081,22 +1250,29 @@
     "name": "Bug Buzz",
     "category": "Special",
     "primary_type": "Bug",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "boosts": { "spd": -1 } } }
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
     ]
   },
   "dragonpulse": {
     "name": "Dragon Pulse",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 85,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Any",
     "flags": ["Distance", "Mirror", "Protect", "Pulse"]
   },
@@ -1104,22 +1280,27 @@
     "name": "Dragon Rush",
     "category": "Physical",
     "primary_type": "Dragon",
-    "pp": 10,
-    "accuracy": 75,
     "base_power": 100,
+    "accuracy": 75,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "20%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "powergem": {
     "name": "Power Gem",
     "category": "Special",
     "primary_type": "Rock",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1127,9 +1308,9 @@
     "name": "Drain Punch",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 75,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Heal", "Mirror", "Protect", "Punch"],
     "drain_percent": "1/2"
@@ -1138,9 +1319,9 @@
     "name": "Vacuum Wave",
     "category": "Special",
     "primary_type": "Fighting",
-    "pp": 30,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 30,
     "priority": 1,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
@@ -1149,92 +1330,129 @@
     "name": "Focus Blast",
     "category": "Special",
     "primary_type": "Fighting",
-    "pp": 5,
-    "accuracy": 70,
     "base_power": 120,
+    "accuracy": 70,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "boosts": { "spd": -1 } } }
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
     ]
   },
   "energyball": {
     "name": "Energy Ball",
     "category": "Special",
     "primary_type": "Grass",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "boosts": { "spd": -1 } } }
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
     ]
   },
   "bravebird": {
     "name": "Brave Bird",
     "category": "Physical",
     "primary_type": "Flying",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Any",
     "flags": ["Contact", "Distance", "Mirror", "Protect"],
-    "recoil": { "percent": "1/3" }
+    "recoil": {
+      "percent": "1/3"
+    }
   },
   "earthpower": {
     "name": "Earth Power",
     "category": "Special",
     "primary_type": "Ground",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "boosts": { "spd": -1 } } }
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
     ]
   },
   "switcheroo": {
     "name": "Switcheroo",
     "category": "Status",
     "primary_type": "Dark",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["FailCopycat", "Mirror", "NoAssist", "NoMetronome", "Protect"],
-    "z_move": { "boosts": { "spe": 2 } },
-    "effect": { "delegates": ["move:trick"] }
+    "z_move": {
+      "boosts": {
+        "spe": 2
+      }
+    },
+    "effect": {
+      "delegates": ["move:trick"]
+    }
   },
   "gigaimpact": {
     "name": "Giga Impact",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 150,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Recharge"],
-    "user_effect": { "volatile_status": "mustrecharge" }
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "nastyplot": {
     "name": "Nasty Plot",
     "category": "Status",
     "primary_type": "Dark",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "boosts": { "spa": 2 } },
-    "z_move": { "effect": "zpowerclearnegativeboosts" }
+    "hit_effect": {
+      "boosts": {
+        "spa": 2
+      }
+    },
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
+    }
   },
   "bulletpunch": {
     "name": "Bullet Punch",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 30,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 30,
     "priority": 1,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"]
@@ -1243,9 +1461,9 @@
     "name": "Avalanche",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 10,
     "priority": -4,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
@@ -1263,9 +1481,9 @@
     "name": "Ice Shard",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 30,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 30,
     "priority": 1,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
@@ -1274,9 +1492,9 @@
     "name": "Shadow Claw",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "crit_ratio": 2
@@ -1285,51 +1503,81 @@
     "name": "Thunder Fang",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 15,
-    "accuracy": 95,
     "base_power": 65,
+    "accuracy": 95,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Bite", "Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "status": "par" } },
-      { "chance": "10%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "10%",
+        "target": {
+          "status": "par"
+        }
+      },
+      {
+        "chance": "10%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "icefang": {
     "name": "Ice Fang",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 15,
-    "accuracy": 95,
     "base_power": 65,
+    "accuracy": 95,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Bite", "Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "status": "frz" } },
-      { "chance": "10%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "10%",
+        "target": {
+          "status": "frz"
+        }
+      },
+      {
+        "chance": "10%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "firefang": {
     "name": "Fire Fang",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 15,
-    "accuracy": 95,
     "base_power": 65,
+    "accuracy": 95,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Bite", "Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "status": "brn" } },
-      { "chance": "10%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "10%",
+        "target": {
+          "status": "brn"
+        }
+      },
+      {
+        "chance": "10%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "shadowsneak": {
     "name": "Shadow Sneak",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 30,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 30,
     "priority": 1,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
@@ -1338,22 +1586,29 @@
     "name": "Mud Bomb",
     "category": "Special",
     "primary_type": "Ground",
-    "pp": 10,
-    "accuracy": 85,
     "base_power": 65,
+    "accuracy": 85,
+    "pp": 10,
     "target": "Normal",
     "flags": ["AccuracyLowering", "Bullet", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "30%", "target": { "boosts": { "acc": -1 } } }
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
+      }
     ]
   },
   "psychocut": {
     "name": "Psycho Cut",
     "category": "Physical",
     "primary_type": "Psychic",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Slicing"],
     "crit_ratio": 2
@@ -1362,77 +1617,117 @@
     "name": "Zen Headbutt",
     "category": "Physical",
     "primary_type": "Psychic",
-    "pp": 15,
-    "accuracy": 90,
     "base_power": 80,
+    "accuracy": 90,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "20%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "mirrorshot": {
     "name": "Mirror Shot",
     "category": "Special",
     "primary_type": "Steel",
-    "pp": 10,
-    "accuracy": 85,
     "base_power": 65,
+    "accuracy": 85,
+    "pp": 10,
     "target": "Normal",
     "flags": ["AccuracyLowering", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "30%", "target": { "boosts": { "acc": -1 } } }
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "acc": -1
+          }
+        }
+      }
     ]
   },
   "flashcannon": {
     "name": "Flash Cannon",
     "category": "Special",
     "primary_type": "Steel",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "10%", "target": { "boosts": { "spd": -1 } } }
+      {
+        "chance": "10%",
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
     ]
   },
   "rockclimb": {
     "name": "Rock Climb",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 20,
-    "accuracy": 85,
     "base_power": 90,
+    "accuracy": 85,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "20%", "target": { "volatile_status": "confusion" } }
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
     ]
   },
   "defog": {
     "name": "Defog",
     "category": "Status",
     "primary_type": "Flying",
-    "pp": 15,
     "accuracy": "exempt",
+    "pp": 15,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "boosts": { "eva": -1 } },
-    "z_move": { "boosts": { "accuracy": 1 } },
-    "effect": { "delegates": ["condition:defogmovebase"] }
+    "hit_effect": {
+      "boosts": {
+        "eva": -1
+      }
+    },
+    "z_move": {
+      "boosts": {
+        "accuracy": 1
+      }
+    },
+    "effect": {
+      "delegates": ["condition:defogmovebase"]
+    }
   },
   "trickroom": {
     "name": "Trick Room",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 5,
     "accuracy": "exempt",
+    "pp": 5,
     "priority": -7,
     "target": "Field",
     "flags": ["Mirror"],
-    "hit_effect": { "pseudo_weather": "trickroom" },
-    "z_move": { "boosts": { "accuracy": 1 } },
+    "hit_effect": {
+      "pseudo_weather": "trickroom"
+    },
+    "z_move": {
+      "boosts": {
+        "accuracy": 1
+      }
+    },
     "condition": {
       "duration": 5,
       "callbacks": {
@@ -1450,55 +1745,80 @@
     "name": "Draco Meteor",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 130,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "user_effect": { "boosts": { "spa": -2 } }
+    "user_effect": {
+      "boosts": {
+        "spa": -2
+      }
+    }
   },
   "discharge": {
     "name": "Discharge",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "AllAdjacent",
     "flags": ["Mirror", "Protect"],
-    "secondary_effects": [{ "chance": "30%", "target": { "status": "par" } }]
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ]
   },
   "lavaplume": {
     "name": "Lava Plume",
     "category": "Special",
     "primary_type": "Fire",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "AllAdjacent",
     "flags": ["Mirror", "Protect"],
-    "secondary_effects": [{ "chance": "30%", "target": { "status": "brn" } }]
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "leafstorm": {
     "name": "Leaf Storm",
     "category": "Special",
     "primary_type": "Grass",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 130,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "30%", "target": { "boosts": { "spa": -2 } } }
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "spa": -2
+          }
+        }
+      }
     ]
   },
   "powerwhip": {
     "name": "Power Whip",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 10,
-    "accuracy": 85,
     "base_power": 120,
+    "accuracy": 85,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1506,56 +1826,77 @@
     "name": "Rock Wrecker",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 150,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect", "Recharge"],
-    "user_effect": { "volatile_status": "mustrecharge" }
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "crosspoison": {
     "name": "Cross Poison",
     "category": "Physical",
     "primary_type": "Poison",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2,
-    "secondary_effects": [{ "chance": "10%", "target": { "status": "psn" } }]
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ],
+    "crit_ratio": 2
   },
   "gunkshot": {
     "name": "Gunk Shot",
     "category": "Physical",
     "primary_type": "Poison",
-    "pp": 5,
-    "accuracy": 80,
     "base_power": 120,
+    "accuracy": 80,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "secondary_effects": [{ "chance": "30%", "target": { "status": "psn" } }]
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ]
   },
   "ironhead": {
     "name": "Iron Head",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "30%", "target": { "volatile_status": "flinch" } }
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
     ]
   },
   "magnetbomb": {
     "name": "Magnet Bomb",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 20,
-    "accuracy": "exempt",
     "base_power": 60,
+    "accuracy": "exempt",
+    "pp": 20,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "Protect"]
   },
@@ -1563,9 +1904,9 @@
     "name": "Stone Edge",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 5,
-    "accuracy": 80,
     "base_power": 100,
+    "accuracy": 80,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "crit_ratio": 2
@@ -1574,12 +1915,20 @@
     "name": "Captivate",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 20,
     "accuracy": 100,
+    "pp": 20,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Reflectable"],
-    "hit_effect": { "boosts": { "spa": -2 } },
-    "z_move": { "boosts": { "spd": 2 } },
+    "hit_effect": {
+      "boosts": {
+        "spa": -2
+      }
+    },
+    "z_move": {
+      "boosts": {
+        "spd": 2
+      }
+    },
     "effect": {
       "callbacks": {
         "on_try_immunity": [
@@ -1592,12 +1941,18 @@
     "name": "Stealth Rock",
     "category": "Status",
     "primary_type": "Rock",
-    "pp": 20,
     "accuracy": "exempt",
+    "pp": 20,
     "target": "FoeSide",
     "flags": ["MustPressure", "Reflectable"],
-    "hit_effect": { "side_condition": "stealthrock" },
-    "z_move": { "boosts": { "def": 1 } },
+    "hit_effect": {
+      "side_condition": "stealthrock"
+    },
+    "z_move": {
+      "boosts": {
+        "def": 1
+      }
+    },
     "condition": {
       "callbacks": {
         "on_side_start": ["log_side_start"],
@@ -1615,20 +1970,24 @@
     "name": "Grass Knot",
     "category": "Special",
     "primary_type": "Grass",
-    "pp": 20,
     "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 130 },
-    "effect": { "delegates": ["move:lowkick"] }
+    "max_move": {
+      "base_power": 130
+    },
+    "effect": {
+      "delegates": ["move:lowkick"]
+    }
   },
   "chatter": {
     "name": "Chatter",
     "category": "Special",
     "primary_type": "Flying",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 65,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Any",
     "flags": [
       "BypassSubstitute",
@@ -1644,15 +2003,21 @@
       "Protect",
       "Sound"
     ],
-    "secondary_effects": [{ "target": { "volatile_status": "confusion" } }]
+    "secondary_effects": [
+      {
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
+    ]
   },
   "judgment": {
     "name": "Judgment",
     "category": "Special",
     "primary_type": "Normal",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "effect": {
@@ -1673,44 +2038,55 @@
     "name": "Bug Bite",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "effect": { "delegates": ["move:pluck"] }
+    "effect": {
+      "delegates": ["move:pluck"]
+    }
   },
   "chargebeam": {
     "name": "Charge Beam",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 50,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "70%", "user": { "boosts": { "spa": 1 } } }
+      {
+        "chance": "70%",
+        "user": {
+          "boosts": {
+            "spa": 1
+          }
+        }
+      }
     ]
   },
   "woodhammer": {
     "name": "Wood Hammer",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil": { "percent": "1/3" }
+    "recoil": {
+      "percent": "1/3"
+    }
   },
   "aquajet": {
     "name": "Aqua Jet",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 20,
     "priority": 1,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
@@ -1719,9 +2095,9 @@
     "name": "Attack Order",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "crit_ratio": 2
@@ -1730,65 +2106,84 @@
     "name": "Defend Order",
     "category": "Status",
     "primary_type": "Bug",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Snatch"],
-    "hit_effect": { "boosts": { "def": 1, "spd": 1 } },
-    "z_move": { "boosts": { "def": 1 } }
+    "hit_effect": {
+      "boosts": {
+        "def": 1,
+        "spd": 1
+      }
+    },
+    "z_move": {
+      "boosts": {
+        "def": 1
+      }
+    }
   },
   "healorder": {
     "name": "Heal Order",
     "category": "Status",
     "primary_type": "Bug",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Heal", "Snatch"],
-    "hit_effect": { "heal_percent": "50%" },
-    "z_move": { "effect": "zpowerclearnegativeboosts" }
+    "hit_effect": {
+      "heal_percent": "50%"
+    },
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
+    }
   },
   "headsmash": {
     "name": "Head Smash",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 5,
-    "accuracy": 80,
     "base_power": 150,
+    "accuracy": 80,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil": { "percent": "1/2" }
+    "recoil": {
+      "percent": "1/2"
+    }
   },
   "doublehit": {
     "name": "Double Hit",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 35,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2,
-    "max_move": { "base_power": 120 }
+    "max_move": {
+      "base_power": 120
+    }
   },
   "roaroftime": {
     "name": "Roar of Time",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 150,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Recharge"],
-    "user_effect": { "volatile_status": "mustrecharge" }
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "spacialrend": {
     "name": "Spacial Rend",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 5,
-    "accuracy": 95,
     "base_power": 100,
+    "accuracy": 95,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "crit_ratio": 2
@@ -1797,12 +2192,14 @@
     "name": "Lunar Dance",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Dance", "Heal", "Snatch"],
     "self_destruct": "ifhit",
-    "hit_effect": { "slot_condition": "lunardance" },
+    "hit_effect": {
+      "slot_condition": "lunardance"
+    },
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -1836,34 +2233,44 @@
     "name": "Crush Grip",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 5,
     "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "max_move": { "base_power": 140 },
-    "effect": { "delegates": ["move:wringout"] }
+    "max_move": {
+      "base_power": 140
+    },
+    "effect": {
+      "delegates": ["move:wringout"]
+    }
   },
   "magmastorm": {
     "name": "Magma Storm",
     "category": "Special",
     "primary_type": "Fire",
-    "pp": 5,
-    "accuracy": 75,
     "base_power": 100,
+    "accuracy": 75,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "hit_effect": { "volatile_status": "partiallytrapped" }
+    "hit_effect": {
+      "volatile_status": "partiallytrapped"
+    }
   },
   "darkvoid": {
     "name": "Dark Void",
     "category": "Status",
     "primary_type": "Dark",
-    "pp": 10,
     "accuracy": 50,
+    "pp": 10,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoSketch", "Protect", "Reflectable", "SleepInducing"],
-    "hit_effect": { "status": "slp" },
-    "z_move": { "effect": "zpowerclearnegativeboosts" },
+    "hit_effect": {
+      "status": "slp"
+    },
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
+    },
     "effect": {
       "callbacks": {
         "on_try_use_move": [
@@ -1879,29 +2286,42 @@
     "name": "Seed Flare",
     "category": "Special",
     "primary_type": "Grass",
-    "pp": 5,
-    "accuracy": 85,
     "base_power": 120,
+    "accuracy": 85,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
-      { "chance": "40%", "target": { "boosts": { "spd": -2 } } }
+      {
+        "chance": "40%",
+        "target": {
+          "boosts": {
+            "spd": -2
+          }
+        }
+      }
     ]
   },
   "ominouswind": {
     "name": "Ominous Wind",
     "category": "Special",
     "primary_type": "Ghost",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
       {
         "chance": "10%",
         "user": {
-          "boosts": { "atk": 1, "def": 1, "spa": 1, "spd": 1, "spe": 1 }
+          "boosts": {
+            "atk": 1,
+            "def": 1,
+            "spa": 1,
+            "spd": 1,
+            "spe": 1
+          }
         }
       }
     ]
@@ -1910,9 +2330,9 @@
     "name": "Shadow Force",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": [
       "Charge",

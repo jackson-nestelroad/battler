@@ -1,17 +1,56 @@
 {
-  "intrepidsword": { "name": "Intrepid Sword", "flags": [] },
-  "dauntlessshield": { "name": "Dauntless Shield", "flags": [] },
-  "libero": { "name": "Libero", "flags": [] },
-  "ballfetch": { "name": "Ball Fetch", "flags": [] },
-  "cottondown": { "name": "Cotton Down", "flags": [] },
-  "propellertail": { "name": "Propeller Tail", "flags": [] },
-  "mirrorarmor": { "name": "Mirror Armor", "flags": [] },
-  "gulpmissile": { "name": "Gulp Missile", "flags": ["Permanent"] },
-  "stalwart": { "name": "Stalwart", "flags": [] },
-  "steamengine": { "name": "Steam Engine", "flags": [] },
-  "punkrock": { "name": "Punk Rock", "flags": [] },
-  "sandspit": { "name": "Sand Spit", "flags": [] },
-  "icescales": { "name": "Ice Scales", "flags": [] },
+  "intrepidsword": {
+    "name": "Intrepid Sword",
+    "flags": []
+  },
+  "dauntlessshield": {
+    "name": "Dauntless Shield",
+    "flags": []
+  },
+  "libero": {
+    "name": "Libero",
+    "flags": []
+  },
+  "ballfetch": {
+    "name": "Ball Fetch",
+    "flags": []
+  },
+  "cottondown": {
+    "name": "Cotton Down",
+    "flags": []
+  },
+  "propellertail": {
+    "name": "Propeller Tail",
+    "flags": []
+  },
+  "mirrorarmor": {
+    "name": "Mirror Armor",
+    "flags": []
+  },
+  "gulpmissile": {
+    "name": "Gulp Missile",
+    "flags": ["Permanent"]
+  },
+  "stalwart": {
+    "name": "Stalwart",
+    "flags": []
+  },
+  "steamengine": {
+    "name": "Steam Engine",
+    "flags": []
+  },
+  "punkrock": {
+    "name": "Punk Rock",
+    "flags": []
+  },
+  "sandspit": {
+    "name": "Sand Spit",
+    "flags": []
+  },
+  "icescales": {
+    "name": "Ice Scales",
+    "flags": []
+  },
   "ripen": {
     "name": "Ripen",
     "flags": [],
@@ -57,14 +96,38 @@
       }
     }
   },
-  "iceface": { "name": "Ice Face", "flags": ["Permanent"] },
-  "powerspot": { "name": "Power Spot", "flags": [] },
-  "mimicry": { "name": "Mimicry", "flags": [] },
-  "screencleaner": { "name": "Screen Cleaner", "flags": [] },
-  "steelyspirit": { "name": "Steely Spirit", "flags": [] },
-  "perishbody": { "name": "Perish Body", "flags": [] },
-  "wanderingspirit": { "name": "Wandering Spirit", "flags": [] },
-  "gorillatactics": { "name": "Gorilla Tactics", "flags": [] },
+  "iceface": {
+    "name": "Ice Face",
+    "flags": ["Permanent"]
+  },
+  "powerspot": {
+    "name": "Power Spot",
+    "flags": []
+  },
+  "mimicry": {
+    "name": "Mimicry",
+    "flags": []
+  },
+  "screencleaner": {
+    "name": "Screen Cleaner",
+    "flags": []
+  },
+  "steelyspirit": {
+    "name": "Steely Spirit",
+    "flags": []
+  },
+  "perishbody": {
+    "name": "Perish Body",
+    "flags": []
+  },
+  "wanderingspirit": {
+    "name": "Wandering Spirit",
+    "flags": []
+  },
+  "gorillatactics": {
+    "name": "Gorilla Tactics",
+    "flags": []
+  },
   "neutralizinggas": {
     "name": "Neutralizing Gas",
     "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"],
@@ -111,18 +174,48 @@
       }
     }
   },
-  "pastelveil": { "name": "Pastel Veil", "flags": [] },
+  "pastelveil": {
+    "name": "Pastel Veil",
+    "flags": []
+  },
   "hungerswitch": {
     "name": "Hunger Switch",
     "flags": ["NoRolePlay", "NoSkillSwap", "NoTrace"]
   },
-  "quickdraw": { "name": "Quick Draw", "flags": [] },
-  "unseenfist": { "name": "Unseen Fist", "flags": [] },
-  "curiousmedicine": { "name": "Curious Medicine", "flags": [] },
-  "transistor": { "name": "Transistor", "flags": [] },
-  "dragonsmaw": { "name": "Dragon's Maw", "flags": [] },
-  "chillingneigh": { "name": "Chilling Neigh", "flags": [] },
-  "grimneigh": { "name": "Grim Neigh", "flags": [] },
-  "asoneglastrier": { "name": "As One", "flags": ["Permanent"] },
-  "asonespectrier": { "name": "As One", "flags": ["Permanent"] }
+  "quickdraw": {
+    "name": "Quick Draw",
+    "flags": []
+  },
+  "unseenfist": {
+    "name": "Unseen Fist",
+    "flags": []
+  },
+  "curiousmedicine": {
+    "name": "Curious Medicine",
+    "flags": []
+  },
+  "transistor": {
+    "name": "Transistor",
+    "flags": []
+  },
+  "dragonsmaw": {
+    "name": "Dragon's Maw",
+    "flags": []
+  },
+  "chillingneigh": {
+    "name": "Chilling Neigh",
+    "flags": []
+  },
+  "grimneigh": {
+    "name": "Grim Neigh",
+    "flags": []
+  },
+  "asoneglastrier": {
+    "name": "As One",
+    "flags": ["Permanent"]
+  },
+  "asonespectrier": {
+    "name": "As One",
+    "flags": ["Permanent"]
+  }
 }

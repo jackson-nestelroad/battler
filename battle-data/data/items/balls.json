@@ -4,7 +4,9 @@
     "target": "IsolatedFoe",
     "flags": ["Ball"],
     "effect": {
-      "callbacks": { "on_modify_catch_rate": ["return $catch_rate * 255"] }
+      "callbacks": {
+        "on_modify_catch_rate": ["return $catch_rate * 255"]
+      }
     }
   },
   "ultraball": {
@@ -12,7 +14,9 @@
     "target": "IsolatedFoe",
     "flags": ["Ball"],
     "effect": {
-      "callbacks": { "on_modify_catch_rate": ["return $catch_rate * 2"] }
+      "callbacks": {
+        "on_modify_catch_rate": ["return $catch_rate * 2"]
+      }
     }
   },
   "greatball": {
@@ -20,7 +24,9 @@
     "target": "IsolatedFoe",
     "flags": ["Ball"],
     "effect": {
-      "callbacks": { "on_modify_catch_rate": ["return $catch_rate * 3/2"] }
+      "callbacks": {
+        "on_modify_catch_rate": ["return $catch_rate * 3/2"]
+      }
     }
   },
   "pokeball": {
@@ -28,7 +34,10 @@
     "target": "IsolatedFoe",
     "flags": ["Ball"]
   },
-  "safariball": { "name": "Safari Ball", "flags": ["Ball"] },
+  "safariball": {
+    "name": "Safari Ball",
+    "flags": ["Ball"]
+  },
   "netball": {
     "name": "Net Ball",
     "target": "IsolatedFoe",
@@ -106,7 +115,10 @@
       }
     }
   },
-  "premierball": { "name": "Premier Ball", "flags": ["Ball"] },
+  "premierball": {
+    "name": "Premier Ball",
+    "flags": ["Ball"]
+  },
   "duskball": {
     "name": "Dusk Ball",
     "target": "IsolatedFoe",
@@ -232,7 +244,11 @@
     "name": "Friend Ball",
     "target": "IsolatedFoe",
     "flags": ["Ball"],
-    "effect": { "callbacks": { "on_catch": ["set_friendship: $mon 150"] } }
+    "effect": {
+      "callbacks": {
+        "on_catch": ["set_friendship: $mon 150"]
+      }
+    }
   },
   "loveball": {
     "name": "Love Ball",
