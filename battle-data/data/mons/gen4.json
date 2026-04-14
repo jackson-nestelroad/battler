@@ -1223,6 +1223,7 @@
       "condition": "",
       "level": 34
     },
+    "formes": ["Staraptor-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["L28"],
@@ -5925,7 +5926,7 @@
       "condition": "",
       "level": 48
     },
-    "formes": ["Garchomp-Mega"],
+    "formes": ["Garchomp-Mega", "Garchomp-Mega-Z"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -6279,7 +6280,7 @@
       "friendship": true,
       "time_of_day": "day"
     },
-    "formes": ["Lucario-Mega"],
+    "formes": ["Lucario-Mega", "Lucario-Mega-Z"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -9603,6 +9604,7 @@
       "gender": "F",
       "use_item": "Dawn Stone"
     },
+    "formes": ["Froslass-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -10372,6 +10374,7 @@
       "spd": 106,
       "spe": 77
     },
+    "formes": ["Heatran-Mega"],
     "flags": ["Sub-Legendary"],
     "learnset": {
       "ancientpower": ["L1"],
@@ -10978,6 +10981,7 @@
       "spd": 90,
       "spe": 125
     },
+    "formes": ["Darkrai-Mega"],
     "flags": ["Mythical"],
     "learnset": {
       "aerialace": ["M"],
@@ -15167,6 +15171,8 @@
       "spe": 120
     },
     "battle_only_forme": true,
+    "required_items": ["Froslassite"],
+    "changes_from": "Froslass",
     "flags": [],
     "learnset": {}
   },
@@ -15198,6 +15204,8 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Staraptite"],
+    "changes_from": "Staraptor",
     "flags": [],
     "learnset": {}
   },
@@ -15228,6 +15236,8 @@
       "spe": 151
     },
     "battle_only_forme": true,
+    "required_items": ["Garchompite Z"],
+    "changes_from": "Garchomp",
     "flags": [],
     "learnset": {}
   },
@@ -15259,6 +15269,8 @@
       "spe": 151
     },
     "battle_only_forme": true,
+    "required_items": ["Lucarionite Z"],
+    "changes_from": "Lucario",
     "flags": [],
     "learnset": {}
   },
@@ -15290,6 +15302,8 @@
       "spe": 67
     },
     "battle_only_forme": true,
+    "required_items": ["Heatranite"],
+    "changes_from": "Heatran",
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -15320,6 +15334,8 @@
       "spe": 85
     },
     "battle_only_forme": true,
+    "required_items": ["Darkranite"],
+    "changes_from": "Darkrai",
     "flags": ["Mythical"],
     "learnset": {}
   }

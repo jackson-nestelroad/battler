@@ -269,6 +269,7 @@
       "condition": "",
       "level": 36
     },
+    "formes": ["Chesnaught-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -592,6 +593,7 @@
       "condition": "",
       "level": 36
     },
+    "formes": ["Delphox-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -898,7 +900,7 @@
       "condition": "",
       "level": 36
     },
-    "formes": ["Greninja-Battle-Bond", "Greninja-Ash"],
+    "formes": ["Greninja-Battle-Bond", "Greninja-Ash", "Greninja-Mega"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -1816,6 +1818,7 @@
       "level": 35
     },
     "base_forme": "Male",
+    "formes": ["Pyroar-Mega"],
     "cosmetic_formes": ["Pyroar-Female"],
     "flags": [],
     "learnset": {
@@ -2844,7 +2847,7 @@
       "level": 25
     },
     "base_forme": "Male",
-    "formes": ["Meowstic-Female"],
+    "formes": ["Meowstic-Female", "Meowstic-M-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -3683,6 +3686,7 @@
       "condition": "",
       "level": 30
     },
+    "formes": ["Malamar-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3902,6 +3906,7 @@
       "condition": "",
       "level": 39
     },
+    "formes": ["Barbaracle-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -4113,6 +4118,7 @@
       "condition": "",
       "level": 48
     },
+    "formes": ["Dragalge-Mega"],
     "flags": [],
     "learnset": {
       "acid": ["L15"],
@@ -5070,6 +5076,7 @@
       "spd": 63,
       "spe": 118
     },
+    "formes": ["Hawlucha-Mega"],
     "flags": [],
     "learnset": {
       "acrobatics": ["M"],
@@ -7520,6 +7527,7 @@
       "spd": 128,
       "spe": 92
     },
+    "formes": ["Floette-Mega"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -7694,7 +7702,7 @@
       "spe": 132
     },
     "battle_only_forme": true,
-    "changes_from": "Greninja-Bond",
+    "changes_from": "Greninja-Battle-Bond",
     "flags": [],
     "learnset": {}
   },
@@ -7791,6 +7799,7 @@
       "spd": 95,
       "spe": 85
     },
+    "formes": ["Zygarde-Mega"],
     "battle_only_forme": true,
     "changes_from": "Zygarde",
     "flags": ["Restricted Legendary"],
@@ -7957,6 +7966,8 @@
       "spe": 44
     },
     "battle_only_forme": true,
+    "required_items": ["Chesnaughtite"],
+    "changes_from": "Chesnaught",
     "flags": [],
     "learnset": {}
   },
@@ -7988,6 +7999,8 @@
       "spe": 134
     },
     "battle_only_forme": true,
+    "required_items": ["Delphoxite"],
+    "changes_from": "Delphox",
     "flags": [],
     "learnset": {}
   },
@@ -8019,6 +8032,8 @@
       "spe": 142
     },
     "battle_only_forme": true,
+    "required_items": ["Greninjite"],
+    "changes_from": "Greninja",
     "flags": [],
     "learnset": {}
   },
@@ -8050,6 +8065,8 @@
       "spe": 126
     },
     "battle_only_forme": true,
+    "required_items": ["Pyroarite"],
+    "changes_from": "Pyroar",
     "flags": [],
     "learnset": {}
   },
@@ -8080,6 +8097,8 @@
       "spe": 102
     },
     "battle_only_forme": true,
+    "required_items": ["Floettite"],
+    "changes_from": "Floette-Eternal",
     "flags": [],
     "learnset": {}
   },
@@ -8111,6 +8130,8 @@
       "spe": 88
     },
     "battle_only_forme": true,
+    "required_items": ["Malamarite"],
+    "changes_from": "Malamar",
     "flags": [],
     "learnset": {}
   },
@@ -8142,6 +8163,8 @@
       "spe": 88
     },
     "battle_only_forme": true,
+    "required_items": ["Barbaracite"],
+    "changes_from": "Barbaracle",
     "flags": [],
     "learnset": {}
   },
@@ -8173,6 +8196,8 @@
       "spe": 44
     },
     "battle_only_forme": true,
+    "required_items": ["Dragalgite"],
+    "changes_from": "Dragalge",
     "flags": [],
     "learnset": {}
   },
@@ -8204,6 +8229,8 @@
       "spe": 118
     },
     "battle_only_forme": true,
+    "required_items": ["Hawluchanite"],
+    "changes_from": "Hawlucha",
     "flags": [],
     "learnset": {}
   },
@@ -8235,6 +8262,8 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Zygardite"],
+    "changes_from": "Zygarde-Complete",
     "flags": ["Restricted Legendary"],
     "learnset": {}
   },

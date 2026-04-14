@@ -1663,6 +1663,7 @@
       "condition": "",
       "use_item": "Fire Stone"
     },
+    "formes": ["Scovillain-Mega"],
     "flags": [],
     "learnset": {}
   },
@@ -2288,6 +2289,7 @@
       "condition": "",
       "level": 35
     },
+    "formes": ["Glimmora-Mega"],
     "flags": [],
     "learnset": {}
   },
@@ -2555,7 +2557,11 @@
       "spe": 82
     },
     "base_forme": "Curly",
-    "formes": ["Tatsugiri-Droopy", "Tatsugiri-Stretchy"],
+    "formes": [
+      "Tatsugiri-Droopy",
+      "Tatsugiri-Stretchy",
+      "Tatsugiri-Curly-Mega"
+    ],
     "flags": [],
     "learnset": {}
   },
@@ -3241,6 +3247,7 @@
       "condition": "",
       "level": 54
     },
+    "formes": ["Baxcalibur-Mega"],
     "flags": [],
     "learnset": {}
   },
@@ -4915,6 +4922,8 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "required_items": ["Scovillainite"],
+    "changes_from": "Scovillain",
     "flags": [],
     "learnset": {}
   },
@@ -4946,6 +4955,8 @@
       "spe": 101
     },
     "battle_only_forme": true,
+    "required_items": ["Glimmoranite"],
+    "changes_from": "Glimmora",
     "flags": [],
     "learnset": {}
   },
@@ -4977,6 +4988,8 @@
       "spe": 92
     },
     "battle_only_forme": true,
+    "required_items": ["Tatsugirinite"],
+    "changes_from": "Tatsugiri",
     "flags": [],
     "learnset": {}
   },
@@ -5070,6 +5083,8 @@
       "spe": 87
     },
     "battle_only_forme": true,
+    "required_items": ["Baxcalibrite"],
+    "changes_from": "Baxcalibur",
     "flags": [],
     "learnset": {}
   }

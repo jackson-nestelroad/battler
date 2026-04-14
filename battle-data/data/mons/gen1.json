@@ -2681,7 +2681,7 @@
       "condition": "",
       "use_item": "Thunder Stone"
     },
-    "formes": ["Raichu-Alola"],
+    "formes": ["Raichu-Alola", "Raichu-Mega-X", "Raichu-Mega-Y"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -3957,6 +3957,7 @@
       "condition": "",
       "use_item": "Moon Stone"
     },
+    "formes": ["Clefable-Mega"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -8146,6 +8147,7 @@
       "condition": "",
       "use_item": "Leaf Stone"
     },
+    "formes": ["Victreebel-Mega"],
     "flags": [],
     "learnset": {
       "acid": ["M"],
@@ -13956,6 +13958,7 @@
       "condition": "",
       "use_item": "Water Stone"
     },
+    "formes": ["Starmie-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -17121,6 +17124,7 @@
       "condition": "",
       "level": 55
     },
+    "formes": ["Dragonite-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -18165,7 +18169,7 @@
       "spe": 121
     },
     "battle_only_forme": true,
-  "required_items": ["Pidgeotite"],
+    "required_items": ["Pidgeotite"],
     "changes_from": "Pidgeot",
     "flags": [],
     "learnset": {}
@@ -21751,6 +21755,8 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "required_items": ["Clefablite"],
+    "changes_from": "Clefable",
     "flags": [],
     "learnset": {}
   },
@@ -21782,6 +21788,8 @@
       "spe": 70
     },
     "battle_only_forme": true,
+    "required_items": ["Victreebelite"],
+    "changes_from": "Victreebel",
     "flags": [],
     "learnset": {}
   },
@@ -21813,6 +21821,8 @@
       "spe": 120
     },
     "battle_only_forme": true,
+    "required_items": ["Starminite"],
+    "changes_from": "Starmie",
     "flags": [],
     "learnset": {}
   },
@@ -21844,6 +21854,8 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Dragoninite"],
+    "changes_from": "Dragonite",
     "flags": [],
     "learnset": {}
   },
@@ -21874,6 +21886,8 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Raichunite X"],
+    "changes_from": "Raichu",
     "flags": [],
     "learnset": {}
   },
@@ -21904,6 +21918,8 @@
       "spe": 130
     },
     "battle_only_forme": true,
+    "required_items": ["Raichunite Y"],
+    "changes_from": "Raichu",
     "flags": [],
     "learnset": {}
   }

@@ -1650,6 +1650,7 @@
       "method": "L",
       "condition": ""
     },
+    "formes": ["Crabominable-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -4154,6 +4155,7 @@
       "condition": "",
       "level": 30
     },
+    "formes": ["Golisopod-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -7570,6 +7572,7 @@
       "spd": 91,
       "spe": 36
     },
+    "formes": ["Drampa-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -9501,7 +9504,7 @@
       "spd": 115,
       "spe": 65
     },
-    "formes": ["Magearna-Original"],
+    "formes": ["Magearna-Original", "Magearna-Mega"],
     "flags": ["Mythical"],
     "learnset": {
       "afteryou": ["T"],
@@ -10033,6 +10036,7 @@
       "spd": 80,
       "spe": 143
     },
+    "formes": ["Zeraora-Mega"],
     "flags": ["Mythical"],
     "learnset": {
       "acrobatics": ["M"],
@@ -12135,6 +12139,8 @@
       "spe": 36
     },
     "battle_only_forme": true,
+    "required_items": ["Drampanite"],
+    "changes_from": "Drampa",
     "flags": [],
     "learnset": {}
   },
@@ -12166,6 +12172,8 @@
       "spe": 33
     },
     "battle_only_forme": true,
+    "required_items": ["Crabominite"],
+    "changes_from": "Crabominable",
     "flags": [],
     "learnset": {}
   },
@@ -12197,6 +12205,8 @@
       "spe": 40
     },
     "battle_only_forme": true,
+    "required_items": ["Golisopod"],
+    "changes_from": "Golisopod",
     "flags": [],
     "learnset": {}
   },
@@ -12228,6 +12238,8 @@
       "spe": 95
     },
     "battle_only_forme": true,
+    "required_items": ["Magearnite"],
+    "changes_from": "Magearna",
     "flags": ["Mythical"],
     "learnset": {}
   },
@@ -12289,6 +12301,8 @@
       "spe": 153
     },
     "battle_only_forme": true,
+    "required_items": ["Zeraorite"],
+    "changes_from": "Zeraora",
     "flags": ["Mythical"],
     "learnset": {}
   }

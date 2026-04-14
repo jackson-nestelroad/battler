@@ -650,6 +650,7 @@
       "condition": "",
       "level": 36
     },
+    "formes": ["Emboar-Mega"],
     "flags": [],
     "learnset": {
       "armthrust": ["L1"],
@@ -3552,6 +3553,7 @@
       "condition": "",
       "level": 31
     },
+    "formes": ["Excadrill-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -4977,6 +4979,7 @@
       "condition": "",
       "level": 30
     },
+    "formes": ["Scolipede-Mega"],
     "flags": [],
     "learnset": {
       "agility": ["L33"],
@@ -6438,6 +6441,7 @@
       "condition": "",
       "level": 39
     },
+    "formes": ["Scrafty-Mega"],
     "flags": [],
     "learnset": {
       "attract": ["M"],
@@ -10599,6 +10603,7 @@
       "condition": "",
       "use_item": "Thunder Stone"
     },
+    "formes": ["Eelektross-Mega"],
     "flags": [],
     "learnset": {
       "acid": ["L1"],
@@ -11122,6 +11127,7 @@
       "condition": "",
       "use_item": "Dusk Stone"
     },
+    "formes": ["Chandelure-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -12485,6 +12491,7 @@
       "condition": "",
       "level": 43
     },
+    "formes": ["Golurk-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -16096,6 +16103,8 @@
       "spe": 75
     },
     "battle_only_forme": true,
+    "required_items": ["Emboarite"],
+    "changes_from": "Emboar",
     "flags": [],
     "learnset": {}
   },
@@ -16127,6 +16136,8 @@
       "spe": 103
     },
     "battle_only_forme": true,
+    "required_items": ["Excadrite"],
+    "changes_from": "Excadrill",
     "flags": [],
     "learnset": {}
   },
@@ -16158,6 +16169,8 @@
       "spe": 62
     },
     "battle_only_forme": true,
+    "required_items": ["Scolipite"],
+    "changes_from": "Scolipede",
     "flags": [],
     "learnset": {}
   },
@@ -16189,6 +16202,8 @@
       "spe": 68
     },
     "battle_only_forme": true,
+    "required_items": ["Scraftinite"],
+    "changes_from": "Scrafty",
     "flags": [],
     "learnset": {}
   },
@@ -16219,6 +16234,8 @@
       "spe": 80
     },
     "battle_only_forme": true,
+    "required_items": ["Eelektrossite"],
+    "changes_from": "Eelektross",
     "flags": [],
     "learnset": {}
   },
@@ -16250,6 +16267,8 @@
       "spe": 90
     },
     "battle_only_forme": true,
+    "required_items": ["Chandelurite"],
+    "changes_from": "Chandelure",
     "flags": [],
     "learnset": {}
   },
@@ -16281,6 +16300,8 @@
       "spe": 55
     },
     "battle_only_forme": true,
+    "required_items": ["Golurkite"],
+    "changes_from": "Golurk",
     "flags": [],
     "learnset": {}
   }

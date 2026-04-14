@@ -11699,6 +11699,7 @@
       "friendship": true,
       "time_of_day": "night"
     },
+    "formes": ["Chimecho-Mega"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],
@@ -11818,7 +11819,7 @@
       "spd": 60,
       "spe": 75
     },
-    "formes": ["Absol-Mega"],
+    "formes": ["Absol-Mega", "Absol-Mega-Z"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -15771,6 +15772,8 @@
       "spe": 65
     },
     "battle_only_forme": true,
+    "required_items": ["Chimechite"],
+    "changes_from": "Chimecho",
     "flags": [],
     "learnset": {}
   },
@@ -15802,6 +15805,8 @@
       "spe": 151
     },
     "battle_only_forme": true,
+    "required_items": ["Absolite Z"],
+    "changes_from": "Absol",
     "flags": [],
     "learnset": {}
   }

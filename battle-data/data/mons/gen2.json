@@ -234,6 +234,7 @@
       "condition": "",
       "level": 32
     },
+    "formes": ["Meganium-Mega"],
     "flags": [],
     "learnset": {
       "ancientpower": ["T"],
@@ -917,6 +918,7 @@
       "condition": "",
       "level": 30
     },
+    "formes": ["Feraligatr-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -3915,7 +3917,7 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "holding_item": "King’s Rock"
+      "holding_item": "King's Rock"
     },
     "flags": [],
     "learnset": {
@@ -5319,7 +5321,7 @@
     "evolution_data": {
       "method": "T",
       "condition": "",
-      "holding_item": "King’s Rock"
+      "holding_item": "King's Rock"
     },
     "formes": ["Slowking-Galar"],
     "flags": [],
@@ -8491,6 +8493,7 @@
       "spd": 70,
       "spe": 70
     },
+    "formes": ["Skarmory-Mega"],
     "flags": [],
     "learnset": {
       "aerialace": ["M"],
@@ -11676,6 +11679,8 @@
       "spe": 80
     },
     "battle_only_forme": true,
+    "required_items": ["Meganiumite"],
+    "changes_from": "Meganium",
     "flags": [],
     "learnset": {}
   },
@@ -11707,6 +11712,8 @@
       "spe": 78
     },
     "battle_only_forme": true,
+    "required_items": ["Feraligite"],
+    "changes_from": "Feraligatr",
     "flags": [],
     "learnset": {}
   },
@@ -11738,6 +11745,8 @@
       "spe": 110
     },
     "battle_only_forme": true,
+    "required_items": ["Skarmorite"],
+    "changes_from": "Skarmory",
     "flags": [],
     "learnset": {}
   }

@@ -2248,6 +2248,7 @@
       "spd": 60,
       "spe": 75
     },
+    "formes": ["Falinks-Mega"],
     "flags": [],
     "learnset": {}
   },
@@ -4724,6 +4725,8 @@
       "spe": 100
     },
     "battle_only_forme": true,
+    "required_items": ["Falinksite"],
+    "changes_from": "Falinks",
     "flags": [],
     "learnset": {}
   }
