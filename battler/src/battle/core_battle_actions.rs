@@ -3869,6 +3869,10 @@ pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> R
         return Ok(false);
     }
 
+    if mon_states::effective_types(&mut context.target_context()?) == types {
+        return Ok(false);
+    }
+
     if !core_battle_effects::run_event_for_applying_effect(
         context,
         fxlang::BattleEvent::SetTypes,
@@ -6217,6 +6221,13 @@ pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
 
     context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::MegaEvolution);
     context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Success);
+
+    core_battle_effects::run_event_for_mon(
+        context,
+        fxlang::BattleEvent::AfterMegaEvolution,
+        fxlang::VariableInput::default(),
+    );
+
     context.player_mut().can_mega_evolve = false;
     Ok(true)
 }

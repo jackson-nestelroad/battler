@@ -18,23 +18,28 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Pikachu",
-                    "species": "Pikachu",
-                    "ability": "No Ability",
-                    "item": "Shed Shell",
+                    "name": "Slurpuff",
+                    "species": "Slurpuff",
+                    "ability": "Sweet Veil",
                     "moves": [
-                        "Mean Look"
+                        "Sleep Powder",
+                        "Yawn"
                     ],
                     "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 },
                 {
-                    "name": "Eevee",
-                    "species": "Eevee",
+                    "name": "Slurpuff",
+                    "species": "Slurpuff",
                     "ability": "No Ability",
-                    "moves": [],
+                    "moves": [
+                        "Rest"
+                    ],
                     "nature": "Hardy",
-                    "level": 50
+                    "level": 100,
+                    "persistent_battle_data": {
+                        "hp": 1
+                    }
                 }
             ]
         }"#,
@@ -44,7 +49,7 @@ fn team() -> Result<TeamData> {
 
 fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
-        .with_battle_type(BattleType::Singles)
+        .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
@@ -57,27 +62,32 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn shed_shell_allows_holder_to_switch_out_when_trapped() {
+fn sweet_veil_prevents_user_and_ally_sleep() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1;move 0"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 1,2;pass"),
+        Ok(())
+    );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Mean Look|target:Pikachu,player-1,1",
-            "activate|mon:Pikachu,player-1,1|condition:Trapped",
+            "move|mon:Slurpuff,player-1,1|name:Sleep Powder|noanim",
+            "block|mon:Slurpuff,player-2,1|move:Sleep Powder|from:ability:Sweet Veil",
+            "fail|mon:Slurpuff,player-1,1",
+            "move|mon:Slurpuff,player-1,2|name:Rest|noanim",
+            "block|mon:Slurpuff,player-1,2|move:Rest|from:ability:Sweet Veil",
+            "fail|mon:Slurpuff,player-1,2",
+            "move|mon:Slurpuff,player-2,1|name:Yawn|noanim",
+            "block|mon:Slurpuff,player-1,2|move:Yawn|from:ability:Sweet Veil",
+            "fail|mon:Slurpuff,player-2,1",
             "residual",
-            "turn|turn:2",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Eevee"],
-            ["switch", "player-1", "Eevee"],
-            "residual",
-            "turn|turn:3"
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

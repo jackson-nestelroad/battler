@@ -121,6 +121,23 @@ mod abilities {
         mod zen_mode_test;
     }
 
+    mod gen6 {
+        mod aroma_veil_test;
+        mod bulletproof_test;
+        mod cheek_pouch_test;
+        mod competitive_test;
+        mod dark_aura_test;
+        mod flower_veil_test;
+        mod gale_wings_test;
+        mod gooey_test;
+        mod magician_test;
+        mod protean_test;
+        mod refrigerate_test;
+        mod stance_change_test;
+        mod sweet_veil_test;
+        mod symbiosis_test;
+    }
+
     mod gen7 {
         mod dancer_test;
         mod emergency_exit_test;
@@ -215,6 +232,12 @@ mod items {
         mod gem_test;
         mod red_card_test;
         mod ring_target_test;
+    }
+
+    mod gen6 {
+        mod assault_vest_test;
+        mod luminous_moss_test;
+        mod weakness_policy_test;
     }
 
     mod gen7 {

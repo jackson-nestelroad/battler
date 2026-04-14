@@ -18,23 +18,15 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Pikachu",
-                    "species": "Pikachu",
+                    "name": "Bunnelby",
+                    "species": "Bunnelby",
                     "ability": "No Ability",
-                    "item": "Shed Shell",
+                    "item": "Luminous Moss",
                     "moves": [
-                        "Mean Look"
+                        "Water Gun"
                     ],
                     "nature": "Hardy",
-                    "level": 50
-                },
-                {
-                    "name": "Eevee",
-                    "species": "Eevee",
-                    "ability": "No Ability",
-                    "moves": [],
-                    "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 }
             ]
         }"#,
@@ -57,27 +49,23 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn shed_shell_allows_holder_to_switch_out_when_trapped() {
+fn luminous_moss_boosts_special_defense_on_water_damage() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Mean Look|target:Pikachu,player-1,1",
-            "activate|mon:Pikachu,player-1,1|condition:Trapped",
+            "move|mon:Bunnelby,player-1,1|name:Water Gun|target:Bunnelby,player-2,1",
+            "split|side:1",
+            "damage|mon:Bunnelby,player-2,1|health:155/186",
+            "damage|mon:Bunnelby,player-2,1|health:84/100",
+            "itemend|mon:Bunnelby,player-2,1|item:Luminous Moss",
+            "boost|mon:Bunnelby,player-2,1|stat:spd|by:1|from:item:Luminous Moss",
             "residual",
-            "turn|turn:2",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Eevee"],
-            ["switch", "player-1", "Eevee"],
-            "residual",
-            "turn|turn:3"
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

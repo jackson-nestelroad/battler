@@ -18,23 +18,24 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Pikachu",
-                    "species": "Pikachu",
-                    "ability": "No Ability",
-                    "item": "Shed Shell",
+                    "name": "Aromatisse",
+                    "species": "Aromatisse",
+                    "ability": "Aroma Veil",
                     "moves": [
-                        "Mean Look"
+                        "Taunt"
                     ],
                     "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 },
                 {
-                    "name": "Eevee",
-                    "species": "Eevee",
+                    "name": "Aromatisse",
+                    "species": "Aromatisse",
                     "ability": "No Ability",
-                    "moves": [],
+                    "moves": [
+                        "Taunt"
+                    ],
                     "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 }
             ]
         }"#,
@@ -44,7 +45,7 @@ fn team() -> Result<TeamData> {
 
 fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
-        .with_battle_type(BattleType::Singles)
+        .with_battle_type(BattleType::Doubles)
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
@@ -57,27 +58,23 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn shed_shell_allows_holder_to_switch_out_when_trapped() {
+fn aroma_veil_prevents_taunt_for_allies() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 0,2;pass"),
+        Ok(())
+    );
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Mean Look|target:Pikachu,player-1,1",
-            "activate|mon:Pikachu,player-1,1|condition:Trapped",
+            "move|mon:Aromatisse,player-2,1|name:Taunt|noanim",
+            "block|mon:Aromatisse,player-1,2|move:Taunt|from:ability:Aroma Veil",
+            "fail|mon:Aromatisse,player-2,1",
             "residual",
-            "turn|turn:2",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Eevee"],
-            ["switch", "player-1", "Eevee"],
-            "residual",
-            "turn|turn:3"
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

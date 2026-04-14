@@ -107,6 +107,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Mega Evolution
 
 1. Mon changes forme.
+1. `AfterMegaEvolution`.
 
 ## Primal Reversion
 

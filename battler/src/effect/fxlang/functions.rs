@@ -335,6 +335,7 @@ pub fn run_function(
         "skip_effect_callback" => skip_effect_callback(context).map(|()| None),
         "special_item_data" => special_item_data(context).map(|val| Some(val)),
         "species_has_flag" => species_has_flag(context).map(|val| Some(val)),
+        "speed_sort_mons" => speed_sort_mons(context).map(|val| Some(val)),
         "start_ability" => start_ability(context).map(|()| None),
         "start_item" => start_item(context).map(|()| None),
         "status_effect_state" => status_effect_state(context),
@@ -4496,4 +4497,14 @@ fn effect_has_event_callback(mut context: FunctionContext) -> Result<Value> {
         event,
     )
     .map(|val| Value::Boolean(val))
+}
+
+fn speed_sort_mons(mut context: FunctionContext) -> Result<Value> {
+    let mons = context
+        .pop_front()
+        .wrap_expectation("missing mons list")?
+        .mons_list()
+        .wrap_error_with_message("invalid mons list")?;
+    CoreBattle::speed_sort_mons(context.battle_context_mut(), &mons, false)
+        .map(|mons| Value::List(mons.into_iter().map(|mon| Value::Mon(mon)).collect()))
 }

@@ -127,7 +127,6 @@ fn trick_or_treat_added_ghost_type_reflected_by_reflect_type() {
             "turn|turn:3",
             "continue",
             "move|mon:Chesnaught,player-1,1|name:Reflect Type|target:Chesnaught,player-2,1",
-            "typechange|mon:Chesnaught,player-1,1|types:Grass/Fighting",
             "addedtype|mon:Chesnaught,player-1,1|type:Ghost",
             "move|mon:Chesnaught,player-2,1|name:Tackle|noanim",
             "immune|mon:Chesnaught,player-1,1",

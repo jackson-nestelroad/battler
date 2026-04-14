@@ -5,7 +5,7 @@
     "effect": {
       "callbacks": {
         "on_ally_add_volatile": [
-          "if !([attract, disable, encore, healblock, truant, torment] has $volatile.id):",
+          "if !([attract, disable, encore, healblock, taunt, torment] has $volatile.id):",
           ["return"],
           "if $effect.is_move:",
           ["log_block: with_target"],
@@ -36,9 +36,9 @@
           "return $boosts"
         ],
         "on_ally_set_status": [
-          "if ($source.is_defined and $target == $source) or !func_call(has_type: $target grass):",
+          "if ($source.is_defined and $target == $source) or !func_call(has_type: $target grass) or $effect.id == yawn:",
           ["return"],
-          "if $effect.id == yawn or ($effect.is_move and !$effect.is_move_secondary):",
+          "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_block: with_target"],
           "return false"
         ],
@@ -76,12 +76,11 @@
           ["return"],
           "if $move.typeless:",
           ["return"],
-          "if $user.effective_types == [$move.type]:",
-          ["return"],
-          "if !func_call(set_types: $user $move.type):",
+          "if !func_call(set_types: $user [$move.type]):",
           ["return"],
           "$effect_state.activated = true"
-        ]
+        ],
+        "on_after_mega_evolution": ["$effect_state.activated = false"]
       }
     }
   },
@@ -112,7 +111,7 @@
             "$item = func_call(take_item: $mon)",
             "if !$item:",
             ["continue"],
-            "set_item: $user item",
+            "set_item: $user $item",
             "break"
           ]
         ]
@@ -139,13 +138,7 @@
         "on_after_each_boost": [
           "if !$source or func_call(is_ally: $target $source):",
           ["return"],
-          "$activate = false",
-          "foreach $boost in func_call(boostable_stats):",
-          [
-            "if func_call(get_boost: $boosts $boost) < 0:",
-            ["$activate = true", "break"]
-          ],
-          "if $activate:",
+          "if $value < 0:",
           ["boost: $target 'spa:2'"]
         ]
       }
@@ -269,13 +262,13 @@
           "if $target.needs_switch:",
           ["return"],
           "$source = $effect_state.target",
-          "$item = func_call(take_item: $source dry_run)",
-          "if !$item or !func_call(set_item: $target $item dry_run):",
+          "$ally_item = func_call(take_item: $source dry_run)",
+          "if !$ally_item or !func_call(set_item: $target $ally_item dry_run):",
           ["return"],
-          "$item = func_call(take_item: $source)",
-          "if !$item:",
+          "$ally_item = func_call(take_item: $source)",
+          "if !$ally_item:",
           ["return"],
-          "set_item: $target $item"
+          "set_item: $target $ally_item"
         ]
       }
     }

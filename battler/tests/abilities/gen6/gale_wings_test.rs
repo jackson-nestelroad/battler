@@ -18,23 +18,14 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Pikachu",
-                    "species": "Pikachu",
+                    "name": "Talonflame",
+                    "species": "Talonflame",
                     "ability": "No Ability",
-                    "item": "Shed Shell",
                     "moves": [
-                        "Mean Look"
+                        "Peck"
                     ],
                     "nature": "Hardy",
-                    "level": 50
-                },
-                {
-                    "name": "Eevee",
-                    "species": "Eevee",
-                    "ability": "No Ability",
-                    "moves": [],
-                    "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 }
             ]
         }"#,
@@ -57,25 +48,40 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn shed_shell_allows_holder_to_switch_out_when_trapped() {
-    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+fn gale_wings_boosts_priority_at_full_health() {
+    let mut team_1 = team().unwrap();
+    team_1.members[0].ability = "Gale Wings".to_owned();
+    let mut team_2 = team().unwrap();
+    team_2.members[0].evs.spe = 252;
+    let mut battle = make_battle(0, team_1, team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Mean Look|target:Pikachu,player-1,1",
-            "activate|mon:Pikachu,player-1,1|condition:Trapped",
+            "move|mon:Talonflame,player-1,1|name:Peck|target:Talonflame,player-2,1",
+            "split|side:1",
+            "damage|mon:Talonflame,player-2,1|health:217/266",
+            "damage|mon:Talonflame,player-2,1|health:82/100",
+            "move|mon:Talonflame,player-2,1|name:Peck|target:Talonflame,player-1,1",
+            "split|side:0",
+            "damage|mon:Talonflame,player-1,1|health:220/266",
+            "damage|mon:Talonflame,player-1,1|health:83/100",
             "residual",
             "turn|turn:2",
             "continue",
+            "move|mon:Talonflame,player-2,1|name:Peck|target:Talonflame,player-1,1",
             "split|side:0",
-            ["switch", "player-1", "Eevee"],
-            ["switch", "player-1", "Eevee"],
+            "damage|mon:Talonflame,player-1,1|health:177/266",
+            "damage|mon:Talonflame,player-1,1|health:67/100",
+            "move|mon:Talonflame,player-1,1|name:Peck|target:Talonflame,player-2,1",
+            "split|side:1",
+            "damage|mon:Talonflame,player-2,1|health:171/266",
+            "damage|mon:Talonflame,player-2,1|health:65/100",
             "residual",
             "turn|turn:3"
         ]"#,

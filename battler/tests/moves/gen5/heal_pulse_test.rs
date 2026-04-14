@@ -127,11 +127,11 @@ fn mega_launcher_boosts_heal_pulse() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "split|side:0",
-            "switch|player:player-1|position:1|name:Clawitzer|health:162/162|species:Clawitzer|level:50|gender:U",
-            "switch|player:player-1|position:1|name:Clawitzer|health:100/100|species:Clawitzer|level:50|gender:U",
+            ["switch", "player-1", "Clawitzer"],
+            ["switch", "player-1", "Clawitzer"],
             "split|side:1",
-            "switch|player:player-2|position:1|name:Clawitzer|health:162/162|species:Clawitzer|level:50|gender:U",
-            "switch|player:player-2|position:1|name:Clawitzer|health:100/100|species:Clawitzer|level:50|gender:U",
+            ["switch", "player-2", "Clawitzer"],
+            ["switch", "player-2", "Clawitzer"],
             "residual",
             "turn|turn:2",
             "continue",

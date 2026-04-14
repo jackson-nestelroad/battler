@@ -18,23 +18,16 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Pikachu",
-                    "species": "Pikachu",
-                    "ability": "No Ability",
-                    "item": "Shed Shell",
+                    "name": "Aegislash",
+                    "species": "Aegislash",
+                    "ability": "Stance Change",
                     "moves": [
-                        "Mean Look"
+                        "Shadow Claw",
+                        "Swords Dance",
+                        "King's Shield"
                     ],
                     "nature": "Hardy",
-                    "level": 50
-                },
-                {
-                    "name": "Eevee",
-                    "species": "Eevee",
-                    "ability": "No Ability",
-                    "moves": [],
-                    "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 }
             ]
         }"#,
@@ -57,27 +50,38 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn shed_shell_allows_holder_to_switch_out_when_trapped() {
+fn stance_change_changes_aegislash_forme() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-2,1|name:Mean Look|target:Pikachu,player-1,1",
-            "activate|mon:Pikachu,player-1,1|condition:Trapped",
+            "formechange|mon:Aegislash,player-1,1|species:Aegislash-Blade|from:ability:Stance Change",
+            "move|mon:Aegislash,player-1,1|name:Shadow Claw|target:Aegislash,player-2,1",
+            "supereffective|mon:Aegislash,player-2,1",
+            "split|side:1",
+            "damage|mon:Aegislash,player-2,1|health:56/230",
+            "damage|mon:Aegislash,player-2,1|health:25/100",
             "residual",
             "turn|turn:2",
             "continue",
-            "split|side:0",
-            ["switch", "player-1", "Eevee"],
-            ["switch", "player-1", "Eevee"],
+            "move|mon:Aegislash,player-1,1|name:Swords Dance|target:Aegislash,player-1,1",
+            "boost|mon:Aegislash,player-1,1|stat:atk|by:2",
             "residual",
-            "turn|turn:3"
+            "turn|turn:3",
+            "continue",
+            "formechange|mon:Aegislash,player-1,1|species:Aegislash|from:ability:Stance Change",
+            "move|mon:Aegislash,player-1,1|name:King's Shield|noanim",
+            "fail|mon:Aegislash,player-1,1",
+            "residual",
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();

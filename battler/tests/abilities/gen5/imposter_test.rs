@@ -71,11 +71,11 @@ fn imposter_transforms_on_switch_in() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "split|side:0",
-            "switch|player:player-1|position:1|name:Ditto|health:108/108|species:Ditto|level:50|gender:U",
-            "switch|player:player-1|position:1|name:Ditto|health:100/100|species:Ditto|level:50|gender:U",
+            ["switch", "player-1", "Ditto"],
+            ["switch", "player-1", "Ditto"],
             "split|side:1",
-            "switch|player:player-2|position:1|name:Reshiram|health:160/160|species:Reshiram|level:50|gender:U",
-            "switch|player:player-2|position:1|name:Reshiram|health:100/100|species:Reshiram|level:50|gender:U",
+            ["switch", "player-2", "Reshiram"],
+            ["switch", "player-2", "Reshiram"],
             "transform|mon:Ditto,player-1,1|into:Reshiram,player-2,1|species:Reshiram|from:ability:Imposter",
             "turn|turn:1"
         ]"#,

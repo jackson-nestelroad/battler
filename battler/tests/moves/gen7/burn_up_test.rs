@@ -112,8 +112,8 @@ fn burn_up_dual_type_loses_fire_type() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "split|side:0",
-            "switch|player:player-1|position:1|name:Turtonator|health:120/120|species:Turtonator|level:50|gender:U",
-            "switch|player:player-1|position:1|name:Turtonator|health:100/100|species:Turtonator|level:50|gender:U",
+            ["switch", "player-1", "Turtonator"],
+            ["switch", "player-1", "Turtonator"],
             "residual",
             "turn|turn:2",
             "continue",

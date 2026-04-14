@@ -45,9 +45,9 @@
           "program": [
             "if $effect.typeless or $type != normal or $type != $effect.type:",
             ["return"],
-            "$effect.type = func_call(value_from_local_data: type)",
-            "if $effect.effect_state.is_defined:",
-            ["$effect.effect_state.type_change_boosted = true"]
+            "if $effect.is_move:",
+            ["$effect.effect_state.type_change_boosted = true"],
+            "return func_call(value_from_local_data: type)"
           ],
           "on_source_base_power": [
             "if $move.effect_state.type_change_boosted:",

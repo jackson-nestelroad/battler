@@ -417,6 +417,11 @@ pub enum BattleEvent {
     /// Runs on the active move.
     #[string = "AfterHit"]
     AfterHit,
+    /// Runs after a Mon Mega Evolves.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterMegaEvolution"]
+    AfterMegaEvolution,
     /// Runs after a Mon finishes using a move.
     ///
     /// Runs on the active move and in the context of a move user.
@@ -1341,6 +1346,7 @@ impl BattleEvent {
             Self::AfterEachBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterFainted => CommonCallbackType::MonVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
+            Self::AfterMegaEvolution => CommonCallbackType::MonVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::AfterMoveSecondaryEffects => CommonCallbackType::MoveVoid as u32,
             Self::AfterMoveSecondaryEffectsDamage => CommonCallbackType::MoveVoid as u32,

@@ -536,15 +536,7 @@ impl<'d> CoreBattle<'d> {
             .battle()
             .all_active_mon_handles()
             .collect::<Vec<_>>();
-        let mut active_mons_with_speed = Vec::with_capacity(active_mons.len());
-        for mon in active_mons {
-            active_mons_with_speed.push(Mon::speed_orderable(&context.mon_context(mon)?));
-        }
-        Self::speed_sort(context, active_mons_with_speed.as_mut_slice());
-        Ok(active_mons_with_speed
-            .into_iter()
-            .map(|mon| mon.mon_handle)
-            .collect())
+        Self::speed_sort_mons(context, &active_mons, false)
     }
 
     pub fn all_active_mon_handles_in_speed_order_and_ability_effect_order(
@@ -554,11 +546,22 @@ impl<'d> CoreBattle<'d> {
             .battle()
             .all_active_mon_handles()
             .collect::<Vec<_>>();
-        let mut active_mons_with_speed = Vec::with_capacity(active_mons.len());
-        for mon in active_mons {
-            active_mons_with_speed.push(Mon::speed_orderable_with_ability_effect_order(
-                &context.mon_context(mon)?,
-            ));
+        Self::speed_sort_mons(context, &active_mons, true)
+    }
+
+    pub fn speed_sort_mons(
+        context: &mut Context,
+        mons: &[MonHandle],
+        with_ability_effect_order: bool,
+    ) -> Result<Vec<MonHandle>> {
+        let mut active_mons_with_speed = Vec::with_capacity(mons.len());
+        for mon in mons {
+            let context = context.mon_context(*mon)?;
+            active_mons_with_speed.push(if with_ability_effect_order {
+                Mon::speed_orderable_with_ability_effect_order(&context)
+            } else {
+                Mon::speed_orderable(&context)
+            });
         }
         Self::speed_sort(context, active_mons_with_speed.as_mut_slice());
         Ok(active_mons_with_speed

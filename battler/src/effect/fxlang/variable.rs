@@ -220,6 +220,22 @@ where
                                 None => ValueRef::Undefined,
                             })
                             .unwrap_or(ValueRef::Undefined),
+                            "damaged_targets" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                ValueRef::TempList(
+                                    mov.damaged_targets
+                                        .iter()
+                                        .map(|mon| {
+                                            ValueRefToStoredValue::new(None, ValueRef::Mon(*mon))
+                                        })
+                                        .collect(),
+                                )
+                            })
+                            .unwrap_or(ValueRef::Undefined),
                             "drain_percent" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
