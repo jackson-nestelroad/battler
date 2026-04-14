@@ -907,5 +907,9 @@
   "freshstartmochi": {
     "name": "Fresh Start Mochi",
     "flags": []
+  },
+  "linkingcord": {
+    "name": "Linking Cord",
+    "flags": []
   }
 }
