@@ -29,7 +29,8 @@ fn commander_team() -> Result<TeamData> {
                     ],
                     "nature": "Hardy",
                     "level": 50
-                }, {
+                },
+                {
                     "name": "Tatsugiri",
                     "species": "Tatsugiri",
                     "ability": "Commander",

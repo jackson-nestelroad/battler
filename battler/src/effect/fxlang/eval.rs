@@ -153,6 +153,7 @@ impl<'event_state> Evaluator<'event_state> {
         mut input: VariableInput,
         effect_state_connector: Option<DynamicEffectStateConnector>,
         effect_mon_handle: Option<MonHandle>,
+        event_origin_mon_handle: Option<MonHandle>,
     ) -> Result<()> {
         if let Some(effect_state_connector) = effect_state_connector {
             if effect_state_connector.exists(context.battle_context_mut())? {
@@ -164,6 +165,11 @@ impl<'event_state> Evaluator<'event_state> {
         if let Some(effect_mon_handle) = effect_mon_handle {
             self.vars
                 .set("effect_target", Value::Mon(effect_mon_handle))?;
+        }
+
+        if let Some(event_origin_mon_handle) = event_origin_mon_handle {
+            self.vars
+                .set("event_origin", Value::Mon(event_origin_mon_handle))?;
         }
 
         self.vars
@@ -326,6 +332,7 @@ impl<'event_state> Evaluator<'event_state> {
         callback: &ParsedCallback,
         effect_state_connector: Option<DynamicEffectStateConnector>,
         effect_mon_handle: Option<MonHandle>,
+        event_origin_mon_handle: Option<MonHandle>,
     ) -> Result<ProgramEvalResult> {
         self.initialize_vars(
             context,
@@ -333,6 +340,7 @@ impl<'event_state> Evaluator<'event_state> {
             input,
             effect_state_connector,
             effect_mon_handle,
+            event_origin_mon_handle,
         )?;
         let root_state = ProgramBlockEvalState::new();
         let value = match self
@@ -613,6 +621,11 @@ impl<'event_state> Evaluator<'event_state> {
             .get("effect_target")?
             .map(|val| (*val).clone().mon_handle().ok())
             .flatten();
+        let event_origin_mon_handle = self
+            .vars
+            .get("event_origin")?
+            .map(|val| (*val).clone().mon_handle().ok())
+            .flatten();
         run_function(
             context,
             function_name,
@@ -621,6 +634,7 @@ impl<'event_state> Evaluator<'event_state> {
             self.event_state,
             effect_state,
             effect_mon_handle,
+            event_origin_mon_handle,
         )
         .map(|val| val.map(|val| MaybeReferenceValue::from(val)))
     }

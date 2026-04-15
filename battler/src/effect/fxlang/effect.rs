@@ -499,6 +499,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "BasePower"]
     BasePower,
+    /// Runs when a Mon is using a charge move, on the charging turn.
+    ///
+    /// Runs in the context of a move user.
+    #[string = "BeforeChargeMove"]
+    BeforeChargeMove,
     /// Runs before a Mon Dynamaxes.
     ///
     /// Runs in the context of a Mon.
@@ -971,6 +976,12 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "OverrideMove"]
     OverrideMove,
+    /// Runs when determining the effective weather for a Mon. Overrides the weather without looking
+    /// at the actual field weather or weather suppression effects.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "OverrideWeather"]
+    OverrideWeather,
     /// Runs when a player tries to choose to use an item.
     ///
     /// Runs on the item.
@@ -1359,6 +1370,7 @@ impl BattleEvent {
             Self::AfterTerastallization => CommonCallbackType::MonVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
+            Self::BeforeChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
@@ -1446,6 +1458,7 @@ impl BattleEvent {
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveTargetOverride => CommonCallbackType::MonMoveTarget as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
+            Self::OverrideWeather => CommonCallbackType::MonInfo as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
             Self::PlayerUse => CommonCallbackType::MonVoid as u32,
@@ -1515,6 +1528,22 @@ impl BattleEvent {
     /// Checks if the event has the given [`CallbackFlag`] flag set.
     pub fn has_flag(&self, flag: u32) -> bool {
         self.callback_type_flags() & flag != 0
+    }
+
+    /// The target of the event callback is the "origin" of the event.
+    ///
+    /// Most events target a Mon. Some event callbacks receive a Mon as the "source' of the effect.
+    /// However, some events trigger against against the source Mon. This is most common for move
+    /// events that run "in the context of a move user." In this sense, the target of the event
+    /// callback is actually the source.
+    ///
+    /// This method allows event callbacks to understand who the true "origin" is, no matter who the
+    /// target or source is. This is important for effects that need to understand why some event is
+    /// running. For example, the ability "Mega Sol" needs to override weather event callbacks
+    /// whenever the ability holder is the origin, which can sometimes be the source (e.g.,
+    /// ModifySpd) or the target (e.g., WeatherModifyDamage).
+    pub fn target_is_event_origin(&self) -> bool {
+        self.has_flag(CallbackFlag::TakesGeneralMon) || self.has_flag(CallbackFlag::TakesUserMon)
     }
 
     /// Does the event allow custom input variables?
@@ -1596,7 +1625,7 @@ impl BattleEvent {
             Self::ModifyTarget => &[("target", ValueType::Mon, false)],
             Self::ModifyWeight => &[("weight", ValueType::UFraction, true)],
             Self::NegateImmunity => &[("type", ValueType::Type, true)],
-            Self::OverrideMove => &[("move", ValueType::ActiveMove, true)],
+            Self::OverrideMove => &[("move", ValueType::String, true)],
             Self::PlayerTryUseItem => &[("input", ValueType::Object, true)],
             Self::PlayerUse => &[("input", ValueType::Object, true)],
             Self::RedirectTarget => &[("target", ValueType::Mon, true)],
@@ -1711,6 +1740,7 @@ impl BattleEvent {
             Self::SuppressFieldWeather => 4,
             Self::SuppressMonTerrain => 5,
             Self::SuppressMonWeather => 5,
+            Self::OverrideWeather => 5,
             _ => usize::MAX,
         }
     }

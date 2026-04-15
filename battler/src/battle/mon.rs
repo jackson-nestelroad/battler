@@ -498,6 +498,8 @@ pub struct MonEffectCache {
     pub effective_weather: Option<Option<Id>>,
     pub effective_terrain: Option<Option<Id>>,
 
+    pub override_weather: Option<Option<Id>>,
+
     pub berry_eating_health: Option<u16>,
     pub can_heal: Option<bool>,
     pub can_suppress_ability: Option<bool>,

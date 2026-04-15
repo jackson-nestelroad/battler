@@ -109,6 +109,7 @@ pub fn run_function(
     event_state: &EventState,
     effect_state: Option<DynamicEffectStateConnector>,
     effect_mon_handle: Option<MonHandle>,
+    event_origin_mon_handle: Option<MonHandle>,
 ) -> Result<Option<Value>> {
     let context = FunctionContext::new(
         context,
@@ -117,6 +118,7 @@ pub fn run_function(
         event_state,
         effect_state,
         effect_mon_handle,
+        event_origin_mon_handle,
     );
     // Maintain alphabetical order.
     match function_name {
@@ -188,6 +190,7 @@ pub fn run_function(
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "effect_has_event_callback" => effect_has_event_callback(context).map(|val| Some(val)),
+        "effective_weather" => effective_weather(context),
         "end_ability" => end_ability(context).map(|()| None),
         "end_dynamax" => end_dynamax(context).map(|()| None),
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
@@ -374,6 +377,7 @@ struct FunctionContext<'eval, 'effect, 'context, 'battle, 'data> {
     event_state: &'eval EventState,
     effect_state: Option<DynamicEffectStateConnector>,
     effect_mon_handle: Option<MonHandle>,
+    event_origin_mon_handle: Option<MonHandle>,
     flags: HashMap<String, bool>,
 }
 
@@ -387,6 +391,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         event_state: &'eval EventState,
         effect_state: Option<DynamicEffectStateConnector>,
         effect_mon_handle: Option<MonHandle>,
+        event_origin_mon_handle: Option<MonHandle>,
     ) -> Self {
         Self {
             context,
@@ -395,6 +400,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             event_state,
             effect_state,
             effect_mon_handle,
+            event_origin_mon_handle,
             flags: HashMap::default(),
         }
     }
@@ -581,12 +587,20 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("use_source")
     }
 
+    fn use_source_as_origin(&mut self) -> bool {
+        self.has_flag("use_source_as_origin")
+    }
+
     fn use_source_effect(&mut self) -> bool {
         self.has_flag("use_source_effect")
     }
 
     fn set_use_source_effect(&mut self, val: bool) {
         self.set_flag("use_source_effect", val)
+    }
+
+    fn use_target_as_origin(&mut self) -> bool {
+        self.has_flag("use_target_as_origin")
     }
 
     fn use_target_as_source(&mut self) -> bool {
@@ -695,6 +709,32 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
             _ => self
                 .target_handle()
                 .wrap_expectation("effect has no target mon"),
+        }
+    }
+
+    fn origin_handle(&mut self) -> Option<MonHandle> {
+        self.origin_handle_internal()
+    }
+
+    fn origin_handle_internal(&mut self) -> Option<MonHandle> {
+        if self.use_target_as_origin() {
+            self.evaluation_context().target_handle()
+        } else if self.use_source_as_origin() {
+            self.evaluation_context().source_handle()
+        } else {
+            self.event_origin_mon_handle
+        }
+    }
+
+    fn origin_handle_positional(&mut self) -> Result<Option<MonHandle>> {
+        match self.front().map(|val| val.value_type()) {
+            Some(ValueType::Mon) => Ok(Some(
+                self.pop_front()
+                    .wrap_expectation("missing origin mon")?
+                    .mon_handle()
+                    .wrap_error_with_message("invalid origin mon")?,
+            )),
+            _ => Ok(self.origin_handle()),
         }
     }
 
@@ -4507,4 +4547,20 @@ fn speed_sort_mons(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid mons list")?;
     CoreBattle::speed_sort_mons(context.battle_context_mut(), &mons, false)
         .map(|mons| Value::List(mons.into_iter().map(|mon| Value::Mon(mon)).collect()))
+}
+
+fn effective_weather(mut context: FunctionContext) -> Result<Option<Value>> {
+    let target_handle = context.target_handle_positional()?;
+    let origin = context.origin_handle_positional()?;
+    let mut context = context.mon_context(target_handle)?;
+    let weather = mon_states::effective_weather(&mut context, origin)?;
+    match weather {
+        Some(weather) => Ok(Some(Value::Effect(
+            context
+                .battle_mut()
+                .get_effect_handle_by_id(&weather)?
+                .clone(),
+        ))),
+        None => Ok(None),
+    }
 }

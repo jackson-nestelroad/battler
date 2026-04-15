@@ -1641,7 +1641,7 @@
     "effect": {
       "callbacks": {
         "on_modify_move_type": [
-          "$weather = $user.effective_weather",
+          "$weather = func_call(effective_weather: $user)",
           "if !$weather:",
           ["return"],
           "if $weather.is_sunny:",

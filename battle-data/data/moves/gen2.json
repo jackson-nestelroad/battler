@@ -1520,7 +1520,7 @@
           ["$effect_state.duration = $effect_state.duration + 1"]
         ],
         "on_override_move": [
-          "if $move.id != $effect_state.move:",
+          "if $move != $effect_state.move:",
           ["return $effect_state.move"]
         ],
         "on_residual": [
@@ -1705,7 +1705,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "$weather = $target.effective_weather",
+          "$weather = func_call(effective_weather: $target)",
           "if !$weather:",
           ["$factor = 1/2"],
           "else if $weather.is_sunny:",

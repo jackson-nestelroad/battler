@@ -1535,7 +1535,7 @@ Then, moves that have side effects based on the presence of rain can easily inte
   "effect": {
     "callbacks": {
       "on_use_move": [
-        "$weather = $selected_target.effective_weather",
+        "$weather = func_call(effective_weather: $selected_target)",
         "if !$weather:",
         ["return"],
         "if $weather.is_raining:",
@@ -1784,13 +1784,13 @@ Solar Beam is a bit more complex; in sunny weather, the move is executed immedia
     "delegates": ["condition:chargemovebase"],
     "callbacks": {
       "on_charge_move": [
-        "$weather = $user.effective_weather",
+        "$weather = func_call(effective_weather: $user)",
         "if $weather.is_defined and $weather.is_sunny:",
         ["return false"]
       ],
       "on_move_base_power": [
         "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
-        "if $weak_weathers has $source.effective_weather:",
+        "if $weak_weathers has func_call(effective_weather: $source):",
         ["return $move.base_power * 1/2"]
       ]
     }

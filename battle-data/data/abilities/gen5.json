@@ -219,7 +219,8 @@
     "effect": {
       "callbacks": {
         "on_residual": [
-          "if !$field.weather or !$field.weather.is_sunny:",
+          "$weather = func_call(effective_weather: $target)",
+          "if (!$weather or !$weather.is_sunny) and func_call(chance: 1 2):",
           ["return"],
           "if $target.item.is_defined or !$target.last_item or !func_call(item_has_flag: $target.last_item berry):",
           ["return"],

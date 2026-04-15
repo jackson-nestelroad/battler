@@ -198,7 +198,18 @@
   },
   "megasol": {
     "name": "Mega Sol",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_override_weather": ["return harshsunlight"],
+        "on_before_charge_move": [
+          "# Solar Beam will see that the weather is sunny, though it may not actually be.",
+          "# Show the ability to make the effect apparent.",
+          "if $move.id == solarbeam and (!$field.weather or !$field.weather.is_sunny):",
+          ["log_ability"]
+        ]
+      }
+    }
   },
   "spicyspray": {
     "name": "Spicy Spray",

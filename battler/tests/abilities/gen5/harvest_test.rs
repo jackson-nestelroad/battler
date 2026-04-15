@@ -50,7 +50,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn harvest_has_chance_to_reclaim_berry_in_sun() {
+fn harvest_reclaims_berry_in_sun() {
     let mut battle = make_battle(0, tropius().unwrap(), tropius().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -74,15 +74,15 @@ fn harvest_has_chance_to_reclaim_berry_in_sun() {
             "continue",
             "move|mon:Tropius,player-1,1|name:Tackle|target:Tropius,player-2,1",
             "split|side:1",
-            "damage|mon:Tropius,player-2,1|health:138/159",
+            "damage|mon:Tropius,player-2,1|health:137/159",
             "damage|mon:Tropius,player-2,1|health:87/100",
+            "item|mon:Tropius,player-2,1|item:Chilan Berry|from:ability:Harvest",
             "residual",
             "turn|turn:3",
             "continue",
             "move|mon:Tropius,player-2,1|name:Sunny Day",
             "weather|weather:Harsh Sunlight",
             "weather|weather:Harsh Sunlight|residual",
-            "item|mon:Tropius,player-2,1|item:Chilan Berry|from:ability:Harvest",
             "residual",
             "turn|turn:4"
         ]"#,

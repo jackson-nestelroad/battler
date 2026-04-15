@@ -150,6 +150,7 @@ mod abilities {
 
     mod gen9 {
         mod commander_test;
+        mod mega_sol_test;
     }
 }
 

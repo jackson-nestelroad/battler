@@ -93,6 +93,7 @@ impl EffectManager {
         event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
         effect_mon_handle: Option<MonHandle>,
+        event_origin_mon_handle: Option<MonHandle>,
     ) -> Result<ProgramEvalResult> {
         context
             .battle_context_mut()
@@ -116,6 +117,7 @@ impl EffectManager {
             event_state,
             effect_state_connector,
             effect_mon_handle,
+            event_origin_mon_handle,
         );
 
         context
@@ -242,6 +244,7 @@ impl EffectManager {
         event_state: &EventState,
         effect_state_connector: Option<DynamicEffectStateConnector>,
         effect_mon_handle: Option<MonHandle>,
+        event_origin_mon_handle: Option<MonHandle>,
     ) -> Result<ProgramEvalResult> {
         let mut evaluator = Evaluator::new(event, event_state);
         let effect = Self::parsed_effect(context.battle_context_mut(), effect_handle)?;
@@ -256,6 +259,7 @@ impl EffectManager {
                 callback,
                 effect_state_connector,
                 effect_mon_handle,
+                event_origin_mon_handle,
             ),
             None => Ok(ProgramEvalResult::new(None)),
         }
@@ -280,6 +284,7 @@ impl EffectManager {
                 sub_order: 0,
                 metadata: ProgramMetadata::default(),
             },
+            None,
             None,
             None,
         )
