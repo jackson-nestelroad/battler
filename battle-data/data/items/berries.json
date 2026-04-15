@@ -2,11 +2,16 @@
   "cheriberry": {
     "name": "Cheri Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Fire" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Fire"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -22,11 +27,16 @@
   "chestoberry": {
     "name": "Chesto Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Water" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Water"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -42,11 +52,16 @@
   "pechaberry": {
     "name": "Pecha Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Electric" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Electric"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -68,11 +83,16 @@
   "rawstberry": {
     "name": "Rawst Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Grass" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Grass"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -88,11 +108,16 @@
   "aspearberry": {
     "name": "Aspear Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Ice" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Ice"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -109,11 +134,16 @@
     "name": "Leppa Berry",
     "target": "Party",
     "input": "MoveSlot",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Fighting" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Fighting"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -150,11 +180,16 @@
   "oranberry": {
     "name": "Oran Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Poison" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Poison"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -170,11 +205,16 @@
   "persimberry": {
     "name": "Persim Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Ground" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Ground"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -193,11 +233,16 @@
   "lumberry": {
     "name": "Lum Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Flying" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Flying"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -220,11 +265,16 @@
   "sitrusberry": {
     "name": "Sitrus Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Psychic" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Psychic"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
@@ -241,11 +291,16 @@
   "figyberry": {
     "name": "Figy Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Bug" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Bug"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": [
         "condition:eatberrybyhealthitembase",
@@ -259,17 +314,26 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": { "values": { "stat": "atk" } }
+      "local_data": {
+        "values": {
+          "stat": "atk"
+        }
+      }
     }
   },
   "wikiberry": {
     "name": "Wiki Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Rock" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Rock"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": [
         "condition:eatberrybyhealthitembase",
@@ -283,17 +347,26 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": { "values": { "stat": "spa" } }
+      "local_data": {
+        "values": {
+          "stat": "spa"
+        }
+      }
     }
   },
   "magoberry": {
     "name": "Mago Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Ghost" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Ghost"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": [
         "condition:eatberrybyhealthitembase",
@@ -307,17 +380,26 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": { "values": { "stat": "spe" } }
+      "local_data": {
+        "values": {
+          "stat": "spe"
+        }
+      }
     }
   },
   "aguavberry": {
     "name": "Aguav Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Dragon" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Dragon"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": [
         "condition:eatberrybyhealthitembase",
@@ -331,17 +413,26 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": { "values": { "stat": "spd" } }
+      "local_data": {
+        "values": {
+          "stat": "spd"
+        }
+      }
     }
   },
   "iapapaberry": {
     "name": "Iapapa Berry",
     "target": "Party",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Dark" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Dark"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": [
         "condition:eatberrybyhealthitembase",
@@ -355,452 +446,756 @@
         "on_player_use": ["eat_given_item: $mon $this.id"],
         "on_try_eat_item": ["if !$target.can_heal:", ["return false"]]
       },
-      "local_data": { "values": { "stat": "def" } }
+      "local_data": {
+        "values": {
+          "stat": "def"
+        }
+      }
     }
   },
   "razzberry": {
     "name": "Razz Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Steel" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Steel"
+      }
+    },
+    "flags": ["Berry"]
   },
   "blukberry": {
     "name": "Bluk Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Fire" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Fire"
+      }
+    },
+    "flags": ["Berry"]
   },
   "nanabberry": {
     "name": "Nanab Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Water" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Water"
+      }
+    },
+    "flags": ["Berry"]
   },
   "wepearberry": {
     "name": "Wepear Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Electric" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Electric"
+      }
+    },
+    "flags": ["Berry"]
   },
   "pinapberry": {
     "name": "Pinap Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Grass" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Grass"
+      }
+    },
+    "flags": ["Berry"]
   },
   "pomegberry": {
     "name": "Pomeg Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Ice" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Ice"
+      }
+    },
+    "flags": ["Berry"]
   },
   "kelpsyberry": {
     "name": "Kelpsy Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Fighting" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Fighting"
+      }
+    },
+    "flags": ["Berry"]
   },
   "qualotberry": {
     "name": "Qualot Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Poison" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Poison"
+      }
+    },
+    "flags": ["Berry"]
   },
   "hondewberry": {
     "name": "Hondew Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Ground" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Ground"
+      }
+    },
+    "flags": ["Berry"]
   },
   "grepaberry": {
     "name": "Grepa Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Flying" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Flying"
+      }
+    },
+    "flags": ["Berry"]
   },
   "tamatoberry": {
     "name": "Tamato Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Psychic" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Psychic"
+      }
+    },
+    "flags": ["Berry"]
   },
   "cornnberry": {
     "name": "Cornn Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Bug" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Bug"
+      }
+    },
+    "flags": ["Berry"]
   },
   "magostberry": {
     "name": "Magost Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Rock" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Rock"
+      }
+    },
+    "flags": ["Berry"]
   },
   "rabutaberry": {
     "name": "Rabuta Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Ghost" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Ghost"
+      }
+    },
+    "flags": ["Berry"]
   },
   "nomelberry": {
     "name": "Nomel Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Dragon" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Dragon"
+      }
+    },
+    "flags": ["Berry"]
   },
   "spelonberry": {
     "name": "Spelon Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Dark" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Dark"
+      }
+    },
+    "flags": ["Berry"]
   },
   "pamtreberry": {
     "name": "Pamtre Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 90, "type": "Steel" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 90,
+        "type": "Steel"
+      }
+    },
+    "flags": ["Berry"]
   },
   "watmelberry": {
     "name": "Watmel Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Fire" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Fire"
+      }
+    },
+    "flags": ["Berry"]
   },
   "durinberry": {
     "name": "Durin Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Water" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Water"
+      }
+    },
+    "flags": ["Berry"]
   },
   "belueberry": {
     "name": "Belue Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Electric" }
-    }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Electric"
+      }
+    },
+    "flags": ["Berry"]
   },
   "occaberry": {
     "name": "Occa Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Fire" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Fire"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Fire" } }
+      "local_data": {
+        "values": {
+          "type": "Fire"
+        }
+      }
     }
   },
   "passhoberry": {
     "name": "Passho Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Water" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Water"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Water" } }
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
+      }
     }
   },
   "wacanberry": {
     "name": "Wacan Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Electric" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Electric"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Electric" } }
+      "local_data": {
+        "values": {
+          "type": "Electric"
+        }
+      }
     }
   },
   "rindoberry": {
     "name": "Rindo Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Grass" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Grass"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Grass" } }
+      "local_data": {
+        "values": {
+          "type": "Grass"
+        }
+      }
     }
   },
   "yacheberry": {
     "name": "Yache Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Ice" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Ice"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Ice" } }
+      "local_data": {
+        "values": {
+          "type": "Ice"
+        }
+      }
     }
   },
   "chopleberry": {
     "name": "Chople Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Fighting" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Fighting"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Fighting" } }
+      "local_data": {
+        "values": {
+          "type": "Fighting"
+        }
+      }
     }
   },
   "kebiaberry": {
     "name": "Kebia Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Poison" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Poison"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Poison" } }
+      "local_data": {
+        "values": {
+          "type": "Poison"
+        }
+      }
     }
   },
   "shucaberry": {
     "name": "Shuca Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Ground" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Ground"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Ground" } }
+      "local_data": {
+        "values": {
+          "type": "Ground"
+        }
+      }
     }
   },
   "cobaberry": {
     "name": "Coba Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Flying" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Flying"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Flying" } }
+      "local_data": {
+        "values": {
+          "type": "Flying"
+        }
+      }
     }
   },
   "payapaberry": {
     "name": "Payapa Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Psychic" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Psychic"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Psychic" } }
+      "local_data": {
+        "values": {
+          "type": "Psychic"
+        }
+      }
     }
   },
   "tangaberry": {
     "name": "Tanga Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Bug" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Bug"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Bug" } }
+      "local_data": {
+        "values": {
+          "type": "Bug"
+        }
+      }
     }
   },
   "chartiberry": {
     "name": "Charti Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Rock" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Rock"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Rock" } }
+      "local_data": {
+        "values": {
+          "type": "Rock"
+        }
+      }
     }
   },
   "kasibberry": {
     "name": "Kasib Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Ghost" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Ghost"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Ghost" } }
+      "local_data": {
+        "values": {
+          "type": "Ghost"
+        }
+      }
     }
   },
   "habanberry": {
     "name": "Haban Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Dragon" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Dragon"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Dragon" } }
+      "local_data": {
+        "values": {
+          "type": "Dragon"
+        }
+      }
     }
   },
   "colburberry": {
     "name": "Colbur Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Dark" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Dark"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Dark" } }
+      "local_data": {
+        "values": {
+          "type": "Dark"
+        }
+      }
     }
   },
   "babiriberry": {
     "name": "Babiri Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Steel" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Steel"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Steel" } }
+      "local_data": {
+        "values": {
+          "type": "Steel"
+        }
+      }
     }
   },
   "chilanberry": {
     "name": "Chilan Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Normal" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Normal"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Normal" } }
+      "local_data": {
+        "values": {
+          "type": "Normal"
+        }
+      }
     }
   },
   "liechiberry": {
     "name": "Liechi Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Grass" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Grass"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": { "on_eat": ["boost: $mon 'atk:1'"] }
+      "callbacks": {
+        "on_eat": ["boost: $mon 'atk:1'"]
+      }
     }
   },
   "ganlonberry": {
     "name": "Ganlon Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Ice" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Ice"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": { "on_eat": ["boost: $mon 'def:1'"] }
+      "callbacks": {
+        "on_eat": ["boost: $mon 'def:1'"]
+      }
     }
   },
   "salacberry": {
     "name": "Salac Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Fighting" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Fighting"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": { "on_eat": ["boost: $mon 'spe:1'"] }
+      "callbacks": {
+        "on_eat": ["boost: $mon 'spe:1'"]
+      }
     }
   },
   "petayaberry": {
     "name": "Petaya Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Poison" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Poison"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": { "on_eat": ["boost: $mon 'spa:1'"] }
+      "callbacks": {
+        "on_eat": ["boost: $mon 'spa:1'"]
+      }
     }
   },
   "apicotberry": {
     "name": "Apicot Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Ground" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Ground"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": { "on_eat": ["boost: $mon 'spd:1'"] }
+      "callbacks": {
+        "on_eat": ["boost: $mon 'spd:1'"]
+      }
     }
   },
   "lansatberry": {
     "name": "Lansat Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Flying" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Flying"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": { "on_eat": ["add_volatile: $mon focusenergy"] }
+      "callbacks": {
+        "on_eat": ["add_volatile: $mon focusenergy"]
+      }
     }
   },
   "starfberry": {
     "name": "Starf Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Psychic" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Psychic"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
       "callbacks": {
@@ -823,23 +1218,37 @@
   },
   "enigmaberry": {
     "name": "Enigma Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Bug" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Bug"
+      }
     },
-    "effect": { "delegates": ["condition:damagereducingberryitembase"] }
+    "flags": ["Berry", "DamageReducingBerry"],
+    "effect": {
+      "delegates": ["condition:damagereducingberryitembase"]
+    }
   },
   "micleberry": {
     "name": "Micle Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Rock" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Rock"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "delegates": ["condition:eatberrybyhealthitembase"],
-      "callbacks": { "on_eat": ["add_volatile: $mon $this.id"] }
+      "callbacks": {
+        "on_eat": ["add_volatile: $mon $this.id"]
+      }
     },
     "condition": {
       "callbacks": {
@@ -852,11 +1261,16 @@
   },
   "custapberry": {
     "name": "Custap Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Ghost" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Ghost"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_sub_priority": {
@@ -875,11 +1289,16 @@
   },
   "jabocaberry": {
     "name": "Jaboca Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Dragon" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Dragon"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_damaging_hit": [
@@ -894,11 +1313,16 @@
   },
   "rowapberry": {
     "name": "Rowap Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Dark" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Dark"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_damaging_hit": [
@@ -913,23 +1337,37 @@
   },
   "roseliberry": {
     "name": "Roseli Berry",
-    "flags": ["Berry", "DamageReducingBerry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 80, "type": "Fairy" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 80,
+        "type": "Fairy"
+      }
     },
+    "flags": ["Berry", "DamageReducingBerry"],
     "effect": {
       "delegates": ["condition:damagereducingberryitembase"],
-      "local_data": { "values": { "type": "Fairy" } }
+      "local_data": {
+        "values": {
+          "type": "Fairy"
+        }
+      }
     }
   },
   "keeberry": {
     "name": "Kee Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Fairy" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Fairy"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects": [
@@ -942,11 +1380,16 @@
   },
   "marangaberry": {
     "name": "Maranga Berry",
-    "flags": ["Berry"],
     "special_data": {
-      "fling": { "power": 10 },
-      "natural_gift": { "power": 100, "type": "Dark" }
+      "fling": {
+        "power": 10
+      },
+      "natural_gift": {
+        "power": 100,
+        "type": "Dark"
+      }
     },
+    "flags": ["Berry"],
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects": [

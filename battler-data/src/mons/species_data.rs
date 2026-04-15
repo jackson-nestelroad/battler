@@ -103,12 +103,6 @@ pub struct SpeciesData {
     pub max_hp: Option<u16>,
     /// Base stats.
     pub base_stats: StatTable,
-    /// Learnset, which contains all legal moves for this species.
-    ///
-    /// The learnset also defines how moves are learned by the species
-    /// ([`crate::mons::MoveSource`]).
-    #[serde(default)]
-    pub learnset: LearnSet,
 
     /// Pre-evolution, if it exists.
     pub prevo: Option<String>,
@@ -149,6 +143,13 @@ pub struct SpeciesData {
     /// Event giveaways for this species.
     #[serde(default)]
     pub events: HashMap<String, EventData>,
+
+    /// Learnset, which contains all legal moves for this species.
+    ///
+    /// The learnset also defines how moves are learned by the species
+    /// ([`crate::mons::MoveSource`]).
+    #[serde(default)]
+    pub learnset: LearnSet,
 
     /// Dynamic battle effects.
     #[serde(default)]

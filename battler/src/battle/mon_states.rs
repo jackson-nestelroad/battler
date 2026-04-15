@@ -1,5 +1,6 @@
 use alloc::vec::Vec;
 
+use anyhow::Result;
 use battler_data::{
     Id,
     MoveFlag,
@@ -11,6 +12,7 @@ use crate::{
         ActiveMoveContext,
         Field,
         MonContext,
+        MonHandle,
         core_battle_effects,
     },
     effect::fxlang,
@@ -318,10 +320,58 @@ pub fn is_semi_invulnerable(context: &mut MonContext) -> bool {
     is_semi_invulnerable
 }
 
+/// The weather override for the [`Mon`][`crate::battle::Mon`].
+///
+/// Weather can be overridden for different events by abilities and items.
+pub fn override_weather(context: &mut MonContext) -> Option<Id> {
+    if let Some(override_weather) = context
+        .mon()
+        .volatile_state
+        .effect_cache
+        .override_weather
+        .clone()
+    {
+        return override_weather;
+    }
+    let override_weather = {
+        if let Some(weather) = core_battle_effects::run_event_for_mon_expecting_string(
+            context,
+            fxlang::BattleEvent::OverrideWeather,
+            fxlang::VariableInput::default(),
+        ) {
+            Some(Id::from(weather))
+        } else {
+            None
+        }
+    };
+    context
+        .mon_mut()
+        .volatile_state
+        .effect_cache
+        .override_weather = Some(override_weather.clone());
+    override_weather
+}
+
 /// The effective weather for the [`Mon`][`crate::battle::Mon`].
 ///
 /// Weather can be suppressed for the Mon by abilities and items.
-pub fn effective_weather(context: &mut MonContext) -> Option<Id> {
+pub fn effective_weather(
+    context: &mut MonContext,
+    origin: Option<MonHandle>,
+) -> Result<Option<Id>> {
+    let origin = origin.unwrap_or(context.mon_handle());
+    if let Some(override_weather) =
+        override_weather(&mut context.as_battle_context_mut().mon_context(origin)?)
+    {
+        return Ok(Some(override_weather));
+    }
+    Ok(effective_weather_no_override(context))
+}
+
+/// The effective weather for the [`Mon`][`crate::battle::Mon`], without any overrides.
+///
+/// Weather can be suppressed for the Mon by abilities and items.
+fn effective_weather_no_override(context: &mut MonContext) -> Option<Id> {
     if let Some(effective_weather) = context
         .mon()
         .volatile_state
@@ -331,7 +381,6 @@ pub fn effective_weather(context: &mut MonContext) -> Option<Id> {
     {
         return effective_weather;
     }
-    let weather = Field::effective_weather(context.as_battle_context_mut()).clone()?;
     let effective_weather = {
         if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
             context,
@@ -340,7 +389,7 @@ pub fn effective_weather(context: &mut MonContext) -> Option<Id> {
         ) {
             None
         } else {
-            Some(weather)
+            Field::effective_weather(context.as_battle_context_mut())
         }
     };
     context

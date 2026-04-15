@@ -4,7 +4,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Fire" } }
+      "local_data": {
+        "values": {
+          "type": "Fire"
+        }
+      }
     }
   },
   "watergem": {
@@ -12,7 +16,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Water" } }
+      "local_data": {
+        "values": {
+          "type": "Water"
+        }
+      }
     }
   },
   "electricgem": {
@@ -20,7 +28,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Electric" } }
+      "local_data": {
+        "values": {
+          "type": "Electric"
+        }
+      }
     }
   },
   "grassgem": {
@@ -28,7 +40,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Grass" } }
+      "local_data": {
+        "values": {
+          "type": "Grass"
+        }
+      }
     }
   },
   "icegem": {
@@ -36,7 +52,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Ice" } }
+      "local_data": {
+        "values": {
+          "type": "Ice"
+        }
+      }
     }
   },
   "fightinggem": {
@@ -44,7 +64,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Fighting" } }
+      "local_data": {
+        "values": {
+          "type": "Fighting"
+        }
+      }
     }
   },
   "poisongem": {
@@ -52,7 +76,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Poison" } }
+      "local_data": {
+        "values": {
+          "type": "Poison"
+        }
+      }
     }
   },
   "groundgem": {
@@ -60,7 +88,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Ground" } }
+      "local_data": {
+        "values": {
+          "type": "Ground"
+        }
+      }
     }
   },
   "flyinggem": {
@@ -68,7 +100,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Flying" } }
+      "local_data": {
+        "values": {
+          "type": "Flying"
+        }
+      }
     }
   },
   "psychicgem": {
@@ -76,7 +112,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Psychic" } }
+      "local_data": {
+        "values": {
+          "type": "Psychic"
+        }
+      }
     }
   },
   "buggem": {
@@ -84,7 +124,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Bug" } }
+      "local_data": {
+        "values": {
+          "type": "Bug"
+        }
+      }
     }
   },
   "rockgem": {
@@ -92,7 +136,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Rock" } }
+      "local_data": {
+        "values": {
+          "type": "Rock"
+        }
+      }
     }
   },
   "ghostgem": {
@@ -100,7 +148,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Ghost" } }
+      "local_data": {
+        "values": {
+          "type": "Ghost"
+        }
+      }
     }
   },
   "darkgem": {
@@ -108,7 +160,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Dark" } }
+      "local_data": {
+        "values": {
+          "type": "Dark"
+        }
+      }
     }
   },
   "steelgem": {
@@ -116,7 +172,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Steel" } }
+      "local_data": {
+        "values": {
+          "type": "Steel"
+        }
+      }
     }
   },
   "dragongem": {
@@ -124,7 +184,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Dragon" } }
+      "local_data": {
+        "values": {
+          "type": "Dragon"
+        }
+      }
     }
   },
   "normalgem": {
@@ -132,7 +196,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Normal" } }
+      "local_data": {
+        "values": {
+          "type": "Normal"
+        }
+      }
     }
   },
   "fairygem": {
@@ -140,7 +208,11 @@
     "flags": ["Gem"],
     "effect": {
       "delegates": ["condition:gemitembase"],
-      "local_data": { "values": { "type": "Fairy" } }
+      "local_data": {
+        "values": {
+          "type": "Fairy"
+        }
+      }
     }
   }
 }

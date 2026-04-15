@@ -653,19 +653,6 @@ where
                                 .map(|val| ValueRefToStoredValue::new(None, ValueRef::Type(*val)))
                                 .collect(),
                             ),
-                            "effective_weather" => {
-                                match mon_states::effective_weather(
-                                    &mut context.mon_context(mon_handle)?,
-                                ) {
-                                    Some(weather) => ValueRef::Effect(
-                                        context
-                                            .battle_context_mut()
-                                            .battle_mut()
-                                            .get_effect_handle_by_id(&weather)?,
-                                    ),
-                                    None => ValueRef::Undefined,
-                                }
-                            }
                             "effective_terrain" => {
                                 match mon_states::effective_terrain(
                                     &mut context.mon_context(mon_handle)?,

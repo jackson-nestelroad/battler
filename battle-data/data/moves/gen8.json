@@ -3,8 +3,8 @@
     "name": "Max Guard",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "priority": 4,
     "target": "User",
     "flags": [
@@ -18,7 +18,9 @@
       "NoSleepTalk",
       "Stalling"
     ],
-    "hit_effect": { "volatile_status": "maxguard" },
+    "hit_effect": {
+      "volatile_status": "maxguard"
+    },
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
@@ -47,9 +49,9 @@
     "name": "Dynamax Cannon",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -66,9 +68,9 @@
     "name": "Snipe Shot",
     "category": "Special",
     "primary_type": "Water",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "crit_ratio": 2,
@@ -78,9 +80,9 @@
     "name": "Jaw Lock",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Bite", "Contact", "Mirror", "Protect"]
   },
@@ -88,8 +90,8 @@
     "name": "Stuff Cheeks",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Snatch"]
   },
@@ -97,8 +99,8 @@
     "name": "No Retreat",
     "category": "Status",
     "primary_type": "Fighting",
-    "pp": 5,
     "accuracy": "exempt",
+    "pp": 5,
     "target": "User",
     "flags": ["Snatch"]
   },
@@ -106,8 +108,8 @@
     "name": "Tar Shot",
     "category": "Status",
     "primary_type": "Rock",
-    "pp": 15,
     "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"]
   },
@@ -115,8 +117,8 @@
     "name": "Magic Powder",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 20,
     "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "Powder", "Protect", "Reflectable"]
   },
@@ -124,21 +126,22 @@
     "name": "Dragon Darts",
     "category": "Physical",
     "primary_type": "Dragon",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 50,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoParentalBond", "Protect"],
     "multihit": 2,
-    "smart_target": true,
-    "max_move": { "base_power": 130 }
+    "max_move": {
+      "base_power": 130
+    }
   },
   "teatime": {
     "name": "Teatime",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "All",
     "flags": ["BypassSubstitute"]
   },
@@ -146,8 +149,8 @@
     "name": "Octolock",
     "category": "Status",
     "primary_type": "Fighting",
-    "pp": 15,
     "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -155,9 +158,9 @@
     "name": "Bolt Beak",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 85,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -165,9 +168,9 @@
     "name": "Fishious Rend",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 85,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Bite", "Contact", "Mirror", "Protect"]
   },
@@ -175,8 +178,8 @@
     "name": "Court Change",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "target": "All",
     "flags": ["Mirror"]
   },
@@ -184,8 +187,9 @@
     "name": "Max Flare",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 10,
+    "base_power": 100,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -213,8 +217,8 @@
     "name": "Max Flutterby",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -243,8 +247,8 @@
     "name": "Max Lightning",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -272,8 +276,8 @@
     "name": "Max Strike",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -302,8 +306,8 @@
     "name": "Max Knuckle",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -332,8 +336,8 @@
     "name": "Max Phantasm",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -362,8 +366,8 @@
     "name": "Max Hailstorm",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -391,8 +395,8 @@
     "name": "Max Ooze",
     "category": "Physical",
     "primary_type": "Poison",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -421,8 +425,8 @@
     "name": "Max Geyser",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -450,8 +454,8 @@
     "name": "Max Airstream",
     "category": "Physical",
     "primary_type": "Flying",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -480,8 +484,8 @@
     "name": "Max Starfall",
     "category": "Physical",
     "primary_type": "Fairy",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -509,8 +513,8 @@
     "name": "Max Wyrmwind",
     "category": "Physical",
     "primary_type": "Dragon",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -539,8 +543,8 @@
     "name": "Max Mindstorm",
     "category": "Physical",
     "primary_type": "Psychic",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -568,8 +572,8 @@
     "name": "Max Rockfall",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -597,8 +601,8 @@
     "name": "Max Quake",
     "category": "Physical",
     "primary_type": "Ground",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -627,8 +631,8 @@
     "name": "Max Darkness",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -657,8 +661,8 @@
     "name": "Max Overgrowth",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -686,8 +690,8 @@
     "name": "Max Steelspike",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentFoe",
     "flags": [
       "FailCopycat",
@@ -716,8 +720,8 @@
     "name": "Clangorous Soul",
     "category": "Status",
     "primary_type": "Dragon",
-    "pp": 5,
     "accuracy": 100,
+    "pp": 5,
     "target": "User",
     "flags": ["Dance", "NoMetronome", "Snatch", "Sound"]
   },
@@ -725,9 +729,9 @@
     "name": "Body Press",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
     "override_offensive_stat": "def"
@@ -736,8 +740,8 @@
     "name": "Decorate",
     "category": "Status",
     "primary_type": "Fairy",
-    "pp": 15,
     "accuracy": "exempt",
+    "pp": 15,
     "target": "Normal",
     "flags": ["BypassMaxGuard", "NoMetronome"]
   },
@@ -745,9 +749,9 @@
     "name": "Drum Beating",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -755,9 +759,9 @@
     "name": "Snap Trap",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 35,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -765,9 +769,9 @@
     "name": "Pyro Ball",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 120,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Bullet", "Mirror", "NoMetronome", "Protect", "Thawing"]
   },
@@ -775,9 +779,9 @@
     "name": "Behemoth Blade",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -793,9 +797,9 @@
     "name": "Behemoth Bash",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": [
       "Contact",
@@ -810,9 +814,9 @@
     "name": "Aura Wheel",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 110,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -820,9 +824,9 @@
     "name": "Breaking Swipe",
     "category": "Physical",
     "primary_type": "Dragon",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 15,
     "target": "AllAdjacentFoes",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -830,9 +834,9 @@
     "name": "Branch Poke",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 40,
-    "accuracy": 100,
     "base_power": 40,
+    "accuracy": 100,
+    "pp": 40,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -840,9 +844,9 @@
     "name": "Overdrive",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "AllAdjacentFoes",
     "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "Protect", "Sound"]
   },
@@ -850,9 +854,9 @@
     "name": "Apple Acid",
     "category": "Special",
     "primary_type": "Grass",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -860,9 +864,9 @@
     "name": "Grav Apple",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -870,9 +874,9 @@
     "name": "Spirit Break",
     "category": "Physical",
     "primary_type": "Fairy",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 75,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -880,9 +884,9 @@
     "name": "Strange Steam",
     "category": "Special",
     "primary_type": "Fairy",
-    "pp": 10,
-    "accuracy": 95,
     "base_power": 90,
+    "accuracy": 95,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -890,8 +894,8 @@
     "name": "Life Dew",
     "category": "Status",
     "primary_type": "Water",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Allies",
     "flags": [
       "BypassMaxGuard",
@@ -900,14 +904,16 @@
       "NoMetronome",
       "Snatch"
     ],
-    "hit_effect": { "heal_percent": "25%" }
+    "hit_effect": {
+      "heal_percent": "25%"
+    }
   },
   "obstruct": {
     "name": "Obstruct",
     "category": "Status",
     "primary_type": "Dark",
-    "pp": 10,
     "accuracy": 100,
+    "pp": 10,
     "priority": 4,
     "target": "User",
     "flags": ["FailInstruct", "NoMetronome", "Stalling"]
@@ -916,9 +922,9 @@
     "name": "False Surrender",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 10,
-    "accuracy": "exempt",
     "base_power": 80,
+    "accuracy": "exempt",
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -926,9 +932,9 @@
     "name": "Meteor Assault",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 150,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["FailInstruct", "Mirror", "NoMetronome", "Protect", "Recharge"]
   },
@@ -936,9 +942,9 @@
     "name": "Eternabeam",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 160,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect", "Recharge"]
   },
@@ -946,9 +952,9 @@
     "name": "Steel Beam",
     "category": "Special",
     "primary_type": "Steel",
-    "pp": 5,
-    "accuracy": 95,
     "base_power": 140,
+    "accuracy": 95,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -956,9 +962,9 @@
     "name": "Expanding Force",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -966,9 +972,9 @@
     "name": "Steel Roller",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 130,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -976,21 +982,23 @@
     "name": "Scale Shot",
     "category": "Physical",
     "primary_type": "Dragon",
-    "pp": 20,
-    "accuracy": 90,
     "base_power": 25,
+    "accuracy": 90,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "multihit": [2, 5],
-    "max_move": { "base_power": 130 }
+    "max_move": {
+      "base_power": 130
+    }
   },
   "meteorbeam": {
     "name": "Meteor Beam",
     "category": "Special",
     "primary_type": "Rock",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 120,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Charge", "Mirror", "Protect"]
   },
@@ -998,9 +1006,9 @@
     "name": "Shell Side Arm",
     "category": "Special",
     "primary_type": "Poison",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1008,9 +1016,9 @@
     "name": "Misty Explosion",
     "category": "Special",
     "primary_type": "Fairy",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 100,
+    "accuracy": 100,
+    "pp": 5,
     "target": "AllAdjacent",
     "flags": ["Mirror", "Protect"],
     "self_destruct": true
@@ -1019,9 +1027,9 @@
     "name": "Grassy Glide",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 55,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1029,31 +1037,35 @@
     "name": "Rising Voltage",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "max_move": { "base_power": 140 }
+    "max_move": {
+      "base_power": 140
+    }
   },
   "terrainpulse": {
     "name": "Terrain Pulse",
     "category": "Special",
     "primary_type": "Normal",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 50,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Pulse"],
-    "max_move": { "base_power": 130 }
+    "max_move": {
+      "base_power": 130
+    }
   },
   "skittersmack": {
     "name": "Skitter Smack",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 70,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1061,9 +1073,9 @@
     "name": "Burning Jealousy",
     "category": "Special",
     "primary_type": "Fire",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 5,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect"]
   },
@@ -1071,9 +1083,9 @@
     "name": "Lash Out",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 75,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1081,9 +1093,9 @@
     "name": "Poltergeist",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 5,
-    "accuracy": 90,
     "base_power": 110,
+    "accuracy": 90,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1091,8 +1103,8 @@
     "name": "Corrosive Gas",
     "category": "Status",
     "primary_type": "Poison",
-    "pp": 40,
     "accuracy": 100,
+    "pp": 40,
     "target": "AllAdjacent",
     "flags": ["Mirror", "Protect", "Reflectable"]
   },
@@ -1100,8 +1112,8 @@
     "name": "Coaching",
     "category": "Status",
     "primary_type": "Fighting",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "AdjacentAlly",
     "flags": ["BypassMaxGuard", "BypassSubstitute"]
   },
@@ -1109,44 +1121,49 @@
     "name": "Flip Turn",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 20,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "user_switch": true
   },
   "tripleaxel": {
     "name": "Triple Axel",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 20,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "multiaccuracy": true,
     "multihit": 3,
-    "max_move": { "base_power": 140 }
+    "max_move": {
+      "base_power": 140
+    }
   },
   "dualwingbeat": {
     "name": "Dual Wingbeat",
     "category": "Physical",
     "primary_type": "Flying",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 40,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2,
-    "max_move": { "base_power": 130 }
+    "max_move": {
+      "base_power": 130
+    }
   },
   "scorchingsands": {
     "name": "Scorching Sands",
     "category": "Special",
     "primary_type": "Ground",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 70,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"]
   },
@@ -1154,8 +1171,8 @@
     "name": "Jungle Healing",
     "category": "Status",
     "primary_type": "Grass",
-    "pp": 10,
     "accuracy": "exempt",
+    "pp": 10,
     "target": "Allies",
     "flags": ["BypassMaxGuard", "BypassSubstitute", "Heal", "NoMetronome"]
   },
@@ -1163,9 +1180,9 @@
     "name": "Wicked Blow",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 75,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "will_crit": true
@@ -1174,22 +1191,24 @@
     "name": "Surging Strikes",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 25,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "multihit": 3,
     "will_crit": true,
-    "max_move": { "base_power": 130 }
+    "max_move": {
+      "base_power": 130
+    }
   },
   "thundercage": {
     "name": "Thunder Cage",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 15,
-    "accuracy": 90,
     "base_power": 80,
+    "accuracy": 90,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1197,9 +1216,9 @@
     "name": "Dragon Energy",
     "category": "Special",
     "primary_type": "Dragon",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 150,
+    "accuracy": 100,
+    "pp": 5,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1207,9 +1226,9 @@
     "name": "Freezing Glare",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1217,9 +1236,9 @@
     "name": "Fiery Wrath",
     "category": "Special",
     "primary_type": "Dark",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1227,9 +1246,9 @@
     "name": "Thunderous Kick",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
@@ -1237,9 +1256,9 @@
     "name": "Glacial Lance",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 5,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1247,9 +1266,9 @@
     "name": "Astral Barrage",
     "category": "Special",
     "primary_type": "Ghost",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 5,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1257,9 +1276,9 @@
     "name": "Eerie Spell",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
   },
@@ -1267,9 +1286,9 @@
     "name": "Dire Claw",
     "category": "Physical",
     "primary_type": "Poison",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1277,9 +1296,9 @@
     "name": "Psyshield Bash",
     "category": "Physical",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 70,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"]
   },
@@ -1287,9 +1306,9 @@
     "name": "Power Shift",
     "category": "Status",
     "primary_type": "Normal",
-    "pp": 10,
-    "accuracy": "exempt",
     "base_power": 0,
+    "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["NoMetronome", "Snatch"]
   },
@@ -1297,9 +1316,9 @@
     "name": "Stone Axe",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 15,
-    "accuracy": 90,
     "base_power": 65,
+    "accuracy": 90,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
@@ -1307,9 +1326,9 @@
     "name": "Springtide Storm",
     "category": "Special",
     "primary_type": "Fairy",
-    "pp": 5,
-    "accuracy": 80,
     "base_power": 100,
+    "accuracy": 80,
+    "pp": 5,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "NoMetronome", "Protect", "Wind"]
   },
@@ -1317,9 +1336,9 @@
     "name": "Mystical Power",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": 90,
     "base_power": 70,
+    "accuracy": 90,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1327,9 +1346,9 @@
     "name": "Raging Fury",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 10,
     "target": "RandomNormal",
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
@@ -1337,31 +1356,36 @@
     "name": "Wave Crash",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect"],
-    "recoil": { "percent": "1/3" }
+    "recoil": {
+      "percent": "1/3"
+    }
   },
   "chloroblast": {
     "name": "Chloroblast",
     "category": "Special",
     "primary_type": "Grass",
-    "pp": 5,
-    "accuracy": 95,
     "base_power": 150,
+    "accuracy": 95,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "recoil": { "percent": "1/2", "base": "usermaxhp" }
+    "recoil": {
+      "percent": "1/2",
+      "base": "usermaxhp"
+    }
   },
   "mountaingale": {
     "name": "Mountain Gale",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 10,
-    "accuracy": 85,
     "base_power": 100,
+    "accuracy": 85,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1369,9 +1393,9 @@
     "name": "Victory Dance",
     "category": "Status",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": "exempt",
     "base_power": 0,
+    "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Dance", "Snatch"]
   },
@@ -1379,9 +1403,9 @@
     "name": "Headlong Rush",
     "category": "Physical",
     "primary_type": "Ground",
-    "pp": 5,
-    "accuracy": 100,
     "base_power": 120,
+    "accuracy": 100,
+    "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"]
   },
@@ -1389,9 +1413,9 @@
     "name": "Barb Barrage",
     "category": "Physical",
     "primary_type": "Poison",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1399,9 +1423,9 @@
     "name": "Esper Wing",
     "category": "Special",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 80,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "crit_ratio": 2
@@ -1410,9 +1434,9 @@
     "name": "Bitter Malice",
     "category": "Special",
     "primary_type": "Ghost",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 75,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1420,9 +1444,9 @@
     "name": "Shelter",
     "category": "Status",
     "primary_type": "Steel",
-    "pp": 10,
-    "accuracy": "exempt",
     "base_power": 0,
+    "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Snatch"]
   },
@@ -1430,9 +1454,9 @@
     "name": "Triple Arrows",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 10,
-    "accuracy": 100,
     "base_power": 90,
+    "accuracy": 100,
+    "pp": 10,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "crit_ratio": 2
@@ -1441,9 +1465,9 @@
     "name": "Infernal Parade",
     "category": "Special",
     "primary_type": "Ghost",
-    "pp": 15,
-    "accuracy": 100,
     "base_power": 60,
+    "accuracy": 100,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Mirror", "Protect"]
   },
@@ -1451,9 +1475,9 @@
     "name": "Ceaseless Edge",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 15,
-    "accuracy": 90,
     "base_power": 65,
+    "accuracy": 90,
+    "pp": 15,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
@@ -1461,9 +1485,9 @@
     "name": "Bleakwind Storm",
     "category": "Special",
     "primary_type": "Flying",
-    "pp": 10,
-    "accuracy": 80,
     "base_power": 100,
+    "accuracy": 80,
+    "pp": 10,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Wind"]
   },
@@ -1471,9 +1495,9 @@
     "name": "Wildbolt Storm",
     "category": "Special",
     "primary_type": "Electric",
-    "pp": 10,
-    "accuracy": 80,
     "base_power": 100,
+    "accuracy": 80,
+    "pp": 10,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Wind"]
   },
@@ -1481,9 +1505,9 @@
     "name": "Sandsear Storm",
     "category": "Special",
     "primary_type": "Ground",
-    "pp": 10,
-    "accuracy": 80,
     "base_power": 100,
+    "accuracy": 80,
+    "pp": 10,
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect", "Wind"]
   },
@@ -1491,9 +1515,9 @@
     "name": "Lunar Blessing",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 5,
-    "accuracy": "exempt",
     "base_power": 0,
+    "accuracy": "exempt",
+    "pp": 5,
     "target": "Allies",
     "flags": ["Heal", "Snatch"]
   },
@@ -1501,9 +1525,9 @@
     "name": "Take Heart",
     "category": "Status",
     "primary_type": "Psychic",
-    "pp": 10,
-    "accuracy": "exempt",
     "base_power": 0,
+    "accuracy": "exempt",
+    "pp": 10,
     "target": "User",
     "flags": ["Snatch"]
   },
@@ -1750,7 +1774,9 @@
       "WeakenThroughProtection"
     ],
     "user_effect": {},
-    "effect": { "delegates": ["condition:ignoreabilitymovebase"] }
+    "effect": {
+      "delegates": ["condition:ignoreabilitymovebase"]
+    }
   },
   "gmaxfinale": {
     "name": "G-Max Finale",
@@ -1802,7 +1828,9 @@
       "WeakenThroughProtection"
     ],
     "user_effect": {},
-    "effect": { "delegates": ["move:gmaxdrumsolo"] }
+    "effect": {
+      "delegates": ["move:gmaxdrumsolo"]
+    }
   },
   "gmaxfoamburst": {
     "name": "G-Max Foam Burst",
@@ -1913,7 +1941,9 @@
       "WeakenThroughProtection"
     ],
     "user_effect": {},
-    "effect": { "delegates": ["move:gmaxdrumsolo"] }
+    "effect": {
+      "delegates": ["move:gmaxdrumsolo"]
+    }
   },
   "gmaxmalodor": {
     "name": "G-Max Malodor",
@@ -1992,7 +2022,9 @@
       "NoSketch",
       "NoSleepTalk"
     ],
-    "effect": { "delegates": ["condition:breakprotectmovebase"] }
+    "effect": {
+      "delegates": ["condition:breakprotectmovebase"]
+    }
   },
   "gmaxrapidflow": {
     "name": "G-Max Rapid Flow",
@@ -2011,7 +2043,9 @@
       "NoSketch",
       "NoSleepTalk"
     ],
-    "effect": { "delegates": ["condition:breakprotectmovebase"] }
+    "effect": {
+      "delegates": ["condition:breakprotectmovebase"]
+    }
   },
   "gmaxreplenish": {
     "name": "G-Max Replenish",
@@ -2540,7 +2574,11 @@
     "user_effect": {},
     "effect": {
       "delegates": ["condition:defogmovebase;on_hit=>on_hit_user"],
-      "local_data": { "values": { "use_source_foe_side": "true" } }
+      "local_data": {
+        "values": {
+          "use_source_foe_side": "true"
+        }
+      }
     }
   }
 }

@@ -241,60 +241,173 @@
       }
     }
   },
-  "energypowder": { "name": "Energy Powder", "flags": ["Medicine"] },
-  "energyroot": { "name": "Energy Root", "flags": ["Medicine"] },
-  "healpowder": { "name": "Heal Powder", "flags": ["Medicine"] },
-  "revivalherb": { "name": "Revival Herb", "flags": ["Medicine"] },
-  "ether": { "name": "Ether", "flags": ["Medicine"] },
-  "maxether": { "name": "Max Ether", "flags": ["Medicine"] },
-  "elixir": { "name": "Elixir", "flags": ["Medicine"] },
-  "maxelixir": { "name": "Max Elixir", "flags": ["Medicine"] },
-  "lavacookie": { "name": "Lava Cookie", "flags": ["Medicine"] },
-  "sacredash": { "name": "Sacred Ash", "flags": ["Medicine"] },
-  "hpup": { "name": "HP Up", "flags": ["Medicine"] },
-  "protein": { "name": "Protein", "flags": ["Medicine"] },
-  "iron": { "name": "Iron", "flags": ["Medicine"] },
-  "carbos": { "name": "Carbos", "flags": ["Medicine"] },
-  "calcium": { "name": "Calcium", "flags": ["Medicine"] },
-  "rarecandy": { "name": "Rare Candy", "flags": ["Medicine"] },
-  "ppup": { "name": "PP Up", "flags": ["Medicine"] },
-  "zinc": { "name": "Zinc", "flags": ["Medicine"] },
-  "ppmax": { "name": "PP Max", "flags": ["Medicine"] },
+  "energypowder": {
+    "name": "Energy Powder",
+    "flags": ["Medicine"]
+  },
+  "energyroot": {
+    "name": "Energy Root",
+    "flags": ["Medicine"]
+  },
+  "healpowder": {
+    "name": "Heal Powder",
+    "flags": ["Medicine"]
+  },
+  "revivalherb": {
+    "name": "Revival Herb",
+    "flags": ["Medicine"]
+  },
+  "ether": {
+    "name": "Ether",
+    "flags": ["Medicine"]
+  },
+  "maxether": {
+    "name": "Max Ether",
+    "flags": ["Medicine"]
+  },
+  "elixir": {
+    "name": "Elixir",
+    "flags": ["Medicine"]
+  },
+  "maxelixir": {
+    "name": "Max Elixir",
+    "flags": ["Medicine"]
+  },
+  "lavacookie": {
+    "name": "Lava Cookie",
+    "flags": ["Medicine"]
+  },
+  "sacredash": {
+    "name": "Sacred Ash",
+    "flags": ["Medicine"]
+  },
+  "hpup": {
+    "name": "HP Up",
+    "flags": ["Medicine"]
+  },
+  "protein": {
+    "name": "Protein",
+    "flags": ["Medicine"]
+  },
+  "iron": {
+    "name": "Iron",
+    "flags": ["Medicine"]
+  },
+  "carbos": {
+    "name": "Carbos",
+    "flags": ["Medicine"]
+  },
+  "calcium": {
+    "name": "Calcium",
+    "flags": ["Medicine"]
+  },
+  "rarecandy": {
+    "name": "Rare Candy",
+    "flags": ["Medicine"]
+  },
+  "ppup": {
+    "name": "PP Up",
+    "flags": ["Medicine"]
+  },
+  "zinc": {
+    "name": "Zinc",
+    "flags": ["Medicine"]
+  },
+  "ppmax": {
+    "name": "PP Max",
+    "flags": ["Medicine"]
+  },
   "oldgateau": {
     "name": "Old Gateau",
     "flags": ["Medicine"],
-    "effect": { "delegates": ["item:fullheal"] }
+    "effect": {
+      "delegates": ["item:fullheal"]
+    }
   },
-  "blueflute": { "name": "Blue Flute", "flags": ["Medicine"] },
-  "yellowflute": { "name": "Yellow Flute", "flags": ["Medicine"] },
-  "redflute": { "name": "Red Flute", "flags": ["Medicine"] },
-  "blackflute": { "name": "Black Flute", "flags": ["Medicine"] },
-  "whiteflute": { "name": "White Flute", "flags": ["Medicine"] },
-  "ragecandybar": { "name": "Rage Candy Bar", "flags": ["Medicine"] },
+  "blueflute": {
+    "name": "Blue Flute",
+    "flags": ["Medicine"]
+  },
+  "yellowflute": {
+    "name": "Yellow Flute",
+    "flags": ["Medicine"]
+  },
+  "redflute": {
+    "name": "Red Flute",
+    "flags": ["Medicine"]
+  },
+  "blackflute": {
+    "name": "Black Flute",
+    "flags": ["Medicine"]
+  },
+  "whiteflute": {
+    "name": "White Flute",
+    "flags": ["Medicine"]
+  },
+  "ragecandybar": {
+    "name": "Rage Candy Bar",
+    "flags": ["Medicine"]
+  },
   "sweetheart": {
     "name": "Sweet Heart",
     "target": "Party",
     "flags": ["Medicine"],
-    "effect": { "delegates": ["item:potion"] }
+    "effect": {
+      "delegates": ["item:potion"]
+    }
   },
-  "healthwing": { "name": "Health Feather", "flags": ["Medicine"] },
-  "musclewing": { "name": "Muscle Feather", "flags": ["Medicine"] },
-  "resistwing": { "name": "Resist Feather", "flags": ["Medicine"] },
-  "geniuswing": { "name": "Genius Feather", "flags": ["Medicine"] },
-  "cleverwing": { "name": "Clever Feather", "flags": ["Medicine"] },
-  "swiftwing": { "name": "Swift Feather", "flags": ["Medicine"] },
-  "prettywing": { "name": "Pretty Feather", "flags": ["Medicine"] },
+  "healthwing": {
+    "name": "Health Feather",
+    "flags": ["Medicine"]
+  },
+  "musclewing": {
+    "name": "Muscle Feather",
+    "flags": ["Medicine"]
+  },
+  "resistwing": {
+    "name": "Resist Feather",
+    "flags": ["Medicine"]
+  },
+  "geniuswing": {
+    "name": "Genius Feather",
+    "flags": ["Medicine"]
+  },
+  "cleverwing": {
+    "name": "Clever Feather",
+    "flags": ["Medicine"]
+  },
+  "swiftwing": {
+    "name": "Swift Feather",
+    "flags": ["Medicine"]
+  },
+  "prettywing": {
+    "name": "Pretty Feather",
+    "flags": ["Medicine"]
+  },
   "casteliacone": {
     "name": "Casteliacone",
     "flags": ["Medicine"],
-    "effect": { "delegates": ["item:fullheal"] }
+    "effect": {
+      "delegates": ["item:fullheal"]
+    }
   },
   "lumiosegalette": {
     "name": "Lumiose Galette",
     "flags": ["Medicine"],
-    "effect": { "delegates": ["item:fullheal"] }
+    "effect": {
+      "delegates": ["item:fullheal"]
+    }
   },
-  "bigmalasada": { "name": "Big Malasada", "flags": ["Medicine"] },
-  "pewtercrunchies": { "name": "Pewter Crunchies", "flags": ["Medicine"] },
-  "maxhoney": { "name": "Max Honey", "flags": ["Medicine"] }
+  "bigmalasada": {
+    "name": "Big Malasada",
+    "flags": ["Medicine"]
+  },
+  "pewtercrunchies": {
+    "name": "Pewter Crunchies",
+    "flags": ["Medicine"]
+  },
+  "maxhoney": {
+    "name": "Max Honey",
+    "flags": ["Medicine"]
+  }
 }

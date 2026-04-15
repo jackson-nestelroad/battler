@@ -1,566 +1,1934 @@
 {
   "gengarite": {
     "name": "Gengarite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Gengar", "into": "Gengar-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Gengar",
+        "into": "Gengar-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "gengar" } }
+      "local_data": {
+        "values": {
+          "species": "gengar"
+        }
+      }
     }
   },
   "gardevoirite": {
     "name": "Gardevoirite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Gardevoir", "into": "Gardevoir-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Gardevoir",
+        "into": "Gardevoir-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "gardevoir" } }
+      "local_data": {
+        "values": {
+          "species": "gardevoir"
+        }
+      }
     }
   },
   "ampharosite": {
     "name": "Ampharosite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Ampharos", "into": "Ampharos-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Ampharos",
+        "into": "Ampharos-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "ampharos" } }
+      "local_data": {
+        "values": {
+          "species": "ampharos"
+        }
+      }
     }
   },
   "venusaurite": {
     "name": "Venusaurite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Venusaur", "into": "Venusaur-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Venusaur",
+        "into": "Venusaur-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "venusaur" } }
+      "local_data": {
+        "values": {
+          "species": "venusaur"
+        }
+      }
     }
   },
   "charizarditex": {
     "name": "Charizardite X",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Charizard", "into": "Charizard-Mega-X" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Charizard",
+        "into": "Charizard-Mega-X"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "charizard" } }
+      "local_data": {
+        "values": {
+          "species": "charizard"
+        }
+      }
     }
   },
   "blastoisinite": {
     "name": "Blastoisinite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Blastoise", "into": "Blastoise-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Blastoise",
+        "into": "Blastoise-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "blastoise" } }
+      "local_data": {
+        "values": {
+          "species": "blastoise"
+        }
+      }
     }
   },
   "mewtwonitex": {
     "name": "Mewtwonite X",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Mewtwo", "into": "Mewtwo-Mega-X" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Mewtwo",
+        "into": "Mewtwo-Mega-X"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "mewtwo" } }
+      "local_data": {
+        "values": {
+          "species": "mewtwo"
+        }
+      }
     }
   },
   "mewtwonitey": {
     "name": "Mewtwonite Y",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Mewtwo", "into": "Mewtwo-Mega-Y" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Mewtwo",
+        "into": "Mewtwo-Mega-Y"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "mewtwo" } }
+      "local_data": {
+        "values": {
+          "species": "mewtwo"
+        }
+      }
     }
   },
   "blazikenite": {
     "name": "Blazikenite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Blaziken", "into": "Blaziken-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Blaziken",
+        "into": "Blaziken-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "blaziken" } }
+      "local_data": {
+        "values": {
+          "species": "blaziken"
+        }
+      }
     }
   },
   "medichamite": {
     "name": "Medichamite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Medicham", "into": "Medicham-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Medicham",
+        "into": "Medicham-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "medicham" } }
+      "local_data": {
+        "values": {
+          "species": "medicham"
+        }
+      }
     }
   },
   "houndoominite": {
     "name": "Houndoominite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Houndoom", "into": "Houndoom-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Houndoom",
+        "into": "Houndoom-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "houndoom" } }
+      "local_data": {
+        "values": {
+          "species": "houndoom"
+        }
+      }
     }
   },
   "aggronite": {
     "name": "Aggronite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Aggron", "into": "Aggron-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Aggron",
+        "into": "Aggron-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "aggron" } }
+      "local_data": {
+        "values": {
+          "species": "aggron"
+        }
+      }
     }
   },
   "banettite": {
     "name": "Banettite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Banette", "into": "Banette-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Banette",
+        "into": "Banette-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "bannett" } }
+      "local_data": {
+        "values": {
+          "species": "bannett"
+        }
+      }
     }
   },
   "tyranitarite": {
     "name": "Tyranitarite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Tyranitar", "into": "Tyranitar-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Tyranitar",
+        "into": "Tyranitar-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "tyranitar" } }
+      "local_data": {
+        "values": {
+          "species": "tyranitar"
+        }
+      }
     }
   },
   "scizorite": {
     "name": "Scizorite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Scizor", "into": "Scizor-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Scizor",
+        "into": "Scizor-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "scizor" } }
+      "local_data": {
+        "values": {
+          "species": "scizor"
+        }
+      }
     }
   },
   "pinsirite": {
     "name": "Pinsirite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Pinsir", "into": "Pinsir-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Pinsir",
+        "into": "Pinsir-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "pinsir" } }
+      "local_data": {
+        "values": {
+          "species": "pinsir"
+        }
+      }
     }
   },
   "aerodactylite": {
     "name": "Aerodactylite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Aerodactyl", "into": "Aerodactyl-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Aerodactyl",
+        "into": "Aerodactyl-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "aerodactyl" } }
+      "local_data": {
+        "values": {
+          "species": "aerodactyl"
+        }
+      }
     }
   },
   "lucarionite": {
     "name": "Lucarionite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Lucario", "into": "Lucario-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Lucario",
+        "into": "Lucario-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "lucario" } }
+      "local_data": {
+        "values": {
+          "species": "lucario"
+        }
+      }
     }
   },
   "abomasite": {
     "name": "Abomasite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Abomasnow", "into": "Abomasnow-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Abomasnow",
+        "into": "Abomasnow-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "abomasnow" } }
+      "local_data": {
+        "values": {
+          "species": "abomasnow"
+        }
+      }
     }
   },
   "kangaskhanite": {
     "name": "Kangaskhanite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Kangaskhan", "into": "Kangaskhan-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Kangaskhan",
+        "into": "Kangaskhan-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "kangaskhan" } }
+      "local_data": {
+        "values": {
+          "species": "kangaskhan"
+        }
+      }
     }
   },
   "gyaradosite": {
     "name": "Gyaradosite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Gyarados", "into": "Gyarados-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Gyarados",
+        "into": "Gyarados-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "gyarados" } }
+      "local_data": {
+        "values": {
+          "species": "gyarados"
+        }
+      }
     }
   },
   "absolite": {
     "name": "Absolite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Absol", "into": "Absol-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Absol",
+        "into": "Absol-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "absol" } }
+      "local_data": {
+        "values": {
+          "species": "absol"
+        }
+      }
     }
   },
   "charizarditey": {
     "name": "Charizardite Y",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Charizard", "into": "Charizard-Mega-Y" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Charizard",
+        "into": "Charizard-Mega-Y"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "charizard" } }
+      "local_data": {
+        "values": {
+          "species": "charizard"
+        }
+      }
     }
   },
   "alakazite": {
     "name": "Alakazite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Alakazam", "into": "Alakazam-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Alakazam",
+        "into": "Alakazam-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "alakazam" } }
+      "local_data": {
+        "values": {
+          "species": "alakazam"
+        }
+      }
     }
   },
   "heracronite": {
     "name": "Heracronite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Heracross", "into": "Heracross-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Heracross",
+        "into": "Heracross-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "heracross" } }
+      "local_data": {
+        "values": {
+          "species": "heracross"
+        }
+      }
     }
   },
   "mawilite": {
     "name": "Mawilite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Mawile", "into": "Mawile-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Mawile",
+        "into": "Mawile-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "mawile" } }
+      "local_data": {
+        "values": {
+          "species": "mawile"
+        }
+      }
     }
   },
   "manectite": {
     "name": "Manectite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Manectric", "into": "Manectric-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Manectric",
+        "into": "Manectric-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "manectric" } }
+      "local_data": {
+        "values": {
+          "species": "manectric"
+        }
+      }
     }
   },
   "garchompite": {
     "name": "Garchompite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Garchomp", "into": "Garchomp-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Garchomp",
+        "into": "Garchomp-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "garchomp" } }
+      "local_data": {
+        "values": {
+          "species": "garchomp"
+        }
+      }
     }
   },
   "latiasite": {
     "name": "Latiasite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Latias", "into": "Latias-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Latias",
+        "into": "Latias-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "latias" } }
+      "local_data": {
+        "values": {
+          "species": "latias"
+        }
+      }
     }
   },
   "latiosite": {
     "name": "Latiosite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Latios", "into": "Latios-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Latios",
+        "into": "Latios-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "latios" } }
+      "local_data": {
+        "values": {
+          "species": "latios"
+        }
+      }
     }
   },
   "swampertite": {
     "name": "Swampertite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Swampert", "into": "Swampert-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Swampert",
+        "into": "Swampert-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "swampert" } }
+      "local_data": {
+        "values": {
+          "species": "swampert"
+        }
+      }
     }
   },
   "sceptilite": {
     "name": "Sceptilite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Sceptile", "into": "Sceptile-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Sceptile",
+        "into": "Sceptile-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "sceptile" } }
+      "local_data": {
+        "values": {
+          "species": "sceptile"
+        }
+      }
     }
   },
   "sablenite": {
     "name": "Sablenite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Sableye", "into": "Sableye-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Sableye",
+        "into": "Sableye-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "sableye" } }
+      "local_data": {
+        "values": {
+          "species": "sableye"
+        }
+      }
     }
   },
   "altarianite": {
     "name": "Altarianite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Altaria", "into": "Altaria-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Altaria",
+        "into": "Altaria-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "altaria" } }
+      "local_data": {
+        "values": {
+          "species": "altaria"
+        }
+      }
     }
   },
   "galladite": {
     "name": "Galladite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Gallade", "into": "Gallade-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Gallade",
+        "into": "Gallade-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "gallade" } }
+      "local_data": {
+        "values": {
+          "species": "gallade"
+        }
+      }
     }
   },
   "audinite": {
     "name": "Audinite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Audino", "into": "Audino-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Audino",
+        "into": "Audino-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "audino" } }
+      "local_data": {
+        "values": {
+          "species": "audino"
+        }
+      }
     }
   },
   "metagrossite": {
     "name": "Metagrossite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Metagross", "into": "Metagross-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Metagross",
+        "into": "Metagross-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "metagross" } }
+      "local_data": {
+        "values": {
+          "species": "metagross"
+        }
+      }
     }
   },
   "sharpedonite": {
     "name": "Sharpedonite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Sharpedo", "into": "Sharpedo-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Sharpedo",
+        "into": "Sharpedo-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "sharpedo" } }
+      "local_data": {
+        "values": {
+          "species": "sharpedo"
+        }
+      }
     }
   },
   "slowbronite": {
     "name": "Slowbronite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Slowbro", "into": "Slowbro-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Slowbro",
+        "into": "Slowbro-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "slowbro" } }
+      "local_data": {
+        "values": {
+          "species": "slowbro"
+        }
+      }
     }
   },
   "steelixite": {
     "name": "Steelixite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Steelix", "into": "Steelix-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Steelix",
+        "into": "Steelix-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "steelix" } }
+      "local_data": {
+        "values": {
+          "species": "steelix"
+        }
+      }
     }
   },
   "pidgeotite": {
     "name": "Pidgeotite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Pidgeot", "into": "Pidgeot-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Pidgeot",
+        "into": "Pidgeot-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "pidgeot" } }
+      "local_data": {
+        "values": {
+          "species": "pidgeot"
+        }
+      }
     }
   },
   "glalitite": {
     "name": "Glalitite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Glalie", "into": "Glalie-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Glalie",
+        "into": "Glalie-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "glalie" } }
+      "local_data": {
+        "values": {
+          "species": "glalie"
+        }
+      }
     }
   },
   "diancite": {
     "name": "Diancite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Diancie", "into": "Diancie-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Diancie",
+        "into": "Diancie-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "diancie" } }
+      "local_data": {
+        "values": {
+          "species": "diancie"
+        }
+      }
     }
   },
   "cameruptite": {
     "name": "Cameruptite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Camerupt", "into": "Camerupt-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Camerupt",
+        "into": "Camerupt-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "camerupt" } }
+      "local_data": {
+        "values": {
+          "species": "camerupt"
+        }
+      }
     }
   },
   "lopunnite": {
     "name": "Lopunnite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Lopunny", "into": "Lopunny-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Lopunny",
+        "into": "Lopunny-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "lopunny" } }
+      "local_data": {
+        "values": {
+          "species": "lopunny"
+        }
+      }
     }
   },
   "salamencite": {
     "name": "Salamencite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Salamence", "into": "Salamence-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Salamence",
+        "into": "Salamence-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "salamence" } }
+      "local_data": {
+        "values": {
+          "species": "salamence"
+        }
+      }
     }
   },
   "beedrillite": {
     "name": "Beedrillite",
-    "flags": [],
     "special_data": {
-      "mega_evolution": { "from": "Beedrill", "into": "Beedrill-Mega" },
-      "fling": { "power": 80 }
+      "mega_evolution": {
+        "from": "Beedrill",
+        "into": "Beedrill-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
     },
+    "flags": [],
     "effect": {
       "delegates": ["condition:untakablebyspeciesitembase"],
-      "local_data": { "values": { "species": "beedrill" } }
+      "local_data": {
+        "values": {
+          "species": "beedrill"
+        }
+      }
+    }
+  },
+  "absolitez": {
+    "name": "Absolite Z",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Absol",
+        "into": "Absol-Mega-Z"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "absol"
+        }
+      }
+    }
+  },
+  "barbaracite": {
+    "name": "Barbaracite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Barbaracle",
+        "into": "Barbaracle-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "barbaracle"
+        }
+      }
+    }
+  },
+  "baxcalibrite": {
+    "name": "Baxcalibrite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Baxcalibur",
+        "into": "Baxcalibur-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "baxcalibur"
+        }
+      }
+    }
+  },
+  "chandelurite": {
+    "name": "Chandelurite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Chandelure",
+        "into": "Chandelure-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "chandelure"
+        }
+      }
+    }
+  },
+  "chesnaughtite": {
+    "name": "Chesnaughtite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Chesnaught",
+        "into": "Chesnaught-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "chesnaught"
+        }
+      }
+    }
+  },
+  "chimechite": {
+    "name": "Chimechite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Chimecho",
+        "into": "Chimecho-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "chimecho"
+        }
+      }
+    }
+  },
+  "clefablite": {
+    "name": "Clefablite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Clefable",
+        "into": "Clefable-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "clefable"
+        }
+      }
+    }
+  },
+  "crabominite": {
+    "name": "Crabominite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Crabominable",
+        "into": "Crabominable-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "crabominable"
+        }
+      }
+    }
+  },
+  "darkranite": {
+    "name": "Darkranite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Darkrai",
+        "into": "Darkrai-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "darkrai"
+        }
+      }
+    }
+  },
+  "delphoxite": {
+    "name": "Delphoxite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Delphox",
+        "into": "Delphox-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "delphox"
+        }
+      }
+    }
+  },
+  "dragalgite": {
+    "name": "Dragalgite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Dragalge",
+        "into": "Dragalge-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "dragalge"
+        }
+      }
+    }
+  },
+  "dragoninite": {
+    "name": "Dragoninite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Dragonite",
+        "into": "Dragonite-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "dragonite"
+        }
+      }
+    }
+  },
+  "drampanite": {
+    "name": "Drampanite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Drampa",
+        "into": "Drampa-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "drampa"
+        }
+      }
+    }
+  },
+  "eeelektrossite": {
+    "name": "Eelektrossite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Eelektross",
+        "into": "Eelektross-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "eelektross"
+        }
+      }
+    }
+  },
+  "emboarite": {
+    "name": "Emboarite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Emboar",
+        "into": "Emboar-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "emboar"
+        }
+      }
+    }
+  },
+  "excadrite": {
+    "name": "Excadrite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Excadrill",
+        "into": "Excadrill-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "excadrill"
+        }
+      }
+    }
+  },
+  "falinksite": {
+    "name": "Falinksite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Falinks",
+        "into": "Falinks-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "falinks"
+        }
+      }
+    }
+  },
+  "feraligite": {
+    "name": "Feraligite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Feraligatr",
+        "into": "Feraligatr-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "feraligatr"
+        }
+      }
+    }
+  },
+  "floettite": {
+    "name": "Floettite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Floette-Eternal",
+        "into": "Floette-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "floette"
+        }
+      }
+    }
+  },
+  "froslassite": {
+    "name": "Froslassite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Froslass",
+        "into": "Froslass-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "froslass"
+        }
+      }
+    }
+  },
+  "garchompitez": {
+    "name": "Garchompite Z",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Garchomp",
+        "into": "Garchomp-Mega-Z"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "garchomp"
+        }
+      }
+    }
+  },
+  "glimmoranite": {
+    "name": "Glimmoranite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Glimmora",
+        "into": "Glimmora-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "glimmora"
+        }
+      }
+    }
+  },
+  "golisopite": {
+    "name": "Golisopite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Golisopod",
+        "into": "Golisopod-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "golisopod"
+        }
+      }
+    }
+  },
+  "golurkite": {
+    "name": "Golurkite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Golurk",
+        "into": "Golurk-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "golurk"
+        }
+      }
+    }
+  },
+  "greninjite": {
+    "name": "Greninjite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Greninja",
+        "into": "Greninja-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "greninja"
+        }
+      }
+    }
+  },
+  "hawluchanite": {
+    "name": "Hawluchanite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Hawlucha",
+        "into": "Hawlucha-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "hawlucha"
+        }
+      }
+    }
+  },
+  "heatranite": {
+    "name": "Heatranite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Heatran",
+        "into": "Heatran-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "heatran"
+        }
+      }
+    }
+  },
+  "lucarionitez": {
+    "name": "Lucarionite Z",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Lucario",
+        "into": "Lucario-Mega-Z"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "lucario"
+        }
+      }
+    }
+  },
+  "magearnite": {
+    "name": "Magearnite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Magearna",
+        "into": "Magearna-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "magearna"
+        }
+      }
+    }
+  },
+  "malamarite": {
+    "name": "Malamarite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Malamar",
+        "into": "Malamar-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "malamar"
+        }
+      }
+    }
+  },
+  "meganiumite": {
+    "name": "Meganiumite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Meganium",
+        "into": "Meganium-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "meganium"
+        }
+      }
+    }
+  },
+  "meowsticite": {
+    "name": "Meowsticite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Meowstic",
+        "into": "Meowstic-M-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "meowstic"
+        }
+      }
+    }
+  },
+  "pyroarite": {
+    "name": "Pyroarite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Pyroar",
+        "into": "Pyroar-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "pyroar"
+        }
+      }
+    }
+  },
+  "raichunitex": {
+    "name": "Raichunite X",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Raichu",
+        "into": "Raichu-Mega-X"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "raichu"
+        }
+      }
+    }
+  },
+  "raichunitey": {
+    "name": "Raichunite Y",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Raichu",
+        "into": "Raichu-Mega-Y"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "raichu"
+        }
+      }
+    }
+  },
+  "scolipite": {
+    "name": "Scolipite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Scolipede",
+        "into": "Scolipede-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "scolipede"
+        }
+      }
+    }
+  },
+  "scovillainite": {
+    "name": "Scovillainite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Scovillain",
+        "into": "Scovillain-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "scovillain"
+        }
+      }
+    }
+  },
+  "scraftinite": {
+    "name": "Scraftinite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Scrafty",
+        "into": "Scrafty-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "scrafty"
+        }
+      }
+    }
+  },
+  "skarmorite": {
+    "name": "Skarmorite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Skarmory",
+        "into": "Skarmory-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "skarmory"
+        }
+      }
+    }
+  },
+  "staraptite": {
+    "name": "Staraptite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Staraptor",
+        "into": "Staraptor-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "staraptor"
+        }
+      }
+    }
+  },
+  "starminite": {
+    "name": "Starminite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Starmie",
+        "into": "Starmie-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "starmie"
+        }
+      }
+    }
+  },
+  "tatsugirinite": {
+    "name": "Tatsugirinite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Tatsugiri",
+        "into": "Tatsugiri-Curly-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "tatsugiri"
+        }
+      }
+    }
+  },
+  "victreebelite": {
+    "name": "Victreebelite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Victreebel",
+        "into": "Victreebel-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "victreebel"
+        }
+      }
+    }
+  },
+  "zeraorite": {
+    "name": "Zeraora",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Zeraora",
+        "into": "Zeraora-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "zeraora"
+        }
+      }
+    }
+  },
+  "zygardite": {
+    "name": "Zygardite",
+    "special_data": {
+      "mega_evolution": {
+        "from": "Zygarde-Complete",
+        "into": "Zygarde-Mega"
+      },
+      "fling": {
+        "power": 80
+      }
+    },
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "zygarde"
+        }
+      }
     }
   }
 }

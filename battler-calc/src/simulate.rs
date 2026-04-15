@@ -964,7 +964,12 @@ fn calculate_recoil(
 
     modify_recoil_damage(context, &mut recoil);
 
-    if context.move_data.struggle_recoil {
+    if context
+        .move_data
+        .recoil
+        .as_ref()
+        .is_some_and(|recoil| recoil.struggle)
+    {
         let struggle_recoil = attacker_max_hp.map(|val| Fraction::new(val, 4));
         recoil.mul(struggle_recoil, "Struggle");
     }

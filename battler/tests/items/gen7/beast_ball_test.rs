@@ -179,7 +179,7 @@ fn master_ball_works_for_ultra_beasts() {
         r#"[
             "useitem|player:protagonist|name:Master Ball|target:Buzzwole,wild,1",
             "catch|player:protagonist|mon:Buzzwole,wild,1|item:Master Ball|shakes:4",
-            "exp|mon:Bulbasaur,protagonist,1|exp:2851",
+            "exp|mon:Bulbasaur,protagonist,1|exp:2571",
             "win|side:0"
         ]"#,
     )

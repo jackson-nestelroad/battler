@@ -165,6 +165,7 @@ fn run_effect_event_with_errors(
     event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
     effect_mon_handle: Option<MonHandle>,
+    event_origin_mon_handle: Option<MonHandle>,
     suppressed: bool,
 ) -> Result<fxlang::ProgramEvalResult> {
     // Effect was suppressed somewhere up the stack, so we should skip the callback.
@@ -244,6 +245,7 @@ fn run_effect_event_with_errors(
         event_state,
         effect_state_connector.clone(),
         effect_mon_handle,
+        event_origin_mon_handle,
     );
 
     if let Some(effect_state_connector) = &effect_state_connector {
@@ -270,6 +272,7 @@ fn run_active_move_event_with_errors(
         ActiveMoveEffectStateConnector::new(context.active_move_handle()).make_dynamic();
     let effect_mon_handle = context.mon_handle();
     let effect_handle = context.effect_handle().clone();
+    let event_origin_mon_handle = context.mon_handle();
 
     let result = match target {
         MoveTargetForEvent::Mon(mon) => run_effect_event_with_errors(
@@ -283,6 +286,7 @@ fn run_active_move_event_with_errors(
             &fxlang::EventState::default(),
             Some(effect_state_connector),
             Some(effect_mon_handle),
+            Some(event_origin_mon_handle),
             false,
         )?,
         MoveTargetForEvent::Side(side) => run_effect_event_with_errors(
@@ -294,6 +298,7 @@ fn run_active_move_event_with_errors(
             &fxlang::EventState::default(),
             Some(effect_state_connector),
             Some(effect_mon_handle),
+            Some(event_origin_mon_handle),
             false,
         )?,
         MoveTargetForEvent::Field => run_effect_event_with_errors(
@@ -305,6 +310,7 @@ fn run_active_move_event_with_errors(
             &fxlang::EventState::default(),
             Some(effect_state_connector),
             Some(effect_mon_handle),
+            Some(event_origin_mon_handle),
             false,
         )?,
         MoveTargetForEvent::User => run_effect_event_with_errors(
@@ -318,6 +324,7 @@ fn run_active_move_event_with_errors(
             &fxlang::EventState::default(),
             Some(effect_state_connector),
             Some(effect_mon_handle),
+            Some(event_origin_mon_handle),
             false,
         )?,
         MoveTargetForEvent::UserWithTarget(target) => run_effect_event_with_errors(
@@ -331,6 +338,7 @@ fn run_active_move_event_with_errors(
             &fxlang::EventState::default(),
             Some(effect_state_connector),
             Some(effect_mon_handle),
+            Some(event_origin_mon_handle),
             false,
         )?,
         MoveTargetForEvent::None => run_effect_event_with_errors(
@@ -342,6 +350,7 @@ fn run_active_move_event_with_errors(
             &fxlang::EventState::default(),
             Some(effect_state_connector),
             Some(effect_mon_handle),
+            Some(event_origin_mon_handle),
             false,
         )?,
     };
@@ -388,6 +397,7 @@ fn run_effect_event_by_handle(
     event_state: &fxlang::EventState,
     effect_state_connector: Option<fxlang::DynamicEffectStateConnector>,
     effect_mon_handle: Option<MonHandle>,
+    event_origin_mon_handle: Option<MonHandle>,
     suppressed: bool,
 ) -> fxlang::ProgramEvalResult {
     match run_effect_event_with_errors(
@@ -399,6 +409,7 @@ fn run_effect_event_by_handle(
         event_state,
         effect_state_connector,
         effect_mon_handle,
+        event_origin_mon_handle,
         suppressed,
     ) {
         Ok(result) => result,
@@ -442,6 +453,7 @@ pub enum MoveTargetForEvent {
 struct CallbackHandle {
     pub applied_effect_handle: AppliedEffectHandle,
     pub event: fxlang::BattleEvent,
+    pub event_origin_mon_handle: Option<MonHandle>,
     pub modifier: fxlang::BattleEventModifier,
     pub suppressed: bool,
 }
@@ -451,11 +463,13 @@ impl CallbackHandle {
         effect_handle: EffectHandle,
         event: fxlang::BattleEvent,
         modifier: fxlang::BattleEventModifier,
+        event_origin_mon_handle: Option<MonHandle>,
         location: AppliedEffectLocation,
     ) -> Self {
         Self {
             applied_effect_handle: AppliedEffectHandle::new(effect_handle, location),
             event,
+            event_origin_mon_handle,
             modifier,
             suppressed: false,
         }
@@ -488,6 +502,7 @@ fn run_callback_with_errors(
             .applied_effect_handle
             .effect_state_connector(),
         callback_handle.applied_effect_handle.mon_handle(),
+        callback_handle.event_origin_mon_handle,
         callback_handle.suppressed,
     );
 
@@ -581,6 +596,11 @@ pub fn run_mon_status_event(
         .ok()?
         .clone();
     let target_handle = context.target_handle();
+    let origin = event_origin_mon_handle(
+        event,
+        Some(context.target_handle()),
+        context.source_handle(),
+    );
     run_callback_under_applying_effect(
         context,
         input,
@@ -588,6 +608,7 @@ pub fn run_mon_status_event(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::MonStatus(target_handle),
         ),
     )
@@ -606,6 +627,11 @@ pub fn run_mon_volatile_event(
         .ok()?
         .clone();
     let target_handle = context.target_handle();
+    let origin = event_origin_mon_handle(
+        event,
+        Some(context.target_handle()),
+        context.source_handle(),
+    );
     run_callback_under_applying_effect(
         context,
         input,
@@ -613,6 +639,7 @@ pub fn run_mon_volatile_event(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::MonVolatile(target_handle),
         ),
     )
@@ -626,6 +653,11 @@ pub fn run_mon_ability_event(
 ) -> Option<fxlang::Value> {
     let ability = mon_states::effective_ability(&mut context.target_context().ok()?)?;
     let target_handle = context.target_handle();
+    let origin = event_origin_mon_handle(
+        event,
+        Some(context.target_handle()),
+        context.source_handle(),
+    );
     run_callback_under_applying_effect(
         context,
         input,
@@ -633,6 +665,7 @@ pub fn run_mon_ability_event(
             EffectHandle::Ability(ability),
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::MonAbility(target_handle),
         ),
     )
@@ -646,6 +679,11 @@ pub fn run_mon_item_event(
 ) -> Option<fxlang::Value> {
     let item = mon_states::effective_item(&mut context.target_context().ok()?)?;
     let target_handle = context.target_handle();
+    let origin = event_origin_mon_handle(
+        event,
+        Some(context.target_handle()),
+        context.source_handle(),
+    );
     run_callback_under_applying_effect(
         context,
         input,
@@ -653,6 +691,7 @@ pub fn run_mon_item_event(
             EffectHandle::Item(item),
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::MonItem(target_handle),
         ),
     )
@@ -673,6 +712,7 @@ pub fn run_mon_effect_event(
             effect.clone(),
             event,
             fxlang::BattleEventModifier::default(),
+            Some(mon_handle),
             AppliedEffectLocation::MonInactiveMove(mon_handle),
         ),
     )
@@ -691,6 +731,7 @@ pub fn run_side_condition_event(
         .ok()?
         .clone();
     let side_index = context.side().index;
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     run_callback_under_side_effect(
         context,
         input,
@@ -698,6 +739,7 @@ pub fn run_side_condition_event(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::SideCondition(side_index),
         ),
     )
@@ -717,6 +759,7 @@ pub fn run_slot_condition_event(
         .ok()?
         .clone();
     let side_index = context.side().index;
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     run_callback_under_side_effect(
         context,
         input,
@@ -724,6 +767,7 @@ pub fn run_slot_condition_event(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::SlotCondition(side_index, slot),
         ),
     )
@@ -741,6 +785,7 @@ pub fn run_terrain_event(
         .get_effect_handle_by_id(&weather)
         .ok()?
         .clone();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     run_callback_under_field_effect(
         context,
         input,
@@ -748,6 +793,7 @@ pub fn run_terrain_event(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::Terrain,
         ),
     )
@@ -765,6 +811,7 @@ pub fn run_weather_event(
         .get_effect_handle_by_id(&weather)
         .ok()?
         .clone();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     run_callback_under_field_effect(
         context,
         input,
@@ -772,6 +819,7 @@ pub fn run_weather_event(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::Weather,
         ),
     )
@@ -789,6 +837,7 @@ pub fn run_pseudo_weather_event(
         .get_effect_handle_by_id(&pseudo_weather)
         .ok()?
         .clone();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     run_callback_under_field_effect(
         context,
         input,
@@ -796,6 +845,7 @@ pub fn run_pseudo_weather_event(
             effect_handle,
             event,
             fxlang::BattleEventModifier::default(),
+            origin,
             AppliedEffectLocation::PseudoWeather,
         ),
     )
@@ -813,6 +863,11 @@ pub fn run_applying_effect_event(
         Some(source) => AppliedEffectLocation::Mon(source),
         None => AppliedEffectLocation::None,
     };
+    let origin = event_origin_mon_handle(
+        event,
+        Some(context.target_handle()),
+        context.source_handle(),
+    );
     match context.source_applying_effect_context().ok()? {
         Some(mut context) => run_callback_under_applying_effect(
             &mut context,
@@ -821,6 +876,7 @@ pub fn run_applying_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
+                origin,
                 location,
             ),
         ),
@@ -831,6 +887,7 @@ pub fn run_applying_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
+                origin,
                 location,
             ),
         ),
@@ -875,6 +932,7 @@ pub fn run_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
+                None,
                 AppliedEffectLocation::None,
             ),
         ),
@@ -885,6 +943,7 @@ pub fn run_effect_event(
                 effect,
                 event,
                 fxlang::BattleEventModifier::default(),
+                None,
                 AppliedEffectLocation::None,
             ),
         ),
@@ -895,6 +954,7 @@ fn find_callbacks_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     modifier: fxlang::BattleEventModifier,
+    origin: Option<MonHandle>,
     mon: MonHandle,
 ) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
@@ -904,6 +964,7 @@ fn find_callbacks_on_mon(
         EffectHandle::Condition(Id::from_known("mon")),
         event,
         modifier,
+        origin,
         AppliedEffectLocation::None,
     ));
 
@@ -914,6 +975,7 @@ fn find_callbacks_on_mon(
                 EffectHandle::Condition(Id::from(format!("{typ}type"))),
                 event,
                 modifier,
+                origin,
                 AppliedEffectLocation::MonType(mon),
             ));
         }
@@ -925,6 +987,7 @@ fn find_callbacks_on_mon(
             status_effect_handle.clone(),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::MonStatus(mon),
         ));
     }
@@ -934,6 +997,7 @@ fn find_callbacks_on_mon(
             volatile_status_handle.clone(),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::MonVolatile(mon),
         ));
     }
@@ -950,6 +1014,7 @@ fn find_callbacks_on_mon(
                 EffectHandle::Ability(ability),
                 event,
                 modifier,
+                origin,
                 AppliedEffectLocation::MonAbility(mon),
             );
             callback_handle.suppressed = suppressed;
@@ -968,6 +1033,7 @@ fn find_callbacks_on_mon(
                 EffectHandle::Item(item),
                 event,
                 modifier,
+                origin,
                 AppliedEffectLocation::MonItem(mon),
             );
             callback_handle.suppressed = suppressed;
@@ -979,6 +1045,7 @@ fn find_callbacks_on_mon(
         EffectHandle::Species(context.mon().volatile_state.species.clone()),
         event,
         modifier,
+        origin,
         AppliedEffectLocation::Mon(context.mon_handle()),
     ));
 
@@ -987,6 +1054,7 @@ fn find_callbacks_on_mon(
             EffectHandle::ItemCondition(ball),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::Mon(context.mon_handle()),
         ));
     }
@@ -998,6 +1066,7 @@ fn find_callbacks_on_mon(
             EffectHandle::Condition(Id::from_known("disobedience")),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::Mon(context.mon_handle()),
         ));
     }
@@ -1007,6 +1076,7 @@ fn find_callbacks_on_mon(
             EffectHandle::Condition(Id::from_known("affection")),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::Mon(context.mon_handle()),
         ));
     }
@@ -1016,6 +1086,7 @@ fn find_callbacks_on_mon(
             EffectHandle::Condition(Id::from_known("terastallization")),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::MonTerastallization(mon),
         ));
     }
@@ -1027,6 +1098,7 @@ fn find_callbacks_on_side(
     context: &mut Context,
     event: fxlang::BattleEvent,
     modifier: fxlang::BattleEventModifier,
+    origin: Option<MonHandle>,
     side: usize,
 ) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
@@ -1040,6 +1112,7 @@ fn find_callbacks_on_side(
             side_condition_handle.clone(),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::SideCondition(side),
         ));
     }
@@ -1053,6 +1126,7 @@ fn find_callbacks_on_side(
                 slot_condition_handle.clone(),
                 event,
                 modifier,
+                origin,
                 AppliedEffectLocation::SlotCondition(side, slot),
             ));
         }
@@ -1065,6 +1139,7 @@ fn find_callbacks_on_side_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     modifier: fxlang::BattleEventModifier,
+    origin: Option<MonHandle>,
     mon: MonHandle,
 ) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
@@ -1079,6 +1154,7 @@ fn find_callbacks_on_side_on_mon(
             side_condition_handle.clone(),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::MonSideCondition(side, mon),
         ));
     }
@@ -1095,6 +1171,7 @@ fn find_callbacks_on_side_on_mon(
                     slot_condition_handle.clone(),
                     event,
                     modifier,
+                    origin,
                     AppliedEffectLocation::MonSlotCondition(side, slot, mon),
                 ));
             }
@@ -1108,6 +1185,7 @@ fn find_callbacks_on_field(
     context: &mut Context,
     event: fxlang::BattleEvent,
     modifier: fxlang::BattleEventModifier,
+    origin: Option<MonHandle>,
 ) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
 
@@ -1125,6 +1203,7 @@ fn find_callbacks_on_field(
                     weather_handle.clone(),
                     event,
                     modifier,
+                    origin,
                     AppliedEffectLocation::Weather,
                 );
                 callback_handle.suppressed = suppressed;
@@ -1147,6 +1226,7 @@ fn find_callbacks_on_field(
                     terrain_handle.clone(),
                     event,
                     modifier,
+                    origin,
                     AppliedEffectLocation::Terrain,
                 );
                 callback_handle.suppressed = suppressed;
@@ -1163,6 +1243,7 @@ fn find_callbacks_on_field(
             pseudo_weather_handle.clone(),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::PseudoWeather,
         ));
     }
@@ -1172,6 +1253,7 @@ fn find_callbacks_on_field(
             EffectHandle::Clause(rule.clone()),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::None,
         ));
     }
@@ -1183,6 +1265,7 @@ fn find_callbacks_on_field_on_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
     modifier: fxlang::BattleEventModifier,
+    origin: Option<MonHandle>,
     mon: MonHandle,
 ) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
@@ -1191,44 +1274,56 @@ fn find_callbacks_on_field_on_mon(
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressMonTerrain.callback_lookup_layer()
     {
-        if let Some(terrain) = context.battle().field.terrain.clone() {
-            let effective_terrain = mon_states::effective_terrain(&mut context);
-            let suppressed = effective_terrain.is_none();
-            if event.force_default_callback() || !suppressed {
-                let terrain_handle = context
-                    .battle_mut()
-                    .get_effect_handle_by_id(&effective_terrain.unwrap_or(terrain))?;
-                let mut callback_handle = CallbackHandle::new(
-                    terrain_handle.clone(),
-                    event,
-                    modifier,
-                    AppliedEffectLocation::MonTerrain(mon),
-                );
-                callback_handle.suppressed = suppressed;
-                callbacks.push(callback_handle);
-            }
+        let terrain = context.battle().field.terrain.clone();
+        let effective_terrain = mon_states::effective_terrain(&mut context);
+        let suppressed = terrain.is_some() && effective_terrain.is_none();
+        if (effective_terrain.is_some() && !suppressed)
+            || (terrain.is_some() && event.force_default_callback())
+        {
+            let terrain_handle = context.battle_mut().get_effect_handle_by_id(
+                &effective_terrain
+                    .or(terrain)
+                    .wrap_expectation("expected terrain")?,
+            )?;
+            let mut callback_handle = CallbackHandle::new(
+                terrain_handle.clone(),
+                event,
+                modifier,
+                origin,
+                AppliedEffectLocation::MonTerrain(mon),
+            );
+            callback_handle.suppressed = suppressed;
+            callbacks.push(callback_handle);
         }
     }
 
     if event.callback_lookup_layer()
         > fxlang::BattleEvent::SuppressMonWeather.callback_lookup_layer()
     {
-        if let Some(weather) = context.battle().field.weather.clone() {
-            let effective_weather = mon_states::effective_weather(&mut context);
-            let suppressed = effective_weather.is_none();
-            if event.force_default_callback() || !suppressed {
-                let weather_handle = context
-                    .battle_mut()
-                    .get_effect_handle_by_id(&effective_weather.unwrap_or(weather))?;
-                let mut callback_handle = CallbackHandle::new(
-                    weather_handle.clone(),
-                    event,
-                    modifier,
-                    AppliedEffectLocation::MonWeather(mon),
-                );
-                callback_handle.suppressed = suppressed;
-                callbacks.push(callback_handle);
-            }
+        let weather = context.battle().field.weather.clone();
+        let effective_weather = mon_states::effective_weather(&mut context, origin)?;
+        let suppressed = weather.is_some() && effective_weather.is_none();
+        if (effective_weather.is_some() && !suppressed)
+            || (weather.is_some() && event.force_default_callback())
+        {
+            let weather_handle = context.battle_mut().get_effect_handle_by_id(
+                &effective_weather
+                    .or(weather.clone())
+                    .wrap_expectation("expected weather")?,
+            )?;
+            let mut callback_handle = CallbackHandle::new(
+                weather_handle.clone(),
+                event,
+                modifier,
+                origin,
+                if weather.is_some() {
+                    AppliedEffectLocation::MonWeather(mon)
+                } else {
+                    AppliedEffectLocation::Mon(mon)
+                },
+            );
+            callback_handle.suppressed = suppressed;
+            callbacks.push(callback_handle);
         }
     }
 
@@ -1240,6 +1335,7 @@ fn find_callbacks_on_field_on_mon(
             pseudo_weather_handle.clone(),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::MonPseudoWeather(mon),
         ));
     }
@@ -1249,6 +1345,7 @@ fn find_callbacks_on_field_on_mon(
             EffectHandle::Clause(rule.clone()),
             event,
             modifier,
+            origin,
             AppliedEffectLocation::None,
         ));
     }
@@ -1270,6 +1367,7 @@ fn find_all_callbacks(
     event: fxlang::BattleEvent,
     target: AllEffectsTarget,
     source: Option<MonHandle>,
+    origin: Option<MonHandle>,
 ) -> Result<Vec<CallbackHandle>> {
     let mut callbacks = Vec::new();
 
@@ -1279,6 +1377,7 @@ fn find_all_callbacks(
                 context,
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
                 mon,
             )?);
             let mut context = context.mon_context(mon)?;
@@ -1287,12 +1386,14 @@ fn find_all_callbacks(
                     context.as_battle_context_mut(),
                     event,
                     fxlang::BattleEventModifier::Ally,
+                    origin,
                     mon,
                 )?);
                 callbacks.extend(find_callbacks_on_mon(
                     context.as_battle_context_mut(),
                     event,
                     fxlang::BattleEventModifier::Any,
+                    origin,
                     mon,
                 )?);
             }
@@ -1301,12 +1402,14 @@ fn find_all_callbacks(
                     context.as_battle_context_mut(),
                     event,
                     fxlang::BattleEventModifier::Foe,
+                    origin,
                     mon,
                 )?);
                 callbacks.extend(find_callbacks_on_mon(
                     context.as_battle_context_mut(),
                     event,
                     fxlang::BattleEventModifier::Any,
+                    origin,
                     mon,
                 )?);
             }
@@ -1314,6 +1417,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
                 mon,
             )?);
             let side = context.side().index;
@@ -1321,6 +1425,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::Side,
+                origin,
                 side,
             )?);
             let foe_side = context.foe_side().index;
@@ -1328,6 +1433,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::Foe,
+                origin,
                 foe_side,
             )?);
 
@@ -1335,6 +1441,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
                 mon,
             )?);
         }
@@ -1345,6 +1452,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
                 side,
             )?);
             let foe_side = context.foe_side().index;
@@ -1352,6 +1460,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::Foe,
+                origin,
                 foe_side,
             )?);
 
@@ -1359,6 +1468,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
             )?);
 
             for mon in context
@@ -1370,6 +1480,7 @@ fn find_all_callbacks(
                     context.as_battle_context_mut(),
                     event,
                     fxlang::BattleEventModifier::Side,
+                    origin,
                     mon,
                 )?);
             }
@@ -1379,6 +1490,7 @@ fn find_all_callbacks(
                 context,
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
                 side,
             )?);
             let mut context = context.side_context(side)?;
@@ -1387,6 +1499,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::Foe,
+                origin,
                 foe_side,
             )?);
 
@@ -1394,6 +1507,7 @@ fn find_all_callbacks(
                 context.as_battle_context_mut(),
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
             )?);
 
             for mon in context
@@ -1405,6 +1519,7 @@ fn find_all_callbacks(
                     context.as_battle_context_mut(),
                     event,
                     fxlang::BattleEventModifier::Side,
+                    origin,
                     mon,
                 )?);
             }
@@ -1419,6 +1534,7 @@ fn find_all_callbacks(
                     context,
                     event,
                     fxlang::BattleEventModifier::None,
+                    origin,
                     mon,
                 )?);
             }
@@ -1427,6 +1543,7 @@ fn find_all_callbacks(
                     context,
                     event,
                     fxlang::BattleEventModifier::None,
+                    origin,
                     side,
                 )?);
             }
@@ -1434,6 +1551,7 @@ fn find_all_callbacks(
                 context,
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
             )?);
         }
         AllEffectsTarget::Residual => {
@@ -1446,18 +1564,21 @@ fn find_all_callbacks(
                     context,
                     event,
                     fxlang::BattleEventModifier::None,
+                    origin,
                     mon,
                 )?);
                 callbacks.extend(find_callbacks_on_side_on_mon(
                     context,
                     event,
                     fxlang::BattleEventModifier::None,
+                    origin,
                     mon,
                 )?);
                 callbacks.extend(find_callbacks_on_field_on_mon(
                     context,
                     event,
                     fxlang::BattleEventModifier::None,
+                    origin,
                     mon,
                 )?);
             }
@@ -1468,6 +1589,7 @@ fn find_all_callbacks(
                         .side_event()
                         .wrap_expectation("residual event has no side event")?,
                     fxlang::BattleEventModifier::None,
+                    origin,
                     side,
                 )?);
             }
@@ -1475,8 +1597,9 @@ fn find_all_callbacks(
                 context,
                 event
                     .field_event()
-                    .wrap_expectation("residual event has no side event")?,
+                    .wrap_expectation("residual event has no field event")?,
                 fxlang::BattleEventModifier::None,
+                origin,
             )?);
         }
     }
@@ -1486,18 +1609,21 @@ fn find_all_callbacks(
             context,
             event,
             fxlang::BattleEventModifier::Source,
+            origin,
             source,
         )?);
         callbacks.extend(find_callbacks_on_side_on_mon(
             context,
             event,
             fxlang::BattleEventModifier::Source,
+            origin,
             source,
         )?);
         callbacks.extend(find_callbacks_on_field_on_mon(
             context,
             event,
             fxlang::BattleEventModifier::Source,
+            origin,
             source,
         )?);
     }
@@ -2100,16 +2226,18 @@ fn run_event_with_errors(
     source_effect: Option<&EffectHandle>,
     target: AllEffectsTarget,
     source: Option<MonHandle>,
+    origin: Option<MonHandle>,
     input: fxlang::VariableInput,
     options: &RunCallbacksOptions,
 ) -> Result<Option<fxlang::Value>> {
-    let mut callbacks = find_all_callbacks(context, event, target, source)?;
+    let mut callbacks = find_all_callbacks(context, event, target, source, origin)?;
     if event.run_callback_on_source_effect() {
         if let Some(source_effect) = source_effect {
             callbacks.push(CallbackHandle::new(
                 source_effect.clone(),
                 event,
                 fxlang::BattleEventModifier::None,
+                origin,
                 AppliedEffectLocation::None,
             ));
         }
@@ -2156,6 +2284,18 @@ fn run_event_with_errors(
     }
 }
 
+fn event_origin_mon_handle(
+    event: fxlang::BattleEvent,
+    target: Option<MonHandle>,
+    source: Option<MonHandle>,
+) -> Option<MonHandle> {
+    if event.target_is_event_origin() {
+        target
+    } else {
+        source
+    }
+}
+
 fn run_event_for_applying_effect_internal(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
@@ -2165,12 +2305,18 @@ fn run_event_for_applying_effect_internal(
     let target = AllEffectsTarget::Mon(context.target_handle());
     let effect = context.effect_handle().clone();
     let source = context.source_handle();
+    let origin = event_origin_mon_handle(
+        event,
+        Some(context.target_handle()),
+        context.source_handle(),
+    );
     match run_event_with_errors(
         context.as_battle_context_mut(),
         event,
         Some(&effect),
         target,
         source,
+        origin,
         input,
         options,
     ) {
@@ -2193,12 +2339,14 @@ fn run_event_for_mon_internal(
     options: &RunCallbacksOptions,
 ) -> Option<fxlang::Value> {
     let target = AllEffectsTarget::Mon(context.mon_handle());
+    let origin = event_origin_mon_handle(event, Some(context.mon_handle()), None);
     match run_event_with_errors(
         context.as_battle_context_mut(),
         event,
         None,
         target,
         None,
+        origin,
         input,
         options,
     ) {
@@ -2227,6 +2375,7 @@ fn run_event_for_player_internal(
         None,
         target,
         None,
+        None,
         input,
         options,
     ) {
@@ -2251,12 +2400,14 @@ fn run_event_for_player_effect_internal(
     let target = AllEffectsTarget::Player(context.player().index);
     let effect = context.effect_handle().clone();
     let source = context.source_handle();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     match run_event_with_errors(
         context.as_battle_context_mut(),
         event,
         Some(&effect),
         target,
         source,
+        origin,
         input,
         options,
     ) {
@@ -2281,12 +2432,14 @@ fn run_event_for_side_effect_internal(
     let target = AllEffectsTarget::Side(context.side().index);
     let effect = context.effect_handle().clone();
     let source = context.source_handle();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     match run_event_with_errors(
         context.as_battle_context_mut(),
         event,
         Some(&effect),
         target,
         source,
+        origin,
         input,
         options,
     ) {
@@ -2311,12 +2464,14 @@ fn run_event_for_field_effect_internal(
     let target = AllEffectsTarget::Field;
     let effect = context.effect_handle().clone();
     let source = context.source_handle();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
     match run_event_with_errors(
         context.as_battle_context_mut(),
         event,
         Some(&effect),
         target,
         source,
+        origin,
         input,
         options,
     ) {
@@ -2344,6 +2499,7 @@ fn run_event_for_battle_internal(
         None,
         AllEffectsTarget::Field,
         None,
+        None,
         input,
         options,
     ) {
@@ -2361,6 +2517,7 @@ fn run_event_for_residual_internal(context: &mut Context, event: fxlang::BattleE
         event,
         None,
         AllEffectsTarget::Residual,
+        None,
         None,
         fxlang::VariableInput::default(),
         &RunCallbacksOptions::default(),

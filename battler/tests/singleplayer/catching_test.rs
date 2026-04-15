@@ -465,7 +465,7 @@ fn level_100_metagross_caught_in_master_ball() {
         r#"[
             "useitem|player:protagonist|name:Master Ball|target:Metagross,wild,1",
             "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:4",
-            "exp|mon:Pikachu,protagonist,1|exp:12059",
+            "exp|mon:Pikachu,protagonist,1|exp:10853",
             "split|side:0",
             "sethp|mon:Pikachu,protagonist,1|health:96/96",
             "sethp|mon:Pikachu,protagonist,1|health:100/100",
@@ -550,7 +550,7 @@ fn level_100_metagross_critical_capture() {
         r#"[
             "useitem|player:protagonist|name:Master Ball|target:Metagross,wild,1",
             "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical",
-            "exp|mon:Pikachu,protagonist,1|exp:12059",
+            "exp|mon:Pikachu,protagonist,1|exp:10853",
             "split|side:0",
             "sethp|mon:Pikachu,protagonist,1|health:96/96",
             "sethp|mon:Pikachu,protagonist,1|health:100/100",

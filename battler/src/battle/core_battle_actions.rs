@@ -487,8 +487,9 @@ fn do_move_internal(
     if let Some(change_move) = core_battle_effects::run_event_for_mon_expecting_string(
         context,
         fxlang::BattleEvent::OverrideMove,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(active_move_handle.into())]),
-    ) {
+        fxlang::VariableInput::from_iter([fxlang::Value::String(move_id.to_string())]),
+    ) && &change_move != move_id.as_ref()
+    {
         active_move_handle = CoreBattle::register_active_move_by_id(
             context.as_battle_context_mut(),
             &Id::from(change_move),

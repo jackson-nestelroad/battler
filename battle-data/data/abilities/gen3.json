@@ -541,7 +541,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": [
-          "$weather = $target.effective_weather",
+          "$weather = func_call(effective_weather: $target)",
           "if $weather.is_defined and $weather.is_raining:",
           ["return $spe * 2"]
         ]
@@ -554,7 +554,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": [
-          "$weather = $target.effective_weather",
+          "$weather = func_call(effective_weather: $target)",
           "if $weather.is_defined and $weather.is_sunny:",
           ["return $spe * 2"]
         ]
@@ -887,7 +887,7 @@
         "on_weather_change": [
           "if func_call(base_species: $target) != castform or $target.transformed:",
           ["return"],
-          "$weather = $target.effective_weather",
+          "$weather = func_call(effective_weather: $target)",
           "if !$weather:",
           ["$forme = castform"],
           "else if $weather.is_raining:",
