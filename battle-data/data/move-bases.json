@@ -78,6 +78,10 @@
         "on_source_modify_damage": [
           "if func_call(move_has_flag: $move weakenthroughprotection):",
           [
+            "if $move.effect_state.weaken_through_protection_effect.is_defined and $move.effect_state.weaken_through_protection_source.is_defined:",
+            [
+              "log_activate: $move.effect_state.weaken_through_protection_effect with_target $move.effect_state.weaken_through_protection_source"
+            ],
             "log_custom_effect: protectweaken no_effect with_target use_source",
             "return $damage / 4"
           ]

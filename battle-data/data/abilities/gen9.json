@@ -190,11 +190,35 @@
   },
   "piercingdrill": {
     "name": "Piercing Drill",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_try_hit": {
+          "priority": 4,
+          "program": [
+            "if func_call(move_makes_contact: $move):",
+            [
+              "$move.effect_state.weaken_through_protection_effect = $this",
+              "$move.effect_state.weaken_through_protection_source = $effect_state.target",
+              "remove_move_flag: $move protect",
+              "add_move_flag: $move weakenthroughprotection"
+            ]
+          ]
+        }
+      }
+    }
   },
   "dragonize": {
     "name": "Dragonize",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:modifynormaltypemoveabilitybase"],
+      "local_data": {
+        "values": {
+          "type": "dragon"
+        }
+      }
+    }
   },
   "megasol": {
     "name": "Mega Sol",
@@ -213,6 +237,11 @@
   },
   "spicyspray": {
     "name": "Spicy Spray",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": ["set_status: $source brn"]
+      }
+    }
   }
 }

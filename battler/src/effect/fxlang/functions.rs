@@ -128,6 +128,7 @@ pub fn run_function(
         "activate_applying_effect" => activate_applying_effect(context),
         "add_attribute_to_last_move" => add_attribute_to_last_move(context).map(|()| None),
         "add_move_action" => add_move_action(context).map(|val| Some(val)),
+        "add_move_flag" => add_move_flag(context).map(|()| None),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
@@ -1635,6 +1636,27 @@ fn remove_move_flag(mut context: FunctionContext) -> Result<()> {
         .data
         .flags
         .remove(&move_flag);
+    Ok(())
+}
+
+fn add_move_flag(mut context: FunctionContext) -> Result<()> {
+    let active_move = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+    let move_flag = context
+        .pop_front()
+        .wrap_expectation("missing move flag")?
+        .string()
+        .wrap_error_with_message("invalid move flag")?;
+    let move_flag = MoveFlag::from_str(&move_flag).map_err(general_error)?;
+    context
+        .evaluation_context_mut()
+        .active_move_mut(active_move)?
+        .data
+        .flags
+        .insert(move_flag);
     Ok(())
 }
 
