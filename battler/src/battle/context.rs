@@ -751,35 +751,6 @@ impl<'player, 'side, 'context, 'battle, 'data>
     pub fn mon_mut(&mut self) -> &mut Mon {
         &mut *self.mon
     }
-
-    /// Returns a reference to the active [`Move`], if it exists.
-    pub fn active_move(&self) -> Result<&Move> {
-        let move_handle = self
-            .mon()
-            .active_move
-            .wrap_expectation_with_format(format_args!(
-                "mon {} does not have an active move",
-                self.mon_handle()
-            ))?;
-        let context = self.as_battle_context();
-        context
-            .cache
-            .active_move(context.battle(), move_handle)
-            .map(|mov| &*mov)
-    }
-
-    /// Returns a mutable reference to the active [`Move`], if it exists.
-    pub fn active_move_mut(&mut self) -> Result<&mut Move> {
-        let move_handle = self
-            .mon()
-            .active_move
-            .wrap_expectation_with_format(format_args!(
-                "mon {} does not have an active move",
-                self.mon_handle()
-            ))?;
-        let context = self.as_battle_context();
-        context.cache.active_move(context.battle(), move_handle)
-    }
 }
 
 /// The context of an active [`Move`] in a battle.

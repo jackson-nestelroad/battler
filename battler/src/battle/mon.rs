@@ -245,13 +245,18 @@ impl MonMoveSlotData {
         let name = mov.data.name.clone();
         let id = mov.id().clone();
         // Some moves may have a special target, depending on the user's type (e.g., Curse).
-        let target = core_battle_effects::run_mon_effect_event_expecting_move_target(
-            context,
-            fxlang::BattleEvent::MoveTargetOverride,
-            &EffectHandle::InactiveMove(move_slot.id.clone()),
-        )
-        .unwrap_or(move_slot.target);
-        let typ = core_battle_actions::move_type_for_display(context, &id).unwrap_or(move_slot.typ);
+        let (target, typ) = core_battle_actions::run_in_using_move_state(context, |context| {
+            let target = core_battle_effects::run_mon_effect_event_expecting_move_target(
+                context,
+                fxlang::BattleEvent::MoveTargetOverride,
+                &EffectHandle::InactiveMove(move_slot.id.clone()),
+            )
+            .unwrap_or(move_slot.target);
+            let typ =
+                core_battle_actions::move_type_for_display(context, &id).unwrap_or(move_slot.typ);
+            (target, typ)
+        });
+
         let mut disabled = move_slot.disabled;
         if move_slot.pp == 0 {
             disabled = true;
@@ -551,6 +556,8 @@ pub struct MonVolatileState {
     /// The Mon's physical appearance.
     pub illusion: Option<PhysicalMonDetails>,
 
+    /// The Mon is using a move.
+    pub using_move: bool,
     /// The last move selected.
     pub last_move_selected: Option<Id>,
     /// The last move used for the Mon.
@@ -1786,6 +1793,7 @@ impl Mon {
             volatiles: HashMap::default(),
             transformed: false,
             illusion: None,
+            using_move: false,
             last_move_selected: None,
             last_move: None,
             last_move_used: None,

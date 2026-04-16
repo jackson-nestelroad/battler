@@ -508,10 +508,7 @@
           "if $move.type == electric:",
           ["return $base_power * 2"]
         ],
-        "on_move_aborted": [
-          "if $move.type == electric and $move.id != $this.id:",
-          ["remove_volatile: $user $this.id"]
-        ],
+        "on_move_aborted": ["run_event_on_move: AfterMove"],
         "on_after_move": [
           "if $move.type == electric and $move.id != $this.id:",
           ["remove_volatile: $user $this.id"]

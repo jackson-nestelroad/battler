@@ -940,7 +940,7 @@ pub enum BattleEvent {
     ModifyWeight,
     /// Runs when a move is aborted due to failing the BeforeMove event.
     ///
-    /// Runs in the context of a move user.
+    /// Runs on the active move and in the context of a move user.
     #[string = "MoveAborted"]
     MoveAborted,
     /// Runs when a move's base power is being calculated for a target.
@@ -1138,6 +1138,16 @@ pub enum BattleEvent {
     /// Runs on the effect.
     #[string = "Start"]
     Start,
+    /// Runs when Mon starts using a move.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "StartUsingMove"]
+    StartUsingMove,
+    /// Runs when Mon stops using a move.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "StopUsingMove"]
+    StopUsingMove,
     /// Runs when determining the sub-priority of a move.
     ///
     /// Runs in the context of a move user.
@@ -1487,6 +1497,8 @@ impl BattleEvent {
             Self::SlotStart => CommonCallbackType::SideResult as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
+            Self::StartUsingMove => CommonCallbackType::MonVoid as u32,
+            Self::StopUsingMove => CommonCallbackType::MonVoid as u32,
             Self::SubPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::SuppressFieldTerrain => CommonCallbackType::NoContextResult as u32,
             Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,

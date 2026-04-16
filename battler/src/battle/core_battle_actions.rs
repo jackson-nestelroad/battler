@@ -658,10 +658,58 @@ impl Default for UseActiveMoveOptions {
     }
 }
 
+/// Runs the given function, wrapped in the events that correspond go the Mon being in the "using
+/// move" state.
+pub fn run_in_using_move_state<F, T>(context: &mut MonContext, f: F) -> T
+where
+    F: FnOnce(&mut MonContext) -> T,
+{
+    let not_using_move_at_start = !context.mon().volatile_state.using_move;
+    if not_using_move_at_start {
+        context.mon_mut().volatile_state.using_move = true;
+        core_battle_effects::run_event_for_mon(
+            context,
+            fxlang::BattleEvent::StartUsingMove,
+            fxlang::VariableInput::default(),
+        );
+    }
+
+    let result = f(context);
+
+    if not_using_move_at_start {
+        core_battle_effects::run_event_for_mon(
+            context,
+            fxlang::BattleEvent::StopUsingMove,
+            fxlang::VariableInput::default(),
+        );
+        context.mon_mut().volatile_state.using_move = false;
+    }
+
+    result
+}
+
 /// Uses a move that was already registered as an active move.
 ///
 /// This code is shared between chosen and external moves.
 pub fn use_active_move(
+    context: &mut MonContext,
+    active_move_handle: MoveHandle,
+    target: Option<MonHandle>,
+    source_effect: Option<&EffectHandle>,
+    options: UseActiveMoveOptions,
+) -> Result<bool> {
+    run_in_using_move_state(context, |context| {
+        use_active_move_with_using_move_state(
+            context,
+            active_move_handle,
+            target,
+            source_effect,
+            options,
+        )
+    })
+}
+
+fn use_active_move_with_using_move_state(
     context: &mut MonContext,
     active_move_handle: MoveHandle,
     target: Option<MonHandle>,
@@ -710,6 +758,12 @@ pub fn use_active_move(
         )
         .unwrap_or(true)
         {
+            core_battle_effects::run_active_move_event_expecting_void(
+                &mut context,
+                fxlang::BattleEvent::MoveAborted,
+                core_battle_effects::MoveTargetForEvent::None,
+                fxlang::VariableInput::default(),
+            );
             core_battle_effects::run_event_for_applying_effect(
                 &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::MoveAborted,

@@ -41,7 +41,12 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `TrapMon` will set the Mon as trapped.
 1. `PreventUsedItems` will prevent the Mon from using items.
 1. `LockMove` affects move request if applicable.
-1. `MoveTargetOverride` affects move request, per move, if applicable.
+1. Generate move request:
+   1. Generate move object:
+      1. `StartUsingMove`.
+         1. `MoveTargetOverride`.
+         1. `ModifyMoveType`.
+      1. `StopUsingMove`.
 
 ## Player Choice
 
@@ -133,6 +138,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. `UpgradeMove`.
 1. `OverrideMove`.
+1. `StartUsingMove`.
 1. Use active move:
    1. `BeforeMove`.
       1. _(extension)_ `Flinch`.
@@ -276,6 +282,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
    1. `AfterMove`.
 
+1. `StopUsingMove`.
 1. `SetLastMove`.
 1. `DeductPp`.
 

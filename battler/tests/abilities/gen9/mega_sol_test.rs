@@ -290,7 +290,7 @@ fn mega_sol_ignores_rain_damage_reduction_on_solar_beam() {
 }
 
 #[test]
-fn mega_sol_ignores_sandstorm_stat_boost_and_residual() {
+fn mega_sol_ignores_sandstorm_stat_boost_but_not_residual() {
     let mut team_2 = team().unwrap();
     team_2.members[0].ability = "No Ability".to_owned();
     let mut battle = make_battle(0, BattleType::Doubles, team().unwrap(), team_2).unwrap();
@@ -318,6 +318,9 @@ fn mega_sol_ignores_sandstorm_stat_boost_and_residual() {
             "damage|mon:Golem,player-1,2|health:105/140",
             "damage|mon:Golem,player-1,2|health:75/100",
             "weather|weather:Sandstorm|residual",
+            "split|side:0",
+            "damage|mon:Meganium,player-1,1|from:weather:Sandstorm|health:124/140",
+            "damage|mon:Meganium,player-1,1|from:weather:Sandstorm|health:89/100",
             "split|side:1",
             "damage|mon:Meganium,player-2,1|from:weather:Sandstorm|health:124/140",
             "damage|mon:Meganium,player-2,1|from:weather:Sandstorm|health:89/100",

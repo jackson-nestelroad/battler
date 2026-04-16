@@ -152,8 +152,10 @@
     "name": "Ignore Ability Move Base",
     "condition_type": "Built-in",
     "condition": {
+      "duration": 1,
       "callbacks": {
         "on_before_move": ["add_pseudo_weather: moldbreaker"],
+        "on_move_aborted": ["run_event_on_move: AfterMove"],
         "on_after_move": ["remove_pseudo_weather: moldbreaker"]
       }
     }

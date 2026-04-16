@@ -225,6 +225,13 @@
     "flags": [],
     "effect": {
       "callbacks": {
+        "on_start_using_move": ["add_volatile: $this.id"],
+        "on_stop_using_move": ["remove_volatile: $this.id"]
+      }
+    },
+    "condition": {
+      "duration": 1,
+      "callbacks": {
         "on_override_weather": ["return harshsunlight"],
         "on_before_charge_move": [
           "# Solar Beam will see that the weather is sunny, though it may not actually be.",
