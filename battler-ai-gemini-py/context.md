@@ -19,7 +19,7 @@ Players on the same side work together to win the battle. A side is declared the
 
 Pokémon battles are turn-based. On each turn, each player can make an action for each active Pokémon. An action can be one of the following:
 
-- Use a move - The Pokémon can use one of its moves towards one or more active Pokémon. A move can only be used towards a valid target. A move's valid targets can vary move to move. A move cannot be used if it is disabled or out of PP. Additionally, during a move action, additional mechanics may be selected for activation on the Pokémon if allowed, such as Mega Evolution, Dynamax, or Terastallization.
+- Use a move - The Pokémon can use one of its moves towards one or more active Pokémon. A move can only be used towards a valid target. A move's valid targets can vary move to move. A move cannot be used if it is disabled or out of PP. Additionally, during a move action, additional mechanics may be selected for activation on the Pokémon if allowed, such as Mega Evolution, Z-Moves, Ultra Burst, Dynamax, or Terastallization.
 - Switch out - The player can switch out an active Pokémon for some inactive Pokémon on the player's team. A Pokémon that is already active cannot be switched in.
 - Use item - The player can use an item from their bag. The item can only be used towards a valid target. An item's valid targets can vary item to item.
 - Escape - The player can attempt to run away and escape the battle. Players can only escape from wild battles. An escaped player no longer participates in a battle.
@@ -80,6 +80,8 @@ Generally, you should consider the following for different types of effects:
 Additionally, certain mechanics may be available for use, once per battle, if allowed in the battle format:
 
 - Mega Evolution - A Pokémon holding the required Mega Stone may Mega Evolve into a stronger forme with different stats for the duration of the battle.
+- Z-Moves - A Pokémon holding an eligible Z-Crystal may transform its next move into a more powerful Z-Move, once per battle.
+- Ultra Burst - A Pokémon holding the required Z-Crystal may Ultra Burst into a stronger forme with different stats for the duration of the battle. This is conceptually similar to Mega Evolution, except only Necrozma can Ultra Burst.
 - Dynamax - A Pokémon can Dynamax and use Max Moves for 3 turns, or until the Pokémon switches out. A Dynamaxed Pokémon has boosted HP, and Max Moves are incredibly strong with powerful secondary effects.
 - Terastallization - A Pokémon can Terastallize and change its type for the duration of the battle. A Terastallized Pokémon gains a boosted STAB multiplier for its moves.
 
@@ -208,10 +210,13 @@ The turn request has an `active` array. Each entry in the array represents an ac
 
 - `team_position` - Zero-based index for the Pokémon in your team. This index can be used to index into `player_data.mons` to see the current state of this Pokémon.
 - `moves` - Moves that can be used this turn. Includes if the move is disabled, how much PP the move has, and what its valid targets are.
+- `z_moves` - Z-Moves that can be used this turn. `null` if the corresponding move cannot transform into a Z-Move.
 - `max_moves` - Max Moves that can be used this turn. Only applicable if the Pokémon is Dynamaxed or is going to Dynamax this turn.
 - `locked_into_move` - If the Pokémon is locked into some move and cannot do anything else. This is a clue that you can only use the single move specified in `moves`.
 - `trapped` - If the Pokémon cannot switch out.
 - `can_mega_evolve` - The Pokémon can Mega Evolve if you choose to.
+- `can_z_move` - The Pokémon can use a Z-Move is you choose to.
+- `can_ultra_burst` - The Pokémon can Ultra Burst if you choose to.
 - `can_dynamax` - The Pokémon can Dynamax if you choose to.
 - `can_terastallize` - The Pokémon can Terastallize if you choose to.
 
@@ -254,8 +259,10 @@ You should follow the following process for understanding which Pokémon are act
    4. Otherwise, use the move that has the best outcome for the turn and future turns.
    5. Additionally, look at potential mechanics that can be activated on the Pokémon. A mechanic is active only if it is reported as a Rule in the battle state. Otherwise, the mechanic is not active.
       1. If the Mega Evolution rule is active, you can Mega Evolve one eligible Pokémon per battle. If the active Pokémon can Mega Evolve and no other Pokémon will be able to, choose Mega Evolve immediately. If some other Pokémon can Mega Evolve, choose to Mega Evolve the Pokémon that will provide the better advantage against the opposing Pokémon.
-      2. If the Dynamax rule is active, you can Dynamax once per battle. Choose to Dynamax the Pokémon that will provide the better advantage against the opposing Pokémon. You should aim to knock out multiple Pokémon with a Dynamax Pokémon.
-      3. If the Terastallization rule is active, you can Terastallize once per battle. Choose to Terastallize the Pokémon that will provide the better advantage against the opposing Pokémon. You should aim to knock out multiple Pokémon with a Terastallized Pokémon.
+      2. If the Z-Move rule is active, you can use a Z-Move with an eligible Pokémon (i.e., holding a Z-Crystal) once per battle. Choose to use a Z-Move when the more transformed move and secondary effect provides an overwhelming benefit in the battle, such as catching an opponent off guard.
+      3. If the Ultra Burst rule is active, you can Ultra Burst one eligible Pokémon per battle. This mechanic should be used similar to Mega Evolution, except only Necrozma is eligible for Ultra Bursting.
+      4. If the Dynamax rule is active, you can Dynamax once per battle. Choose to Dynamax the Pokémon that will provide the better advantage against the opposing Pokémon. You should aim to knock out multiple Pokémon with a Dynamax Pokémon.
+      5. If the Terastallization rule is active, you can Terastallize once per battle. Choose to Terastallize the Pokémon that will provide the better advantage against the opposing Pokémon. You should aim to knock out multiple Pokémon with a Terastallized Pokémon.
 
 ## Making Decisions for a Switch Request
 
@@ -295,6 +302,8 @@ The `side_position` of allies can be derived from turn request data or the battl
 You may append additional strings to the move action if you choose to activate special battle mechanics:
 
 - Append `, mega` if you are Mega Evolving.
+- Append `, zmove` if you are using a Z-Move.
+- Append `, ultra` if you are Ultra Bursting.
 - Append `, dyna` if you are Dynamaxing.
 - Append `, tera` if you are Terastallizing.
 
