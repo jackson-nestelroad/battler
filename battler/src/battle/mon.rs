@@ -529,6 +529,8 @@ pub struct MonVolatileState {
     /// The weight of the Mon.
     pub weight: u32,
 
+    /// Current base stats.
+    pub base_stored_stats: StatTable,
     /// Current stats.
     pub stats: StatTable,
     /// Current stat boosts.
@@ -1760,6 +1762,7 @@ impl Mon {
         Ok(MonVolatileState {
             species: context.mon().base_species.clone(),
             weight: 0, // Updated by set_species.
+            base_stored_stats: context.mon().base_stored_stats.clone(),
             stats: context.mon().base_stored_stats.clone(),
             boosts: BoostTable::default(),
             speed: 0, // Updated by set_species.
@@ -1971,8 +1974,7 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        context.mon_mut().volatile_state.speed = stats.spe as u32;
-        context.mon_mut().volatile_state.stats = stats;
+        Mon::set_stats(context, stats, false)?;
 
         Ok(())
     }
@@ -2804,6 +2806,31 @@ impl Mon {
             .collect::<Vec<_>>()
         {
             context.mon_mut().restore_pp(&move_id, max_pp);
+        }
+
+        Ok(())
+    }
+
+    /// Sets the Mon's stats directly.
+    pub fn set_stats(
+        context: &mut MonContext,
+        stats: StatTable,
+        preserve_overrides: bool,
+    ) -> Result<()> {
+        context.mon_mut().volatile_state.speed = stats.spe as u32;
+
+        if !preserve_overrides {
+            context.mon_mut().volatile_state.base_stored_stats = stats.clone();
+            context.mon_mut().volatile_state.stats = stats;
+        } else {
+            for (stat, val) in &stats {
+                if context.mon().volatile_state.base_stored_stats.get(stat)
+                    == context.mon().volatile_state.stats.get(stat)
+                {
+                    context.mon_mut().volatile_state.stats.set(stat, val);
+                }
+            }
+            context.mon_mut().volatile_state.base_stored_stats = stats.clone();
         }
 
         Ok(())

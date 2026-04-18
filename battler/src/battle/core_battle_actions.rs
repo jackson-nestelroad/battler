@@ -6042,7 +6042,11 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     // species.
     let weight = target_context.mon().volatile_state.weight;
     let types = target_context.mon().volatile_state.types.clone();
-    let stats = target_context.mon().volatile_state.stats.clone();
+    let stats = target_context
+        .mon()
+        .volatile_state
+        .base_stored_stats
+        .clone();
     let boosts = target_context.mon().volatile_state.boosts.clone();
     let ability_id = target_context.mon().volatile_state.ability.id.clone();
     let mut move_slots = target_context.mon().volatile_state.move_slots.clone();
@@ -6062,7 +6066,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     // Then, manually set everything else.
     context.target_mut().volatile_state.weight = weight;
     context.target_mut().volatile_state.types = types;
-    context.target_mut().volatile_state.stats = stats;
+    Mon::set_stats(&mut context.target_context()?, stats, false)?;
     context.target_mut().volatile_state.boosts = boosts;
     set_ability(context, &ability_id, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;

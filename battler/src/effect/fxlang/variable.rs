@@ -587,9 +587,9 @@ where
                             "base_species" => {
                                 ValueRef::Str(&context.mon(mon_handle)?.base_species.as_ref())
                             }
-                            "base_stats" => {
-                                ValueRef::StatTable(&context.mon(mon_handle)?.base_stored_stats)
-                            }
+                            "base_stats" => ValueRef::StatTable(
+                                &context.mon(mon_handle)?.volatile_state.base_stored_stats,
+                            ),
                             "being_called_back" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.switch_state.being_called_back,
                             ),

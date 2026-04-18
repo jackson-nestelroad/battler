@@ -652,23 +652,14 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": [
-          "if !$effect_state.logged:",
-          ["log_start", "$effect_state.logged = true"],
-          "$atk = $target.stats.def",
-          "$def = $target.stats.atk",
-          "$target.stats.atk = $atk",
-          "$target.stats.def = $def"
+        "on_calculate_stat": [
+          "if $name == atk:",
+          ["return $target.stats.def"],
+          "if $name == def:",
+          ["return $target.stats.atk"]
         ],
-        "on_copy_volatile": [
-          "$effect_state.logged = true",
-          "run_event_on_mon_volatile: $this.id Start"
-        ],
-        "on_end": [
-          "log_end",
-          "$effect_state.logged = true",
-          "run_event_on_mon_volatile: $this.id Start"
-        ],
+        "on_start": ["log_start"],
+        "on_end": ["log_end"],
         "on_restart": ["remove_volatile: $target $this.id", "return true"]
       }
     }
