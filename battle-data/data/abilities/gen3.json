@@ -887,7 +887,7 @@
         "on_weather_change": [
           "if func_call(base_species: $target) != castform or $target.transformed:",
           ["return"],
-          "$weather = func_call(effective_weather: $target)",
+          "$weather = func_call(effective_weather: $target use_target_as_origin)",
           "if !$weather:",
           ["$forme = castform"],
           "else if $weather.is_raining:",

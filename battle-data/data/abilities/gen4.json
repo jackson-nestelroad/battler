@@ -378,7 +378,7 @@
           "return false"
         ],
         "on_add_volatile": [
-          "$weather = func_call(effective_weather: $target)",
+          "$weather = func_call(effective_weather: $target use_target_as_origin)",
           "if !$weather.is_defined or !$weather.is_sunny:",
           ["return"],
           "if $volatile.id == yawn:",
@@ -772,7 +772,7 @@
         "on_weather_change": [
           "if func_call(base_species: $target) != cherrim or $target.transformed or $target.hp == 0:",
           ["return"],
-          "$weather = func_call(effective_weather: $target)",
+          "$weather = func_call(effective_weather: $target use_target_as_origin)",
           "$species = cherrim",
           "if $weather.is_defined and $weather.is_sunny:",
           ["$species = cherrimsunshine"],
