@@ -17,6 +17,7 @@ use crate::{
         Context,
         CoreBattle,
         CoreBattleEngineSpeedSortTieResolution,
+        Mon,
         MonHandle,
         MoveAction,
         SpeedOrderable,
@@ -420,6 +421,19 @@ impl BattleQueue {
                 self.actions.push_back(action);
             }
         }
+    }
+
+    /// Updates the speed for each action taken by a Mon.
+    pub fn update_mon_speeds(context: &mut Context) -> Result<()> {
+        let mut actions = VecDeque::new();
+        core::mem::swap(&mut actions, &mut context.battle_mut().queue.actions);
+        for action in &mut actions {
+            if let Some(action) = action.mon_action_mut() {
+                action.speed = Mon::action_speed(&mut context.mon_context(action.mon)?)? as u32;
+            }
+        }
+        core::mem::swap(&mut actions, &mut context.battle_mut().queue.actions);
+        Ok(())
     }
 }
 

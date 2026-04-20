@@ -2817,8 +2817,6 @@ impl Mon {
         stats: StatTable,
         preserve_overrides: bool,
     ) -> Result<()> {
-        context.mon_mut().volatile_state.speed = stats.spe as u32;
-
         if !preserve_overrides {
             context.mon_mut().volatile_state.base_stored_stats = stats.clone();
             context.mon_mut().volatile_state.stats = stats;
@@ -2832,6 +2830,8 @@ impl Mon {
             }
             context.mon_mut().volatile_state.base_stored_stats = stats.clone();
         }
+
+        Self::update_speed(context)?;
 
         Ok(())
     }

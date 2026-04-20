@@ -1567,8 +1567,6 @@ impl<'d> CoreBattle<'d> {
             }
         }
 
-        // TODO: Update speed dynamically, if we wish to support it like gen 8 does.
-
         Self::update(context)?;
 
         let mut some_switch_needed = false;
@@ -1621,6 +1619,23 @@ impl<'d> CoreBattle<'d> {
         if some_switch_needed {
             Self::make_request(context, RequestType::Switch)?;
             return Ok(());
+        }
+
+        // Update speed dynamically between some primary actions.
+        match context.battle().queue.peek() {
+            Some(
+                Action::Move(_)
+                | Action::Item(_)
+                | Action::MegaEvo(_)
+                | Action::UltraBurst(_)
+                | Action::Dynamax(_)
+                | Action::Terastallize(_),
+            ) => {
+                Self::update_speed(context)?;
+                BattleQueue::update_mon_speeds(context)?;
+                BattleQueue::sort(context);
+            }
+            _ => (),
         }
 
         Ok(())

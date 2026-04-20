@@ -43,7 +43,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
         .with_team_validation(false)
         .with_pass_allowed(true)
         .with_controlled_rng(true)
-        .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Reverse)
+        .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
@@ -55,7 +55,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 fn shield_dust_removes_secondary_effects() {
     let mut team = dustox().unwrap();
     team.members[0].ability = "Shield Dust".to_owned();
-    let mut battle = make_battle(0, team, dustox().unwrap()).unwrap();
+    let mut battle = make_battle(0, dustox().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
@@ -71,21 +71,22 @@ fn shield_dust_removes_secondary_effects() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Dustox,player-2,1|name:Fake Out|target:Dustox,player-1,1",
-            "split|side:0",
-            "damage|mon:Dustox,player-1,1|health:107/120",
-            "damage|mon:Dustox,player-1,1|health:90/100",
             "move|mon:Dustox,player-1,1|name:Fake Out|target:Dustox,player-2,1",
             "split|side:1",
-            "damage|mon:Dustox,player-2,1|health:108/120",
+            "damage|mon:Dustox,player-2,1|health:107/120",
             "damage|mon:Dustox,player-2,1|health:90/100",
+            "move|mon:Dustox,player-2,1|name:Fake Out|target:Dustox,player-1,1",
+            "split|side:0",
+            "damage|mon:Dustox,player-1,1|health:108/120",
+            "damage|mon:Dustox,player-1,1|health:90/100",
             "residual",
             "turn|turn:2",
             "continue",
             "move|mon:Dustox,player-2,1|name:Crush Claw|target:Dustox,player-1,1",
             "split|side:0",
-            "damage|mon:Dustox,player-1,1|health:85/120",
-            "damage|mon:Dustox,player-1,1|health:71/100",
+            "damage|mon:Dustox,player-1,1|health:86/120",
+            "damage|mon:Dustox,player-1,1|health:72/100",
+            "unboost|mon:Dustox,player-1,1|stat:def|by:1",
             "residual",
             "turn|turn:3",
             "continue",
