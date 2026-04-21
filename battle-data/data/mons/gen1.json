@@ -9493,8 +9493,8 @@
     }
   },
   "farfetchd": {
-    "name": "Farfetch’d",
-    "base_species": "Farfetch’d",
+    "name": "Farfetch'd",
+    "base_species": "Farfetch'd",
     "class": "Wild Duck",
     "color": "Brown",
     "primary_type": "Normal",
@@ -20875,7 +20875,7 @@
   },
   "farfetchdgalar": {
     "name": "Farfetchd-Galar",
-    "base_species": "Farfetch’d",
+    "base_species": "Farfetch'd",
     "forme": "Galar",
     "class": "Wild Duck",
     "color": "Brown",

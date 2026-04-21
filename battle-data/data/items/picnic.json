@@ -99,7 +99,7 @@
     "name": "Smiling Vee Pick",
     "flags": []
   },
-  "bluepokballpick": {
+  "bluepokeballpick": {
     "name": "Blue Poké Ball Pick",
     "flags": []
   },
@@ -251,11 +251,11 @@
     "name": "Bronze Cup",
     "flags": []
   },
-  "greenpokballpick": {
+  "greenpokeballpick": {
     "name": "Green Poké Ball Pick",
     "flags": []
   },
-  "redpokballpick": {
+  "redpokeballpick": {
     "name": "Red Poké Ball Pick",
     "flags": []
   },

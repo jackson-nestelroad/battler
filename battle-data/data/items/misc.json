@@ -507,20 +507,12 @@
     "name": "Azure Flute",
     "flags": []
   },
-  "ssticket": {
-    "name": "S.S. Ticket",
-    "flags": []
-  },
   "contestpass": {
     "name": "Contest Pass",
     "flags": []
   },
   "magmastone": {
     "name": "Magma Stone",
-    "flags": []
-  },
-  "parcel": {
-    "name": "Parcel",
     "flags": []
   },
   "coupon1": {
@@ -535,10 +527,6 @@
     "name": "Coupon 3",
     "flags": []
   },
-  "storagekey": {
-    "name": "Storage Key",
-    "flags": []
-  },
   "secretpotion": {
     "name": "Secret Potion",
     "flags": []
@@ -549,10 +537,6 @@
   },
   "gracidea": {
     "name": "Gracidea",
-    "flags": []
-  },
-  "secretkey": {
-    "name": "Secret Key",
     "flags": []
   },
   "apricornbox": {
@@ -621,14 +605,6 @@
   },
   "clearbell": {
     "name": "Clear Bell",
-    "flags": []
-  },
-  "cardkey": {
-    "name": "Card Key",
-    "flags": []
-  },
-  "basementkey": {
-    "name": "Basement Key",
     "flags": []
   },
   "redscale": {
@@ -821,10 +797,6 @@
   },
   "gogoggles": {
     "name": "Go-Goggles",
-    "flags": []
-  },
-  "meteorite": {
-    "name": "Meteorite",
     "flags": []
   },
   "rm1key": {
@@ -1055,10 +1027,6 @@
     "name": "TM95",
     "flags": []
   },
-  "xtransceiver": {
-    "name": "Xtransceiver",
-    "flags": []
-  },
   "godstone": {
     "name": "god stone",
     "flags": []
@@ -1077,10 +1045,6 @@
   },
   "medalbox": {
     "name": "Medal Box",
-    "flags": []
-  },
-  "dnasplicers": {
-    "name": "DNA Splicers",
     "flags": []
   },
   "permit": {
@@ -1107,10 +1071,6 @@
     "name": "Colress Machine",
     "flags": []
   },
-  "droppeditem": {
-    "name": "Dropped Item",
-    "flags": []
-  },
   "revealglass": {
     "name": "Reveal Glass",
     "flags": []
@@ -1129,10 +1089,6 @@
   },
   "elevatorkey": {
     "name": "Elevator Key",
-    "flags": []
-  },
-  "holocaster": {
-    "name": "Holo Caster",
     "flags": []
   },
   "honorofkalos": {
@@ -1309,10 +1265,6 @@
   },
   "zring": {
     "name": "Z-Ring",
-    "flags": []
-  },
-  "fishingrod": {
-    "name": "Fishing Rod",
     "flags": []
   },
   "professorsmask": {
@@ -1607,10 +1559,6 @@
     "name": "Endorsement",
     "flags": []
   },
-  "pokemonboxlink": {
-    "name": "Pokémon Box Link",
-    "flags": []
-  },
   "wishingstar": {
     "name": "Wishing Star",
     "flags": []
@@ -1621,10 +1569,6 @@
   },
   "fishingrodgalar": {
     "name": "Fishing Rod",
-    "flags": []
-  },
-  "rotombike": {
-    "name": "Rotom Bike",
     "flags": []
   },
   "campinggear": {
@@ -1747,10 +1691,6 @@
     "name": "Ability Patch",
     "flags": []
   },
-  "reinsofunity": {
-    "name": "Reins of Unity",
-    "flags": []
-  },
   "legendplate": {
     "name": "Legend Plate",
     "special_data": {
@@ -1768,11 +1708,11 @@
     "name": "Sandwich",
     "flags": []
   },
-  "koraidonspokball": {
+  "koraidonspokeball": {
     "name": "Koraidon's Poké Ball",
     "flags": []
   },
-  "miraidonspokball": {
+  "miraidonspokeball": {
     "name": "Miraidon's Poké Ball",
     "flags": []
   },
@@ -2342,6 +2282,14 @@
   },
   "tm229": {
     "name": "TM229",
+    "flags": []
+  },
+  "pokemonboxlink": {
+    "name": "Pokémon Box Link",
+    "flags": []
+  },
+  "reinsofunity": {
+    "name": "Reins of Unity",
     "flags": []
   }
 }

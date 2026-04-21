@@ -66,7 +66,7 @@ fn gmax_one_blow_breaks_protect() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "gigantamax|mon:Urshifu,player-1,1|species:Urshifu-Single-Strike-Gmax",
+            "gigantamax|mon:Urshifu,player-1,1|species:Urshifu-Gmax",
             "dynamax|mon:Urshifu,player-1,1",
             "split|side:0",
             "sethp|mon:Urshifu,player-1,1|health:240/240",

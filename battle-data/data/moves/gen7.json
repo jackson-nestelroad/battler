@@ -3,8 +3,8 @@
     "name": "Breakneck Blitz",
     "category": "Physical",
     "primary_type": "Normal",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -23,8 +23,8 @@
     "name": "All-Out Pummeling",
     "category": "Physical",
     "primary_type": "Fighting",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -43,8 +43,8 @@
     "name": "Supersonic Skystrike",
     "category": "Physical",
     "primary_type": "Flying",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -63,8 +63,8 @@
     "name": "Acid Downpour",
     "category": "Physical",
     "primary_type": "Poison",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -83,8 +83,8 @@
     "name": "Tectonic Rage",
     "category": "Physical",
     "primary_type": "Ground",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -103,8 +103,8 @@
     "name": "Continental Crush",
     "category": "Physical",
     "primary_type": "Rock",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -123,8 +123,8 @@
     "name": "Savage Spin-Out",
     "category": "Physical",
     "primary_type": "Bug",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -143,8 +143,8 @@
     "name": "Never-Ending Nightmare",
     "category": "Physical",
     "primary_type": "Ghost",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -163,8 +163,8 @@
     "name": "Corkscrew Crash",
     "category": "Physical",
     "primary_type": "Steel",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -183,8 +183,8 @@
     "name": "Inferno Overdrive",
     "category": "Physical",
     "primary_type": "Fire",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -203,8 +203,8 @@
     "name": "Hydro Vortex",
     "category": "Physical",
     "primary_type": "Water",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -219,7 +219,7 @@
       "Z"
     ]
   },
-  "bloomdoomp": {
+  "bloomdoom": {
     "name": "Bloom Doom",
     "category": "Physical",
     "primary_type": "Grass",
@@ -243,8 +243,8 @@
     "name": "Gigavolt Havoc",
     "category": "Physical",
     "primary_type": "Electric",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -263,8 +263,8 @@
     "name": "Shattered Psyche",
     "category": "Physical",
     "primary_type": "Psychic",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -283,8 +283,8 @@
     "name": "Subzero Slammer",
     "category": "Physical",
     "primary_type": "Ice",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -303,8 +303,8 @@
     "name": "Devastating Drake",
     "category": "Physical",
     "primary_type": "Dragon",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -323,8 +323,8 @@
     "name": "Black Hole Eclipse",
     "category": "Physical",
     "primary_type": "Dark",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -343,8 +343,8 @@
     "name": "Twinkle Tackle",
     "category": "Physical",
     "primary_type": "Fairy",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
@@ -1647,329 +1647,5 @@
     "max_move": {
       "base_power": 140
     }
-  },
-  "breakneckblitzphysical": {
-    "name": "Breakneck Blitz",
-    "category": "Physical",
-    "primary_type": "Normal",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "breakneckblitzspecial": {
-    "name": "Breakneck Blitz",
-    "category": "Special",
-    "primary_type": "Normal",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "alloutpummelingphysical": {
-    "name": "All-Out Pummeling",
-    "category": "Physical",
-    "primary_type": "Fighting",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "alloutpummelingspecial": {
-    "name": "All-Out Pummeling",
-    "category": "Special",
-    "primary_type": "Fighting",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "supersonicskystrikephysical": {
-    "name": "Supersonic Skystrike",
-    "category": "Physical",
-    "primary_type": "Flying",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "supersonicskystrikespecial": {
-    "name": "Supersonic Skystrike",
-    "category": "Special",
-    "primary_type": "Flying",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "aciddownpourphysical": {
-    "name": "Acid Downpour",
-    "category": "Physical",
-    "primary_type": "Poison",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "aciddownpourspecial": {
-    "name": "Acid Downpour",
-    "category": "Special",
-    "primary_type": "Poison",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "tectonicragephysical": {
-    "name": "Tectonic Rage",
-    "category": "Physical",
-    "primary_type": "Ground",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "tectonicragespecial": {
-    "name": "Tectonic Rage",
-    "category": "Special",
-    "primary_type": "Ground",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "continentalcrushphysical": {
-    "name": "Continental Crush",
-    "category": "Physical",
-    "primary_type": "Rock",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "continentalcrushspecial": {
-    "name": "Continental Crush",
-    "category": "Special",
-    "primary_type": "Rock",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "savagespinoutphysical": {
-    "name": "Savage Spin-Out",
-    "category": "Physical",
-    "primary_type": "Bug",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "savagespinoutspecial": {
-    "name": "Savage Spin-Out",
-    "category": "Special",
-    "primary_type": "Bug",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "neverendingnightmarephysical": {
-    "name": "Never-Ending Nightmare",
-    "category": "Physical",
-    "primary_type": "Ghost",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "neverendingnightmarespecial": {
-    "name": "Never-Ending Nightmare",
-    "category": "Special",
-    "primary_type": "Ghost",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "corkscrewcrashphysical": {
-    "name": "Corkscrew Crash",
-    "category": "Physical",
-    "primary_type": "Steel",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "corkscrewcrashspecial": {
-    "name": "Corkscrew Crash",
-    "category": "Special",
-    "primary_type": "Steel",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "infernooverdrivephysical": {
-    "name": "Inferno Overdrive",
-    "category": "Physical",
-    "primary_type": "Fire",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "infernooverdrivespecial": {
-    "name": "Inferno Overdrive",
-    "category": "Special",
-    "primary_type": "Fire",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "hydrovortexphysical": {
-    "name": "Hydro Vortex",
-    "category": "Physical",
-    "primary_type": "Water",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "hydrovortexspecial": {
-    "name": "Hydro Vortex",
-    "category": "Special",
-    "primary_type": "Water",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "bloomdoomphysical": {
-    "name": "Bloom Doom",
-    "category": "Physical",
-    "primary_type": "Grass",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "bloomdoomspecial": {
-    "name": "Bloom Doom",
-    "category": "Special",
-    "primary_type": "Grass",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "gigavolthavocphysical": {
-    "name": "Gigavolt Havoc",
-    "category": "Physical",
-    "primary_type": "Electric",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "gigavolthavocspecial": {
-    "name": "Gigavolt Havoc",
-    "category": "Special",
-    "primary_type": "Electric",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "shatteredpsychephysical": {
-    "name": "Shattered Psyche",
-    "category": "Physical",
-    "primary_type": "Psychic",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "shatteredpsychespecial": {
-    "name": "Shattered Psyche",
-    "category": "Special",
-    "primary_type": "Psychic",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "subzeroslammerphysical": {
-    "name": "Subzero Slammer",
-    "category": "Physical",
-    "primary_type": "Ice",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "subzeroslammerspecial": {
-    "name": "Subzero Slammer",
-    "category": "Special",
-    "primary_type": "Ice",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "devastatingdrakephysical": {
-    "name": "Devastating Drake",
-    "category": "Physical",
-    "primary_type": "Dragon",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "devastatingdrakespecial": {
-    "name": "Devastating Drake",
-    "category": "Special",
-    "primary_type": "Dragon",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "blackholeeclipsephysical": {
-    "name": "Black Hole Eclipse",
-    "category": "Physical",
-    "primary_type": "Dark",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "blackholeeclipsespecial": {
-    "name": "Black Hole Eclipse",
-    "category": "Special",
-    "primary_type": "Dark",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "twinkletacklephysical": {
-    "name": "Twinkle Tackle",
-    "category": "Physical",
-    "primary_type": "Fairy",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
-  },
-  "twinkletacklespecial": {
-    "name": "Twinkle Tackle",
-    "category": "Special",
-    "primary_type": "Fairy",
-    "accuracy": "exempt",
-    "pp": 1,
-    "target": "Normal",
-    "flags": ["NoMetronome"]
   }
 }

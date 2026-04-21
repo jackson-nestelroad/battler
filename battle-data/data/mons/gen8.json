@@ -1420,11 +1420,7 @@
       "level": 30
     },
     "base_forme": "Amped",
-    "formes": [
-      "Toxtricity-Low-Key",
-      "Toxtricity-Amped-Gmax",
-      "Toxtricity-Low-Key-Gmax"
-    ],
+    "formes": ["Toxtricity-Low-Key", "Toxtricity-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -1976,8 +1972,8 @@
     "learnset": {}
   },
   "sirfetchd": {
-    "name": "Sirfetch’d",
-    "base_species": "Sirfetch’d",
+    "name": "Sirfetch'd",
+    "base_species": "Sirfetch'd",
     "class": "Wild Duck",
     "color": "White",
     "primary_type": "Fighting",
@@ -2003,7 +1999,7 @@
       "spd": 82,
       "spe": 65
     },
-    "prevo": "Farfetch’d",
+    "prevo": "Farfetch'd",
     "evolution_data": {
       "method": "B",
       "condition": ""
@@ -3000,7 +2996,7 @@
       "condition": ""
     },
     "base_forme": "Single-Strike",
-    "formes": ["Urshifu-Rapid-Strike", "Urshifu-Single-Strike-Gmax"],
+    "formes": ["Urshifu-Rapid-Strike", "Urshifu-Gmax"],
     "flags": ["Sub-Legendary"],
     "learnset": {}
   },
@@ -3549,6 +3545,7 @@
       "spd": 70,
       "spe": 75
     },
+    "formes": ["Toxtricity-Low-Key-Gmax"],
     "flags": [],
     "learnset": {}
   },
@@ -4246,8 +4243,8 @@
     "flags": [],
     "learnset": {}
   },
-  "toxtricityampedgmax": {
-    "name": "Toxtricity-Amped-Gmax",
+  "toxtricitygmax": {
+    "name": "Toxtricity-Gmax",
     "base_species": "Toxtricity",
     "forme": "Gmax",
     "class": "Punk",
@@ -4495,8 +4492,8 @@
     "flags": [],
     "learnset": {}
   },
-  "urshifusinglestrikegmax": {
-    "name": "Urshifu-Single-Strike-Gmax",
+  "urshifugmax": {
+    "name": "Urshifu-Gmax",
     "base_species": "Urshifu",
     "forme": "Gmax",
     "class": "Wushu",
