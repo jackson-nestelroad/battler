@@ -3,8 +3,35 @@
     "ignorePaths": [
         ".vscode"
     ],
-    "dictionaryDefinitions": [],
-    "dictionaries": [],
+    "dictionaryDefinitions": [
+        {
+            "name": "pokemon",
+            "path": ".cspell/pokemon.txt"
+        },
+        {
+            "name": "pokemon-abilities",
+            "path": ".cspell/pokemon-abilities.txt"
+        },
+        {
+            "name": "pokemon-items",
+            "path": ".cspell/pokemon-items.txt"
+        },
+        {
+            "name": "pokemon-moves",
+            "path": ".cspell/pokemon-moves.txt"
+        },
+        {
+            "name": "pokemon-aliases",
+            "path": ".cspell/pokemon-aliases.txt"
+        }
+    ],
+    "dictionaries": [
+        "pokemon",
+        "pokemon-abilities",
+        "pokemon-items",
+        "pokemon-moves",
+        "pokemon-aliases"
+    ],
     "words": [
         "ahash",
         "callees",

@@ -1,0 +1,4232 @@
+★And15
+★And337
+★And390
+★And458
+★And603
+★Aql7235
+★Aql7525
+★Aql7557
+★Aql7595
+★Aql7602
+★Aqr7950
+★Aqr8232
+★Aqr8264
+★Aqr8414
+★Aqr8499
+★Aqr8518
+★Aqr8610
+★Aqr8709
+★Ara6585
+★Ari546
+★Ari553
+★Ari617
+★Ari951
+★Aur1577
+★Aur1605
+★Aur1612
+★Aur1641
+★Aur1708
+★Aur2088
+★Aur2095
+★Boo5235
+★Boo5340
+★Boo5351
+★Boo5435
+★Boo5506
+★Boo5602
+★Boo5733
+★Cap7754
+★Cap7773
+★Cap7776
+★Cap8278
+★Cap8322
+★Car2326
+★Car3307
+★Car3685
+★Car3699
+★Cas153
+★Cas168
+★Cas21
+★Cas219
+★Cas265
+★Cas403
+★Cas542
+★Cen5267
+★Cen5288
+★Cen5459
+★Cen5460
+★Cen551
+★Cep8162
+★Cep8238
+★Cep8417
+★Cep8974
+★Cet188
+★Cet539
+★Cet681
+★Cet804
+★Cet911
+★CMa2282
+★CMa2294
+★CMa2491
+★CMa2618
+★CMa2646
+★CMa2657
+★CMa2693
+★CMa2827
+★CMi2845
+★CMi2943
+★Cnc3208
+★Cnc3249
+★Cnc3268
+★Cnc3429
+★Cnc3449
+★Cnc3461
+★Cnc3572
+★Cnc3627
+★Col1956
+★Col2040
+★Col2177
+★Com4968
+★Crt4287
+★Cru4656
+★Cru4700
+★Cru4730
+★Cru4763
+★Cru4853
+★Crv4623
+★Crv4662
+★Crv4757
+★Crv4786
+★CVn4785
+★CVn4846
+★CVn4915
+★Cyg7417
+★Cyg7528
+★Cyg7796
+★Cyg7924
+★Cyg7949
+★Cyg8301
+★Del7852
+★Del7882
+★Del7906
+★Dra4434
+★Dra5291
+★Dra5744
+★Dra6132
+★Dra6370
+★Dra6396
+★Dra6536
+★Dra6636
+★Dra6688
+★Dra6705
+★Dra7310
+★Dra7462
+★Equ8131
+★Eri1084
+★Eri1231
+★Eri1298
+★Eri1325
+★Eri1393
+★Eri1464
+★Eri1666
+★Eri472
+★Eri850
+★Eri874
+★Eri897
+★Eri984
+★Gem2216
+★Gem2286
+★Gem2421
+★Gem2473
+★Gem2484
+★Gem2650
+★Gem2777
+★Gem2891
+★Gem2930
+★Gem2990
+★Gru8353
+★Gru8425
+★Gru8636
+★Her6008
+★Her6117
+★Her6148
+★Her6406
+★Her6410
+★Her6526
+★Hya3418
+★Hya3482
+★Hya3748
+★Hya3845
+★Hya3903
+★Leo3773
+★Leo3852
+★Leo3905
+★Leo3982
+★Leo4031
+★Leo4057
+★Leo4357
+★Leo4359
+★Leo4534
+★Lep1829
+★Lep1865
+★Lib5531
+★Lib5603
+★Lib5685
+★Lib5787
+★Lyr7001
+★Lyr7106
+★Lyr7178
+★Lyr7298
+★Oct7228
+★Oph6056
+★Oph6075
+★Oph6149
+★Oph6378
+★Oph6556
+★Oph6603
+★Ori1543
+★Ori1713
+★Ori1790
+★Ori1852
+★Ori1879
+★Ori1899
+★Ori1903
+★Ori1948
+★Ori2004
+★Ori2061
+★Pav7790
+★Peg39
+★Peg8308
+★Peg8450
+★Peg8634
+★Peg8650
+★Peg8684
+★Peg8775
+★Peg8781
+★Peg8880
+★Peg8905
+★Per1017
+★Per1131
+★Per1228
+★Per834
+★Per936
+★Per941
+★Phe338
+★Phe99
+★PsA8728
+★Psc361
+★Psc437
+★Psc510
+★Psc596
+★Psc8773
+★Pup3045
+★Pup3165
+★Pup3185
+★Sco5928
+★Sco5944
+★Sco5953
+★Sco5984
+★Sco6027
+★Sco6084
+★Sco6134
+★Sco6165
+★Sco6241
+★Sco6247
+★Sco6252
+★Sco6508
+★Sco6527
+★Sco6553
+★Sco6630
+★Ser5854
+★Ser5879
+★Ser7141
+★Sge7479
+★Sgr6746
+★Sgr6812
+★Sgr6859
+★Sgr6879
+★Sgr6913
+★Sgr7116
+★Sgr7121
+★Sgr7194
+★Sgr7264
+★Sgr7337
+★Sgr7343
+★Sgr7348
+★Sgr7597
+★Tau1165
+★Tau1346
+★Tau1373
+★Tau1409
+★Tau1412
+★Tau1457
+★Tau1791
+★Tau1910
+★TrA6217
+★Tri544
+★UMa3323
+★UMa3569
+★UMa3594
+★UMa4033
+★UMa4069
+★UMa4295
+★UMa4301
+★UMa4375
+★UMa4377
+★UMa4518
+★UMa4554
+★UMa4660
+★UMa4905
+★UMa5054
+★UMa5191
+★UMi424
+★UMi5563
+★UMi5735
+★UMi6789
+★Vel3485
+★Vel3634
+★Vel3734
+★Vir4540
+★Vir4689
+★Vir4825
+★Vir4910
+★Vir4932
+★Vir5056
+★Vir5107
+★Vir5315
+★Vir5338
+★Vir5359
+★Vir5409
+★Vul7405
+Ability Capsule
+Ability Patch
+Ability Shield
+Ability Urge
+abilitycapsule
+abilitypatch
+abilityshield
+abilityurge
+abomasite
+Abomasite
+Abra Candy
+abracandy
+absolite
+Absolite
+Absorb Bulb
+absorbbulb
+Academy Ball
+Academy Bottle
+Academy Cup
+Academy Tablecloth
+academyball
+academybottle
+academycup
+academytablecloth
+Acro Bike
+acrobike
+Adamant Crystal
+Adamant Mint
+Adamant Orb
+adamantcrystal
+adamantmint
+adamantorb
+Adrenaline Orb
+adrenalineorb
+Adventure Guide
+adventureguide
+adventurerules
+Aerodactyl Candy
+aerodactylcandy
+aerodactylite
+Aerodactylite
+aggronite
+Aggronite
+Aguav Berry
+aguavberry
+Aipom Hair
+aipomhair
+Air Balloon
+Air Mail
+airballoon
+airmail
+alakazite
+Alakazite
+Alomomola Mucus
+alomomolamucus
+Aloraichium Z
+aloraichiumz
+altarianite
+Altarianite
+Amaze Mulch
+amazemulch
+ampharosite
+Ampharosite
+Amulet Coin
+amuletcoin
+antidote
+Antidote
+Apicot Berry
+apicotberry
+apple
+Apple
+Applin Juice
+applinjuice
+Apricorn Box
+apricornbox
+Aqua Suit
+aquasuit
+Armor Fossil
+Armor Pass
+armorfossil
+Armorite Ore
+armoriteore
+armorpass
+Arrokuda Scales
+arrokudascales
+Articuno Candy
+articunocandy
+Aspear Berry
+aspearberry
+Assault Vest
+assaultvest
+audinite
+Audinite
+auroraticket
+AuroraTicket
+Auspicious Armor
+auspiciousarmor
+autograph
+Autograph
+avocado
+Avocado
+awakening
+Awakening
+Axew Scales
+axewscales
+Azure Flute
+azureflute
+Azurill Fur
+azurillfur
+B&W Grass Tablecloth
+Babiri Berry
+babiriberry
+Bach's Food Tin
+bachsfoodtin
+bacon
+Bacon
+Bagon Scales
+bagonscales
+baguette
+Baguette
+Balm Mushroom
+balmmushroom
+banana
+Banana
+Band Autograph
+bandautograph
+banettite
+Banettite
+Barboach Slime
+barboachslime
+Barred Cup
+barredcup
+Basculin Fang
+basculinfang
+Basement Key
+basementkey
+basementkeygoldenrod
+basementkeynewmauville
+basil
+Basil
+Battle Pocket
+Battle Tablecloth
+battlepocket
+battletablecloth
+Beach Glass
+beachglass
+Bead Mail
+beadmail
+Beast Ball
+beastball
+beedrillite
+Beedrillite
+Bellsprout Candy
+Bellsprout Vine
+bellsproutcandy
+bellsproutvine
+Belue Berry
+belueberry
+Bergmite Ice
+bergmiteice
+Berry Juice
+Berry Pots
+Berry Pouch
+Berry Sweet
+berryjuice
+berrypots
+berrypouch
+berrysweet
+bicycle
+Bicycle
+Big Bamboo Shoot
+Big Malasada
+Big Mushroom
+Big Nugget
+Big Pearl
+Big Root
+bigbambooshoot
+bigmalasada
+bigmushroom
+bignugget
+bigpearl
+bigroot
+bike
+Bike
+Bike Voucher
+bikegreen
+bikevoucher
+bikeyellow
+Binding Band
+bindingband
+Bitter Herba Mystica
+bitterherbamystica
+Black Apricorn
+Black Belt
+Black Flute
+Black Glasses
+Black Mane Hair
+Black Sludge
+blackapricorn
+blackbelt
+blackflute
+blackglasses
+blackmanehair
+blacksludge
+Blank Plate
+blankplate
+blastoisinite
+Blastoisinite
+blazikenite
+Blazikenite
+Bloom Mail
+bloommail
+Blue Apricorn
+Blue Bottle
+Blue Card
+Blue Cup
+Blue Dish
+Blue Flute
+Blue Orb
+Blue Petal
+Blue Poké Ball Pick
+Blue Scarf
+Blue Shard
+Blue Tablecloth
+Blue-Flag Pick
+Blue-Sky Flower Pick
+blueapricorn
+bluebottle
+bluecard
+bluecup
+bluedish
+blueflagpick
+blueflute
+blueorb
+bluepetal
+bluepokeballpick
+bluescarf
+blueshard
+blueskyflowerpick
+bluetablecloth
+Bluk Berry
+blukberry
+Blunder Policy
+blunderpolicy
+Bob's Food Tin
+bobsfoodtin
+Boiled Egg
+boiledegg
+Bold Mint
+boldmint
+Bombirdier Feather
+bombirdierfeather
+Bonsly Tears
+bonslytears
+Boost Mulch
+Booster Energy
+boosterenergy
+boostmulch
+Bottle Cap
+bottlecap
+Bounsweet Sweat
+bounsweetsweat
+Bramblin Twig
+bramblintwig
+Brave Mint
+bravemint
+bread
+Bread
+Brick Mail
+brickmail
+Bridge Mail D
+Bridge Mail M
+Bridge Mail S
+Bridge Mail T
+Bridge Mail V
+bridgemaild
+bridgemailm
+bridgemails
+bridgemailt
+bridgemailv
+Bright Powder
+brightpowder
+Brittle Bones
+brittlebones
+Bronze Bottle
+Bronze Cup
+bronzebottle
+bronzecup
+Bronzor Fragment
+bronzorfragment
+Bruxish Tooth
+bruxishtooth
+Bubble Mail
+bubblemail
+Bug Gem
+Bug Memory
+Bug Tera Shard
+buggem
+Buginium Z
+buginiumz
+bugmemory
+bugterashard
+Buizel Fur
+buizelfur
+Bulbasaur Candy
+bulbasaurcandy
+Burn Drive
+Burn Heal
+burndrive
+burnheal
+butter
+Butter
+bwgrasstablecloth
+Cacnea Needle
+cacneaneedle
+calcium
+Calcium
+Calm Mint
+calmmint
+cameruptite
+Cameruptite
+Camping Gear
+campinggear
+Candy Jar
+candyjar
+Capsakid Seed
+capsakidseed
+Carbink Jewel
+carbinkjewel
+carbos
+Carbos
+Card Key
+cardkey
+cardkeyletsgo
+Careful Mint
+carefulmint
+Carrot Seeds
+carrotseeds
+casteliacone
+Casteliacone
+Catching Charm
+Catching Pocket
+catchingcharm
+catchingpocket
+Caterpie Candy
+caterpiecandy
+Cell Battery
+cellbattery
+Cetoddle Grease
+cetoddlegrease
+Chalky Stone
+chalkystone
+Chansey Candy
+chanseycandy
+Charcadet Soot
+charcadetsoot
+charcoal
+Charcoal
+Charizardite X
+Charizardite Y
+charizarditex
+charizarditey
+Charmander Candy
+charmandercandy
+Charti Berry
+chartiberry
+cheese
+Cheese
+Cheri Berry
+cheriberry
+Cherish Ball
+cherishball
+Cherry Tomatoes
+cherrytomatoes
+Chesto Berry
+chestoberry
+Chewtle Claw
+chewtleclaw
+Chilan Berry
+chilanberry
+Chili Sauce
+chilisauce
+Chill Drive
+chilldrive
+Chingling Fragment
+chinglingfragment
+Chipped Pot
+chippedpot
+Choice Band
+Choice Scarf
+Choice Specs
+choiceband
+choicescarf
+choicespecs
+Chople Berry
+chopleberry
+chorizo
+Chorizo
+Clauncher Claw
+clauncherclaw
+Claw Fossil
+clawfossil
+Cleanse Tag
+cleansetag
+Clear Amulet
+Clear Bell
+clearamulet
+clearbell
+Clefairy Candy
+clefairycandy
+Cleffa Fur
+cleffafur
+Clever Feather
+Clever Mochi
+cleverfeather
+clevermochi
+cleverwing
+Clothing Trunk
+clothingtrunk
+Clover Sweet
+cloversweet
+Coba Berry
+cobaberry
+Coconut Milk
+coconutmilk
+Coin Case
+coincase
+Colbur Berry
+colburberry
+Colress Machine
+colressmachine
+Combee Honey
+combeehoney
+Comet Shard
+cometshard
+Common Stone
+commonstone
+Contest Costume
+Contest Pass
+contestcostume
+contestcostumedress
+contestcostumejacket
+contestpass
+Cornerstone Mask
+cornerstonemask
+Cornn Berry
+cornnberry
+Corphish Shell
+corphishshell
+Coupon 1
+Coupon 2
+Coupon 3
+coupon1
+coupon2
+coupon3
+Courage Candy
+Courage Candy L
+Courage Candy XL
+couragecandy
+couragecandyl
+couragecandyxl
+Cover Fossil
+coverfossil
+Covert Cloak
+covertcloak
+Crabrawler Shell
+crabrawlershell
+Cracked Pot
+crackedpot
+Cramorant Down
+cramorantdown
+Cream Cheese
+creamcheese
+Croagunk Poison
+croagunkpoison
+Crown Pass
+crownpass
+Cryogonal Ice
+cryogonalice
+Crystal Cluster
+crystalcluster
+Cubchoo Fur
+cubchoofur
+Cubone Candy
+cubonecandy
+cucumber
+Cucumber
+Cufant Tarnish
+cufanttarnish
+Curry Powder
+currypowder
+Custap Berry
+custapberry
+Cutiefly Powder
+cutieflypowder
+Cyber Ball
+cyberball
+Cyclizar Scales
+cyclizarscales
+Damp Mulch
+Damp Rock
+dampmulch
+damprock
+Dark Gem
+Dark Memory
+Dark Stone
+Dark Tera Shard
+darkgem
+Darkinium Z
+darkiniumz
+darkmemory
+darkstone
+darkterashard
+Data Card 01
+Data Card 02
+Data Card 03
+Data Card 04
+Data Card 05
+Data Card 06
+Data Card 07
+Data Card 08
+Data Card 09
+Data Card 10
+Data Card 11
+Data Card 12
+Data Card 13
+Data Card 14
+Data Card 15
+Data Card 16
+Data Card 17
+Data Card 18
+Data Card 19
+Data Card 20
+Data Card 21
+Data Card 22
+Data Card 23
+Data Card 24
+Data Card 25
+Data Card 26
+Data Card 27
+datacard01
+datacard02
+datacard03
+datacard04
+datacard05
+datacard06
+datacard07
+datacard08
+datacard09
+datacard10
+datacard11
+datacard12
+datacard13
+datacard14
+datacard15
+datacard16
+datacard17
+datacard18
+datacard19
+datacard20
+datacard21
+datacard22
+datacard23
+datacard24
+datacard25
+datacard26
+datacard27
+Dawn Stone
+dawnstone
+Decidium Z
+decidiumz
+Dedenne Fur
+dedennefur
+Deep Sea Scale
+Deep Sea Tooth
+deepseascale
+deepseatooth
+Deerling Hair
+deerlinghair
+Deino Scales
+deinoscales
+Delibird Parcel
+delibirdparcel
+Destiny Knot
+destinyknot
+Devon Goods
+Devon Parts
+Devon Scope
+Devon Scuba Gear
+devongoods
+devonparts
+devonscope
+devonscubagear
+Diamond Bottle
+Diamond Pattern Cup
+Diamond Tablecloth
+diamondbottle
+diamondpatterncup
+diamondtablecloth
+diancite
+Diancite
+Diglett Candy
+Diglett Dirt
+diglettcandy
+diglettdirt
+Dire Hit
+Dire Hit 2
+Dire Hit 3
+direhit
+direhit2
+direhit3
+Discount Coupon
+discountcoupon
+Ditto Candy
+Ditto Goo
+dittocandy
+dittogoo
+Dive Ball
+diveball
+DNA Splicers
+dnasplicers
+dnasplicersmerge
+dnasplicerssplit
+Doduo Candy
+doduocandy
+Dome Fossil
+domefossil
+Dondozo Whisker
+dondozowhisker
+Douse Drive
+dousedrive
+Dowsing Machine
+dowsingmachine
+Draco Plate
+dracoplate
+Dragon Fang
+Dragon Gem
+Dragon Memory
+Dragon Scale
+Dragon Skull
+Dragon Tera Shard
+dragonfang
+dragongem
+Dragonium Z
+dragoniumz
+dragonmemory
+dragonscale
+dragonskull
+dragonterashard
+Dratini Candy
+Dratini Scales
+dratinicandy
+dratiniscales
+Dread Plate
+dreadplate
+Dream Ball
+Dream Mail
+dreamball
+dreammail
+Dreepy Powder
+dreepypowder
+Drifloon Gas
+drifloongas
+Dropped Item
+droppeditem
+droppeditemred
+droppeditemyellow
+Drowzee Candy
+Drowzee Fur
+drowzeecandy
+drowzeefur
+Dubious Disc
+dubiousdisc
+Ducklett Feather
+ducklettfeather
+Dunsparce Scales
+dunsparcescales
+Durin Berry
+durinberry
+Dusk Ball
+Dusk Stone
+duskball
+duskstone
+Duskull Fragment
+duskullfragment
+Dynamax Band
+Dynamax Candy
+dynamaxband
+dynamaxcandy
+dynamaxcrystaland15
+dynamaxcrystaland337
+dynamaxcrystaland390
+dynamaxcrystaland458
+dynamaxcrystaland603
+dynamaxcrystalaql7235
+dynamaxcrystalaql7525
+dynamaxcrystalaql7557
+dynamaxcrystalaql7595
+dynamaxcrystalaql7602
+dynamaxcrystalaqr7950
+dynamaxcrystalaqr8232
+dynamaxcrystalaqr8264
+dynamaxcrystalaqr8414
+dynamaxcrystalaqr8499
+dynamaxcrystalaqr8518
+dynamaxcrystalaqr8610
+dynamaxcrystalaqr8709
+dynamaxcrystalara6585
+dynamaxcrystalari546
+dynamaxcrystalari553
+dynamaxcrystalari617
+dynamaxcrystalari951
+dynamaxcrystalaur1577
+dynamaxcrystalaur1605
+dynamaxcrystalaur1612
+dynamaxcrystalaur1641
+dynamaxcrystalaur1708
+dynamaxcrystalaur2088
+dynamaxcrystalaur2095
+dynamaxcrystalboo5235
+dynamaxcrystalboo5340
+dynamaxcrystalboo5351
+dynamaxcrystalboo5435
+dynamaxcrystalboo5506
+dynamaxcrystalboo5602
+dynamaxcrystalboo5733
+dynamaxcrystalcap7754
+dynamaxcrystalcap7773
+dynamaxcrystalcap7776
+dynamaxcrystalcap8278
+dynamaxcrystalcap8322
+dynamaxcrystalcar2326
+dynamaxcrystalcar3307
+dynamaxcrystalcar3685
+dynamaxcrystalcar3699
+dynamaxcrystalcas153
+dynamaxcrystalcas168
+dynamaxcrystalcas21
+dynamaxcrystalcas219
+dynamaxcrystalcas265
+dynamaxcrystalcas403
+dynamaxcrystalcas542
+dynamaxcrystalcen5267
+dynamaxcrystalcen5288
+dynamaxcrystalcen5459
+dynamaxcrystalcen5460
+dynamaxcrystalcen551
+dynamaxcrystalcep8162
+dynamaxcrystalcep8238
+dynamaxcrystalcep8417
+dynamaxcrystalcep8974
+dynamaxcrystalcet188
+dynamaxcrystalcet539
+dynamaxcrystalcet681
+dynamaxcrystalcet804
+dynamaxcrystalcet911
+dynamaxcrystalcma2282
+dynamaxcrystalcma2294
+dynamaxcrystalcma2491
+dynamaxcrystalcma2618
+dynamaxcrystalcma2646
+dynamaxcrystalcma2657
+dynamaxcrystalcma2693
+dynamaxcrystalcma2827
+dynamaxcrystalcmi2845
+dynamaxcrystalcmi2943
+dynamaxcrystalcnc3208
+dynamaxcrystalcnc3249
+dynamaxcrystalcnc3268
+dynamaxcrystalcnc3429
+dynamaxcrystalcnc3449
+dynamaxcrystalcnc3461
+dynamaxcrystalcnc3572
+dynamaxcrystalcnc3627
+dynamaxcrystalcol1956
+dynamaxcrystalcol2040
+dynamaxcrystalcol2177
+dynamaxcrystalcom4968
+dynamaxcrystalcrt4287
+dynamaxcrystalcru4656
+dynamaxcrystalcru4700
+dynamaxcrystalcru4730
+dynamaxcrystalcru4763
+dynamaxcrystalcru4853
+dynamaxcrystalcrv4623
+dynamaxcrystalcrv4662
+dynamaxcrystalcrv4757
+dynamaxcrystalcrv4786
+dynamaxcrystalcvn4785
+dynamaxcrystalcvn4846
+dynamaxcrystalcvn4915
+dynamaxcrystalcyg7417
+dynamaxcrystalcyg7528
+dynamaxcrystalcyg7796
+dynamaxcrystalcyg7924
+dynamaxcrystalcyg7949
+dynamaxcrystalcyg8301
+dynamaxcrystaldel7852
+dynamaxcrystaldel7882
+dynamaxcrystaldel7906
+dynamaxcrystaldra4434
+dynamaxcrystaldra5291
+dynamaxcrystaldra5744
+dynamaxcrystaldra6132
+dynamaxcrystaldra6370
+dynamaxcrystaldra6396
+dynamaxcrystaldra6536
+dynamaxcrystaldra6636
+dynamaxcrystaldra6688
+dynamaxcrystaldra6705
+dynamaxcrystaldra7310
+dynamaxcrystaldra7462
+dynamaxcrystalequ8131
+dynamaxcrystaleri1084
+dynamaxcrystaleri1231
+dynamaxcrystaleri1298
+dynamaxcrystaleri1325
+dynamaxcrystaleri1393
+dynamaxcrystaleri1464
+dynamaxcrystaleri1666
+dynamaxcrystaleri472
+dynamaxcrystaleri850
+dynamaxcrystaleri874
+dynamaxcrystaleri897
+dynamaxcrystaleri984
+dynamaxcrystalgem2216
+dynamaxcrystalgem2286
+dynamaxcrystalgem2421
+dynamaxcrystalgem2473
+dynamaxcrystalgem2484
+dynamaxcrystalgem2650
+dynamaxcrystalgem2777
+dynamaxcrystalgem2891
+dynamaxcrystalgem2930
+dynamaxcrystalgem2990
+dynamaxcrystalgru8353
+dynamaxcrystalgru8425
+dynamaxcrystalgru8636
+dynamaxcrystalher6008
+dynamaxcrystalher6117
+dynamaxcrystalher6148
+dynamaxcrystalher6406
+dynamaxcrystalher6410
+dynamaxcrystalher6526
+dynamaxcrystalhya3418
+dynamaxcrystalhya3482
+dynamaxcrystalhya3748
+dynamaxcrystalhya3845
+dynamaxcrystalhya3903
+dynamaxcrystalleo3773
+dynamaxcrystalleo3852
+dynamaxcrystalleo3905
+dynamaxcrystalleo3982
+dynamaxcrystalleo4031
+dynamaxcrystalleo4057
+dynamaxcrystalleo4357
+dynamaxcrystalleo4359
+dynamaxcrystalleo4534
+dynamaxcrystallep1829
+dynamaxcrystallep1865
+dynamaxcrystallib5531
+dynamaxcrystallib5603
+dynamaxcrystallib5685
+dynamaxcrystallib5787
+dynamaxcrystallyr7001
+dynamaxcrystallyr7106
+dynamaxcrystallyr7178
+dynamaxcrystallyr7298
+dynamaxcrystaloct7228
+dynamaxcrystaloph6056
+dynamaxcrystaloph6075
+dynamaxcrystaloph6149
+dynamaxcrystaloph6378
+dynamaxcrystaloph6556
+dynamaxcrystaloph6603
+dynamaxcrystalori1543
+dynamaxcrystalori1713
+dynamaxcrystalori1790
+dynamaxcrystalori1852
+dynamaxcrystalori1879
+dynamaxcrystalori1899
+dynamaxcrystalori1903
+dynamaxcrystalori1948
+dynamaxcrystalori2004
+dynamaxcrystalori2061
+dynamaxcrystalpav7790
+dynamaxcrystalpeg39
+dynamaxcrystalpeg8308
+dynamaxcrystalpeg8450
+dynamaxcrystalpeg8634
+dynamaxcrystalpeg8650
+dynamaxcrystalpeg8684
+dynamaxcrystalpeg8775
+dynamaxcrystalpeg8781
+dynamaxcrystalpeg8880
+dynamaxcrystalpeg8905
+dynamaxcrystalper1017
+dynamaxcrystalper1131
+dynamaxcrystalper1228
+dynamaxcrystalper834
+dynamaxcrystalper936
+dynamaxcrystalper941
+dynamaxcrystalphe338
+dynamaxcrystalphe99
+dynamaxcrystalpsa8728
+dynamaxcrystalpsc361
+dynamaxcrystalpsc437
+dynamaxcrystalpsc510
+dynamaxcrystalpsc596
+dynamaxcrystalpsc8773
+dynamaxcrystalpup3045
+dynamaxcrystalpup3165
+dynamaxcrystalpup3185
+dynamaxcrystalsco5928
+dynamaxcrystalsco5944
+dynamaxcrystalsco5953
+dynamaxcrystalsco5984
+dynamaxcrystalsco6027
+dynamaxcrystalsco6084
+dynamaxcrystalsco6134
+dynamaxcrystalsco6165
+dynamaxcrystalsco6241
+dynamaxcrystalsco6247
+dynamaxcrystalsco6252
+dynamaxcrystalsco6508
+dynamaxcrystalsco6527
+dynamaxcrystalsco6553
+dynamaxcrystalsco6630
+dynamaxcrystalser5854
+dynamaxcrystalser5879
+dynamaxcrystalser7141
+dynamaxcrystalsge7479
+dynamaxcrystalsgr6746
+dynamaxcrystalsgr6812
+dynamaxcrystalsgr6859
+dynamaxcrystalsgr6879
+dynamaxcrystalsgr6913
+dynamaxcrystalsgr7116
+dynamaxcrystalsgr7121
+dynamaxcrystalsgr7194
+dynamaxcrystalsgr7264
+dynamaxcrystalsgr7337
+dynamaxcrystalsgr7343
+dynamaxcrystalsgr7348
+dynamaxcrystalsgr7597
+dynamaxcrystaltau1165
+dynamaxcrystaltau1346
+dynamaxcrystaltau1373
+dynamaxcrystaltau1409
+dynamaxcrystaltau1412
+dynamaxcrystaltau1457
+dynamaxcrystaltau1791
+dynamaxcrystaltau1910
+dynamaxcrystaltra6217
+dynamaxcrystaltri544
+dynamaxcrystaluma3323
+dynamaxcrystaluma3569
+dynamaxcrystaluma3594
+dynamaxcrystaluma4033
+dynamaxcrystaluma4069
+dynamaxcrystaluma4295
+dynamaxcrystaluma4301
+dynamaxcrystaluma4375
+dynamaxcrystaluma4377
+dynamaxcrystaluma4518
+dynamaxcrystaluma4554
+dynamaxcrystaluma4660
+dynamaxcrystaluma4905
+dynamaxcrystaluma5054
+dynamaxcrystaluma5191
+dynamaxcrystalumi424
+dynamaxcrystalumi5563
+dynamaxcrystalumi5735
+dynamaxcrystalumi6789
+dynamaxcrystalvel3485
+dynamaxcrystalvel3634
+dynamaxcrystalvel3734
+dynamaxcrystalvir4540
+dynamaxcrystalvir4689
+dynamaxcrystalvir4825
+dynamaxcrystalvir4910
+dynamaxcrystalvir4932
+dynamaxcrystalvir5056
+dynamaxcrystalvir5107
+dynamaxcrystalvir5315
+dynamaxcrystalvir5338
+dynamaxcrystalvir5359
+dynamaxcrystalvir5409
+dynamaxcrystalvul7405
+Dynite Ore
+dyniteore
+Earth Plate
+earthplate
+Eevee Candy
+Eevee Cup
+Eevee Fur
+eeveecandy
+eeveecup
+eeveefur
+Eevium Z
+eeviumz
+egg
+Egg
+Eiscue Down
+eiscuedown
+Eject Button
+Eject Pack
+ejectbutton
+ejectpack
+Ekans Candy
+Ekans Fang
+ekanscandy
+ekansfang
+Electabuzz Candy
+electabuzzcandy
+electirizer
+Electirizer
+Electric Gem
+Electric Memory
+Electric Seed
+Electric Tera Shard
+electricgem
+electricmemory
+electricseed
+electricterashard
+Electrium Z
+electriumz
+Elevator Key
+elevatorkey
+elixir
+Elixir
+endorsement
+Endorsement
+Energy Powder
+Energy Root
+energypowder
+energyroot
+Enigma Berry
+Enigma Stone
+enigmaberry
+enigmastone
+Enigmatic Card
+enigmaticcard
+Eon Flute
+Eon Ticket
+eonflute
+eonticket
+Escape Rope
+escaperope
+ether
+Ether
+everstone
+Everstone
+eviolite
+Eviolite
+Exeggcute Candy
+exeggcutecandy
+Exercise Ball
+exerciseball
+Exp. Candy L
+Exp. Candy M
+Exp. Candy S
+Exp. Candy XL
+Exp. Candy XS
+Exp. Charm
+Exp. Share
+expcandyl
+expcandym
+expcandys
+expcandyxl
+expcandyxs
+expcharm
+Expert Belt
+expertbelt
+Explorer Kit
+explorerkit
+expshare
+Fab Mail
+fabmail
+Fairium Z
+fairiumz
+Fairy Feather
+Fairy Gem
+Fairy Memory
+Fairy Tera Shard
+fairyfeather
+fairygem
+fairymemory
+fairyterashard
+Falinks Sweat
+falinkssweat
+Fame Checker
+famechecker
+Fancy Apple
+fancyapple
+Farfetch'd Candy
+farfetchdcandy
+Fashion Case
+fashioncase
+Fast Ball
+fastball
+Favored Mail
+favoredmail
+Feebas Scales
+feebasscales
+Festival Ticket
+festivalticket
+Fidough Fur
+fidoughfur
+Fighting Gem
+Fighting Memory
+Fighting Tera Shard
+fightinggem
+fightingmemory
+fightingterashard
+Fightinium Z
+fightiniumz
+Figy Berry
+figyberry
+Finizen Mucus
+finizenmucus
+Finneon Scales
+finneonscales
+Fire Gem
+Fire Memory
+Fire Pattern Cup
+Fire Stone
+Fire Tera Shard
+firegem
+firememory
+firepatterncup
+firestone
+fireterashard
+Firium Z
+firiumz
+Fishing Rod
+fishingrod
+fishingrodgalar
+Fist Plate
+fistplate
+Flabébé Pollen
+flabebepollen
+Flame Mail
+Flame Orb
+Flame Plate
+flamemail
+flameorb
+flameplate
+Flamigo Down
+flamigodown
+Fletchling Feather
+fletchlingfeather
+Flittle Down
+flittledown
+Float Stone
+floatstone
+Flower Pattern Cup
+Flower Sweet
+flowerpatterncup
+flowersweet
+Fluffy Tail
+fluffytail
+Flying Gem
+Flying Memory
+Flying Tera Shard
+flyinggem
+flyingmemory
+flyingterashard
+Flyinium Z
+flyiniumz
+Focus Band
+Focus Sash
+focusband
+focussash
+Fomantis Leaf
+fomantisleaf
+Foongus Spores
+foongusspores
+Fossilized Bird
+Fossilized Dino
+Fossilized Drake
+Fossilized Fish
+fossilizedbird
+fossilizeddino
+fossilizeddrake
+fossilizedfish
+Fresh Cream
+Fresh Start Mochi
+Fresh Water
+freshcream
+freshstartmochi
+freshwater
+Fried Fillet
+Fried Food
+friedfillet
+friedfood
+Friend Ball
+friendball
+Frigibax Scales
+frigibaxscales
+Fruit Bunch
+fruitbunch
+Full Heal
+Full Incense
+Full Restore
+fullheal
+fullincense
+fullrestore
+Galactic Key
+galactickey
+Galarica Cuff
+Galarica Twig
+Galarica Wreath
+galaricacuff
+galaricatwig
+galaricawreath
+galladite
+Galladite
+Ganlon Berry
+ganlonberry
+garchompite
+Garchompite
+gardevoirite
+Gardevoirite
+Gastly Candy
+Gastly Gas
+gastlycandy
+gastlygas
+GB Sounds
+gbsounds
+gengarite
+Gengarite
+Genius Feather
+Genius Mochi
+geniusfeather
+geniusmochi
+geniuswing
+Gentle Mint
+gentlemint
+Geodude Candy
+Geodude Fragment
+geodudecandy
+geodudefragment
+Ghost Gem
+Ghost Memory
+Ghost Tera Shard
+ghostgem
+Ghostium Z
+ghostiumz
+ghostmemory
+ghostterashard
+Gible Scales
+giblescales
+gigantamix
+Gigantamix
+Gimmighoul Coin
+gimmighoulcoin
+Girafarig Fur
+girafarigfur
+glalitite
+Glalitite
+Gligar Fang
+gligarfang
+Glimmering Charm
+glimmeringcharm
+Glimmet Crystal
+glimmetcrystal
+Glitter Mail
+glittermail
+Go-Goggles
+god stone
+godstone
+gogoggles
+Gold Bottle
+Gold Bottle Cap
+Gold Cup
+Gold Leaf
+Gold Pick
+Gold Teeth
+goldbottle
+goldbottlecap
+goldcup
+Goldeen Candy
+goldeencandy
+Golden Nanab Berry
+Golden Pinap Berry
+Golden Razz Berry
+goldennanabberry
+goldenpinapberry
+goldenrazzberry
+goldleaf
+goldpick
+goldteeth
+Good Rod
+goodrod
+Gooey Mulch
+gooeymulch
+Goomy Goo
+goomygoo
+Gothita Eyelash
+gothitaeyelash
+gracidea
+Gracidea
+Gram 1
+Gram 2
+Gram 3
+gram1
+gram2
+gram3
+Grass Gem
+Grass Mail
+Grass Memory
+Grass Tera Shard
+grassgem
+Grassium Z
+grassiumz
+grassmail
+grassmemory
+grassterashard
+Grassy Seed
+grassyseed
+Great Ball
+greatball
+Greavard Wax
+greavardwax
+Green Apricorn
+Green Bell Pepper
+Green Dish
+Green Petal
+Green Poké Ball Pick
+Green Scarf
+Green Shard
+greenapricorn
+greenbellpepper
+greendish
+greenpetal
+greenpokeballpick
+greenscarf
+greenshard
+Greet Mail
+greetmail
+Grepa Berry
+grepaberry
+Grimer Candy
+Grimer Toxin
+grimercandy
+grimertoxin
+Grip Claw
+gripclaw
+Griseous Core
+Griseous Orb
+griseouscore
+griseousorb
+Ground Gem
+Ground Memory
+Ground Tera Shard
+groundgem
+Groundium Z
+groundiumz
+groundmemory
+groundterashard
+Growlithe Candy
+Growlithe Fur
+growlithecandy
+growlithefur
+Growth Mulch
+growthmulch
+Grubbin Thread
+grubbinthread
+Grubby Hanky
+grubbyhanky
+Guard Spec.
+guardspec
+Gulpin Mucus
+gulpinmucus
+gyaradosite
+Gyaradosite
+Haban Berry
+habanberry
+ham
+Ham
+hamburger
+Hamburger
+Happiny Dust
+happinydust
+Harbor Mail
+harbormail
+Hard Stone
+hardstone
+Hasty Mint
+hastymint
+Hatenna Dust
+hatennadust
+Hawlucha Down
+hawluchadown
+Heal Ball
+Heal Powder
+healball
+healpowder
+Health Candy
+Health Candy L
+Health Candy XL
+Health Feather
+Health Mochi
+healthcandy
+healthcandyl
+healthcandyxl
+healthfeather
+healthmochi
+healthwing
+Heart Mail
+Heart Scale
+Hearthflame Mask
+hearthflamemask
+heartmail
+heartscale
+Heat Rock
+heatrock
+Heavy Ball
+Heavy-Duty Boots
+heavyball
+heavydutyboots
+Helix Fossil
+helixfossil
+heracronite
+Heracronite
+Heracross Claw
+heracrossclaw
+Herbed Sausage
+herbedsausage
+Heroic Sword Pick
+heroicswordpick
+Hi-tech Earbuds
+Hippopotas Sand
+hippopotassand
+hitechearbuds
+Hitmonchan Candy
+hitmonchancandy
+Hitmonlee Candy
+hitmonleecandy
+hm01
+HM01
+hm02
+HM02
+hm03
+HM03
+hm04
+HM04
+hm05
+HM05
+hm06
+HM06
+hm07
+HM07
+hm08
+HM08
+Holo Caster
+holocaster
+holocastergreen
+holocasterred
+Hondew Berry
+hondewberry
+honey
+Honey
+Honor of Kalos
+honorofkalos
+Hoothoot Feather
+hoothootfeather
+Hoppip Leaf
+hoppipleaf
+Horsea Candy
+horseacandy
+horseradish
+Horseradish
+houndoominite
+Houndoominite
+Houndour Fang
+houndourfang
+HP Up
+hpup
+Hyper Potion
+hyperpotion
+Iapapa Berry
+iapapaberry
+Ice Gem
+Ice Heal
+Ice Memory
+Ice Stone
+Ice Tera Shard
+icegem
+iceheal
+icememory
+Iceroot Carrot
+icerootcarrot
+icestone
+iceterashard
+Icicle Plate
+icicleplate
+Icium Z
+iciumz
+Icy Rock
+icyrock
+Igglybuff Fluff
+igglybufffluff
+Ilima Normalium Z
+ilimanormaliumz
+ilimasnormaliumz
+Illumise Fluid
+illumisefluid
+Impidimp Hair
+impidimphair
+Impish Mint
+impishmint
+Incinium Z
+inciniumz
+Indeedee Fur
+indeedeefur
+Inquiry Mail
+inquirymail
+Insect Plate
+insectplate
+Instant Noodles
+instantnoodles
+Intriguing Stone
+intriguingstone
+iron
+Iron
+Iron Ball
+Iron Plate
+ironball
+ironplate
+Item Drop
+Item Urge
+itemdrop
+itemurge
+Jaboca Berry
+jabocaberry
+Jade Orb
+jadeorb
+jalapeno
+Jalapeño
+jam
+Jam
+Jangmo-o Scales
+jangmooscales
+Jaw Fossil
+jawfossil
+Jigglypuff Candy
+jigglypuffcandy
+Jolly Mint
+jollymint
+journal
+Journal
+Jynx Candy
+jynxcandy
+Kabuto Candy
+kabutocandy
+Kangaskhan Candy
+kangaskhancandy
+kangaskhanite
+Kangaskhanite
+Kasib Berry
+kasibberry
+Kebia Berry
+kebiaberry
+Kee Berry
+keeberry
+Kelpsy Berry
+kelpsyberry
+ketchup
+Ketchup
+Key Stone
+Key to Room 1
+Key to Room 2
+Key to Room 4
+Key to Room 6
+keystone
+keytoroom1
+keytoroom2
+keytoroom4
+keytoroom6
+King's Rock
+kingsrock
+kiwi
+Kiwi
+Klawf Claw
+Klawf Stick
+klawfclaw
+klawfstick
+Klefki Key
+klefkikey
+Koffing Candy
+Koffing Gas
+koffingcandy
+koffinggas
+Kofu's Wallet
+kofuswallet
+Komala Claw
+komalaclaw
+Kommonium Z
+kommoniumz
+Koraidon's Poké Ball
+koraidonspokeball
+Krabby Candy
+krabbycandy
+Kricketot Shell
+kricketotshell
+Lagging Tail
+laggingtail
+Lansat Berry
+lansatberry
+Lapras Candy
+laprascandy
+Large Leek
+largeleek
+Larvesta Fuzz
+larvestafuzz
+Larvitar Claw
+larvitarclaw
+latiasite
+Latiasite
+latiosite
+Latiosite
+Lava Cookie
+lavacookie
+Lax Incense
+Lax Mint
+laxincense
+laxmint
+Leader's Crest
+leaderscrest
+Leaf Letter
+Leaf Stone
+leafletter
+leaflettereevee
+leafletterpikachu
+leafstone
+Leafy Tablecloth
+leafytablecloth
+Lechonk Hair
+lechonkhair
+leek
+Leek
+Left Poké Ball
+leftovers
+Leftovers
+leftpokeball
+Legend Plate
+Legendary Clue 1
+Legendary Clue 2
+Legendary Clue 3
+Legendary Clue?
+legendaryclue
+legendaryclue1
+legendaryclue2
+legendaryclue3
+legendarycluequestion
+legendplate
+lemonade
+Lemonade
+Lens Case
+lenscase
+Leppa Berry
+leppaberry
+letter
+Letter
+lettuce
+Lettuce
+Level Ball
+levelball
+Liberty Pass
+libertypass
+Lickitung Candy
+lickitungcandy
+Liechi Berry
+liechiberry
+Life Orb
+lifeorb
+Lift Key
+liftkey
+Light Ball
+Light Clay
+Light Stone
+lightball
+lightclay
+lightstone
+Like Mail
+likemail
+Lilac Tablecloth
+lilactablecloth
+Linking Cord
+linkingcord
+Litleo Tuft
+litleotuft
+Litwick Soot
+litwicksoot
+Loaded Dice
+loadeddice
+Lock Capsule
+lockcapsule
+Lone Earring
+loneearring
+Lonely Mint
+lonelymint
+Looker Ticket
+lookerticket
+Loot Sack
+lootsack
+lopunnite
+Lopunnite
+Lost Item
+lostitem
+Lotad Leaf
+lotadleaf
+Love Ball
+Love Sweet
+loveball
+lovesweet
+lucarionite
+Lucarionite
+Luck Incense
+luckincense
+Lucky Egg
+Lucky Punch
+luckyegg
+luckypunch
+Lum Berry
+lumberry
+Luminous Moss
+luminousmoss
+Lumiose Galette
+lumiosegalette
+Lunalium Z
+lunaliumz
+Lunar Wing
+lunarwing
+lure
+Lure
+Lure Ball
+lureball
+Lustrous Globe
+Lustrous Orb
+lustrousglobe
+lustrousorb
+Luvdisc Scales
+luvdiscscales
+Luxury Ball
+luxuryball
+Lycanium Z
+lycaniumz
+Mach Bike
+machbike
+Machine Part
+machinepart
+Macho Brace
+machobrace
+Machop Candy
+machopcandy
+Magical Heart Pick
+Magical Star Pick
+magicalheartpick
+magicalstarpick
+Magikarp Candy
+Magikarp Scales
+magikarpcandy
+magikarpscales
+Magma Emblem
+Magma Stone
+Magma Suit
+magmaemblem
+Magmar Candy
+magmarcandy
+magmarizer
+Magmarizer
+magmastone
+magmasuit
+Magnemite Candy
+Magnemite Screw
+magnemitecandy
+magnemitescrew
+magnet
+Magnet
+Mago Berry
+magoberry
+Magost Berry
+magostberry
+Makuhita Sweat
+makuhitasweat
+Malicious Armor
+maliciousarmor
+manectite
+Manectite
+Mankey Candy
+Mankey Fur
+mankeycandy
+mankeyfur
+Maranga Berry
+marangaberry
+marble
+Marble
+Mareanie Spike
+mareaniespike
+Mareep Wool
+mareepwool
+Marill Ball
+marillball
+Mark Charm
+markcharm
+marmalade
+Marmalade
+Marshadium Z
+marshadiumz
+Maschiff Fang
+maschifffang
+Master Ball
+masterball
+Masterpiece Teacup
+masterpieceteacup
+mawilite
+Mawilite
+Max Elixir
+Max Ether
+Max Honey
+Max Lure
+Max Mushrooms
+Max Potion
+Max Repel
+Max Revive
+maxelixir
+maxether
+maxhoney
+maxlure
+maxmushrooms
+maxpotion
+maxrepel
+maxrevive
+mayonnaise
+Mayonnaise
+Meadow Plate
+meadowplate
+Mech Mail
+mechmail
+Medal Box
+medalbox
+medichamite
+Medichamite
+Medicine Pocket
+medicinepocket
+Meditite Sweat
+medititesweat
+Mega Anchor
+Mega Anklet
+Mega Bracelet
+Mega Charm
+Mega Cuff
+Mega Glasses
+Mega Glove
+Mega Pendant
+Mega Ring
+Mega Stickpin
+Mega Tiara
+megaanchor
+megaanklet
+megabracelet
+megacharm
+megacuff
+megaglasses
+megaglove
+megapendant
+megaring
+megastickpin
+megatiara
+Meltan Candy
+meltancandy
+Member Card
+membercard
+Mental Herb
+mentalherb
+Meowth Candy
+Meowth Fur
+meowthcandy
+meowthfur
+metagrossite
+Metagrossite
+Metal Coat
+Metal Powder
+metalcoat
+metalpowder
+meteorite
+Meteorite
+Meteorite Shard
+meteorite2
+meteorite3
+meteorite4
+meteoriteshard
+metronome
+Metronome
+Mew Candy
+mewcandy
+Mewnium Z
+mewniumz
+Mewtwo Candy
+mewtwocandy
+Mewtwonite X
+Mewtwonite Y
+mewtwonitex
+mewtwonitey
+Micle Berry
+micleberry
+Mienfoo Claw
+mienfooclaw
+Mighty Candy
+Mighty Candy L
+Mighty Candy XL
+mightycandy
+mightycandyl
+mightycandyxl
+Mild Mint
+mildmint
+Mimikium Z
+mimikiumz
+Mimikyu Scrap
+mimikyuscrap
+Mind Plate
+mindplate
+Mint Tablecloth
+minttablecloth
+Miracle Seed
+miracleseed
+Miraidon's Poké Ball
+miraidonspokeball
+Mirror Herb
+mirrorherb
+Misdreavus Tears
+misdreavustears
+Misty Seed
+mistyseed
+Mixed Mushrooms
+mixedmushrooms
+Modest Mint
+modestmint
+Moltres Candy
+moltrescandy
+Monstrous Tablecloth
+monstroustablecloth
+Moomoo Cheese
+Moomoo Milk
+moomoocheese
+moomoomilk
+Moon Ball
+Moon Flute
+Moon Stone
+moonball
+moonflute
+moonstone
+Morpeko Snack
+morpekosnack
+Mosaic Mail
+mosaicmail
+Mr. Mime Candy
+mrmimecandy
+Mudbray Mud
+mudbraymud
+Munchlax Fang
+munchlaxfang
+Murkrow Bauble
+murkrowbauble
+Muscle Band
+Muscle Feather
+Muscle Mochi
+muscleband
+musclefeather
+musclemochi
+musclewing
+mustard
+Mustard
+Mystery Egg
+mysteryegg
+Mystic Water
+mysticticket
+MysticTicket
+mysticwater
+N-Lunarizer
+N-Solarizer
+Nacli Salt
+naclisalt
+Naive Mint
+naivemint
+Nanab Berry
+nanabberry
+Naughty Mint
+naughtymint
+Nest Ball
+nestball
+Net Ball
+netball
+Never-Melt Ice
+nevermeltice
+Nidoran♀ Candy
+Nidoran♂ Candy
+nidoranfcandy
+nidoranmcandy
+nlunarizer
+nlunarizermerge
+nlunarizersplit
+Noibat Fur
+noibatfur
+Nomel Berry
+nomelberry
+noodles
+Noodles
+Normal Gem
+Normal Tera Shard
+normalgem
+Normalium Z
+normaliumz
+normalterashard
+Nosepass Fragment
+nosepassfragment
+nsolarizer
+nsolarizermerge
+nsolarizersplit
+nugget
+Nugget
+Numel Lava
+numellava
+Nymble Claw
+nymbleclaw
+Oak's Letter
+Oak's Parcel
+oaksletter
+oaksparcel
+Occa Berry
+occaberry
+Odd Incense
+Odd Keystone
+oddincense
+Oddish Candy
+oddishcandy
+oddkeystone
+Old Amber
+Old Charm
+Old Gateau
+Old Letter
+Old Rod
+Old Sea Map
+oldamber
+oldcharm
+oldgateau
+oldletter
+oldrod
+oldseamap
+Olive Oil
+oliveoil
+Omanyte Candy
+omanytecandy
+onion
+Onion
+Onix Candy
+onixcandy
+Oran Berry
+oranberry
+Orange Dish
+Orange Mail
+Orange Petal
+orangedish
+orangemail
+orangepetal
+Oranguru Fur
+orangurufur
+Oricorio Feather
+oricoriofeather
+Orthworm Tarnish
+orthwormtarnish
+Oval Charm
+Oval Stone
+ovalcharm
+ovalstone
+Pachirisu Fur
+pachirisufur
+Pack of Potatoes
+Packaged Curry
+packagedcurry
+packofpotatoes
+Pair of Tickets
+pairoftickets
+Pal Pad
+palpad
+Pamtre Berry
+pamtreberry
+Paralyze Heal
+paralyzeheal
+Paras Candy
+parascandy
+Parasol Pick
+parasolpick
+parcel
+Parcel
+parcelletsgo
+Park Ball
+parkball
+Party Sparkler Pick
+partysparklerpick
+pass
+Pass
+Pass Orb
+Passho Berry
+passhoberry
+Passimian Fur
+passimianfur
+passorb
+pasta
+Pasta
+Pawmi Fur
+pawmifur
+Pawniard Blade
+pawniardblade
+Payapa Berry
+payapaberry
+Peach Tablecloth
+peachtablecloth
+Peanut Butter
+peanutbutter
+pearl
+Pearl
+Pearl String
+pearlstring
+Pecha Berry
+pechaberry
+pepper
+Pepper
+permit
+Permit
+Persim Berry
+persimberry
+Petaya Berry
+petayaberry
+Petilil Leaf
+petililleaf
+Pewter Crunchies
+pewtercrunchies
+Phanpy Nail
+phanpynail
+Phantump Twig
+phantumptwig
+Photo Album
+photoalbum
+Pichu Fur
+pichufur
+pickle
+Pickle
+Picnic Set
+picnicset
+pidgeotite
+Pidgeotite
+Pidgey Candy
+pidgeycandy
+Pika-Pika Pick
+Pikachu Candy
+Pikachu Cup
+pikachucandy
+pikachucup
+Pikanium Z
+pikaniumz
+pikapikapick
+Pikashunium Z
+pikashuniumz
+Pinap Berry
+pinapberry
+Pincurchin Spines
+pincurchinspines
+pineapple
+Pineapple
+Pineco Husk
+pinecohusk
+Pink Apricorn
+Pink Bottle
+Pink Cup
+Pink Nectar
+Pink Petal
+Pink Scarf
+Pink Tablecloth
+pinkapricorn
+pinkbottle
+pinkcup
+pinknectar
+pinkpetal
+pinkscarf
+pinktablecloth
+Pinsir Candy
+pinsircandy
+pinsirite
+Pinsirite
+Pixie Plate
+pixieplate
+Plaid Tablecloth (B)
+Plaid Tablecloth (R)
+Plaid Tablecloth (Y)
+plaidtableclothb
+plaidtableclothr
+plaidtableclothy
+Plasma Card
+plasmacard
+Plume Fossil
+plumefossil
+Poffin Case
+poffincase
+Point Card
+pointcard
+Poison Barb
+Poison Gem
+Poison Memory
+Poison Tera Shard
+poisonbarb
+poisongem
+Poisonium Z
+poisoniumz
+poisonmemory
+poisonterashard
+Poké Ball
+Poké Doll
+Poké Flute
+Poké Radar
+Poké Toy
+pokeball
+Pokéblock Case
+Pokéblock Kit
+pokeblockcase
+pokeblockkit
+pokedoll
+pokeflute
+Pokémon Box Link
+pokemonbox
+pokemonboxlink
+pokeradar
+poketoy
+Polished Mud Ball
+polishedmudball
+Poliwag Candy
+Poliwag Slime
+poliwagcandy
+poliwagslime
+Polka-Dot Bottle
+Polka-Dot Cup
+Polka-Dot Tablecloth
+polkadotbottle
+polkadotcup
+polkadottablecloth
+Poltchageist Powder
+poltchageistpowder
+Pomeg Berry
+pomegberry
+Ponyta Candy
+ponytacandy
+Poochyena Fang
+poochyenafang
+Porygon Candy
+porygoncandy
+Potato Salad
+Potato Tortilla
+potatosalad
+potatotortilla
+potion
+Potion
+Powder Jar
+powderjar
+Power Anklet
+Power Band
+Power Belt
+Power Bracer
+Power Herb
+Power Lens
+Power Plant Pass
+Power Weight
+Power-Up Pocket
+poweranklet
+powerband
+powerbelt
+powerbracer
+powerherb
+powerlens
+powerplantpass
+poweruppocket
+powerweight
+PP Max
+PP Up
+ppmax
+ppup
+Precooked Burger
+precookedburger
+Premier Ball
+premierball
+Pretty Feather
+prettyfeather
+prettywing
+Primarium Z
+primariumz
+Prism Scale
+prismscale
+Prison Bottle
+prisonbottle
+Prof's Letter
+Professor's Mask
+professorsmask
+profsletter
+Prop Case
+propcase
+prosciutto
+Prosciutto
+Protective Pads
+protectivepads
+protector
+Protector
+protein
+Protein
+Psychic Gem
+Psychic Memory
+Psychic Seed
+Psychic Tera Shard
+psychicgem
+psychicmemory
+psychicseed
+psychicterashard
+Psychium Z
+psychiumz
+Psyduck Candy
+Psyduck Down
+psyduckcandy
+psyduckdown
+Punching Glove
+punchingglove
+Pungent Root
+pungentroot
+Pure Incense
+pureincense
+Purple Nectar
+Purple Petal
+purplenectar
+purplepetal
+Qualot Berry
+qualotberry
+Quick Ball
+Quick Candy
+Quick Candy L
+Quick Candy XL
+Quick Claw
+Quick Powder
+quickball
+quickcandy
+quickcandyl
+quickcandyxl
+quickclaw
+quickpowder
+Quiet Mint
+quietmint
+Qwilfish Spines
+qwilfishspines
+Rabuta Berry
+rabutaberry
+Radiant Petal
+radiantpetal
+Rage Candy Bar
+ragecandybar
+Rainbow Flower
+Rainbow Pass
+Rainbow Wing
+rainbowflower
+rainbowpass
+rainbowwing
+Ralts Dust
+raltsdust
+Rare Bone
+Rare Candy
+rarebone
+rarecandy
+Rash Mint
+rashmint
+Rattata Candy
+rattatacandy
+Rawst Berry
+rawstberry
+Razor Claw
+Razor Fang
+razorclaw
+razorfang
+Razz Berry
+razzberry
+Reaper Cloth
+reapercloth
+Red Apricorn
+Red Bell Pepper
+Red Card
+Red Chain
+Red Dish
+Red Flute
+Red Nectar
+Red Onion
+Red Orb
+Red Petal
+Red Poké Ball Pick
+Red Scale
+Red Scarf
+Red Shard
+Red-Flag Pick
+redapricorn
+redbellpepper
+redcard
+redchain
+reddish
+redflagpick
+redflute
+rednectar
+redonion
+redorb
+redpetal
+redpokeballpick
+redscale
+redscarf
+redshard
+Reins of Unity
+reinsofunity
+reinsofunitymerge
+reinsofunitysplit
+Relaxed Mint
+relaxedmint
+Relic Band
+Relic Copper
+Relic Crown
+Relic Gold
+Relic Silver
+Relic Statue
+Relic Vase
+relicband
+reliccopper
+reliccrown
+relicgold
+relicsilver
+relicstatue
+relicvase
+Rellor Mud
+rellormud
+Repeat Ball
+repeatball
+repel
+Repel
+Reply Mail
+replymail
+Reset Urge
+reseturge
+Resist Feather
+Resist Mochi
+resistfeather
+resistmochi
+resistwing
+Retro Mail
+retromail
+Reveal Glass
+revealglass
+Revival Herb
+revivalherb
+revive
+Revive
+Rhyhorn Candy
+rhyhorncandy
+Ribbon Sweet
+ribbonsweet
+rice
+Rice
+Rich Mulch
+richmulch
+Ride Pager
+ridepager
+Rindo Berry
+rindoberry
+Ring Target
+ringtarget
+Riolu Fur
+riolufur
+Rm. 1 Key
+Rm. 2 Key
+Rm. 4 Key
+Rm. 6 Key
+rm1key
+rm2key
+rm4key
+rm6key
+Rock Gem
+Rock Incense
+Rock Memory
+Rock Tera Shard
+rockgem
+rockincense
+Rockium Z
+rockiumz
+rockmemory
+Rockruff Rock
+rockruffrock
+rockterashard
+Rocky Helmet
+rockyhelmet
+Roller Skates
+rollerskates
+Rolycoly Coal
+rolycolycoal
+Rookidee Feather
+rookideefeather
+Room Service
+roomservice
+Root Fossil
+rootfossil
+Rose Incense
+roseincense
+Roseli Berry
+roseliberry
+Roto Bargain
+Roto Boost
+Roto Catch
+Roto Encounter
+Roto Exp. Points
+Roto Friendship
+Roto Hatch
+Roto HP Restore
+Roto PP Restore
+Roto Prize Money
+Roto Stealth
+Roto Stick
+rotobargain
+rotoboost
+rotocatch
+rotoencounter
+rotoexppoints
+rotofriendship
+rotohatch
+rotohprestore
+Rotom Bike
+Rotom Catalog
+Rotom Phone
+Rotom Sparks
+rotombike
+rotombikeglisteningblack
+rotombikesparklingwhite
+rotombikewatermode
+rotomcatalog
+rotomphone
+rotomsparks
+rotopprestore
+rotoprizemoney
+rotostealth
+rotostick
+Rowap Berry
+rowapberry
+RSVP Mail
+rsvpmail
+ruby
+Ruby
+Rufflet Feather
+ruffletfeather
+Rule Book
+rulebook
+Rusted Shield
+Rusted Sword
+rustedshield
+rustedsword
+S.S. Ticket
+sablenite
+Sablenite
+Sableye Gem
+sableyegem
+sachet
+Sachet
+Sacred Ash
+sacredash
+Safari Ball
+safariball
+Safety Goggles
+safetygoggles
+Sail Fossil
+sailfossil
+Salac Berry
+salacberry
+Salad Mix
+saladmix
+salamencite
+Salamencite
+Salandit Gas
+salanditgas
+salt
+Salt
+Salty Herba Mystica
+saltyherbamystica
+Sandile Claw
+sandileclaw
+Sandshrew Candy
+Sandshrew Claw
+sandshrewcandy
+sandshrewclaw
+sandwich
+Sandwich
+Sandygast Sand
+sandygastsand
+sapphire
+Sapphire
+Sassy Mint
+sassymint
+sausages
+Sausages
+scanner
+Scanner
+Scarlet Book
+scarletbook
+Scatterbug Powder
+scatterbugpowder
+sceptilite
+Sceptilite
+scizorite
+Scizorite
+Scope Lens
+scopelens
+Scroll of Darkness
+Scroll of Waters
+scrollofdarkness
+scrollofwaters
+Scyther Candy
+Scyther Claw
+scythercandy
+scytherclaw
+Sea Incense
+seaincense
+Seal Case
+sealcase
+Secret Key
+Secret Potion
+secretkey
+secretkeyletsgo
+secretpotion
+Seedot Stem
+seedotstem
+Seel Candy
+seelcandy
+Sentret Fur
+sentretfur
+Serious Mint
+seriousmint
+Seviper Fang
+seviperfang
+Sewaddle Leaf
+sewaddleleaf
+Shaderoot Carrot
+shaderootcarrot
+Shadow Mail
+shadowmail
+Shalour Sable
+shaloursable
+Sharp Beak
+sharpbeak
+sharpedonite
+Sharpedonite
+Shed Shell
+shedshell
+Shell Bell
+shellbell
+Shellder Candy
+Shellder Pearl
+shelldercandy
+shellderpearl
+Shellos Mucus
+shellosmucus
+Shinx Fang
+shinxfang
+Shiny Charm
+Shiny Stone
+shinycharm
+shinystone
+Shoal Salt
+Shoal Shell
+shoalsalt
+shoalshell
+Shock Drive
+shockdrive
+Shroodle Ink
+shroodleink
+Shroomish Spores
+shroomishspores
+Shuca Berry
+shucaberry
+Shuppet Scrap
+shuppetscrap
+Silicobra Sand
+silicobrasand
+Silk Scarf
+silkscarf
+Silph Scope
+silphscope
+Silver Bottle
+Silver Cup
+Silver Leaf
+Silver Nanab Berry
+Silver Pick
+Silver Pinap Berry
+Silver Powder
+Silver Razz Berry
+Silver Wing
+silverbottle
+silvercup
+silverleaf
+silvernanabberry
+silverpick
+silverpinapberry
+silverpowder
+silverrazzberry
+silverwing
+Sinistea Chip
+sinisteachip
+Sitrus Berry
+sitrusberry
+Skiddo Leaf
+skiddoleaf
+Skrelp Kelp
+skrelpkelp
+Skull Fossil
+skullfossil
+Skwovet Fur
+skwovetfur
+Sky Plate
+skyplate
+Slakoth Fur
+slakothfur
+slowbronite
+Slowbronite
+Slowpoke Candy
+Slowpoke Claw
+Slowpoke Cup
+Slowpoke Tail
+slowpokecandy
+slowpokeclaw
+slowpokecup
+slowpoketail
+Slugma Lava
+slugmalava
+Small Bouquet
+smallbouquet
+Smart Candy
+Smart Candy L
+Smart Candy XL
+smartcandy
+smartcandyl
+smartcandyxl
+Smiling Vee Pick
+smilingveepick
+Smoke Ball
+Smoke-Poke Tail
+smokeball
+Smoked Fillet
+smokedfillet
+smokepoketail
+Smoliv Oil
+smolivoil
+Smooth Rock
+smoothrock
+Sneasel Claw
+sneaselclaw
+Snom Thread
+snomthread
+Snorlax Candy
+snorlaxcandy
+Snorlium Z
+snorliumz
+Snorunt Fur
+snoruntfur
+Snover Berries
+snoverberries
+Snow Mail
+snowball
+Snowball
+snowmail
+Soda Pop
+sodapop
+Soft Sand
+softsand
+Solganium Z
+solganiumz
+Sonia's Book
+soniasbook
+Soot Sack
+Soothe Bell
+soothebell
+sootsack
+Soul Dew
+souldew
+Sour Herba Mystica
+sourherbamystica
+Space Mail
+spacemail
+Sparkling Stone
+sparklingstone
+Spearow Candy
+spearowcandy
+Spell Tag
+spelltag
+Spelon Berry
+spelonberry
+Spice Mix
+spicemix
+Spicy Herba Mystica
+spicyherbamystica
+Spinarak Thread
+spinarakthread
+Spiritomb Fragment
+spiritombfragment
+Splash Plate
+splashplate
+Spoink Pearl
+spoinkpearl
+Spooky Plate
+Spooky Tablecloth
+spookyplate
+spookytablecloth
+Sport Ball
+sportball
+sprayduck
+Sprayduck
+sprinklotad
+Sprinklotad
+Squawkabilly Feather
+squawkabillyfeather
+Squirt Bottle
+squirtbottle
+Squirtle Candy
+squirtlecandy
+ssticket
+sstickethoenn
+ssticketletsgo
+Stable Mulch
+stablemulch
+Stantler Hair
+stantlerhair
+Star Piece
+Star Sweet
+stardust
+Stardust
+Starf Berry
+starfberry
+Starly Feather
+starlyfeather
+starpiece
+starsweet
+Staryu Candy
+staryucandy
+Steel Bottle (B)
+Steel Bottle (R)
+Steel Bottle (Y)
+Steel Gem
+Steel Mail
+Steel Memory
+Steel Tera Shard
+steelbottleb
+steelbottler
+steelbottley
+steelgem
+Steelium Z
+steeliumz
+steelixite
+Steelixite
+steelmail
+steelmemory
+steelterashard
+stick
+Sticky Barb
+stickybarb
+Stone Plate
+stoneplate
+Stonjourner Stone
+stonjournerstone
+Storage Key
+storagekey
+storagekeygalacticwarehouse
+storagekeyseamauville
+Strange Ball
+Strange Souvenir
+strangeball
+strangesouvenir
+strawberry
+Strawberry
+Strawberry Sweet
+strawberrysweet
+Stretchy Spring
+stretchyspring
+Striped Bottle
+Striped Cup
+Striped Tablecloth
+stripedbottle
+stripedcup
+stripedtablecloth
+Stunky Fur
+stunkyfur
+Style Card
+stylecard
+Suite Key
+suitekey
+Sun Flute
+Sun Stone
+sunflute
+Sunkern Leaf
+sunkernleaf
+Sunrise Flower Pick
+sunriseflowerpick
+Sunset Flower Pick
+sunsetflowerpick
+sunstone
+Super Lure
+Super Potion
+Super Repel
+Super Rod
+superlure
+superpotion
+superrepel
+superrod
+Surge Badge
+surgebadge
+Surprise Mulch
+surprisemulch
+Surskit Syrup
+surskitsyrup
+Swablu Fluff
+swablufluff
+swampertite
+Swampertite
+Sweet Apple
+Sweet Heart
+Sweet Herba Mystica
+sweetapple
+sweetheart
+sweetherbamystica
+Swift Feather
+Swift Mochi
+swiftfeather
+swiftmochi
+swiftwing
+Swinub Hair
+swinubhair
+Syrupy Apple
+syrupyapple
+Tadbulb Mucus
+tadbulbmucus
+Tamato Berry
+tamatoberry
+Tandemaus Fur
+tandemausfur
+Tanga Berry
+tangaberry
+Tangela Candy
+tangelacandy
+Tapunium Z
+tapuniumz
+Tarountula Thread
+tarountulathread
+Tart Apple
+tartapple
+Tatsugiri Scales
+tatsugiriscales
+Tauros Candy
+Tauros Hair
+tauroscandy
+tauroshair
+tea
+Tea
+Teachy TV
+teachytv
+Teal Mask
+Teal Style Card
+tealmask
+tealstylecard
+Teddiursa Claw
+teddiursaclaw
+Tentacool Candy
+tentacoolcandy
+Tera Orb
+teraorb
+Terrain Extender
+terrainextender
+Thanks Mail
+thanksmail
+Thick Club
+thickclub
+Throat Spray
+throatspray
+Thunder Stone
+thunderstone
+Tidal Bell
+tidalbell
+Timburr Sweat
+timburrsweat
+Timer Ball
+timerball
+Timid Mint
+timidmint
+Tin of Beans
+Tinkatink Hair
+tinkatinkhair
+tinofbeans
+Tiny Bamboo Shoot
+Tiny Mushroom
+tinybambooshoot
+tinymushroom
+TM Case
+tm00
+TM00
+tm01
+TM01
+tm02
+TM02
+tm03
+TM03
+tm04
+TM04
+tm05
+TM05
+tm06
+TM06
+tm07
+TM07
+tm08
+TM08
+tm09
+TM09
+tm10
+TM10
+tm100
+TM100
+tm101
+TM101
+tm102
+TM102
+tm103
+TM103
+tm104
+TM104
+tm105
+TM105
+tm106
+TM106
+tm107
+TM107
+tm108
+TM108
+tm109
+TM109
+tm11
+TM11
+tm110
+TM110
+tm111
+TM111
+tm112
+TM112
+tm113
+TM113
+tm114
+TM114
+tm115
+TM115
+tm116
+TM116
+tm117
+TM117
+tm118
+TM118
+tm119
+TM119
+tm12
+TM12
+tm120
+TM120
+tm121
+TM121
+tm122
+TM122
+tm123
+TM123
+tm124
+TM124
+tm125
+TM125
+tm126
+TM126
+tm127
+TM127
+tm128
+TM128
+tm129
+TM129
+tm13
+TM13
+tm130
+TM130
+tm131
+TM131
+tm132
+TM132
+tm133
+TM133
+tm134
+TM134
+tm135
+TM135
+tm136
+TM136
+tm137
+TM137
+tm138
+TM138
+tm139
+TM139
+tm14
+TM14
+tm140
+TM140
+tm141
+TM141
+tm142
+TM142
+tm143
+TM143
+tm144
+TM144
+tm145
+TM145
+tm146
+TM146
+tm147
+TM147
+tm148
+TM148
+tm149
+TM149
+tm15
+TM15
+tm150
+TM150
+tm151
+TM151
+tm152
+TM152
+tm153
+TM153
+tm154
+TM154
+tm155
+TM155
+tm156
+TM156
+tm157
+TM157
+tm158
+TM158
+tm159
+TM159
+tm16
+TM16
+tm160
+TM160
+tm161
+TM161
+tm162
+TM162
+tm163
+TM163
+tm164
+TM164
+tm165
+TM165
+tm166
+TM166
+tm167
+TM167
+tm168
+TM168
+tm169
+TM169
+tm17
+TM17
+tm170
+TM170
+tm171
+TM171
+tm172
+TM172
+tm173
+TM173
+tm174
+TM174
+tm175
+TM175
+tm176
+TM176
+tm177
+TM177
+tm178
+TM178
+tm179
+TM179
+tm18
+TM18
+tm180
+TM180
+tm181
+TM181
+tm182
+TM182
+tm183
+TM183
+tm184
+TM184
+tm185
+TM185
+tm186
+TM186
+tm187
+TM187
+tm188
+TM188
+tm189
+TM189
+tm19
+TM19
+tm190
+TM190
+tm191
+TM191
+tm192
+TM192
+tm193
+TM193
+tm194
+TM194
+tm195
+TM195
+tm196
+TM196
+tm197
+TM197
+tm198
+TM198
+tm199
+TM199
+tm20
+TM20
+tm200
+TM200
+tm201
+TM201
+tm202
+TM202
+tm203
+TM203
+tm204
+TM204
+tm205
+TM205
+tm206
+TM206
+tm207
+TM207
+tm208
+TM208
+tm209
+TM209
+tm21
+TM21
+tm210
+TM210
+tm211
+TM211
+tm212
+TM212
+tm213
+TM213
+tm214
+TM214
+tm215
+TM215
+tm216
+TM216
+tm217
+TM217
+tm218
+TM218
+tm219
+TM219
+tm22
+TM22
+tm220
+TM220
+tm221
+TM221
+tm222
+TM222
+tm223
+TM223
+tm224
+TM224
+tm225
+TM225
+tm226
+TM226
+tm227
+TM227
+tm228
+TM228
+tm229
+TM229
+tm23
+TM23
+tm24
+TM24
+tm25
+TM25
+tm26
+TM26
+tm27
+TM27
+tm28
+TM28
+tm29
+TM29
+tm30
+TM30
+tm31
+TM31
+tm32
+TM32
+tm33
+TM33
+tm34
+TM34
+tm35
+TM35
+tm36
+TM36
+tm37
+TM37
+tm38
+TM38
+tm39
+TM39
+tm40
+TM40
+tm41
+TM41
+tm42
+TM42
+tm43
+TM43
+tm44
+TM44
+tm45
+TM45
+tm46
+TM46
+tm47
+TM47
+tm48
+TM48
+tm49
+TM49
+tm50
+TM50
+tm51
+TM51
+tm52
+TM52
+tm53
+TM53
+tm54
+TM54
+tm55
+TM55
+tm56
+TM56
+tm57
+TM57
+tm58
+TM58
+tm59
+TM59
+tm60
+TM60
+tm61
+TM61
+tm62
+TM62
+tm63
+TM63
+tm64
+TM64
+tm65
+TM65
+tm66
+TM66
+tm67
+TM67
+tm68
+TM68
+tm69
+TM69
+tm70
+TM70
+tm71
+TM71
+tm72
+TM72
+tm73
+TM73
+tm74
+TM74
+tm75
+TM75
+tm76
+TM76
+tm77
+TM77
+tm78
+TM78
+tm79
+TM79
+tm80
+TM80
+tm81
+TM81
+tm82
+TM82
+tm83
+TM83
+tm84
+TM84
+tm85
+TM85
+tm86
+TM86
+tm87
+TM87
+tm88
+TM88
+tm89
+TM89
+tm90
+TM90
+tm91
+TM91
+tm92
+TM92
+tm93
+TM93
+tm94
+TM94
+tm95
+TM95
+tm96
+TM96
+tm97
+TM97
+tm98
+TM98
+tm99
+TM99
+tmcase
+TMV Pass
+tmvpass
+Toedscool Flaps
+toedscoolflaps
+tofu
+Tofu
+tomato
+Tomato
+Torkoal Coal
+torkoalcoal
+Tough Candy
+Tough Candy L
+Tough Candy XL
+toughcandy
+toughcandyl
+toughcandyxl
+Town Map
+townmap
+Toxel Sparks
+toxelsparks
+Toxic Orb
+Toxic Plate
+toxicorb
+toxicplate
+tr00
+TR00
+tr01
+TR01
+tr02
+TR02
+tr03
+TR03
+tr04
+TR04
+tr05
+TR05
+tr06
+TR06
+tr07
+TR07
+tr08
+TR08
+tr09
+TR09
+tr10
+TR10
+tr11
+TR11
+tr12
+TR12
+tr13
+TR13
+tr14
+TR14
+tr15
+TR15
+tr16
+TR16
+tr17
+TR17
+tr18
+TR18
+tr19
+TR19
+tr20
+TR20
+tr21
+TR21
+tr22
+TR22
+tr23
+TR23
+tr24
+TR24
+tr25
+TR25
+tr26
+TR26
+tr27
+TR27
+tr28
+TR28
+tr29
+TR29
+tr30
+TR30
+tr31
+TR31
+tr32
+TR32
+tr33
+TR33
+tr34
+TR34
+tr35
+TR35
+tr36
+TR36
+tr37
+TR37
+tr38
+TR38
+tr39
+TR39
+tr40
+TR40
+tr41
+TR41
+tr42
+TR42
+tr43
+TR43
+tr44
+TR44
+tr45
+TR45
+tr46
+TR46
+tr47
+TR47
+tr48
+TR48
+tr49
+TR49
+tr50
+TR50
+tr51
+TR51
+tr52
+TR52
+tr53
+TR53
+tr54
+TR54
+tr55
+TR55
+tr56
+TR56
+tr57
+TR57
+tr58
+TR58
+tr59
+TR59
+tr60
+TR60
+tr61
+TR61
+tr62
+TR62
+tr63
+TR63
+tr64
+TR64
+tr65
+TR65
+tr66
+TR66
+tr67
+TR67
+tr68
+TR68
+tr69
+TR69
+tr70
+TR70
+tr71
+TR71
+tr72
+TR72
+tr73
+TR73
+tr74
+TR74
+tr75
+TR75
+tr76
+TR76
+tr77
+TR77
+tr78
+TR78
+tr79
+TR79
+tr80
+TR80
+tr81
+TR81
+tr82
+TR82
+tr83
+TR83
+tr84
+TR84
+tr85
+TR85
+tr86
+TR86
+tr87
+TR87
+tr88
+TR88
+tr89
+TR89
+tr90
+TR90
+tr91
+TR91
+tr92
+TR92
+tr93
+TR93
+tr94
+TR94
+tr95
+TR95
+tr96
+TR96
+tr97
+TR97
+tr98
+TR98
+tr99
+TR99
+Travel Trunk
+traveltrunk
+Tri-Pass
+tripass
+Tropic Mail
+Tropical Shell
+tropicalshell
+tropicmail
+Tropius Leaf
+tropiusleaf
+Tunnel Mail
+tunnelmail
+Twisted Spoon
+twistedspoon
+Tynamo Slime
+tynamoslime
+tyranitarite
+Tyranitarite
+Ultra Ball
+ultraball
+Ultranecrozium Z
+ultranecroziumz
+Unown Report
+unownreport
+Unremarkable Teacup
+unremarkableteacup
+upgrade
+Upgrade
+Utility Umbrella
+utilityumbrella
+Varoom Fume
+varoomfume
+Vee-Vee Pick
+veeveepick
+Veluza Fillet
+veluzafillet
+Venonat Candy
+Venonat Fang
+venonatcandy
+venonatfang
+venusaurite
+Venusaurite
+vinegar
+Vinegar
+Violet Book
+violetbook
+Volbeat Fluid
+volbeatfluid
+Voltorb Candy
+Voltorb Sparks
+voltorbcandy
+voltorbsparks
+Vs. Recorder
+Vs. Seeker
+vsrecorder
+vsseeker
+Vullaby Feather
+vullabyfeather
+Vulpix Candy
+Vulpix Fur
+vulpixcandy
+vulpixfur
+Wacan Berry
+wacanberry
+Wailmer Pail
+wailmerpail
+wasabi
+Wasabi
+Water Gem
+Water Memory
+Water Stone
+Water Tera Shard
+watercress
+Watercress
+watergem
+Waterium Z
+wateriumz
+watermemory
+waterstone
+waterterashard
+Watmel Berry
+watmelberry
+Wattrel Feather
+wattrelfeather
+Wave Incense
+Wave Mail
+waveincense
+wavemail
+Weakness Policy
+weaknesspolicy
+Weedle Candy
+weedlecandy
+Wellspring Mask
+wellspringmask
+Wepear Berry
+wepearberry
+Whimsical Tablecloth
+whimsicaltablecloth
+Whipped Cream
+Whipped Dream
+whippedcream
+whippeddream
+White Apricorn
+White Dish
+White Flute
+White Herb
+White Mane Hair
+whiteapricorn
+whitedish
+whiteflute
+whiteherb
+whitemanehair
+Wide Lens
+widelens
+Wiglett Sand
+wiglettsand
+Wiki Berry
+wikiberry
+Wingull Feather
+wingullfeather
+Winking Pika Pick
+winkingpikapick
+Wise Glasses
+wiseglasses
+Wishing Chip
+Wishing Piece
+Wishing Star
+wishingchip
+wishingpiece
+wishingstar
+Wood Mail
+Wooden Crown
+woodencrown
+woodmail
+Wooper Slime
+wooperslime
+Works Key
+workskey
+X Accuracy
+X Accuracy 2
+X Accuracy 3
+X Accuracy 6
+X Attack
+X Attack 2
+X Attack 3
+X Attack 6
+X Defense
+X Defense 2
+X Defense 3
+X Defense 6
+X Sp. Atk
+X Sp. Atk 2
+X Sp. Atk 3
+X Sp. Atk 6
+X Sp. Def
+X Sp. Def 2
+X Sp. Def 3
+X Sp. Def 6
+X Speed
+X Speed 2
+X Speed 3
+X Speed 6
+xaccuracy
+xaccuracy2
+xaccuracy3
+xaccuracy6
+xattack
+xattack2
+xattack3
+xattack6
+xdefense
+xdefense2
+xdefense3
+xdefense6
+xspatk
+xspatk2
+xspatk3
+xspatk6
+xspdef
+xspdef2
+xspdef3
+xspdef6
+xspeed
+xspeed2
+xspeed3
+xspeed6
+xtransceiver
+Xtransceiver
+xtransceiverred
+xtransceiveryellow
+Yache Berry
+yacheberry
+Yanma Spike
+yanmaspike
+Yarn Ball
+yarnball
+Yellow Apricorn
+Yellow Bell Pepper
+Yellow Bottle
+Yellow Cup
+Yellow Dish
+Yellow Flute
+Yellow Nectar
+Yellow Petal
+Yellow Scarf
+Yellow Shard
+Yellow Tablecloth
+yellowapricorn
+yellowbellpepper
+yellowbottle
+yellowcup
+yellowdish
+yellowflute
+yellownectar
+yellowpetal
+yellowscarf
+yellowshard
+yellowtablecloth
+yogurt
+Yogurt
+Yungoos Fur
+yungoosfur
+Z-Power Ring
+Z-Ring
+Zangoose Claw
+zangooseclaw
+Zap Plate
+Zapdos Candy
+zapdoscandy
+zapplate
+zinc
+Zinc
+Zoom Lens
+zoomlens
+Zorua Fur
+zoruafur
+zpowerring
+zring
+Zubat Candy
+zubatcandy
+Zygarde Cube
+zygardecube

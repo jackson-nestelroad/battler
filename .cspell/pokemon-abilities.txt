@@ -1,0 +1,742 @@
+adaptability
+Adaptability
+aerilate
+Aerilate
+aftermath
+Aftermath
+Air Lock
+airlock
+analytic
+Analytic
+Anger Point
+Anger Shell
+angerpoint
+angershell
+anticipation
+Anticipation
+Aqua Boost
+aquaboost
+Arena Trap
+arenatrap
+Armor Tail
+armortail
+Aroma Veil
+aromaveil
+As One
+asone
+asoneglastrier
+asonespectrier
+Aura Break
+aurabreak
+Bad Dreams
+baddreams
+Ball Fetch
+ballfetch
+battery
+Battery
+Battle Armor
+Battle Bond
+battlearmor
+battlebond
+Beads of Ruin
+beadsofruin
+Beast Boost
+beastboost
+berserk
+Berserk
+Big Pecks
+bigpecks
+Black Hole
+blackhole
+blaze
+Blaze
+bodyguard
+Bodyguard
+bonanza
+Bonanza
+bulletproof
+Bulletproof
+calming
+Calming
+celebrate
+Celebrate
+Cheek Pouch
+cheekpouch
+Chilling Neigh
+chillingneigh
+chlorophyll
+Chlorophyll
+Clear Body
+clearbody
+climber
+Climber
+Cloud Nine
+cloudnine
+Color Change
+colorchange
+comatose
+Comatose
+commander
+Commander
+competitive
+Competitive
+Compound Eyes
+compoundeyes
+confidence
+Confidence
+conqueror
+Conqueror
+contrary
+Contrary
+corrosion
+Corrosion
+costar
+Costar
+Cotton Down
+cottondown
+Cud Chew
+cudchew
+Curious Medicine
+curiousmedicine
+Cursed Body
+cursedbody
+Cute Charm
+cutecharm
+damp
+Damp
+dancer
+Dancer
+Dark Aura
+darkaura
+Dauntless Shield
+dauntlessshield
+daze
+Daze
+dazzling
+Dazzling
+decoy
+Decoy
+Deep Sleep
+deepsleep
+defeatist
+Defeatist
+defiant
+Defiant
+Delta Stream
+deltastream
+Desolate Land
+desolateland
+disguise
+Disguise
+disgust
+Disgust
+dodge
+Dodge
+download
+Download
+Dragon's Maw
+dragonize
+Dragonize
+dragonsmaw
+drizzle
+Drizzle
+drought
+Drought
+Dry Skin
+dryskin
+Early Bird
+earlybird
+Earth Eater
+eartheater
+Effect Spore
+effectspore
+Electric Surge
+electricsurge
+electromorphosis
+Electromorphosis
+Embody Aspect
+embodyaspect
+Emergency Exit
+emergencyexit
+explode
+Explode
+Fairy Aura
+fairyaura
+filter
+Filter
+Flame Body
+Flame Boost
+flamebody
+flameboost
+Flare Boost
+flareboost
+Flash Fire
+flashfire
+Flower Gift
+Flower Veil
+flowergift
+flowerveil
+fluffy
+Fluffy
+forecast
+Forecast
+forewarn
+Forewarn
+fortune
+Fortune
+Friend Guard
+friendguard
+frighten
+Frighten
+frisk
+Frisk
+frostbite
+Frostbite
+Full Metal Body
+fullmetalbody
+Fur Coat
+furcoat
+Gale Wings
+galewings
+galvanize
+Galvanize
+gluttony
+Gluttony
+Good as Gold
+goodasgold
+gooey
+Gooey
+Gorilla Tactics
+gorillatactics
+Grass Cloak
+Grass Pelt
+grasscloak
+grasspelt
+Grassy Surge
+grassysurge
+Grim Neigh
+grimneigh
+Guard Dog
+guarddog
+gulp
+Gulp
+Gulp Missile
+gulpmissile
+guts
+Guts
+Hadron Engine
+hadronengine
+harvest
+Harvest
+healer
+Healer
+heatproof
+Heatproof
+Heavy Metal
+heavymetal
+herbivore
+Herbivore
+hero
+Hero
+High-rise
+highrise
+Honey Gather
+honeygather
+hospitality
+Hospitality
+Hot Blooded
+hotblooded
+Huge Power
+hugepower
+Hunger Switch
+hungerswitch
+hustle
+Hustle
+hydration
+Hydration
+Hyper Cutter
+hypercutter
+Ice Body
+Ice Face
+Ice Scales
+icebody
+iceface
+icescales
+illuminate
+Illuminate
+illusion
+Illusion
+immunity
+Immunity
+imposter
+Imposter
+infiltrator
+Infiltrator
+Innards Out
+innardsout
+Inner Focus
+innerfocus
+insomnia
+Insomnia
+instinct
+Instinct
+interference
+Interference
+intimidate
+Intimidate
+Intrepid Sword
+intrepidsword
+Iron Barbs
+Iron Fist
+ironbarbs
+ironfist
+Jagged Edge
+jaggededge
+justified
+Justified
+Keen Eye
+keeneye
+klutz
+Klutz
+Last Bastion
+lastbastion
+Leaf Guard
+leafguard
+levitate
+Levitate
+libero
+Libero
+Life Force
+lifeforce
+Light Metal
+lightmetal
+Lightning Rod
+lightningrod
+limber
+Limber
+Lingering Aroma
+lingeringaroma
+Liquid Ooze
+Liquid Voice
+liquidooze
+liquidvoice
+Long Reach
+longreach
+lullaby
+Lullaby
+lunchbox
+Lunchbox
+Magic Bounce
+Magic Guard
+magicbounce
+magicguard
+magician
+Magician
+Magma Armor
+magmaarmor
+Magnet Pull
+magnetpull
+Marvel Scale
+marvelscale
+medic
+Medic
+Mega Launcher
+Mega Sol
+megalauncher
+megasol
+melee
+Melee
+merciless
+Merciless
+mimicry
+Mimicry
+Mind's Eye
+mindseye
+minus
+Minus
+Mirror Armor
+mirrorarmor
+Misty Surge
+mistysurge
+Mold Breaker
+moldbreaker
+Mood Maker
+moodmaker
+moody
+Moody
+Motor Drive
+motordrive
+mountaineer
+Mountaineer
+moxie
+Moxie
+multiscale
+Multiscale
+multitype
+Multitype
+mummy
+Mummy
+Mycelium Might
+myceliummight
+Natural Cure
+naturalcure
+neuroforce
+Neuroforce
+Neutralizing Gas
+neutralizinggas
+No Guard
+noguard
+nomad
+Nomad
+normalize
+Normalize
+nurse
+Nurse
+oblivious
+Oblivious
+omnipotent
+Omnipotent
+opportunist
+Opportunist
+Orichalcum Pulse
+orichalcumpulse
+overcoat
+Overcoat
+overgrow
+Overgrow
+Own Tempo
+owntempo
+Parental Bond
+parentalbond
+parry
+Parry
+Pastel Veil
+pastelveil
+perception
+Perception
+Perish Body
+perishbody
+pickpocket
+Pickpocket
+pickup
+Pickup
+Piercing Drill
+piercingdrill
+pixilate
+Pixilate
+plus
+Plus
+Poison Heal
+Poison Point
+Poison Puppeteer
+Poison Touch
+poisonheal
+poisonpoint
+poisonpuppeteer
+poisontouch
+Power Construct
+Power Nap
+Power of Alchemy
+Power Spot
+powerconstruct
+powernap
+powerofalchemy
+powerspot
+prankster
+Prankster
+pressure
+Pressure
+pride
+Pride
+Primordial Sea
+primordialsea
+Prism Armor
+prismarmor
+Propeller Tail
+propellertail
+protean
+Protean
+protosynthesis
+Protosynthesis
+Psychic Surge
+psychicsurge
+Punk Rock
+punkrock
+Pure Power
+purepower
+Purifying Salt
+purifyingsalt
+Quark Drive
+quarkdrive
+Queenly Majesty
+queenlymajesty
+Quick Draw
+Quick Feet
+quickdraw
+quickfeet
+Rain Dish
+raindish
+rattled
+Rattled
+receiver
+Receiver
+reckless
+Reckless
+refrigerate
+Refrigerate
+regenerator
+Regenerator
+ripen
+Ripen
+rivalry
+Rivalry
+RKS System
+rkssystem
+Rock Head
+rockhead
+Rocky Payload
+rockypayload
+Rough Skin
+roughskin
+Run Away
+Run Up
+runaway
+runup
+Sand Force
+Sand Rush
+Sand Spit
+Sand Stream
+Sand Veil
+sandforce
+sandpit
+Sandpit
+sandrush
+sandspit
+sandstream
+sandveil
+Sap Sipper
+sapsipper
+schooling
+Schooling
+scrappy
+Scrappy
+Screen Cleaner
+screencleaner
+Seed Sower
+seedsower
+sequence
+Sequence
+Serene Grace
+serenegrace
+shackle
+Shackle
+Shadow Dash
+Shadow Shield
+Shadow Tag
+shadowdash
+shadowshield
+shadowtag
+share
+Share
+sharpness
+Sharpness
+Shed Skin
+shedskin
+Sheer Force
+sheerforce
+Shell Armor
+shellarmor
+shield
+Shield
+Shield Dust
+shielddust
+Shields Down
+shieldsdown
+simple
+Simple
+skater
+Skater
+Skill Link
+skilllink
+Slow Start
+slowstart
+Slush Rush
+slushrush
+sniper
+Sniper
+Snow Cloak
+Snow Warning
+snowcloak
+snowwarning
+Solar Power
+solarpower
+Solid Rock
+solidrock
+Soul-Heart
+soulheart
+soundproof
+Soundproof
+Speed Boost
+speedboost
+Spicy Spray
+spicyspray
+spirit
+Spirit
+sponge
+Sponge
+sprint
+Sprint
+stakeout
+Stakeout
+stall
+Stall
+stalwart
+Stalwart
+stamina
+Stamina
+Stance Change
+stancechange
+static
+Static
+steadfast
+Steadfast
+stealth
+Stealth
+Steam Engine
+steamengine
+steelworker
+Steelworker
+Steely Spirit
+steelyspirit
+stench
+Stench
+Sticky Hold
+stickyhold
+Storm Drain
+stormdrain
+Strong Jaw
+strongjaw
+sturdy
+Sturdy
+Suction Cups
+suctioncups
+Super Luck
+superluck
+Supersweet Syrup
+supersweetsyrup
+Supreme Overlord
+supremeoverlord
+Surge Surfer
+surgesurfer
+swarm
+Swarm
+Sweet Veil
+sweetveil
+Swift Swim
+swiftswim
+Sword of Ruin
+swordofruin
+symbiosis
+Symbiosis
+synchronize
+Synchronize
+Tablets of Ruin
+tabletsofruin
+Tangled Feet
+tangledfeet
+Tangling Hair
+tanglinghair
+technician
+Technician
+telepathy
+Telepathy
+tenacity
+Tenacity
+Tera Shell
+Tera Shift
+Teraform Zero
+teraformzero
+terashell
+terashift
+teravolt
+Teravolt
+Thermal Exchange
+thermalexchange
+Thick Fat
+thickfat
+thrust
+Thrust
+Tinted Lens
+tintedlens
+torrent
+Torrent
+Tough Claws
+toughclaws
+Toxic Boost
+Toxic Chain
+Toxic Debris
+toxicboost
+toxicchain
+toxicdebris
+trace
+Trace
+transistor
+Transistor
+triage
+Triage
+truant
+Truant
+turboblaze
+Turboblaze
+unaware
+Unaware
+unburden
+Unburden
+unnerve
+Unnerve
+Unseen Fist
+unseenfist
+vanguard
+Vanguard
+Vessel of Ruin
+vesselofruin
+Victory Star
+victorystar
+Vital Spirit
+vitalspirit
+Volt Absorb
+voltabsorb
+Wandering Spirit
+wanderingspirit
+Warm Blanket
+warmblanket
+Water Absorb
+Water Bubble
+Water Compaction
+Water Veil
+waterabsorb
+waterbubble
+watercompaction
+waterveil
+Wave Rider
+waverider
+Weak Armor
+weakarmor
+Well-Baked Body
+wellbakedbody
+White Smoke
+whitesmoke
+Wimp Out
+wimpout
+Wind Power
+Wind Rider
+windpower
+windrider
+Wonder Guard
+Wonder Skin
+wonderguard
+wonderskin
+Zen Mode
+zenmode
+Zero to Hero
+zerotohero
