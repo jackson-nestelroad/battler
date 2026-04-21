@@ -223,8 +223,8 @@
     "name": "Bloom Doom",
     "category": "Physical",
     "primary_type": "Grass",
-    "pp": 1,
     "accuracy": "exempt",
+    "pp": 1,
     "target": "Normal",
     "flags": [
       "FailCopycat",
