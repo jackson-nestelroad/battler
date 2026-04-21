@@ -15,6 +15,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. All Mons are switched in, as specified by the battle format.
 1. Switch events are scheduled in speed order.
+1. `StartBattle`.
 
 ## Switch
 
@@ -102,6 +103,11 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Before Turn (per move)
 
 1. Move `BeforeTurn`.
+
+## After Turn
+
+1. `EndTurn`.
+1. `BattleEndTurn`.
 
 ## Escape
 
@@ -210,6 +216,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                      1. Heal:
                         1. `CanHeal`.
                         1. `TryHeal`.
+                        1. `AfterHeal`.
                      1. Set status:
                         1. Check immunity.
                         1. `SetStatus`.

@@ -1338,6 +1338,11 @@ impl<'d> CoreBattle<'d> {
                     None,
                 )?)?;
 
+                core_battle_effects::run_event_for_battle(
+                    context,
+                    fxlang::BattleEvent::StartBattle,
+                );
+
                 context.battle_mut().mid_turn = true;
             }
             Action::End(action) => {
@@ -1767,7 +1772,13 @@ impl<'d> CoreBattle<'d> {
 
         context.battle_mut().registry.next_turn()?;
 
-        // TODO: Endless battle clause.
+        core_battle_effects::run_event_for_each_active_mon(context, fxlang::BattleEvent::EndTurn)?;
+        core_battle_effects::run_event_for_battle(context, fxlang::BattleEvent::BattleEndTurn);
+
+        // Some clauses may forcefully end the battle at the end of a turn.
+        if context.battle().ended {
+            return Ok(());
+        }
 
         Self::ensure_adjacency(context)?;
 
@@ -1819,7 +1830,7 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn end_battle(context: &mut Context, winning_side: Option<usize>) -> Result<()> {
+    pub fn end_battle(context: &mut Context, winning_side: Option<usize>) -> Result<()> {
         core_battle_actions::end_battle(context)?;
         Self::win(context, winning_side)?;
         Ok(())

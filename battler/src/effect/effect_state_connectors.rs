@@ -45,6 +45,73 @@ impl fxlang::EffectStateConnector for ActiveMoveEffectStateConnector {
     }
 }
 
+/// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for a
+/// Mon.
+#[derive(Debug, Clone)]
+pub struct MonEffectStateConnector {
+    mon: MonHandle,
+}
+
+impl MonEffectStateConnector {
+    pub fn new(mon: MonHandle) -> Self {
+        Self { mon }
+    }
+}
+
+impl fxlang::EffectStateConnector for MonEffectStateConnector {
+    fn exists(&self, _: &mut Context) -> Result<bool> {
+        Ok(true)
+    }
+
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
+        Ok(Some(&mut context.mon_mut(self.mon)?.mon_effect_state))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Mon(self.mon)
+    }
+
+    fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
+        fxlang::DynamicEffectStateConnector::new(self.clone())
+    }
+}
+
+/// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for the
+/// volatile state of a Mon.
+#[derive(Debug, Clone)]
+pub struct MonVolatileEffectStateConnector {
+    mon: MonHandle,
+}
+
+impl MonVolatileEffectStateConnector {
+    pub fn new(mon: MonHandle) -> Self {
+        Self { mon }
+    }
+}
+
+impl fxlang::EffectStateConnector for MonVolatileEffectStateConnector {
+    fn exists(&self, _: &mut Context) -> Result<bool> {
+        Ok(true)
+    }
+
+    fn get_mut<'a>(&self, context: &'a mut Context) -> Result<Option<&'a mut fxlang::EffectState>> {
+        Ok(Some(
+            &mut context
+                .mon_mut(self.mon)?
+                .volatile_state
+                .volatile_mon_effect_state,
+        ))
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Mon(self.mon)
+    }
+
+    fn make_dynamic(&self) -> fxlang::DynamicEffectStateConnector {
+        fxlang::DynamicEffectStateConnector::new(self.clone())
+    }
+}
+
 /// [`EffectStateConnector`][`crate::effect::fxlang::EffectStateConnector`] implementation for an
 /// ability on a Mon.
 #[derive(Debug, Clone)]

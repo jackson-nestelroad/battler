@@ -88,7 +88,7 @@ There are also types specific to the battle engine:
 
 - Mons are references to Mons participating in a battle.
 - Effects are references to generic battle effects, such as moves, abilities, statuses, and more.
-- Active moves are references to moves being executed by a Mon on the current turn. Active moves are modifiable, so they are always separate from effects.
+- Active moves are references to moves being executed by a Mon on the current turn. Active moves are a special type of effect that are independently modifiable from their base move.
 - Some other types exist for battle-specific functions, such as a player in the battle, a side of the battle, or the entire field itself.
 - Many other battle-specific value types exist, such as types, move categories, stats, stat tables, and more!
 

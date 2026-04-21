@@ -39,7 +39,9 @@ use crate::{
     effect::{
         ActiveMoveEffectStateConnector,
         EffectHandle,
+        MonEffectStateConnector,
         MonStatusEffectStateConnector,
+        MonVolatileEffectStateConnector,
         fxlang::{
             EffectStateConnector,
             EvaluationContext,
@@ -584,6 +586,19 @@ where
                             "base_max_hp" => {
                                 ValueRef::UFraction(context.mon(mon_handle)?.base_max_hp.into())
                             }
+                            "base_move_slots" => ValueRef::TempList(
+                                context
+                                    .mon(mon_handle)?
+                                    .base_move_slots
+                                    .iter()
+                                    .map(|move_slot| {
+                                        ValueRefToStoredValue::new(
+                                            self.stored.clone(),
+                                            ValueRef::MoveSlot(move_slot),
+                                        )
+                                    })
+                                    .collect(),
+                            ),
                             "base_species" => {
                                 ValueRef::Str(&context.mon(mon_handle)?.base_species.as_ref())
                             }
@@ -619,6 +634,9 @@ where
                                 context.mon(mon_handle)?.volatile_state.damaged_this_turn,
                             ),
                             "dynamaxed" => ValueRef::Boolean(context.mon(mon_handle)?.dynamaxed),
+                            "effect_state" => ValueRef::EffectState(
+                                MonEffectStateConnector::new(mon_handle).make_dynamic(),
+                            ),
                             "effective_ability" => {
                                 match mon_states::effective_ability(
                                     &mut context.mon_context(mon_handle)?,
@@ -816,6 +834,15 @@ where
                                     .data
                                     .not_fully_evolved(),
                             ),
+                            "original_base_ability" => ValueRef::TempString(
+                                context.mon(mon_handle)?.original_base_ability.to_string(),
+                            ),
+                            "original_item" => context
+                                .mon(mon_handle)?
+                                .original_item
+                                .as_ref()
+                                .map(|item| ValueRef::TempString(item.to_string()))
+                                .unwrap_or(ValueRef::Undefined),
                             "player" => ValueRef::Player(context.mon(mon_handle)?.player),
                             "position" => {
                                 match Mon::position_on_side(&context.mon_context(mon_handle)?) {
@@ -853,6 +880,9 @@ where
                             "transformed" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.transformed,
                             ),
+                            "trapped" => ValueRef::Boolean(Mon::trapped(
+                                &mut context.mon_context(mon_handle)?,
+                            )?),
                             "true_nature" => ValueRef::Nature(context.mon(mon_handle)?.true_nature),
                             "types" => ValueRef::TempList(
                                 context
@@ -864,6 +894,9 @@ where
                                         ValueRefToStoredValue::new(None, ValueRef::Type(*val))
                                     })
                                     .collect(),
+                            ),
+                            "volatile_effect_state" => ValueRef::EffectState(
+                                MonVolatileEffectStateConnector::new(mon_handle).make_dynamic(),
                             ),
                             "undynamaxed_hp" => ValueRef::UFraction(
                                 context.mon(mon_handle)?.undynamaxed_hp().into(),
@@ -1030,6 +1063,32 @@ where
                             ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         };
+                    } else if let ValueRef::Side(side) = value {
+                        value = match *member {
+                            "foe_side" => ValueRef::Side(
+                                context
+                                    .battle_context_mut()
+                                    .side_context(side)?
+                                    .foe_side()
+                                    .index,
+                            ),
+                            "index" => ValueRef::UFraction(
+                                TryInto::<u64>::try_into(side)
+                                    .map_err(integer_overflow_error)?
+                                    .into(),
+                            ),
+                            "players" => ValueRef::TempList(
+                                context
+                                    .battle_context()
+                                    .battle()
+                                    .player_indices_on_side(side)
+                                    .map(|player| {
+                                        ValueRefToStoredValue::new(None, ValueRef::Player(player))
+                                    })
+                                    .collect(),
+                            ),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
                     } else if let ValueRef::HitEffect(hit_effect) = value {
                         value = match *member {
                             "boosts" => hit_effect
@@ -1238,6 +1297,9 @@ where
                         "boosts" => ValueRefMut::BoostTable(
                             &mut context.mon_mut(**mon_handle)?.volatile_state.boosts,
                         ),
+                        "effect_state" => ValueRefMut::TempEffectState(
+                            MonEffectStateConnector::new(**mon_handle).make_dynamic(),
+                        ),
                         "last_item" => ValueRefMut::OptionalId(
                             &mut context.mon_mut(**mon_handle)?.volatile_state.last_item,
                         ),
@@ -1258,6 +1320,9 @@ where
                         ),
                         "status_state" => ValueRefMut::TempEffectState(
                             MonStatusEffectStateConnector::new(**mon_handle).make_dynamic(),
+                        ),
+                        "volatile_effect_state" => ValueRefMut::TempEffectState(
+                            MonVolatileEffectStateConnector::new(**mon_handle).make_dynamic(),
                         ),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),
                     }

@@ -19,9 +19,11 @@ pub use effect_manager::EffectManager;
 pub use effect_state_connectors::{
     ActiveMoveEffectStateConnector,
     MonAbilityEffectStateConnector,
+    MonEffectStateConnector,
     MonItemEffectStateConnector,
     MonStatusEffectStateConnector,
     MonTerastallizationEffectStateConnector,
+    MonVolatileEffectStateConnector,
     MonVolatileStatusEffectStateConnector,
     PseudoWeatherEffectStateConnector,
     SideConditionEffectStateConnector,

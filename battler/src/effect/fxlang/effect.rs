@@ -119,6 +119,7 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsVoid,
 
     NoContextResult = CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
+    NoContextVoid = CallbackFlag::ReturnsVoid,
 
     SourceMoveModifier = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
@@ -412,6 +413,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "AfterFainted"]
     AfterFainted,
+    /// Runs after a Mon heals.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "AfterHeal"]
+    AfterHeal,
     /// Runs after a Mon hits another Mon with a move.
     ///
     /// Runs on the active move.
@@ -499,6 +505,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "BasePower"]
     BasePower,
+    /// Runs before a turn of a battle ends.
+    ///
+    /// Runs in the context of the battle.
+    #[string = "BattleEndTurn"]
+    BattleEndTurn,
     /// Runs when a Mon is using a charge move, on the charging turn.
     ///
     /// Runs in the context of a move user.
@@ -666,6 +677,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "EndBattle"]
     EndBattle,
+    /// Runs before a turn of a battle ends.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "EndTurn"]
+    EndTurn,
     /// Runs when a Mon exits the battle (is no longer active).
     ///
     /// Runs in the context of a Mon.
@@ -1138,6 +1154,11 @@ pub enum BattleEvent {
     /// Runs on the effect.
     #[string = "Start"]
     Start,
+    /// Runs when the battle starts.
+    ///
+    /// Runs in the context of the battle.
+    #[string = "StartBattle"]
+    StartBattle,
     /// Runs when Mon starts using a move.
     ///
     /// Runs in the context of a Mon.
@@ -1366,6 +1387,7 @@ impl BattleEvent {
             Self::AfterDamage => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterEachBoost => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterFainted => CommonCallbackType::MonVoid as u32,
+            Self::AfterHeal => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterHit => CommonCallbackType::MoveVoid as u32,
             Self::AfterMegaEvolution => CommonCallbackType::MonVoid as u32,
             Self::AfterMove => CommonCallbackType::SourceMoveVoid as u32,
@@ -1380,6 +1402,7 @@ impl BattleEvent {
             Self::AfterTerastallization => CommonCallbackType::MonVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::BasePower => CommonCallbackType::MoveModifier as u32,
+            Self::BattleEndTurn => CommonCallbackType::NoContextVoid as u32,
             Self::BeforeChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
@@ -1411,6 +1434,7 @@ impl BattleEvent {
             Self::EatItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::End => CommonCallbackType::EffectVoid as u32,
             Self::EndBattle => CommonCallbackType::MonVoid as u32,
+            Self::EndTurn => CommonCallbackType::MonVoid as u32,
             Self::Exit => CommonCallbackType::MonVoid as u32,
             Self::Faint => CommonCallbackType::MaybeApplyingEffectVoid as u32,
             Self::FieldEnd => CommonCallbackType::FieldVoid as u32,
@@ -1497,6 +1521,7 @@ impl BattleEvent {
             Self::SlotStart => CommonCallbackType::SideResult as u32,
             Self::StallMove => CommonCallbackType::MonResult as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
+            Self::StartBattle => CommonCallbackType::NoContextVoid as u32,
             Self::StartUsingMove => CommonCallbackType::MonVoid as u32,
             Self::StopUsingMove => CommonCallbackType::MonVoid as u32,
             Self::SubPriority => CommonCallbackType::SourceMoveModifier as u32,
@@ -1586,6 +1611,7 @@ impl BattleEvent {
                 ("count", ValueType::UFraction, true),
                 ("effect", ValueType::Effect, false),
             ],
+            Self::AfterHeal => &[("damage", ValueType::UFraction, true)],
             Self::AfterMove => &[("success", ValueType::Boolean, true)],
             Self::AfterMoveSecondaryEffectsDamage => &[
                 ("damage", ValueType::UFraction, true),

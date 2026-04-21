@@ -193,6 +193,7 @@ pub fn run_function(
         "effect_has_event_callback" => effect_has_event_callback(context).map(|val| Some(val)),
         "effective_weather" => effective_weather(context),
         "end_ability" => end_ability(context).map(|()| None),
+        "end_battle" => end_battle(context).map(|()| None),
         "end_dynamax" => end_dynamax(context).map(|()| None),
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
         "end_item" => end_item(context).map(|()| None),
@@ -231,6 +232,7 @@ pub fn run_function(
         "is_adjacent" => is_adjacent(context).map(|val| Some(val)),
         "is_ally" => is_ally(context).map(|val| Some(val)),
         "item_has_flag" => item_has_flag(context).map(|val| Some(val)),
+        "join" => join(context).map(|val| Some(val)),
         "last_attack" => last_attack(context),
         "log" => log(context).map(|()| None),
         "log_ability" => log_ability(context).map(|()| None),
@@ -3194,6 +3196,25 @@ fn reverse(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::List(list))
 }
 
+fn join(mut context: FunctionContext) -> Result<Value> {
+    let list = context
+        .pop_front()
+        .wrap_expectation("missing list")?
+        .list()
+        .wrap_error_with_message("invalid list")?;
+    let separator = context
+        .pop_front()
+        .wrap_expectation("missing separator")?
+        .string()
+        .wrap_error_with_message("invalid separator")?;
+    Ok(Value::String(
+        list.iter()
+            .map(|val| MaybeReferenceValueForOperation::from(val).for_formatted_string())
+            .collect::<Result<Vec<_>>>()?
+            .join(&separator),
+    ))
+}
+
 fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value> {
     Ok(Value::Boolean(
         context
@@ -4585,4 +4606,12 @@ fn effective_weather(mut context: FunctionContext) -> Result<Option<Value>> {
         ))),
         None => Ok(None),
     }
+}
+
+fn end_battle(mut context: FunctionContext) -> Result<()> {
+    let winning_side = match context.pop_front() {
+        Some(val) => Some(val.side_index().wrap_error_with_message("invalid side")?),
+        None => None,
+    };
+    CoreBattle::end_battle(context.battle_context_mut(), winning_side)
 }

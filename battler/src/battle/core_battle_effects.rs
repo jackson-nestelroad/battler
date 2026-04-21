@@ -3612,6 +3612,21 @@ pub fn run_event_for_field_effect_expecting_move_event_result(
 
 /// Runs an event on the [`CoreBattle`].
 ///
+/// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
+pub fn run_event_for_battle(context: &mut Context, event: fxlang::BattleEvent) -> bool {
+    run_event_for_battle_internal(
+        context,
+        event,
+        fxlang::VariableInput::default(),
+        &RunCallbacksOptions::default(),
+    )
+    .map(|value| value.boolean().ok())
+    .flatten()
+    .unwrap_or(true)
+}
+
+/// Runs an event on the [`CoreBattle`].
+///
 /// Expects a [`bool`]. Returns the value of the first callback that returns a value.
 pub fn run_event_for_battle_expecting_bool_quick_return(
     context: &mut Context,

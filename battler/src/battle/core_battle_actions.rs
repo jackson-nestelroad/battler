@@ -2586,6 +2586,12 @@ fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     let healed = context.target_mut().heal(damage)?;
     if healed > 0 {
         core_battle_logs::heal(context)?;
+
+        core_battle_effects::run_event_for_applying_effect(
+            context,
+            fxlang::BattleEvent::AfterHeal,
+            fxlang::VariableInput::from_iter([fxlang::Value::UFraction(damage.into())]),
+        );
     }
     Ok(healed)
 }
@@ -2606,6 +2612,9 @@ pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     let damage = if force_healing_effect(context) {
         damage
     } else {
+        if !mon_states::can_heal(&mut context.target_context()?) {
+            return Ok(0);
+        }
         core_battle_effects::run_event_for_applying_effect_expecting_u16(
             context,
             fxlang::BattleEvent::TryHeal,

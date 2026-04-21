@@ -75,7 +75,104 @@
   "endlessbattleclause": {
     "name": "Endless Battle Clause",
     "description": "Prevents players from forcing a battle which their opponent cannot end except by forfeit.",
-    "rule_log": "Endless Battle Clause: Forcing endless battles is banned"
+    "rule_log": "Endless Battle Clause: Forcing endless battles is banned",
+    "effect": {
+      "callbacks": {
+        "on_after_set_ability": [
+          "if !func_call(is_ally: $source $target):",
+          ["$target.volatile_effect_state.stale = true"],
+          "else:",
+          ["$target.volatile_effect_state.stale = false"]
+        ],
+        "on_after_heal": [
+          "if !func_call(is_ally: $source $target) and [healpulse, floralhealing] has $effect.id:",
+          ["$target.effect_state.stale = true"],
+          "else:",
+          ["$target.effect_state.stale = false"]
+        ],
+        "on_after_set_item": ["$target.effect_state.received_item = true"],
+        "on_eat_item": [
+          "if $target.effect_state.received_item and [leppaberry, aguavberry, enigmaberry, figyberry, iapapaberry, magoberry, oranberry, sitrusberry, wikiberry] has $item.id:",
+          ["$target.effect_state.stale = true"],
+          "else:",
+          ["$target.effect_state.stale = false"]
+        ],
+        "on_battle_end_turn": [
+          "if $battle.turn <= 100:",
+          ["return"],
+          "$all_active_stale = true",
+          "foreach $mon in func_call(all_active_mons):",
+          [
+            "if !$mon.effect_state.stale and !$mon.volatile_effect_state.stale:",
+            ["$all_active_stale = false", "break"]
+          ],
+          "if !$all_active_stale:",
+          ["return"],
+          "$side_cannot_switch_out_of_stale = false",
+          "foreach $side in $field.sides:",
+          [
+            "$side_can_switch_out_of_stale_mon = false",
+            "foreach $player in $side.players:",
+            [
+              "$has_inactive_not_stale = false",
+              "foreach $mon in func_call(all_mons_in_party: $player):",
+              [
+                "if !$mon.active and !$mon.exited and !$mon.effect_state.stale:",
+                ["$has_inactive_not_stale = true", "break"]
+              ],
+              "$can_switch = false",
+              "$player_can_switch = func_call(can_switch: $mon.player)",
+              "foreach $mon in func_call(all_mons_in_party: $player):",
+              [
+                "if $player_can_switch and $mon.active and !$mon.trapped:",
+                ["$can_switch = true", "break"]
+              ],
+              "if $has_inactive_not_stale and $can_switch:",
+              ["$side_can_switch_out_of_stale_mon = true", "break"]
+            ],
+            "if !$side_can_switch_out_of_stale_mon:",
+            ["$side_cannot_switch_out_of_stale = true", "break"]
+          ],
+          "if !$side_cannot_switch_out_of_stale:",
+          ["return"],
+          "$losing_sides = []",
+          "$losing_side_indices = []",
+          "foreach $side in $field.sides:",
+          [
+            "$could_cause_endless_battle = false",
+            "foreach $mon in func_call(all_mons_on_side: $side):",
+            [
+              "$has_berry = $mon.original_item.is_defined and [leppaberry, aguavberry, enigmaberry, figyberry, iapapaberry, magoberry, oranberry, sitrusberry, wikiberry] has $mon.original_item",
+              "$has_cycle = [harvest, pickup] has $mon.original_base_ability",
+              "if !$has_cycle:",
+              [
+                "foreach $move_slot in $mon.base_move_slots:",
+                [
+                  "$has_cycle = [recycle] has $move_slot.id",
+                  "if $has_cycle:",
+                  ["break"]
+                ]
+              ],
+              "if $has_berry and $has_cycle:",
+              ["$could_cause_endless_battle = true", "break"]
+            ],
+            "if $could_cause_endless_battle:",
+            [
+              "$losing_sides = func_call(append: $losing_sides $side)",
+              "$losing_side_indices = func_call(append: $losing_side_indices $side.index)"
+            ]
+          ],
+          "log_activate: str('sides:{}', func_call(join: $losing_side_indices ','))",
+          "if $losing_sides.length == 1:",
+          [
+            "$loser = func_call(index: $losing_sides 0)",
+            "end_battle: $loser.foe_side"
+          ],
+          "else:",
+          ["end_battle"]
+        ]
+      }
+    }
   },
   "evasionclause": {
     "name": "Evasion Clause",

@@ -59,7 +59,7 @@ struct ProgramParser {
 }
 
 impl ProgramParser {
-    const MAX_DEPTH: u8 = 6;
+    const MAX_DEPTH: u8 = 10;
     const MAX_LENGTH: u16 = 999;
 
     fn new() -> Self {
@@ -442,7 +442,19 @@ mod program_parser_test {
                                         [
                                             "if true:",
                                             [
-                                                "if true:"
+                                                "if true:",
+                                                [
+                                                    "if true:",
+                                                    [
+                                                        "if true:",
+                                                        [
+                                                            "if true:",
+                                                            [
+                                                                "if true:"
+                                                            ]
+                                                        ]
+                                                    ]
+                                                ]
                                             ]
                                         ]
                                     ]
@@ -453,7 +465,7 @@ mod program_parser_test {
                 )
                 .unwrap(),
             ),
-            Err(err) => assert_eq!(format!("{err:#}"), "exceeded maximum depth of 6")
+            Err(err) => assert_eq!(format!("{err:#}"), "exceeded maximum depth of 10")
         )
     }
 

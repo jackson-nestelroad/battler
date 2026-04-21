@@ -538,6 +538,8 @@ pub struct MonVolatileState {
     /// Current speed.
     pub speed: u32,
 
+    /// Volatile effect state for the Mon.
+    pub volatile_mon_effect_state: fxlang::EffectState,
     /// Current moves.
     pub move_slots: Vec<MoveSlot>,
     /// Current types.
@@ -643,9 +645,11 @@ pub struct Mon {
     pub gigantamax_factor: bool,
     pub tera_type: Type,
 
+    pub mon_effect_state: fxlang::EffectState,
     pub base_move_slots: Vec<MoveSlot>,
     pub original_base_ability: Id,
     pub base_ability: Id,
+    pub original_item: Option<Id>,
     pub item: Option<Id>,
     pub status: Option<Id>,
     pub status_state: fxlang::EffectState,
@@ -678,6 +682,7 @@ impl Mon {
     /// Creates a new Mon.
     pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self> {
         let species = Id::from(data.species);
+        let item = data.item.map(|item| Id::from(item));
         let ability = Id::from(data.ability);
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
@@ -750,10 +755,12 @@ impl Mon {
             dynamax_level: data.dynamax_level,
             gigantamax_factor: data.gigantamax_factor,
             tera_type: data.tera_type.unwrap_or(Type::None),
+            mon_effect_state: fxlang::EffectState::default(),
             base_move_slots,
             original_base_ability: ability.clone(),
             base_ability: ability,
-            item: data.item.map(|item| Id::from(item)),
+            original_item: item.clone(),
+            item,
             status: data
                 .persistent_battle_data
                 .status
@@ -821,8 +828,15 @@ impl Mon {
             context.mon_mut().exited = Some(MonExitType::Fainted);
         }
 
+        let mon_handle = context.mon_handle();
+        context.mon_mut().mon_effect_state = fxlang::EffectState::initial_effect_state(
+            context.as_battle_context_mut(),
+            None,
+            Some(mon_handle),
+            None,
+        )?;
+
         if context.mon().status.is_some() {
-            let mon_handle = context.mon_handle();
             context.mon_mut().status_state = fxlang::EffectState::initial_effect_state(
                 context.as_battle_context_mut(),
                 None,
@@ -1766,6 +1780,12 @@ impl Mon {
             stats: context.mon().base_stored_stats.clone(),
             boosts: BoostTable::default(),
             speed: 0, // Updated by set_species.
+            volatile_mon_effect_state: fxlang::EffectState::initial_effect_state(
+                context.as_battle_context_mut(),
+                None,
+                Some(mon_handle),
+                None,
+            )?,
             move_slots: context.mon().base_move_slots.clone(),
             types: Vec::default(), // Updated by set_species.
             added_type: None,

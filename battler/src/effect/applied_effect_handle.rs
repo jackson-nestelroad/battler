@@ -108,6 +108,7 @@ impl AppliedEffectHandle {
     pub fn effect_state_connector(&self) -> Option<fxlang::DynamicEffectStateConnector> {
         match self.location {
             AppliedEffectLocation::None => None,
+            // Note that Mons have an effect state, though we don't attach it to event callbacks.
             AppliedEffectLocation::Mon(_) => None,
             AppliedEffectLocation::MonAbility(mon) => {
                 Some(MonAbilityEffectStateConnector::new(mon).make_dynamic())
