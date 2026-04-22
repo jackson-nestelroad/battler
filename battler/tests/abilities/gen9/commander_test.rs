@@ -493,8 +493,8 @@ fn multiple_commanders_can_activate_at_once_in_multi_battle() {
     tatsugiri.members.drain(1..);
     let mut dondozo = commander_team().unwrap();
     dondozo.members.drain(0..2);
-    let mut meoscarada = non_commander_team().unwrap();
-    meoscarada.members.drain(1..);
+    let mut meowscarada = non_commander_team().unwrap();
+    meowscarada.members.drain(1..);
     let mut battle = TestBattleBuilder::new()
         .with_battle_type(BattleType::Multi)
         .with_seed(0)
@@ -514,10 +514,10 @@ fn multiple_commanders_can_activate_at_once_in_multi_battle() {
         .with_team("player-2", dondozo.clone())
         .with_team("player-3", tatsugiri)
         .with_team("player-4", dondozo)
-        .with_team("player-5", meoscarada.clone())
-        .with_team("player-6", meoscarada.clone())
-        .with_team("player-7", meoscarada.clone())
-        .with_team("player-8", meoscarada)
+        .with_team("player-5", meowscarada.clone())
+        .with_team("player-6", meowscarada.clone())
+        .with_team("player-7", meowscarada.clone())
+        .with_team("player-8", meowscarada)
         .build(static_local_data_store())
         .unwrap();
 

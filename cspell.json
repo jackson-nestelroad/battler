@@ -1,7 +1,12 @@
 {
     "version": "0.2",
     "ignorePaths": [
-        ".vscode"
+        ".vscode",
+        "data-filler/**",
+        "dev/**",
+        "target/**",
+        "Cargo.lock",
+        "**.txt"
     ],
     "dictionaryDefinitions": [
         {
@@ -46,6 +51,7 @@
         "dynamaxes",
         "evos",
         "exponentiate",
+        "exponentiates",
         "formes",
         "fxlang",
         "gigantamax",
