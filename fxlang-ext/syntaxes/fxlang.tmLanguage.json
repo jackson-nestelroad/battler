@@ -1,0 +1,192 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "fxlang",
+  "scopeName": "source.fxlang",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#functions"
+    },
+    {
+      "include": "#unquoted-strings"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+        "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.fxlang",
+          "match": "#[^\"]*"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "match": "(\\$)(this)\\b",
+          "captures": {
+            "1": { "name": "constant.language.fxlang" },
+            "2": { "name": "constant.language.fxlang" }
+          }
+        },
+        {
+          "match": "(\\$)(effect_state)\\b",
+          "captures": {
+            "1": { "name": "entity.name.type.fxlang" },
+            "2": { "name": "entity.name.type.fxlang" }
+          }
+        },
+        {
+          "match": "(\\$)([a-zA-Z0-9_]+)",
+          "captures": {
+            "1": { "name": "variable.other.fxlang" },
+            "2": { "name": "variable.other.fxlang" }
+          }
+        },
+        {
+          "match": "(\\.)([a-zA-Z0-9_]+)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.fxlang" },
+            "2": { "name": "variable.other.constant.fxlang" }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.fxlang",
+          "match": "\\b(if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.fxlang",
+          "match": "\\b(true|false|undefined|exempt|none|all|any|self|source|target|stop|active|inactive)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.fxlang",
+          "match": "[\\+\\-]?\\b\\d+(/\\d+)?\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.fxlang",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.fxlang",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "comment": "Interior function call ID inside func_call(...) (Yellow)",
+          "match": "(?<=\\bfunc_call\\()\\s*([a-zA-Z0-9_\\-]+)",
+          "captures": {
+            "1": { "name": "entity.name.function.fxlang" }
+          }
+        },
+        {
+          "comment": "Secondary rule for function labels (Yellow). Injection layer handles top-level.",
+          "match": "(?<=[\\(,\\[])\\s*([a-zA-Z0-9_\\-]+)\\s*:",
+          "captures": {
+            "1": { "name": "entity.name.function.fxlang" }
+          }
+        }
+      ]
+    },
+    "unquoted-strings": {
+        "patterns": [
+            {
+                "name": "string.unquoted.fxlang",
+                "match": "\\b[a-zA-Z0-9_\\-]+\\b"
+            }
+        ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.assignment.fxlang",
+          "match": "="
+        },
+        {
+          "name": "keyword.operator.comparison.fxlang",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.arithmetic.fxlang",
+          "match": "\\+|\\-|\\*|/|%|\\^"
+        },
+        {
+          "name": "keyword.operator.logical.fxlang",
+          "match": "!"
+        }
+      ]
+    },
+    "punctuation": {
+        "patterns": [
+            {
+                "name": "punctuation.terminator.statement.fxlang",
+                "match": ":"
+            },
+            {
+                "name": "punctuation.separator.parameter.fxlang",
+                "match": ","
+            },
+            {
+                "name": "punctuation.section.group.begin.fxlang",
+                "match": "\\((?![^']*'\\))"
+            },
+            {
+                "name": "punctuation.section.group.end.fxlang",
+                "match": "\\)"
+            },
+            {
+                "name": "punctuation.section.array.begin.fxlang",
+                "match": "\\["
+            },
+            {
+                "name": "punctuation.section.array.end.fxlang",
+                "match": "\\]"
+            }
+        ]
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "fxlang-vscode",
+  "displayName": "fxlang Support",
+  "description": "Syntax highlighting and IntelliSense for fxlang DSL scripts.",
+  "version": "0.1.0",
+  "publisher": "jackson-nestelroad",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "fxlang",
+        "aliases": [
+            "fxlang"
+        ],
+        "extensions": [
+            ".fx"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "fxlang",
+        "scopeName": "source.fxlang",
+        "path": "./syntaxes/fxlang.tmLanguage.json"
+      },
+      {
+        "scopeName": "fxlang.injection",
+        "path": "./syntaxes/fxlang-injection.tmLanguage.json",
+        "injectTo": ["source.json"]
+      }
+    ]
+  },
+  "scripts": {
+    "update-metadata": "node ./tools/scrape-metadata.js"
+  }
+}

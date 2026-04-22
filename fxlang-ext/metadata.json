@@ -1,0 +1,1197 @@
+{
+  "variable_members": {
+    "is_boolean": {
+      "description": "Checks if the value is a boolean."
+    },
+    "is_defined": {
+      "description": ""
+    },
+    "is_empty": {
+      "description": ""
+    },
+    "is_undefined": {
+      "description": ""
+    },
+    "length": {
+      "description": ""
+    },
+    "to_string": {
+      "description": ""
+    },
+    "accuracy": {
+      "description": ""
+    },
+    "base_power": {
+      "description": ""
+    },
+    "callable": {
+      "description": ""
+    },
+    "category": {
+      "description": ""
+    },
+    "condition": {
+      "description": ""
+    },
+    "damage": {
+      "description": ""
+    },
+    "damaged_targets": {
+      "description": ""
+    },
+    "drain_percent": {
+      "description": ""
+    },
+    "id": {
+      "description": "The unique identifier of the effect."
+    },
+    "is_ability": {
+      "description": ""
+    },
+    "is_item": {
+      "description": ""
+    },
+    "is_move": {
+      "description": ""
+    },
+    "is_move_secondary": {
+      "description": ""
+    },
+    "is_raining": {
+      "description": ""
+    },
+    "is_snowing": {
+      "description": ""
+    },
+    "is_sunny": {
+      "description": ""
+    },
+    "max_move_base_power": {
+      "description": ""
+    },
+    "move_target": {
+      "description": ""
+    },
+    "multiaccuracy": {
+      "description": ""
+    },
+    "multihit": {
+      "description": ""
+    },
+    "name": {
+      "description": "The name of the effect."
+    },
+    "ohko": {
+      "description": ""
+    },
+    "priority": {
+      "description": ""
+    },
+    "recoil_percent": {
+      "description": ""
+    },
+    "target": {
+      "description": ""
+    },
+    "type": {
+      "description": ""
+    },
+    "typeless": {
+      "description": ""
+    },
+    "z_move_base_power": {
+      "description": ""
+    },
+    "z_power_boosts": {
+      "description": ""
+    },
+    "z_power_effect": {
+      "description": ""
+    },
+    "effect_state": {
+      "description": ""
+    },
+    "external": {
+      "description": ""
+    },
+    "hit": {
+      "description": ""
+    },
+    "hit_effect": {
+      "description": ""
+    },
+    "ignore_all_secondary_effects": {
+      "description": ""
+    },
+    "override_defensive_stat": {
+      "description": ""
+    },
+    "override_offensive_stat": {
+      "description": ""
+    },
+    "secondary_effects": {
+      "description": ""
+    },
+    "spread_hit": {
+      "description": ""
+    },
+    "total_damage": {
+      "description": ""
+    },
+    "upgraded": {
+      "description": ""
+    },
+    "upgraded_base_move": {
+      "description": ""
+    },
+    "user_effect": {
+      "description": ""
+    },
+    "user_effect_chance": {
+      "description": ""
+    }
+  },
+  "type_members": {
+    "Mon": {
+      "ability": {
+        "description": ""
+      },
+      "active": {
+        "description": ""
+      },
+      "active_move": {
+        "description": ""
+      },
+      "active_move_actions": {
+        "description": ""
+      },
+      "active_position": {
+        "description": ""
+      },
+      "active_turns": {
+        "description": ""
+      },
+      "added_type": {
+        "description": ""
+      },
+      "affection_level": {
+        "description": ""
+      },
+      "ate_item": {
+        "description": ""
+      },
+      "base_max_hp": {
+        "description": ""
+      },
+      "base_move_slots": {
+        "description": ""
+      },
+      "base_species": {
+        "description": ""
+      },
+      "base_stats": {
+        "description": ""
+      },
+      "being_called_back": {
+        "description": ""
+      },
+      "berry_eating_health": {
+        "description": ""
+      },
+      "boosts": {
+        "description": ""
+      },
+      "can_heal": {
+        "description": ""
+      },
+      "can_suppress_ability": {
+        "description": ""
+      },
+      "can_suppress_item": {
+        "description": ""
+      },
+      "damaged_this_turn": {
+        "description": ""
+      },
+      "dynamaxed": {
+        "description": ""
+      },
+      "effect_state": {
+        "description": ""
+      },
+      "effective_ability": {
+        "description": ""
+      },
+      "effective_item": {
+        "description": ""
+      },
+      "effective_types": {
+        "description": ""
+      },
+      "effective_types_no_added_type": {
+        "description": ""
+      },
+      "effective_terrain": {
+        "description": ""
+      },
+      "exited": {
+        "description": ""
+      },
+      "fainted": {
+        "description": ""
+      },
+      "foe_side": {
+        "description": ""
+      },
+      "force_switch": {
+        "description": ""
+      },
+      "friendship": {
+        "description": ""
+      },
+      "gender": {
+        "description": ""
+      },
+      "hidden_power_type": {
+        "description": ""
+      },
+      "hp": {
+        "description": ""
+      },
+      "illusion": {
+        "description": ""
+      },
+      "is_asleep": {
+        "description": ""
+      },
+      "is_away_from_field": {
+        "description": ""
+      },
+      "is_behind_substitute": {
+        "description": ""
+      },
+      "is_grounded": {
+        "description": ""
+      },
+      "is_immune_to_entry_hazards": {
+        "description": ""
+      },
+      "is_semi_invulnerable": {
+        "description": ""
+      },
+      "is_soundproof": {
+        "description": ""
+      },
+      "item": {
+        "description": ""
+      },
+      "item_used_this_turn": {
+        "description": ""
+      },
+      "last_item": {
+        "description": ""
+      },
+      "last_move": {
+        "description": ""
+      },
+      "last_move_used": {
+        "description": ""
+      },
+      "last_target_location": {
+        "description": ""
+      },
+      "level": {
+        "description": ""
+      },
+      "max_hp": {
+        "description": "The maximum health points (HP) of the Mon."
+      },
+      "move_last_turn_succeeded": {
+        "description": ""
+      },
+      "move_slots": {
+        "description": ""
+      },
+      "move_this_turn_failed": {
+        "description": ""
+      },
+      "moved_this_turn": {
+        "description": ""
+      },
+      "name": {
+        "description": ""
+      },
+      "nature": {
+        "description": ""
+      },
+      "needs_switch": {
+        "description": ""
+      },
+      "newly_switched": {
+        "description": ""
+      },
+      "not_fully_evolved": {
+        "description": ""
+      },
+      "original_base_ability": {
+        "description": ""
+      },
+      "original_item": {
+        "description": ""
+      },
+      "player": {
+        "description": ""
+      },
+      "position": {
+        "description": ""
+      },
+      "position_details": {
+        "description": ""
+      },
+      "positive_boosts": {
+        "description": ""
+      },
+      "side": {
+        "description": ""
+      },
+      "species": {
+        "description": ""
+      },
+      "stats": {
+        "description": ""
+      },
+      "status": {
+        "description": ""
+      },
+      "terastallized": {
+        "description": ""
+      },
+      "transformed": {
+        "description": ""
+      },
+      "trapped": {
+        "description": ""
+      },
+      "true_nature": {
+        "description": ""
+      },
+      "types": {
+        "description": ""
+      },
+      "volatile_effect_state": {
+        "description": ""
+      },
+      "undynamaxed_hp": {
+        "description": ""
+      },
+      "weight": {
+        "description": ""
+      },
+      "can_escape": {
+        "description": ""
+      },
+      "mon_fainted_last_turn": {
+        "description": ""
+      },
+      "team": {
+        "description": ""
+      },
+      "team_by_effective_position": {
+        "description": ""
+      },
+      "total_active_positions": {
+        "description": ""
+      },
+      "wild_encounter_type": {
+        "description": ""
+      },
+      "id": {
+        "description": ""
+      },
+      "max_pp": {
+        "description": ""
+      },
+      "pp": {
+        "description": ""
+      },
+      "used": {
+        "description": ""
+      },
+      "ending": {
+        "description": ""
+      },
+      "last_successful_move": {
+        "description": ""
+      },
+      "turn": {
+        "description": ""
+      },
+      "effective_weather": {
+        "description": ""
+      },
+      "environment": {
+        "description": ""
+      },
+      "sides": {
+        "description": ""
+      },
+      "time": {
+        "description": ""
+      },
+      "weather": {
+        "description": ""
+      },
+      "mons_per_side": {
+        "description": ""
+      },
+      "obedience_cap": {
+        "description": ""
+      },
+      "index": {
+        "description": ""
+      },
+      "players": {
+        "description": ""
+      },
+      "volatile_status": {
+        "description": ""
+      },
+      "chance": {
+        "description": ""
+      },
+      "target": {
+        "description": ""
+      },
+      "user": {
+        "description": ""
+      },
+      "acc": {
+        "description": ""
+      },
+      "atk": {
+        "description": ""
+      },
+      "def": {
+        "description": ""
+      },
+      "eva": {
+        "description": ""
+      },
+      "spa": {
+        "description": ""
+      },
+      "spd": {
+        "description": ""
+      },
+      "spe": {
+        "description": ""
+      },
+      "drops": {
+        "description": ""
+      },
+      "fling": {
+        "description": ""
+      },
+      "judgment": {
+        "description": ""
+      },
+      "natural_gift": {
+        "description": ""
+      },
+      "techno_blast": {
+        "description": ""
+      },
+      "hit_effect": {
+        "description": ""
+      },
+      "power": {
+        "description": ""
+      },
+      "use_item": {
+        "description": ""
+      },
+      "type": {
+        "description": ""
+      },
+      "max": {
+        "description": ""
+      },
+      "min": {
+        "description": ""
+      },
+      "skip_before_switch_out": {
+        "description": ""
+      },
+      "status_state": {
+        "description": ""
+      },
+      "accuracy": {
+        "description": ""
+      },
+      "base_power": {
+        "description": ""
+      },
+      "category": {
+        "description": ""
+      },
+      "damage": {
+        "description": ""
+      },
+      "force_stab": {
+        "description": ""
+      },
+      "ignore_all_secondary_effects": {
+        "description": ""
+      },
+      "multiaccuracy": {
+        "description": ""
+      },
+      "multihit": {
+        "description": ""
+      },
+      "priority": {
+        "description": ""
+      },
+      "secondary_effects": {
+        "description": ""
+      },
+      "total_damage": {
+        "description": ""
+      },
+      "user_effect": {
+        "description": ""
+      },
+      "user_effect_chance": {
+        "description": ""
+      },
+      "override_offensive_stat": {
+        "description": ""
+      },
+      "override_defensive_stat": {
+        "description": ""
+      },
+      "heal_percent": {
+        "description": ""
+      },
+      "side_condition": {
+        "description": ""
+      }
+    }
+  },
+  "functions": {
+    "ability_effect_state": {
+      "description": ""
+    },
+    "ability_has_flag": {
+      "description": ""
+    },
+    "activate_ability": {
+      "description": ""
+    },
+    "activate_applying_effect": {
+      "description": ""
+    },
+    "add_attribute_to_last_move": {
+      "description": ""
+    },
+    "add_move_action": {
+      "description": ""
+    },
+    "add_move_flag": {
+      "description": ""
+    },
+    "add_pseudo_weather": {
+      "description": ""
+    },
+    "add_secondary_effect_to_move": {
+      "description": ""
+    },
+    "add_side_condition": {
+      "description": ""
+    },
+    "add_slot_condition": {
+      "description": ""
+    },
+    "add_type": {
+      "description": ""
+    },
+    "add_volatile": {
+      "description": ""
+    },
+    "adjacent_allies": {
+      "description": ""
+    },
+    "adjacent_foes": {
+      "description": ""
+    },
+    "all_active_mons": {
+      "description": ""
+    },
+    "all_active_mons_in_speed_order": {
+      "description": ""
+    }
+  },
+  "events": {
+    "AccuracyExempt": {
+      "description": "Runs when the accuracy of a move against a target is being determined.  Runs in the context of a move target."
+    },
+    "Activate": {
+      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on a Mon."
+    },
+    "ActivateField": {
+      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on the field."
+    },
+    "ActivatePlayer": {
+      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on a player."
+    },
+    "ActivateSide": {
+      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on a side."
+    },
+    "AddPseudoWeather": {
+      "description": "Runs when a pseudo-weather is being added to the field.  Runs before the pseudo-weather effect is applied. Can be used to fail the pseudo-weather.  Runs in the context of an applying effect on the field."
+    },
+    "AddType": {
+      "description": "Runs when a type is being added to a Mon.  Runs before the type addition is applied. Can be used to fail the type addition.  Runs in the context of an applying effect on a Mon."
+    },
+    "AddVolatile": {
+      "description": "Runs after a volatile effect is added to a Mon.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterAddPseudoWeather": {
+      "description": "Runs after a new pseudo-weather is added to the field.  Only runs if the pseudo-weather has been added successfully. This event will not undo the pseudo-weather.  Runs in the context of an applying effect on the field."
+    },
+    "AfterAddVolatile": {
+      "description": "Runs after a Mon receives a new volatile effect.  Only runs if the volatile has been added successfully. This event will not undo the volatile.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterBoost": {
+      "description": "Runs after stat boosts are applied.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterCureStatus": {
+      "description": "Runs after a Mon's current status is cured.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterDamage": {
+      "description": "Runs after a Mon takes damage.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterEachBoost": {
+      "description": "Runs after an individual stat boost is applied.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterFainted": {
+      "description": "Runs after a Mon causes one or more Mons to faint.  Runs in the context of a Mon."
+    },
+    "AfterHeal": {
+      "description": "Runs after a Mon heals.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterHit": {
+      "description": "Runs after a Mon hits another Mon with a move.  Runs on the active move."
+    },
+    "AfterMegaEvolution": {
+      "description": "Runs after a Mon Mega Evolves.  Runs in the context of a Mon."
+    },
+    "AfterMove": {
+      "description": "Runs after a Mon finishes using a move.  Runs on the active move and in the context of a move user."
+    },
+    "AfterMoveSecondaryEffects": {
+      "description": "Runs after a move's secondary effects have been applied, for all targets the move was successful against.  Should be viewed as the last effect the move needs to apply on the target.  Runs on the active move and in the context of a move target."
+    },
+    "AfterMoveSecondaryEffectsDamage": {
+      "description": "Runs after a move's secondary effects have been applied, for all targets affected by damage.  Should be viewed as the last effect the move needs to apply on the target. Minimal difference with `AfterMove`; the key difference is that Sheer Force prevents this event from running.  Runs on the active move and in the context of a move target."
+    },
+    "AfterMoveSecondaryEffectsUser": {
+      "description": "Runs after a move's secondary effects have been applied.  Should be viewed as the last effect the move needs to apply on the user. Minimal difference with `AfterMove`; the key difference is that Sheer Force prevents this event from running.  Runs on the active move and in the context of a move user."
+    },
+    "AfterSetAbility": {
+      "description": "Runs after a Mon has its ability set.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterSetItem": {
+      "description": "Runs after a Mon has its item set.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterSetStatus": {
+      "description": "Runs after a Mon's status effect is changed.  Only runs if the status has been set successfully. This event will not undo a status change.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterSubstituteDamage": {
+      "description": "Runs after damage is applied to a substitute.  Hitting a substitute does not trigger ordinary effects that run when a target is hit. Thus, this event is used to cover for scenarios where hitting a substitute should still trigger some callback.  Runs on the active move and in the context of a move target."
+    },
+    "AfterTakeItem": {
+      "description": "Runs after a Mon has its item taken.  Runs in the context of an applying effect on a Mon."
+    },
+    "AfterTerastallization": {
+      "description": "Runs after a Mon Terastallizes.  Runs in the context of a Mon."
+    },
+    "AfterUseItem": {
+      "description": "Runs after a Mon uses its item.  Runs in the context of an applying effect on a Mon."
+    },
+    "BasePower": {
+      "description": "Runs when a move's base power is being calculated for a target.  Runs on the active move and in the context of a move target."
+    },
+    "BattleEndTurn": {
+      "description": "Runs before a turn of a battle ends.  Runs in the context of the battle."
+    },
+    "BeforeChargeMove": {
+      "description": "Runs when a Mon is using a charge move, on the charging turn.  Runs in the context of a move user."
+    },
+    "BeforeDynamax": {
+      "description": "Runs before a Mon Dynamaxes.  Runs in the context of a Mon."
+    },
+    "BeforeMove": {
+      "description": "Runs before a Mon uses a move.  Can prevent the move from being used.  Runs on the active move and in the context of a move user."
+    },
+    "BeforeSwitchIn": {
+      "description": "Runs when a Mon switches in, prior to `SwitchIn`.  Not really prior to switching in.  Runs in the context of a Mon."
+    },
+    "BeforeSwitchOut": {
+      "description": "Runs before a Mon switches out.  Runs in the context of a Mon."
+    },
+    "BeforeTerastallization": {
+      "description": "Runs before a Mon Terastallizes.  Runs in the context of a Mon."
+    },
+    "BeforeTurn": {
+      "description": "Runs before a turn of a battle.  Runs on the effect and in the context of an applying effect on a Mon."
+    },
+    "BerryEatingHealth": {
+      "description": "Runs when determining the health at which the Mon should eat berries.  Runs in the context of a Mon."
+    },
+    "CanDynamax": {
+      "description": "Runs when determining if a Mon can Dynamax.  Runs in the context of a Mon."
+    },
+    "CanEscape": {
+      "description": "Runs when a Mon is attempting to escape from battle.  Runs in the context of a Mon."
+    },
+    "CanHeal": {
+      "description": "Runs when determining if a Mon can heal.  Runs in the context of a Mon."
+    },
+    "Catch": {
+      "description": "Runs when a Mon is caught.  Runs on the item (used to catch the Mon) and in the context of a Mon."
+    },
+    "ChangeBoosts": {
+      "description": "Runs when a group of stat boosts is being applied to a Mon.  Runs in the context of a Mon."
+    },
+    "CalculateStat": {
+      "description": "Runs when a Mon's stat is being calculated.  Runs in the context of an applying effect on a Mon."
+    },
+    "ChargeMove": {
+      "description": "Runs when a Mon is using a charge move, on the charging turn.  Runs on the active move and in the context of a move user."
+    },
+    "ClearTerrain": {
+      "description": "Runs when the field's terrain is being cleared.  Runs before the terrain effect is cleared. Can be used to fail the clear.  Runs in the context of an applying effect on the field."
+    },
+    "ClearWeather": {
+      "description": "Runs when the field's weather is being cleared.  Runs before the weather effect is cleared. Can be used to fail the clear.  Runs in the context of an applying effect on the field."
+    },
+    "CopyVolatile": {
+      "description": "Runs when copying a volatile effect to the target Mon.  Runs on the effect."
+    },
+    "CriticalHit": {
+      "description": "Runs when a move critical hits a target.  Runs in the context of a move target."
+    },
+    "CureStatus": {
+      "description": "Runs when a Mon's current status is cured.  Runs in the context of an applying effect on a Mon."
+    },
+    "Damage": {
+      "description": "Runs when a Mon's damage is being calculated for a target.  Runs in the context of an applying effect on a Mon."
+    },
+    "DamagingHit": {
+      "description": "Runs after a Mon hits another Mon with a move, causing a nonzero amount of damage.  Runs once per hit (i.e., multi-hit moves execute one event per hit).  Runs in the context of a move target."
+    },
+    "DeductPp": {
+      "description": "Runs after a move is used that should have PP deducted.  Runs in the context of a move user."
+    },
+    "DisableMove": {
+      "description": "Runs when determining which moves are disabled.  Runs in the context of a Mon and on the move."
+    },
+    "DragOut": {
+      "description": "Runs before a Mon is dragged out of battle.  Can cancel the force switch.  Runs in the context of a Mon."
+    },
+    "Duration": {
+      "description": "Runs when determining the duration of an effect.  Runs on the effect."
+    },
+    "Eat": {
+      "description": "Runs when an item is eaten.  Runs on the item."
+    },
+    "EatItem": {
+      "description": "Runs when a Mon eats its item.  Runs in the context of a Mon."
+    },
+    "Effectiveness": {
+      "description": "Runs when determining the type effectiveness of a move.  Runs on the effect and in the context of an applying effect on a Mon."
+    },
+    "End": {
+      "description": "Runs when an effect ends.  Runs on the effect."
+    },
+    "EndBattle": {
+      "description": "Runs when a Mon is active when the battle has ended.  Runs in the context of a Mon."
+    },
+    "EndTurn": {
+      "description": "Runs before a turn of a battle ends.  Runs in the context of a Mon."
+    },
+    "Exit": {
+      "description": "Runs when a Mon exits the battle (is no longer active).  Runs in the context of a Mon."
+    },
+    "Faint": {
+      "description": "Runs when a Mon faints.  Runs in the context of an applying effect on a Mon."
+    },
+    "FieldEnd": {
+      "description": "Runs when a field condition ends.  Runs on the field condition."
+    },
+    "FieldResidual": {
+      "description": "Runs at the end of every turn to apply residual effects on the field.  Runs on the field condition."
+    },
+    "FieldRestart": {
+      "description": "Runs when a field condition restarts.  Runs on the field condition."
+    },
+    "FieldStart": {
+      "description": "Runs when a field condition starts.  Runs on the field condition."
+    },
+    "Flinch": {
+      "description": "Runs when a Mon flinches.  Runs in the context of the target Mon."
+    },
+    "ForceEffectiveness": {
+      "description": "Runs when determining the type effectiveness of an effect, to prevent normal type effectiveness from being used.  Runs on the effect and in the context of an applying effect on a Mon."
+    },
+    "ForceEscape": {
+      "description": "Runs when a Mon is attempting to escape from battle, prior to any speed check.  Runs in the context of a Mon."
+    },
+    "ForceTypes": {
+      "description": "Runs when determining the types of a Mon, to force types early.  Runs in the context of a Mon."
+    },
+    "Hit": {
+      "description": "Runs when a Mon is hit by a move.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move and in the context of a move target."
+    },
+    "HitField": {
+      "description": "Runs when the field is hit by a move.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move."
+    },
+    "HitSide": {
+      "description": "Runs when a side is hit by a move.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move and in the context of an applying effect on a side."
+    },
+    "HitUser": {
+      "description": "Runs when a Mon uses a move that defines a user hit effect.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move."
+    },
+    "IgnoreImmunity": {
+      "description": "Runs when determining if a move should ignore type immunity.  Runs on the active move and in the context of a move target."
+    },
+    "Immunity": {
+      "description": "Runs when determining if a Mon is immune to some status.  Runs in the context of an applying effect on a Mon."
+    },
+    "Invulnerability": {
+      "description": "Runs when determining if a Mon is invulnerable to targeting moves.  Runs as the very first step in a move.  Runs in the context of a move target."
+    },
+    "IsAsleep": {
+      "description": "Runs when determining if a Mon is asleep.  Runs in the context of a Mon."
+    },
+    "IsAwayFromField": {
+      "description": "Runs when determining if a Mon is away from the field (e.g., immobilized by Sky Drop).  Runs in the context of a Mon."
+    },
+    "IsBehindSubstitute": {
+      "description": "Runs when determining if a Mon is behind a substitute.  Runs in the context of a Mon."
+    },
+    "IsContactProof": {
+      "description": "Runs when determining if a Mon is protected from making contact with other Mons.  Runs in the context of a Mon."
+    },
+    "IsGrounded": {
+      "description": "Runs when determining if a Mon is grounded.  Runs in the context of a Mon."
+    },
+    "IsImmuneToEntryHazards": {
+      "description": "Runs when determining if a Mon is immune to entry hazards.  Runs in the context of a Mon."
+    },
+    "IsRaining": {
+      "description": "Runs when determining if a weather includes raining.  Runs in the context of a Mon."
+    },
+    "IsSemiInvulnerable": {
+      "description": "Runs when determining if a Mon is in a semi-invulnerable state.  Runs in the context of a Mon."
+    },
+    "IsSnowing": {
+      "description": "Runs when determining if a weather includes snowing.  Runs in the context of a Mon."
+    },
+    "IsSoundproof": {
+      "description": "Runs when determining if a Mon is soundproof.  Runs in the context of a Mon."
+    },
+    "IsSunny": {
+      "description": "Runs when determining if a weather includes sunny weather.  Runs in the context of a Mon."
+    },
+    "LockMove": {
+      "description": "Runs when determining if a Mon is locked into a move.  Runs in the context of a Mon."
+    },
+    "ModifyAccuracy": {
+      "description": "Runs when calculating the accuracy of a move.  Runs in the context of a move target."
+    },
+    "ModifyActionSpeed": {
+      "description": "Runs when calculating the speed of an action.  Runs in the context of a Mon."
+    },
+    "ModifyAtk": {
+      "description": "Runs when calculating a Mon's Atk stat.  Runs in the context of an applying effect on a Mon."
+    },
+    "ModifyBoosts": {
+      "description": "Runs when modifying a Mon's stat boosts used for stat calculations.  Runs in the context of an applying effect on a Mon."
+    },
+    "ModifyCatchRate": {
+      "description": "Runs when calculating the modified catch rate of a Mon.  Runs in the context of the item and in the context of an applying effect on a Mon."
+    },
+    "ModifyCritChance": {
+      "description": "Runs when calculating a move's critical hit chance.  Runs in the context of a move user."
+    },
+    "ModifyCritRatio": {
+      "description": "Runs when calculating a move's critical hit ratio.  Runs in the context of a move user."
+    },
+    "ModifyDamage": {
+      "description": "Runs when calculating the damage applied to a Mon.  Runs as the very last step in the regular damage calculation formula.  Runs in the context of a move user."
+    },
+    "ModifyDef": {
+      "description": "Runs when calculating a Mon's Def stat.  Runs in the context of an applying effect on a Mon."
+    },
+    "ModifyEvYield": {
+      "description": "Runs when calculating the EV yield gained by a Mon.  Runs in the context of a Mon."
+    },
+    "ModifyExperience": {
+      "description": "Runs when calculating the amount of experience gained by a Mon.  Runs in the context of a Mon."
+    },
+    "ModifyFriendshipIncrease": {
+      "description": "Runs when calculating the amount of friendship gained by a Mon.  Runs in the context of a Mon."
+    },
+    "ModifyMoveType": {
+      "description": "Runs when modifying the type of a move.  Runs on the move and in the context of a move user."
+    },
+    "ModifyPriority": {
+      "description": "Runs when determining the priority of a move.  Runs in the context of a move user."
+    },
+    "ModifySecondaryEffects": {
+      "description": "Runs before applying secondary move effects.  Runs in the context of a move target."
+    },
+    "ModifySpA": {
+      "description": "Runs when calculating a Mon's SpA stat.  Runs in the context of an applying effect on a Mon."
+    },
+    "ModifySpD": {
+      "description": "Runs when calculating a Mon's SpD stat.  Runs in the context of an applying effect on a Mon."
+    },
+    "ModifySpe": {
+      "description": "Runs when calculating a Mon's Spe stat.  Runs in the context of an applying effect on a Mon."
+    },
+    "ModifySpeciesCatchRate": {
+      "description": "Runs when calculating the base species catch rate of a Mon.  Runs in the context of the item and in the context of an applying effect on a Mon."
+    },
+    "ModifyStab": {
+      "description": "Runs when calculating a move's STAB multiplier.  Runs in the context of a move user."
+    },
+    "ModifyTarget": {
+      "description": "Runs before a move is used, to modify the target Mon.  Runs on the active move and in the context of a move user."
+    },
+    "ModifyWeight": {
+      "description": "Runs when calculating a Mon's weight.  Runs in the context of a Mon."
+    },
+    "MoveAborted": {
+      "description": "Runs when a move is aborted due to failing the BeforeMove event.  Runs on the active move and in the context of a move user."
+    },
+    "MoveBasePower": {
+      "description": "Runs when a move's base power is being calculated for a target.  Runs on the active move."
+    },
+    "MoveDamage": {
+      "description": "Runs when a move's damage is being calculated for a target.  Runs on the active move."
+    },
+    "MoveFailed": {
+      "description": "Runs when a move fails, only on the move itself.  A move fails when it is successfully used by the user, but it does not hit or apply its primary effect to any targets.  Runs on the active move."
+    },
+    "MoveTargetOverride": {
+      "description": "Runs when a move's target type is determined for a Mon selecting a move.  Runs on the move."
+    },
+    "NegateImmunity": {
+      "description": "Runs when determining if a Mon's immunity against a single type should be negated.  Runs in the context of a Mon."
+    },
+    "OverrideMove": {
+      "description": "Runs when a Mon uses a move, to override the chosen move.  Runs in the context of a Mon."
+    },
+    "OverrideWeather": {
+      "description": "Runs when determining the effective weather for a Mon. Overrides the weather without looking at the actual field weather or weather suppression effects.  Runs in the context of a Mon."
+    },
+    "PlayerTryUseItem": {
+      "description": "Runs when a player tries to choose to use an item.  Runs on the item."
+    },
+    "PlayerUse": {
+      "description": "Runs when an item is used on a Mon by a player.  Runs on the item."
+    },
+    "PreMoveEffect": {
+      "description": "Runs when applying any pre-move effect.  Very similar to `UseMove`, except it runs after the move is announced.  Runs in the context of a move user."
+    },
+    "PrepareHit": {
+      "description": "Runs when a Mon is preparing to hit all of its targets with a move.  Can fail the move.  Runs on the active move and in the context of a move user."
+    },
+    "PreventUsedItems": {
+      "description": "Runs when determining if a Mon can have items used on it.  Runs in the context of a Mon."
+    },
+    "PriorityChargeMove": {
+      "description": "Runs before at the start of the turn, when a move is charging for the turn.  Runs in the context of a Mon."
+    },
+    "RedirectTarget": {
+      "description": "Runs when a move is going to target one Mon but can be redirected towards a different target.  Runs in the context of a move user."
+    },
+    "Residual": {
+      "description": "Runs at the end of every turn to apply residual effects.  Runs in the context of an applying effect on a Mon."
+    },
+    "Restart": {
+      "description": "Runs when a volatile effect is applied to a Mon that already has the volatile effect.  Runs on the effect."
+    },
+    "RestorePp": {
+      "description": "Runs when restoring PP to a move.  Runs in the context of an applying effect on a Mon."
+    },
+    "SetAbility": {
+      "description": "Runs when a Mon's ability is being set.  Runs before the ability is changed. Can be used to fail the ability change.  Runs in the context of an applying effect on a Mon."
+    },
+    "SetItem": {
+      "description": "Runs when an item is being given to a Mon.  Can prevent the item from being set.  Runs on the item and in the context of an applying effect on a Mon."
+    },
+    "SetLastMove": {
+      "description": "Runs when the Mon's last move selected is being set.  Runs in the context of a Mon."
+    },
+    "SetStatus": {
+      "description": "Runs when a Mon's status effect is being set.  Runs before the status effect is applied. Can be used to fail the status change.  Runs in the context of an applying effect on a Mon."
+    },
+    "SetTerrain": {
+      "description": "Runs when the field's terrain is being set.  Runs before the terrain effect is applied. Can be used to fail the terrain.  Runs in the context of an applying effect on the field."
+    },
+    "SetTypes": {
+      "description": "Runs when a Mon's types are being changed.  Runs before the types are applied. Can be used to fail the type change.  Runs in the context of an applying effect on a Mon."
+    },
+    "SetWeather": {
+      "description": "Runs when the field's weather is being set.  Runs before the weather effect is applied. Can be used to fail the weather.  Runs in the context of an applying effect on the field."
+    },
+    "SideConditionStart": {
+      "description": "Runs when a side condition starts successfully.  Runs in the context of an applying effect on a side."
+    },
+    "SideEnd": {
+      "description": "Runs when a side condition ends.  Runs in the context of the side condition."
+    },
+    "SideResidual": {
+      "description": "Runs at the end of every turn to apply residual effects on the side.  Runs in the context of the side condition."
+    },
+    "SideRestart": {
+      "description": "Runs when a side condition restarts.  Runs in the context of the side condition."
+    },
+    "SideStart": {
+      "description": "Runs when a side condition starts.  Runs in the context of the side condition."
+    },
+    "SlotEnd": {
+      "description": "Runs when a slot condition ends.  Runs in the context of the slot condition."
+    },
+    "SlotRestart": {
+      "description": "Runs when a slot condition restarts.  Runs in the context of the slot condition."
+    },
+    "SlotStart": {
+      "description": "Runs when a slot condition starts.  Runs in the context of the slot condition."
+    },
+    "StallMove": {
+      "description": "Runs when a Mon attempts a stalling move (e.g., Protect).  Can fail the stalling move (assuming the stalling move integrates with the event properly).  Runs in the context of a Mon."
+    },
+    "Start": {
+      "description": "Runs when an effect starts.  Used to set up state.  Runs on the effect."
+    },
+    "StartBattle": {
+      "description": "Runs when the battle starts.  Runs in the context of the battle."
+    },
+    "StartUsingMove": {
+      "description": "Runs when Mon starts using a move.  Runs in the context of a Mon."
+    },
+    "StopUsingMove": {
+      "description": "Runs when Mon stops using a move.  Runs in the context of a Mon."
+    },
+    "SubPriority": {
+      "description": "Runs when determining the sub-priority of a move.  Runs in the context of a move user."
+    },
+    "SuppressFieldTerrain": {
+      "description": "Runs when determining if terrain on the field is suppressed, for some other active effect.  Runs on the effect."
+    },
+    "SuppressFieldWeather": {
+      "description": "Runs when determining if weather on the field is suppressed, for some other active effect.  Runs on the effect."
+    },
+    "SuppressMonAbility": {
+      "description": "Runs when determining if a Mon's ability is suppressed, for some other active effect.  Runs on the effect."
+    },
+    "SuppressMonItem": {
+      "description": "Runs when determining if the item on the Mon is suppressed, for some other active effect.  Runs on the effect."
+    },
+    "SuppressMonTerrain": {
+      "description": "Runs when determining if terrain on the Mon is suppressed, for some other active effect.  Runs on the effect."
+    },
+    "SuppressMonWeather": {
+      "description": "Runs when determining if weather on the Mon is suppressed, for some other active effect.  Runs on the effect."
+    },
+    "SwitchIn": {
+      "description": "Runs when a Mon switches in.  Runs in the context of a Mon."
+    },
+    "SwitchingIn": {
+      "description": "Runs when a Mon is switching in, prior to `SwitchIn`.  Runs in the context of a Mon."
+    },
+    "SwitchOut": {
+      "description": "Runs when a Mon is switching out.  Runs in the context of a Mon."
+    },
+    "TakeItem": {
+      "description": "Runs when an item is being taken from a Mon.  Can prevent the item from being taken.  Runs on the item and in the context of an applying effect on a Mon."
+    },
+    "TrapMon": {
+      "description": "Runs when determining if a Mon is trapped (i.e., cannot switch out).  Runs in the context of a Mon."
+    },
+    "TryBoost": {
+      "description": "Runs when a group of stat boosts is being applied to a Mon.  Runs in the context of an applying effect on a Mon."
+    },
+    "TryEatItem": {
+      "description": "Runs when a Mon tries to eat its item.  Runs in the context of an applying effect on a Mon."
+    },
+    "TryHeal": {
+      "description": "Runs before a Mon is healed for some amount of damage.  Runs in the context of an applying effect on a Mon."
+    },
+    "TryHit": {
+      "description": "Runs when a move is trying to hit a set of targets.  Can fail the move.  Runs on the active move and in the context of a move target."
+    },
+    "TryHitField": {
+      "description": "Runs when a move is trying to hit the whole field.  Can fail the move.  Runs on the active move and in the context of an applying effect on the field."
+    },
+    "TryHitSide": {
+      "description": "Runs when a move is trying to hit an entire side  Can fail the move.  Runs on the active move and in the context of an applying effect on a side."
+    },
+    "TryImmunity": {
+      "description": "Runs when a move is checking general immunity for its target.  Can fail the move (by marking the target as immune).  Runs in the context of the active move."
+    },
+    "TryMove": {
+      "description": "Runs when trying to use a move.  Can fail the move.  Runs on the active move and in the context of a move user."
+    },
+    "TryPrimaryHit": {
+      "description": "Runs when a move's primary hit is being applied to a target.  Used to override the core battle engine logic. Can fail the move or return an amount of damage dealt to the target. If zero damage is returned, the core battle engine assumes a substitute was hit for the purposes of hit effects (i.e., hit effects do not apply to the target).  Runs in the context of a move target."
+    },
+    "TryUseItem": {
+      "description": "Runs when a Mon tries to use an item.  Runs in the context of an applying effect on a Mon."
+    },
+    "TryUseMove": {
+      "description": "Runs when a Mon is trying to use a move on a set of targets.  Can fail the move.  Runs on the active move."
+    },
+    "TypeImmunity": {
+      "description": "Runs when determining if a Mon has immunity against a single type.  Runs in the context of a Mon."
+    },
+    "Types": {
+      "description": "Runs when determining the types of a Mon.  Runs in the context of a Mon."
+    },
+    "Update": {
+      "description": "Runs when miscellaneous Mon effects in the battle could activate.  Runs in the context of a Mon."
+    },
+    "UpgradeMove": {
+      "description": "Runs when a Mon uses a move, to upgrade the chosen move.  Runs in the context of a move user."
+    },
+    "Use": {
+      "description": "Runs when an item is used.  Runs on the item."
+    },
+    "UseMove": {
+      "description": "Runs when a Mon uses a move.  Can be used to modify a move when it is used.  Runs on the active move and in the context of a move user."
+    },
+    "UseMoveMessage": {
+      "description": "Runs when a custom message should be displayed when a Mon uses a move.  Runs on the active move."
+    },
+    "ValidateMon": {
+      "description": "Runs when validating a Mon.  Runs in the context of a Mon."
+    },
+    "ValidateTeam": {
+      "description": "Runs when validating a team.  Runs in the context of a player."
+    },
+    "Weather": {
+      "description": "Runs when weather is activated at the end of each turn.  Runs in the context of an applying effect on a Mon."
+    },
+    "WeatherChange": {
+      "description": "Runs when the weather over a Mon changes.  Runs in the context of an applying effect on a Mon."
+    },
+    "WeatherModifyDamage": {
+      "description": "Runs when calculating the damage applied to a Mon.  Runs in the context of a move user."
+    }
+  }
+}

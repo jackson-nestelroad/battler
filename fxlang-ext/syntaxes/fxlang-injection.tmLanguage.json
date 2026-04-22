@@ -1,0 +1,97 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "fxlang-injection",
+  "scopeName": "fxlang.injection",
+  "injectionSelector": "L:source.json",
+  "patterns": [
+    {
+      "comment": "Entry point: 'callbacks' or 'program' fields",
+      "begin": "(\"(?:callbacks|program)\")\\s*(:)\\s*",
+      "beginCaptures": {
+        "1": { "name": "support.type.property-name.json" },
+        "2": { "name": "punctuation.separator.dictionary.key-value.json" }
+      },
+      "end": "(?=[,\\}])",
+      "patterns": [
+        {
+          "include": "#fxlang-value-recursive"
+        }
+      ]
+    }
+  ],
+  "repository": {
+    "fxlang-value-recursive": {
+      "patterns": [
+        {
+           "comment": "Detect a single parameterless function call word (Yellow). EXCLUDES keywords like return.",
+           "match": "(\")\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(\")",
+           "captures": {
+             "1": { "name": "punctuation.definition.string.begin.json" },
+             "2": { "name": "entity.name.function.fxlang" },
+             "3": { "name": "punctuation.definition.string.end.json" }
+           }
+        },
+        {
+          "comment": "Content of an fxlang string. Capture any leading function label immediately.",
+          "begin": "(\")(?:\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(:))?",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.string.begin.json" },
+            "2": { "name": "entity.name.function.fxlang" },
+            "3": { "name": "punctuation.terminator.statement.fxlang" }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.json" }
+          },
+          "contentName": "source.fxlang",
+          "patterns": [
+            { "include": "source.fxlang" }
+          ]
+        },
+        {
+          "comment": "Array containing fxlang items",
+          "begin": "\\[",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.array.begin.json" }
+          },
+          "end": "\\]",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.array.end.json" }
+          },
+          "patterns": [
+            { "include": "#fxlang-value-recursive" },
+            { "match": ",", "name": "punctuation.separator.array.json" }
+          ]
+        },
+        {
+          "comment": "Object wrapper for metadata",
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.dictionary.begin.json" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.dictionary.end.json" }
+          },
+          "patterns": [
+            {
+              "comment": "Any key inside a callbacks/program context",
+              "begin": "(\"[a-zA-Z0-9_]+\")\\s*(:)\\s*",
+              "beginCaptures": {
+                "1": { "name": "support.type.property-name.json" },
+                "2": { "name": "punctuation.separator.dictionary.key-value.json" }
+              },
+              "end": "(?=[,\\}])",
+              "patterns": [
+                {
+                  "include": "#fxlang-value-recursive"
+                }
+              ]
+            },
+            { "match": ",", "name": "punctuation.separator.dictionary.json" }
+          ]
+        }
+      ]
+    }
+  }
+}
