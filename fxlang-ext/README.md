@@ -4,8 +4,8 @@ Visual Studio Code extension for `fxlang`, the battle effect DSL used in the `ba
 
 ## Features
 
-- **Syntax Highlighting**: Full syntax highlighting for `fxlang` code.
-- **JSON Injection**: Automatically highlights `fxlang` code embedded in JSON strings (e.g., `program`, `effect`, `on_hit`).
+- **Syntax Highlighting**: High-precision, context-aware syntax highlighting for `fxlang` code.
+- **Precision Injection**: Automatically identifies `fxlang` code blocks within JSON, while isolating metadata fields (like `priority` or `order`) to maintain theme-native JSON highlighting.
 - **IntelliSense**: Auto-completion for functions, variables, and members.
 - **Hovers**: View documentation for functions and members directly from the source code.
 - **Always Up-to-Date**: Includes a scraper tool to sync metadata with the Rust source code.

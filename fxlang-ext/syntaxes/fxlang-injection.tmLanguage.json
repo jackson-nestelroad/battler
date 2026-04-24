@@ -5,92 +5,133 @@
   "injectionSelector": "L:source.json",
   "patterns": [
     {
-      "comment": "Entry point: 'callbacks' or 'program' fields",
-      "begin": "(\"(?:callbacks|program)\")\\s*(:)\\s*",
+      "comment": "Entry Point: 'callbacks' field (Light Blue Key)",
+      "begin": "(\"callbacks\")\\s*(:)\\s*",
       "beginCaptures": {
-        "1": { "name": "support.type.property-name.json" },
+        "1": { "name": "variable.other.object.property.json" },
         "2": { "name": "punctuation.separator.dictionary.key-value.json" }
       },
       "end": "(?=[,\\}])",
       "patterns": [
-        {
-          "include": "#fxlang-value-recursive"
-        }
+        { "include": "#fxlang-event-map-object" }
+      ]
+    },
+    {
+      "comment": "Entry Point: 'program' field (Light Blue Key)",
+      "begin": "(\"program\")\\s*(:)\\s*",
+      "beginCaptures": {
+        "1": { "name": "variable.other.object.property.json" },
+        "2": { "name": "punctuation.separator.dictionary.key-value.json" }
+      },
+      "end": "(?=[,\\}])",
+      "patterns": [
+        { "include": "#fxlang-program-choice" }
       ]
     }
   ],
   "repository": {
-    "fxlang-value-recursive": {
+    "fxlang-event-map-object": {
+      "comment": "An object where every key is an event (colored Light Blue).",
+      "begin": "\\{",
+      "beginCaptures": { "0": { "name": "punctuation.definition.dictionary.begin.json" } },
+      "end": "\\}",
+      "endCaptures": { "0": { "name": "punctuation.definition.dictionary.end.json" } },
       "patterns": [
         {
-           "comment": "Detect a single parameterless function call word (Yellow). EXCLUDES keywords like return.",
-           "match": "(\")\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(\")",
-           "captures": {
-             "1": { "name": "punctuation.definition.string.begin.json" },
-             "2": { "name": "entity.name.function.fxlang" },
-             "3": { "name": "punctuation.definition.string.end.json" }
-           }
-        },
-        {
-          "comment": "Content of an fxlang string. Capture any leading function label immediately.",
-          "begin": "(\")(?:\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(:))?",
+          "comment": "Event Key (Light Blue), recursing into Program Choice",
+          "begin": "(\"[a-zA-Z0-9_]+\")\\s*(:)\\s*",
           "beginCaptures": {
-            "1": { "name": "punctuation.definition.string.begin.json" },
-            "2": { "name": "entity.name.function.fxlang" },
-            "3": { "name": "punctuation.terminator.statement.fxlang" }
+            "1": { "name": "variable.other.object.property.json" },
+            "2": { "name": "punctuation.separator.dictionary.key-value.json" }
           },
-          "end": "\"",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.string.end.json" }
-          },
-          "contentName": "source.fxlang",
+          "end": "(?=[,\\}])",
           "patterns": [
-            { "include": "source.fxlang" }
+            { "include": "#fxlang-program-choice" }
+          ]
+        },
+        { "include": "source.json" },
+        { "match": ",", "name": "punctuation.separator.dictionary.json" }
+      ]
+    },
+    "fxlang-program-choice": {
+      "comment": "Routes Strings/Arrays to code, and Objects to restricted Metadata Containers",
+      "patterns": [
+        { "include": "#fxlang-string-as-code" },
+        { "include": "#fxlang-array-as-code" },
+        { "include": "#fxlang-metadata-restricted-object" }
+      ]
+    },
+    "fxlang-metadata-restricted-object": {
+      "comment": "Object in code context. ALL keys are Light Blue, but ONLY 'program' contains code.",
+      "begin": "\\{",
+      "beginCaptures": { "0": { "name": "punctuation.definition.dictionary.begin.json" } },
+      "end": "\\}",
+      "endCaptures": { "0": { "name": "punctuation.definition.dictionary.end.json" } },
+      "patterns": [
+        {
+          "comment": "The program key (Light Blue) recurses into code logic",
+          "begin": "(\"program\")\\s*(:)\\s*",
+          "beginCaptures": {
+            "1": { "name": "variable.other.object.property.json" },
+            "2": { "name": "punctuation.separator.dictionary.key-value.json" }
+          },
+          "end": "(?=[,\\}])",
+          "patterns": [
+            { "include": "#fxlang-program-choice" }
           ]
         },
         {
-          "comment": "Array containing fxlang items",
-          "begin": "\\[",
+          "comment": "Other Metadata keys (Light Blue), but their values stay JSON",
+          "begin": "(\"[a-zA-Z0-9_]+\")\\s*(:)\\s*",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.array.begin.json" }
+            "1": { "name": "variable.other.object.property.json" },
+            "2": { "name": "punctuation.separator.dictionary.key-value.json" }
           },
-          "end": "\\]",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.array.end.json" }
-          },
+          "end": "(?=[,\\}])",
           "patterns": [
-            { "include": "#fxlang-value-recursive" },
-            { "match": ",", "name": "punctuation.separator.array.json" }
+            { "include": "source.json" }
           ]
         },
-        {
-          "comment": "Object wrapper for metadata",
-          "begin": "\\{",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.dictionary.begin.json" }
-          },
-          "end": "\\}",
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.dictionary.end.json" }
-          },
-          "patterns": [
-            {
-              "comment": "Any key inside a callbacks/program context",
-              "begin": "(\"[a-zA-Z0-9_]+\")\\s*(:)\\s*",
-              "beginCaptures": {
-                "1": { "name": "support.type.property-name.json" },
-                "2": { "name": "punctuation.separator.dictionary.key-value.json" }
-              },
-              "end": "(?=[,\\}])",
-              "patterns": [
-                {
-                  "include": "#fxlang-value-recursive"
-                }
-              ]
-            },
-            { "match": ",", "name": "punctuation.separator.dictionary.json" }
-          ]
-        }
+        { "include": "source.json" },
+        { "match": ",", "name": "punctuation.separator.dictionary.json" }
+      ]
+    },
+    "fxlang-string-as-code": {
+      "patterns": [
+        { "include": "#fxlang-single-word-call" },
+        { "include": "#fxlang-full-statement-string" }
+      ]
+    },
+    "fxlang-single-word-call": {
+       "comment": "Parameterless call word.",
+       "match": "(\")\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(\")",
+       "captures": {
+         "1": { "name": "punctuation.definition.string.begin.json" },
+         "2": { "name": "entity.name.function.fxlang" },
+         "3": { "name": "punctuation.definition.string.end.json" }
+       }
+    },
+    "fxlang-full-statement-string": {
+      "begin": "(\")(?:\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(:))?",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.string.begin.json" },
+        "2": { "name": "entity.name.function.fxlang" },
+        "3": { "name": "punctuation.terminator.statement.fxlang" }
+      },
+      "end": "\"",
+      "endCaptures": { "0": { "name": "punctuation.definition.string.end.json" } },
+      "contentName": "source.fxlang",
+      "patterns": [ { "include": "source.fxlang" } ]
+    },
+    "fxlang-array-as-code": {
+      "begin": "\\[",
+      "beginCaptures": { "0": { "name": "punctuation.definition.array.begin.json" } },
+      "end": "\\]",
+      "endCaptures": { "0": { "name": "punctuation.definition.array.end.json" } },
+      "patterns": [
+        { "include": "#fxlang-program-choice" },
+        { "match": ",", "name": "punctuation.separator.array.json" },
+        { "include": "source.json" }
       ]
     }
   }
