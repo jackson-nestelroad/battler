@@ -150,7 +150,10 @@ export function getEnclosingEvent(document: vscode.TextDocument, position: vscod
         const line = document.lineAt(i).text.trim();
         const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
         if (match) {
-            return resolveEventName(match[1], metadata);
+            const rawName = match[1];
+            if (rawName !== 'program') {
+                return resolveEventName(rawName, metadata);
+            }
         }
         if (line.match(/^"callbacks"\s*:\s*\{/)) {
             break;
