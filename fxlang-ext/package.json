@@ -1,6 +1,6 @@
 {
   "name": "fxlang-vscode",
-  "displayName": "fxlang Support",
+  "displayName": "fxlang support",
   "description": "Syntax highlighting and IntelliSense for fxlang DSL scripts.",
   "version": "0.1.0",
   "publisher": "jackson-nestelroad",
@@ -35,6 +35,19 @@
         "scopeName": "fxlang.injection",
         "path": "./syntaxes/fxlang-injection.tmLanguage.json",
         "injectTo": ["source.json"]
+      }
+    ],
+    "commands": [
+      {
+        "command": "fxlang.toggleLineNumbers",
+        "title": "fxlang: toggle line numbers"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "fxlang.toggleLineNumbers",
+        "key": "alt+l",
+        "mac": "alt+l"
       }
     ]
   },
