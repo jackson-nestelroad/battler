@@ -83,6 +83,21 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     /**
+     * Finds the longest base event name that is a suffix of the raw JSON key.
+     */
+    function resolveEventName(rawName: string): string | undefined {
+        let bestMatch: string | undefined = undefined;
+        for (const baseName of Object.keys(metadata.events || {})) {
+            if (rawName === baseName || rawName.endsWith('_' + baseName)) {
+                if (!bestMatch || baseName.length > bestMatch.length) {
+                    bestMatch = baseName;
+                }
+            }
+        }
+        return bestMatch;
+    }
+
+    /**
      * Walks backwards from the current position to find the enclosing event key inside a callbacks block.
      * Extracts the base event name ignoring prefixes like `on_` and modifiers like `ally_`.
      */
@@ -91,19 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
             const line = document.lineAt(i).text.trim();
             const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
             if (match) {
-                const rawName = match[1];
-                let bestMatch: string | undefined = undefined;
-                // Find the longest base event name that is a suffix of the raw JSON key
-                for (const baseName of Object.keys(metadata.events || {})) {
-                    if (rawName === baseName || rawName.endsWith('_' + baseName)) {
-                        if (!bestMatch || baseName.length > bestMatch.length) {
-                            bestMatch = baseName;
-                        }
-                    }
-                }
-                if (bestMatch) {
-                    return bestMatch;
-                }
+                return resolveEventName(match[1]);
             }
             if (line.match(/^"callbacks"\s*:\s*\{/)) {
                 break;
@@ -559,7 +562,15 @@ export function activate(context: vscode.ExtensionContext) {
                     
                     return new vscode.Hover(hoverText);
                 }
-
+                
+                const eventKey = resolveEventName(word2);
+                if (eventKey && metadata.events[eventKey]) {
+                    const eventData = metadata.events[eventKey];
+                    const hoverText = new vscode.MarkdownString();
+                    hoverText.appendMarkdown(`**Event \`${word2}\`**\n\n`);
+                    hoverText.appendMarkdown(`${eventData.description}`);
+                    return new vscode.Hover(hoverText);
+                }
                 } catch (err) {
                     try {
                         const fs = require('fs');

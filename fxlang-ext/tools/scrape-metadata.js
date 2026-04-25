@@ -135,8 +135,7 @@ function scrapeVariables(filePath, typeMapping) {
           break;
       }
 
-      const description = docBuffer.join(" ");
-      const memberData = { description, type: returnType };
+      const memberData = { description: "", type: returnType };
 
       if (currentType === "global") {
         metadata.global[memberName] = memberData;
@@ -505,7 +504,7 @@ function scrapeEffectStateMembers(filePath) {
     if (constMatch) {
       const memberName = constMatch[1];
       members[memberName] = {
-        description: docBuffer.join(" ").trim(),
+        description: "",
         type: lastType,
       };
       docBuffer = [];

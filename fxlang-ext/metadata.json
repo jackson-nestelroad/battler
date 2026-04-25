@@ -31,7 +31,7 @@
   },
   "variable_members": {
     "is_boolean": {
-      "description": "A registry of variables for an fxlang program evaluation. An fxlang variable.  Acts as a wrapper for an immutable access of a variable that can be consumed at some later time.",
+      "description": "",
       "type": "Boolean"
     },
     "is_defined": {
