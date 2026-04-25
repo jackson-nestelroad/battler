@@ -1335,6 +1335,7 @@ fn log_weather(mut context: FunctionContext) -> Result<()> {
 /// Logs an effect failure to the battle log.
 /// 
 /// @param {[`ValueType::Mon`]} [mon] The Mon the effect failed on.
+/// @param {[`ValueType::Effect`]} [what] The effect that failed.
 fn log_fail(mut context: FunctionContext) -> Result<()> {
     let effect_handle = if context.from_effect() {
         Some(context.effect_handle()?)
@@ -1412,9 +1413,10 @@ fn log_ohko(mut context: FunctionContext) -> Result<()> {
     core_battle_logs::ohko(&mut context.mon_context(mon_handle)?)
 }
 
-/// Generates a random number between 0 and a maximum value.
+/// Generates a random number.
 /// 
-/// @param {[`ValueType::UFraction`]} max The maximum value.
+/// @param {[`ValueType::UFraction`]} [min] The minimum value.
+/// @param {[`ValueType::UFraction`]} [max] The maximum value.
 /// @returns {[`ValueType::UFraction`]} A random number.
 fn random(mut context: FunctionContext) -> Result<Value> {
     let a = context
@@ -1444,7 +1446,8 @@ fn random(mut context: FunctionContext) -> Result<Value> {
 
 /// Performs a random chance check.
 /// 
-/// @param {[`ValueType::UFraction`]} probability The probability of success (0 to 100).
+/// @param {[`ValueType::UFraction`]} numerator The numerator of the probability.
+/// @param {[`ValueType::UFraction`]} [denominator] The denominator of the probability.
 /// @returns {[`ValueType::Boolean`]} Whether the check succeeded.
 fn chance(mut context: FunctionContext) -> Result<Value> {
     let a = context
@@ -4244,6 +4247,8 @@ fn cancel_action(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move to prioritize.
 /// @param {[`ValueType::UFraction`]} [action_id] The action ID to prioritize.
+/// @param {[`ValueType::Effect`]} [source_effect] The source effect.
+/// @param {[`ValueType::Mon`]} [source] The source Mon.
 fn prioritize_move(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
     let action_id = match context.front().map(|val| val.value_type()) {

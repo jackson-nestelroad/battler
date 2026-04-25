@@ -1509,10 +1509,16 @@
       "description": "Performs a random chance check.",
       "parameters": [
         {
-          "name": "probability",
+          "name": "numerator",
           "type": "UFraction",
-          "description": "The probability of success (0 to 100).",
+          "description": "The numerator of the probability.",
           "optional": false
+        },
+        {
+          "name": "denominator",
+          "type": "UFraction",
+          "description": "The denominator of the probability.",
+          "optional": true
         }
       ],
       "flags": [],
@@ -2701,6 +2707,12 @@
           "type": "Mon",
           "description": "The Mon the effect failed on.",
           "optional": true
+        },
+        {
+          "name": "what",
+          "type": "Effect",
+          "description": "The effect that failed.",
+          "optional": true
         }
       ],
       "flags": [],
@@ -3411,6 +3423,18 @@
           "type": "UFraction",
           "description": "The action ID to prioritize.",
           "optional": true
+        },
+        {
+          "name": "source_effect",
+          "type": "Effect",
+          "description": "The source effect.",
+          "optional": true
+        },
+        {
+          "name": "source",
+          "type": "Mon",
+          "description": "The source Mon.",
+          "optional": true
         }
       ],
       "flags": [],
@@ -3430,13 +3454,19 @@
       "type": "EffectState | Undefined"
     },
     "random": {
-      "description": "Generates a random number between 0 and a maximum value.",
+      "description": "Generates a random number.",
       "parameters": [
+        {
+          "name": "min",
+          "type": "UFraction",
+          "description": "The minimum value.",
+          "optional": true
+        },
         {
           "name": "max",
           "type": "UFraction",
           "description": "The maximum value.",
-          "optional": false
+          "optional": true
         }
       ],
       "flags": [],

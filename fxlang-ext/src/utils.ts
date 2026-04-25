@@ -15,6 +15,24 @@ export function isFxLangContext(document: vscode.TextDocument, position: vscode.
 }
 
 /**
+ * Checks if the current position is inside an fxlang program string.
+ */
+export function isInFxLangProgram(document: vscode.TextDocument, position: vscode.Position): boolean {
+    if (!isFxLangContext(document, position)) return false;
+    
+    const line = document.lineAt(position.line).text;
+    const match = line.match(/^(\s*"[a-zA-Z0-9_]+"\s*):/);
+    if (match) {
+        const keyEndPos = match[1].length;
+        if (position.character <= keyEndPos) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+/**
  * Finds the longest base event name that is a suffix of the raw JSON key.
  */
 export function resolveEventName(rawName: string, metadata: Metadata): string | undefined {
@@ -230,6 +248,9 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
  */
 export function getTypeMembers(type: string, metadata: Metadata): Record<string, MemberData> {
     const members: Record<string, MemberData> = {};
+    if (type.includes(' | ')) {
+        type = type.split(' | ')[0];
+    }
     if (type === 'ActiveMove') {
         const effectMembers = metadata.type_members['Effect'];
         if (effectMembers) {

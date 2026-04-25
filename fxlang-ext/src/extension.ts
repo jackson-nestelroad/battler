@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { Metadata, MemberData } from './types';
 import { 
     isFxLangContext, 
+    isInFxLangProgram,
     resolveEventName, 
     getEnclosingEvent, 
     getEnclosingBlockType, 
@@ -102,7 +103,14 @@ export function activate(context: vscode.ExtensionContext) {
                         const varName = chain.join('.');
                         for (const [name, data] of Object.entries(metadata.functions)) {
                             const firstParam = data.parameters[0];
-                            if (firstParam && firstParam.optional && (firstParam.type === type || firstParam.type === 'Any')) {
+                            if (firstParam) {
+                                const pType = firstParam.type;
+                                const isMatch = pType === type || pType === 'Any' ||
+                                    (pType === 'Object' && (type === 'BoostTable' || type === 'StatTable' || type === 'EffectState')) ||
+                                    (pType === 'Fraction' && type === 'UFraction') ||
+                                    (pType === 'UFraction' && type === 'Fraction');
+                                
+                                if (isMatch) {
                                 const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Method);
                                 item.sortText = ' ' + name;
                                 item.documentation = new vscode.MarkdownString(data.description);
@@ -123,6 +131,7 @@ export function activate(context: vscode.ExtensionContext) {
                                 const returnTypeStr = (data.type === 'List' && (data as any).item_type) ? `List<${(data as any).item_type}>` : data.type;
                                 item.detail = `(Function) ${name}(${paramsText}) -> ${returnTypeStr}`;
                                 items.push(item);
+                                }
                             }
                         }
                     }
@@ -217,12 +226,14 @@ export function activate(context: vscode.ExtensionContext) {
                 try {
                     if (!isFxLangContext(document, position)) return undefined;
 
-                    const symbols = parseContext(document, position, metadata);
                     const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_]+/);
                     if (!wordRange) return null;
 
                     const word = document.getText(wordRange);
                     const eventName = getEnclosingEvent(document, position, metadata);
+                    
+                    if (isInFxLangProgram(document, position)) {
+                        const symbols = parseContext(document, position, metadata);
                     
                     if (word.startsWith('$')) {
                         const varName = word.substring(1);
@@ -279,6 +290,36 @@ export function activate(context: vscode.ExtensionContext) {
                                     const memberData = metadata.variable_members[lastMember];
                                     return new vscode.Hover(new vscode.MarkdownString(`**Member \`${lastMember}\`** (Global)\n\nType: \`${memberData.type}\`\n\n${memberData.description}`));
                                 }
+                                // Check for pseudo-methods
+                                if (parentType && metadata.functions[lastMember]) {
+                                    const fnData = metadata.functions[lastMember];
+                                    const firstParam = fnData.parameters[0];
+                                    if (firstParam) {
+                                        const pType = firstParam.type;
+                                        const isMatch = pType === parentType || pType === 'Any' ||
+                                            (pType === 'Object' && (parentType === 'BoostTable' || parentType === 'StatTable' || parentType === 'EffectState')) ||
+                                            (pType === 'Fraction' && parentType === 'UFraction') ||
+                                            (pType === 'UFraction' && parentType === 'Fraction');
+                                        
+                                        if (isMatch) {
+                                            const params = fnData.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
+                                            const paramDetails = fnData.parameters.map(p => `* \`${p.name}\`: \`${p.type}\`${p.optional ? ' (optional)' : ''} - ${p.description}`).join('\n');
+                                            const flagDetails = (fnData.flags || []).map(f => `* \`${f.name}\` - ${f.description}`).join('\n');
+                                            
+                                            const hoverText = new vscode.MarkdownString();
+                                            hoverText.appendMarkdown(`**Pseudo-Method \`${lastMember}\`**\n\n`);
+                                            const returnTypeStr = (fnData.type === 'List' && (fnData as any).item_type) ? `List<${(fnData as any).item_type}>` : fnData.type;
+                                            hoverText.appendCodeblock(`${lastMember}(${params}) -> ${returnTypeStr}`, 'fxlang');
+                                            hoverText.appendMarkdown(`\n\n${fnData.description}`);
+                                            if (paramDetails) hoverText.appendMarkdown(`\n\n**Parameters:**\n${paramDetails}`);
+                                            if (flagDetails) hoverText.appendMarkdown(`\n\n**Flags:**\n${flagDetails}`);
+                                            
+                                            return new vscode.Hover(hoverText);
+                                        }
+                                    }
+                                }
+                                
+                                return undefined;
                             }
                         }
                     }
@@ -306,15 +347,16 @@ export function activate(context: vscode.ExtensionContext) {
                         }
                         
                         return new vscode.Hover(hoverText);
-                    }
-                    
-                    const eventKey = resolveEventName(word2, metadata);
-                    if (eventKey && metadata.events[eventKey]) {
+                        }
+                    } else {
+                        const eventKey = resolveEventName(word, metadata);
+                        if (eventKey && metadata.events[eventKey]) {
                         const eventData = metadata.events[eventKey];
                         const hoverText = new vscode.MarkdownString();
-                        hoverText.appendMarkdown(`**Event \`${word2}\`**\n\n`);
+                        hoverText.appendMarkdown(`**Event \`${word}\`**\n\n`);
                         hoverText.appendMarkdown(`${eventData.description}`);
                         return new vscode.Hover(hoverText);
+                        }
                     }
                 } catch (err) {
                     try {
