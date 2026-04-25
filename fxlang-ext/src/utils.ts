@@ -53,10 +53,11 @@ export function getEnclosingEvent(document: vscode.TextDocument, position: vscod
 export function inferType(expression: string, symbols: SymbolTable, metadata: Metadata, eventName?: string): string | undefined {
     expression = expression.trim();
     
-    // 1. Literals
+    if (expression === 'undefined') return 'Undefined';
     if (expression.match(/^(true|false)$/)) return 'Boolean';
     if (expression.match(/^-?\d+(\.\d+)?$/)) return 'UFraction';
     if (expression.match(/^['"]/)) return 'String';
+    
     
     // 2. Function calls: func(...)
     const funcMatch = expression.match(/^([a-z0-9_]+)\(/);
@@ -113,7 +114,7 @@ export function getEnclosingBlockType(document: vscode.TextDocument, position: v
 /**
  * Parses the current code block to build a local symbol table (variable type tracking).
  */
-export function parseContext(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata): SymbolTable {
+export function parseContext(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata, parseUpToCursor = false): SymbolTable {
     const symbols: SymbolTable = {};
     
     // Find the start of the current program/callback block
@@ -142,19 +143,27 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
             const varName = assignMatch[1].substring(1);
             let expression = assignMatch[2].trim();
             
-            // If we are on the current line, only parse up to the cursor
-            if (i === position.line) {
+            // If we are on the current line and completing, only parse up to the cursor
+            if (parseUpToCursor && i === position.line) {
                 const cursorInLine = position.character - (document.lineAt(i).text.length - line.length);
                 expression = expression.substring(0, cursorInLine).trim();
             }
 
             const eventName = getEnclosingEvent(document, position, metadata);
             const type = inferType(expression, symbols, metadata, eventName);
-            if (type && type !== 'Undefined') {
+            if (type) {
                 // Variables cannot change type once set
                 if (!symbols[varName]) {
                     symbols[varName] = type;
                 }
+            }
+        }
+        
+        const foreachMatch = line.match(/foreach\s+(\$[a-zA-Z0-9_]+)\s+in/);
+        if (foreachMatch) {
+            const varName = foreachMatch[1].substring(1);
+            if (!symbols[varName]) {
+                symbols[varName] = 'unknown';
             }
         }
     }

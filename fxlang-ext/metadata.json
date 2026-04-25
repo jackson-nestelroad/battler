@@ -1384,17 +1384,10 @@
       "type": "Object"
     },
     "boostable_stats": {
-      "description": "Calculates damage for a move.",
-      "parameters": [
-        {
-          "name": "target",
-          "type": "Mon",
-          "description": "The move target.",
-          "optional": true
-        }
-      ],
+      "description": "Returns a list of all boostable stats.",
+      "parameters": [],
       "flags": [],
-      "type": "UFraction"
+      "type": "List"
     },
     "calculate_damage": {
       "description": "Calculates damage for a move.",
@@ -3192,23 +3185,10 @@
       "type": "Effect"
     },
     "new_object": {
-      "description": "Gets a value from an object.",
-      "parameters": [
-        {
-          "name": "object",
-          "type": "Object",
-          "description": "The object to query.",
-          "optional": false
-        },
-        {
-          "name": "key",
-          "type": "String",
-          "description": "The key to retrieve.",
-          "optional": false
-        }
-      ],
+      "description": "Creates a new empty object.",
+      "parameters": [],
       "flags": [],
-      "type": "Any | Undefined"
+      "type": "Object"
     },
     "object_get": {
       "description": "Gets a value from an object.",
@@ -4759,6 +4739,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "type": {
+          "type": "Type",
+          "optional": false
         }
       }
     },
@@ -4774,6 +4758,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "volatile": {
           "type": "Effect",
           "optional": false
         }
@@ -4806,6 +4794,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "volatile": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -4822,6 +4814,10 @@
         },
         "effect": {
           "type": "Effect",
+          "optional": false
+        },
+        "boosts": {
+          "type": "BoostTable",
           "optional": false
         }
       }
@@ -4857,6 +4853,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "damage": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -4874,6 +4874,14 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "boost": {
+          "type": "Boost",
+          "optional": false
+        },
+        "value": {
+          "type": "Fraction",
+          "optional": false
         }
       }
     },
@@ -4883,6 +4891,14 @@
         "mon": {
           "type": "Mon",
           "optional": false
+        },
+        "count": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
         }
       }
     },
@@ -4899,6 +4915,10 @@
         },
         "effect": {
           "type": "Effect",
+          "optional": false
+        },
+        "damage": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -4943,6 +4963,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "success": {
+          "type": "Boolean",
+          "optional": false
         }
       }
     },
@@ -4977,6 +5001,14 @@
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "damage": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "original_hp": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -4994,6 +5026,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "targets": {
+          "type": "List",
+          "optional": false
         }
       }
     },
@@ -5009,6 +5045,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "ability": {
           "type": "Effect",
           "optional": false
         }
@@ -5043,6 +5083,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "status": {
           "type": "Effect",
           "optional": false
         }
@@ -5121,6 +5165,10 @@
         },
         "move": {
           "type": "ActiveMove",
+          "optional": false
+        },
+        "base_power": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -5214,6 +5262,10 @@
         "mon": {
           "type": "Mon",
           "optional": false
+        },
+        "hp": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -5231,6 +5283,14 @@
         "effect": {
           "type": "Effect",
           "optional": true
+        },
+        "stat": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "name": {
+          "type": "Stat",
+          "optional": false
         }
       }
     },
@@ -5275,6 +5335,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "boosts": {
+          "type": "BoostTable",
           "optional": false
         }
       }
@@ -5387,6 +5451,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "damage": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -5403,6 +5471,10 @@
         },
         "move": {
           "type": "ActiveMove",
+          "optional": false
+        },
+        "damage": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -5430,6 +5502,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "pp": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -5473,6 +5549,14 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "modifier": {
+          "type": "Fraction",
+          "optional": false
+        },
+        "type": {
+          "type": "Type",
+          "optional": false
         }
       }
     },
@@ -5497,6 +5581,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "item": {
           "type": "Effect",
           "optional": false
         }
@@ -5638,6 +5726,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "modifier": {
+          "type": "Fraction",
+          "optional": false
         }
       }
     },
@@ -5655,6 +5747,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "types": {
+          "type": "List",
           "optional": false
         }
       }
@@ -5881,6 +5977,10 @@
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "acc": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -5889,6 +5989,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "spe": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -5907,6 +6011,10 @@
         "effect": {
           "type": "Effect",
           "optional": true
+        },
+        "atk": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -5924,6 +6032,10 @@
         "effect": {
           "type": "Effect",
           "optional": true
+        },
+        "boosts": {
+          "type": "BoostTable",
+          "optional": false
         }
       }
     },
@@ -5958,6 +6070,10 @@
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "chance": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -5974,6 +6090,10 @@
         },
         "move": {
           "type": "ActiveMove",
+          "optional": false
+        },
+        "crit_ratio": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -6009,6 +6129,10 @@
         "effect": {
           "type": "Effect",
           "optional": true
+        },
+        "def": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6017,6 +6141,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "evs": {
+          "type": "StatTable",
           "optional": false
         }
       }
@@ -6027,6 +6155,10 @@
         "mon": {
           "type": "Mon",
           "optional": false
+        },
+        "exp": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6035,6 +6167,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "friendship": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -6053,6 +6189,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "type": {
+          "type": "Type",
+          "optional": false
         }
       }
     },
@@ -6070,6 +6210,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "priority": {
+          "type": "Fraction",
+          "optional": false
         }
       }
     },
@@ -6086,6 +6230,10 @@
         },
         "move": {
           "type": "ActiveMove",
+          "optional": false
+        },
+        "secondary_effects": {
+          "type": "List",
           "optional": false
         }
       }
@@ -6104,6 +6252,10 @@
         "effect": {
           "type": "Effect",
           "optional": true
+        },
+        "spa": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6121,6 +6273,10 @@
         "effect": {
           "type": "Effect",
           "optional": true
+        },
+        "spd": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6138,6 +6294,10 @@
         "effect": {
           "type": "Effect",
           "optional": true
+        },
+        "spe": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6172,6 +6332,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "stab": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6197,6 +6361,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "weight": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -6284,6 +6452,10 @@
         "mon": {
           "type": "Mon",
           "optional": false
+        },
+        "type": {
+          "type": "Type",
+          "optional": false
         }
       }
     },
@@ -6302,6 +6474,10 @@
         "mon": {
           "type": "Mon",
           "optional": false
+        },
+        "move": {
+          "type": "String",
+          "optional": false
         }
       }
     },
@@ -6319,6 +6495,10 @@
         "source_effect": {
           "type": "Effect",
           "optional": false
+        },
+        "input": {
+          "type": "Object",
+          "optional": false
         }
       }
     },
@@ -6327,6 +6507,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "input": {
+          "type": "Object",
           "optional": false
         }
       }
@@ -6396,7 +6580,7 @@
         },
         "target": {
           "type": "Mon",
-          "optional": true
+          "optional": false
         }
       }
     },
@@ -6448,6 +6632,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "pp": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6465,6 +6653,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "ability": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -6480,6 +6672,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "item": {
           "type": "Effect",
           "optional": false
         }
@@ -6508,6 +6704,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "status": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -6519,6 +6719,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "terrain": {
           "type": "Effect",
           "optional": false
         }
@@ -6538,6 +6742,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "types": {
+          "type": "List",
+          "optional": false
         }
       }
     },
@@ -6549,6 +6757,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "weather": {
           "type": "Effect",
           "optional": false
         }
@@ -6567,6 +6779,10 @@
         },
         "side": {
           "type": "Side",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
           "optional": false
         }
       }
@@ -6653,6 +6869,10 @@
         "side": {
           "type": "Side",
           "optional": false
+        },
+        "slot": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6670,6 +6890,10 @@
         "side": {
           "type": "Side",
           "optional": false
+        },
+        "slot": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6686,6 +6910,10 @@
         },
         "side": {
           "type": "Side",
+          "optional": false
+        },
+        "slot": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -6752,6 +6980,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "sub_priority": {
+          "type": "Fraction",
+          "optional": false
         }
       }
     },
@@ -6840,6 +7072,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "item": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -6866,6 +7102,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "boosts": {
+          "type": "BoostTable",
+          "optional": false
         }
       }
     },
@@ -6881,6 +7121,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "item": {
           "type": "Effect",
           "optional": false
         }
@@ -6899,6 +7143,10 @@
         },
         "effect": {
           "type": "Effect",
+          "optional": false
+        },
+        "damage": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -7015,6 +7263,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "item": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -7041,6 +7293,10 @@
         "mon": {
           "type": "Mon",
           "optional": false
+        },
+        "type": {
+          "type": "Type",
+          "optional": false
         }
       }
     },
@@ -7049,6 +7305,10 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        },
+        "types": {
+          "type": "List",
           "optional": false
         }
       }
@@ -7102,6 +7362,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "selected_target": {
+          "type": "Mon",
+          "optional": true
         }
       }
     },
@@ -7128,6 +7392,10 @@
         "mon": {
           "type": "Mon",
           "optional": false
+        },
+        "problems": {
+          "type": "List",
+          "optional": false
         }
       }
     },
@@ -7136,6 +7404,10 @@
       "variables": {
         "player": {
           "type": "Player",
+          "optional": false
+        },
+        "problems": {
+          "type": "List",
           "optional": false
         }
       }

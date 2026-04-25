@@ -203,26 +203,39 @@ function scrapeFunctions(filePath) {
 
     if (!insideMatch) continue;
 
-    const match = line.match(/^"([a-z0-9_]+)"\s*=>\s*([a-z0-9_]+)?/);
+    const match = line.match(/^"([a-z0-9_]+)"\s*=>\s*([a-zA-Z0-9_]+)?/);
     if (match) {
       const extName = match[1];
       let intName = match[2];
 
-      if (!intName || intName === "{") {
-        for (let j = i + 1; j < lines.length; j++) {
-          const nextLine = lines[j].trim();
-          const nextMatch = nextLine.match(/([a-z0-9_]+)\(/);
-          if (nextMatch) {
-            intName = nextMatch[1];
-            if (intName === "map" || intName === "Ok" || intName === "Some")
-              continue;
+      if (!intName || intName === "{" || intName === "Ok" || intName === "Some") {
+        const fnMatches = [...line.matchAll(/([a-zA-Z0-9_]+)\(/g)];
+        let found = false;
+        for (const fnMatch of fnMatches) {
+          const fnName = fnMatch[1];
+          if (fnName !== "map" && fnName !== "Ok" && fnName !== "Some") {
+            intName = fnName;
+            found = true;
             break;
           }
-          if (nextLine.startsWith('"') || nextLine.startsWith("_ =>")) break;
+        }
+        
+        if (!found) {
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextLine = lines[j].trim();
+            const nextMatch = nextLine.match(/([a-z0-9_]+)\(/);
+            if (nextMatch) {
+              intName = nextMatch[1];
+              if (intName === "map" || intName === "Ok" || intName === "Some")
+                continue;
+              break;
+            }
+            if (nextLine.startsWith('"') || nextLine.startsWith("_ =>")) break;
+          }
         }
       }
 
-      if (intName) {
+      if (intName && intName !== "{") {
         funcMap[extName] = intName;
       }
     }
@@ -425,7 +438,62 @@ function scrapeEvents(effectFilePath, evalFilePath) {
       docBuffer = [];
     }
   }
-
+  // Parse input_vars globally
+  const inputVarsMap = {};
+  const ivMatch = effectContent.match(/pub fn input_vars\(&self\)\s*->\s*&\[\(&str,\s*ValueType,\s*bool\)\]\s*{([\s\S]*?)^    }/m);
+  if (ivMatch) {
+    const ivBody = ivMatch[1];
+    const ivLines = ivBody.split('\n');
+    let currentEvents = [];
+    let insideVars = false;
+    
+    for (let line of ivLines) {
+      line = line.trim();
+      if (line.includes('=>')) {
+        const arrowIndex = line.indexOf('=>');
+        const leftSide = line.substring(0, arrowIndex).trim();
+        const rightSide = line.substring(arrowIndex + 2).trim();
+        
+        currentEvents = [];
+        const eventMatches = [...leftSide.matchAll(/Self::(\w+)/g)];
+        for (const em of eventMatches) {
+          currentEvents.push(em[1]);
+        }
+        
+        if (rightSide.includes('&[')) {
+          if (rightSide.endsWith('],') || rightSide.endsWith(']')) {
+             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+             for (const vm of varMatches) {
+               for (const ev of currentEvents) {
+                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
+                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+               }
+             }
+          } else {
+             insideVars = true;
+             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+             for (const vm of varMatches) {
+               for (const ev of currentEvents) {
+                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
+                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+               }
+             }
+          }
+        }
+      } else if (insideVars) {
+        const varMatches = [...line.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+        for (const vm of varMatches) {
+          for (const ev of currentEvents) {
+            if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
+            inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+          }
+        }
+        if (line.includes(']')) {
+          insideVars = false;
+        }
+      }
+    }
+  }
   // 5. Map BattleEvent to CommonCallbackType and populate variables
   const validEvents = {};
   const ctfMatch = effectContent.match(
@@ -449,6 +517,29 @@ function scrapeEvents(effectFilePath, evalFilePath) {
             for (const [vName, vType] of Object.entries(varsMap)) {
               events[eventName].variables[vName] = vType;
             }
+          }
+        }
+
+        // Add variables from input_vars()
+        if (inputVarsMap[eventName]) {
+          const typeMap = {
+            'UFraction': 'UFraction',
+            'Fraction': 'Fraction',
+            'Boolean': 'Boolean',
+            'String': 'String',
+            'Effect': 'Effect',
+            'Mon': 'Mon',
+            'List': 'List',
+            'Object': 'Object',
+            'Type': 'Type',
+            'BoostTable': 'BoostTable',
+            'StatTable': 'StatTable',
+            'Stat': 'Stat',
+            'Boost': 'Boost'
+          };
+          for (const v of inputVarsMap[eventName]) {
+            const type = typeMap[v.type] || v.type;
+            events[eventName].variables[v.name] = { type, optional: v.optional };
           }
         }
 

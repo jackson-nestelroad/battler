@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
                 if (!isFxLangContext(document, position)) return undefined;
                 if (getEnclosingBlockType(document, position) !== 'array') return undefined;
 
-                const symbols = parseContext(document, position, metadata);
+                const symbols = parseContext(document, position, metadata, true);
                 const linePrefix = document.lineAt(position).text.substring(0, position.character);
                 
                 // Member completion (after .)
@@ -68,8 +68,24 @@ export function activate(context: vscode.ExtensionContext) {
                             const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
                             item.documentation = new vscode.MarkdownString(data.description);
                             item.detail = `(Member of ${type} -> ${data.type})`;
+                            item.sortText = '0_' + name;
                             return item;
                         });
+
+                        if (type === 'Effect') {
+                            const moveMembers = metadata.type_members['ActiveMove'];
+                            if (moveMembers) {
+                                for (const [name, data] of Object.entries(moveMembers)) {
+                                    if (!typeMembers[name]) {
+                                        const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
+                                        item.documentation = new vscode.MarkdownString(data.description);
+                                        item.detail = `(Potential Move Member -> ${data.type})`;
+                                        item.sortText = 'z_' + name;
+                                        items.push(item);
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     // Add global variable members (shared across types, e.g., is_undefined)
@@ -240,9 +256,20 @@ export function activate(context: vscode.ExtensionContext) {
                                 
                                 if (parentType) {
                                     const typeMembers = getTypeMembers(parentType, metadata);
-                                    const memberData = typeMembers[lastMember];
+                                    let memberData = typeMembers[lastMember];
+                                    let isPotentialMove = false;
+                                    
+                                    if (!memberData && parentType === 'Effect') {
+                                        const moveMembers = metadata.type_members['ActiveMove'];
+                                        if (moveMembers && moveMembers[lastMember]) {
+                                            memberData = moveMembers[lastMember];
+                                            isPotentialMove = true;
+                                        }
+                                    }
+                                    
                                     if (memberData) {
-                                        return new vscode.Hover(new vscode.MarkdownString(`**Member \`${lastMember}\`** of \`${parentType}\`\n\nType: \`${memberData.type}\`\n\n${memberData.description}`));
+                                        const origin = isPotentialMove ? `Potential ActiveMove` : parentType;
+                                        return new vscode.Hover(new vscode.MarkdownString(`**Member \`${lastMember}\`** of \`${origin}\`\n\nType: \`${memberData.type}\`\n\n${memberData.description}`));
                                     }
                                 }
                                 
