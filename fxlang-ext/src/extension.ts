@@ -11,7 +11,8 @@ import {
     parseContext, 
     getChainAtPosition, 
     resolveType, 
-    getTypeMembers 
+    getTypeMembers,
+    parseFxLangDocument 
 } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -49,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
         languages,
         {
             provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-                if (!isFxLangContext(document, position)) return undefined;
+                if (!isFxLangContext(document, position, metadata)) return undefined;
                 if (getEnclosingBlockType(document, position) !== 'array') return undefined;
 
                 const symbols = parseContext(document, position, metadata, true);
@@ -224,7 +225,7 @@ export function activate(context: vscode.ExtensionContext) {
         {
             provideHover(document: vscode.TextDocument, position: vscode.Position) {
                 try {
-                    if (!isFxLangContext(document, position)) return undefined;
+                    if (!isFxLangContext(document, position, metadata)) return undefined;
 
                     const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_]+/);
                     if (!wordRange) return null;
@@ -232,7 +233,7 @@ export function activate(context: vscode.ExtensionContext) {
                     const word = document.getText(wordRange);
                     const eventName = getEnclosingEvent(document, position, metadata);
                     
-                    if (isInFxLangProgram(document, position)) {
+                    if (isInFxLangProgram(document, position, metadata)) {
                         const symbols = parseContext(document, position, metadata);
                     
                     if (word.startsWith('$')) {
@@ -442,7 +443,7 @@ export function activate(context: vscode.ExtensionContext) {
         gutterIconSize: 'contain'
     });
 
-    let showLineNumbers = true;
+    let showLineNumbers = false;
 
     const marginDecorationType = vscode.window.createTextEditorDecorationType({
         after: {
@@ -473,100 +474,26 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        let isFxLang = editor.document.languageId === 'fxlang';
-        if (!isFxLang) {
-            const text = editor.document.getText();
-            if (text.includes('"program"') || text.includes('"callbacks"')) {
-                isFxLang = true;
-            }
-        }
-        if (!isFxLang) {
-            editor.setDecorations(decorationType, []);
-            editor.setDecorations(marginDecorationType, []);
-            editor.setDecorations(inlineDecorationType, []);
-            return;
-        }
-
         const gutterRanges: vscode.Range[] = [];
         const marginDecorations: vscode.DecorationOptions[] = [];
         const inlineDecorations: vscode.DecorationOptions[] = [];
 
-        let insideFxLangArray = false;
-        let fxLangBracketDepth = 0;
-        let currentLineIndex = 1;
+        const { blocks, mappings } = parseFxLangDocument(editor.document, metadata);
 
-        for (let i = 0; i < editor.document.lineCount; i++) {
-            const line = editor.document.lineAt(i).text;
-            const trimmed = line.trim();
+        for (const block of blocks) {
+            gutterRanges.push(new vscode.Range(block.startLine, 0, block.startLine, 0));
+        }
 
-            if (!insideFxLangArray) {
-                const match = trimmed.match(/^"([a-zA-Z0-9_]+)"\s*:\s*\[/);
-                if (match) {
-                    const rawName = match[1];
-                    if (resolveEventName(rawName, metadata) || rawName === 'program') {
-                        gutterRanges.push(new vscode.Range(i, 0, i, 0));
-                        insideFxLangArray = true;
-                        fxLangBracketDepth = 1;
-                        currentLineIndex = 1;
-
-                        if (trimmed.endsWith(']') || trimmed.endsWith('],')) {
-                            const stringMatches = trimmed.match(/"([^"]*)"/g);
-                            if (stringMatches && stringMatches.length > 1) {
-                                let lastIdx = 0;
-                                for (let s = 1; s < stringMatches.length; s++) {
-                                    const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
-                                    const strIdx = line.indexOf('"' + str + '"', lastIdx);
-                                    if (strIdx !== -1) {
-                                        lastIdx = strIdx + str.length + 2;
-                                        const startPos = new vscode.Position(i, strIdx + 1);
-                                        inlineDecorations.push({
-                                            range: new vscode.Range(startPos, startPos),
-                                            renderOptions: {
-                                                before: {
-                                                    contentText: `L${s}`,
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-                            insideFxLangArray = false;
-                        }
+        for (const m of mappings) {
+            const startPos = new vscode.Position(m.documentLine, m.charStart + 1);
+            inlineDecorations.push({
+                range: new vscode.Range(startPos, startPos),
+                renderOptions: {
+                    before: {
+                        contentText: `L${m.lineIndex}`,
                     }
                 }
-            } else {
-                for (const char of trimmed) {
-                    if (char === '[') fxLangBracketDepth++;
-                    if (char === ']') fxLangBracketDepth--;
-                }
-
-                if (fxLangBracketDepth <= 0) {
-                    insideFxLangArray = false;
-                    continue;
-                }
-
-                const stringMatches = trimmed.match(/"([^"]*)"/g);
-                if (stringMatches) {
-                    let lastIdx = 0;
-                    for (let s = 0; s < stringMatches.length; s++) {
-                        const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
-                        const strIdx = line.indexOf('"' + str + '"', lastIdx);
-                        if (strIdx !== -1) {
-                            lastIdx = strIdx + str.length + 2;
-                            const startPos = new vscode.Position(i, strIdx + 1);
-                            inlineDecorations.push({
-                                range: new vscode.Range(startPos, startPos),
-                                renderOptions: {
-                                    before: {
-                                        contentText: `L${currentLineIndex}`,
-                                    }
-                                }
-                            });
-                            currentLineIndex++;
-                        }
-                    }
-                }
-            }
+            });
         }
 
         editor.setDecorations(decorationType, gutterRanges);
@@ -582,72 +509,14 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const position = editor.selection.active;
-        let insideFxLangArray = false;
-        let fxLangBracketDepth = 0;
-        let currentLineIndex = 1;
         let activeLineIndex = -1;
 
-        for (let i = 0; i < editor.document.lineCount; i++) {
-            const line = editor.document.lineAt(i).text;
-            const trimmed = line.trim();
+        const { mappings } = parseFxLangDocument(editor.document, metadata);
 
-            if (!insideFxLangArray) {
-                const match = trimmed.match(/^"([a-zA-Z0-9_]+)"\s*:\s*\[/);
-                if (match) {
-                    const rawName = match[1];
-                    if (resolveEventName(rawName, metadata) || rawName === 'program') {
-                        insideFxLangArray = true;
-                        fxLangBracketDepth = 1;
-                        currentLineIndex = 1;
-
-                        if (trimmed.endsWith(']') || trimmed.endsWith('],')) {
-                            const stringMatches = trimmed.match(/"([^"]*)"/g);
-                            if (stringMatches && stringMatches.length > 1) {
-                                let lastIdx = 0;
-                                for (let s = 1; s < stringMatches.length; s++) {
-                                    const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
-                                    const strIdx = line.indexOf('"' + str + '"', lastIdx);
-                                    if (strIdx !== -1) {
-                                        lastIdx = strIdx + str.length + 2;
-                                        if (i === position.line) {
-                                            if (activeLineIndex === -1 || position.character >= strIdx) {
-                                                activeLineIndex = s;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            insideFxLangArray = false;
-                        }
-                    }
-                }
-            } else {
-                for (const char of trimmed) {
-                    if (char === '[') fxLangBracketDepth++;
-                    if (char === ']') fxLangBracketDepth--;
-                }
-
-                if (fxLangBracketDepth <= 0) {
-                    insideFxLangArray = false;
-                    continue;
-                }
-
-                const stringMatches = trimmed.match(/"([^"]*)"/g);
-                if (stringMatches) {
-                    let lastIdx = 0;
-                    for (let s = 0; s < stringMatches.length; s++) {
-                        const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
-                        const strIdx = line.indexOf('"' + str + '"', lastIdx);
-                        if (strIdx !== -1) {
-                            lastIdx = strIdx + str.length + 2;
-                            if (i === position.line) {
-                                if (activeLineIndex === -1 || position.character >= strIdx) {
-                                    activeLineIndex = currentLineIndex;
-                                }
-                            }
-                            currentLineIndex++;
-                        }
-                    }
+        for (const m of mappings) {
+            if (m.documentLine === position.line) {
+                if (activeLineIndex === -1 || position.character >= m.charStart) {
+                    activeLineIndex = m.lineIndex;
                 }
             }
         }

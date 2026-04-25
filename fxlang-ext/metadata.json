@@ -1951,8 +1951,8 @@
         },
         {
           "name": "origin",
-          "type": "Effect",
-          "description": "The origin effect.",
+          "type": "Mon",
+          "description": "The origin Mon.",
           "optional": true
         }
       ],

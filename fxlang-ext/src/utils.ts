@@ -1,24 +1,118 @@
 import * as vscode from 'vscode';
 import { Metadata, SymbolTable, MemberData } from './types';
 
+export interface FxLangBlock {
+    startLine: number;
+    endLine: number;
+}
+
+export interface FxLangLineMapping {
+    documentLine: number;
+    charStart: number;
+    charEnd: number;
+    lineIndex: number;
+}
+
+export interface FxLangParseResult {
+    blocks: FxLangBlock[];
+    mappings: FxLangLineMapping[];
+}
+
+export function parseFxLangDocument(document: vscode.TextDocument, metadata: Metadata): FxLangParseResult {
+    const blocks: FxLangBlock[] = [];
+    const mappings: FxLangLineMapping[] = [];
+    
+    let insideFxLangArray = false;
+    let fxLangBracketDepth = 0;
+    let currentLineIndex = 1;
+    let currentBlockStart = -1;
+
+    for (let i = 0; i < document.lineCount; i++) {
+        const line = document.lineAt(i).text;
+        const trimmed = line.trim();
+
+        if (!insideFxLangArray) {
+            const match = trimmed.match(/^"([a-zA-Z0-9_]+)"\s*:\s*\[/);
+            if (match) {
+                const rawName = match[1];
+                if (resolveEventName(rawName, metadata) || rawName === 'program') {
+                    insideFxLangArray = true;
+                    fxLangBracketDepth = 1;
+                    currentLineIndex = 1;
+                    currentBlockStart = i;
+
+                    if (trimmed.endsWith(']') || trimmed.endsWith('],')) {
+                        const stringMatches = trimmed.match(/"([^"]*)"/g);
+                        if (stringMatches && stringMatches.length > 1) {
+                            let lastIdx = 0;
+                            for (let s = 1; s < stringMatches.length; s++) {
+                                const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
+                                const strIdx = line.indexOf('"' + str + '"', lastIdx);
+                                if (strIdx !== -1) {
+                                    lastIdx = strIdx + str.length + 2;
+                                    mappings.push({
+                                        documentLine: i,
+                                        charStart: strIdx,
+                                        charEnd: strIdx + str.length + 2,
+                                        lineIndex: s
+                                    });
+                                }
+                            }
+                        }
+                        blocks.push({ startLine: currentBlockStart, endLine: i });
+                        insideFxLangArray = false;
+                    }
+                }
+            }
+        } else {
+            for (const char of trimmed) {
+                if (char === '[') fxLangBracketDepth++;
+                if (char === ']') fxLangBracketDepth--;
+            }
+
+            if (fxLangBracketDepth <= 0) {
+                blocks.push({ startLine: currentBlockStart, endLine: i });
+                insideFxLangArray = false;
+                continue;
+            }
+
+            const stringMatches = trimmed.match(/"([^"]*)"/g);
+            if (stringMatches) {
+                let lastIdx = 0;
+                for (let s = 0; s < stringMatches.length; s++) {
+                    const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
+                    const strIdx = line.indexOf('"' + str + '"', lastIdx);
+                    if (strIdx !== -1) {
+                        lastIdx = strIdx + str.length + 2;
+                        mappings.push({
+                            documentLine: i,
+                            charStart: strIdx,
+                            charEnd: strIdx + str.length + 2,
+                            lineIndex: currentLineIndex
+                        });
+                        currentLineIndex++;
+                    }
+                }
+            }
+        }
+    }
+    return { blocks, mappings };
+}
+
 /**
  * Checks if the current position is likely within an fxlang code block.
  */
-export function isFxLangContext(document: vscode.TextDocument, position: vscode.Position): boolean {
+export function isFxLangContext(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata): boolean {
     if (document.languageId === 'fxlang') return true;
-    
-    for (let i = position.line; i >= 0; i--) {
-        const line = document.lineAt(i).text;
-        if (line.includes('"program"') || line.includes('"callbacks"')) return true;
-    }
-    return false;
+    const { blocks } = parseFxLangDocument(document, metadata);
+    return blocks.some(b => position.line >= b.startLine && position.line <= b.endLine);
 }
 
 /**
  * Checks if the current position is inside an fxlang program string.
  */
-export function isInFxLangProgram(document: vscode.TextDocument, position: vscode.Position): boolean {
-    if (!isFxLangContext(document, position)) return false;
+export function isInFxLangProgram(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata): boolean {
+    if (!isFxLangContext(document, position, metadata)) return false;
     
     const line = document.lineAt(position.line).text;
     const match = line.match(/^(\s*"[a-zA-Z0-9_]+"\s*):/);

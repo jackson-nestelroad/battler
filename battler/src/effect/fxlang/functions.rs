@@ -5601,7 +5601,7 @@ fn speed_sort_mons(mut context: FunctionContext) -> Result<Value> {
 /// Gets the effective weather for a Mon.
 /// 
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
-/// @param {[`ValueType::Effect`]} [origin] The origin effect.
+/// @param {[`ValueType::Mon`]} [origin] The origin Mon.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]} The effective weather.
 fn effective_weather(mut context: FunctionContext) -> Result<Option<Value>> {
     let target_handle = context.target_handle_positional()?;
