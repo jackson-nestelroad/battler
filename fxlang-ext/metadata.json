@@ -1,636 +1,4605 @@
 {
+  "variables": {
+    "effect_state": "EffectState",
+    "effect_target": "Mon",
+    "event_origin": "Mon",
+    "this": "Effect",
+    "battle": "Battle",
+    "field": "Field",
+    "format": "Format",
+    "target": "Mon",
+    "source": "Mon",
+    "move": "Effect",
+    "effect": "Effect"
+  },
   "variable_members": {
     "is_boolean": {
-      "description": "Checks if the value is a boolean."
+      "description": "A registry of variables for an fxlang program evaluation. An fxlang variable.  Acts as a wrapper for an immutable access of a variable that can be consumed at some later time.",
+      "type": "Boolean"
     },
     "is_defined": {
-      "description": ""
+      "description": "",
+      "type": "Boolean"
     },
     "is_empty": {
-      "description": ""
+      "description": "",
+      "type": "Boolean"
     },
     "is_undefined": {
-      "description": ""
+      "description": "",
+      "type": "Boolean"
     },
     "length": {
-      "description": ""
+      "description": "",
+      "type": "UFraction"
     },
     "to_string": {
-      "description": ""
-    },
-    "accuracy": {
-      "description": ""
-    },
-    "base_power": {
-      "description": ""
-    },
-    "callable": {
-      "description": ""
-    },
-    "category": {
-      "description": ""
-    },
-    "condition": {
-      "description": ""
-    },
-    "damage": {
-      "description": ""
-    },
-    "damaged_targets": {
-      "description": ""
-    },
-    "drain_percent": {
-      "description": ""
-    },
-    "id": {
-      "description": "The unique identifier of the effect."
-    },
-    "is_ability": {
-      "description": ""
-    },
-    "is_item": {
-      "description": ""
-    },
-    "is_move": {
-      "description": ""
-    },
-    "is_move_secondary": {
-      "description": ""
-    },
-    "is_raining": {
-      "description": ""
-    },
-    "is_snowing": {
-      "description": ""
-    },
-    "is_sunny": {
-      "description": ""
-    },
-    "max_move_base_power": {
-      "description": ""
-    },
-    "move_target": {
-      "description": ""
-    },
-    "multiaccuracy": {
-      "description": ""
-    },
-    "multihit": {
-      "description": ""
-    },
-    "name": {
-      "description": "The name of the effect."
-    },
-    "ohko": {
-      "description": ""
-    },
-    "priority": {
-      "description": ""
-    },
-    "recoil_percent": {
-      "description": ""
-    },
-    "target": {
-      "description": ""
-    },
-    "type": {
-      "description": ""
-    },
-    "typeless": {
-      "description": ""
-    },
-    "z_move_base_power": {
-      "description": ""
-    },
-    "z_power_boosts": {
-      "description": ""
-    },
-    "z_power_effect": {
-      "description": ""
-    },
-    "effect_state": {
-      "description": ""
-    },
-    "external": {
-      "description": ""
-    },
-    "hit": {
-      "description": ""
-    },
-    "hit_effect": {
-      "description": ""
-    },
-    "ignore_all_secondary_effects": {
-      "description": ""
-    },
-    "override_defensive_stat": {
-      "description": ""
-    },
-    "override_offensive_stat": {
-      "description": ""
-    },
-    "secondary_effects": {
-      "description": ""
-    },
-    "spread_hit": {
-      "description": ""
-    },
-    "total_damage": {
-      "description": ""
-    },
-    "upgraded": {
-      "description": ""
-    },
-    "upgraded_base_move": {
-      "description": ""
-    },
-    "user_effect": {
-      "description": ""
-    },
-    "user_effect_chance": {
-      "description": ""
+      "description": "",
+      "type": "String"
     }
   },
   "type_members": {
-    "Mon": {
-      "ability": {
-        "description": ""
-      },
-      "active": {
-        "description": ""
-      },
-      "active_move": {
-        "description": ""
-      },
-      "active_move_actions": {
-        "description": ""
-      },
-      "active_position": {
-        "description": ""
-      },
-      "active_turns": {
-        "description": ""
-      },
-      "added_type": {
-        "description": ""
-      },
-      "affection_level": {
-        "description": ""
-      },
-      "ate_item": {
-        "description": ""
-      },
-      "base_max_hp": {
-        "description": ""
-      },
-      "base_move_slots": {
-        "description": ""
-      },
-      "base_species": {
-        "description": ""
-      },
-      "base_stats": {
-        "description": ""
-      },
-      "being_called_back": {
-        "description": ""
-      },
-      "berry_eating_health": {
-        "description": ""
-      },
-      "boosts": {
-        "description": ""
-      },
-      "can_heal": {
-        "description": ""
-      },
-      "can_suppress_ability": {
-        "description": ""
-      },
-      "can_suppress_item": {
-        "description": ""
-      },
-      "damaged_this_turn": {
-        "description": ""
-      },
-      "dynamaxed": {
-        "description": ""
-      },
-      "effect_state": {
-        "description": ""
-      },
-      "effective_ability": {
-        "description": ""
-      },
-      "effective_item": {
-        "description": ""
-      },
-      "effective_types": {
-        "description": ""
-      },
-      "effective_types_no_added_type": {
-        "description": ""
-      },
-      "effective_terrain": {
-        "description": ""
-      },
-      "exited": {
-        "description": ""
-      },
-      "fainted": {
-        "description": ""
-      },
-      "foe_side": {
-        "description": ""
-      },
-      "force_switch": {
-        "description": ""
-      },
-      "friendship": {
-        "description": ""
-      },
-      "gender": {
-        "description": ""
-      },
-      "hidden_power_type": {
-        "description": ""
-      },
-      "hp": {
-        "description": ""
-      },
-      "illusion": {
-        "description": ""
-      },
-      "is_asleep": {
-        "description": ""
-      },
-      "is_away_from_field": {
-        "description": ""
-      },
-      "is_behind_substitute": {
-        "description": ""
-      },
-      "is_grounded": {
-        "description": ""
-      },
-      "is_immune_to_entry_hazards": {
-        "description": ""
-      },
-      "is_semi_invulnerable": {
-        "description": ""
-      },
-      "is_soundproof": {
-        "description": ""
-      },
-      "item": {
-        "description": ""
-      },
-      "item_used_this_turn": {
-        "description": ""
-      },
-      "last_item": {
-        "description": ""
-      },
-      "last_move": {
-        "description": ""
-      },
-      "last_move_used": {
-        "description": ""
-      },
-      "last_target_location": {
-        "description": ""
-      },
-      "level": {
-        "description": ""
-      },
-      "max_hp": {
-        "description": "The maximum health points (HP) of the Mon."
-      },
-      "move_last_turn_succeeded": {
-        "description": ""
-      },
-      "move_slots": {
-        "description": ""
-      },
-      "move_this_turn_failed": {
-        "description": ""
-      },
-      "moved_this_turn": {
-        "description": ""
-      },
-      "name": {
-        "description": ""
-      },
-      "nature": {
-        "description": ""
-      },
-      "needs_switch": {
-        "description": ""
-      },
-      "newly_switched": {
-        "description": ""
-      },
-      "not_fully_evolved": {
-        "description": ""
-      },
-      "original_base_ability": {
-        "description": ""
-      },
-      "original_item": {
-        "description": ""
-      },
-      "player": {
-        "description": ""
-      },
-      "position": {
-        "description": ""
-      },
-      "position_details": {
-        "description": ""
-      },
-      "positive_boosts": {
-        "description": ""
-      },
-      "side": {
-        "description": ""
-      },
-      "species": {
-        "description": ""
-      },
-      "stats": {
-        "description": ""
-      },
-      "status": {
-        "description": ""
-      },
-      "terastallized": {
-        "description": ""
-      },
-      "transformed": {
-        "description": ""
-      },
-      "trapped": {
-        "description": ""
-      },
-      "true_nature": {
-        "description": ""
-      },
-      "types": {
-        "description": ""
-      },
-      "volatile_effect_state": {
-        "description": ""
-      },
-      "undynamaxed_hp": {
-        "description": ""
-      },
-      "weight": {
-        "description": ""
-      },
-      "can_escape": {
-        "description": ""
-      },
-      "mon_fainted_last_turn": {
-        "description": ""
-      },
-      "team": {
-        "description": ""
-      },
-      "team_by_effective_position": {
-        "description": ""
-      },
-      "total_active_positions": {
-        "description": ""
-      },
-      "wild_encounter_type": {
-        "description": ""
-      },
-      "id": {
-        "description": ""
-      },
-      "max_pp": {
-        "description": ""
-      },
-      "pp": {
-        "description": ""
-      },
-      "used": {
-        "description": ""
-      },
-      "ending": {
-        "description": ""
-      },
-      "last_successful_move": {
-        "description": ""
-      },
-      "turn": {
-        "description": ""
-      },
-      "effective_weather": {
-        "description": ""
-      },
-      "environment": {
-        "description": ""
-      },
-      "sides": {
-        "description": ""
-      },
-      "time": {
-        "description": ""
-      },
-      "weather": {
-        "description": ""
-      },
-      "mons_per_side": {
-        "description": ""
-      },
-      "obedience_cap": {
-        "description": ""
-      },
-      "index": {
-        "description": ""
-      },
-      "players": {
-        "description": ""
-      },
-      "volatile_status": {
-        "description": ""
-      },
-      "chance": {
-        "description": ""
-      },
-      "target": {
-        "description": ""
-      },
-      "user": {
-        "description": ""
-      },
-      "acc": {
-        "description": ""
-      },
-      "atk": {
-        "description": ""
-      },
-      "def": {
-        "description": ""
-      },
-      "eva": {
-        "description": ""
-      },
-      "spa": {
-        "description": ""
-      },
-      "spd": {
-        "description": ""
-      },
-      "spe": {
-        "description": ""
-      },
-      "drops": {
-        "description": ""
-      },
-      "fling": {
-        "description": ""
-      },
-      "judgment": {
-        "description": ""
-      },
-      "natural_gift": {
-        "description": ""
-      },
-      "techno_blast": {
-        "description": ""
-      },
-      "hit_effect": {
-        "description": ""
-      },
-      "power": {
-        "description": ""
-      },
-      "use_item": {
-        "description": ""
-      },
-      "type": {
-        "description": ""
-      },
-      "max": {
-        "description": ""
-      },
-      "min": {
-        "description": ""
-      },
-      "skip_before_switch_out": {
-        "description": ""
-      },
-      "status_state": {
-        "description": ""
-      },
+    "Effect": {
       "accuracy": {
-        "description": ""
+        "description": "",
+        "type": "Accuracy"
       },
       "base_power": {
-        "description": ""
+        "description": "",
+        "type": "UFraction"
+      },
+      "callable": {
+        "description": "",
+        "type": "Boolean"
       },
       "category": {
-        "description": ""
+        "description": "",
+        "type": "MoveCategory"
+      },
+      "condition": {
+        "description": "",
+        "type": "Effect"
       },
       "damage": {
-        "description": ""
+        "description": "",
+        "type": "UFraction"
       },
-      "force_stab": {
-        "description": ""
+      "damaged_targets": {
+        "description": "",
+        "type": "List"
       },
-      "ignore_all_secondary_effects": {
-        "description": ""
+      "drain_percent": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "id": {
+        "description": "",
+        "type": "String"
+      },
+      "is_ability": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_item": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_move": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_move_secondary": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_raining": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_snowing": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_sunny": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "max_move_base_power": {
+        "description": "",
+        "type": "Undefined"
+      },
+      "move_target": {
+        "description": "",
+        "type": "MoveTarget"
       },
       "multiaccuracy": {
-        "description": ""
+        "description": "",
+        "type": "Boolean"
       },
       "multihit": {
-        "description": ""
+        "description": "",
+        "type": "MultihitType"
+      },
+      "name": {
+        "description": "",
+        "type": "String"
+      },
+      "ohko": {
+        "description": "",
+        "type": "Boolean"
       },
       "priority": {
-        "description": ""
+        "description": "",
+        "type": "Fraction"
       },
-      "secondary_effects": {
-        "description": ""
+      "recoil_percent": {
+        "description": "",
+        "type": "UFraction"
       },
-      "total_damage": {
-        "description": ""
+      "target": {
+        "description": "",
+        "type": "MoveTarget"
       },
-      "user_effect": {
-        "description": ""
+      "type": {
+        "description": "",
+        "type": "Type"
       },
-      "user_effect_chance": {
-        "description": ""
+      "typeless": {
+        "description": "",
+        "type": "Boolean"
       },
-      "override_offensive_stat": {
-        "description": ""
+      "z_move_base_power": {
+        "description": "",
+        "type": "Undefined"
+      },
+      "z_power_boosts": {
+        "description": "",
+        "type": "Undefined"
+      },
+      "z_power_effect": {
+        "description": "",
+        "type": "Undefined"
+      }
+    },
+    "ActiveMove": {
+      "effect_state": {
+        "description": "",
+        "type": "EffectState"
+      },
+      "external": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "hit": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "hit_effect": {
+        "description": "",
+        "type": "HitEffect"
+      },
+      "ignore_all_secondary_effects": {
+        "description": "",
+        "type": "Boolean"
       },
       "override_defensive_stat": {
-        "description": ""
+        "description": "",
+        "type": "Stat"
+      },
+      "override_offensive_stat": {
+        "description": "",
+        "type": "Stat"
+      },
+      "secondary_effects": {
+        "description": "",
+        "type": "List"
+      },
+      "spread_hit": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "total_damage": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "upgraded": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "upgraded_base_move": {
+        "description": "",
+        "type": "String"
+      },
+      "user_effect": {
+        "description": "",
+        "type": "HitEffect"
+      },
+      "user_effect_chance": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "accuracy": {
+        "description": "",
+        "type": "Accuracy"
+      },
+      "base_power": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "category": {
+        "description": "",
+        "type": "MoveCategory"
+      },
+      "damage": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "force_stab": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "multiaccuracy": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "multihit": {
+        "description": "",
+        "type": "MultihitType"
+      },
+      "priority": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "target": {
+        "description": "",
+        "type": "MoveTarget"
+      },
+      "type": {
+        "description": "",
+        "type": "Type"
+      }
+    },
+    "Mon": {
+      "ability": {
+        "description": "",
+        "type": "String"
+      },
+      "active": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "active_move": {
+        "description": "",
+        "type": "Effect"
+      },
+      "active_move_actions": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "active_position": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "active_turns": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "added_type": {
+        "description": "",
+        "type": "Type"
+      },
+      "affection_level": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "ate_item": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "base_max_hp": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "base_move_slots": {
+        "description": "",
+        "type": "List"
+      },
+      "base_species": {
+        "description": "",
+        "type": "String"
+      },
+      "base_stats": {
+        "description": "",
+        "type": "StatTable"
+      },
+      "being_called_back": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "berry_eating_health": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "boosts": {
+        "description": "",
+        "type": "BoostTable"
+      },
+      "can_heal": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "can_suppress_ability": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "can_suppress_item": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "damaged_this_turn": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "dynamaxed": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "effect_state": {
+        "description": "",
+        "type": "EffectState"
+      },
+      "effective_ability": {
+        "description": "",
+        "type": "Effect"
+      },
+      "effective_item": {
+        "description": "",
+        "type": "Effect"
+      },
+      "effective_types": {
+        "description": "",
+        "type": "List"
+      },
+      "effective_types_no_added_type": {
+        "description": "",
+        "type": "List"
+      },
+      "effective_terrain": {
+        "description": "",
+        "type": "Effect"
+      },
+      "exited": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "fainted": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "foe_side": {
+        "description": "",
+        "type": "Side"
+      },
+      "force_switch": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "friendship": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "gender": {
+        "description": "",
+        "type": "Gender"
+      },
+      "hidden_power_type": {
+        "description": "",
+        "type": "Type"
+      },
+      "hp": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "illusion": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_asleep": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_away_from_field": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_behind_substitute": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_grounded": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_immune_to_entry_hazards": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_semi_invulnerable": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_soundproof": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "item": {
+        "description": "",
+        "type": "String"
+      },
+      "item_used_this_turn": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "last_item": {
+        "description": "",
+        "type": "String"
+      },
+      "last_move": {
+        "description": "",
+        "type": "Effect"
+      },
+      "last_move_used": {
+        "description": "",
+        "type": "Effect"
+      },
+      "last_target_location": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "level": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "max_hp": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "move_last_turn_succeeded": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "move_slots": {
+        "description": "",
+        "type": "List"
+      },
+      "move_this_turn_failed": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "moved_this_turn": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "name": {
+        "description": "",
+        "type": "String"
+      },
+      "nature": {
+        "description": "",
+        "type": "Nature"
+      },
+      "needs_switch": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "newly_switched": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "not_fully_evolved": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "original_base_ability": {
+        "description": "",
+        "type": "String"
+      },
+      "original_item": {
+        "description": "",
+        "type": "String"
+      },
+      "player": {
+        "description": "",
+        "type": "Player"
+      },
+      "position": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "position_details": {
+        "description": "",
+        "type": "String"
+      },
+      "positive_boosts": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "side": {
+        "description": "",
+        "type": "Side"
+      },
+      "species": {
+        "description": "",
+        "type": "String"
+      },
+      "stats": {
+        "description": "",
+        "type": "StatTable"
+      },
+      "status": {
+        "description": "",
+        "type": "String"
+      },
+      "terastallized": {
+        "description": "",
+        "type": "Type"
+      },
+      "transformed": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "trapped": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "true_nature": {
+        "description": "",
+        "type": "Nature"
+      },
+      "types": {
+        "description": "",
+        "type": "List"
+      },
+      "volatile_effect_state": {
+        "description": "",
+        "type": "EffectState"
+      },
+      "undynamaxed_hp": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "weight": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "skip_before_switch_out": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "status_state": {
+        "description": "",
+        "type": "EffectState"
+      }
+    },
+    "Player": {
+      "can_escape": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "mon_fainted_last_turn": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "team": {
+        "description": "",
+        "type": "List"
+      },
+      "team_by_effective_position": {
+        "description": "",
+        "type": "List"
+      },
+      "total_active_positions": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "wild_encounter_type": {
+        "description": "",
+        "type": "WildEncounterType"
+      }
+    },
+    "MoveSlot": {
+      "id": {
+        "description": "",
+        "type": "String"
+      },
+      "max_pp": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "name": {
+        "description": "",
+        "type": "String"
+      },
+      "pp": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "used": {
+        "description": "",
+        "type": "Boolean"
+      }
+    },
+    "Battle": {
+      "ending": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "last_move": {
+        "description": "",
+        "type": "Effect"
+      },
+      "last_successful_move": {
+        "description": "",
+        "type": "Effect"
+      },
+      "turn": {
+        "description": "",
+        "type": "UFraction"
+      }
+    },
+    "Field": {
+      "effective_terrain": {
+        "description": "",
+        "type": "Effect"
+      },
+      "effective_weather": {
+        "description": "",
+        "type": "Effect"
+      },
+      "environment": {
+        "description": "",
+        "type": "FieldEnvironment"
+      },
+      "sides": {
+        "description": "",
+        "type": "List"
+      },
+      "time": {
+        "description": "",
+        "type": "TimeOfDay"
+      },
+      "weather": {
+        "description": "",
+        "type": "Effect"
+      }
+    },
+    "Format": {
+      "mons_per_side": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "obedience_cap": {
+        "description": "",
+        "type": "UFraction"
+      }
+    },
+    "Side": {
+      "foe_side": {
+        "description": "",
+        "type": "Side"
+      },
+      "index": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "players": {
+        "description": "",
+        "type": "List"
+      }
+    },
+    "HitEffect": {
+      "boosts": {
+        "description": "",
+        "type": "BoostTable"
+      },
+      "volatile_status": {
+        "description": "",
+        "type": "String"
+      }
+    },
+    "SecondaryHitEffect": {
+      "chance": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "target": {
+        "description": "",
+        "type": "HitEffect"
+      },
+      "user": {
+        "description": "",
+        "type": "HitEffect"
+      }
+    },
+    "BoostTable": {
+      "acc": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "atk": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "def": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "eva": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "spa": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "spd": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "spe": {
+        "description": "",
+        "type": "Fraction"
+      }
+    },
+    "StatTable": {
+      "atk": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "def": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "hp": {
+        "description": "",
+        "type": "Fraction"
+      },
+      "spa": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "spd": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "spe": {
+        "description": "",
+        "type": "UFraction"
+      }
+    },
+    "Nature": {
+      "boosts": {
+        "description": "",
+        "type": "Boost"
+      },
+      "drops": {
+        "description": "",
+        "type": "Boost"
+      }
+    },
+    "SpecialItemData": {
+      "fling": {
+        "description": "",
+        "type": "FlingData"
+      },
+      "judgment": {
+        "description": "",
+        "type": "JudgmentData"
+      },
+      "natural_gift": {
+        "description": "",
+        "type": "NaturalGiftData"
+      },
+      "techno_blast": {
+        "description": "",
+        "type": "TechnoBlastData"
+      }
+    },
+    "FlingData": {
+      "hit_effect": {
+        "description": "",
+        "type": "HitEffect"
+      },
+      "power": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "use_item": {
+        "description": "",
+        "type": "Boolean"
+      }
+    },
+    "NaturalGiftData": {
+      "power": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "type": {
+        "description": "",
+        "type": "Type"
+      }
+    },
+    "MultihitType": {
+      "max": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "min": {
+        "description": "",
+        "type": "UFraction"
+      }
+    },
+    "JudgmentData": {
+      "type": {
+        "description": "",
+        "type": "Type"
+      }
+    },
+    "TechnoBlastData": {
+      "type": {
+        "description": "",
+        "type": "Type"
+      }
+    },
+    "EffectState": {},
+    "Object": {},
+    "OptionalHitEffect": {
+      "boosts": {
+        "description": "",
+        "type": "BoostTable"
       },
       "heal_percent": {
-        "description": ""
+        "description": "",
+        "type": "UFraction"
       },
       "side_condition": {
-        "description": ""
+        "description": "",
+        "type": "String"
+      },
+      "status": {
+        "description": "",
+        "type": "String"
+      },
+      "volatile_status": {
+        "description": "",
+        "type": "String"
       }
-    }
+    },
+    "TempEffectState": {}
   },
   "functions": {
     "ability_effect_state": {
-      "description": ""
+      "description": "Gets the effect state for an ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose ability state to retrieve. Defaults to the current source.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "EffectState | Undefined"
     },
     "ability_has_flag": {
-      "description": ""
+      "description": "Returns whether the ability has the given flag.",
+      "parameters": [
+        {
+          "name": "ability_handle",
+          "type": "Effect",
+          "description": "The ability to check.",
+          "optional": false
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
     },
     "activate_ability": {
-      "description": ""
+      "description": "Activates a Mon's ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose ability to activate. Defaults to the current source.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean | Undefined"
     },
     "activate_applying_effect": {
-      "description": ""
+      "description": "Activates an applying effect.",
+      "parameters": [],
+      "flags": [],
+      "type": "Boolean | Undefined"
     },
     "add_attribute_to_last_move": {
-      "description": ""
+      "description": "Adds an attribute to the last move used.",
+      "parameters": [
+        {
+          "name": "attribute",
+          "type": "String",
+          "description": "The attribute to add.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
     },
     "add_move_action": {
-      "description": ""
+      "description": "Adds a move action to the battle queue.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon performing the move.",
+          "optional": true
+        },
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to perform.",
+          "optional": false
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target of the move.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
     },
     "add_move_flag": {
-      "description": ""
+      "description": "Adds a flag to a move.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to modify.",
+          "optional": true
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag to add.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
     },
     "add_pseudo_weather": {
-      "description": ""
+      "description": "Adds pseudo-weather to the field.",
+      "parameters": [
+        {
+          "name": "weather",
+          "type": "String",
+          "description": "The pseudo-weather ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
     },
     "add_secondary_effect_to_move": {
-      "description": ""
+      "description": "Adds a secondary effect to a move.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to modify.",
+          "optional": true
+        },
+        {
+          "name": "effect",
+          "type": "SecondaryHitEffect",
+          "description": "The secondary effect to add.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
     },
     "add_side_condition": {
-      "description": ""
+      "description": "Adds a side condition to a side.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to modify.",
+          "optional": true
+        },
+        {
+          "name": "condition",
+          "type": "String",
+          "description": "The condition effect ID.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
     },
     "add_slot_condition": {
-      "description": ""
+      "description": "Adds a slot condition.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to modify.",
+          "optional": true
+        },
+        {
+          "name": "slot",
+          "type": "UFraction",
+          "description": "The slot index.",
+          "optional": false
+        },
+        {
+          "name": "condition",
+          "type": "String",
+          "description": "The slot condition ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
     },
     "add_type": {
-      "description": ""
+      "description": "Adds a type to a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "type_to_add",
+          "type": "Type",
+          "description": "The type to add.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
     },
     "add_volatile": {
-      "description": ""
+      "description": "Adds a volatile effect to a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "effect",
+          "type": "String",
+          "description": "The volatile effect ID.",
+          "optional": true
+        }
+      ],
+      "flags": [
+        {
+          "name": "link",
+          "description": "If set, the volatile effect is linked to the current effect."
+        }
+      ],
+      "type": "Boolean"
     },
     "adjacent_allies": {
-      "description": ""
+      "description": "Gets all adjacent allies of a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The reference Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "List"
     },
     "adjacent_foes": {
-      "description": ""
+      "description": "Gets all adjacent foes of a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The reference Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "List"
     },
     "all_active_mons": {
-      "description": ""
+      "description": "Gets all active Mons in the battle.",
+      "parameters": [],
+      "flags": [],
+      "type": "List"
     },
     "all_active_mons_in_speed_order": {
-      "description": ""
+      "description": "Gets all active Mons in speed order.",
+      "parameters": [],
+      "flags": [],
+      "type": "List"
+    },
+    "all_active_mons_in_speed_order_and_ability_effect_order": {
+      "description": "Gets all active Mons in speed and ability effect order.",
+      "parameters": [],
+      "flags": [],
+      "type": "List"
+    },
+    "all_active_mons_on_side": {
+      "description": "Gets all active Mons on a specific side.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to query. Defaults to the current side.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "all_active_or_exited_mons": {
+      "description": "Gets all active or recently exited Mons.",
+      "parameters": [],
+      "flags": [],
+      "type": "List"
+    },
+    "all_foes": {
+      "description": "Gets all foes of a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The reference Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "all_mons_in_party": {
+      "description": "Gets all Mons in a player's party.",
+      "parameters": [
+        {
+          "name": "player",
+          "type": "Player",
+          "description": "The player.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "all_mons_on_side": {
+      "description": "Gets all Mons on a specific side, including those in the party.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to query. Defaults to the current side.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "all_types": {
+      "description": "Gets a list of all defined types in the battle.",
+      "parameters": [],
+      "flags": [],
+      "type": "List"
+    },
+    "allies_and_self": {
+      "description": "Gets all allies of a Mon and the Mon itself.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The reference Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "any_mon_will_move_this_turn": {
+      "description": "Checks if any Mon will perform a move this turn.",
+      "parameters": [],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "append": {
+      "description": "Appends an element to a list.",
+      "parameters": [
+        {
+          "name": "list",
+          "type": "List",
+          "description": "The list to modify.",
+          "optional": false
+        },
+        {
+          "name": "element",
+          "type": "Object",
+          "description": "The element to append.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "apply_drain": {
+      "description": "Applies drain effects (healing based on damage dealt).",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        },
+        {
+          "name": "source",
+          "type": "Mon",
+          "description": "The source Mon.",
+          "optional": true
+        },
+        {
+          "name": "damage",
+          "type": "UFraction",
+          "description": "The amount of damage dealt.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "apply_recoil_damage": {
+      "description": "Applies recoil damage to the move user.",
+      "parameters": [
+        {
+          "name": "damage",
+          "type": "UFraction",
+          "description": "The amount of damage dealt to the target.",
+          "optional": false
+        },
+        {
+          "name": "ratio",
+          "type": "Fraction",
+          "description": "The ratio of damage to take as recoil.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "base_species": {
+      "description": "Gets a Mon's base species ID.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to query.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "String"
+    },
+    "boost": {
+      "description": "Boosts or unboosts a Mon's stats.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to boost.",
+          "optional": true
+        },
+        {
+          "name": "boosts",
+          "type": "BoostTable",
+          "description": "The boosts to apply.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "boost_table": {
+      "description": "Creates a boost table from a list of stat:amount strings.  @param {[`ValueType::String`]} ... Boost strings (e.g., \"atk:1\").",
+      "parameters": [],
+      "flags": [],
+      "type": "Object"
+    },
+    "boostable_stats": {
+      "description": "Calculates damage for a move.",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The move target.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "calculate_damage": {
+      "description": "Calculates damage for a move.",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The move target.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "calculate_confusion_damage": {
+      "description": "Calculates confusion damage for a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to damage.",
+          "optional": true
+        },
+        {
+          "name": "base_power",
+          "type": "UFraction",
+          "description": "The base power of the confusion attack.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "can_boost": {
+      "description": "Checks if a Mon can receive a boost.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "boosts",
+          "type": "BoostTable",
+          "description": "The boosts to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "can_escape": {
+      "description": "Checks if a Mon can escape from battle.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "can_switch": {
+      "description": "Checks if a Mon can switch out.",
+      "parameters": [
+        {
+          "name": "player",
+          "type": "Player",
+          "description": "The player whose Mon to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "cancel_action": {
+      "description": "Cancels a Mon's pending action.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose action to cancel.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "cancel_move": {
+      "description": "Cancels a Mon's pending move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose move to cancel.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "chance": {
+      "description": "Performs a random chance check.",
+      "parameters": [
+        {
+          "name": "probability",
+          "type": "UFraction",
+          "description": "The probability of success (0 to 100).",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "check_immunity": {
+      "description": "Checks if a Mon is immune to an effect.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "effect",
+          "type": "String",
+          "description": "The effect ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "clamp_number": {
+      "description": "Clamps a number between a minimum and maximum value.",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "UFraction",
+          "description": "The value to clamp.",
+          "optional": false
+        },
+        {
+          "name": "min",
+          "type": "UFraction",
+          "description": "The minimum value.",
+          "optional": false
+        },
+        {
+          "name": "max",
+          "type": "UFraction",
+          "description": "The maximum value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "clause_integer_value": {
+      "description": "Gets the integer value of a battle clause.",
+      "parameters": [
+        {
+          "name": "clause",
+          "type": "String",
+          "description": "The clause ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction | Undefined"
+    },
+    "clause_type_value": {
+      "description": "Gets the type value of a battle clause.",
+      "parameters": [
+        {
+          "name": "clause",
+          "type": "String",
+          "description": "The clause ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Type | Undefined"
+    },
+    "clear_boosts": {
+      "description": "Clears all boosts from a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to clear.",
+          "optional": true
+        }
+      ],
+      "flags": [
+        {
+          "name": "silent",
+          "description": "If set, no message is displayed."
+        }
+      ],
+      "type": "Undefined"
+    },
+    "clear_negative_boosts": {
+      "description": "Clears negative boosts from a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to clear.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "clear_terrain": {
+      "description": "Clears the field terrain.",
+      "parameters": [],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "clear_weather": {
+      "description": "Clears the field weather.",
+      "parameters": [],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "clone_active_move": {
+      "description": "Clones the currently active move.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move to clone.",
+          "optional": false
+        },
+        {
+          "name": "user",
+          "type": "Mon",
+          "description": "The Mon using the cloned move.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "ActiveMove"
+    },
+    "cure_status": {
+      "description": "Cures a Mon's status condition.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to cure.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "damage": {
+      "description": "Deals damage to a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to damage.",
+          "optional": true
+        },
+        {
+          "name": "amount",
+          "type": "UFraction",
+          "description": "The amount of damage.",
+          "optional": false
+        },
+        {
+          "name": "effect",
+          "type": "Effect",
+          "description": "The effect causing the damage.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "debug_log": {
+      "description": "Logs a debug message to the battle log.",
+      "parameters": [
+        {
+          "name": "message",
+          "type": "String",
+          "description": "The message to log.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "decrease_friendship": {
+      "description": "Decreases a Mon's friendship.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "delta_1",
+          "type": "UFraction",
+          "description": "The friendship decrease at level 1.",
+          "optional": false
+        },
+        {
+          "name": "delta_2",
+          "type": "UFraction",
+          "description": "The friendship decrease at level 2.",
+          "optional": false
+        },
+        {
+          "name": "delta_3",
+          "type": "UFraction",
+          "description": "The friendship decrease at level 3.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "decrease_weight": {
+      "description": "Decreases a Mon's weight.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "amount",
+          "type": "UFraction",
+          "description": "The amount to decrease.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "deduct_pp": {
+      "description": "Deducts PP from a Mon's move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose move to modify.",
+          "optional": true
+        },
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to deduct from.",
+          "optional": true
+        },
+        {
+          "name": "amount",
+          "type": "UFraction",
+          "description": "The amount of PP to deduct.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "deprioritize_move": {
+      "description": "Deprioritizes a Mon's move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose move to deprioritize.",
+          "optional": true
+        },
+        {
+          "name": "action_id",
+          "type": "UFraction",
+          "description": "The action ID to deprioritize.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "direct_damage": {
+      "description": "Deals direct damage to a Mon (bypasses most calculations).",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The Mon to damage.",
+          "optional": true
+        },
+        {
+          "name": "amount",
+          "type": "UFraction",
+          "description": "The amount of damage.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "disable_move": {
+      "description": "Disables a move for a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose move is disabled.",
+          "optional": true
+        },
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID to disable.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "discard_item": {
+      "description": "Makes a Mon discard its held item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose item to discard.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "do_move": {
+      "description": "Executes a move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        },
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID to execute.",
+          "optional": false
+        },
+        {
+          "name": "target_position",
+          "type": "UFraction",
+          "description": "The target field position.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "do_not_animate_last_move": {
+      "description": "Prevents the last move from being animated.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "eat_item": {
+      "description": "Makes a Mon eat its held item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to eat.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "eat_given_item": {
+      "description": "Makes a Mon eat a specific item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to eat.",
+          "optional": true
+        },
+        {
+          "name": "item",
+          "type": "String",
+          "description": "The item ID to eat.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "effect_has_event_callback": {
+      "description": "Checks if an effect has a specific event callback.",
+      "parameters": [
+        {
+          "name": "effect",
+          "type": "Effect",
+          "description": "The effect handle.",
+          "optional": false
+        },
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "effective_weather": {
+      "description": "Gets the effective weather for a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "origin",
+          "type": "Effect",
+          "description": "The origin effect.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Effect | Undefined"
+    },
+    "end_ability": {
+      "description": "Ends a Mon's ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "end_battle": {
+      "description": "Ends the current battle immediately.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "end_dynamax": {
+      "description": "Ends a Mon's Dynamax state.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose Dynamax to end.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "end_illusion": {
+      "description": "Ends a Mon's illusion.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose illusion to end.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "end_item": {
+      "description": "Ends a Mon's item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "escape": {
+      "description": "Makes a Mon escape from battle.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to escape.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "faint": {
+      "description": "Makes a Mon faint.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon that faints.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "faint_messages": {
+      "description": "Processes faint messages for the battle.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "floor": {
+      "description": "Rounds a number down to the nearest whole number.",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "Fraction",
+          "description": "The value to floor.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "force_fully_heal": {
+      "description": "Forces a Mon to fully heal.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to heal.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "force_switch": {
+      "description": "Forces a Mon to switch out.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to switch.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "forme_change": {
+      "description": "Changes a Mon's forme.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "forme",
+          "type": "String",
+          "description": "The new forme ID.",
+          "optional": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "permanent",
+          "description": "If set, the forme change is permanent."
+        }
+      ],
+      "type": "Boolean"
+    },
+    "get_all_moves": {
+      "description": "Gets all moves from the registry.",
+      "parameters": [],
+      "flags": [],
+      "type": "List"
+    },
+    "get_ability": {
+      "description": "Gets an ability by ID.",
+      "parameters": [],
+      "flags": [],
+      "type": "Effect | Undefined"
+    },
+    "get_boost": {
+      "description": "Gets a boost level from a boost table.",
+      "parameters": [
+        {
+          "name": "boosts",
+          "type": "BoostTable",
+          "description": "The boost table to query.",
+          "optional": false
+        },
+        {
+          "name": "stat",
+          "type": "Stat",
+          "description": "The stat to query.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Fraction"
+    },
+    "get_item": {
+      "description": "Gets an item by ID.",
+      "parameters": [
+        {
+          "name": "item_id",
+          "type": "String",
+          "description": "The item ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Effect | Undefined"
+    },
+    "get_move": {
+      "description": "Gets move data from the registry.",
+      "parameters": [
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Effect | Undefined"
+    },
+    "get_move_targets": {
+      "description": "Gets valid targets for a move.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "user",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": false
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "A potential target.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "get_species": {
+      "description": "Gets species data from the registry.",
+      "parameters": [
+        {
+          "name": "species_id",
+          "type": "String",
+          "description": "The species ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Effect | Undefined"
+    },
+    "get_stat": {
+      "description": "Gets a Mon's stat value.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to query.",
+          "optional": true
+        },
+        {
+          "name": "stat",
+          "type": "Stat",
+          "description": "The stat to query.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "has_ability": {
+      "description": "Checks if a Mon has a specific ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "ability",
+          "type": "String",
+          "description": "The ability ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_any_type": {
+      "description": "Checks if a Mon has any of the given types.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "types",
+          "type": "List",
+          "description": "The list of types to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_item": {
+      "description": "Checks if a Mon has a specific item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "item",
+          "type": "String",
+          "description": "The item ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_move": {
+      "description": "Checks if a Mon has a specific move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_pseudo_weather": {
+      "description": "Checks if a pseudo-weather is active on the field.",
+      "parameters": [
+        {
+          "name": "weather",
+          "type": "String",
+          "description": "The pseudo-weather ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_side_condition": {
+      "description": "Checks if a side has a specific condition.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to check.",
+          "optional": true
+        },
+        {
+          "name": "condition",
+          "type": "String",
+          "description": "The condition ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_species_registered": {
+      "description": "Checks if a Mon has a specific species registered.",
+      "parameters": [
+        {
+          "name": "player",
+          "type": "Player",
+          "description": "The player to check.",
+          "optional": false
+        },
+        {
+          "name": "species",
+          "type": "String",
+          "description": "The species ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_type": {
+      "description": "Checks if a Mon has a specific type.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "target_type",
+          "type": "Type",
+          "description": "The type to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_type_before_forced_types": {
+      "description": "Checks if a Mon has a specific type before forced type changes.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "target_type",
+          "type": "Type",
+          "description": "The type to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "has_volatile": {
+      "description": "Checks if a Mon has a specific volatile effect.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "effect",
+          "type": "String",
+          "description": "The volatile effect ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "heal": {
+      "description": "Heals a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to heal.",
+          "optional": true
+        },
+        {
+          "name": "amount",
+          "type": "UFraction",
+          "description": "The amount to heal.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "hit_effect": {
+      "description": "Creates a new hit effect object.",
+      "parameters": [],
+      "flags": [],
+      "type": "HitEffect"
+    },
+    "increase_friendship": {
+      "description": "Increases a Mon's friendship.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "delta_1",
+          "type": "UFraction",
+          "description": "The friendship increase at level 1.",
+          "optional": false
+        },
+        {
+          "name": "delta_2",
+          "type": "UFraction",
+          "description": "The friendship increase at level 2.",
+          "optional": false
+        },
+        {
+          "name": "delta_3",
+          "type": "UFraction",
+          "description": "The friendship increase at level 3.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "index": {
+      "description": "Gets the index of an item in a list.",
+      "parameters": [
+        {
+          "name": "list",
+          "type": "List",
+          "description": "The list.",
+          "optional": false
+        },
+        {
+          "name": "item",
+          "type": "Any",
+          "description": "The item to find.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction | Undefined"
+    },
+    "invert_boosts": {
+      "description": "Inverts a Mon's boosts.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "is_adjacent": {
+      "description": "Checks if two Mons are adjacent.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The first Mon.",
+          "optional": false
+        },
+        {
+          "name": "other",
+          "type": "Mon",
+          "description": "The second Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "is_ally": {
+      "description": "Checks if two Mons are allies.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The first Mon.",
+          "optional": true
+        },
+        {
+          "name": "other",
+          "type": "Mon",
+          "description": "The second Mon.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "item_has_flag": {
+      "description": "Checks if an item has a specific flag.",
+      "parameters": [
+        {
+          "name": "item_handle",
+          "type": "Effect",
+          "description": "The item to check.",
+          "optional": false
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "join": {
+      "description": "Joins a list into a string.",
+      "parameters": [
+        {
+          "name": "list",
+          "type": "List",
+          "description": "The list.",
+          "optional": false
+        },
+        {
+          "name": "separator",
+          "type": "String",
+          "description": "The separator.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "String"
+    },
+    "last_attack": {
+      "description": "Gets the last attack directed at a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        }
+      ],
+      "flags": [
+        {
+          "name": "has_damage",
+          "description": "If set, only attacks that dealt damage are considered."
+        },
+        {
+          "name": "different_side",
+          "description": "If set, only attacks from the opposite side are considered."
+        }
+      ],
+      "type": "Object | Undefined"
+    },
+    "log": {
+      "description": "Logs a message to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [
+        {
+          "name": "title",
+          "type": "String",
+          "description": "The log title.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_ability": {
+      "description": "Logs an ability activation to the battle log.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose ability activated.",
+          "optional": true
+        },
+        {
+          "name": "ability",
+          "type": "String",
+          "description": "The ability ID.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_activate": {
+      "description": "Logs an effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_animate_move": {
+      "description": "Logs a move animation to the battle log.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target of the move.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_announce_item": {
+      "description": "Logs an item announcement to the battle log.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose item is announced.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_block": {
+      "description": "Logs a block effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_cant": {
+      "description": "Logs that a Mon cannot perform an action.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_custom_effect": {
+      "description": "Logs a custom effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [
+        {
+          "name": "header",
+          "type": "String",
+          "description": "The log header.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_end": {
+      "description": "Logs the end of an effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_fail": {
+      "description": "Logs an effect failure to the battle log.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon the effect failed on.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_fail_heal": {
+      "description": "Logs a heal failure to the battle log.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon that failed to heal.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_fail_unboost": {
+      "description": "Logs an unboost failure to the battle log.  @param {[`ValueType::List`] | [`ValueType::String`]} ... The boosts that failed to unboost.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose unboost failed.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_field_activate": {
+      "description": "Logs a field effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_field_start": {
+      "description": "Logs the start of a field effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_field_end": {
+      "description": "Logs the end of a field effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_immune": {
+      "description": "Logs immunity to an effect.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon that is immune.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_ohko": {
+      "description": "Logs an OHKO move to the battle log.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon that was hit by the OHKO move.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_prepare_move": {
+      "description": "Logs move preparation to the battle log.",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target of the move.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_side_end": {
+      "description": "Logs the end of a side condition to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_side_start": {
+      "description": "Logs the start of a side condition to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_single_move": {
+      "description": "Logs a single-move effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_single_turn": {
+      "description": "Logs a single-turn effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_start": {
+      "description": "Logs the start of an effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "parameters": [],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_status": {
+      "description": "Logs a status change to the battle log.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose status changed.",
+          "optional": true
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "description": "The status ID.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_use_move": {
+      "description": "Logs a move usage to the battle log.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target of the move.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_waiting": {
+      "description": "Logs that a Mon is waiting.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon waiting.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target being waited for.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "log_weather": {
+      "description": "Logs weather change or continuation to the battle log.",
+      "parameters": [
+        {
+          "name": "weather",
+          "type": "String",
+          "description": "The weather ID.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "max": {
+      "description": "Returns the maximum of two values.",
+      "parameters": [
+        {
+          "name": "a",
+          "type": "UFraction",
+          "description": "The first value.",
+          "optional": false
+        },
+        {
+          "name": "b",
+          "type": "UFraction",
+          "description": "The second value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "max_move": {
+      "description": "Executes a Max Move.",
+      "parameters": [],
+      "flags": [],
+      "type": "Boolean | Undefined"
+    },
+    "min": {
+      "description": "Returns the minimum of two values.",
+      "parameters": [
+        {
+          "name": "a",
+          "type": "UFraction",
+          "description": "The first value.",
+          "optional": false
+        },
+        {
+          "name": "b",
+          "type": "UFraction",
+          "description": "The second value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "modify_move_type": {
+      "description": "Modifies the type of an active move.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move to modify.",
+          "optional": false
+        },
+        {
+          "name": "new_type",
+          "type": "Type",
+          "description": "The new type.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "mon_at_target_location": {
+      "description": "Gets the Mon at a specific target location relative to a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The reference Mon.",
+          "optional": true
+        },
+        {
+          "name": "location",
+          "type": "Fraction",
+          "description": "The relative location index.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Mon | Undefined"
+    },
+    "mon_in_position": {
+      "description": "Checks if a Mon is at a specific field position.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to check.",
+          "optional": true
+        },
+        {
+          "name": "position",
+          "type": "UFraction",
+          "description": "The position index.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Mon | Undefined"
+    },
+    "move_at_move_slot_index": {
+      "description": "Gets the move at a specific move slot index.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "index",
+          "type": "UFraction",
+          "description": "The move slot index.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Effect | Undefined"
+    },
+    "move_crit_target": {
+      "description": "Checks if a move dealt a critical hit to its target.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to check.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "move_has_flag": {
+      "description": "Checks if a move has a specific flag.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to check.",
+          "optional": false
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "move_hit_data_has_flag_against_target": {
+      "description": "Checks if a move's hit data has a flag for a target.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "move_hit_target": {
+      "description": "Checks if a move hit its target.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to check.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "move_makes_contact": {
+      "description": "Checks if a move makes contact.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to check.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "move_slot": {
+      "description": "Creates a simulated move slot from an active move.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "MoveSlot"
+    },
+    "move_slot_at_index": {
+      "description": "Gets the move slot at a specific index.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to query.",
+          "optional": true
+        },
+        {
+          "name": "index",
+          "type": "UFraction",
+          "description": "The move slot index.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "MoveSlot | Undefined"
+    },
+    "move_slot_index": {
+      "description": "Gets the index of a move in a Mon's move slots.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction | Undefined"
+    },
+    "new_active_move": {
+      "description": "Creates a new active move.",
+      "parameters": [
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Effect"
+    },
+    "new_active_move_from_local_data": {
+      "description": "Creates a new active move from local data.",
+      "parameters": [
+        {
+          "name": "effect",
+          "type": "Effect",
+          "description": "The effect containing local data.",
+          "optional": false
+        },
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID in local data.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Effect"
+    },
+    "new_object": {
+      "description": "Gets a value from an object.",
+      "parameters": [
+        {
+          "name": "object",
+          "type": "Object",
+          "description": "The object to query.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to retrieve.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Any | Undefined"
+    },
+    "object_get": {
+      "description": "Gets a value from an object.",
+      "parameters": [
+        {
+          "name": "object",
+          "type": "Object",
+          "description": "The object to query.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to retrieve.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Any | Undefined"
+    },
+    "object_increment": {
+      "description": "Increments an integer value in an object.",
+      "parameters": [
+        {
+          "name": "object",
+          "type": "Object",
+          "description": "The object to modify.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to increment.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Object"
+    },
+    "object_keys": {
+      "description": "Gets the keys of an object.",
+      "parameters": [
+        {
+          "name": "object",
+          "type": "Object",
+          "description": "The object to query.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "object_set": {
+      "description": "Sets a value on an object.",
+      "parameters": [
+        {
+          "name": "object",
+          "type": "Object",
+          "description": "The object to modify.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to set.",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Any",
+          "description": "The value to set.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Object"
+    },
+    "object_value": {
+      "description": "Gets a value from an object.",
+      "parameters": [
+        {
+          "name": "object",
+          "type": "Object",
+          "description": "The object to query.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to retrieve.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Any | Undefined"
+    },
+    "overwrite_move_slot": {
+      "description": "Overwrites a move slot on a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "index",
+          "type": "UFraction",
+          "description": "The move slot index.",
+          "optional": false
+        },
+        {
+          "name": "move_slot",
+          "type": "MoveSlot",
+          "description": "The new move slot data.",
+          "optional": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "override_base_slot",
+          "description": "If set, the base move slot is also overridden."
+        }
+      ],
+      "type": "Undefined"
+    },
+    "pending_move_action_this_turn": {
+      "description": "Gets a pending move action for a Mon this turn.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Object | Undefined"
+    },
+    "pending_move_actions_this_turn": {
+      "description": "Gets all pending move actions this turn.",
+      "parameters": [],
+      "flags": [],
+      "type": "List"
+    },
+    "plural": {
+      "description": "Returns an 's' if the number is not 1.",
+      "parameters": [
+        {
+          "name": "number",
+          "type": "UFraction",
+          "description": "The number to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "String"
+    },
+    "prepare_direct_move": {
+      "description": "Prepares a direct move for execution.",
+      "parameters": [
+        {
+          "name": "targets",
+          "type": "List",
+          "description": "The list of target Mons.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "primal_reversion": {
+      "description": "Executes a primal reversion.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "forme",
+          "type": "String",
+          "description": "The primal forme ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "prioritize_move": {
+      "description": "Prioritizes a Mon's move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose move to prioritize.",
+          "optional": true
+        },
+        {
+          "name": "action_id",
+          "type": "UFraction",
+          "description": "The action ID to prioritize.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "pseudo_weather_effect_state": {
+      "description": "Gets the effect state for a pseudo-weather condition.",
+      "parameters": [
+        {
+          "name": "pseudo_weather_id",
+          "type": "String",
+          "description": "The pseudo-weather ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "EffectState | Undefined"
+    },
+    "random": {
+      "description": "Generates a random number between 0 and a maximum value.",
+      "parameters": [
+        {
+          "name": "max",
+          "type": "UFraction",
+          "description": "The maximum value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "random_target": {
+      "description": "Selects a random target for a move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        },
+        {
+          "name": "move_target",
+          "type": "MoveTarget",
+          "description": "The target type.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Mon | Undefined"
+    },
+    "received_attack": {
+      "description": "Checks if a Mon received an attack this turn.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "source",
+          "type": "Mon",
+          "description": "The source Mon of the attack.",
+          "optional": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "has_damage",
+          "description": "If set, only attacks that dealt damage are counted."
+        },
+        {
+          "name": "this_turn",
+          "description": "If set, only attacks received this turn are counted."
+        }
+      ],
+      "type": "Boolean"
+    },
+    "remove": {
+      "description": "Removes an item from a list.",
+      "parameters": [
+        {
+          "name": "list",
+          "type": "List",
+          "description": "The list.",
+          "optional": false
+        },
+        {
+          "name": "item",
+          "type": "Any",
+          "description": "The item to remove.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "remove_move_flag": {
+      "description": "Removes a flag from a move.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to modify.",
+          "optional": true
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag to remove.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "remove_pseudo_weather": {
+      "description": "Removes pseudo-weather from the field.",
+      "parameters": [
+        {
+          "name": "weather",
+          "type": "String",
+          "description": "The pseudo-weather ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "remove_side_condition": {
+      "description": "Removes a side condition.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to modify.",
+          "optional": true
+        },
+        {
+          "name": "side_condition",
+          "type": "String",
+          "description": "The side condition ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "remove_slot_condition": {
+      "description": "Removes a slot condition.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side to modify.",
+          "optional": true
+        },
+        {
+          "name": "slot",
+          "type": "UFraction",
+          "description": "The slot index.",
+          "optional": false
+        },
+        {
+          "name": "condition",
+          "type": "String",
+          "description": "The slot condition ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "remove_volatile": {
+      "description": "Removes a volatile effect from a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "effect",
+          "type": "String",
+          "description": "The volatile effect ID.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "restore_pp": {
+      "description": "Restores PP to a Mon's move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose move to modify.",
+          "optional": true
+        },
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to restore.",
+          "optional": true
+        },
+        {
+          "name": "amount",
+          "type": "UFraction",
+          "description": "The amount of PP to restore.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "reverse": {
+      "description": "Reverses a list.",
+      "parameters": [
+        {
+          "name": "list",
+          "type": "List",
+          "description": "The list.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "revive": {
+      "description": "Revives a fainted Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to revive.",
+          "optional": false
+        },
+        {
+          "name": "hp_percent",
+          "type": "UFraction",
+          "description": "The percentage of HP to restore.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "run_event": {
+      "description": "Runs a battle event.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event name.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Object | Undefined"
+    },
+    "run_event_for_each_active_mon": {
+      "description": "Runs an event on each active Mon.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "run_event_for_mon": {
+      "description": "Runs an event on a Mon.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "run_event_on_mon_ability": {
+      "description": "Runs an event on a Mon's ability.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean | Undefined"
+    },
+    "run_event_on_mon_item": {
+      "description": "Runs an event on a Mon's item.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean | Undefined"
+    },
+    "run_event_on_mon_volatile": {
+      "description": "Runs an event on a Mon's volatile effect.",
+      "parameters": [
+        {
+          "name": "volatile",
+          "type": "String",
+          "description": "The volatile effect ID.",
+          "optional": false
+        },
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean | Undefined"
+    },
+    "run_event_on_move": {
+      "description": "Runs an event on an active move.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean | Undefined"
+    },
+    "sample": {
+      "description": "Randomly samples an element from a list.",
+      "parameters": [
+        {
+          "name": "list",
+          "type": "List",
+          "description": "The list to sample from.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Object | Undefined"
+    },
+    "save_move_hit_data_flag_against_target": {
+      "description": "Saves a flag on a move's hit data for a target.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag ID to save.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "secondary_hit_effect": {
+      "description": "Creates a new secondary hit effect object.",
+      "parameters": [],
+      "flags": [],
+      "type": "SecondaryHitEffect"
+    },
+    "set_ability": {
+      "description": "Sets a Mon's ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "ability",
+          "type": "String",
+          "description": "The new ability ID.",
+          "optional": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "dry_run",
+          "description": "If set, the ability is not actually changed."
+        },
+        {
+          "name": "silent",
+          "description": "If set, no message is displayed."
+        }
+      ],
+      "type": "Boolean"
+    },
+    "set_boost": {
+      "description": "Sets a boost value in a boost table.",
+      "parameters": [
+        {
+          "name": "boosts",
+          "type": "Object",
+          "description": "The boost table.",
+          "optional": false
+        },
+        {
+          "name": "boost",
+          "type": "Stat",
+          "description": "The stat to boost.",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Fraction",
+          "description": "The boost value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Object"
+    },
+    "set_friendship": {
+      "description": "Sets a Mon's friendship value.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "friendship",
+          "type": "UFraction",
+          "description": "The new friendship value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "set_hp": {
+      "description": "Sets a Mon's HP.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "hp",
+          "type": "UFraction",
+          "description": "The new HP value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_illusion": {
+      "description": "Sets a Mon's illusion species.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the illusion.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The Mon to imitate.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_item": {
+      "description": "Sets a Mon's held item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "item",
+          "type": "String",
+          "description": "The item ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_needs_switch": {
+      "description": "Sets whether a Mon needs to switch out.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "needs_switch",
+          "type": "Boolean",
+          "description": "Whether the Mon needs to switch.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "set_pp": {
+      "description": "Sets a Mon's move PP.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose move to modify.",
+          "optional": true
+        },
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to modify.",
+          "optional": true
+        },
+        {
+          "name": "pp",
+          "type": "UFraction",
+          "description": "The new PP value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_status": {
+      "description": "Sets a Mon's status condition.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "description": "The status ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_types": {
+      "description": "Sets a Mon's types.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "types",
+          "type": "List",
+          "description": "The list of types.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_terrain": {
+      "description": "Sets the field terrain.",
+      "parameters": [
+        {
+          "name": "terrain",
+          "type": "String",
+          "description": "The terrain ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_upgraded_to_max_move": {
+      "description": "Marks an active move as upgraded to a Max Move.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "base_move",
+          "type": "String",
+          "description": "The base move ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "set_upgraded_to_z_move": {
+      "description": "Marks an active move as upgraded to a Z-Move.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "base_move",
+          "type": "String",
+          "description": "The base move ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "set_weather": {
+      "description": "Sets the field weather.",
+      "parameters": [
+        {
+          "name": "weather",
+          "type": "String",
+          "description": "The weather ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "set_z_power_boosts": {
+      "description": "Sets Z-Power boosts for a move.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "boost_table",
+          "type": "Object",
+          "description": "The boost table.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "side_condition_effect_state": {
+      "description": "Gets the effect state for a side condition.",
+      "parameters": [
+        {
+          "name": "side",
+          "type": "Side",
+          "description": "The side whose condition state to retrieve.",
+          "optional": true
+        },
+        {
+          "name": "condition_id",
+          "type": "String",
+          "description": "The side condition ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "EffectState | Undefined"
+    },
+    "skip_effect_callback": {
+      "description": "Skips an effect callback.",
+      "parameters": [
+        {
+          "name": "effect",
+          "type": "String",
+          "description": "The effect ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "special_item_data": {
+      "description": "Gets special data for an item.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": "String",
+          "description": "The item ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Object"
+    },
+    "species_has_flag": {
+      "description": "Checks if a species has a specific flag.",
+      "parameters": [
+        {
+          "name": "species_handle",
+          "type": "Effect",
+          "description": "The species to check.",
+          "optional": false
+        },
+        {
+          "name": "flag",
+          "type": "String",
+          "description": "The flag ID to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "speed_sort_mons": {
+      "description": "Sorts a list of Mons by speed.",
+      "parameters": [
+        {
+          "name": "mons",
+          "type": "List",
+          "description": "The list of Mons to sort.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "List"
+    },
+    "start_ability": {
+      "description": "Starts a Mon's ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "start_item": {
+      "description": "Starts a Mon's item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "status_effect_state": {
+      "description": "Gets the effect state for a status condition.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose status state to retrieve.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "EffectState | Undefined"
+    },
+    "swap_boosts": {
+      "description": "Swaps boosts between two Mons.",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        },
+        {
+          "name": "source",
+          "type": "Mon",
+          "description": "The source Mon.",
+          "optional": true
+        },
+        {
+          "name": "boosts",
+          "type": "List",
+          "description": "The list of boosts to swap.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined"
+    },
+    "swap_position": {
+      "description": "Swaps a Mon's position with another index.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to swap.",
+          "optional": true
+        },
+        {
+          "name": "position",
+          "type": "UFraction",
+          "description": "The target position index.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "switch_out": {
+      "description": "Forces a Mon to switch out.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to switch.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "take_item": {
+      "description": "Takes a Mon's held item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose item to take.",
+          "optional": true
+        }
+      ],
+      "flags": [
+        {
+          "name": "dry_run",
+          "description": "If set, the item is not actually taken."
+        },
+        {
+          "name": "silent",
+          "description": "If set, no message is displayed."
+        }
+      ],
+      "type": "Effect | Undefined"
+    },
+    "target_location_of_mon": {
+      "description": "Gets the target location of a Mon relative to another Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The reference Mon.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Fraction"
+    },
+    "transform_into": {
+      "description": "Transforms a Mon into another species.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to transform.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The Mon to transform into.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "type_chart_effectiveness": {
+      "description": "Gets type chart effectiveness.",
+      "parameters": [
+        {
+          "name": "attack_type",
+          "type": "Type",
+          "description": "The attacking type.",
+          "optional": false
+        },
+        {
+          "name": "defense_type",
+          "type": "Type",
+          "description": "The defending type.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "type_chart_immunity": {
+      "description": "Checks type chart immunity.",
+      "parameters": [
+        {
+          "name": "attack_type",
+          "type": "Type",
+          "description": "The attacking type.",
+          "optional": false
+        },
+        {
+          "name": "defense_type",
+          "type": "Type",
+          "description": "The defending type.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "type_effectiveness": {
+      "description": "Calculates type effectiveness.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "type_has_no_effect_against": {
+      "description": "Checks if a type has no effect against another type.",
+      "parameters": [
+        {
+          "name": "attack_type",
+          "type": "Type",
+          "description": "The attacking type.",
+          "optional": false
+        },
+        {
+          "name": "defense_type",
+          "type": "Type",
+          "description": "The defending type.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "type_is_weak_against": {
+      "description": "Checks if a type is weak against another type.",
+      "parameters": [
+        {
+          "name": "attack_type",
+          "type": "Type",
+          "description": "The attacking type.",
+          "optional": false
+        },
+        {
+          "name": "defense_type",
+          "type": "Type",
+          "description": "The defending type.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "type_modifier": {
+      "description": "Calculates a type modifier.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "UFraction"
+    },
+    "type_modifier_against_target": {
+      "description": "Calculates a type modifier against a target Mon.",
+      "parameters": [
+        {
+          "name": "move_handle",
+          "type": "Effect",
+          "description": "The move to check.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Fraction | Undefined"
+    },
+    "use_active_move": {
+      "description": "Uses an active move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        },
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move to use.",
+          "optional": false
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target of the move.",
+          "optional": true
+        }
+      ],
+      "flags": [
+        {
+          "name": "indirect",
+          "description": "If set, the move is considered indirect."
+        },
+        {
+          "name": "preventable",
+          "description": "If set, the move can be prevented by certain effects."
+        }
+      ],
+      "type": "Boolean"
+    },
+    "use_given_item": {
+      "description": "Uses a specific item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the item.",
+          "optional": true
+        },
+        {
+          "name": "item",
+          "type": "String",
+          "description": "The item ID to use.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "use_item": {
+      "description": "Uses a Mon's held item.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the item.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "use_move": {
+      "description": "Uses a move by ID.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        },
+        {
+          "name": "move_id",
+          "type": "String",
+          "description": "The move ID.",
+          "optional": false
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "valid_target": {
+      "description": "Checks if a target is valid for a move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The target Mon to check.",
+          "optional": false
+        },
+        {
+          "name": "move_target",
+          "type": "MoveTarget",
+          "description": "The move target type.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "value_from_local_data": {
+      "description": "Gets a value from an effect's local data.",
+      "parameters": [
+        {
+          "name": "effect",
+          "type": "Effect",
+          "description": "The effect handle.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to retrieve.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "String | Undefined"
+    },
+    "volatile_status_state": {
+      "description": "Gets the effect state for a volatile status condition.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon whose volatile state to retrieve.",
+          "optional": true
+        },
+        {
+          "name": "effect",
+          "type": "String",
+          "description": "The volatile effect ID.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "EffectState | Undefined"
+    },
+    "will_move_this_turn": {
+      "description": "Checks if a Mon will move this turn.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean"
+    },
+    "z_move": {
+      "description": "Executes a Z-Move.",
+      "parameters": [],
+      "flags": [],
+      "type": "Boolean | Undefined"
     }
   },
+  "common_flags": [
+    "from_effect",
+    "link",
+    "no_effect",
+    "no_events",
+    "no_forward",
+    "no_source",
+    "no_source_effect",
+    "residual",
+    "silent",
+    "use_effect_as_source_effect",
+    "use_effect_state_source",
+    "use_effect_state_source_as_source",
+    "use_effect_state_source_effect",
+    "use_effect_state_target",
+    "use_effect_state_target_as_source",
+    "use_source",
+    "use_source_as_origin",
+    "use_source_effect",
+    "use_target_as_origin",
+    "use_target_as_source",
+    "with_source",
+    "with_source_effect",
+    "with_target"
+  ],
   "events": {
     "AccuracyExempt": {
       "description": "Runs when the accuracy of a move against a target is being determined.  Runs in the context of a move target."
