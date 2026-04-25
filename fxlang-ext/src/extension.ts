@@ -120,7 +120,8 @@ export function activate(context: vscode.ExtensionContext) {
                                 item.insertText = new vscode.SnippetString(`${name}: ${escapedVarName}${snippetParams ? ' ' + snippetParams : ''}`);
                                 
                                 const paramsText = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
-                                item.detail = `(Function) ${name}(${paramsText}) -> ${data.type}`;
+                                const returnTypeStr = (data.type === 'List' && (data as any).item_type) ? `List<${(data as any).item_type}>` : data.type;
+                                item.detail = `(Function) ${name}(${paramsText}) -> ${returnTypeStr}`;
                                 items.push(item);
                             }
                         }
@@ -169,7 +170,8 @@ export function activate(context: vscode.ExtensionContext) {
                     item.sortText = ' ' + name;
                     item.range = wordRange;
                     const params = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
-                    item.detail = `(Function) ${name}(${params}) -> ${data.type}`;
+                    const returnTypeStr = (data.type === 'List' && (data as any).item_type) ? `List<${(data as any).item_type}>` : data.type;
+                    item.detail = `(Function) ${name}(${params}) -> ${returnTypeStr}`;
                     item.documentation = new vscode.MarkdownString(data.description);
                     
                     const snippetParams = data.parameters.map((p, i) => `\${${i + 1}:${p.name}}`).join(' ');
@@ -293,7 +295,8 @@ export function activate(context: vscode.ExtensionContext) {
                         
                         const hoverText = new vscode.MarkdownString();
                         hoverText.appendMarkdown(`**Function \`${word2}\`**\n\n`);
-                        hoverText.appendCodeblock(`${word2}(${params}) -> ${data.type}`, 'fxlang');
+                        const returnTypeStr = (data.type === 'List' && (data as any).item_type) ? `List<${(data as any).item_type}>` : data.type;
+                        hoverText.appendCodeblock(`${word2}(${params}) -> ${returnTypeStr}`, 'fxlang');
                         hoverText.appendMarkdown(`\n\n${data.description}`);
                         if (paramDetails) {
                             hoverText.appendMarkdown(`\n\n**Parameters:**\n${paramDetails}`);

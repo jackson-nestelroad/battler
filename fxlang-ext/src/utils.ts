@@ -55,15 +55,52 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
     
     if (expression === 'undefined') return 'Undefined';
     if (expression.match(/^(true|false)$/)) return 'Boolean';
-    if (expression.match(/^-?\d+(\.\d+)?$/)) return 'UFraction';
+    if (expression.match(/^[+-]\d+(\.\d+)?$/)) return 'Fraction';
+    if (expression.match(/^\d+(\.\d+)?$/)) return 'UFraction';
     if (expression.match(/^['"]/)) return 'String';
-    
-    
-    // 2. Function calls: func(...)
+    if (expression.startsWith('[') && expression.endsWith(']')) {
+        const innerText = expression.substring(1, expression.length - 1).trim();
+        if (!innerText) return 'List';
+        
+        const elements = innerText.split(',').map(e => e.trim());
+        let commonType: string | undefined = undefined;
+        let uniform = true;
+        
+        for (const element of elements) {
+            const elType = inferType(element, symbols, metadata, eventName);
+            if (!elType || elType === 'unknown') {
+                uniform = false;
+                break;
+            }
+            if (commonType === undefined) {
+                commonType = elType;
+            } else if (commonType !== elType) {
+                uniform = false;
+                break;
+            }
+        }
+        
+        if (uniform && commonType) {
+            return `List<${commonType}>`;
+        }
+        return 'List';
+    }
     const funcMatch = expression.match(/^([a-z0-9_]+)\(/);
     if (funcMatch) {
-        const funcName = funcMatch[1];
-        return metadata.functions[funcName]?.type;
+        let funcName = funcMatch[1];
+        if (funcName === 'func_call') {
+            const innerMatch = expression.match(/^func_call\(\s*([a-z0-9_]+)/);
+            if (innerMatch) {
+                funcName = innerMatch[1];
+            }
+        }
+        const funcMeta = metadata.functions[funcName];
+        if (funcMeta) {
+            if (funcMeta.type === 'List' && funcMeta.item_type) {
+                return `List<${funcMeta.item_type}>`;
+            }
+            return funcMeta.type;
+        }
     }
     
     // 3. Variable/Member chains: $var.member...
@@ -71,6 +108,10 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
     if (chainMatch) {
         const chain = chainMatch[1].split('.');
         return resolveType(chain, symbols, metadata, eventName);
+    }
+    
+    if (expression.match(/^[a-zA-Z0-9_]+$/)) {
+        return 'String';
     }
     
     return undefined;
@@ -159,11 +200,24 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
             }
         }
         
-        const foreachMatch = line.match(/foreach\s+(\$[a-zA-Z0-9_]+)\s+in/);
+        const foreachMatch = line.match(/foreach\s+(\$[a-zA-Z0-9_]+)\s+in\s*(.*)/);
         if (foreachMatch) {
             const varName = foreachMatch[1].substring(1);
+            let expression = foreachMatch[2].replace(/\s*:\s*$/, '').trim();
+
+            const eventName = getEnclosingEvent(document, position, metadata);
+            const listType = inferType(expression, symbols, metadata, eventName);
+            
+            let innerType = 'unknown';
+            if (listType) {
+                const genericMatch = listType.match(/^List<(.+)>$/);
+                if (genericMatch) {
+                    innerType = genericMatch[1];
+                }
+            }
+            
             if (!symbols[varName]) {
-                symbols[varName] = 'unknown';
+                symbols[varName] = innerType;
             }
         }
     }

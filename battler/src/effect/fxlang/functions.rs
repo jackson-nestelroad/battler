@@ -2313,6 +2313,7 @@ fn is_ally(mut context: FunctionContext) -> Result<Value> {
 /// Returns a list of all boostable stats.
 /// 
 /// @returns {[`ValueType::List`]} A list of stats.
+/// @returnsitem {[`ValueType::Boost`]}
 fn boostable_stats() -> Value {
     Value::List(Vec::from_iter(
         BoostOrderIterator::new().map(|boost| Value::Boost(boost)),
@@ -2856,6 +2857,7 @@ fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result
 /// Gets all active Mons in the battle.
 /// 
 /// @returns {[`ValueType::List`]} A list of all active Mons.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_active_mons(context: FunctionContext) -> Result<Value> {
     Ok(Value::List(
         context
@@ -2871,6 +2873,7 @@ fn all_active_mons(context: FunctionContext) -> Result<Value> {
 /// Gets all active Mons in speed order.
 /// 
 /// @returns {[`ValueType::List`]} A list of active Mons sorted by speed.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_active_mons_in_speed_order(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::List(
         CoreBattle::all_active_mon_handles_in_speed_order(context.battle_context_mut())?
@@ -2883,6 +2886,7 @@ fn all_active_mons_in_speed_order(mut context: FunctionContext) -> Result<Value>
 /// Gets all active Mons in speed and ability effect order.
 /// 
 /// @returns {[`ValueType::List`]} A list of active Mons in speed and ability order.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_active_mons_in_speed_order_and_ability_effect_order(
     mut context: FunctionContext,
 ) -> Result<Value> {
@@ -2899,6 +2903,7 @@ fn all_active_mons_in_speed_order_and_ability_effect_order(
 /// Gets all active or recently exited Mons.
 /// 
 /// @returns {[`ValueType::List`]} A list of active or exited Mons.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_active_or_exited_mons(context: FunctionContext) -> Result<Value> {
     Ok(Value::List(
         context
@@ -2915,6 +2920,7 @@ fn all_active_or_exited_mons(context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Side`]} [side] The side to query. Defaults to the current side.
 /// @returns {[`ValueType::List`]} A list of active Mons on the side.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value> {
     let side = context.target_side_index_positional()?;
     Ok(Value::List(
@@ -2932,6 +2938,7 @@ fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Side`]} [side] The side to query. Defaults to the current side.
 /// @returns {[`ValueType::List`]} A list of all Mons on the side.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_mons_on_side(mut context: FunctionContext) -> Result<Value> {
     let side = context.target_side_index_positional()?;
     Ok(Value::List(
@@ -2949,6 +2956,7 @@ fn all_mons_on_side(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Player`]} player The player.
 /// @returns {[`ValueType::List`]} A list of Mons in the party.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_mons_in_party(mut context: FunctionContext) -> Result<Value> {
     let player = context
         .pop_front()
@@ -2971,6 +2979,7 @@ fn all_mons_in_party(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of adjacent foe Mons.
+/// @returnsitem {[`ValueType::Mon`]}
 fn adjacent_foes(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     Ok(Value::List(
@@ -2984,6 +2993,7 @@ fn adjacent_foes(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of adjacent ally Mons.
+/// @returnsitem {[`ValueType::Mon`]}
 fn adjacent_allies(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     Ok(Value::List(
@@ -2997,6 +3007,7 @@ fn adjacent_allies(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of foe Mons.
+/// @returnsitem {[`ValueType::Mon`]}
 fn all_foes(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     Ok(Value::List(
@@ -3010,6 +3021,7 @@ fn all_foes(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of ally Mons including the reference Mon.
+/// @returnsitem {[`ValueType::Mon`]}
 fn allies_and_self(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     Ok(Value::List(
@@ -3405,6 +3417,7 @@ fn get_species(mut context: FunctionContext) -> Result<Option<Value>> {
 /// Gets all moves from the registry.
 /// 
 /// @returns {[`ValueType::List`]} A list of all moves.
+/// @returnsitem {[`ValueType::Effect`]}
 fn get_all_moves(mut context: FunctionContext) -> Result<Value> {
     let mut with_flags = HashSet::default();
     let mut without_flags = HashSet::default();
@@ -3629,6 +3642,7 @@ fn secondary_hit_effect() -> Result<Value> {
 /// Gets a list of all defined types in the battle.
 /// 
 /// @returns {[`ValueType::List`]} A list of type IDs.
+/// @returnsitem {[`ValueType::Type`]}
 fn all_types(context: FunctionContext) -> Result<Value> {
     let mut types = context
         .evaluation_context()
@@ -3856,6 +3870,7 @@ fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<
 /// Gets all pending move actions this turn.
 /// 
 /// @returns {[`ValueType::List`]} A list of all pending move actions.
+/// @returnsitem {[`ValueType::Object`]}
 fn pending_move_actions_this_turn(mut context: FunctionContext) -> Result<Value> {
     let actions = context
         .battle_context_mut()
@@ -3911,6 +3926,7 @@ fn faint(mut context: FunctionContext) -> Result<()> {
 /// 
 /// @param {[`ValueType::List`]} targets The list of target Mons.
 /// @returns {[`ValueType::List`]} The list of Mons that were hit.
+/// @returnsitem {[`ValueType::Mon`]}
 fn prepare_direct_move(mut context: FunctionContext) -> Result<Value> {
     let targets = context
         .pop_front()
@@ -4911,6 +4927,7 @@ fn new_object(_: FunctionContext) -> Value {
 /// 
 /// @param {[`ValueType::Object`]} object The object to query.
 /// @returns {[`ValueType::List`]} A list of keys.
+/// @returnsitem {[`ValueType::String`]}
 fn object_keys(mut context: FunctionContext) -> Result<Value> {
     let object = context
         .pop_front()
@@ -5355,6 +5372,7 @@ fn set_upgraded_to_max_move(mut context: FunctionContext) -> Result<()> {
 /// @param {[`ValueType::Mon`]} user The Mon using the move.
 /// @param {[`ValueType::Mon`]} [target] A potential target.
 /// @returns {[`ValueType::List`]} A list of valid target Mons.
+/// @returnsitem {[`ValueType::Mon`]}
 fn get_move_targets(mut context: FunctionContext) -> Result<Value> {
     let active_move = context
         .pop_front()

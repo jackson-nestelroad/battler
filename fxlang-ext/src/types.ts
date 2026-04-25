@@ -20,6 +20,7 @@ export interface FunctionData {
     parameters: ParameterData[];
     flags: FlagData[];
     type: string;
+    item_type?: string;
 }
 
 export interface VariableData {

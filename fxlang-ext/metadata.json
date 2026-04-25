@@ -1166,7 +1166,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "adjacent_foes": {
       "description": "Gets all adjacent foes of a Mon.",
@@ -1179,25 +1180,29 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_active_mons": {
       "description": "Gets all active Mons in the battle.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_active_mons_in_speed_order": {
       "description": "Gets all active Mons in speed order.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_active_mons_in_speed_order_and_ability_effect_order": {
       "description": "Gets all active Mons in speed and ability effect order.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_active_mons_on_side": {
       "description": "Gets all active Mons on a specific side.",
@@ -1210,13 +1215,15 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_active_or_exited_mons": {
       "description": "Gets all active or recently exited Mons.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_foes": {
       "description": "Gets all foes of a Mon.",
@@ -1229,7 +1236,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_mons_in_party": {
       "description": "Gets all Mons in a player's party.",
@@ -1242,7 +1250,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_mons_on_side": {
       "description": "Gets all Mons on a specific side, including those in the party.",
@@ -1255,13 +1264,15 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "all_types": {
       "description": "Gets a list of all defined types in the battle.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Type"
     },
     "allies_and_self": {
       "description": "Gets all allies of a Mon and the Mon itself.",
@@ -1274,7 +1285,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "any_mon_will_move_this_turn": {
       "description": "Checks if any Mon will perform a move this turn.",
@@ -1387,7 +1399,8 @@
       "description": "Returns a list of all boostable stats.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Boost"
     },
     "calculate_damage": {
       "description": "Calculates damage for a move.",
@@ -2097,7 +2110,8 @@
       "description": "Gets all moves from the registry.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Effect"
     },
     "get_ability": {
       "description": "Gets an ability by ID.",
@@ -2173,7 +2187,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "get_species": {
       "description": "Gets species data from the registry.",
@@ -3239,7 +3254,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "String"
     },
     "object_set": {
       "description": "Sets a value on an object.",
@@ -3332,7 +3348,8 @@
       "description": "Gets all pending move actions this turn.",
       "parameters": [],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Object"
     },
     "plural": {
       "description": "Returns an 's' if the number is not 1.",
@@ -3358,7 +3375,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "item_type": "Mon"
     },
     "primal_reversion": {
       "description": "Executes a primal reversion.",
