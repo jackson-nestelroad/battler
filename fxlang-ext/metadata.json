@@ -1,16 +1,33 @@
 {
   "variables": {
-    "effect_state": "EffectState",
-    "effect_target": "Mon",
-    "event_origin": "Mon",
-    "this": "Effect",
-    "battle": "Battle",
-    "field": "Field",
-    "format": "Format",
-    "target": "Mon",
-    "source": "Mon",
-    "move": "Effect",
-    "effect": "Effect"
+    "this": {
+      "type": "Effect",
+      "optional": false
+    },
+    "battle": {
+      "type": "Battle",
+      "optional": false
+    },
+    "field": {
+      "type": "Field",
+      "optional": false
+    },
+    "format": {
+      "type": "Format",
+      "optional": false
+    },
+    "effect_state": {
+      "type": "EffectState",
+      "optional": true
+    },
+    "effect_target": {
+      "type": "Mon",
+      "optional": true
+    },
+    "event_origin": {
+      "type": "Mon",
+      "optional": true
+    }
   },
   "variable_members": {
     "is_boolean": {
@@ -851,7 +868,40 @@
         "type": "Type"
       }
     },
-    "EffectState": {},
+    "EffectState": {
+      "duration": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "target": {
+        "description": "",
+        "type": "Mon"
+      },
+      "source_effect": {
+        "description": "",
+        "type": "Effect"
+      },
+      "source": {
+        "description": "",
+        "type": "Mon"
+      },
+      "source_side": {
+        "description": "",
+        "type": "Side"
+      },
+      "source_position": {
+        "description": "",
+        "type": "UFraction"
+      },
+      "started": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "ending": {
+        "description": "",
+        "type": "Boolean"
+      }
+    },
     "Object": {},
     "OptionalHitEffect": {
       "boosts": {
@@ -4601,566 +4651,2545 @@
     "with_target"
   ],
   "events": {
-    "AccuracyExempt": {
-      "description": "Runs when the accuracy of a move against a target is being determined.  Runs in the context of a move target."
-    },
-    "Activate": {
-      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on a Mon."
-    },
-    "ActivateField": {
-      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on the field."
-    },
-    "ActivatePlayer": {
-      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on a player."
-    },
-    "ActivateSide": {
-      "description": "Runs when an effect activates.  Runs when activated by a battle effect. Used for shared logic between multiple event callbacks.  Runs in the context of an applying effect on a side."
-    },
-    "AddPseudoWeather": {
-      "description": "Runs when a pseudo-weather is being added to the field.  Runs before the pseudo-weather effect is applied. Can be used to fail the pseudo-weather.  Runs in the context of an applying effect on the field."
-    },
-    "AddType": {
-      "description": "Runs when a type is being added to a Mon.  Runs before the type addition is applied. Can be used to fail the type addition.  Runs in the context of an applying effect on a Mon."
-    },
-    "AddVolatile": {
-      "description": "Runs after a volatile effect is added to a Mon.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterAddPseudoWeather": {
-      "description": "Runs after a new pseudo-weather is added to the field.  Only runs if the pseudo-weather has been added successfully. This event will not undo the pseudo-weather.  Runs in the context of an applying effect on the field."
-    },
-    "AfterAddVolatile": {
-      "description": "Runs after a Mon receives a new volatile effect.  Only runs if the volatile has been added successfully. This event will not undo the volatile.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterBoost": {
-      "description": "Runs after stat boosts are applied.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterCureStatus": {
-      "description": "Runs after a Mon's current status is cured.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterDamage": {
-      "description": "Runs after a Mon takes damage.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterEachBoost": {
-      "description": "Runs after an individual stat boost is applied.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterFainted": {
-      "description": "Runs after a Mon causes one or more Mons to faint.  Runs in the context of a Mon."
-    },
-    "AfterHeal": {
-      "description": "Runs after a Mon heals.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterHit": {
-      "description": "Runs after a Mon hits another Mon with a move.  Runs on the active move."
-    },
-    "AfterMegaEvolution": {
-      "description": "Runs after a Mon Mega Evolves.  Runs in the context of a Mon."
-    },
-    "AfterMove": {
-      "description": "Runs after a Mon finishes using a move.  Runs on the active move and in the context of a move user."
-    },
-    "AfterMoveSecondaryEffects": {
-      "description": "Runs after a move's secondary effects have been applied, for all targets the move was successful against.  Should be viewed as the last effect the move needs to apply on the target.  Runs on the active move and in the context of a move target."
-    },
-    "AfterMoveSecondaryEffectsDamage": {
-      "description": "Runs after a move's secondary effects have been applied, for all targets affected by damage.  Should be viewed as the last effect the move needs to apply on the target. Minimal difference with `AfterMove`; the key difference is that Sheer Force prevents this event from running.  Runs on the active move and in the context of a move target."
-    },
-    "AfterMoveSecondaryEffectsUser": {
-      "description": "Runs after a move's secondary effects have been applied.  Should be viewed as the last effect the move needs to apply on the user. Minimal difference with `AfterMove`; the key difference is that Sheer Force prevents this event from running.  Runs on the active move and in the context of a move user."
-    },
-    "AfterSetAbility": {
-      "description": "Runs after a Mon has its ability set.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterSetItem": {
-      "description": "Runs after a Mon has its item set.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterSetStatus": {
-      "description": "Runs after a Mon's status effect is changed.  Only runs if the status has been set successfully. This event will not undo a status change.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterSubstituteDamage": {
-      "description": "Runs after damage is applied to a substitute.  Hitting a substitute does not trigger ordinary effects that run when a target is hit. Thus, this event is used to cover for scenarios where hitting a substitute should still trigger some callback.  Runs on the active move and in the context of a move target."
-    },
-    "AfterTakeItem": {
-      "description": "Runs after a Mon has its item taken.  Runs in the context of an applying effect on a Mon."
-    },
-    "AfterTerastallization": {
-      "description": "Runs after a Mon Terastallizes.  Runs in the context of a Mon."
-    },
-    "AfterUseItem": {
-      "description": "Runs after a Mon uses its item.  Runs in the context of an applying effect on a Mon."
-    },
-    "BasePower": {
-      "description": "Runs when a move's base power is being calculated for a target.  Runs on the active move and in the context of a move target."
-    },
-    "BattleEndTurn": {
-      "description": "Runs before a turn of a battle ends.  Runs in the context of the battle."
-    },
-    "BeforeChargeMove": {
-      "description": "Runs when a Mon is using a charge move, on the charging turn.  Runs in the context of a move user."
-    },
-    "BeforeDynamax": {
-      "description": "Runs before a Mon Dynamaxes.  Runs in the context of a Mon."
-    },
-    "BeforeMove": {
-      "description": "Runs before a Mon uses a move.  Can prevent the move from being used.  Runs on the active move and in the context of a move user."
-    },
-    "BeforeSwitchIn": {
-      "description": "Runs when a Mon switches in, prior to `SwitchIn`.  Not really prior to switching in.  Runs in the context of a Mon."
-    },
-    "BeforeSwitchOut": {
-      "description": "Runs before a Mon switches out.  Runs in the context of a Mon."
-    },
-    "BeforeTerastallization": {
-      "description": "Runs before a Mon Terastallizes.  Runs in the context of a Mon."
-    },
-    "BeforeTurn": {
-      "description": "Runs before a turn of a battle.  Runs on the effect and in the context of an applying effect on a Mon."
-    },
-    "BerryEatingHealth": {
-      "description": "Runs when determining the health at which the Mon should eat berries.  Runs in the context of a Mon."
-    },
-    "CanDynamax": {
-      "description": "Runs when determining if a Mon can Dynamax.  Runs in the context of a Mon."
-    },
-    "CanEscape": {
-      "description": "Runs when a Mon is attempting to escape from battle.  Runs in the context of a Mon."
-    },
-    "CanHeal": {
-      "description": "Runs when determining if a Mon can heal.  Runs in the context of a Mon."
-    },
-    "Catch": {
-      "description": "Runs when a Mon is caught.  Runs on the item (used to catch the Mon) and in the context of a Mon."
-    },
-    "ChangeBoosts": {
-      "description": "Runs when a group of stat boosts is being applied to a Mon.  Runs in the context of a Mon."
-    },
-    "CalculateStat": {
-      "description": "Runs when a Mon's stat is being calculated.  Runs in the context of an applying effect on a Mon."
-    },
-    "ChargeMove": {
-      "description": "Runs when a Mon is using a charge move, on the charging turn.  Runs on the active move and in the context of a move user."
-    },
-    "ClearTerrain": {
-      "description": "Runs when the field's terrain is being cleared.  Runs before the terrain effect is cleared. Can be used to fail the clear.  Runs in the context of an applying effect on the field."
-    },
-    "ClearWeather": {
-      "description": "Runs when the field's weather is being cleared.  Runs before the weather effect is cleared. Can be used to fail the clear.  Runs in the context of an applying effect on the field."
-    },
-    "CopyVolatile": {
-      "description": "Runs when copying a volatile effect to the target Mon.  Runs on the effect."
-    },
-    "CriticalHit": {
-      "description": "Runs when a move critical hits a target.  Runs in the context of a move target."
-    },
-    "CureStatus": {
-      "description": "Runs when a Mon's current status is cured.  Runs in the context of an applying effect on a Mon."
-    },
-    "Damage": {
-      "description": "Runs when a Mon's damage is being calculated for a target.  Runs in the context of an applying effect on a Mon."
-    },
-    "DamagingHit": {
-      "description": "Runs after a Mon hits another Mon with a move, causing a nonzero amount of damage.  Runs once per hit (i.e., multi-hit moves execute one event per hit).  Runs in the context of a move target."
-    },
-    "DeductPp": {
-      "description": "Runs after a move is used that should have PP deducted.  Runs in the context of a move user."
-    },
-    "DisableMove": {
-      "description": "Runs when determining which moves are disabled.  Runs in the context of a Mon and on the move."
-    },
-    "DragOut": {
-      "description": "Runs before a Mon is dragged out of battle.  Can cancel the force switch.  Runs in the context of a Mon."
-    },
-    "Duration": {
-      "description": "Runs when determining the duration of an effect.  Runs on the effect."
-    },
-    "Eat": {
-      "description": "Runs when an item is eaten.  Runs on the item."
-    },
-    "EatItem": {
-      "description": "Runs when a Mon eats its item.  Runs in the context of a Mon."
-    },
-    "Effectiveness": {
-      "description": "Runs when determining the type effectiveness of a move.  Runs on the effect and in the context of an applying effect on a Mon."
-    },
-    "End": {
-      "description": "Runs when an effect ends.  Runs on the effect."
-    },
-    "EndBattle": {
-      "description": "Runs when a Mon is active when the battle has ended.  Runs in the context of a Mon."
-    },
-    "EndTurn": {
-      "description": "Runs before a turn of a battle ends.  Runs in the context of a Mon."
-    },
-    "Exit": {
-      "description": "Runs when a Mon exits the battle (is no longer active).  Runs in the context of a Mon."
-    },
-    "Faint": {
-      "description": "Runs when a Mon faints.  Runs in the context of an applying effect on a Mon."
-    },
-    "FieldEnd": {
-      "description": "Runs when a field condition ends.  Runs on the field condition."
-    },
-    "FieldResidual": {
-      "description": "Runs at the end of every turn to apply residual effects on the field.  Runs on the field condition."
-    },
-    "FieldRestart": {
-      "description": "Runs when a field condition restarts.  Runs on the field condition."
-    },
-    "FieldStart": {
-      "description": "Runs when a field condition starts.  Runs on the field condition."
-    },
-    "Flinch": {
-      "description": "Runs when a Mon flinches.  Runs in the context of the target Mon."
-    },
-    "ForceEffectiveness": {
-      "description": "Runs when determining the type effectiveness of an effect, to prevent normal type effectiveness from being used.  Runs on the effect and in the context of an applying effect on a Mon."
-    },
-    "ForceEscape": {
-      "description": "Runs when a Mon is attempting to escape from battle, prior to any speed check.  Runs in the context of a Mon."
-    },
-    "ForceTypes": {
-      "description": "Runs when determining the types of a Mon, to force types early.  Runs in the context of a Mon."
-    },
-    "Hit": {
-      "description": "Runs when a Mon is hit by a move.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move and in the context of a move target."
-    },
-    "HitField": {
-      "description": "Runs when the field is hit by a move.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move."
-    },
-    "HitSide": {
-      "description": "Runs when a side is hit by a move.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move and in the context of an applying effect on a side."
-    },
-    "HitUser": {
-      "description": "Runs when a Mon uses a move that defines a user hit effect.  Can fail, but will only fail the move if everything else failed. Can be viewed as part of the applying hit effect.  Runs on the active move."
-    },
-    "IgnoreImmunity": {
-      "description": "Runs when determining if a move should ignore type immunity.  Runs on the active move and in the context of a move target."
-    },
-    "Immunity": {
-      "description": "Runs when determining if a Mon is immune to some status.  Runs in the context of an applying effect on a Mon."
-    },
-    "Invulnerability": {
-      "description": "Runs when determining if a Mon is invulnerable to targeting moves.  Runs as the very first step in a move.  Runs in the context of a move target."
-    },
-    "IsAsleep": {
-      "description": "Runs when determining if a Mon is asleep.  Runs in the context of a Mon."
-    },
-    "IsAwayFromField": {
-      "description": "Runs when determining if a Mon is away from the field (e.g., immobilized by Sky Drop).  Runs in the context of a Mon."
-    },
-    "IsBehindSubstitute": {
-      "description": "Runs when determining if a Mon is behind a substitute.  Runs in the context of a Mon."
-    },
-    "IsContactProof": {
-      "description": "Runs when determining if a Mon is protected from making contact with other Mons.  Runs in the context of a Mon."
-    },
-    "IsGrounded": {
-      "description": "Runs when determining if a Mon is grounded.  Runs in the context of a Mon."
-    },
-    "IsImmuneToEntryHazards": {
-      "description": "Runs when determining if a Mon is immune to entry hazards.  Runs in the context of a Mon."
-    },
-    "IsRaining": {
-      "description": "Runs when determining if a weather includes raining.  Runs in the context of a Mon."
-    },
-    "IsSemiInvulnerable": {
-      "description": "Runs when determining if a Mon is in a semi-invulnerable state.  Runs in the context of a Mon."
-    },
-    "IsSnowing": {
-      "description": "Runs when determining if a weather includes snowing.  Runs in the context of a Mon."
-    },
-    "IsSoundproof": {
-      "description": "Runs when determining if a Mon is soundproof.  Runs in the context of a Mon."
-    },
-    "IsSunny": {
-      "description": "Runs when determining if a weather includes sunny weather.  Runs in the context of a Mon."
-    },
-    "LockMove": {
-      "description": "Runs when determining if a Mon is locked into a move.  Runs in the context of a Mon."
-    },
-    "ModifyAccuracy": {
-      "description": "Runs when calculating the accuracy of a move.  Runs in the context of a move target."
-    },
-    "ModifyActionSpeed": {
-      "description": "Runs when calculating the speed of an action.  Runs in the context of a Mon."
-    },
-    "ModifyAtk": {
-      "description": "Runs when calculating a Mon's Atk stat.  Runs in the context of an applying effect on a Mon."
-    },
-    "ModifyBoosts": {
-      "description": "Runs when modifying a Mon's stat boosts used for stat calculations.  Runs in the context of an applying effect on a Mon."
-    },
-    "ModifyCatchRate": {
-      "description": "Runs when calculating the modified catch rate of a Mon.  Runs in the context of the item and in the context of an applying effect on a Mon."
-    },
-    "ModifyCritChance": {
-      "description": "Runs when calculating a move's critical hit chance.  Runs in the context of a move user."
-    },
-    "ModifyCritRatio": {
-      "description": "Runs when calculating a move's critical hit ratio.  Runs in the context of a move user."
-    },
-    "ModifyDamage": {
-      "description": "Runs when calculating the damage applied to a Mon.  Runs as the very last step in the regular damage calculation formula.  Runs in the context of a move user."
-    },
-    "ModifyDef": {
-      "description": "Runs when calculating a Mon's Def stat.  Runs in the context of an applying effect on a Mon."
-    },
-    "ModifyEvYield": {
-      "description": "Runs when calculating the EV yield gained by a Mon.  Runs in the context of a Mon."
-    },
-    "ModifyExperience": {
-      "description": "Runs when calculating the amount of experience gained by a Mon.  Runs in the context of a Mon."
-    },
-    "ModifyFriendshipIncrease": {
-      "description": "Runs when calculating the amount of friendship gained by a Mon.  Runs in the context of a Mon."
-    },
-    "ModifyMoveType": {
-      "description": "Runs when modifying the type of a move.  Runs on the move and in the context of a move user."
-    },
-    "ModifyPriority": {
-      "description": "Runs when determining the priority of a move.  Runs in the context of a move user."
-    },
-    "ModifySecondaryEffects": {
-      "description": "Runs before applying secondary move effects.  Runs in the context of a move target."
-    },
-    "ModifySpA": {
-      "description": "Runs when calculating a Mon's SpA stat.  Runs in the context of an applying effect on a Mon."
-    },
-    "ModifySpD": {
-      "description": "Runs when calculating a Mon's SpD stat.  Runs in the context of an applying effect on a Mon."
-    },
-    "ModifySpe": {
-      "description": "Runs when calculating a Mon's Spe stat.  Runs in the context of an applying effect on a Mon."
-    },
-    "ModifySpeciesCatchRate": {
-      "description": "Runs when calculating the base species catch rate of a Mon.  Runs in the context of the item and in the context of an applying effect on a Mon."
-    },
-    "ModifyStab": {
-      "description": "Runs when calculating a move's STAB multiplier.  Runs in the context of a move user."
-    },
-    "ModifyTarget": {
-      "description": "Runs before a move is used, to modify the target Mon.  Runs on the active move and in the context of a move user."
-    },
-    "ModifyWeight": {
-      "description": "Runs when calculating a Mon's weight.  Runs in the context of a Mon."
-    },
-    "MoveAborted": {
-      "description": "Runs when a move is aborted due to failing the BeforeMove event.  Runs on the active move and in the context of a move user."
-    },
-    "MoveBasePower": {
-      "description": "Runs when a move's base power is being calculated for a target.  Runs on the active move."
-    },
-    "MoveDamage": {
-      "description": "Runs when a move's damage is being calculated for a target.  Runs on the active move."
-    },
-    "MoveFailed": {
-      "description": "Runs when a move fails, only on the move itself.  A move fails when it is successfully used by the user, but it does not hit or apply its primary effect to any targets.  Runs on the active move."
-    },
-    "MoveTargetOverride": {
-      "description": "Runs when a move's target type is determined for a Mon selecting a move.  Runs on the move."
-    },
-    "NegateImmunity": {
-      "description": "Runs when determining if a Mon's immunity against a single type should be negated.  Runs in the context of a Mon."
-    },
-    "OverrideMove": {
-      "description": "Runs when a Mon uses a move, to override the chosen move.  Runs in the context of a Mon."
-    },
-    "OverrideWeather": {
-      "description": "Runs when determining the effective weather for a Mon. Overrides the weather without looking at the actual field weather or weather suppression effects.  Runs in the context of a Mon."
-    },
-    "PlayerTryUseItem": {
-      "description": "Runs when a player tries to choose to use an item.  Runs on the item."
-    },
-    "PlayerUse": {
-      "description": "Runs when an item is used on a Mon by a player.  Runs on the item."
-    },
-    "PreMoveEffect": {
-      "description": "Runs when applying any pre-move effect.  Very similar to `UseMove`, except it runs after the move is announced.  Runs in the context of a move user."
-    },
-    "PrepareHit": {
-      "description": "Runs when a Mon is preparing to hit all of its targets with a move.  Can fail the move.  Runs on the active move and in the context of a move user."
-    },
-    "PreventUsedItems": {
-      "description": "Runs when determining if a Mon can have items used on it.  Runs in the context of a Mon."
-    },
-    "PriorityChargeMove": {
-      "description": "Runs before at the start of the turn, when a move is charging for the turn.  Runs in the context of a Mon."
-    },
-    "RedirectTarget": {
-      "description": "Runs when a move is going to target one Mon but can be redirected towards a different target.  Runs in the context of a move user."
-    },
-    "Residual": {
-      "description": "Runs at the end of every turn to apply residual effects.  Runs in the context of an applying effect on a Mon."
-    },
-    "Restart": {
-      "description": "Runs when a volatile effect is applied to a Mon that already has the volatile effect.  Runs on the effect."
-    },
-    "RestorePp": {
-      "description": "Runs when restoring PP to a move.  Runs in the context of an applying effect on a Mon."
-    },
-    "SetAbility": {
-      "description": "Runs when a Mon's ability is being set.  Runs before the ability is changed. Can be used to fail the ability change.  Runs in the context of an applying effect on a Mon."
-    },
-    "SetItem": {
-      "description": "Runs when an item is being given to a Mon.  Can prevent the item from being set.  Runs on the item and in the context of an applying effect on a Mon."
-    },
-    "SetLastMove": {
-      "description": "Runs when the Mon's last move selected is being set.  Runs in the context of a Mon."
-    },
-    "SetStatus": {
-      "description": "Runs when a Mon's status effect is being set.  Runs before the status effect is applied. Can be used to fail the status change.  Runs in the context of an applying effect on a Mon."
-    },
-    "SetTerrain": {
-      "description": "Runs when the field's terrain is being set.  Runs before the terrain effect is applied. Can be used to fail the terrain.  Runs in the context of an applying effect on the field."
-    },
-    "SetTypes": {
-      "description": "Runs when a Mon's types are being changed.  Runs before the types are applied. Can be used to fail the type change.  Runs in the context of an applying effect on a Mon."
-    },
-    "SetWeather": {
-      "description": "Runs when the field's weather is being set.  Runs before the weather effect is applied. Can be used to fail the weather.  Runs in the context of an applying effect on the field."
-    },
-    "SideConditionStart": {
-      "description": "Runs when a side condition starts successfully.  Runs in the context of an applying effect on a side."
-    },
-    "SideEnd": {
-      "description": "Runs when a side condition ends.  Runs in the context of the side condition."
-    },
-    "SideResidual": {
-      "description": "Runs at the end of every turn to apply residual effects on the side.  Runs in the context of the side condition."
-    },
-    "SideRestart": {
-      "description": "Runs when a side condition restarts.  Runs in the context of the side condition."
-    },
-    "SideStart": {
-      "description": "Runs when a side condition starts.  Runs in the context of the side condition."
-    },
-    "SlotEnd": {
-      "description": "Runs when a slot condition ends.  Runs in the context of the slot condition."
-    },
-    "SlotRestart": {
-      "description": "Runs when a slot condition restarts.  Runs in the context of the slot condition."
-    },
-    "SlotStart": {
-      "description": "Runs when a slot condition starts.  Runs in the context of the slot condition."
-    },
-    "StallMove": {
-      "description": "Runs when a Mon attempts a stalling move (e.g., Protect).  Can fail the stalling move (assuming the stalling move integrates with the event properly).  Runs in the context of a Mon."
-    },
-    "Start": {
-      "description": "Runs when an effect starts.  Used to set up state.  Runs on the effect."
-    },
-    "StartBattle": {
-      "description": "Runs when the battle starts.  Runs in the context of the battle."
-    },
-    "StartUsingMove": {
-      "description": "Runs when Mon starts using a move.  Runs in the context of a Mon."
-    },
-    "StopUsingMove": {
-      "description": "Runs when Mon stops using a move.  Runs in the context of a Mon."
-    },
-    "SubPriority": {
-      "description": "Runs when determining the sub-priority of a move.  Runs in the context of a move user."
-    },
-    "SuppressFieldTerrain": {
-      "description": "Runs when determining if terrain on the field is suppressed, for some other active effect.  Runs on the effect."
-    },
-    "SuppressFieldWeather": {
-      "description": "Runs when determining if weather on the field is suppressed, for some other active effect.  Runs on the effect."
-    },
-    "SuppressMonAbility": {
-      "description": "Runs when determining if a Mon's ability is suppressed, for some other active effect.  Runs on the effect."
-    },
-    "SuppressMonItem": {
-      "description": "Runs when determining if the item on the Mon is suppressed, for some other active effect.  Runs on the effect."
-    },
-    "SuppressMonTerrain": {
-      "description": "Runs when determining if terrain on the Mon is suppressed, for some other active effect.  Runs on the effect."
-    },
-    "SuppressMonWeather": {
-      "description": "Runs when determining if weather on the Mon is suppressed, for some other active effect.  Runs on the effect."
-    },
-    "SwitchIn": {
-      "description": "Runs when a Mon switches in.  Runs in the context of a Mon."
-    },
-    "SwitchingIn": {
-      "description": "Runs when a Mon is switching in, prior to `SwitchIn`.  Runs in the context of a Mon."
-    },
-    "SwitchOut": {
-      "description": "Runs when a Mon is switching out.  Runs in the context of a Mon."
-    },
-    "TakeItem": {
-      "description": "Runs when an item is being taken from a Mon.  Can prevent the item from being taken.  Runs on the item and in the context of an applying effect on a Mon."
-    },
-    "TrapMon": {
-      "description": "Runs when determining if a Mon is trapped (i.e., cannot switch out).  Runs in the context of a Mon."
-    },
-    "TryBoost": {
-      "description": "Runs when a group of stat boosts is being applied to a Mon.  Runs in the context of an applying effect on a Mon."
-    },
-    "TryEatItem": {
-      "description": "Runs when a Mon tries to eat its item.  Runs in the context of an applying effect on a Mon."
-    },
-    "TryHeal": {
-      "description": "Runs before a Mon is healed for some amount of damage.  Runs in the context of an applying effect on a Mon."
-    },
-    "TryHit": {
-      "description": "Runs when a move is trying to hit a set of targets.  Can fail the move.  Runs on the active move and in the context of a move target."
-    },
-    "TryHitField": {
-      "description": "Runs when a move is trying to hit the whole field.  Can fail the move.  Runs on the active move and in the context of an applying effect on the field."
-    },
-    "TryHitSide": {
-      "description": "Runs when a move is trying to hit an entire side  Can fail the move.  Runs on the active move and in the context of an applying effect on a side."
-    },
-    "TryImmunity": {
-      "description": "Runs when a move is checking general immunity for its target.  Can fail the move (by marking the target as immune).  Runs in the context of the active move."
-    },
-    "TryMove": {
-      "description": "Runs when trying to use a move.  Can fail the move.  Runs on the active move and in the context of a move user."
-    },
-    "TryPrimaryHit": {
-      "description": "Runs when a move's primary hit is being applied to a target.  Used to override the core battle engine logic. Can fail the move or return an amount of damage dealt to the target. If zero damage is returned, the core battle engine assumes a substitute was hit for the purposes of hit effects (i.e., hit effects do not apply to the target).  Runs in the context of a move target."
-    },
-    "TryUseItem": {
-      "description": "Runs when a Mon tries to use an item.  Runs in the context of an applying effect on a Mon."
-    },
-    "TryUseMove": {
-      "description": "Runs when a Mon is trying to use a move on a set of targets.  Can fail the move.  Runs on the active move."
-    },
-    "TypeImmunity": {
-      "description": "Runs when determining if a Mon has immunity against a single type.  Runs in the context of a Mon."
-    },
-    "Types": {
-      "description": "Runs when determining the types of a Mon.  Runs in the context of a Mon."
-    },
-    "Update": {
-      "description": "Runs when miscellaneous Mon effects in the battle could activate.  Runs in the context of a Mon."
-    },
-    "UpgradeMove": {
-      "description": "Runs when a Mon uses a move, to upgrade the chosen move.  Runs in the context of a move user."
-    },
-    "Use": {
-      "description": "Runs when an item is used.  Runs on the item."
-    },
-    "UseMove": {
-      "description": "Runs when a Mon uses a move.  Can be used to modify a move when it is used.  Runs on the active move and in the context of a move user."
-    },
-    "UseMoveMessage": {
-      "description": "Runs when a custom message should be displayed when a Mon uses a move.  Runs on the active move."
-    },
-    "ValidateMon": {
-      "description": "Runs when validating a Mon.  Runs in the context of a Mon."
-    },
-    "ValidateTeam": {
-      "description": "Runs when validating a team.  Runs in the context of a player."
-    },
-    "Weather": {
-      "description": "Runs when weather is activated at the end of each turn.  Runs in the context of an applying effect on a Mon."
-    },
-    "WeatherChange": {
-      "description": "Runs when the weather over a Mon changes.  Runs in the context of an applying effect on a Mon."
-    },
-    "WeatherModifyDamage": {
-      "description": "Runs when calculating the damage applied to a Mon.  Runs in the context of a move user."
+    "accuracy_exempt": {
+      "description": "Runs when the accuracy of a move against a target is being determined.\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "activate": {
+      "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "activate_field": {
+      "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "activate_player": {
+      "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on a player.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "player": {
+          "type": "Player",
+          "optional": false
+        }
+      }
+    },
+    "activate_side": {
+      "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "add_pseudo_weather": {
+      "description": "Runs when a pseudo-weather is being added to the field.\n\nRuns before the pseudo-weather effect is applied. Can be used to fail the pseudo-weather.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "add_type": {
+      "description": "Runs when a type is being added to a Mon.\n\nRuns before the type addition is applied. Can be used to fail the type addition.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "add_volatile": {
+      "description": "Runs after a volatile effect is added to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_add_pseudo_weather": {
+      "description": "Runs after a new pseudo-weather is added to the field.\n\nOnly runs if the pseudo-weather has been added successfully. This event will not undo the\npseudo-weather.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_add_volatile": {
+      "description": "Runs after a Mon receives a new volatile effect.\n\nOnly runs if the volatile has been added successfully. This event will not undo the\nvolatile.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_boost": {
+      "description": "Runs after stat boosts are applied.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_cure_status": {
+      "description": "Runs after a Mon's current status is cured.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_damage": {
+      "description": "Runs after a Mon takes damage.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_each_boost": {
+      "description": "Runs after an individual stat boost is applied.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_fainted": {
+      "description": "Runs after a Mon causes one or more Mons to faint.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "after_heal": {
+      "description": "Runs after a Mon heals.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_hit": {
+      "description": "Runs after a Mon hits another Mon with a move.\n\nRuns on the active move.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "after_mega_evolution": {
+      "description": "Runs after a Mon Mega Evolves.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "after_move": {
+      "description": "Runs after a Mon finishes using a move.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "after_move_secondary_effects": {
+      "description": "Runs after a move's secondary effects have been applied, for all targets the move was\nsuccessful against.\n\nShould be viewed as the last effect the move needs to apply on the target.\n\nRuns on the active move and in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "after_move_secondary_effects_damage": {
+      "description": "Runs after a move's secondary effects have been applied, for all targets affected by damage.\n\nShould be viewed as the last effect the move needs to apply on the target. Minimal\ndifference with `AfterMove`; the key difference is that Sheer Force prevents this event from\nrunning.\n\nRuns on the active move and in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "after_move_secondary_effects_user": {
+      "description": "Runs after a move's secondary effects have been applied.\n\nShould be viewed as the last effect the move needs to apply on the user. Minimal difference\nwith `AfterMove`; the key difference is that Sheer Force prevents this event from running.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "after_set_ability": {
+      "description": "Runs after a Mon has its ability set.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_set_item": {
+      "description": "Runs after a Mon has its item set.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_set_status": {
+      "description": "Runs after a Mon's status effect is changed.\n\nOnly runs if the status has been set successfully. This event will not undo a status\nchange.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_substitute_damage": {
+      "description": "Runs after damage is applied to a substitute.\n\nHitting a substitute does not trigger ordinary effects that run when a target is hit. Thus,\nthis event is used to cover for scenarios where hitting a substitute should still trigger\nsome callback.\n\nRuns on the active move and in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "after_take_item": {
+      "description": "Runs after a Mon has its item taken.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "after_terastallization": {
+      "description": "Runs after a Mon Terastallizes.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "after_use_item": {
+      "description": "Runs after a Mon uses its item.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "base_power": {
+      "description": "Runs when a move's base power is being calculated for a target.\n\nRuns on the active move and in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "battle_end_turn": {
+      "description": "Runs before a turn of a battle ends.\n\nRuns in the context of the battle.",
+      "variables": {}
+    },
+    "before_charge_move": {
+      "description": "Runs when a Mon is using a charge move, on the charging turn.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "before_dynamax": {
+      "description": "Runs before a Mon Dynamaxes.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "before_move": {
+      "description": "Runs before a Mon uses a move.\n\nCan prevent the move from being used.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "before_switch_in": {
+      "description": "Runs when a Mon switches in, prior to `SwitchIn`.\n\nNot really prior to switching in.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "before_switch_out": {
+      "description": "Runs before a Mon switches out.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "before_terastallization": {
+      "description": "Runs before a Mon Terastallizes.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "before_turn": {
+      "description": "Runs before a turn of a battle.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "berry_eating_health": {
+      "description": "Runs when determining the health at which the Mon should eat berries.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "calculate_stat": {
+      "description": "Runs when a Mon's stat is being calculated.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "can_dynamax": {
+      "description": "Runs when determining if a Mon can Dynamax.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "can_escape": {
+      "description": "Runs when a Mon is attempting to escape from battle.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "can_heal": {
+      "description": "Runs when determining if a Mon can heal.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "catch": {
+      "description": "Runs when a Mon is caught.\n\nRuns on the item (used to catch the Mon) and in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "change_boosts": {
+      "description": "Runs when a group of stat boosts is being applied to a Mon.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "charge_move": {
+      "description": "Runs when a Mon is using a charge move, on the charging turn.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "clear_terrain": {
+      "description": "Runs when the field's terrain is being cleared.\n\nRuns before the terrain effect is cleared. Can be used to fail the clear.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "clear_weather": {
+      "description": "Runs when the field's weather is being cleared.\n\nRuns before the weather effect is cleared. Can be used to fail the clear.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "copy_volatile": {
+      "description": "Runs when copying a volatile effect to the target Mon.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "critical_hit": {
+      "description": "Runs when a move critical hits a target.\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "cure_status": {
+      "description": "Runs when a Mon's current status is cured.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "damage": {
+      "description": "Runs when a Mon's damage is being calculated for a target.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "damaging_hit": {
+      "description": "Runs after a Mon hits another Mon with a move, causing a nonzero amount of damage.\n\nRuns once per hit (i.e., multi-hit moves execute one event per hit).\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "disable_move": {
+      "description": "Runs when determining which moves are disabled.\n\nRuns in the context of a Mon and on the move.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "deduct_pp": {
+      "description": "Runs after a move is used that should have PP deducted.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "drag_out": {
+      "description": "Runs before a Mon is dragged out of battle.\n\nCan cancel the force switch.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "duration": {
+      "description": "Runs when determining the duration of an effect.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "effectiveness": {
+      "description": "Runs when determining the type effectiveness of a move.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "eat": {
+      "description": "Runs when an item is eaten.\n\nRuns on the item.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "eat_item": {
+      "description": "Runs when a Mon eats its item.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "end": {
+      "description": "Runs when an effect ends.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "end_battle": {
+      "description": "Runs when a Mon is active when the battle has ended.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "end_turn": {
+      "description": "Runs before a turn of a battle ends.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "exit": {
+      "description": "Runs when a Mon exits the battle (is no longer active).\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "faint": {
+      "description": "Runs when a Mon faints.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "field_end": {
+      "description": "Runs when a field condition ends.\n\nRuns on the field condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "field_residual": {
+      "description": "Runs at the end of every turn to apply residual effects on the field.\n\nRuns on the field condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "field_restart": {
+      "description": "Runs when a field condition restarts.\n\nRuns on the field condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "field_start": {
+      "description": "Runs when a field condition starts.\n\nRuns on the field condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "flinch": {
+      "description": "Runs when a Mon flinches.\n\nRuns in the context of the target Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "force_effectiveness": {
+      "description": "Runs when determining the type effectiveness of an effect, to prevent normal type\neffectiveness from being used.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "force_escape": {
+      "description": "Runs when a Mon is attempting to escape from battle, prior to any speed check.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "force_types": {
+      "description": "Runs when determining the types of a Mon, to force types early.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "hit": {
+      "description": "Runs when a Mon is hit by a move.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move and in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "hit_field": {
+      "description": "Runs when the field is hit by a move.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "hit_side": {
+      "description": "Runs when a side is hit by a move.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move and in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "hit_user": {
+      "description": "Runs when a Mon uses a move that defines a user hit effect.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "ignore_immunity": {
+      "description": "Runs when determining if a move should ignore type immunity.\n\nRuns on the active move and in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "immunity": {
+      "description": "Runs when determining if a Mon is immune to some status.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "invulnerability": {
+      "description": "Runs when determining if a Mon is invulnerable to targeting moves.\n\nRuns as the very first step in a move.\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "is_asleep": {
+      "description": "Runs when determining if a Mon is asleep.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_away_from_field": {
+      "description": "Runs when determining if a Mon is away from the field (e.g., immobilized by Sky Drop).\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_behind_substitute": {
+      "description": "Runs when determining if a Mon is behind a substitute.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_contact_proof": {
+      "description": "Runs when determining if a Mon is protected from making contact with other Mons.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_grounded": {
+      "description": "Runs when determining if a Mon is grounded.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_immune_to_entry_hazards": {
+      "description": "Runs when determining if a Mon is immune to entry hazards.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_raining": {
+      "description": "Runs when determining if a weather includes raining.\n\nRuns in the context of a Mon.",
+      "variables": {}
+    },
+    "is_semi_invulnerable": {
+      "description": "Runs when determining if a Mon is in a semi-invulnerable state.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_snowing": {
+      "description": "Runs when determining if a weather includes snowing.\n\nRuns in the context of a Mon.",
+      "variables": {}
+    },
+    "is_soundproof": {
+      "description": "Runs when determining if a Mon is soundproof.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "is_sunny": {
+      "description": "Runs when determining if a weather includes sunny weather.\n\nRuns in the context of a Mon.",
+      "variables": {}
+    },
+    "lock_move": {
+      "description": "Runs when determining if a Mon is locked into a move.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "modify_accuracy": {
+      "description": "Runs when calculating the accuracy of a move.\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "modify_action_speed": {
+      "description": "Runs when calculating the speed of an action.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "modify_atk": {
+      "description": "Runs when calculating a Mon's Atk stat.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "modify_boosts": {
+      "description": "Runs when modifying a Mon's stat boosts used for stat calculations.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "modify_catch_rate": {
+      "description": "Runs when calculating the modified catch rate of a Mon.\n\nRuns in the context of the item and in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "modify_crit_chance": {
+      "description": "Runs when calculating a move's critical hit chance.\n\nRuns in the context of a move user.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "modify_crit_ratio": {
+      "description": "Runs when calculating a move's critical hit ratio.\n\nRuns in the context of a move user.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "modify_damage": {
+      "description": "Runs when calculating the damage applied to a Mon.\n\nRuns as the very last step in the regular damage calculation formula.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "modify_def": {
+      "description": "Runs when calculating a Mon's Def stat.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "modify_ev_yield": {
+      "description": "Runs when calculating the EV yield gained by a Mon.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "modify_experience": {
+      "description": "Runs when calculating the amount of experience gained by a Mon.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "modify_friendship_increase": {
+      "description": "Runs when calculating the amount of friendship gained by a Mon.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "modify_move_type": {
+      "description": "Runs when modifying the type of a move.\n\nRuns on the move and in the context of a move user.",
+      "variables": {
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "modify_priority": {
+      "description": "Runs when determining the priority of a move.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "modify_secondary_effects": {
+      "description": "Runs before applying secondary move effects.\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "modify_sp_a": {
+      "description": "Runs when calculating a Mon's SpA stat.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "modify_sp_d": {
+      "description": "Runs when calculating a Mon's SpD stat.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "modify_spe": {
+      "description": "Runs when calculating a Mon's Spe stat.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        }
+      }
+    },
+    "modify_species_catch_rate": {
+      "description": "Runs when calculating the base species catch rate of a Mon.\n\nRuns in the context of the item and in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "modify_stab": {
+      "description": "Runs when calculating a move's STAB multiplier.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "modify_target": {
+      "description": "Runs before a move is used, to modify the target Mon.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "modify_weight": {
+      "description": "Runs when calculating a Mon's weight.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "move_aborted": {
+      "description": "Runs when a move is aborted due to failing the BeforeMove event.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "move_base_power": {
+      "description": "Runs when a move's base power is being calculated for a target.\n\nRuns on the active move.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "move_damage": {
+      "description": "Runs when a move's damage is being calculated for a target.\n\nRuns on the active move.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "move_failed": {
+      "description": "Runs when a move fails, only on the move itself.\n\nA move fails when it is successfully used by the user, but it does not hit or apply its\nprimary effect to any targets.\n\nRuns on the active move.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "move_target_override": {
+      "description": "Runs when a move's target type is determined for a Mon selecting a move.\n\nRuns on the move.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "negate_immunity": {
+      "description": "Runs when determining if a Mon's immunity against a single type should be negated.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "override_weather": {
+      "description": "Runs when determining the effective weather for a Mon. Overrides the weather without looking\nat the actual field weather or weather suppression effects.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "override_move": {
+      "description": "Runs when a Mon uses a move, to override the chosen move.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "player_try_use_item": {
+      "description": "Runs when a player tries to choose to use an item.\n\nRuns on the item.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "player_use": {
+      "description": "Runs when an item is used on a Mon by a player.\n\nRuns on the item.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "pre_move_effect": {
+      "description": "Runs when applying any pre-move effect.\n\nVery similar to `UseMove`, except it runs after the move is announced.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "prepare_hit": {
+      "description": "Runs when a Mon is preparing to hit all of its targets with a move.\n\nCan fail the move.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "prevent_used_items": {
+      "description": "Runs when determining if a Mon can have items used on it.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "priority_charge_move": {
+      "description": "Runs before at the start of the turn, when a move is charging for the turn.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "redirect_target": {
+      "description": "Runs when a move is going to target one Mon but can be redirected towards a different\ntarget.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "residual": {
+      "description": "Runs at the end of every turn to apply residual effects.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "restart": {
+      "description": "Runs when a volatile effect is applied to a Mon that already has the volatile effect.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "restore_pp": {
+      "description": "Runs when restoring PP to a move.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "set_ability": {
+      "description": "Runs when a Mon's ability is being set.\n\nRuns before the ability is changed. Can be used to fail the ability change.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "set_item": {
+      "description": "Runs when an item is being given to a Mon.\n\nCan prevent the item from being set.\n\nRuns on the item and in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "set_last_move": {
+      "description": "Runs when the Mon's last move selected is being set.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "set_status": {
+      "description": "Runs when a Mon's status effect is being set.\n\nRuns before the status effect is applied. Can be used to fail the status change.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "set_terrain": {
+      "description": "Runs when the field's terrain is being set.\n\nRuns before the terrain effect is applied. Can be used to fail the terrain.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "set_types": {
+      "description": "Runs when a Mon's types are being changed.\n\nRuns before the types are applied. Can be used to fail the type change.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "set_weather": {
+      "description": "Runs when the field's weather is being set.\n\nRuns before the weather effect is applied. Can be used to fail the weather.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "side_condition_start": {
+      "description": "Runs when a side condition starts successfully.\n\nRuns in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "side_end": {
+      "description": "Runs when a side condition ends.\n\nRuns in the context of the side condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "side_residual": {
+      "description": "Runs at the end of every turn to apply residual effects on the side.\n\nRuns in the context of the side condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "side_restart": {
+      "description": "Runs when a side condition restarts.\n\nRuns in the context of the side condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "side_start": {
+      "description": "Runs when a side condition starts.\n\nRuns in the context of the side condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "slot_end": {
+      "description": "Runs when a slot condition ends.\n\nRuns in the context of the slot condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "slot_restart": {
+      "description": "Runs when a slot condition restarts.\n\nRuns in the context of the slot condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "slot_start": {
+      "description": "Runs when a slot condition starts.\n\nRuns in the context of the slot condition.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "stall_move": {
+      "description": "Runs when a Mon attempts a stalling move (e.g., Protect).\n\nCan fail the stalling move (assuming the stalling move integrates with the event properly).\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "start": {
+      "description": "Runs when an effect starts.\n\nUsed to set up state.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "start_battle": {
+      "description": "Runs when the battle starts.\n\nRuns in the context of the battle.",
+      "variables": {}
+    },
+    "start_using_move": {
+      "description": "Runs when Mon starts using a move.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "stop_using_move": {
+      "description": "Runs when Mon stops using a move.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "sub_priority": {
+      "description": "Runs when determining the sub-priority of a move.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "suppress_field_terrain": {
+      "description": "Runs when determining if terrain on the field is suppressed, for some other active effect.\n\nRuns on the effect.",
+      "variables": {}
+    },
+    "suppress_field_weather": {
+      "description": "Runs when determining if weather on the field is suppressed, for some other active effect.\n\nRuns on the effect.",
+      "variables": {}
+    },
+    "suppress_mon_ability": {
+      "description": "Runs when determining if a Mon's ability is suppressed, for some other active effect.\n\nRuns on the effect.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "suppress_mon_item": {
+      "description": "Runs when determining if the item on the Mon is suppressed, for some other active effect.\n\nRuns on the effect.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "suppress_mon_terrain": {
+      "description": "Runs when determining if terrain on the Mon is suppressed, for some other active effect.\n\nRuns on the effect.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "suppress_mon_weather": {
+      "description": "Runs when determining if weather on the Mon is suppressed, for some other active effect.\n\nRuns on the effect.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "switch_in": {
+      "description": "Runs when a Mon switches in.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "switching_in": {
+      "description": "Runs when a Mon is switching in, prior to `SwitchIn`.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "switch_out": {
+      "description": "Runs when a Mon is switching out.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "take_item": {
+      "description": "Runs when an item is being taken from a Mon.\n\nCan prevent the item from being taken.\n\nRuns on the item and in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "trap_mon": {
+      "description": "Runs when determining if a Mon is trapped (i.e., cannot switch out).\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "try_boost": {
+      "description": "Runs when a group of stat boosts is being applied to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "try_eat_item": {
+      "description": "Runs when a Mon tries to eat its item.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "try_heal": {
+      "description": "Runs before a Mon is healed for some amount of damage.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "try_hit": {
+      "description": "Runs when a move is trying to hit a set of targets.\n\nCan fail the move.\n\nRuns on the active move and in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "try_hit_field": {
+      "description": "Runs when a move is trying to hit the whole field.\n\nCan fail the move.\n\nRuns on the active move and in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "try_hit_side": {
+      "description": "Runs when a move is trying to hit an entire side\n\nCan fail the move.\n\nRuns on the active move and in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        }
+      }
+    },
+    "try_immunity": {
+      "description": "Runs when a move is checking general immunity for its target.\n\nCan fail the move (by marking the target as immune).\n\nRuns in the context of the active move.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "try_move": {
+      "description": "Runs when trying to use a move.\n\nCan fail the move.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "try_primary_hit": {
+      "description": "Runs when a move's primary hit is being applied to a target.\n\nUsed to override the core battle engine logic. Can fail the move or return an amount of\ndamage dealt to the target. If zero damage is returned, the core battle engine assumes a\nsubstitute was hit for the purposes of hit effects (i.e., hit effects do not apply to the\ntarget).\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      }
+    },
+    "try_use_item": {
+      "description": "Runs when a Mon tries to use an item.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "try_use_move": {
+      "description": "Runs when a Mon is trying to use a move on a set of targets.\n\nCan fail the move.\n\nRuns on the active move.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "type_immunity": {
+      "description": "Runs when determining if a Mon has immunity against a single type.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "types": {
+      "description": "Runs when determining the types of a Mon.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "update": {
+      "description": "Runs when miscellaneous Mon effects in the battle could activate.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "upgrade_move": {
+      "description": "Runs when a Mon uses a move, to upgrade the chosen move.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "use": {
+      "description": "Runs when an item is used.\n\nRuns on the item.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "use_move": {
+      "description": "Runs when a Mon uses a move.\n\nCan be used to modify a move when it is used.\n\nRuns on the active move and in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "use_move_message": {
+      "description": "Runs when a custom message should be displayed when a Mon uses a move.\n\nRuns on the active move.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
+    },
+    "validate_mon": {
+      "description": "Runs when validating a Mon.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      }
+    },
+    "validate_team": {
+      "description": "Runs when validating a team.\n\nRuns in the context of a player.",
+      "variables": {
+        "player": {
+          "type": "Player",
+          "optional": false
+        }
+      }
+    },
+    "weather": {
+      "description": "Runs when weather is activated at the end of each turn.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "weather_change": {
+      "description": "Runs when the weather over a Mon changes.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      }
+    },
+    "weather_modify_damage": {
+      "description": "Runs when calculating the damage applied to a Mon.\n\nRuns in the context of a move user.",
+      "variables": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
+        }
+      }
     }
   }
 }

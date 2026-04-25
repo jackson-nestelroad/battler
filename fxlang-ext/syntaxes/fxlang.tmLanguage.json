@@ -95,7 +95,7 @@
       "patterns": [
         {
           "name": "keyword.control.fxlang",
-          "match": "\\b(if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b"
+          "match": "\\b(if|else|foreach|in|return|break|continue|and|or|has|hasany|func_call|expr|str)\\b"
         }
       ]
     },

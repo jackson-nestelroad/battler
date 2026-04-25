@@ -26,12 +26,17 @@ interface FunctionData {
     type: string;
 }
 
+interface VariableData {
+    type: string;
+    optional: boolean;
+}
+
 interface Metadata {
-    variables: Record<string, string>;
+    variables: Record<string, VariableData>;
     variable_members: Record<string, MemberData>;
     type_members: Record<string, Record<string, MemberData>>;
     functions: Record<string, FunctionData>;
-    events: Record<string, { description: string }>;
+    events: Record<string, { description: string, variables: Record<string, VariableData> }>;
     common_flags: string[];
 }
 
@@ -70,8 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
     function isFxLangContext(document: vscode.TextDocument, position: vscode.Position): boolean {
         if (document.languageId === 'fxlang') return true;
         
-        const limit = Math.max(0, position.line - 50); // Increased limit for better context
-        for (let i = position.line; i >= limit; i--) {
+        for (let i = position.line; i >= 0; i--) {
             const line = document.lineAt(i).text;
             if (line.includes('"program"') || line.includes('"callbacks"')) return true;
         }
@@ -79,9 +83,39 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     /**
+     * Walks backwards from the current position to find the enclosing event key inside a callbacks block.
+     * Extracts the base event name ignoring prefixes like `on_` and modifiers like `ally_`.
+     */
+    function getEnclosingEvent(document: vscode.TextDocument, position: vscode.Position): string | undefined {
+        for (let i = position.line; i >= 0; i--) {
+            const line = document.lineAt(i).text.trim();
+            const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
+            if (match) {
+                const rawName = match[1];
+                let bestMatch: string | undefined = undefined;
+                // Find the longest base event name that is a suffix of the raw JSON key
+                for (const baseName of Object.keys(metadata.events || {})) {
+                    if (rawName === baseName || rawName.endsWith('_' + baseName)) {
+                        if (!bestMatch || baseName.length > bestMatch.length) {
+                            bestMatch = baseName;
+                        }
+                    }
+                }
+                if (bestMatch) {
+                    return bestMatch;
+                }
+            }
+            if (line.match(/^"callbacks"\s*:\s*\{/)) {
+                break;
+            }
+        }
+        return undefined;
+    }
+
+    /**
      * Infers the type of an expression based on literals, function calls, and variable chains.
      */
-    function inferType(expression: string, symbols: SymbolTable): string | undefined {
+    function inferType(expression: string, symbols: SymbolTable, eventName?: string): string | undefined {
         expression = expression.trim();
         
         // 1. Literals
@@ -100,10 +134,45 @@ export function activate(context: vscode.ExtensionContext) {
         const chainMatch = expression.match(/^(\$[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*)/);
         if (chainMatch) {
             const chain = chainMatch[1].split('.');
-            return resolveType(chain, symbols);
+            return resolveType(chain, symbols, eventName);
         }
         
         return undefined;
+    }
+
+    /**
+     * Parses the JSON structure up to the cursor to determine if the immediate enclosing block is an array or object.
+     * This is used to completely disjoint FxLang program suggestions (which only occur in arrays) 
+     * from event callback key suggestions (which only occur in objects).
+     */
+    function getEnclosingBlockType(document: vscode.TextDocument, position: vscode.Position): 'array' | 'object' | 'none' {
+        const text = document.getText(new vscode.Range(new vscode.Position(0, 0), position));
+        const stack: ('array' | 'object')[] = [];
+        let inString = false;
+        let escape = false;
+        
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (escape) {
+                escape = false;
+                continue;
+            }
+            if (char === '\\') {
+                escape = true;
+                continue;
+            }
+            if (char === '"') {
+                inString = !inString;
+                continue;
+            }
+            if (!inString) {
+                if (char === '[') stack.push('array');
+                else if (char === ']') stack.pop();
+                else if (char === '{') stack.push('object');
+                else if (char === '}') stack.pop();
+            }
+        }
+        return stack.length > 0 ? stack[stack.length - 1] : 'none';
     }
 
     /**
@@ -114,7 +183,7 @@ export function activate(context: vscode.ExtensionContext) {
         
         // Find the start of the current program/callback block
         let blockStartLine = -1;
-        for (let i = position.line; i >= 0 && i > position.line - 100; i--) {
+        for (let i = position.line; i >= 0; i--) {
             const line = document.lineAt(i).text;
             if (line.includes('"program"') || line.includes('"callbacks"')) {
                 blockStartLine = i;
@@ -144,7 +213,8 @@ export function activate(context: vscode.ExtensionContext) {
                     expression = expression.substring(0, cursorInLine).trim();
                 }
 
-                const type = inferType(expression, symbols);
+                const eventName = getEnclosingEvent(document, position);
+                const type = inferType(expression, symbols, eventName);
                 if (type && type !== 'Undefined') {
                     // Variables cannot change type once set
                     if (!symbols[varName]) {
@@ -158,9 +228,27 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     /**
+     * Retrieves all members for a type, taking inheritance into account.
+     */
+    function getTypeMembers(type: string): Record<string, MemberData> {
+        const members: Record<string, MemberData> = {};
+        if (type === 'ActiveMove') {
+            const effectMembers = metadata.type_members['Effect'];
+            if (effectMembers) {
+                Object.assign(members, effectMembers);
+            }
+        }
+        const specificMembers = metadata.type_members[type];
+        if (specificMembers) {
+            Object.assign(members, specificMembers);
+        }
+        return members;
+    }
+
+    /**
      * Resolves the type of a variable or member access chain.
      */
-    function resolveType(chain: string[], symbols: SymbolTable = {}): string | undefined {
+    function resolveType(chain: string[], symbols: SymbolTable = {}, eventName?: string): string | undefined {
         if (chain.length === 0) return undefined;
 
         let currentType: string | undefined;
@@ -168,24 +256,38 @@ export function activate(context: vscode.ExtensionContext) {
         const first = chain[0];
         if (first.startsWith('$')) {
             const varName = first.substring(1);
-            // Check local symbol table (static analysis) first, then built-in variables
-            currentType = symbols[varName] || metadata.variables[varName];
+            // Check local symbol table (static analysis) first
+            currentType = symbols[varName];
+            if (!currentType) {
+                if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables[varName]) {
+                    currentType = metadata.events[eventName].variables[varName].type;
+                } else if (metadata.variables[varName]) {
+                    currentType = metadata.variables[varName].type;
+                }
+            }
         } else {
             const member = metadata.variable_members[first];
             if (member) currentType = member.type;
         }
 
-        if (!currentType) return undefined;
-
         // Resolve remaining parts
         for (let i = 1; i < chain.length; i++) {
             const memberName = chain[i];
-            if (!currentType) return undefined;
+            if (!currentType) {
+                if (metadata.variable_members[memberName]) {
+                    currentType = metadata.variable_members[memberName].type;
+                    continue;
+                }
+                return undefined;
+            }
             
-            const typeMembers: Record<string, MemberData> | undefined = metadata.type_members[currentType];
-            if (!typeMembers) return undefined;
+            const typeMembers: Record<string, MemberData> = getTypeMembers(currentType);
+            if (Object.keys(typeMembers).length === 0) return undefined;
             
-            const member: MemberData | undefined = typeMembers[memberName];
+            let member: MemberData | undefined = typeMembers[memberName];
+            if (!member && metadata.variable_members[memberName]) {
+                member = metadata.variable_members[memberName];
+            }
             if (!member) return undefined;
             
             currentType = member.type;
@@ -220,6 +322,7 @@ export function activate(context: vscode.ExtensionContext) {
         {
             provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
                 if (!isFxLangContext(document, position)) return undefined;
+                if (getEnclosingBlockType(document, position) !== 'array') return undefined;
 
                 const symbols = parseContext(document, position);
                 const linePrefix = document.lineAt(position).text.substring(0, position.character);
@@ -228,11 +331,13 @@ export function activate(context: vscode.ExtensionContext) {
                 const memberMatch = linePrefix.match(/\.([\w]*)$/);
                 if (memberMatch) {
                     const chain = getChainAtPosition(document, position);
-                    const type = resolveType(chain, symbols);
+                    const eventName = getEnclosingEvent(document, position);
+                    const type = resolveType(chain, symbols, eventName);
                     
                     let items: vscode.CompletionItem[] = [];
-                    if (type && metadata.type_members[type]) {
-                        items = Object.entries(metadata.type_members[type]).map(([name, data]) => {
+                    if (type) {
+                        const typeMembers = getTypeMembers(type);
+                        items = Object.entries(typeMembers).map(([name, data]) => {
                             const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
                             item.documentation = new vscode.MarkdownString(data.description);
                             item.detail = `(Member of ${type} -> ${data.type})`;
@@ -257,6 +362,7 @@ export function activate(context: vscode.ExtensionContext) {
                             const firstParam = data.parameters[0];
                             if (firstParam && firstParam.optional && (firstParam.type === type || firstParam.type === 'Any')) {
                                 const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Method);
+                                item.sortText = ' ' + name;
                                 item.documentation = new vscode.MarkdownString(data.description);
                                 
                                 // To replace the entire "$target.func", we must set the range to cover it.
@@ -291,16 +397,29 @@ export function activate(context: vscode.ExtensionContext) {
                 if (varMatch) {
                     const items: vscode.CompletionItem[] = [];
                     
-                    // Add built-in variables
-                    for (const [name, type] of Object.entries(metadata.variables)) {
+                    const eventName = getEnclosingEvent(document, position);
+
+                    for (const [name, vData] of Object.entries(metadata.variables)) {
                         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Variable);
-                        item.detail = `(Built-in: ${type})`;
+                        item.sortText = ' ' + name;
+                        item.detail = `(Global: ${vData.type})${vData.optional ? ' (optional)' : ''}`;
                         items.push(item);
+                    }
+                    
+                    // Add event-specific built-in variables
+                    if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables) {
+                        for (const [name, vData] of Object.entries(metadata.events[eventName].variables)) {
+                            const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Variable);
+                            item.sortText = ' ' + name;
+                            item.detail = `(Context: ${vData.type})${vData.optional ? ' (optional)' : ''}`;
+                            items.push(item);
+                        }
                     }
                     
                     // Add local variables from static analysis
                     for (const [name, type] of Object.entries(symbols)) {
                         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Variable);
+                        item.sortText = ' ' + name;
                         item.detail = `(Local: ${type})`;
                         items.push(item);
                     }
@@ -308,9 +427,13 @@ export function activate(context: vscode.ExtensionContext) {
                     return items;
                 }
 
+                const wordRange = document.getWordRangeAtPosition(position, /[a-zA-Z0-9_]+/) || new vscode.Range(position, position);
+
                 const items: vscode.CompletionItem[] = [];
                 for (const [name, data] of Object.entries(metadata.functions)) {
                     const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Function);
+                    item.sortText = ' ' + name;
+                    item.range = wordRange;
                     const params = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
                     item.detail = `(Function) ${name}(${params}) -> ${data.type}`;
                     item.documentation = new vscode.MarkdownString(data.description);
@@ -322,22 +445,33 @@ export function activate(context: vscode.ExtensionContext) {
                     items.push(item);
                 }
                 
-                const keywords = ['if', 'else', 'elseif', 'foreach', 'in', 'return', 'break', 'continue', 'set'];
+                const keywords = ['if', 'else', 'foreach', 'in', 'return', 'break', 'continue', 'and', 'or', 'has', 'hasany', 'func_call', 'expr', 'str'];
                 for (const kw of keywords) {
-                    items.push(new vscode.CompletionItem(kw, vscode.CompletionItemKind.Keyword));
+                    const item = new vscode.CompletionItem(kw, vscode.CompletionItemKind.Keyword);
+                    item.sortText = ' ' + kw;
+                    item.range = wordRange;
+                    
+                    if (kw === 'func_call') {
+                        item.insertText = new vscode.SnippetString('func_call($0)');
+                        item.command = { command: 'editor.action.triggerSuggest', title: 'Suggest' };
+                    }
+                    
+                    items.push(item);
                 }
 
                 const constants = ['true', 'false', 'undefined', 'stop', ...(metadata.common_flags || [])];
                 for (const c of constants) {
                     const item = new vscode.CompletionItem(c, vscode.CompletionItemKind.Constant);
+                    item.sortText = ' ' + c;
                     item.detail = "(Flag / Constant)";
+                    item.range = wordRange;
                     items.push(item);
                 }
 
                 return items;
             }
         },
-        '.', '$'
+        '.', '$', '"', '('
     );
 
     // Hover Provider
@@ -345,51 +479,76 @@ export function activate(context: vscode.ExtensionContext) {
         languages,
         {
             provideHover(document: vscode.TextDocument, position: vscode.Position) {
-                if (!isFxLangContext(document, position)) return undefined;
+                try {
+                    if (!isFxLangContext(document, position)) return undefined;
 
-                const symbols = parseContext(document, position);
-                const range = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_.]+/);
-                if (!range) return null;
+                    const symbols = parseContext(document, position);
+                    const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_]+/);
+                    if (!wordRange) return null;
 
-                const text = document.getText(range);
-                
-                if (text.includes('$') || text.includes('.')) {
-                    const chain = text.split('.');
-                    const resolvedType = resolveType(chain, symbols);
+                    const word = document.getText(wordRange);
+                    const eventName = getEnclosingEvent(document, position);
                     
-                    if (chain.length === 1 && chain[0].startsWith('$')) {
-                        const varName = chain[0].substring(1);
-                        const type = symbols[varName] || metadata.variables[varName];
+                    if (word.startsWith('$')) {
+                        const varName = word.substring(1);
+                        let type = symbols[varName];
+                        let origin = 'Local';
+                        let optional = false;
+                        
+                        if (!type) {
+                            if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables[varName]) {
+                                type = metadata.events[eventName].variables[varName].type;
+                                optional = metadata.events[eventName].variables[varName].optional;
+                                origin = `Event Context: ${eventName}`;
+                            } else if (metadata.variables[varName]) {
+                                type = metadata.variables[varName].type;
+                                optional = metadata.variables[varName].optional;
+                                origin = 'Built-in / Global';
+                            }
+                        }
+                        
                         if (type) {
-                            const origin = symbols[varName] ? 'Local' : 'Built-in';
-                            return new vscode.Hover(new vscode.MarkdownString(`**Variable \`${chain[0]}\`** (${origin})\n\nType: \`${type}\``));
+                            return new vscode.Hover(new vscode.MarkdownString(`**Variable \`${word}\`** (${origin})\n\nType: \`${type}\`${optional ? ' (optional)' : ''}`));
+                        }
+                    } else {
+                        const fullRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_.]+/);
+                        if (fullRange) {
+                            const fullText = document.getText(fullRange);
+                            const chain = fullText.split('.');
+                            const wordIndex = chain.indexOf(word);
+                            if (wordIndex > 0) {
+                                const lastMember = chain[wordIndex];
+                                const parentChain = chain.slice(0, wordIndex);
+                                const parentType = resolveType(parentChain, symbols, eventName);
+                                
+                                if (parentType) {
+                                    const typeMembers = getTypeMembers(parentType);
+                                    const memberData = typeMembers[lastMember];
+                                    if (memberData) {
+                                        return new vscode.Hover(new vscode.MarkdownString(`**Member \`${lastMember}\`** of \`${parentType}\`\n\nType: \`${memberData.type}\`\n\n${memberData.description}`));
+                                    }
+                                }
+                                
+                                if (metadata.variable_members[lastMember]) {
+                                    const memberData = metadata.variable_members[lastMember];
+                                    return new vscode.Hover(new vscode.MarkdownString(`**Member \`${lastMember}\`** (Global)\n\nType: \`${memberData.type}\`\n\n${memberData.description}`));
+                                }
+                            }
                         }
                     }
 
-                    const lastMember = chain[chain.length - 1];
-                    const parentChain = chain.slice(0, -1);
-                    const parentType = resolveType(parentChain, symbols);
-                    
-                    if (parentType && metadata.type_members[parentType]) {
-                        const memberData = metadata.type_members[parentType][lastMember];
-                        if (memberData) {
-                            return new vscode.Hover(new vscode.MarkdownString(`**Member \`${lastMember}\`** of \`${parentType}\`\n\nType: \`${memberData.type}\`\n\n${memberData.description}`));
-                        }
-                    }
-                }
-
-                const wordRange = document.getWordRangeAtPosition(position);
-                if (!wordRange) return null;
-                const word = document.getText(wordRange);
-                if (metadata.functions[word]) {
-                    const data = metadata.functions[word];
+                const wordRange2 = document.getWordRangeAtPosition(position);
+                if (!wordRange2) return null;
+                const word2 = document.getText(wordRange2);
+                if (metadata.functions[word2]) {
+                    const data = metadata.functions[word2];
                     const params = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
                     const paramDetails = data.parameters.map(p => `* \`${p.name}\`: \`${p.type}\`${p.optional ? ' (optional)' : ''} - ${p.description}`).join('\n');
                     const flagDetails = (data.flags || []).map(f => `* \`${f.name}\` - ${f.description}`).join('\n');
                     
                     const hoverText = new vscode.MarkdownString();
-                    hoverText.appendMarkdown(`**Function \`${word}\`**\n\n`);
-                    hoverText.appendCodeblock(`${word}(${params}) -> ${data.type}`, 'fxlang');
+                    hoverText.appendMarkdown(`**Function \`${word2}\`**\n\n`);
+                    hoverText.appendCodeblock(`${word2}(${params}) -> ${data.type}`, 'fxlang');
                     hoverText.appendMarkdown(`\n\n${data.description}`);
                     if (paramDetails) {
                         hoverText.appendMarkdown(`\n\n**Parameters:**\n${paramDetails}`);
@@ -401,12 +560,90 @@ export function activate(context: vscode.ExtensionContext) {
                     return new vscode.Hover(hoverText);
                 }
 
+                } catch (err) {
+                    try {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const logPath = path.join(__dirname, '..', 'error_log.txt');
+                        fs.appendFileSync(logPath, `${new Date().toISOString()} - ${err instanceof Error ? err.stack : String(err)}\n`);
+                    } catch (e) {
+                        // Suppress
+                    }
+                    return undefined;
+                }
                 return null;
             }
         }
     );
+    // Event Callback Autocomplete
+    const eventProvider = vscode.languages.registerCompletionItemProvider(
+        languages,
+        {
+            provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+                const line = document.lineAt(position.line).text;
+                
+                let insideCallbacks = false;
+                for (let i = position.line; i >= 0; i--) {
+                    const l = document.lineAt(i).text.trim();
+                    if (l.match(/^"callbacks"\s*:\s*\{/)) {
+                        insideCallbacks = true;
+                        break;
+                    }
+                }
+                
+                if (!insideCallbacks) return undefined;
+                if (getEnclosingBlockType(document, position) !== 'object') return undefined;
+                
+                const textBeforeCursor = line.substring(0, position.character);
+                if (textBeforeCursor.match(/^\s*"/)) {
+                    const quoteRange = document.getWordRangeAtPosition(position, /"[a-zA-Z0-9_]*"?/) || new vscode.Range(position, position);
+                    const items: vscode.CompletionItem[] = [];
+                    const modifiers = ['ally', 'any', 'field', 'foe', 'side', 'source'];
+                    
+                    for (const [baseName, data] of Object.entries(metadata.events || {})) {
+                        if (baseName.startsWith('is_') || baseName.startsWith('suppress_')) {
+                            // ONLY suggest the base name (no modifiers, no 'on_')
+                            const primaryName = baseName;
+                            const item = new vscode.CompletionItem(primaryName, vscode.CompletionItemKind.Event);
+                            item.sortText = ' ' + primaryName;
+                            item.filterText = `"${primaryName}`;
+                            item.range = quoteRange;
+                            item.documentation = new vscode.MarkdownString(data.description);
+                            item.insertText = new vscode.SnippetString(`"${primaryName}": [\n\t$0\n],`);
+                            items.push(item);
+                        } else {
+                            // Standard event: ONLY suggest forms starting with 'on_'
+                            const primaryName = 'on_' + baseName;
+                            const item = new vscode.CompletionItem(primaryName, vscode.CompletionItemKind.Event);
+                            item.sortText = ' ' + primaryName;
+                            item.filterText = `"${primaryName}`;
+                            item.range = quoteRange;
+                            item.documentation = new vscode.MarkdownString(data.description);
+                            item.insertText = new vscode.SnippetString(`"${primaryName}": [\n\t$0\n],`);
+                            items.push(item);
+                            
+                            // Modifiers (must include 'on_')
+                            for (const mod of modifiers) {
+                                const modName = `on_${mod}_${baseName}`;
+                                const modItem = new vscode.CompletionItem(modName, vscode.CompletionItemKind.Event);
+                                modItem.sortText = '000_' + modName;
+                                modItem.filterText = `"${modName}`;
+                                modItem.range = quoteRange;
+                                modItem.documentation = new vscode.MarkdownString(`*(Modifier: ${mod})*\n\n` + data.description);
+                                modItem.insertText = new vscode.SnippetString(`"${modName}": [\n\t$0\n],`);
+                                items.push(modItem);
+                            }
+                        }
+                    }
+                    return items;
+                }
+                return undefined;
+            }
+        },
+        '"'
+    );
 
-    context.subscriptions.push(completionProvider, hoverProvider);
+    context.subscriptions.push(completionProvider, hoverProvider, eventProvider);
 }
 
 export function deactivate() {}
