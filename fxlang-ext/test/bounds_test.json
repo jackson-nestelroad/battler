@@ -1,0 +1,123 @@
+// SYNTAX TEST "fxlang.injection"
+
+{
+  "dynamax": {
+    "callbacks": {
+      "on_start": [
+        "add_volatile: $target twoturnmove"
+        //^^^^^^^^^^^^ entity.name.function
+        //             ^^^^^^^ variable.other
+      ],
+      "on_upgrade_move": {
+        "priority": 12,
+        //^^^^^^^^^^ support.type.property-name.json
+        //                    ^^ constant.numeric.json
+        "order": "before",
+        //^^^^^^^ support.type.property-name.json
+        //                ^^^^^^^^ string.quoted.double.json
+        "program": [
+
+
+
+          "return false"
+          //^^^^^^ keyword.control
+          //       ^^^^^ constant.language
+        ]
+      }
+    }
+  },
+
+  "firetype_leak_test": {
+    "name": "Fire",
+    "condition_type": "Type",
+    "condition": {
+      "callbacks": {
+        "on_immunity": ["if $effect.id == brn:", ["return false"]]
+      }
+    }
+  },
+
+  "watertype_leak_test": {
+    "name": "Water",
+    "condition_type": "Type"
+    //^^^^^^^^^^^^^^ support.type.property-name.json
+  },
+
+  "invulnerability": {
+
+
+    "callbacks": {
+      "on_invulnerability": {
+        "order": 2,
+        "program": [
+          "# Allow targeting move to hit.",
+          //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.number-sign
+          "if $move.id = 10:",
+          // ^^ keyword.control
+          //    ^^^^^ variable.other
+          //             ^^ constant.numeric
+          "return true"
+          // ^^^^^^ keyword.control
+          //        ^^^^ constant.language
+        ]
+      },
+      "on_damage": [
+        "damage: target 10"
+        //^^^^^^ entity.name.function
+        //               ^^ constant.numeric
+      ]
+    }
+  },
+
+  "zpower_stress_test": {
+    "callbacks": {
+    //^^^^^^^^^^^ support.type.property-name.json
+      "on_upgrade_move": [
+
+        "$z_move_id = func_call(z_move: $user $move)",
+        //^^^^^^^^^ variable.other
+        //           ^^^^^^^^^ keyword.other
+        //                     ^^^^^^ entity.name.function
+        "if !$z_move_id:",
+        //^^ keyword.control
+        //   ^^^^^^^^^^ variable.other
+        ["return"],
+        //^^^^^^ keyword.control
+        "$type = $move.type",
+        //^^^^ variable.other
+        //       ^^^^^ variable.other
+        "modify_move_type: $move",
+        //^^^^^^^^^^^^^^^^ entity.name.function
+        //                  ^^^^^ variable.other
+        "if $type != $move.type:",
+        //^^ keyword.control
+        //  ^^^^^ variable.other
+        //           ^^^^^ variable.other
+        [
+          "$new_z_move_id = func_call(z_move: $user $move)",
+          "if $new_z_move_id.is_defined and $new_z_move_id != $z_move_id:",
+          [
+            "$old_z_move = func_call(get_move: $z_move_id)",
+            "if !$old_z_move:",
+            ["return"],
+            "$old_z_move_active_move = func_call(new_active_move: $old_z_move.id $user)",
+            "log_use_move: $old_z_move_active_move",
+            "do_not_animate_last_move: $old_z_move_active_move",
+            "$z_move_id = $new_z_move_id"
+          ]
+        ],
+        "$z_move = func_call(new_active_move: $z_move_id $user)",
+        //^^^^^^^ variable.other
+        "set_upgraded_to_z_move: $z_move $move.id",
+        "if !$user.item:",
+        ["return"],
+        "if $move.z_move_base_power.is_defined and !$z_move.base_power:",
+        ["$z_move.base_power = $move.z_move_base_power"],
+        "$z_move.category = $move.category",
+        "# Move is already being used...",
+        "$z_move.priority = $move.priority",
+        "return $z_move"
+      ]
+    }
+  }
+}

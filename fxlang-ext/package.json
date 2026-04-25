@@ -17,24 +17,13 @@
     "Programming Languages"
   ],
   "contributes": {
-    "languages": [
-      {
-        "id": "fxlang",
-        "aliases": [
-            "fxlang"
-        ]
-      }
-    ],
     "grammars": [
-      {
-        "language": "fxlang",
-        "scopeName": "source.fxlang",
-        "path": "./syntaxes/fxlang.tmLanguage.json"
-      },
       {
         "scopeName": "fxlang.injection",
         "path": "./syntaxes/fxlang-injection.tmLanguage.json",
-        "injectTo": ["source.json"]
+        "injectTo": [
+          "source.json"
+        ]
       }
     ],
     "commands": [
@@ -54,11 +43,13 @@
   "scripts": {
     "update-metadata": "node ./tools/scrape-metadata.js",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "test": "vscode-tmgrammar-test -g ./syntaxes/fxlang-injection.tmLanguage.json \"./test/**/*.json\""
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
     "@types/vscode": "^1.75.0",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "vscode-tmgrammar-test": "^0.1.3"
   }
 }

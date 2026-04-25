@@ -468,12 +468,6 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) return;
 
-        if (!showLineNumbers) {
-            editor.setDecorations(inlineDecorationType, []);
-            editor.setDecorations(decorationType, []);
-            return;
-        }
-
         const gutterRanges: vscode.Range[] = [];
         const marginDecorations: vscode.DecorationOptions[] = [];
         const inlineDecorations: vscode.DecorationOptions[] = [];
@@ -498,7 +492,12 @@ export function activate(context: vscode.ExtensionContext) {
 
         editor.setDecorations(decorationType, gutterRanges);
         editor.setDecorations(marginDecorationType, marginDecorations);
-        editor.setDecorations(inlineDecorationType, inlineDecorations);
+
+        if (!showLineNumbers) {
+            editor.setDecorations(inlineDecorationType, []);
+        } else {
+            editor.setDecorations(inlineDecorationType, inlineDecorations);
+        }
     }
 
     function updateStatusBar() {

@@ -1,142 +1,248 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "fxlang-injection",
   "scopeName": "fxlang.injection",
+  "name": "fxlang-injection",
   "injectionSelector": "L:source.json",
   "patterns": [
     {
-      "comment": "Entry Point: 'callbacks' field (Light Blue Key)",
-      "begin": "(\"callbacks\")\\s*(:)\\s*",
-      "beginCaptures": {
-        "1": { "name": "variable.other.object.property.json" },
-        "2": { "name": "punctuation.separator.dictionary.key-value.json" }
-      },
-      "end": "(?=[,\\}])",
-      "patterns": [{ "include": "#fxlang-event-map-object" }]
+      "include": "#program_key"
     },
     {
-      "comment": "Entry Point: 'program' field (Light Blue Key)",
-      "begin": "(\"program\")\\s*(:)\\s*",
-      "beginCaptures": {
-        "1": { "name": "variable.other.object.property.json" },
-        "2": { "name": "punctuation.separator.dictionary.key-value.json" }
-      },
-      "end": "(?=[,\\}])",
-      "patterns": [{ "include": "#fxlang-program-choice" }]
+      "include": "#callbacks_block"
     }
   ],
   "repository": {
-    "fxlang-event-map-object": {
-      "comment": "An object where every key is an event (colored Light Blue).",
-      "begin": "\\{",
+    "program_key": {
+      "patterns": [
+        {
+          "begin": "^(\\s*)(\"program\")\\s*:\\s*\\[(?=.*\\])",
+          "beginCaptures": {
+            "2": { "name": "support.type.property-name.json" }
+          },
+          "end": "\\](?=[^\\]]*$)",
+          "patterns": [
+            {
+              "include": "#fxlang_array_element"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(\"program\")\\s*:\\s*\\[",
+          "beginCaptures": {
+            "2": { "name": "support.type.property-name.json" }
+          },
+          "end": "^\\1\\],?",
+          "patterns": [
+            {
+              "include": "#fxlang_array_element"
+            }
+          ]
+        }
+      ]
+    },
+    "callbacks_block": {
+      "begin": "^(\\s*)(\"callbacks\")\\s*:\\s*\\{",
       "beginCaptures": {
-        "0": { "name": "punctuation.definition.dictionary.begin.json" }
+        "2": { "name": "support.type.property-name.json" }
       },
-      "end": "\\}",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.dictionary.end.json" }
-      },
+      "end": "^\\1\\},?",
       "patterns": [
         {
-          "comment": "Event Key (Light Blue), recursing into Program Choice",
-          "begin": "(\"[a-zA-Z0-9_]+\")\\s*(:)\\s*",
+          "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\[(?=.*\\])",
           "beginCaptures": {
-            "1": { "name": "variable.other.object.property.json" },
-            "2": { "name": "punctuation.separator.dictionary.key-value.json" }
+            "2": { "name": "support.type.property-name.json" }
           },
-          "end": "(?=[,\\}])",
-          "patterns": [{ "include": "#fxlang-program-choice" }]
-        },
-        { "include": "source.json" },
-        { "match": ",", "name": "punctuation.separator.dictionary.json" }
-      ]
-    },
-    "fxlang-program-choice": {
-      "comment": "Routes Strings/Arrays to code, and Objects to restricted Metadata Containers",
-      "patterns": [
-        { "include": "#fxlang-string-as-code" },
-        { "include": "#fxlang-array-as-code" },
-        { "include": "#fxlang-metadata-restricted-object" }
-      ]
-    },
-    "fxlang-metadata-restricted-object": {
-      "comment": "Object in code context. ALL keys are Light Blue, but ONLY 'program' contains code.",
-      "begin": "\\{",
-      "beginCaptures": {
-        "0": { "name": "punctuation.definition.dictionary.begin.json" }
-      },
-      "end": "\\}",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.dictionary.end.json" }
-      },
-      "patterns": [
-        {
-          "comment": "The program key (Light Blue) recurses into code logic",
-          "begin": "(\"program\")\\s*(:)\\s*",
-          "beginCaptures": {
-            "1": { "name": "variable.other.object.property.json" },
-            "2": { "name": "punctuation.separator.dictionary.key-value.json" }
-          },
-          "end": "(?=[,\\}])",
-          "patterns": [{ "include": "#fxlang-program-choice" }]
+          "end": "\\](?=[^\\]]*$)",
+          "patterns": [
+            {
+              "include": "#fxlang_array_element"
+            }
+          ]
         },
         {
-          "comment": "Other Metadata keys (Light Blue), but their values stay JSON",
-          "begin": "(\"[a-zA-Z0-9_]+\")\\s*(:)\\s*",
+          "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\[",
           "beginCaptures": {
-            "1": { "name": "variable.other.object.property.json" },
-            "2": { "name": "punctuation.separator.dictionary.key-value.json" }
+            "2": { "name": "support.type.property-name.json" }
           },
-          "end": "(?=[,\\}])",
-          "patterns": [{ "include": "source.json" }]
+          "end": "^\\1\\],?",
+          "patterns": [
+            {
+              "include": "#fxlang_array_element"
+            }
+          ]
         },
-        { "include": "source.json" },
-        { "match": ",", "name": "punctuation.separator.dictionary.json" }
+        {
+          "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\{(?=.*\\})",
+          "beginCaptures": {
+            "2": { "name": "support.type.property-name.json" }
+          },
+          "end": "\\}(?=[^\\}]*$)",
+          "patterns": [
+            {
+              "include": "#program_key"
+            },
+            {
+              "match": "(\"[a-zA-Z0-9_]+\")\\s*:",
+              "captures": {
+                "1": { "name": "support.type.property-name.json" }
+              }
+            },
+            {
+              "include": "source.json"
+            }
+          ]
+        },
+        {
+          "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\{",
+          "beginCaptures": {
+            "2": { "name": "support.type.property-name.json" }
+          },
+          "end": "^\\1\\},?",
+          "patterns": [
+            {
+              "include": "#program_key"
+            },
+            {
+              "match": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:",
+              "captures": {
+                "2": { "name": "support.type.property-name.json" }
+              }
+            },
+            {
+              "include": "source.json"
+            }
+          ]
+        }
       ]
     },
-    "fxlang-string-as-code": {
+
+
+
+
+
+
+
+    "fxlang_array_element": {
+      "begin": "\"",
+      "end": "\"",
       "patterns": [
-        { "include": "#fxlang-single-word-call" },
-        { "include": "#fxlang-full-statement-string" }
+        {
+          "include": "#statement"
+        }
       ]
     },
-    "fxlang-single-word-call": {
-      "comment": "Parameterless call word.",
-      "match": "(\")\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(\")",
+    "statement": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#function_name"
+        },
+        {
+          "include": "#keyword"
+        },
+        {
+          "include": "#literal"
+        },
+        {
+          "include": "#effect_state"
+        },
+        {
+          "include": "#variable"
+        },
+        {
+          "include": "#member_access"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#flag"
+        },
+        {
+          "include": "#unquoted_string"
+        }
+      ]
+    },
+    "comment": {
+      "match": "#.*?(?=\"\\s*,?\\s*$)",
+      "name": "comment.line.number-sign"
+    },
+    "keyword": {
+      "patterns": [
+        {
+          "match": "\\b(if|else|foreach|in|return|continue|break|expr|func_call|str|or|and|has|hasany)\\b",
+          "name": "keyword.control"
+        }
+      ]
+    },
+
+
+    "literal": {
+      "patterns": [
+        {
+          "match": "\\b(true|false|undefined)\\b",
+          "name": "constant.language"
+        },
+        {
+          "match": "\\$this\\b",
+          "name": "constant.language"
+        }
+      ]
+    },
+    "effect_state": {
+      "match": "\\$effect_state\\b",
+      "name": "entity.name.type"
+    },
+    "variable": {
+      "match": "\\$[a-zA-Z_\\-][a-zA-Z0-9_\\-]*",
+      "name": "variable.other"
+    },
+    "member_access": {
+      "match": "(\\.)([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
       "captures": {
-        "1": { "name": "punctuation.definition.string.begin.json" },
-        "2": { "name": "entity.name.function.fxlang" },
-        "3": { "name": "punctuation.definition.string.end.json" }
+        "1": { "name": "punctuation.accessor" },
+        "2": { "name": "variable.other.constant" }
       }
     },
-    "fxlang-full-statement-string": {
-      "begin": "(\")(?:\\s*(?!(?:if|else|elseif|foreach|in|return|break|continue|and|or|not|has|hasany|func_call|expr|str)\\b)([a-zA-Z0-9_\\-]+)\\s*(:))?",
-      "beginCaptures": {
-        "1": { "name": "punctuation.definition.string.begin.json" },
-        "2": { "name": "entity.name.function.fxlang" },
-        "3": { "name": "punctuation.terminator.statement.fxlang" }
-      },
-      "end": "\"",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.string.end.json" }
-      },
-      "contentName": "source.fxlang",
-      "patterns": [{ "include": "source.fxlang" }]
-    },
-    "fxlang-array-as-code": {
-      "begin": "\\[",
-      "beginCaptures": {
-        "0": { "name": "punctuation.definition.array.begin.json" }
-      },
-      "end": "\\]",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.array.end.json" }
-      },
+    "function_name": {
       "patterns": [
-        { "include": "#fxlang-program-choice" },
-        { "match": ",", "name": "punctuation.separator.array.json" },
-        { "include": "source.json" }
+        {
+          "match": "\\G\\s*(?!(?:if|else|foreach|in|return|continue|break|has|hasany|and|or|expr|func_call|str)\\b)([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
+          "captures": {
+            "1": { "name": "entity.name.function" }
+          }
+        },
+        {
+          "match": "(\\bfunc_call)\\s*\\(\\s*([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
+          "captures": {
+            "1": { "name": "keyword.control" },
+            "2": { "name": "entity.name.function" }
+          }
+        }
+
       ]
+    },
+    "string": {
+      "match": "'([^']|\\\\')*'",
+      "name": "string.quoted.single"
+    },
+    "number": {
+      "match": "(?<![a-zA-Z0-9_\\-])[\\+\\-]?[0-9]+(/[0-9]+)?\\b",
+      "name": "constant.numeric"
+    },
+    "unquoted_string": {
+      "match": "\\b[a-zA-Z_\\-][a-zA-Z0-9_\\-]*\\b",
+      "name": "string.unquoted"
+    },
+    "flag": {
+      "match": "\\b(from_effect|link|no_effect|no_events|no_forward|no_source|no_source_effect|residual|silent|use_effect_as_source_effect|use_effect_state_source|use_effect_state_source_as_source|use_effect_state_source_effect|use_effect_state_target|use_effect_state_target_as_source|use_source|use_source_as_origin|use_source_effect|use_target_as_origin|use_target_as_source|with_source|with_source_effect|with_target)\\b",
+      "name": "constant.language"
     }
   }
 }
+

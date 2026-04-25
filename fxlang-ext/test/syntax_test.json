@@ -1,0 +1,143 @@
+// SYNTAX TEST "fxlang.injection"
+
+"program": [
+  "damage: target 10",
+// ^^^^^^ entity.name.function
+//         ^^^^^^ string.unquoted
+//                ^^ constant.numeric
+
+  "$x = 10",
+// ^^ variable.other
+//      ^^ constant.numeric
+
+  "if true:",
+// ^^ keyword.control
+//    ^^^^ constant.language
+
+  "else if false:",
+// ^^^^ keyword.control
+//      ^^ keyword.control
+//         ^^^^^ constant.language
+
+  "foreach $item in $list:",
+// ^^^^^^^ keyword.control
+//         ^^^^^ variable.other
+//               ^^ keyword.control
+//                  ^^^^^ variable.other
+
+  "return $x",
+// ^^^^^^ keyword.control
+//        ^^ variable.other
+
+  "continue",
+// ^^^^^^^^ keyword.control
+
+  "break",
+// ^^^^^ keyword.control
+
+  "$x has $y",
+// ^^ variable.other
+//    ^^^ keyword.control
+//        ^^ variable.other
+
+  "$x hasany $y",
+// ^^ variable.other
+//    ^^^^^^ keyword.control
+//           ^^ variable.other
+
+  "$x and $y",
+// ^^ variable.other
+//    ^^^ keyword.control
+//        ^^ variable.other
+
+  "$x or $y",
+// ^^ variable.other
+//    ^^ keyword.control
+//       ^^ variable.other
+
+  "$effect_state.active",
+// ^^^^^^^^^^^^^ entity.name.type
+//               ^^^^^^ variable.other.constant
+
+  "expr($x)",
+// ^^^^ keyword.control
+//      ^^ variable.other
+
+  "func_call(damage: 10)",
+// ^^^^^^^^^ keyword.control
+//           ^^^^^^ entity.name.function
+//                   ^^ constant.numeric
+
+  "str('hello', $x)",
+// ^^^ keyword.control
+//     ^^^^^^^ string.quoted.single
+//              ^^ variable.other
+
+  "$var = 2 * func_call(rand: 1 5)",
+// ^^^^ variable.other
+//        ^ constant.numeric
+//            ^^^^^^^^^ keyword.control
+//                      ^^^^ entity.name.function
+//                            ^ constant.numeric
+//                              ^ constant.numeric
+
+  "if $var == 2:",
+// ^^ keyword.control
+//    ^^^^ variable.other
+//            ^ constant.numeric
+
+  "else:",
+// ^^^^ keyword.control
+
+  "else if $val < 10:",
+// ^^^^ keyword.control
+//      ^^ keyword.control
+//         ^^^^ variable.other
+//                ^^ constant.numeric
+
+  "foreach $mon in [bulbasaur, charmander, squirtle]:",
+// ^^^^^^^ keyword.control
+//         ^^^^ variable.other
+//              ^^ keyword.control
+//                  ^^^^^^^^^ string.unquoted
+//                             ^^^^^^^^^^ string.unquoted
+//                                         ^^^^^^^^ string.unquoted
+
+  "foreach $mon in func_call(range: 0 10 2):",
+// ^^^^^^^ keyword.control
+//         ^^^^ variable.other
+//              ^^ keyword.control
+//                 ^^^^^^^^^ keyword.control
+//                           ^^^^^ entity.name.function
+//                                  ^ constant.numeric
+//                                    ^^ constant.numeric
+//                                       ^ constant.numeric
+
+  "print: str('test = {}', 1/10, 5)",
+// ^^^^^ entity.name.function
+//        ^^^ keyword.control
+//            ^^^^^^^^^^^ string.quoted.single
+//                         ^^^^ constant.numeric
+//                               ^ constant.numeric
+
+  "$test = +1 + +$test",
+// ^^^^^ variable.other
+//         ^^ constant.numeric
+//               ^^^^^ variable.other
+
+  "$foo.bar.baz",
+// ^^^^ variable.other
+//      ^^^ variable.other.constant
+//          ^^^ variable.other.constant
+
+  "$this",
+// ^^^^^ constant.language
+
+  "$x = silent"
+// ^^ variable.other
+//      ^^^^^^ constant.language
+]
+
+
+
+
