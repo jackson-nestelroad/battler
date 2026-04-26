@@ -32,5 +32,7 @@
     },
     "rust-analyzer.showUnlinkedFileNotification": false,
     "rust-analyzer.check.workspace": true,
-    "rust-analyzer.cargo.noDefaultFeatures": true
+    "rust-analyzer.cargo.noDefaultFeatures": true,
+    "cSpell.diagnosticLevel": "Hint",
+    "fxlang.showOverviewRuler": true
 }

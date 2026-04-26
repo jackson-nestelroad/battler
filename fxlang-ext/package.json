@@ -18,6 +18,21 @@
     "Programming Languages"
   ],
   "contributes": {
+    "configuration": {
+      "title": "FxLang",
+      "properties": {
+        "fxlang.showOverviewRuler": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show FxLang locations in the scrollbar/overview ruler."
+        },
+        "fxlang.showLineNumbers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show line numbers for FxLang DSL arrays."
+        }
+      }
+    },
     "grammars": [
       {
         "scopeName": "fxlang.injection",

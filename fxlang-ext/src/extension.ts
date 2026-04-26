@@ -71,10 +71,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     const decorationType = vscode.window.createTextEditorDecorationType({
         gutterIconPath: vscode.Uri.file(path.join(context.extensionPath, 'media', 'fxlang-mono.svg')),
-        gutterIconSize: 'contain'
+        gutterIconSize: 'contain',
+        overviewRulerLane: vscode.OverviewRulerLane.Right,
+        overviewRulerColor: '#f1c40f'
     });
 
-    let showLineNumbers = false;
+    const decorationTypeWithoutRuler = vscode.window.createTextEditorDecorationType({
+        gutterIconPath: vscode.Uri.file(path.join(context.extensionPath, 'media', 'fxlang-mono.svg')),
+        gutterIconSize: 'contain'
+    });
 
     const marginDecorationType = vscode.window.createTextEditorDecorationType({
         after: {
@@ -121,9 +126,17 @@ export function activate(context: vscode.ExtensionContext) {
             });
         }
 
-        editor.setDecorations(decorationType, gutterRanges);
+        const showOverviewRuler = vscode.workspace.getConfiguration('fxlang').get<boolean>('showOverviewRuler', false);
+        if (showOverviewRuler) {
+            editor.setDecorations(decorationType, gutterRanges);
+            editor.setDecorations(decorationTypeWithoutRuler, []);
+        } else {
+            editor.setDecorations(decorationType, []);
+            editor.setDecorations(decorationTypeWithoutRuler, gutterRanges);
+        }
         editor.setDecorations(marginDecorationType, marginDecorations);
 
+        const showLineNumbers = vscode.workspace.getConfiguration('fxlang').get<boolean>('showLineNumbers', false);
         if (!showLineNumbers) {
             editor.setDecorations(inlineDecorationType, []);
         } else {
@@ -160,15 +173,22 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     vscode.commands.registerCommand('fxlang.toggleLineNumbers', () => {
-        showLineNumbers = !showLineNumbers;
-        updateDecorations();
-        vscode.window.showInformationMessage(`fxlang line numbers: ${showLineNumbers ? 'on' : 'off'}`);
+        const config = vscode.workspace.getConfiguration('fxlang');
+        const current = config.get<boolean>('showLineNumbers', false);
+        config.update('showLineNumbers', !current, vscode.ConfigurationTarget.Workspace);
+        vscode.window.showInformationMessage(`fxlang line numbers: ${!current ? 'on' : 'off'}`);
     });
 
     vscode.window.onDidChangeActiveTextEditor(editor => {
         if (editor) {
             updateDecorations();
             updateStatusBar();
+        }
+    }, null, context.subscriptions);
+
+    vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('fxlang.showOverviewRuler') || e.affectsConfiguration('fxlang.showLineNumbers')) {
+            updateDecorations();
         }
     }, null, context.subscriptions);
 
