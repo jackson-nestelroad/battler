@@ -1,11 +1,8 @@
 .vscode/**
-.vscode-test/**
-out/**
+.npm_cache/**
 node_modules/**
 src/**
 tools/**
+test/**
 tsconfig.json
 **/*.map
-battler/**
-battle-data/**
-scripts/**

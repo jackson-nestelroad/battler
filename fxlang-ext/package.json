@@ -4,6 +4,7 @@
   "description": "Syntax highlighting and IntelliSense for fxlang DSL scripts.",
   "version": "0.1.0",
   "publisher": "jackson-nestelroad",
+  "icon": "media/icon.png",
   "main": "./out/extension.js",
   "activationEvents": [
     "onLanguage:fxlang",

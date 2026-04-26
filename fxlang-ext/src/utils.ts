@@ -211,6 +211,28 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
         }
         const funcMeta = metadata.functions[funcName];
         if (funcMeta) {
+            if (funcMeta.returns_item_from_list) {
+                let argsString = '';
+                const baseFuncMatch = expression.match(/^([a-z0-9_]+)\((.*)\)$/);
+                if (baseFuncMatch) {
+                    if (baseFuncMatch[1] === 'func_call') {
+                        const innerStr = baseFuncMatch[2];
+                        const parts = innerStr.split(':');
+                        if (parts.length > 1) {
+                            argsString = parts.slice(1).join(':').trim();
+                        }
+                    } else {
+                        argsString = baseFuncMatch[2].trim();
+                    }
+                }
+                if (argsString) {
+                    const firstArg = argsString.split(',')[0].trim();
+                    const listType = inferType(firstArg, symbols, metadata, eventName);
+                    if (listType && listType.startsWith('List<') && listType.endsWith('>')) {
+                        return listType.substring(5, listType.length - 1);
+                    }
+                }
+            }
             if (funcMeta.type === 'List' && funcMeta.item_type) {
                 return `List<${funcMeta.item_type}>`;
             }

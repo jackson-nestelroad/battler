@@ -939,7 +939,8 @@
         }
       ],
       "flags": [],
-      "type": "EffectState | Undefined"
+      "type": "EffectState | Undefined",
+      "returns_item_from_list": false
     },
     "ability_has_flag": {
       "description": "Returns whether the ability has the given flag.",
@@ -958,7 +959,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "activate_ability": {
       "description": "Activates a Mon's ability.",
@@ -971,13 +973,15 @@
         }
       ],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     },
     "activate_applying_effect": {
       "description": "Activates an applying effect.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     },
     "add_attribute_to_last_move": {
       "description": "Adds an attribute to the last move used.",
@@ -990,7 +994,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "add_move_action": {
       "description": "Adds a move action to the battle queue.",
@@ -1015,7 +1020,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "add_move_flag": {
       "description": "Adds a flag to a move.",
@@ -1034,7 +1040,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "add_pseudo_weather": {
       "description": "Adds pseudo-weather to the field.",
@@ -1047,7 +1054,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "add_secondary_effect_to_move": {
       "description": "Adds a secondary effect to a move.",
@@ -1066,7 +1074,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "add_side_condition": {
       "description": "Adds a side condition to a side.",
@@ -1085,7 +1094,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "add_slot_condition": {
       "description": "Adds a slot condition.",
@@ -1110,7 +1120,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "add_type": {
       "description": "Adds a type to a Mon.",
@@ -1129,7 +1140,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "add_volatile": {
       "description": "Adds a volatile effect to a Mon.",
@@ -1153,7 +1165,8 @@
           "description": "If set, the volatile effect is linked to the current effect."
         }
       ],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "adjacent_allies": {
       "description": "Gets all adjacent allies of a Mon.",
@@ -1167,7 +1180,8 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "adjacent_foes": {
       "description": "Gets all adjacent foes of a Mon.",
@@ -1181,28 +1195,32 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_active_mons": {
       "description": "Gets all active Mons in the battle.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_active_mons_in_speed_order": {
       "description": "Gets all active Mons in speed order.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_active_mons_in_speed_order_and_ability_effect_order": {
       "description": "Gets all active Mons in speed and ability effect order.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_active_mons_on_side": {
       "description": "Gets all active Mons on a specific side.",
@@ -1216,14 +1234,16 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_active_or_exited_mons": {
       "description": "Gets all active or recently exited Mons.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_foes": {
       "description": "Gets all foes of a Mon.",
@@ -1237,7 +1257,8 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_mons_in_party": {
       "description": "Gets all Mons in a player's party.",
@@ -1251,7 +1272,8 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_mons_on_side": {
       "description": "Gets all Mons on a specific side, including those in the party.",
@@ -1265,14 +1287,16 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "all_types": {
       "description": "Gets a list of all defined types in the battle.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Type"
+      "item_type": "Type",
+      "returns_item_from_list": false
     },
     "allies_and_self": {
       "description": "Gets all allies of a Mon and the Mon itself.",
@@ -1286,13 +1310,15 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "any_mon_will_move_this_turn": {
       "description": "Checks if any Mon will perform a move this turn.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "append": {
       "description": "Appends an element to a list.",
@@ -1311,7 +1337,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "returns_item_from_list": false
     },
     "apply_drain": {
       "description": "Applies drain effects (healing based on damage dealt).",
@@ -1336,7 +1363,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "apply_recoil_damage": {
       "description": "Applies recoil damage to the move user.",
@@ -1355,7 +1383,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "base_species": {
       "description": "Gets a Mon's base species ID.",
@@ -1368,7 +1397,8 @@
         }
       ],
       "flags": [],
-      "type": "String"
+      "type": "String",
+      "returns_item_from_list": false
     },
     "boost": {
       "description": "Boosts or unboosts a Mon's stats.",
@@ -1387,20 +1417,23 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "boost_table": {
       "description": "Creates a boost table from a list of stat:amount strings.  @param {[`ValueType::String`]} ... Boost strings (e.g., \"atk:1\").",
       "parameters": [],
       "flags": [],
-      "type": "Object"
+      "type": "Object",
+      "returns_item_from_list": false
     },
     "boostable_stats": {
       "description": "Returns a list of all boostable stats.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Boost"
+      "item_type": "Boost",
+      "returns_item_from_list": false
     },
     "calculate_damage": {
       "description": "Calculates damage for a move.",
@@ -1413,7 +1446,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "calculate_confusion_damage": {
       "description": "Calculates confusion damage for a Mon.",
@@ -1432,7 +1466,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "can_boost": {
       "description": "Checks if a Mon can receive a boost.",
@@ -1451,7 +1486,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "can_escape": {
       "description": "Checks if a Mon can escape from battle.",
@@ -1464,7 +1500,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "can_switch": {
       "description": "Checks if a Mon can switch out.",
@@ -1477,7 +1514,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "cancel_action": {
       "description": "Cancels a Mon's pending action.",
@@ -1490,7 +1528,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "cancel_move": {
       "description": "Cancels a Mon's pending move.",
@@ -1503,7 +1542,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "chance": {
       "description": "Performs a random chance check.",
@@ -1522,7 +1562,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "check_immunity": {
       "description": "Checks if a Mon is immune to an effect.",
@@ -1541,7 +1582,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "clamp_number": {
       "description": "Clamps a number between a minimum and maximum value.",
@@ -1566,7 +1608,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "clause_integer_value": {
       "description": "Gets the integer value of a battle clause.",
@@ -1579,7 +1622,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction | Undefined"
+      "type": "UFraction | Undefined",
+      "returns_item_from_list": false
     },
     "clause_type_value": {
       "description": "Gets the type value of a battle clause.",
@@ -1592,7 +1636,8 @@
         }
       ],
       "flags": [],
-      "type": "Type | Undefined"
+      "type": "Type | Undefined",
+      "returns_item_from_list": false
     },
     "clear_boosts": {
       "description": "Clears all boosts from a Mon.",
@@ -1610,7 +1655,8 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "clear_negative_boosts": {
       "description": "Clears negative boosts from a Mon.",
@@ -1623,19 +1669,22 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "clear_terrain": {
       "description": "Clears the field terrain.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "clear_weather": {
       "description": "Clears the field weather.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "clone_active_move": {
       "description": "Clones the currently active move.",
@@ -1654,7 +1703,8 @@
         }
       ],
       "flags": [],
-      "type": "ActiveMove"
+      "type": "ActiveMove",
+      "returns_item_from_list": false
     },
     "cure_status": {
       "description": "Cures a Mon's status condition.",
@@ -1667,7 +1717,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "damage": {
       "description": "Deals damage to a Mon.",
@@ -1692,7 +1743,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "debug_log": {
       "description": "Logs a debug message to the battle log.",
@@ -1705,7 +1757,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "decrease_friendship": {
       "description": "Decreases a Mon's friendship.",
@@ -1736,7 +1789,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "decrease_weight": {
       "description": "Decreases a Mon's weight.",
@@ -1755,7 +1809,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "deduct_pp": {
       "description": "Deducts PP from a Mon's move.",
@@ -1780,7 +1835,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "deprioritize_move": {
       "description": "Deprioritizes a Mon's move.",
@@ -1799,7 +1855,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "direct_damage": {
       "description": "Deals direct damage to a Mon (bypasses most calculations).",
@@ -1818,7 +1875,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "disable_move": {
       "description": "Disables a move for a Mon.",
@@ -1837,7 +1895,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "discard_item": {
       "description": "Makes a Mon discard its held item.",
@@ -1850,7 +1909,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "do_move": {
       "description": "Executes a move.",
@@ -1881,13 +1941,15 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "do_not_animate_last_move": {
       "description": "Prevents the last move from being animated.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "eat_item": {
       "description": "Makes a Mon eat its held item.",
@@ -1900,7 +1962,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "eat_given_item": {
       "description": "Makes a Mon eat a specific item.",
@@ -1919,7 +1982,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "effect_has_event_callback": {
       "description": "Checks if an effect has a specific event callback.",
@@ -1938,7 +2002,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "effective_weather": {
       "description": "Gets the effective weather for a Mon.",
@@ -1957,7 +2022,8 @@
         }
       ],
       "flags": [],
-      "type": "Effect | Undefined"
+      "type": "Effect | Undefined",
+      "returns_item_from_list": false
     },
     "end_ability": {
       "description": "Ends a Mon's ability.",
@@ -1970,13 +2036,15 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "end_battle": {
       "description": "Ends the current battle immediately.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "end_dynamax": {
       "description": "Ends a Mon's Dynamax state.",
@@ -1989,7 +2057,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "end_illusion": {
       "description": "Ends a Mon's illusion.",
@@ -2002,7 +2071,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "end_item": {
       "description": "Ends a Mon's item.",
@@ -2015,7 +2085,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "escape": {
       "description": "Makes a Mon escape from battle.",
@@ -2028,7 +2099,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "faint": {
       "description": "Makes a Mon faint.",
@@ -2041,13 +2113,15 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "faint_messages": {
       "description": "Processes faint messages for the battle.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "floor": {
       "description": "Rounds a number down to the nearest whole number.",
@@ -2060,7 +2134,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "force_fully_heal": {
       "description": "Forces a Mon to fully heal.",
@@ -2073,7 +2148,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "force_switch": {
       "description": "Forces a Mon to switch out.",
@@ -2086,7 +2162,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "forme_change": {
       "description": "Changes a Mon's forme.",
@@ -2110,20 +2187,23 @@
           "description": "If set, the forme change is permanent."
         }
       ],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "get_all_moves": {
       "description": "Gets all moves from the registry.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Effect"
+      "item_type": "Effect",
+      "returns_item_from_list": false
     },
     "get_ability": {
       "description": "Gets an ability by ID.",
       "parameters": [],
       "flags": [],
-      "type": "Effect | Undefined"
+      "type": "Effect | Undefined",
+      "returns_item_from_list": false
     },
     "get_boost": {
       "description": "Gets a boost level from a boost table.",
@@ -2142,7 +2222,8 @@
         }
       ],
       "flags": [],
-      "type": "Fraction"
+      "type": "Fraction",
+      "returns_item_from_list": false
     },
     "get_item": {
       "description": "Gets an item by ID.",
@@ -2155,7 +2236,8 @@
         }
       ],
       "flags": [],
-      "type": "Effect | Undefined"
+      "type": "Effect | Undefined",
+      "returns_item_from_list": false
     },
     "get_move": {
       "description": "Gets move data from the registry.",
@@ -2168,7 +2250,8 @@
         }
       ],
       "flags": [],
-      "type": "Effect | Undefined"
+      "type": "Effect | Undefined",
+      "returns_item_from_list": false
     },
     "get_move_targets": {
       "description": "Gets valid targets for a move.",
@@ -2194,7 +2277,8 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "get_species": {
       "description": "Gets species data from the registry.",
@@ -2207,7 +2291,8 @@
         }
       ],
       "flags": [],
-      "type": "Effect | Undefined"
+      "type": "Effect | Undefined",
+      "returns_item_from_list": false
     },
     "get_stat": {
       "description": "Gets a Mon's stat value.",
@@ -2226,7 +2311,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "has_ability": {
       "description": "Checks if a Mon has a specific ability.",
@@ -2245,7 +2331,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_any_type": {
       "description": "Checks if a Mon has any of the given types.",
@@ -2264,7 +2351,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_item": {
       "description": "Checks if a Mon has a specific item.",
@@ -2283,7 +2371,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_move": {
       "description": "Checks if a Mon has a specific move.",
@@ -2302,7 +2391,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_pseudo_weather": {
       "description": "Checks if a pseudo-weather is active on the field.",
@@ -2315,7 +2405,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_side_condition": {
       "description": "Checks if a side has a specific condition.",
@@ -2334,7 +2425,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_species_registered": {
       "description": "Checks if a Mon has a specific species registered.",
@@ -2353,7 +2445,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_type": {
       "description": "Checks if a Mon has a specific type.",
@@ -2372,7 +2465,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_type_before_forced_types": {
       "description": "Checks if a Mon has a specific type before forced type changes.",
@@ -2391,7 +2485,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "has_volatile": {
       "description": "Checks if a Mon has a specific volatile effect.",
@@ -2410,7 +2505,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "heal": {
       "description": "Heals a Mon.",
@@ -2429,13 +2525,15 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "hit_effect": {
       "description": "Creates a new hit effect object.",
       "parameters": [],
       "flags": [],
-      "type": "HitEffect"
+      "type": "HitEffect",
+      "returns_item_from_list": false
     },
     "increase_friendship": {
       "description": "Increases a Mon's friendship.",
@@ -2466,7 +2564,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "index": {
       "description": "Gets the index of an item in a list.",
@@ -2485,7 +2584,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction | Undefined"
+      "type": "UFraction | Undefined",
+      "returns_item_from_list": true
     },
     "invert_boosts": {
       "description": "Inverts a Mon's boosts.",
@@ -2498,7 +2598,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "is_adjacent": {
       "description": "Checks if two Mons are adjacent.",
@@ -2517,7 +2618,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "is_ally": {
       "description": "Checks if two Mons are allies.",
@@ -2536,7 +2638,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "item_has_flag": {
       "description": "Checks if an item has a specific flag.",
@@ -2555,7 +2658,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "join": {
       "description": "Joins a list into a string.",
@@ -2574,7 +2678,8 @@
         }
       ],
       "flags": [],
-      "type": "String"
+      "type": "String",
+      "returns_item_from_list": false
     },
     "last_attack": {
       "description": "Gets the last attack directed at a Mon.",
@@ -2596,7 +2701,8 @@
           "description": "If set, only attacks from the opposite side are considered."
         }
       ],
-      "type": "Object | Undefined"
+      "type": "Object | Undefined",
+      "returns_item_from_list": false
     },
     "log": {
       "description": "Logs a message to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
@@ -2609,7 +2715,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_ability": {
       "description": "Logs an ability activation to the battle log.",
@@ -2628,13 +2735,15 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_activate": {
       "description": "Logs an effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_animate_move": {
       "description": "Logs a move animation to the battle log.",
@@ -2653,7 +2762,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_announce_item": {
       "description": "Logs an item announcement to the battle log.",
@@ -2666,19 +2776,22 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_block": {
       "description": "Logs a block effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_cant": {
       "description": "Logs that a Mon cannot perform an action.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_custom_effect": {
       "description": "Logs a custom effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
@@ -2691,13 +2804,15 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_end": {
       "description": "Logs the end of an effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_fail": {
       "description": "Logs an effect failure to the battle log.",
@@ -2716,7 +2831,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_fail_heal": {
       "description": "Logs a heal failure to the battle log.",
@@ -2729,7 +2845,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_fail_unboost": {
       "description": "Logs an unboost failure to the battle log.  @param {[`ValueType::List`] | [`ValueType::String`]} ... The boosts that failed to unboost.",
@@ -2742,25 +2859,29 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_field_activate": {
       "description": "Logs a field effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_field_start": {
       "description": "Logs the start of a field effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_field_end": {
       "description": "Logs the end of a field effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_immune": {
       "description": "Logs immunity to an effect.",
@@ -2773,7 +2894,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_ohko": {
       "description": "Logs an OHKO move to the battle log.",
@@ -2786,7 +2908,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_prepare_move": {
       "description": "Logs move preparation to the battle log.",
@@ -2799,37 +2922,43 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_side_end": {
       "description": "Logs the end of a side condition to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_side_start": {
       "description": "Logs the start of a side condition to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_single_move": {
       "description": "Logs a single-move effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_single_turn": {
       "description": "Logs a single-turn effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_start": {
       "description": "Logs the start of an effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
       "parameters": [],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_status": {
       "description": "Logs a status change to the battle log.",
@@ -2848,7 +2977,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_use_move": {
       "description": "Logs a move usage to the battle log.",
@@ -2867,7 +2997,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_waiting": {
       "description": "Logs that a Mon is waiting.",
@@ -2886,7 +3017,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "log_weather": {
       "description": "Logs weather change or continuation to the battle log.",
@@ -2899,7 +3031,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "max": {
       "description": "Returns the maximum of two values.",
@@ -2918,13 +3051,15 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "max_move": {
       "description": "Executes a Max Move.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     },
     "min": {
       "description": "Returns the minimum of two values.",
@@ -2943,7 +3078,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "modify_move_type": {
       "description": "Modifies the type of an active move.",
@@ -2962,7 +3098,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "mon_at_target_location": {
       "description": "Gets the Mon at a specific target location relative to a Mon.",
@@ -2981,7 +3118,8 @@
         }
       ],
       "flags": [],
-      "type": "Mon | Undefined"
+      "type": "Mon | Undefined",
+      "returns_item_from_list": false
     },
     "mon_in_position": {
       "description": "Checks if a Mon is at a specific field position.",
@@ -3000,7 +3138,8 @@
         }
       ],
       "flags": [],
-      "type": "Mon | Undefined"
+      "type": "Mon | Undefined",
+      "returns_item_from_list": false
     },
     "move_at_move_slot_index": {
       "description": "Gets the move at a specific move slot index.",
@@ -3019,7 +3158,8 @@
         }
       ],
       "flags": [],
-      "type": "Effect | Undefined"
+      "type": "Effect | Undefined",
+      "returns_item_from_list": false
     },
     "move_crit_target": {
       "description": "Checks if a move dealt a critical hit to its target.",
@@ -3038,7 +3178,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "move_has_flag": {
       "description": "Checks if a move has a specific flag.",
@@ -3057,7 +3198,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "move_hit_data_has_flag_against_target": {
       "description": "Checks if a move's hit data has a flag for a target.",
@@ -3082,7 +3224,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "move_hit_target": {
       "description": "Checks if a move hit its target.",
@@ -3101,7 +3244,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "move_makes_contact": {
       "description": "Checks if a move makes contact.",
@@ -3114,7 +3258,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "move_slot": {
       "description": "Creates a simulated move slot from an active move.",
@@ -3127,7 +3272,8 @@
         }
       ],
       "flags": [],
-      "type": "MoveSlot"
+      "type": "MoveSlot",
+      "returns_item_from_list": false
     },
     "move_slot_at_index": {
       "description": "Gets the move slot at a specific index.",
@@ -3146,7 +3292,8 @@
         }
       ],
       "flags": [],
-      "type": "MoveSlot | Undefined"
+      "type": "MoveSlot | Undefined",
+      "returns_item_from_list": false
     },
     "move_slot_index": {
       "description": "Gets the index of a move in a Mon's move slots.",
@@ -3165,7 +3312,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction | Undefined"
+      "type": "UFraction | Undefined",
+      "returns_item_from_list": false
     },
     "new_active_move": {
       "description": "Creates a new active move.",
@@ -3184,7 +3332,8 @@
         }
       ],
       "flags": [],
-      "type": "Effect"
+      "type": "Effect",
+      "returns_item_from_list": false
     },
     "new_active_move_from_local_data": {
       "description": "Creates a new active move from local data.",
@@ -3209,13 +3358,15 @@
         }
       ],
       "flags": [],
-      "type": "Effect"
+      "type": "Effect",
+      "returns_item_from_list": false
     },
     "new_object": {
       "description": "Creates a new empty object.",
       "parameters": [],
       "flags": [],
-      "type": "Object"
+      "type": "Object",
+      "returns_item_from_list": false
     },
     "object_get": {
       "description": "Gets a value from an object.",
@@ -3234,7 +3385,8 @@
         }
       ],
       "flags": [],
-      "type": "Any | Undefined"
+      "type": "Any | Undefined",
+      "returns_item_from_list": false
     },
     "object_increment": {
       "description": "Increments an integer value in an object.",
@@ -3253,7 +3405,8 @@
         }
       ],
       "flags": [],
-      "type": "Object"
+      "type": "Object",
+      "returns_item_from_list": false
     },
     "object_keys": {
       "description": "Gets the keys of an object.",
@@ -3267,7 +3420,8 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "String"
+      "item_type": "String",
+      "returns_item_from_list": false
     },
     "object_set": {
       "description": "Sets a value on an object.",
@@ -3292,7 +3446,8 @@
         }
       ],
       "flags": [],
-      "type": "Object"
+      "type": "Object",
+      "returns_item_from_list": false
     },
     "object_value": {
       "description": "Gets a value from an object.",
@@ -3311,7 +3466,8 @@
         }
       ],
       "flags": [],
-      "type": "Any | Undefined"
+      "type": "Any | Undefined",
+      "returns_item_from_list": false
     },
     "overwrite_move_slot": {
       "description": "Overwrites a move slot on a Mon.",
@@ -3341,7 +3497,8 @@
           "description": "If set, the base move slot is also overridden."
         }
       ],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "pending_move_action_this_turn": {
       "description": "Gets a pending move action for a Mon this turn.",
@@ -3354,14 +3511,16 @@
         }
       ],
       "flags": [],
-      "type": "Object | Undefined"
+      "type": "Object | Undefined",
+      "returns_item_from_list": false
     },
     "pending_move_actions_this_turn": {
       "description": "Gets all pending move actions this turn.",
       "parameters": [],
       "flags": [],
       "type": "List",
-      "item_type": "Object"
+      "item_type": "Object",
+      "returns_item_from_list": false
     },
     "plural": {
       "description": "Returns an 's' if the number is not 1.",
@@ -3374,7 +3533,8 @@
         }
       ],
       "flags": [],
-      "type": "String"
+      "type": "String",
+      "returns_item_from_list": false
     },
     "prepare_direct_move": {
       "description": "Prepares a direct move for execution.",
@@ -3388,7 +3548,8 @@
       ],
       "flags": [],
       "type": "List",
-      "item_type": "Mon"
+      "item_type": "Mon",
+      "returns_item_from_list": false
     },
     "primal_reversion": {
       "description": "Executes a primal reversion.",
@@ -3407,7 +3568,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "prioritize_move": {
       "description": "Prioritizes a Mon's move.",
@@ -3438,7 +3600,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "pseudo_weather_effect_state": {
       "description": "Gets the effect state for a pseudo-weather condition.",
@@ -3451,7 +3614,8 @@
         }
       ],
       "flags": [],
-      "type": "EffectState | Undefined"
+      "type": "EffectState | Undefined",
+      "returns_item_from_list": false
     },
     "random": {
       "description": "Generates a random number.",
@@ -3470,7 +3634,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "random_target": {
       "description": "Selects a random target for a move.",
@@ -3489,7 +3654,8 @@
         }
       ],
       "flags": [],
-      "type": "Mon | Undefined"
+      "type": "Mon | Undefined",
+      "returns_item_from_list": false
     },
     "received_attack": {
       "description": "Checks if a Mon received an attack this turn.",
@@ -3517,7 +3683,8 @@
           "description": "If set, only attacks received this turn are counted."
         }
       ],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "remove": {
       "description": "Removes an item from a list.",
@@ -3536,7 +3703,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "remove_move_flag": {
       "description": "Removes a flag from a move.",
@@ -3555,7 +3723,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "remove_pseudo_weather": {
       "description": "Removes pseudo-weather from the field.",
@@ -3568,7 +3737,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "remove_side_condition": {
       "description": "Removes a side condition.",
@@ -3587,7 +3757,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "remove_slot_condition": {
       "description": "Removes a slot condition.",
@@ -3612,7 +3783,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "remove_volatile": {
       "description": "Removes a volatile effect from a Mon.",
@@ -3631,7 +3803,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "restore_pp": {
       "description": "Restores PP to a Mon's move.",
@@ -3656,7 +3829,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "reverse": {
       "description": "Reverses a list.",
@@ -3669,7 +3843,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "returns_item_from_list": false
     },
     "revive": {
       "description": "Revives a fainted Mon.",
@@ -3688,7 +3863,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "run_event": {
       "description": "Runs a battle event.",
@@ -3701,7 +3877,8 @@
         }
       ],
       "flags": [],
-      "type": "Object | Undefined"
+      "type": "Object | Undefined",
+      "returns_item_from_list": false
     },
     "run_event_for_each_active_mon": {
       "description": "Runs an event on each active Mon.",
@@ -3714,7 +3891,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "run_event_for_mon": {
       "description": "Runs an event on a Mon.",
@@ -3727,7 +3905,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "run_event_on_mon_ability": {
       "description": "Runs an event on a Mon's ability.",
@@ -3740,7 +3919,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     },
     "run_event_on_mon_item": {
       "description": "Runs an event on a Mon's item.",
@@ -3753,7 +3933,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     },
     "run_event_on_mon_volatile": {
       "description": "Runs an event on a Mon's volatile effect.",
@@ -3772,7 +3953,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     },
     "run_event_on_move": {
       "description": "Runs an event on an active move.",
@@ -3785,7 +3967,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     },
     "sample": {
       "description": "Randomly samples an element from a list.",
@@ -3798,7 +3981,8 @@
         }
       ],
       "flags": [],
-      "type": "Object | Undefined"
+      "type": "Object | Undefined",
+      "returns_item_from_list": true
     },
     "save_move_hit_data_flag_against_target": {
       "description": "Saves a flag on a move's hit data for a target.",
@@ -3823,13 +4007,15 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "secondary_hit_effect": {
       "description": "Creates a new secondary hit effect object.",
       "parameters": [],
       "flags": [],
-      "type": "SecondaryHitEffect"
+      "type": "SecondaryHitEffect",
+      "returns_item_from_list": false
     },
     "set_ability": {
       "description": "Sets a Mon's ability.",
@@ -3857,7 +4043,8 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_boost": {
       "description": "Sets a boost value in a boost table.",
@@ -3882,7 +4069,8 @@
         }
       ],
       "flags": [],
-      "type": "Object"
+      "type": "Object",
+      "returns_item_from_list": false
     },
     "set_friendship": {
       "description": "Sets a Mon's friendship value.",
@@ -3901,7 +4089,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "set_hp": {
       "description": "Sets a Mon's HP.",
@@ -3920,7 +4109,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_illusion": {
       "description": "Sets a Mon's illusion species.",
@@ -3939,7 +4129,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_item": {
       "description": "Sets a Mon's held item.",
@@ -3958,7 +4149,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_needs_switch": {
       "description": "Sets whether a Mon needs to switch out.",
@@ -3977,7 +4169,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "set_pp": {
       "description": "Sets a Mon's move PP.",
@@ -4002,7 +4195,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_status": {
       "description": "Sets a Mon's status condition.",
@@ -4021,7 +4215,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_types": {
       "description": "Sets a Mon's types.",
@@ -4040,7 +4235,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_terrain": {
       "description": "Sets the field terrain.",
@@ -4053,7 +4249,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_upgraded_to_max_move": {
       "description": "Marks an active move as upgraded to a Max Move.",
@@ -4072,7 +4269,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "set_upgraded_to_z_move": {
       "description": "Marks an active move as upgraded to a Z-Move.",
@@ -4091,7 +4289,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "set_weather": {
       "description": "Sets the field weather.",
@@ -4104,7 +4303,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "set_z_power_boosts": {
       "description": "Sets Z-Power boosts for a move.",
@@ -4123,7 +4323,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "side_condition_effect_state": {
       "description": "Gets the effect state for a side condition.",
@@ -4142,7 +4343,8 @@
         }
       ],
       "flags": [],
-      "type": "EffectState | Undefined"
+      "type": "EffectState | Undefined",
+      "returns_item_from_list": false
     },
     "skip_effect_callback": {
       "description": "Skips an effect callback.",
@@ -4155,7 +4357,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "special_item_data": {
       "description": "Gets special data for an item.",
@@ -4168,7 +4371,8 @@
         }
       ],
       "flags": [],
-      "type": "Object"
+      "type": "Object",
+      "returns_item_from_list": false
     },
     "species_has_flag": {
       "description": "Checks if a species has a specific flag.",
@@ -4187,7 +4391,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "speed_sort_mons": {
       "description": "Sorts a list of Mons by speed.",
@@ -4200,7 +4405,8 @@
         }
       ],
       "flags": [],
-      "type": "List"
+      "type": "List",
+      "returns_item_from_list": false
     },
     "start_ability": {
       "description": "Starts a Mon's ability.",
@@ -4213,7 +4419,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "start_item": {
       "description": "Starts a Mon's item.",
@@ -4226,7 +4433,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "status_effect_state": {
       "description": "Gets the effect state for a status condition.",
@@ -4239,7 +4447,8 @@
         }
       ],
       "flags": [],
-      "type": "EffectState | Undefined"
+      "type": "EffectState | Undefined",
+      "returns_item_from_list": false
     },
     "swap_boosts": {
       "description": "Swaps boosts between two Mons.",
@@ -4264,7 +4473,8 @@
         }
       ],
       "flags": [],
-      "type": "Undefined"
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "swap_position": {
       "description": "Swaps a Mon's position with another index.",
@@ -4283,7 +4493,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "switch_out": {
       "description": "Forces a Mon to switch out.",
@@ -4296,7 +4507,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "take_item": {
       "description": "Takes a Mon's held item.",
@@ -4318,7 +4530,8 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "Effect | Undefined"
+      "type": "Effect | Undefined",
+      "returns_item_from_list": false
     },
     "target_location_of_mon": {
       "description": "Gets the target location of a Mon relative to another Mon.",
@@ -4337,7 +4550,8 @@
         }
       ],
       "flags": [],
-      "type": "Fraction"
+      "type": "Fraction",
+      "returns_item_from_list": false
     },
     "transform_into": {
       "description": "Transforms a Mon into another species.",
@@ -4356,7 +4570,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "type_chart_effectiveness": {
       "description": "Gets type chart effectiveness.",
@@ -4375,7 +4590,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "type_chart_immunity": {
       "description": "Checks type chart immunity.",
@@ -4394,7 +4610,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "type_effectiveness": {
       "description": "Calculates type effectiveness.",
@@ -4407,7 +4624,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "type_has_no_effect_against": {
       "description": "Checks if a type has no effect against another type.",
@@ -4426,7 +4644,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "type_is_weak_against": {
       "description": "Checks if a type is weak against another type.",
@@ -4445,7 +4664,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "type_modifier": {
       "description": "Calculates a type modifier.",
@@ -4458,7 +4678,8 @@
         }
       ],
       "flags": [],
-      "type": "UFraction"
+      "type": "UFraction",
+      "returns_item_from_list": false
     },
     "type_modifier_against_target": {
       "description": "Calculates a type modifier against a target Mon.",
@@ -4477,7 +4698,8 @@
         }
       ],
       "flags": [],
-      "type": "Fraction | Undefined"
+      "type": "Fraction | Undefined",
+      "returns_item_from_list": false
     },
     "use_active_move": {
       "description": "Uses an active move.",
@@ -4511,7 +4733,8 @@
           "description": "If set, the move can be prevented by certain effects."
         }
       ],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "use_given_item": {
       "description": "Uses a specific item.",
@@ -4530,7 +4753,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "use_item": {
       "description": "Uses a Mon's held item.",
@@ -4543,7 +4767,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "use_move": {
       "description": "Uses a move by ID.",
@@ -4568,7 +4793,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "valid_target": {
       "description": "Checks if a target is valid for a move.",
@@ -4593,7 +4819,8 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "value_from_local_data": {
       "description": "Gets a value from an effect's local data.",
@@ -4612,7 +4839,8 @@
         }
       ],
       "flags": [],
-      "type": "String | Undefined"
+      "type": "String | Undefined",
+      "returns_item_from_list": false
     },
     "volatile_status_state": {
       "description": "Gets the effect state for a volatile status condition.",
@@ -4631,7 +4859,8 @@
         }
       ],
       "flags": [],
-      "type": "EffectState | Undefined"
+      "type": "EffectState | Undefined",
+      "returns_item_from_list": false
     },
     "will_move_this_turn": {
       "description": "Checks if a Mon will move this turn.",
@@ -4644,13 +4873,15 @@
         }
       ],
       "flags": [],
-      "type": "Boolean"
+      "type": "Boolean",
+      "returns_item_from_list": false
     },
     "z_move": {
       "description": "Executes a Z-Move.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean | Undefined"
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
     }
   },
   "common_flags": [

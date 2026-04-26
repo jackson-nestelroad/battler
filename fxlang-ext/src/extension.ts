@@ -63,6 +63,9 @@ export function activate(context: vscode.ExtensionContext) {
                     const eventName = getEnclosingEvent(document, position, metadata);
                     const type = resolveType(chain, symbols, metadata, eventName);
                     
+                    const varName = chain.join('.');
+                    const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_.]+/);
+                    
                     let items: vscode.CompletionItem[] = [];
                     if (type) {
                         const typeMembers = getTypeMembers(type, metadata);
@@ -71,6 +74,9 @@ export function activate(context: vscode.ExtensionContext) {
                             item.documentation = new vscode.MarkdownString(data.description);
                             item.detail = `(Member of ${type} -> ${data.type})`;
                             item.sortText = '0_' + name;
+                            item.filterText = `${varName}.${name}`;
+                            if (wordRange) item.range = wordRange;
+                            item.insertText = `${varName}.${name}`;
                             return item;
                         });
 
@@ -82,7 +88,10 @@ export function activate(context: vscode.ExtensionContext) {
                                         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
                                         item.documentation = new vscode.MarkdownString(data.description);
                                         item.detail = `(Potential Move Member -> ${data.type})`;
-                                        item.sortText = 'z_' + name;
+                                        item.sortText = '1_' + name;
+                                        item.filterText = `${varName}.${name}`;
+                                        if (wordRange) item.range = wordRange;
+                                        item.insertText = `${varName}.${name}`;
                                         items.push(item);
                                     }
                                 }
@@ -95,6 +104,10 @@ export function activate(context: vscode.ExtensionContext) {
                         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
                         item.documentation = new vscode.MarkdownString(data.description);
                         item.detail = `(Global -> ${data.type})`;
+                        item.sortText = '2_' + name;
+                        item.filterText = `${varName}.${name}`;
+                        if (wordRange) item.range = wordRange;
+                        item.insertText = `${varName}.${name}`;
                         return item;
                     });
                     items.push(...globalItems);
@@ -113,7 +126,7 @@ export function activate(context: vscode.ExtensionContext) {
                                 
                                 if (isMatch) {
                                 const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Method);
-                                item.sortText = ' ' + name;
+                                item.sortText = '3_' + name;
                                 item.documentation = new vscode.MarkdownString(data.description);
                                 
                                 const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_.]+/);

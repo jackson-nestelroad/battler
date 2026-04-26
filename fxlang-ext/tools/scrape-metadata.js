@@ -257,6 +257,7 @@ function scrapeFunctions(filePath) {
       let docBuffer = [];
       let returnType = "Undefined";
       let itemType = undefined;
+      let returnsItemFromList = false;
       let parameters = [];
       let flags = [];
       for (let i = defLine - 1; i >= 0; i--) {
@@ -271,7 +272,9 @@ function scrapeFunctions(filePath) {
           );
           const flagMatch = docLine.match(/@flag\s*(\w+)\s*(.*)/);
 
-          if (itemTypeMatch) {
+          if (docLine.includes("@returns_item_from_list")) {
+            returnsItemFromList = true;
+          } else if (itemTypeMatch) {
             const rawItemType = itemTypeMatch[1];
             itemType = rawItemType.replace(/\[`ValueType::(\w+)`\]/g, "$1");
           } else if (retMatch) {
@@ -316,6 +319,7 @@ function scrapeFunctions(filePath) {
         flags,
         type: returnType,
         item_type: itemType,
+        returns_item_from_list: returnsItemFromList,
       };
     } else {
       functions[extName] = {

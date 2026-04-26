@@ -1478,6 +1478,7 @@ fn chance(mut context: FunctionContext) -> Result<Value> {
 /// Randomly samples an element from a list.
 /// 
 /// @param {[`ValueType::List`]} list The list to sample from.
+/// @returns_item_from_list
 /// @returns {[`ValueType::Object`] | [`ValueType::Undefined`]} The sampled element.
 fn sample(mut context: FunctionContext) -> Result<Option<Value>> {
     let list = context
@@ -3773,6 +3774,7 @@ fn remove(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::List`]} list The list.
 /// @param {[`ValueType::Any`]} item The item to find.
+/// @returns_item_from_list
 /// @returns {[`ValueType::UFraction`] | [`ValueType::Undefined`]} The index of the item.
 fn index(mut context: FunctionContext) -> Result<Option<Value>> {
     let list = context

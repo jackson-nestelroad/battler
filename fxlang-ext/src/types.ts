@@ -21,6 +21,7 @@ export interface FunctionData {
     flags: FlagData[];
     type: string;
     item_type?: string;
+    returns_item_from_list?: boolean;
 }
 
 export interface VariableData {
