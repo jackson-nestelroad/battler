@@ -38,7 +38,8 @@
         "scopeName": "fxlang.injection",
         "path": "./syntaxes/fxlang-injection.tmLanguage.json",
         "injectTo": [
-          "source.json"
+          "source.json",
+          "text.html.markdown"
         ]
       }
     ],
