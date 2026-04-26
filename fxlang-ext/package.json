@@ -1,0 +1,71 @@
+{
+  "name": "fxlang-vscode",
+  "displayName": "fxlang support",
+  "description": "Syntax highlighting and IntelliSense for fxlang DSL scripts.",
+  "version": "0.1.0",
+  "publisher": "jackson-nestelroad",
+  "icon": "media/icon.png",
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:fxlang",
+    "onLanguage:json",
+    "onLanguage:jsonc"
+  ],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "FxLang",
+      "properties": {
+        "fxlang.showOverviewRuler": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show FxLang locations in the scrollbar/overview ruler."
+        },
+        "fxlang.showLineNumbers": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show line numbers for FxLang DSL arrays."
+        }
+      }
+    },
+    "grammars": [
+      {
+        "scopeName": "fxlang.injection",
+        "path": "./syntaxes/fxlang-injection.tmLanguage.json",
+        "injectTo": [
+          "source.json"
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "fxlang.toggleLineNumbers",
+        "title": "fxlang: toggle line numbers"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "fxlang.toggleLineNumbers",
+        "key": "alt+l",
+        "mac": "alt+l"
+      }
+    ]
+  },
+  "scripts": {
+    "update-metadata": "node ./tools/scrape-metadata.js",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "vscode-tmgrammar-test -g ./syntaxes/fxlang-injection.tmLanguage.json \"./test/**/*.json\""
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^4.9.4",
+    "vscode-tmgrammar-test": "^0.1.3"
+  }
+}

@@ -16,3 +16,7 @@ target/
 /.gemini/work
 
 /data-filler
+
+.npm_cache/
+node_modules/
+fxlang-ext/out/

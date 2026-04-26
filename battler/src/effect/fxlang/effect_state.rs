@@ -52,12 +52,22 @@ pub struct EffectState {
 }
 
 impl EffectState {
+    /// [`ValueType::UFraction`]
     const DURATION: &'static str = "duration";
+    /// [`ValueType::Mon`]
     const TARGET: &'static str = "target";
+    /// [`ValueType::Effect`]
     const SOURCE_EFFECT: &'static str = "source_effect";
+    /// [`ValueType::Mon`]
     const SOURCE: &'static str = "source";
+    /// [`ValueType::Side`]
     const SOURCE_SIDE: &'static str = "source_side";
+    /// [`ValueType::UFraction`]
     const SOURCE_POSITION: &'static str = "source_position";
+    /// [`ValueType::Boolean`]
+    const STARTED: &'static str = "started";
+    /// [`ValueType::Boolean`]
+    const ENDING: &'static str = "ending";
 
     /// Creates an initial effect state for a new effect.
     pub fn initial_effect_state(
@@ -198,8 +208,8 @@ impl EffectState {
 
     fn set_activation_state(&mut self, activation_state: EffectActivationState) {
         self.activation_state = activation_state;
-        *self.get_mut("started") = Value::Boolean(self.started());
-        *self.get_mut("ending") = Value::Boolean(self.ending());
+        *self.get_mut(Self::STARTED) = Value::Boolean(self.started());
+        *self.get_mut(Self::ENDING) = Value::Boolean(self.ending());
     }
 
     /// Whether or not the effect is started.
