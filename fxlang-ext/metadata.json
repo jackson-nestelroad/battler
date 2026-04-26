@@ -1421,8 +1421,15 @@
       "returns_item_from_list": false
     },
     "boost_table": {
-      "description": "Creates a boost table from a list of stat:amount strings.  @param {[`ValueType::String`]} ... Boost strings (e.g., \"atk:1\").",
-      "parameters": [],
+      "description": "Creates a boost table from a list of stat:amount strings.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Boost strings (e.g., \"atk:1\").",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Object",
       "returns_item_from_list": false
@@ -2705,12 +2712,18 @@
       "returns_item_from_list": false
     },
     "log": {
-      "description": "Logs a message to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "description": "Logs a message to the battle log.",
       "parameters": [
         {
           "name": "title",
           "type": "String",
           "description": "The log title.",
+          "optional": false
+        },
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
           "optional": false
         }
       ],
@@ -2739,8 +2752,15 @@
       "returns_item_from_list": false
     },
     "log_activate": {
-      "description": "Logs an effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs an effect activation to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
@@ -2780,26 +2800,46 @@
       "returns_item_from_list": false
     },
     "log_block": {
-      "description": "Logs a block effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs a block effect to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_cant": {
-      "description": "Logs that a Mon cannot perform an action.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs that a Mon cannot perform an action.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_custom_effect": {
-      "description": "Logs a custom effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
+      "description": "Logs a custom effect to the battle log.",
       "parameters": [
         {
           "name": "header",
           "type": "String",
           "description": "The log header.",
+          "optional": false
+        },
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
           "optional": false
         }
       ],
@@ -2808,8 +2848,15 @@
       "returns_item_from_list": false
     },
     "log_end": {
-      "description": "Logs the end of an effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs the end of an effect to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
@@ -2849,13 +2896,19 @@
       "returns_item_from_list": false
     },
     "log_fail_unboost": {
-      "description": "Logs an unboost failure to the battle log.  @param {[`ValueType::List`] | [`ValueType::String`]} ... The boosts that failed to unboost.",
+      "description": "Logs an unboost failure to the battle log.",
       "parameters": [
         {
           "name": "mon",
           "type": "Mon",
           "description": "The Mon whose unboost failed.",
           "optional": true
+        },
+        {
+          "name": "...",
+          "type": "List | String",
+          "description": "The boosts that failed to unboost.",
+          "optional": false
         }
       ],
       "flags": [],
@@ -2863,22 +2916,43 @@
       "returns_item_from_list": false
     },
     "log_field_activate": {
-      "description": "Logs a field effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs a field effect activation to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_field_start": {
-      "description": "Logs the start of a field effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs the start of a field effect to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_field_end": {
-      "description": "Logs the end of a field effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs the end of a field effect to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
@@ -2926,36 +3000,71 @@
       "returns_item_from_list": false
     },
     "log_side_end": {
-      "description": "Logs the end of a side condition to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs the end of a side condition to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_side_start": {
-      "description": "Logs the start of a side condition to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs the start of a side condition to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_single_move": {
-      "description": "Logs a single-move effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs a single-move effect activation to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_single_turn": {
-      "description": "Logs a single-turn effect activation to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs a single-turn effect activation to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
     },
     "log_start": {
-      "description": "Logs the start of an effect to the battle log.  @param {[`ValueType::String`]} ... Additional log entries.",
-      "parameters": [],
+      "description": "Logs the start of an effect to the battle log.",
+      "parameters": [
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false

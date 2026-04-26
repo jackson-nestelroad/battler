@@ -452,7 +452,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     const decorationType = vscode.window.createTextEditorDecorationType({
-        gutterIconPath: vscode.Uri.file(path.join(context.extensionPath, 'media', 'fxlang-event.svg')),
+        gutterIconPath: vscode.Uri.file(path.join(context.extensionPath, 'media', 'fxlang-mono.svg')),
         gutterIconSize: 'contain'
     });
 

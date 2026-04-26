@@ -268,7 +268,7 @@ function scrapeFunctions(filePath) {
           const itemTypeMatch = docLine.match(/@returnsitem\s*\{(.*)\}/);
           const retMatch = docLine.match(/@returns\s*\{(.*)\}/);
           const paramMatch = docLine.match(
-            /@param\s*\{(.*)\}\s*(?:\[(\w+)\]|(\w+))\s*(.*)/,
+            /@param\s*\{(.*)\}\s*(?:\[([\w\.]+)\]|([\w\.]+))\s*(.*)/,
           );
           const flagMatch = docLine.match(/@flag\s*(\w+)\s*(.*)/);
 
