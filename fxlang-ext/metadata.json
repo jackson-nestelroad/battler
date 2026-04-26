@@ -982,7 +982,7 @@
       "parameters": [
         {
           "name": "ability_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The ability to check.",
           "optional": false
         },
@@ -1022,7 +1022,7 @@
         },
         {
           "name": "effect",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The effect ID.",
           "optional": false
         }
@@ -1062,7 +1062,7 @@
         },
         {
           "name": "move_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The move to perform.",
           "optional": false
         },
@@ -1208,7 +1208,7 @@
         },
         {
           "name": "effect",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The volatile effect ID.",
           "optional": true
         }
@@ -1631,7 +1631,7 @@
         },
         {
           "name": "effect",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The effect ID to check.",
           "optional": false
         }
@@ -1671,7 +1671,7 @@
       "parameters": [
         {
           "name": "clause",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The clause ID.",
           "optional": false
         }
@@ -1685,7 +1685,7 @@
       "parameters": [
         {
           "name": "clause",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The clause ID.",
           "optional": false
         }
@@ -1878,7 +1878,7 @@
         },
         {
           "name": "move_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The move to deduct from.",
           "optional": true
         },
@@ -1950,7 +1950,7 @@
         },
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID to disable.",
           "optional": false
         }
@@ -1984,7 +1984,7 @@
         },
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID to execute.",
           "optional": false
         },
@@ -2044,7 +2044,7 @@
         },
         {
           "name": "item",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The item ID to eat.",
           "optional": false
         }
@@ -2278,7 +2278,7 @@
       "parameters": [
         {
           "name": "ability_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The ability ID.",
           "optional": false
         }
@@ -2312,7 +2312,7 @@
       "parameters": [
         {
           "name": "item_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The item ID.",
           "optional": false
         }
@@ -2326,7 +2326,7 @@
       "parameters": [
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID.",
           "optional": false
         }
@@ -2367,7 +2367,7 @@
       "parameters": [
         {
           "name": "species_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The species ID.",
           "optional": false
         }
@@ -2407,7 +2407,7 @@
         },
         {
           "name": "ability",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The ability ID to check.",
           "optional": false
         }
@@ -2447,7 +2447,7 @@
         },
         {
           "name": "item",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The item ID to check.",
           "optional": false
         }
@@ -2467,7 +2467,7 @@
         },
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID to check.",
           "optional": false
         }
@@ -2521,7 +2521,7 @@
         },
         {
           "name": "species",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The species ID to check.",
           "optional": false
         }
@@ -2581,7 +2581,7 @@
         },
         {
           "name": "effect",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The volatile effect ID.",
           "optional": false
         }
@@ -2728,7 +2728,7 @@
       "parameters": [
         {
           "name": "item_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The item to check.",
           "optional": false
         },
@@ -2817,7 +2817,7 @@
         },
         {
           "name": "ability",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The ability ID.",
           "optional": true
         }
@@ -3377,7 +3377,7 @@
       "parameters": [
         {
           "name": "move_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The move to check.",
           "optional": false
         },
@@ -3497,7 +3497,7 @@
         },
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID to check.",
           "optional": false
         }
@@ -3511,7 +3511,7 @@
       "parameters": [
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID.",
           "optional": false
         },
@@ -3537,7 +3537,7 @@
         },
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID in local data.",
           "optional": false
         },
@@ -3799,7 +3799,7 @@
       "parameters": [
         {
           "name": "pseudo_weather_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The pseudo-weather ID.",
           "optional": false
         }
@@ -3942,7 +3942,7 @@
         },
         {
           "name": "side_condition",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The side condition ID.",
           "optional": false
         }
@@ -3988,7 +3988,7 @@
         },
         {
           "name": "effect",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The volatile effect ID.",
           "optional": true
         }
@@ -4008,7 +4008,7 @@
         },
         {
           "name": "move_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The move to restore.",
           "optional": true
         },
@@ -4219,7 +4219,7 @@
         },
         {
           "name": "ability",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The new ability ID.",
           "optional": false
         }
@@ -4334,7 +4334,7 @@
         },
         {
           "name": "item",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The item ID.",
           "optional": false
         }
@@ -4374,7 +4374,7 @@
         },
         {
           "name": "move_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The move to modify.",
           "optional": true
         },
@@ -4528,7 +4528,7 @@
         },
         {
           "name": "condition_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The side condition ID.",
           "optional": false
         }
@@ -4542,7 +4542,7 @@
       "parameters": [
         {
           "name": "effect",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The effect ID.",
           "optional": false
         }
@@ -4556,7 +4556,7 @@
       "parameters": [
         {
           "name": "item",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The item ID.",
           "optional": false
         }
@@ -4570,7 +4570,7 @@
       "parameters": [
         {
           "name": "species_handle",
-          "type": "Effect",
+          "type": "String | Effect",
           "description": "The species to check.",
           "optional": false
         },
@@ -4938,7 +4938,7 @@
         },
         {
           "name": "item",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The item ID to use.",
           "optional": false
         }
@@ -4972,7 +4972,7 @@
         },
         {
           "name": "move_id",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The move ID.",
           "optional": false
         },
@@ -5044,7 +5044,7 @@
         },
         {
           "name": "effect",
-          "type": "String",
+          "type": "String | Effect",
           "description": "The volatile effect ID.",
           "optional": true
         }

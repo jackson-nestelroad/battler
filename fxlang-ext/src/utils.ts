@@ -488,13 +488,19 @@ export function getDisplayType(typeStr: string, itemType?: string): string {
 export function areTypesCompatible(parentType: string, paramType: string): boolean {
     if (paramType === 'Any') return true;
     const parentTypes = parentType.split(' | ');
-    if (parentTypes.includes(paramType)) return true;
+    const paramTypes = paramType.split(' | ');
+    
+    for (const pt of parentTypes) {
+        if (paramTypes.includes(pt)) return true;
+    }
     
     // Check specific relaxed rules
-    if (paramType === 'Effect' && parentTypes.includes('ActiveMove')) return true;
-    if (paramType === 'Object' && (parentTypes.includes('BoostTable') || parentTypes.includes('StatTable') || parentTypes.includes('EffectState'))) return true;
-    if (paramType === 'Fraction' && parentTypes.includes('UFraction')) return true;
-    if (paramType === 'UFraction' && parentTypes.includes('Fraction')) return true;
+    for (const pt of parentTypes) {
+        if (paramTypes.includes('Effect') && pt === 'ActiveMove') return true;
+        if (paramTypes.includes('Object') && (pt === 'BoostTable' || pt === 'StatTable' || pt === 'EffectState')) return true;
+        if (paramTypes.includes('Fraction') && pt === 'UFraction') return true;
+        if (paramTypes.includes('UFraction') && pt === 'Fraction') return true;
+    }
     
     return false;
 }
