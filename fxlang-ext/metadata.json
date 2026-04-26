@@ -978,7 +978,20 @@
     },
     "activate_applying_effect": {
       "description": "Activates an applying effect.",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "effect",
+          "type": "Effect",
+          "description": "The effect ID.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Boolean | Undefined",
       "returns_item_from_list": false
@@ -986,6 +999,12 @@
     "add_attribute_to_last_move": {
       "description": "Adds an attribute to the last move used.",
       "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": true
+        },
         {
           "name": "attribute",
           "type": "String",
@@ -1373,12 +1392,6 @@
           "name": "damage",
           "type": "UFraction",
           "description": "The amount of damage dealt to the target.",
-          "optional": false
-        },
-        {
-          "name": "ratio",
-          "type": "Fraction",
-          "description": "The ratio of damage to take as recoil.",
           "optional": false
         }
       ],
@@ -1879,6 +1892,12 @@
           "type": "UFraction",
           "description": "The amount of damage.",
           "optional": false
+        },
+        {
+          "name": "damaging_effect",
+          "type": "Effect",
+          "description": "The effect causing the damage.",
+          "optional": true
         }
       ],
       "flags": [],
@@ -1953,7 +1972,14 @@
     },
     "do_not_animate_last_move": {
       "description": "Prevents the last move from being animated.",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": true
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
@@ -2048,7 +2074,14 @@
     },
     "end_battle": {
       "description": "Ends the current battle immediately.",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "winning_side",
+          "type": "Side",
+          "description": "The winning side index.",
+          "optional": true
+        }
+      ],
       "flags": [],
       "type": "Undefined",
       "returns_item_from_list": false
@@ -2207,7 +2240,14 @@
     },
     "get_ability": {
       "description": "Gets an ability by ID.",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "ability_id",
+          "type": "String",
+          "description": "The ability ID.",
+          "optional": false
+        }
+      ],
       "flags": [],
       "type": "Effect | Undefined",
       "returns_item_from_list": false
@@ -3165,9 +3205,22 @@
     },
     "max_move": {
       "description": "Executes a Max Move.",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        },
+        {
+          "name": "move",
+          "type": "Effect",
+          "description": "The move to execute.",
+          "optional": false
+        }
+      ],
       "flags": [],
-      "type": "Boolean | Undefined",
+      "type": "String | Undefined",
       "returns_item_from_list": false
     },
     "min": {
@@ -3197,13 +3250,7 @@
           "name": "active_move",
           "type": "Effect",
           "description": "The active move to modify.",
-          "optional": false
-        },
-        {
-          "name": "new_type",
-          "type": "Type",
-          "description": "The new type.",
-          "optional": false
+          "optional": true
         }
       ],
       "flags": [],
@@ -3972,7 +4019,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "UFraction",
       "returns_item_from_list": false
     },
     "run_event": {
@@ -3986,7 +4033,7 @@
         }
       ],
       "flags": [],
-      "type": "Object | Undefined",
+      "type": "Boolean",
       "returns_item_from_list": false
     },
     "run_event_for_each_active_mon": {
@@ -4639,7 +4686,7 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "Effect | Undefined",
+      "type": "String | Undefined",
       "returns_item_from_list": false
     },
     "target_location_of_mon": {
@@ -4987,9 +5034,22 @@
     },
     "z_move": {
       "description": "Executes a Z-Move.",
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon using the move.",
+          "optional": true
+        },
+        {
+          "name": "move",
+          "type": "Effect",
+          "description": "The move to execute.",
+          "optional": false
+        }
+      ],
       "flags": [],
-      "type": "Boolean | Undefined",
+      "type": "String | Undefined",
       "returns_item_from_list": false
     }
   },

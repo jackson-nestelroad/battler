@@ -1527,6 +1527,7 @@ fn damage(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Mon`]} [target] The Mon to damage.
 /// @param {[`ValueType::UFraction`]} amount The amount of damage.
+/// @param {[`ValueType::Effect`]} [damaging_effect] The effect causing the damage.
 fn direct_damage(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
 
@@ -1871,7 +1872,7 @@ fn remove_volatile(mut context: FunctionContext) -> Result<Value> {
 /// Runs a battle event.
 /// 
 /// @param {[`ValueType::String`]} event The event name.
-/// @returns {[`ValueType::Object`] | [`ValueType::Undefined`]} The event result.
+/// @returns {[`ValueType::Boolean`]} The event result.
 fn run_event(mut context: FunctionContext) -> Result<Value> {
     let event = context
         .pop_front()
@@ -2054,6 +2055,8 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Prevents the last move from being animated.
+/// 
+/// @param {[`ValueType::Effect`]} [active_move] The active move.
 fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {
     core_battle_logs::do_not_animate_last_move(
         &mut context
@@ -2218,7 +2221,7 @@ fn heal(mut context: FunctionContext) -> Result<Value> {
 /// 
 /// @param {[`ValueType::Mon`]} mon The Mon to revive.
 /// @param {[`ValueType::UFraction`]} hp_percent The percentage of HP to restore.
-/// @returns {[`ValueType::Boolean`]} Whether the Mon was revived.
+/// @returns {[`ValueType::UFraction`]} The amount of HP restored.
 fn revive(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let hp = context
@@ -2259,7 +2262,6 @@ fn apply_drain(mut context: FunctionContext) -> Result<()> {
 /// Applies recoil damage to the move user.
 /// 
 /// @param {[`ValueType::UFraction`]} damage The amount of damage dealt to the target.
-/// @param {[`ValueType::Fraction`]} ratio The ratio of damage to take as recoil.
 fn apply_recoil_damage(mut context: FunctionContext) -> Result<()> {
     let damage = context
         .pop_front()
@@ -3372,7 +3374,8 @@ fn get_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets an ability by ID.
-///
+/// 
+/// @param {[`ValueType::String`]} ability_id The ability ID.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]}
 fn get_ability(mut context: FunctionContext) -> Result<Option<Value>> {
     let ability_id = context
@@ -3977,8 +3980,7 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value> {
 
 /// Modifies the type of an active move.
 /// 
-/// @param {[`ValueType::Effect`]} active_move The active move to modify.
-/// @param {[`ValueType::Type`]} new_type The new type.
+/// @param {[`ValueType::Effect`]} [active_move] The active move to modify.
 fn modify_move_type(mut context: FunctionContext) -> Result<()> {
     let target = context.source_handle();
     let mut context = context
@@ -3990,7 +3992,9 @@ fn modify_move_type(mut context: FunctionContext) -> Result<()> {
 
 /// Executes a Z-Move.
 /// 
-/// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]} Whether the Z-move was successful.
+/// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
+/// @param {[`ValueType::Effect`]} move The move to execute.
+/// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The Z-Move ID.
 fn z_move(mut context: FunctionContext) -> Result<Option<Value>> {
     let target = context.target_handle_positional()?;
     let move_handle = context
@@ -4009,7 +4013,9 @@ fn z_move(mut context: FunctionContext) -> Result<Option<Value>> {
 
 /// Executes a Max Move.
 /// 
-/// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]} Whether the Max move was successful.
+/// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
+/// @param {[`ValueType::Effect`]} move The move to execute.
+/// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The Max Move ID.
 fn max_move(mut context: FunctionContext) -> Result<Option<Value>> {
     let target = context.target_handle_positional()?;
     let move_handle = context
@@ -4356,7 +4362,7 @@ fn add_move_action(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose item to take.
 /// @flag dry_run If set, the item is not actually taken.
 /// @flag silent If set, no message is displayed.
-/// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]} The item that was taken.
+/// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The ID of the item that was taken.
 fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon = context.target_handle_positional()?;
     let dry_run = context.has_flag("dry_run");
@@ -5489,6 +5495,8 @@ fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
 
 /// Activates an applying effect.
 /// 
+/// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
+/// @param {[`ValueType::Effect`]} effect The effect ID.
 /// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
 fn activate_applying_effect(mut context: FunctionContext) -> Result<Option<Value>> {
     let target_handle = context.target_handle_positional()?;
@@ -5517,6 +5525,7 @@ fn faint_messages(mut context: FunctionContext) -> Result<()> {
 
 /// Adds an attribute to the last move used.
 /// 
+/// @param {[`ValueType::Effect`]} [active_move] The active move.
 /// @param {[`ValueType::String`]} attribute The attribute to add.
 fn add_attribute_to_last_move(mut context: FunctionContext) -> Result<()> {
     let attribute = context
@@ -5622,6 +5631,8 @@ fn effective_weather(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Ends the current battle immediately.
+/// 
+/// @param {[`ValueType::Side`]} [winning_side] The winning side index.
 fn end_battle(mut context: FunctionContext) -> Result<()> {
     let winning_side = match context.pop_front() {
         Some(val) => Some(val.side_index().wrap_error_with_message("invalid side")?),
