@@ -9,7 +9,8 @@
     "strict": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", ".vscode-test"]
 }

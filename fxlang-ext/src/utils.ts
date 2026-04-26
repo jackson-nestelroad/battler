@@ -299,7 +299,7 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
     let blockStartLine = -1;
     for (let i = position.line; i >= 0; i--) {
         const line = document.lineAt(i).text;
-        if (line.includes('"program"') || line.includes('"callbacks"')) {
+        if (line.match(/"[a-z0-9_]+"\s*:\s*\[/i)) {
             blockStartLine = i;
             break;
         }
