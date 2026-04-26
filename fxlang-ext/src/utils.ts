@@ -232,6 +232,7 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
                         return listType.substring(5, listType.length - 1);
                     }
                 }
+                return 'unknown';
             }
             if (funcMeta.type === 'List' && funcMeta.item_type) {
                 return `List<${funcMeta.item_type}>`;
@@ -328,12 +329,9 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
             }
 
             const eventName = getEnclosingEvent(document, position, metadata);
-            const type = inferType(expression, symbols, metadata, eventName);
-            if (type) {
-                // Variables cannot change type once set
-                if (!symbols[varName]) {
-                    symbols[varName] = type;
-                }
+            const type = inferType(expression, symbols, metadata, eventName) || 'unknown';
+            if (!symbols[varName]) {
+                symbols[varName] = type;
             }
         }
         

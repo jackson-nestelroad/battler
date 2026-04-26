@@ -321,6 +321,7 @@ function scrapeFunctions(filePath) {
 
           if (docLine.includes("@returns_item_from_list")) {
             returnsItemFromList = true;
+            returnType = "unknown";
           } else if (itemTypeMatch) {
             const rawItemType = itemTypeMatch[1];
             itemType = rawItemType.replace(/\[`ValueType::(\w+)`\]/g, "$1");

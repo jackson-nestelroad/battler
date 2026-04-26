@@ -969,7 +969,7 @@
         {
           "name": "mon",
           "type": "Mon",
-          "description": "The Mon whose ability state to retrieve. Defaults to the current source.",
+          "description": "The Mon whose ability state to retrieve. Defaults to the",
           "optional": true
         }
       ],
@@ -1003,7 +1003,7 @@
         {
           "name": "mon",
           "type": "Mon",
-          "description": "The Mon whose ability to activate. Defaults to the current source.",
+          "description": "The Mon whose ability to activate. Defaults to the current",
           "optional": true
         }
       ],
@@ -1776,7 +1776,7 @@
       "returns_item_from_list": false
     },
     "damage": {
-      "description": "Deals damage to a Mon.",
+      "description": "Deals damage to a Mon.  number.",
       "parameters": [
         {
           "name": "mon",
@@ -2666,7 +2666,7 @@
         }
       ],
       "flags": [],
-      "type": "UFraction | Undefined",
+      "type": "unknown",
       "returns_item_from_list": true
     },
     "invert_boosts": {
@@ -3795,7 +3795,7 @@
       "returns_item_from_list": false
     },
     "pseudo_weather_effect_state": {
-      "description": "Gets the effect state for a pseudo-weather condition.",
+      "description": "Gets the effect state for a pseudo-weather condition.  state.",
       "parameters": [
         {
           "name": "pseudo_weather_id",
@@ -4172,7 +4172,7 @@
         }
       ],
       "flags": [],
-      "type": "Object | Undefined",
+      "type": "unknown",
       "returns_item_from_list": true
     },
     "save_move_hit_data_flag_against_target": {
@@ -4518,7 +4518,7 @@
       "returns_item_from_list": false
     },
     "side_condition_effect_state": {
-      "description": "Gets the effect state for a side condition.",
+      "description": "Gets the effect state for a side condition.  state.",
       "parameters": [
         {
           "name": "side",

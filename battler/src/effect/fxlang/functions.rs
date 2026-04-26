@@ -955,7 +955,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 }
 
 /// Logs a debug message to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} message The message to log.
 fn debug_log(mut context: FunctionContext) -> Result<()> {
     let mut event = battle_log_entry!("fxlang_debug");
@@ -982,7 +982,7 @@ fn log_internal(mut context: FunctionContext, title: String) -> Result<()> {
 }
 
 /// Logs a message to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} title The log title.
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log(mut context: FunctionContext) -> Result<()> {
@@ -1048,7 +1048,7 @@ fn log_effect_activation_base(
 }
 
 /// Logs a custom effect to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} header The log header.
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_custom_effect(mut context: FunctionContext) -> Result<()> {
@@ -1061,7 +1061,7 @@ fn log_custom_effect(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs an ability activation to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose ability activated.
 /// @param {[`ValueType::String`]} [ability] The ability ID.
 fn log_ability(mut context: FunctionContext) -> Result<()> {
@@ -1074,7 +1074,7 @@ fn log_ability(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs an item announcement to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose item is announced.
 fn log_announce_item(mut context: FunctionContext) -> Result<()> {
     let target = context.target_handle_positional()?;
@@ -1082,7 +1082,7 @@ fn log_announce_item(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs an effect activation to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_activate(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1093,7 +1093,7 @@ fn log_activate(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs a block effect to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_block(mut context: FunctionContext) -> Result<()> {
     context.set_use_source_effect(true);
@@ -1104,7 +1104,7 @@ fn log_block(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs a field effect activation to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_field_activate(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1115,7 +1115,7 @@ fn log_field_activate(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs a single-turn effect activation to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_single_turn(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1126,7 +1126,7 @@ fn log_single_turn(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs a single-move effect activation to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_single_move(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1155,7 +1155,7 @@ fn log_move_internal(mut context: FunctionContext, animate_only: bool) -> Result
 }
 
 /// Logs a move animation to the battle log.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::Mon`]} [target] The target of the move.
 fn log_animate_move(context: FunctionContext) -> Result<()> {
@@ -1163,7 +1163,7 @@ fn log_animate_move(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs a move usage to the battle log.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::Mon`]} [target] The target of the move.
 fn log_use_move(context: FunctionContext) -> Result<()> {
@@ -1171,7 +1171,7 @@ fn log_use_move(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs the start of an effect to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_start(mut context: FunctionContext) -> Result<()> {
     context.set_with_target(context.evaluation_context().target_handle().is_some());
@@ -1179,7 +1179,7 @@ fn log_start(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs the end of an effect to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_end(mut context: FunctionContext) -> Result<()> {
     context.set_with_target(context.evaluation_context().target_handle().is_some());
@@ -1187,7 +1187,7 @@ fn log_end(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs the start of a side condition to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_side_start(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1201,7 +1201,7 @@ fn log_side_start(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs the end of a side condition to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_side_end(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1215,7 +1215,7 @@ fn log_side_end(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs the start of a field effect to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_field_start(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1226,7 +1226,7 @@ fn log_field_start(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs the end of a field effect to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_field_end(context: FunctionContext) -> Result<()> {
     log_effect_activation_base(
@@ -1237,7 +1237,7 @@ fn log_field_end(context: FunctionContext) -> Result<()> {
 }
 
 /// Logs move preparation to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [target] The target of the move.
 fn log_prepare_move(mut context: FunctionContext) -> Result<()> {
     let target = match context.pop_front() {
@@ -1267,7 +1267,7 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs that a Mon cannot perform an action.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_cant(mut context: FunctionContext) -> Result<()> {
     let effect = context.effect_handle()?;
@@ -1280,7 +1280,7 @@ fn log_cant(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs a status change to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose status changed.
 /// @param {[`ValueType::String`]} [status] The status ID.
 fn log_status(mut context: FunctionContext) -> Result<()> {
@@ -1304,7 +1304,7 @@ fn log_status(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs weather change or continuation to the battle log.
-/// 
+///
 /// @param {[`ValueType::String`]} [weather] The weather ID.
 fn log_weather(mut context: FunctionContext) -> Result<()> {
     let (title, mut additional) = match context.pop_front() {
@@ -1333,7 +1333,7 @@ fn log_weather(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs an effect failure to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon the effect failed on.
 /// @param {[`ValueType::Effect`]} [what] The effect that failed.
 fn log_fail(mut context: FunctionContext) -> Result<()> {
@@ -1354,7 +1354,7 @@ fn log_fail(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs an unboost failure to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose unboost failed.
 /// @param {[`ValueType::List`] | [`ValueType::String`]} ... The boosts that failed to unboost.
 fn log_fail_unboost(mut context: FunctionContext) -> Result<()> {
@@ -1385,7 +1385,7 @@ fn log_fail_unboost(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs immunity to an effect.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon that is immune.
 fn log_immune(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
@@ -1398,7 +1398,7 @@ fn log_immune(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs a heal failure to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon that failed to heal.
 fn log_fail_heal(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
@@ -1406,7 +1406,7 @@ fn log_fail_heal(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Logs an OHKO move to the battle log.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon that was hit by the OHKO move.
 fn log_ohko(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
@@ -1414,7 +1414,7 @@ fn log_ohko(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Generates a random number.
-/// 
+///
 /// @param {[`ValueType::UFraction`]} [min] The minimum value.
 /// @param {[`ValueType::UFraction`]} [max] The maximum value.
 /// @returns {[`ValueType::UFraction`]} A random number.
@@ -1445,7 +1445,7 @@ fn random(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Performs a random chance check.
-/// 
+///
 /// @param {[`ValueType::UFraction`]} numerator The numerator of the probability.
 /// @param {[`ValueType::UFraction`]} [denominator] The denominator of the probability.
 /// @returns {[`ValueType::Boolean`]} Whether the check succeeded.
@@ -1476,10 +1476,9 @@ fn chance(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Randomly samples an element from a list.
-/// 
+///
 /// @param {[`ValueType::List`]} list The list to sample from.
 /// @returns_item_from_list
-/// @returns {[`ValueType::Object`] | [`ValueType::Undefined`]} The sampled element.
 fn sample(mut context: FunctionContext) -> Result<Option<Value>> {
     let list = context
         .pop_front()
@@ -1494,11 +1493,12 @@ fn sample(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Deals damage to a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to damage.
 /// @param {[`ValueType::UFraction`]} amount The amount of damage.
 /// @param {[`ValueType::Effect`]} [effect] The effect causing the damage.
-/// @returns {[`ValueType::UFraction`]} The amount of damage dealt, rounded up to the nearest whole number.
+/// @returns {[`ValueType::UFraction`]} The amount of damage dealt, rounded up to the nearest whole
+/// number.
 fn damage(mut context: FunctionContext) -> Result<Value> {
     let target_handle = context.target_handle_positional()?;
 
@@ -1524,7 +1524,7 @@ fn damage(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Deals direct damage to a Mon (bypasses most calculations).
-/// 
+///
 /// @param {[`ValueType::Mon`]} [target] The Mon to damage.
 /// @param {[`ValueType::UFraction`]} amount The amount of damage.
 /// @param {[`ValueType::Effect`]} [damaging_effect] The effect causing the damage.
@@ -1551,7 +1551,7 @@ fn direct_damage(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Checks if a Mon has a specific ability.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::String`]} ability The ability ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has the ability.
@@ -1585,7 +1585,7 @@ fn has_ability(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon has a specific item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::String`]} item The item ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has the item.
@@ -1604,7 +1604,7 @@ fn has_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon has a specific volatile effect.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::String`]} effect The volatile effect ID.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has the volatile effect.
@@ -1623,7 +1623,7 @@ fn has_volatile(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Cures a Mon's status condition.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to cure.
 /// @returns {[`ValueType::Boolean`]} Whether the status was cured.
 fn cure_status(mut context: FunctionContext) -> Result<Value> {
@@ -1636,7 +1636,7 @@ fn cure_status(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a move has a specific flag.
-/// 
+///
 /// @param {[`ValueType::Effect`]} move_handle The move to check.
 /// @param {[`ValueType::String`]} flag The flag ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the move has the flag.
@@ -1682,7 +1682,7 @@ fn move_has_flag(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if an item has a specific flag.
-/// 
+///
 /// @param {[`ValueType::Effect`]} item_handle The item to check.
 /// @param {[`ValueType::String`]} flag The flag ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the item has the flag.
@@ -1744,7 +1744,7 @@ fn ability_has_flag(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a species has a specific flag.
-/// 
+///
 /// @param {[`ValueType::Effect`]} species_handle The species to check.
 /// @param {[`ValueType::String`]} flag The flag ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the species has the flag.
@@ -1775,7 +1775,7 @@ fn species_has_flag(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Removes a flag from a move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} [move_handle] The move to modify.
 /// @param {[`ValueType::String`]} flag The flag to remove.
 fn remove_move_flag(mut context: FunctionContext) -> Result<()> {
@@ -1800,7 +1800,7 @@ fn remove_move_flag(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Adds a flag to a move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} [move_handle] The move to modify.
 /// @param {[`ValueType::String`]} flag The flag to add.
 fn add_move_flag(mut context: FunctionContext) -> Result<()> {
@@ -1825,7 +1825,7 @@ fn add_move_flag(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Adds a volatile effect to a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} [effect] The volatile effect ID.
 /// @flag link If set, the volatile effect is linked to the current effect.
@@ -1850,7 +1850,7 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Removes a volatile effect from a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} [effect] The volatile effect ID.
 /// @returns {[`ValueType::Boolean`]} Whether the volatile effect was removed.
@@ -1870,7 +1870,7 @@ fn remove_volatile(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Runs a battle event.
-/// 
+///
 /// @param {[`ValueType::String`]} event The event name.
 /// @returns {[`ValueType::Boolean`]} The event result.
 fn run_event(mut context: FunctionContext) -> Result<Value> {
@@ -1917,7 +1917,7 @@ fn run_event(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Runs an event on a Mon.
-/// 
+///
 /// @param {[`ValueType::String`]} event The event ID.
 /// @returns {[`ValueType::Boolean`]} Whether the event was successful.
 fn run_event_for_mon(mut context: FunctionContext) -> Result<Value> {
@@ -1935,7 +1935,7 @@ fn run_event_for_mon(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Runs an event on each active Mon.
-/// 
+///
 /// @param {[`ValueType::String`]} event The event ID.
 fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<()> {
     let event = context
@@ -1951,7 +1951,7 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Runs an event on a Mon's ability.
-/// 
+///
 /// @param {[`ValueType::String`]} event The event ID.
 /// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
 fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -1969,7 +1969,7 @@ fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<Option<Value
 }
 
 /// Runs an event on a Mon's item.
-/// 
+///
 /// @param {[`ValueType::String`]} event The event ID.
 /// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
 fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -1987,7 +1987,7 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> 
 }
 
 /// Runs an event on a Mon's volatile effect.
-/// 
+///
 /// @param {[`ValueType::String`]} volatile The volatile effect ID.
 /// @param {[`ValueType::String`]} event The event ID.
 /// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
@@ -2013,7 +2013,7 @@ fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<Option<Valu
 }
 
 /// Runs an event on an active move.
-/// 
+///
 /// @param {[`ValueType::String`]} event The event ID.
 /// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
 fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -2055,7 +2055,7 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Prevents the last move from being animated.
-/// 
+///
 /// @param {[`ValueType::Effect`]} [active_move] The active move.
 fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {
     core_battle_logs::do_not_animate_last_move(
@@ -2069,7 +2069,7 @@ fn do_not_animate_last_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Calculates damage for a move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [target] The move target.
 /// @returns {[`ValueType::UFraction`]} The calculated damage amount.
 fn calculate_damage(mut context: FunctionContext) -> Result<Value> {
@@ -2087,7 +2087,7 @@ fn calculate_damage(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Calculates confusion damage for a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to damage.
 /// @param {[`ValueType::UFraction`]} base_power The base power of the confusion attack.
 /// @returns {[`ValueType::UFraction`]} The calculated confusion damage.
@@ -2106,7 +2106,7 @@ fn calculate_confusion_damage(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Returns the maximum of two values.
-/// 
+///
 /// @param {[`ValueType::UFraction`]} a The first value.
 /// @param {[`ValueType::UFraction`]} b The second value.
 /// @returns {[`ValueType::UFraction`]} The larger value.
@@ -2127,7 +2127,7 @@ fn max(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Returns the minimum of two values.
-/// 
+///
 /// @param {[`ValueType::UFraction`]} a The first value.
 /// @param {[`ValueType::UFraction`]} b The second value.
 /// @returns {[`ValueType::UFraction`]} The smaller value.
@@ -2148,7 +2148,7 @@ fn min(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Rounds a number down to the nearest whole number.
-/// 
+///
 /// @param {[`ValueType::Fraction`]} value The value to floor.
 /// @returns {[`ValueType::UFraction`]} The floored value.
 fn floor(mut context: FunctionContext) -> Result<Value> {
@@ -2163,7 +2163,7 @@ fn floor(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Clamps a number between a minimum and maximum value.
-/// 
+///
 /// @param {[`ValueType::UFraction`]} value The value to clamp.
 /// @param {[`ValueType::UFraction`]} min The minimum value.
 /// @param {[`ValueType::UFraction`]} max The maximum value.
@@ -2199,7 +2199,7 @@ fn clamp_number(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Heals a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to heal.
 /// @param {[`ValueType::UFraction`]} amount The amount to heal.
 /// @returns {[`ValueType::UFraction`]} The actual amount healed.
@@ -2218,7 +2218,7 @@ fn heal(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Revives a fainted Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} mon The Mon to revive.
 /// @param {[`ValueType::UFraction`]} hp_percent The percentage of HP to restore.
 /// @returns {[`ValueType::UFraction`]} The amount of HP restored.
@@ -2237,7 +2237,7 @@ fn revive(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Applies drain effects (healing based on damage dealt).
-/// 
+///
 /// @param {[`ValueType::Mon`]} [target] The target Mon.
 /// @param {[`ValueType::Mon`]} [source] The source Mon.
 /// @param {[`ValueType::UFraction`]} damage The amount of damage dealt.
@@ -2260,7 +2260,7 @@ fn apply_drain(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Applies recoil damage to the move user.
-/// 
+///
 /// @param {[`ValueType::UFraction`]} damage The amount of damage dealt to the target.
 fn apply_recoil_damage(mut context: FunctionContext) -> Result<()> {
     let damage = context
@@ -2275,7 +2275,7 @@ fn apply_recoil_damage(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Sets a Mon's status condition.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} status The status ID.
 /// @returns {[`ValueType::Boolean`]} Whether the status was successfully set.
@@ -2297,7 +2297,7 @@ fn set_status(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if two Mons are allies.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The first Mon.
 /// @param {[`ValueType::Mon`]} other The second Mon.
 /// @returns {[`ValueType::Boolean`]} Whether the Mons are allies.
@@ -2317,7 +2317,7 @@ fn is_ally(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Returns a list of all boostable stats.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of stats.
 /// @returnsitem {[`ValueType::Boost`]}
 fn boostable_stats() -> Value {
@@ -2327,7 +2327,7 @@ fn boostable_stats() -> Value {
 }
 
 /// Gets a boost level from a boost table.
-/// 
+///
 /// @param {[`ValueType::BoostTable`]} boosts The boost table to query.
 /// @param {[`ValueType::Stat`]} stat The stat to query.
 /// @returns {[`ValueType::Fraction`]} The boost level.
@@ -2346,7 +2346,7 @@ fn get_boost(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sets a boost value in a boost table.
-/// 
+///
 /// @param {[`ValueType::Object`]} boosts The boost table.
 /// @param {[`ValueType::Stat`]} boost The stat to boost.
 /// @param {[`ValueType::Fraction`]} value The boost value.
@@ -2372,7 +2372,7 @@ fn set_boost(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon has a specific type.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::Type`]} target_type The type to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has the type.
@@ -2390,7 +2390,7 @@ fn has_type(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon has any of the given types.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::List`]} types The list of types to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has any of the types.
@@ -2412,7 +2412,7 @@ fn has_any_type(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon has a specific type before forced type changes.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::Type`]} target_type The type to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has the type.
@@ -2430,7 +2430,7 @@ fn has_type_before_forced_types(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon is at a specific field position.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to check.
 /// @param {[`ValueType::UFraction`]} position The position index.
 /// @returns {[`ValueType::Mon`] | [`ValueType::Undefined`]} The Mon at the position.
@@ -2449,7 +2449,7 @@ fn mon_in_position(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Disables a move for a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move is disabled.
 /// @param {[`ValueType::String`]} move_id The move ID to disable.
 fn disable_move(mut context: FunctionContext) -> Result<()> {
@@ -2464,7 +2464,7 @@ fn disable_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Gets the effect state for a volatile status condition.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose volatile state to retrieve.
 /// @param {[`ValueType::String`]} [effect] The volatile effect ID.
 /// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The volatile effect state.
@@ -2485,7 +2485,7 @@ fn volatile_status_state(mut context: FunctionContext) -> Result<Option<Value>> 
 }
 
 /// Gets the effect state for a status condition.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose status state to retrieve.
 /// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The status effect state.
 fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -2499,9 +2499,9 @@ fn status_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets the effect state for an ability.
-/// 
-/// @param {[`ValueType::Mon`]} [mon] The Mon whose ability state to retrieve. Defaults to the current source.
-/// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]}
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon whose ability state to retrieve. Defaults to the
+/// current source. @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]}
 fn ability_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context.target_handle_positional()?;
     let effect_state = MonAbilityEffectStateConnector::new(mon_handle);
@@ -2513,9 +2513,10 @@ fn ability_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets the effect state for a pseudo-weather condition.
-/// 
+///
 /// @param {[`ValueType::String`]} pseudo_weather_id The pseudo-weather ID.
-/// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The pseudo-weather effect state.
+/// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The pseudo-weather effect
+/// state.
 fn pseudo_weather_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let pseudo_weather_id = context
         .pop_front()
@@ -2532,10 +2533,11 @@ fn pseudo_weather_effect_state(mut context: FunctionContext) -> Result<Option<Va
 }
 
 /// Gets the effect state for a side condition.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side whose condition state to retrieve.
 /// @param {[`ValueType::String`]} condition_id The side condition ID.
-/// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The side condition effect state.
+/// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The side condition effect
+/// state.
 fn side_condition_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let side = context.target_side_index_positional()?;
     let condition_id = context
@@ -2566,7 +2568,7 @@ impl FromStr for StatBoost {
 }
 
 /// Checks if a Mon can receive a boost.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::BoostTable`]} boosts The boosts to check.
 /// @returns {[`ValueType::Boolean`]} Whether the boosts can be received.
@@ -2579,7 +2581,7 @@ fn can_boost(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Boosts or unboosts a Mon's stats.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to boost.
 /// @param {[`ValueType::BoostTable`]} boosts The boosts to apply.
 /// @returns {[`ValueType::Boolean`]} Whether the boosts were successfully applied.
@@ -2600,7 +2602,7 @@ fn boost(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Creates a boost table from a list of stat:amount strings.
-/// 
+///
 /// @param {[`ValueType::String`]} ... Boost strings (e.g., "atk:1").
 /// @returns {[`ValueType::Object`]} The created boost table.
 fn boost_table(mut context: FunctionContext) -> Result<Value> {
@@ -2608,7 +2610,7 @@ fn boost_table(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon can switch out.
-/// 
+///
 /// @param {[`ValueType::Player`]} player The player whose Mon to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon can switch.
 fn can_switch(mut context: FunctionContext) -> Result<Value> {
@@ -2623,7 +2625,7 @@ fn can_switch(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon has a specific move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::String`]} move_id The move ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has the move.
@@ -2644,7 +2646,7 @@ fn has_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets the index of a move in a Mon's move slots.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::String`]} move_id The move ID to check.
 /// @returns {[`ValueType::UFraction`] | [`ValueType::Undefined`]} The index of the move.
@@ -2670,7 +2672,7 @@ fn move_slot_index(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets the move slot at a specific index.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to query.
 /// @param {[`ValueType::UFraction`]} index The move slot index.
 /// @returns {[`ValueType::MoveSlot`] | [`ValueType::Undefined`]} The move slot at the index.
@@ -2692,7 +2694,7 @@ fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Creates a simulated move slot from an active move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @returns {[`ValueType::MoveSlot`]} The simulated move slot.
 fn move_slot(mut context: FunctionContext) -> Result<Value> {
@@ -2716,7 +2718,7 @@ fn move_slot(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Overwrites a move slot on a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::UFraction`]} index The move slot index.
 /// @param {[`ValueType::MoveSlot`]} move_slot The new move slot data.
@@ -2743,7 +2745,7 @@ fn overwrite_move_slot(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Checks if a move hit its target.
-/// 
+///
 /// @param {[`ValueType::Effect`]} move_handle The move to check.
 /// @param {[`ValueType::Mon`]} [mon] The target Mon.
 /// @returns {[`ValueType::Boolean`]} Whether the move hit the target.
@@ -2764,7 +2766,7 @@ fn move_hit_target(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a move dealt a critical hit to its target.
-/// 
+///
 /// @param {[`ValueType::Effect`]} move_handle The move to check.
 /// @param {[`ValueType::Mon`]} [mon] The target Mon.
 /// @returns {[`ValueType::Boolean`]} Whether the move dealt a critical hit.
@@ -2786,7 +2788,7 @@ fn move_crit_target(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Calculates a type modifier against a target Mon.
-/// 
+///
 /// @param {[`ValueType::Effect`]} move_handle The move to check.
 /// @param {[`ValueType::Mon`]} [mon] The target Mon.
 /// @returns {[`ValueType::Fraction`] | [`ValueType::Undefined`]} The type modifier.
@@ -2805,7 +2807,7 @@ fn type_modifier_against_target(mut context: FunctionContext) -> Result<Option<V
 }
 
 /// Saves a flag on a move's hit data for a target.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::Mon`]} [mon] The target Mon.
 /// @param {[`ValueType::String`]} flag The flag ID to save.
@@ -2832,7 +2834,7 @@ fn save_move_hit_data_flag_against_target(mut context: FunctionContext) -> Resul
 }
 
 /// Checks if a move's hit data has a flag for a target.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::Mon`]} [mon] The target Mon.
 /// @param {[`ValueType::String`]} flag The flag ID to check.
@@ -2861,7 +2863,7 @@ fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result
 }
 
 /// Gets all active Mons in the battle.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of all active Mons.
 /// @returnsitem {[`ValueType::Mon`]}
 fn all_active_mons(context: FunctionContext) -> Result<Value> {
@@ -2877,7 +2879,7 @@ fn all_active_mons(context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all active Mons in speed order.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of active Mons sorted by speed.
 /// @returnsitem {[`ValueType::Mon`]}
 fn all_active_mons_in_speed_order(mut context: FunctionContext) -> Result<Value> {
@@ -2890,7 +2892,7 @@ fn all_active_mons_in_speed_order(mut context: FunctionContext) -> Result<Value>
 }
 
 /// Gets all active Mons in speed and ability effect order.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of active Mons in speed and ability order.
 /// @returnsitem {[`ValueType::Mon`]}
 fn all_active_mons_in_speed_order_and_ability_effect_order(
@@ -2907,7 +2909,7 @@ fn all_active_mons_in_speed_order_and_ability_effect_order(
 }
 
 /// Gets all active or recently exited Mons.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of active or exited Mons.
 /// @returnsitem {[`ValueType::Mon`]}
 fn all_active_or_exited_mons(context: FunctionContext) -> Result<Value> {
@@ -2923,7 +2925,7 @@ fn all_active_or_exited_mons(context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all active Mons on a specific side.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to query. Defaults to the current side.
 /// @returns {[`ValueType::List`]} A list of active Mons on the side.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -2941,7 +2943,7 @@ fn all_active_mons_on_side(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all Mons on a specific side, including those in the party.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to query. Defaults to the current side.
 /// @returns {[`ValueType::List`]} A list of all Mons on the side.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -2959,7 +2961,7 @@ fn all_mons_on_side(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all Mons in a player's party.
-/// 
+///
 /// @param {[`ValueType::Player`]} player The player.
 /// @returns {[`ValueType::List`]} A list of Mons in the party.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -2982,7 +2984,7 @@ fn all_mons_in_party(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all adjacent foes of a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of adjacent foe Mons.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -2996,7 +2998,7 @@ fn adjacent_foes(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all adjacent allies of a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of adjacent ally Mons.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -3010,7 +3012,7 @@ fn adjacent_allies(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all foes of a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of foe Mons.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -3024,7 +3026,7 @@ fn all_foes(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets all allies of a Mon and the Mon itself.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @returns {[`ValueType::List`]} A list of ally Mons including the reference Mon.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -3038,7 +3040,7 @@ fn allies_and_self(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Clears all boosts from a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to clear.
 /// @flag silent If set, no message is displayed.
 fn clear_boosts(mut context: FunctionContext) -> Result<()> {
@@ -3051,7 +3053,7 @@ fn clear_boosts(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Clears negative boosts from a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to clear.
 fn clear_negative_boosts(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
@@ -3061,7 +3063,7 @@ fn clear_negative_boosts(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Selects a random target for a move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @param {[`ValueType::MoveTarget`]} [move_target] The target type.
 /// @returns {[`ValueType::Mon`] | [`ValueType::Undefined`]} The selected target.
@@ -3080,7 +3082,7 @@ fn random_target(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Clones the currently active move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move to clone.
 /// @param {[`ValueType::Mon`]} user The Mon using the cloned move.
 /// @returns {[`ValueType::ActiveMove`]} The cloned active move.
@@ -3105,7 +3107,7 @@ fn clone_active_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Creates a new active move.
-/// 
+///
 /// @param {[`ValueType::String`]} move_id The move ID.
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @returns {[`ValueType::Effect`]} The new active move.
@@ -3126,7 +3128,7 @@ fn new_active_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Creates a new active move from local data.
-/// 
+///
 /// @param {[`ValueType::Effect`]} effect The effect containing local data.
 /// @param {[`ValueType::String`]} move_id The move ID in local data.
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
@@ -3168,7 +3170,7 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
 }
 
 /// Uses an active move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @param {[`ValueType::Effect`]} active_move The active move to use.
 /// @param {[`ValueType::Mon`]} [target] The target of the move.
@@ -3214,7 +3216,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Logs that a Mon is waiting.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon waiting.
 /// @param {[`ValueType::Mon`]} target The target being waited for.
 fn log_waiting(mut context: FunctionContext) -> Result<()> {
@@ -3232,7 +3234,7 @@ fn log_waiting(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Uses a move by ID.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @param {[`ValueType::String`]} move_id The move ID.
 /// @param {[`ValueType::Mon`]} [target] The target Mon.
@@ -3271,7 +3273,7 @@ fn use_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Executes a move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @param {[`ValueType::String`]} move_id The move ID to execute.
 /// @param {[`ValueType::UFraction`]} [target_position] The target field position.
@@ -3308,7 +3310,7 @@ fn do_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Gets the Mon at a specific target location relative to a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @param {[`ValueType::Fraction`]} location The relative location index.
 /// @returns {[`ValueType::Mon`] | [`ValueType::Undefined`]} The Mon at the location.
@@ -3324,7 +3326,7 @@ fn mon_at_target_location(mut context: FunctionContext) -> Result<Option<Value>>
 }
 
 /// Gets the target location of a Mon relative to another Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The reference Mon.
 /// @param {[`ValueType::Mon`]} target The target Mon.
 /// @returns {[`ValueType::Fraction`]} The target location index.
@@ -3358,7 +3360,7 @@ fn effect_handle_exists_or_none(
 }
 
 /// Gets move data from the registry.
-/// 
+///
 /// @param {[`ValueType::String`]} move_id The move ID.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]} The move data.
 fn get_move(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -3374,7 +3376,7 @@ fn get_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets an ability by ID.
-/// 
+///
 /// @param {[`ValueType::String`]} ability_id The ability ID.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]}
 fn get_ability(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -3390,7 +3392,7 @@ fn get_ability(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets an item by ID.
-/// 
+///
 /// @param {[`ValueType::String`]} item_id The item ID.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]}
 fn get_item(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -3406,7 +3408,7 @@ fn get_item(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets species data from the registry.
-/// 
+///
 /// @param {[`ValueType::String`]} species_id The species ID.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]} The species data.
 fn get_species(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -3422,7 +3424,7 @@ fn get_species(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets all moves from the registry.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of all moves.
 /// @returnsitem {[`ValueType::Effect`]}
 fn get_all_moves(mut context: FunctionContext) -> Result<Value> {
@@ -3464,7 +3466,7 @@ fn get_all_moves(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets the move at a specific move slot index.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::UFraction`]} index The move slot index.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]} The move at the index.
@@ -3485,7 +3487,7 @@ fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>
 }
 
 /// Sets a Mon's types.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::List`]} types The list of types.
 /// @returns {[`ValueType::Boolean`]} Whether the types were successfully set.
@@ -3501,7 +3503,7 @@ fn set_types(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Adds a type to a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::Type`]} type_to_add The type to add.
 /// @returns {[`ValueType::Boolean`]} Whether the type was successfully added.
@@ -3517,7 +3519,7 @@ fn add_type(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sets the field weather.
-/// 
+///
 /// @param {[`ValueType::String`]} weather The weather ID.
 /// @returns {[`ValueType::Boolean`]} Whether the weather was successfully set.
 fn set_weather(mut context: FunctionContext) -> Result<Value> {
@@ -3532,7 +3534,7 @@ fn set_weather(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sets the field terrain.
-/// 
+///
 /// @param {[`ValueType::String`]} terrain The terrain ID.
 /// @returns {[`ValueType::Boolean`]} Whether the terrain was successfully set.
 fn set_terrain(mut context: FunctionContext) -> Result<Value> {
@@ -3547,21 +3549,21 @@ fn set_terrain(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Clears the field weather.
-/// 
+///
 /// @returns {[`ValueType::Boolean`]} Whether the weather was successfully cleared.
 fn clear_weather(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::clear_weather(&mut context.forward_to_field_effect()?).map(Value::Boolean)
 }
 
 /// Clears the field terrain.
-/// 
+///
 /// @returns {[`ValueType::Boolean`]} Whether the terrain was successfully cleared.
 fn clear_terrain(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::clear_terrain(&mut context.forward_to_field_effect()?).map(Value::Boolean)
 }
 
 /// Transforms a Mon into another species.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to transform.
 /// @param {[`ValueType::Mon`]} target The Mon to transform into.
 /// @returns {[`ValueType::Boolean`]} Whether the transformation was successful.
@@ -3581,7 +3583,7 @@ fn transform_into(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sets a Mon's illusion species.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the illusion.
 /// @param {[`ValueType::Mon`]} target The Mon to imitate.
 /// @returns {[`ValueType::Boolean`]} Whether the illusion was successfully set.
@@ -3601,7 +3603,7 @@ fn set_illusion(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Ends a Mon's illusion.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose illusion to end.
 /// @returns {[`ValueType::Boolean`]} Whether the illusion was successfully ended.
 fn end_illusion(mut context: FunctionContext) -> Result<Value> {
@@ -3614,7 +3616,7 @@ fn end_illusion(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon can escape from battle.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon can escape.
 fn can_escape(mut context: FunctionContext) -> Result<Value> {
@@ -3623,7 +3625,7 @@ fn can_escape(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Makes a Mon escape from battle.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to escape.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon escaped.
 fn escape(mut context: FunctionContext) -> Result<Value> {
@@ -3633,21 +3635,21 @@ fn escape(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Creates a new hit effect object.
-/// 
+///
 /// @returns {[`ValueType::HitEffect`]} A new hit effect.
 fn hit_effect() -> Result<Value> {
     Ok(Value::HitEffect(HitEffect::default()))
 }
 
 /// Creates a new secondary hit effect object.
-/// 
+///
 /// @returns {[`ValueType::SecondaryHitEffect`]} A new secondary hit effect.
 fn secondary_hit_effect() -> Result<Value> {
     Ok(Value::SecondaryHitEffect(SecondaryEffectData::default()))
 }
 
 /// Gets a list of all defined types in the battle.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of type IDs.
 /// @returnsitem {[`ValueType::Type`]}
 fn all_types(context: FunctionContext) -> Result<Value> {
@@ -3667,7 +3669,7 @@ fn all_types(context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a type is weak against another type.
-/// 
+///
 /// @param {[`ValueType::Type`]} attack_type The attacking type.
 /// @param {[`ValueType::Type`]} defense_type The defending type.
 /// @returns {[`ValueType::Boolean`]} Whether the attack type is weak against the defense type.
@@ -3701,7 +3703,7 @@ fn type_is_weak_against(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a type has no effect against another type.
-/// 
+///
 /// @param {[`ValueType::Type`]} attack_type The attacking type.
 /// @param {[`ValueType::Type`]} defense_type The defending type.
 /// @returns {[`ValueType::Boolean`]} Whether the attack type has no effect.
@@ -3735,7 +3737,7 @@ fn type_has_no_effect_against(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Appends an element to a list.
-/// 
+///
 /// @param {[`ValueType::List`]} list The list to modify.
 /// @param {[`ValueType::Object`]} element The element to append.
 /// @returns {[`ValueType::List`]} The modified list.
@@ -3751,7 +3753,7 @@ fn append(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Removes an item from a list.
-/// 
+///
 /// @param {[`ValueType::List`]} list The list.
 /// @param {[`ValueType::Any`]} item The item to remove.
 /// @returns {[`ValueType::Boolean`]} Whether the item was removed.
@@ -3774,11 +3776,10 @@ fn remove(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets the index of an item in a list.
-/// 
+///
 /// @param {[`ValueType::List`]} list The list.
 /// @param {[`ValueType::Any`]} item The item to find.
 /// @returns_item_from_list
-/// @returns {[`ValueType::UFraction`] | [`ValueType::Undefined`]} The index of the item.
 fn index(mut context: FunctionContext) -> Result<Option<Value>> {
     let list = context
         .pop_front()
@@ -3794,7 +3795,7 @@ fn index(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Reverses a list.
-/// 
+///
 /// @param {[`ValueType::List`]} list The list.
 /// @returns {[`ValueType::List`]} The reversed list.
 fn reverse(mut context: FunctionContext) -> Result<Value> {
@@ -3808,7 +3809,7 @@ fn reverse(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Joins a list into a string.
-/// 
+///
 /// @param {[`ValueType::List`]} list The list.
 /// @param {[`ValueType::String`]} separator The separator.
 /// @returns {[`ValueType::String`]} The joined string.
@@ -3832,7 +3833,7 @@ fn join(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if any Mon will perform a move this turn.
-/// 
+///
 /// @returns {[`ValueType::Boolean`]} Whether any Mon will move.
 fn any_mon_will_move_this_turn(context: FunctionContext) -> Result<Value> {
     Ok(Value::Boolean(
@@ -3861,7 +3862,7 @@ fn move_action_to_value(move_action: &MoveAction) -> Value {
 }
 
 /// Gets a pending move action for a Mon this turn.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @returns {[`ValueType::Object`] | [`ValueType::Undefined`]} The pending move action.
 fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -3876,7 +3877,7 @@ fn pending_move_action_this_turn(mut context: FunctionContext) -> Result<Option<
 }
 
 /// Gets all pending move actions this turn.
-/// 
+///
 /// @returns {[`ValueType::List`]} A list of all pending move actions.
 /// @returnsitem {[`ValueType::Object`]}
 fn pending_move_actions_this_turn(mut context: FunctionContext) -> Result<Value> {
@@ -3894,7 +3895,7 @@ fn pending_move_actions_this_turn(mut context: FunctionContext) -> Result<Value>
 }
 
 /// Checks if a Mon will move this turn.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon will move.
 fn will_move_this_turn(context: FunctionContext) -> Result<Value> {
@@ -3902,7 +3903,7 @@ fn will_move_this_turn(context: FunctionContext) -> Result<Value> {
 }
 
 /// Removes a side condition.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::String`]} side_condition The side condition ID.
 /// @returns {[`ValueType::Boolean`]} Whether the side condition was removed.
@@ -3921,7 +3922,7 @@ fn remove_side_condition(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Makes a Mon faint.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon that faints.
 fn faint(mut context: FunctionContext) -> Result<()> {
     let mon_handle = context.target_handle_positional()?;
@@ -3931,7 +3932,7 @@ fn faint(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Prepares a direct move for execution.
-/// 
+///
 /// @param {[`ValueType::List`]} targets The list of target Mons.
 /// @returns {[`ValueType::List`]} The list of Mons that were hit.
 /// @returnsitem {[`ValueType::Mon`]}
@@ -3954,7 +3955,7 @@ fn prepare_direct_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon is immune to an effect.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::String`]} effect The effect ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon is immune.
@@ -3979,7 +3980,7 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Modifies the type of an active move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} [active_move] The active move to modify.
 fn modify_move_type(mut context: FunctionContext) -> Result<()> {
     let target = context.source_handle();
@@ -3991,7 +3992,7 @@ fn modify_move_type(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Executes a Z-Move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @param {[`ValueType::Effect`]} move The move to execute.
 /// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The Z-Move ID.
@@ -4012,7 +4013,7 @@ fn z_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Executes a Max Move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @param {[`ValueType::Effect`]} move The move to execute.
 /// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The Max Move ID.
@@ -4034,7 +4035,7 @@ fn max_move(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Sets a Mon's HP.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::UFraction`]} hp The new HP value.
 /// @returns {[`ValueType::Boolean`]} Whether the HP was successfully set.
@@ -4051,7 +4052,7 @@ fn set_hp(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Deducts PP from a Mon's move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move to modify.
 /// @param {[`ValueType::Effect`]} [move_handle] The move to deduct from.
 /// @param {[`ValueType::UFraction`]} amount The amount of PP to deduct.
@@ -4077,7 +4078,7 @@ fn deduct_pp(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Restores PP to a Mon's move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move to modify.
 /// @param {[`ValueType::Effect`]} [move_handle] The move to restore.
 /// @param {[`ValueType::UFraction`]} amount The amount of PP to restore.
@@ -4105,7 +4106,7 @@ fn restore_pp(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sets a Mon's move PP.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move to modify.
 /// @param {[`ValueType::Effect`]} [move_handle] The move to modify.
 /// @param {[`ValueType::UFraction`]} pp The new PP value.
@@ -4131,7 +4132,7 @@ fn set_pp(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Adds a slot condition.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::UFraction`]} slot The slot index.
 /// @param {[`ValueType::String`]} condition The slot condition ID.
@@ -4161,7 +4162,7 @@ fn add_slot_condition(mut context: FunctionContext) -> Result<Value> {
     value.map(|val| Value::Boolean(val))
 }
 /// Removes a slot condition.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::UFraction`]} slot The slot index.
 /// @param {[`ValueType::String`]} condition The slot condition ID.
@@ -4186,7 +4187,7 @@ fn remove_slot_condition(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Adds a side condition to a side.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::String`]} [condition] The condition effect ID.
 /// @returns {[`ValueType::Boolean`]} Whether the condition was added.
@@ -4207,7 +4208,7 @@ fn add_side_condition(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if two Mons are adjacent.
-/// 
+///
 /// @param {[`ValueType::Mon`]} mon The first Mon.
 /// @param {[`ValueType::Mon`]} [other] The second Mon.
 /// @returns {[`ValueType::Boolean`]} Whether the Mons are adjacent.
@@ -4222,7 +4223,7 @@ fn is_adjacent(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Cancels a Mon's pending move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move to cancel.
 /// @returns {[`ValueType::Boolean`]} Whether the move was cancelled.
 fn cancel_move(mut context: FunctionContext) -> Result<Value> {
@@ -4237,7 +4238,7 @@ fn cancel_move(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Cancels a Mon's pending action.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose action to cancel.
 /// @returns {[`ValueType::Boolean`]} Whether the action was cancelled.
 fn cancel_action(mut context: FunctionContext) -> Result<Value> {
@@ -4252,7 +4253,7 @@ fn cancel_action(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Prioritizes a Mon's move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move to prioritize.
 /// @param {[`ValueType::UFraction`]} [action_id] The action ID to prioritize.
 /// @param {[`ValueType::Effect`]} [source_effect] The source effect.
@@ -4302,7 +4303,7 @@ fn prioritize_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Deprioritizes a Mon's move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose move to deprioritize.
 /// @param {[`ValueType::UFraction`]} [action_id] The action ID to deprioritize.
 fn deprioritize_move(mut context: FunctionContext) -> Result<()> {
@@ -4323,7 +4324,7 @@ fn deprioritize_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Adds a move action to the battle queue.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon performing the move.
 /// @param {[`ValueType::Effect`]} move_handle The move to perform.
 /// @param {[`ValueType::Mon`]} [target] The target of the move.
@@ -4358,7 +4359,7 @@ fn add_move_action(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Takes a Mon's held item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose item to take.
 /// @flag dry_run If set, the item is not actually taken.
 /// @flag silent If set, no message is displayed.
@@ -4376,7 +4377,7 @@ fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Sets a Mon's held item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} item The item ID.
 /// @returns {[`ValueType::Boolean`]} Whether the item was successfully set.
@@ -4398,7 +4399,7 @@ fn set_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Decreases a Mon's weight.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::UFraction`]} amount The amount to decrease.
 fn decrease_weight(mut context: FunctionContext) -> Result<()> {
@@ -4416,7 +4417,7 @@ fn decrease_weight(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Makes a Mon eat its held item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to eat.
 /// @returns {[`ValueType::Boolean`]} Whether the item was eaten.
 fn eat_item(mut context: FunctionContext) -> Result<Value> {
@@ -4426,7 +4427,7 @@ fn eat_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Makes a Mon eat a specific item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to eat.
 /// @param {[`ValueType::String`]} item The item ID to eat.
 /// @returns {[`ValueType::Boolean`]} Whether the item was eaten.
@@ -4446,7 +4447,7 @@ fn eat_given_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Uses a Mon's held item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the item.
 /// @returns {[`ValueType::Boolean`]} Whether the item was successfully used.
 fn use_item(mut context: FunctionContext) -> Result<Value> {
@@ -4456,7 +4457,7 @@ fn use_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Uses a specific item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the item.
 /// @param {[`ValueType::String`]} item The item ID to use.
 /// @returns {[`ValueType::Boolean`]} Whether the item was successfully used.
@@ -4476,7 +4477,7 @@ fn use_given_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Makes a Mon discard its held item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose item to discard.
 /// @returns {[`ValueType::Boolean`]} Whether the item was discarded.
 fn discard_item(mut context: FunctionContext) -> Result<Value> {
@@ -4490,7 +4491,7 @@ fn discard_item(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a target is valid for a move.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
 /// @param {[`ValueType::Mon`]} target The target Mon to check.
 /// @param {[`ValueType::MoveTarget`]} [move_target] The move target type.
@@ -4514,7 +4515,7 @@ fn valid_target(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sets a Mon's ability.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} ability The new ability ID.
 /// @flag dry_run If set, the ability is not actually changed.
@@ -4540,7 +4541,7 @@ fn set_ability(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a Mon received an attack this turn.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::Mon`]} source The source Mon of the attack.
 /// @flag has_damage If set, only attacks that dealt damage are counted.
@@ -4576,7 +4577,7 @@ fn received_attack(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets the last attack directed at a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @flag has_damage If set, only attacks that dealt damage are considered.
 /// @flag different_side If set, only attacks from the opposite side are considered.
@@ -4613,7 +4614,7 @@ fn last_attack(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Adds a secondary effect to a move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} [move_handle] The move to modify.
 /// @param {[`ValueType::SecondaryHitEffect`]} effect The secondary effect to add.
 fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<()> {
@@ -4637,7 +4638,7 @@ fn add_secondary_effect_to_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Checks if a move makes contact.
-/// 
+///
 /// @param {[`ValueType::Effect`]} [move_handle] The move to check.
 /// @returns {[`ValueType::Boolean`]} Whether the move makes contact.
 fn move_makes_contact(mut context: FunctionContext) -> Result<Value> {
@@ -4654,7 +4655,7 @@ fn move_makes_contact(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Calculates type effectiveness.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The target Mon.
 /// @returns {[`ValueType::UFraction`]} The effectiveness multiplier.
 fn type_effectiveness(mut context: FunctionContext) -> Result<Value> {
@@ -4666,7 +4667,7 @@ fn type_effectiveness(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Calculates a type modifier.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The target Mon.
 /// @returns {[`ValueType::UFraction`]} The type modifier.
 fn type_modifier(mut context: FunctionContext) -> Result<Value> {
@@ -4678,7 +4679,7 @@ fn type_modifier(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets type chart effectiveness.
-/// 
+///
 /// @param {[`ValueType::Type`]} attack_type The attacking type.
 /// @param {[`ValueType::Type`]} defense_type The defending type.
 /// @returns {[`ValueType::UFraction`]} The effectiveness multiplier.
@@ -4709,7 +4710,7 @@ fn type_chart_effectiveness(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks type chart immunity.
-/// 
+///
 /// @param {[`ValueType::Type`]} attack_type The attacking type.
 /// @param {[`ValueType::Type`]} defense_type The defending type.
 /// @returns {[`ValueType::Boolean`]} Whether the defense type is immune.
@@ -4734,7 +4735,7 @@ fn type_chart_immunity(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Changes a Mon's forme.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} forme The new forme ID.
 /// @flag permanent If set, the forme change is permanent.
@@ -4761,7 +4762,7 @@ fn forme_change(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Executes a primal reversion.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} forme The primal forme ID.
 /// @returns {[`ValueType::Boolean`]} Whether the primal reversion was successful.
@@ -4781,7 +4782,7 @@ fn primal_reversion(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Ends a Mon's Dynamax state.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose Dynamax to end.
 fn end_dynamax(mut context: FunctionContext) -> Result<()> {
     let target = context.target_handle_positional()?;
@@ -4791,7 +4792,7 @@ fn end_dynamax(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Increases a Mon's friendship.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::UFraction`]} delta_1 The friendship increase at level 1.
 /// @param {[`ValueType::UFraction`]} delta_2 The friendship increase at level 2.
@@ -4821,7 +4822,7 @@ fn increase_friendship(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Decreases a Mon's friendship.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::UFraction`]} delta_1 The friendship decrease at level 1.
 /// @param {[`ValueType::UFraction`]} delta_2 The friendship decrease at level 2.
@@ -4851,7 +4852,7 @@ fn decrease_friendship(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Sets a Mon's friendship value.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::UFraction`]} friendship The new friendship value.
 fn set_friendship(mut context: FunctionContext) -> Result<()> {
@@ -4866,7 +4867,7 @@ fn set_friendship(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Checks if a side has a specific condition.
-/// 
+///
 /// @param {[`ValueType::Side`]} [side] The side to check.
 /// @param {[`ValueType::String`]} condition The condition ID.
 /// @returns {[`ValueType::Boolean`]} Whether the side has the condition.
@@ -4885,7 +4886,7 @@ fn has_side_condition(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets the integer value of a battle clause.
-/// 
+///
 /// @param {[`ValueType::String`]} clause The clause ID.
 /// @returns {[`ValueType::UFraction`] | [`ValueType::Undefined`]} The clause value.
 fn clause_integer_value(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -4905,7 +4906,7 @@ fn clause_integer_value(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Gets the type value of a battle clause.
-/// 
+///
 /// @param {[`ValueType::String`]} clause The clause ID.
 /// @returns {[`ValueType::Type`] | [`ValueType::Undefined`]} The clause value.
 fn clause_type_value(mut context: FunctionContext) -> Result<Option<Value>> {
@@ -4930,14 +4931,14 @@ fn clause_type_value(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Creates a new empty object.
-/// 
+///
 /// @returns {[`ValueType::Object`]} The new object.
 fn new_object(_: FunctionContext) -> Value {
     Value::Object(HashMap::default())
 }
 
 /// Gets the keys of an object.
-/// 
+///
 /// @param {[`ValueType::Object`]} object The object to query.
 /// @returns {[`ValueType::List`]} A list of keys.
 /// @returnsitem {[`ValueType::String`]}
@@ -4957,7 +4958,7 @@ fn object_keys(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets a value from an object.
-/// 
+///
 /// @param {[`ValueType::Object`]} object The object to query.
 /// @param {[`ValueType::String`]} key The key to retrieve.
 /// @returns {[`ValueType::Any`] | [`ValueType::Undefined`]} The value at the key.
@@ -4976,7 +4977,7 @@ fn object_value(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Increments an integer value in an object.
-/// 
+///
 /// @param {[`ValueType::Object`]} object The object to modify.
 /// @param {[`ValueType::String`]} key The key to increment.
 /// @returns {[`ValueType::Object`]} The modified object.
@@ -5003,7 +5004,7 @@ fn object_increment(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets a value from an object.
-/// 
+///
 /// @param {[`ValueType::Object`]} object The object to query.
 /// @param {[`ValueType::String`]} key The key to retrieve.
 /// @returns {[`ValueType::Any`] | [`ValueType::Undefined`]} The value at the key.
@@ -5022,7 +5023,7 @@ fn object_get(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Sets a value on an object.
-/// 
+///
 /// @param {[`ValueType::Object`]} object The object to modify.
 /// @param {[`ValueType::String`]} key The key to set.
 /// @param {[`ValueType::Any`]} value The value to set.
@@ -5044,7 +5045,7 @@ fn object_set(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Returns an 's' if the number is not 1.
-/// 
+///
 /// @param {[`ValueType::UFraction`]} number The number to check.
 /// @returns {[`ValueType::String`]} "s" or empty string.
 fn plural(mut context: FunctionContext) -> Result<Value> {
@@ -5061,7 +5062,7 @@ fn plural(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Adds pseudo-weather to the field.
-/// 
+///
 /// @param {[`ValueType::String`]} weather The pseudo-weather ID.
 /// @returns {[`ValueType::Boolean`]} Whether the pseudo-weather was successfully added.
 fn add_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
@@ -5082,7 +5083,7 @@ fn add_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Removes pseudo-weather from the field.
-/// 
+///
 /// @param {[`ValueType::String`]} weather The pseudo-weather ID.
 /// @returns {[`ValueType::Boolean`]} Whether the pseudo-weather was successfully removed.
 fn remove_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
@@ -5101,7 +5102,7 @@ fn remove_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Checks if a pseudo-weather is active on the field.
-/// 
+///
 /// @param {[`ValueType::String`]} weather The pseudo-weather ID.
 /// @returns {[`ValueType::Boolean`]} Whether the pseudo-weather is active.
 fn has_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
@@ -5123,7 +5124,7 @@ fn has_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Starts a Mon's ability.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 fn start_ability(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
@@ -5135,7 +5136,7 @@ fn start_ability(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Ends a Mon's ability.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 fn end_ability(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
@@ -5147,7 +5148,7 @@ fn end_ability(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Starts a Mon's item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 fn start_item(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
@@ -5159,7 +5160,7 @@ fn start_item(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Ends a Mon's item.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 fn end_item(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
@@ -5171,7 +5172,7 @@ fn end_item(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Gets a Mon's stat value.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to query.
 /// @param {[`ValueType::Stat`]} stat The stat to query.
 /// @returns {[`ValueType::UFraction`]} The stat value.
@@ -5195,7 +5196,7 @@ fn get_stat(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets special data for an item.
-/// 
+///
 /// @param {[`ValueType::String`]} item The item ID.
 /// @returns {[`ValueType::Object`]} The special item data.
 fn special_item_data(mut context: FunctionContext) -> Result<Value> {
@@ -5219,7 +5220,7 @@ fn special_item_data(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Swaps boosts between two Mons.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [target] The target Mon.
 /// @param {[`ValueType::Mon`]} [source] The source Mon.
 /// @param {[`ValueType::List`]} [boosts] The list of boosts to swap.
@@ -5239,7 +5240,7 @@ fn swap_boosts(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Inverts a Mon's boosts.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @returns {[`ValueType::Boolean`]} Whether the boosts were successfully inverted.
 fn invert_boosts(mut context: FunctionContext) -> Result<Value> {
@@ -5252,7 +5253,7 @@ fn invert_boosts(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets a Mon's base species ID.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to query.
 /// @returns {[`ValueType::String`]} The base species ID.
 fn base_species(mut context: FunctionContext) -> Result<Value> {
@@ -5262,7 +5263,7 @@ fn base_species(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Skips an effect callback.
-/// 
+///
 /// @param {[`ValueType::String`]} effect The effect ID.
 fn skip_effect_callback(mut context: FunctionContext) -> Result<()> {
     let effect = context
@@ -5282,7 +5283,7 @@ fn skip_effect_callback(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Gets a value from an effect's local data.
-/// 
+///
 /// @param {[`ValueType::Effect`]} effect The effect handle.
 /// @param {[`ValueType::String`]} key The key to retrieve.
 /// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The value from local data.
@@ -5306,7 +5307,7 @@ fn value_from_local_data(mut context: FunctionContext) -> Result<Option<Value>> 
 }
 
 /// Checks if a Mon has a specific species registered.
-/// 
+///
 /// @param {[`ValueType::Player`]} player The player to check.
 /// @param {[`ValueType::String`]} species The species ID to check.
 /// @returns {[`ValueType::Boolean`]} Whether the species is registered.
@@ -5328,7 +5329,7 @@ fn has_species_registered(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Forces a Mon to fully heal.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to heal.
 fn force_fully_heal(mut context: FunctionContext) -> Result<()> {
     let target = context.target_handle_positional()?;
@@ -5336,7 +5337,7 @@ fn force_fully_heal(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Marks an active move as upgraded to a Z-Move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::String`]} base_move The base move ID.
 fn set_upgraded_to_z_move(mut context: FunctionContext) -> Result<()> {
@@ -5358,7 +5359,7 @@ fn set_upgraded_to_z_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Marks an active move as upgraded to a Max Move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::String`]} base_move The base move ID.
 fn set_upgraded_to_max_move(mut context: FunctionContext) -> Result<()> {
@@ -5380,7 +5381,7 @@ fn set_upgraded_to_max_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Gets valid targets for a move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::Mon`]} user The Mon using the move.
 /// @param {[`ValueType::Mon`]} [target] A potential target.
@@ -5418,7 +5419,7 @@ fn get_move_targets(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Swaps a Mon's position with another index.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to swap.
 /// @param {[`ValueType::UFraction`]} position The target position index.
 /// @returns {[`ValueType::Boolean`]} Whether the swap was successful.
@@ -5438,7 +5439,7 @@ fn swap_position(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sets whether a Mon needs to switch out.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::Boolean`]} needs_switch Whether the Mon needs to switch.
 fn set_needs_switch(mut context: FunctionContext) -> Result<()> {
@@ -5455,7 +5456,7 @@ fn set_needs_switch(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Forces a Mon to switch out.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to switch.
 /// @returns {[`ValueType::Boolean`]} Whether the switch was successful.
 fn switch_out(mut context: FunctionContext) -> Result<Value> {
@@ -5466,7 +5467,7 @@ fn switch_out(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Forces a Mon to switch out.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to switch.
 /// @returns {[`ValueType::Boolean`]} Whether the Mon was forced to switch.
 fn force_switch(mut context: FunctionContext) -> Result<Value> {
@@ -5478,9 +5479,9 @@ fn force_switch(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Activates a Mon's ability.
-/// 
-/// @param {[`ValueType::Mon`]} [mon] The Mon whose ability to activate. Defaults to the current source.
-/// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon whose ability to activate. Defaults to the current
+/// source. @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
 fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
     let target_handle = context.target_handle_positional()?;
     // Parse out any flags early.
@@ -5494,7 +5495,7 @@ fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Activates an applying effect.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::Effect`]} effect The effect ID.
 /// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
@@ -5524,7 +5525,7 @@ fn faint_messages(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Adds an attribute to the last move used.
-/// 
+///
 /// @param {[`ValueType::Effect`]} [active_move] The active move.
 /// @param {[`ValueType::String`]} attribute The attribute to add.
 fn add_attribute_to_last_move(mut context: FunctionContext) -> Result<()> {
@@ -5545,7 +5546,7 @@ fn add_attribute_to_last_move(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Sets Z-Power boosts for a move.
-/// 
+///
 /// @param {[`ValueType::Effect`]} active_move The active move.
 /// @param {[`ValueType::Object`]} boost_table The boost table.
 fn set_z_power_boosts(mut context: FunctionContext) -> Result<()> {
@@ -5571,7 +5572,7 @@ fn set_z_power_boosts(mut context: FunctionContext) -> Result<()> {
 }
 
 /// Checks if an effect has a specific event callback.
-/// 
+///
 /// @param {[`ValueType::Effect`]} effect The effect handle.
 /// @param {[`ValueType::String`]} event The event ID.
 /// @returns {[`ValueType::Boolean`]} Whether the effect has the callback.
@@ -5596,7 +5597,7 @@ fn effect_has_event_callback(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Sorts a list of Mons by speed.
-/// 
+///
 /// @param {[`ValueType::List`]} mons The list of Mons to sort.
 /// @returns {[`ValueType::List`]} The sorted list.
 fn speed_sort_mons(mut context: FunctionContext) -> Result<Value> {
@@ -5610,7 +5611,7 @@ fn speed_sort_mons(mut context: FunctionContext) -> Result<Value> {
 }
 
 /// Gets the effective weather for a Mon.
-/// 
+///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to check.
 /// @param {[`ValueType::Mon`]} [origin] The origin Mon.
 /// @returns {[`ValueType::Effect`] | [`ValueType::Undefined`]} The effective weather.
@@ -5631,7 +5632,7 @@ fn effective_weather(mut context: FunctionContext) -> Result<Option<Value>> {
 }
 
 /// Ends the current battle immediately.
-/// 
+///
 /// @param {[`ValueType::Side`]} [winning_side] The winning side index.
 fn end_battle(mut context: FunctionContext) -> Result<()> {
     let winning_side = match context.pop_front() {
