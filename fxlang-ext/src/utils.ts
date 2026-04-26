@@ -172,6 +172,9 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
     if (expression.match(/^(true|false)$/)) return 'Boolean';
     if (expression.match(/^[+-]\d+(\.\d+)?$/)) return 'Fraction';
     if (expression.match(/^\d+(\.\d+)?$/)) return 'UFraction';
+    if (expression.match(/^[+-]?\d+(?:\.\d+)?(?:\s*[\+\-\*\/]\s*\d+(?:\.\d+)?)+$/)) {
+        return expression.startsWith('-') ? 'Fraction' : 'UFraction';
+    }
     if (expression.match(/^['"]/)) return 'String';
     if (expression.startsWith('[') && expression.endsWith(']')) {
         const innerText = expression.substring(1, expression.length - 1).trim();
@@ -293,6 +296,21 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
     }
     
     if (blockStartLine === -1) return symbols;
+
+    const eventName = getEnclosingEvent(document, position, metadata);
+    
+    if (metadata.variables) {
+        for (const key in metadata.variables) {
+            symbols[key] = metadata.variables[key].type;
+        }
+    }
+    
+    if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables) {
+        const evVars = metadata.events[eventName].variables;
+        for (const key in evVars) {
+            symbols[key] = getDisplayType(evVars[key].type, (evVars[key] as any).item_type);
+        }
+    }
 
     // Extract lines from blockStart to current position
     for (let i = blockStartLine; i <= position.line; i++) {
