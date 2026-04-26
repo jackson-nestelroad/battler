@@ -42,23 +42,29 @@ function scrapeTypeMappings(filePath) {
   const mapping = {};
 
   let insideValueType = false;
+  let openBrackets = 0;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
     if (line.includes("pub fn value_type(&self) -> ValueType {")) {
       insideValueType = true;
+      openBrackets = 1;
       continue;
     }
 
     if (insideValueType) {
-      if (line === "}") {
+      for (const char of line) {
+        if (char === '{') openBrackets++;
+        if (char === '}') openBrackets--;
+      }
+      if (openBrackets <= 0) {
         insideValueType = false;
         continue;
       }
 
       // Match: Self::Variant(_) => ValueType::Type,
       const match = line.match(
-        /Self::(\w+)(?:\(.*\))?\s*=>\s*ValueType::(\w+)/,
+        /(?:Self|ValueRef|Value|MaybeReferenceValue)::(\w+)(?:\(.*\))?\s*=>\s*ValueType::(\w+)/,
       );
       if (match) {
         const variant = match[1];
@@ -114,42 +120,83 @@ function scrapeVariables(filePath, typeMapping) {
 
     // Check for member match arms
     // Matches: "id" => ...
-    const memberMatch = line.match(/^"([a-z0-9_]+)"\s*=>/);
+    const memberMatch = line.match(/^"([a-z0-9_]+)"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/);
     if (memberMatch) {
       const memberName = memberMatch[1];
-      let returnType = "Undefined";
-
-      // Look ahead for the type (ValueRef::Type, ValueRefMut::Type, or Value::Type)
-      // We search up to 10 lines ahead for a type indicator
-      for (let j = i; j < Math.min(i + 10, lines.length); j++) {
+      const returnTypes = new Set();
+      let onlyApplicableToMove = false;
+      
+      for (let j = i; j < Math.min(i + 30, lines.length); j++) {
         const nextLine = lines[j].trim();
-        const typeIndicator = nextLine.match(
-          /(?:ValueRef(?:Mut)?|Value)::(\w+)/,
-        );
-        if (typeIndicator) {
-          returnType = typeMapping[typeIndicator[1]] || typeIndicator[1];
+        
+        if (nextLine.includes('.move_effect()')) {
+          onlyApplicableToMove = true;
+        }
+        
+        if (j > i && (nextLine.match(/^"[a-z0-9_]+"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/) || nextLine.match(/(?:value\.(\w+)_handle\(\)|ValueRef(?:Mut)?::(\w+)).*?(?:\{|=>\s*\{)/))) {
           break;
         }
-        // If we hit the next member or end of block, stop
-        if (j > i && (nextLine.match(/^"[a-z0-9_]+"/) || nextLine === "}"))
-          break;
+        
+        const matches = nextLine.matchAll(/\b(?:ValueRef(?:Mut)?|Value)::(\w+)/g);
+        for (const match of matches) {
+          const type = typeMapping[match[1]] || match[1];
+          returnTypes.add(type);
+        }
+      }
+
+      let returnType = "Undefined";
+      let itemType = null;
+      if (returnTypes.has("List")) {
+        for (const t of returnTypes) {
+          if (t !== "List" && t !== "Undefined") {
+            itemType = t;
+            break;
+          }
+        }
+        if (itemType) returnTypes.delete(itemType);
+      }
+
+      if (returnTypes.size > 0) {
+        if (returnTypes.size > 1 && returnTypes.has("Undefined")) {
+          returnTypes.delete("Undefined");
+          returnType = Array.from(returnTypes).join(" | ") + " | Undefined";
+        } else {
+          returnType = Array.from(returnTypes).join(" | ");
+        }
       }
 
       const memberData = { description: "", type: returnType };
+      if (itemType) memberData.item_type = itemType;
+      if (onlyApplicableToMove && currentType === "Effect") {
+        memberData.only_applicable_to_move = true;
+      }
 
       if (currentType === "global") {
         metadata.global[memberName] = memberData;
       } else {
-        // If already exists, don't overwrite if existing has a real type and new one is Undefined
-        if (
-          metadata.types[currentType][memberName] &&
-          metadata.types[currentType][memberName].type !== "Undefined" &&
-          returnType === "Undefined"
-        ) {
-          // Skip
-        } else {
-          metadata.types[currentType][memberName] = memberData;
+        if (metadata.types[currentType][memberName]) {
+          const existingType = metadata.types[currentType][memberName].type;
+          const existingItemType = metadata.types[currentType][memberName].item_type;
+          const existingMoveOnly = metadata.types[currentType][memberName].only_applicable_to_move;
+          
+          if (existingItemType && !memberData.item_type) {
+            memberData.item_type = existingItemType;
+          }
+          if (existingMoveOnly && !memberData.only_applicable_to_move) {
+            memberData.only_applicable_to_move = true;
+          }
+          
+          if (existingType !== returnType) {
+            const types = new Set([...existingType.split(" | "), ...returnType.split(" | ")]);
+            if (types.size > 1 && types.has("Undefined")) {
+              types.delete("Undefined");
+              memberData.type = Array.from(types).join(" | ") + " | Undefined";
+            } else {
+              memberData.type = Array.from(types).join(" | ");
+            }
+          }
         }
+        metadata.types[currentType][memberName] = memberData;
       }
       docBuffer = [];
     } else if (line !== "" && !line.startsWith("//") && !line.startsWith("}")) {

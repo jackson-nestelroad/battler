@@ -72,31 +72,21 @@ export function activate(context: vscode.ExtensionContext) {
                         items = Object.entries(typeMembers).map(([name, data]) => {
                             const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
                             item.documentation = new vscode.MarkdownString(data.description);
-                            item.detail = `(Member of ${type} -> ${data.type})`;
+                            
+                            const isMoveOnly = (data as any).only_applicable_to_move;
+                            const memberTypeStr = (data.type.includes('List') && (data as any).item_type) 
+                                ? data.type.replace('List', `List<${(data as any).item_type}>`) 
+                                : data.type;
+                            item.detail = isMoveOnly 
+                                ? `(Move Member of ${type} -> ${memberTypeStr})` 
+                                : `(Member of ${type} -> ${memberTypeStr})`;
+                                
                             item.sortText = '0_' + name;
                             item.filterText = `${varName}.${name}`;
                             if (wordRange) item.range = wordRange;
                             item.insertText = `${varName}.${name}`;
                             return item;
                         });
-
-                        if (type === 'Effect') {
-                            const moveMembers = metadata.type_members['ActiveMove'];
-                            if (moveMembers) {
-                                for (const [name, data] of Object.entries(moveMembers)) {
-                                    if (!typeMembers[name]) {
-                                        const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
-                                        item.documentation = new vscode.MarkdownString(data.description);
-                                        item.detail = `(Potential Move Member -> ${data.type})`;
-                                        item.sortText = '1_' + name;
-                                        item.filterText = `${varName}.${name}`;
-                                        if (wordRange) item.range = wordRange;
-                                        item.insertText = `${varName}.${name}`;
-                                        items.push(item);
-                                    }
-                                }
-                            }
-                        }
                     }
 
                     // Add global variable members (shared across types, e.g., is_undefined)
@@ -115,14 +105,16 @@ export function activate(context: vscode.ExtensionContext) {
                     // Add functions that take this type as an optional first parameter (pseudo-methods)
                     if (type) {
                         const varName = chain.join('.');
+                        const types = type.split(' | ');
                         for (const [name, data] of Object.entries(metadata.functions)) {
                             const firstParam = data.parameters[0];
                             if (firstParam) {
                                 const pType = firstParam.type;
-                                const isMatch = pType === type || pType === 'Any' ||
-                                    (pType === 'Object' && (type === 'BoostTable' || type === 'StatTable' || type === 'EffectState')) ||
-                                    (pType === 'Fraction' && type === 'UFraction') ||
-                                    (pType === 'UFraction' && type === 'Fraction');
+                                const isMatch = types.includes(pType) || pType === 'Any' ||
+                                    (pType === 'Effect' && types.includes('ActiveMove')) ||
+                                    (pType === 'Object' && (types.includes('BoostTable') || types.includes('StatTable') || types.includes('EffectState'))) ||
+                                    (pType === 'Fraction' && types.includes('UFraction')) ||
+                                    (pType === 'UFraction' && types.includes('Fraction'));
                                 
                                 if (isMatch) {
                                 const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Method);
@@ -284,19 +276,19 @@ export function activate(context: vscode.ExtensionContext) {
                                 if (parentType) {
                                     const typeMembers = getTypeMembers(parentType, metadata);
                                     let memberData = typeMembers[lastMember];
-                                    let isPotentialMove = false;
-                                    
-                                    if (!memberData && parentType === 'Effect') {
-                                        const moveMembers = metadata.type_members['ActiveMove'];
-                                        if (moveMembers && moveMembers[lastMember]) {
-                                            memberData = moveMembers[lastMember];
-                                            isPotentialMove = true;
-                                        }
-                                    }
                                     
                                     if (memberData) {
-                                        const origin = isPotentialMove ? `Potential ActiveMove` : parentType;
-                                        return new vscode.Hover(new vscode.MarkdownString(`**Member \`${lastMember}\`** of \`${origin}\`\n\nType: \`${memberData.type}\`\n\n${memberData.description}`));
+                                        const isMoveOnly = (memberData as any).only_applicable_to_move;
+                                        let markdownText = `**Member \`${lastMember}\`** of \`${parentType}\`\n\n`;
+                                        if (isMoveOnly && parentType !== 'ActiveMove') {
+                                            markdownText = `**Move Member \`${lastMember}\`** of \`${parentType}\` *(only applicable if \`ActiveMove\`)*\n\n`;
+                                        }
+                                        const memberTypeStr = (memberData.type.includes('List') && (memberData as any).item_type) 
+                                            ? memberData.type.replace('List', `List<${(memberData as any).item_type}>`) 
+                                            : memberData.type;
+                                        markdownText += `Type: \`${memberTypeStr}\`\n\n${memberData.description}`;
+                                        
+                                        return new vscode.Hover(new vscode.MarkdownString(markdownText));
                                     }
                                 }
                                 
@@ -310,10 +302,12 @@ export function activate(context: vscode.ExtensionContext) {
                                     const firstParam = fnData.parameters[0];
                                     if (firstParam) {
                                         const pType = firstParam.type;
-                                        const isMatch = pType === parentType || pType === 'Any' ||
-                                            (pType === 'Object' && (parentType === 'BoostTable' || parentType === 'StatTable' || parentType === 'EffectState')) ||
-                                            (pType === 'Fraction' && parentType === 'UFraction') ||
-                                            (pType === 'UFraction' && parentType === 'Fraction');
+                                        const types = parentType.split(' | ');
+                                        const isMatch = types.includes(pType) || pType === 'Any' ||
+                                            (pType === 'Effect' && types.includes('ActiveMove')) ||
+                                            (pType === 'Object' && (types.includes('BoostTable') || types.includes('StatTable') || types.includes('EffectState'))) ||
+                                            (pType === 'Fraction' && types.includes('UFraction')) ||
+                                            (pType === 'UFraction' && types.includes('Fraction'));
                                         
                                         if (isMatch) {
                                             const params = fnData.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');

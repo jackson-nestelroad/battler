@@ -1,6 +1,7 @@
 export interface MemberData {
     description: string;
     type: string;
+    item_type?: string;
 }
 
 export interface ParameterData {
@@ -27,6 +28,7 @@ export interface FunctionData {
 export interface VariableData {
     type: string;
     optional: boolean;
+    item_type?: string;
 }
 
 export interface Metadata {

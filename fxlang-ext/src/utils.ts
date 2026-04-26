@@ -347,7 +347,7 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
             
             let innerType = 'unknown';
             if (listType) {
-                const genericMatch = listType.match(/^List<(.+)>$/);
+                const genericMatch = listType.match(/List<([^>]+)>/);
                 if (genericMatch) {
                     innerType = genericMatch[1];
                 }
@@ -398,14 +398,16 @@ export function resolveType(chain: string[], symbols: SymbolTable, metadata: Met
         currentType = symbols[varName];
         if (!currentType) {
             if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables[varName]) {
-                currentType = metadata.events[eventName].variables[varName].type;
+                const vData = metadata.events[eventName].variables[varName];
+                currentType = (vData.type.includes('List') && vData.item_type) ? vData.type.replace('List', `List<${vData.item_type}>`) : vData.type;
             } else if (metadata.variables[varName]) {
-                currentType = metadata.variables[varName].type;
+                const vData = metadata.variables[varName];
+                currentType = (vData.type.includes('List') && vData.item_type) ? vData.type.replace('List', `List<${vData.item_type}>`) : vData.type;
             }
         }
     } else {
         const member = metadata.variable_members[first];
-        if (member) currentType = member.type;
+        if (member) currentType = (member.type.includes('List') && member.item_type) ? member.type.replace('List', `List<${member.item_type}>`) : member.type;
     }
 
     // Resolve remaining parts
@@ -428,7 +430,7 @@ export function resolveType(chain: string[], symbols: SymbolTable, metadata: Met
         }
         if (!member) return undefined;
         
-        currentType = member.type;
+        currentType = (member.type.includes('List') && member.item_type) ? member.type.replace('List', `List<${member.item_type}>`) : member.type;
     }
 
     return currentType;
