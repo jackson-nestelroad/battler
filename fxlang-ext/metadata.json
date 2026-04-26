@@ -60,11 +60,13 @@
       "accuracy": {
         "description": "",
         "type": "Accuracy | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "base_power": {
         "description": "",
         "type": "UFraction | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "callable": {
@@ -75,6 +77,7 @@
       "category": {
         "description": "",
         "type": "MoveCategory | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "condition": {
@@ -84,6 +87,7 @@
       "damage": {
         "description": "",
         "type": "UFraction | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "damaged_targets": {
@@ -142,11 +146,13 @@
       "multiaccuracy": {
         "description": "",
         "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "multihit": {
         "description": "",
         "type": "MultihitType | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "name": {
@@ -161,6 +167,7 @@
       "priority": {
         "description": "",
         "type": "Fraction | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "recoil_percent": {
@@ -171,11 +178,13 @@
       "target": {
         "description": "",
         "type": "MoveTarget | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "type": {
         "description": "",
         "type": "Type | Undefined",
+        "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
       "typeless": {
@@ -197,6 +206,87 @@
         "description": "",
         "type": "String | Undefined",
         "only_applicable_to_move": true
+      },
+      "effect_state": {
+        "description": "",
+        "type": "EffectState | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "external": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "hit": {
+        "description": "",
+        "type": "UFraction | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "hit_effect": {
+        "description": "",
+        "type": "HitEffect | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "ignore_all_secondary_effects": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "override_defensive_stat": {
+        "description": "",
+        "type": "Stat | HitEffect | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "override_offensive_stat": {
+        "description": "",
+        "type": "Stat | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "secondary_effects": {
+        "description": "",
+        "type": "List | Undefined",
+        "item_type": "SecondaryHitEffect",
+        "only_applicable_to_active_move": true
+      },
+      "source": {
+        "description": "",
+        "type": "Mon | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "spread_hit": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "total_damage": {
+        "description": "",
+        "type": "UFraction | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "upgraded": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "upgraded_base_move": {
+        "description": "",
+        "type": "String | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "user_effect": {
+        "description": "",
+        "type": "HitEffect | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "user_effect_chance": {
+        "description": "",
+        "type": "UFraction | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "force_stab": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
       }
     },
     "ActiveMove": {

@@ -301,12 +301,16 @@ function scrapeVariables(filePath, typeMapping) {
           const existingType = metadata.types[currentType][memberName].type;
           const existingItemType = metadata.types[currentType][memberName].item_type;
           const existingMoveOnly = metadata.types[currentType][memberName].only_applicable_to_move;
+          const existingActiveMoveOnly = metadata.types[currentType][memberName].only_applicable_to_active_move;
           
           if (existingItemType && !memberData.item_type) {
             memberData.item_type = existingItemType;
           }
           if (existingMoveOnly && !memberData.only_applicable_to_move) {
             memberData.only_applicable_to_move = true;
+          }
+          if (existingActiveMoveOnly && !memberData.only_applicable_to_active_move) {
+            memberData.only_applicable_to_active_move = true;
           }
           
           if (existingType !== returnType) {
@@ -320,10 +324,51 @@ function scrapeVariables(filePath, typeMapping) {
           }
         }
         metadata.types[currentType][memberName] = memberData;
+
+        if (currentType === "ActiveMove") {
+          if (!metadata.types["Effect"]) metadata.types["Effect"] = {};
+          const effectMemberData = { ...memberData, only_applicable_to_active_move: true };
+          
+          if (metadata.types["Effect"][memberName]) {
+            const existingType = metadata.types["Effect"][memberName].type;
+            const existingItemType = metadata.types["Effect"][memberName].item_type;
+            const existingMoveOnly = metadata.types["Effect"][memberName].only_applicable_to_move;
+            const existingActiveMoveOnly = metadata.types["Effect"][memberName].only_applicable_to_active_move;
+            
+            if (existingItemType && !effectMemberData.item_type) {
+              effectMemberData.item_type = existingItemType;
+            }
+            if (existingMoveOnly) {
+              effectMemberData.only_applicable_to_move = true;
+            }
+            
+            if (existingType !== returnType) {
+              const types = new Set([...existingType.split(" | "), ...returnType.split(" | ")]);
+              if (types.size > 1 && types.has("Undefined")) {
+                types.delete("Undefined");
+                effectMemberData.type = Array.from(types).join(" | ") + " | Undefined";
+              } else {
+                effectMemberData.type = Array.from(types).join(" | ");
+              }
+            }
+          }
+          metadata.types["Effect"][memberName] = effectMemberData;
+        }
       }
       docBuffer = [];
     } else if (line !== "" && !line.startsWith("//") && !line.startsWith("}")) {
       // No reset here
+    }
+  }
+
+  if (metadata.types["Effect"]) {
+    for (const key in metadata.types["Effect"]) {
+      const member = metadata.types["Effect"][key];
+      if (member.only_applicable_to_move || member.only_applicable_to_active_move) {
+        if (!member.type.includes("Undefined")) {
+          member.type += " | Undefined";
+        }
+      }
     }
   }
 

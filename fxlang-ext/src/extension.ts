@@ -458,9 +458,12 @@ class FxHoverProvider implements vscode.HoverProvider {
                                 
                                 if (memberData) {
                                     const isMoveOnly = (memberData as any).only_applicable_to_move;
+                                    const isActiveMoveOnly = (memberData as any).only_applicable_to_active_move;
                                     let markdownText = `**Member \`${lastMember}\`** of \`${parentType}\`\n\n`;
-                                    if (isMoveOnly && parentType !== 'ActiveMove') {
-                                        markdownText = `**Move Member \`${lastMember}\`** of \`${parentType}\` *(only applicable if \`ActiveMove\`)*\n\n`;
+                                    if (isActiveMoveOnly && parentType !== 'ActiveMove') {
+                                        markdownText = `**Active Move Member \`${lastMember}\`** of \`${parentType}\` *(only applicable if \`ActiveMove\`)*\n\n`;
+                                    } else if (isMoveOnly && parentType !== 'Move') {
+                                        markdownText = `**Move Member \`${lastMember}\`** of \`${parentType}\` *(only applicable if \`Move\`)*\n\n`;
                                     }
                                     const memberTypeStr = getDisplayType(memberData.type, (memberData as any).item_type);
                                     markdownText += `Type: \`${memberTypeStr}\`\n\n${memberData.description}`;
