@@ -12,7 +12,10 @@ import {
     getChainAtPosition, 
     resolveType, 
     getTypeMembers,
-    parseFxLangDocument 
+    parseFxLangDocument,
+    getDisplayType,
+    areTypesCompatible,
+    EVENT_MODIFIERS
 } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -74,9 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
                             item.documentation = new vscode.MarkdownString(data.description);
                             
                             const isMoveOnly = (data as any).only_applicable_to_move;
-                            const memberTypeStr = (data.type.includes('List') && (data as any).item_type) 
-                                ? data.type.replace('List', `List<${(data as any).item_type}>`) 
-                                : data.type;
+                            const memberTypeStr = getDisplayType(data.type, (data as any).item_type);
                             item.detail = isMoveOnly 
                                 ? `(Move Member of ${type} -> ${memberTypeStr})` 
                                 : `(Member of ${type} -> ${memberTypeStr})`;
@@ -110,11 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
                             const firstParam = data.parameters[0];
                             if (firstParam) {
                                 const pType = firstParam.type;
-                                const isMatch = types.includes(pType) || pType === 'Any' ||
-                                    (pType === 'Effect' && types.includes('ActiveMove')) ||
-                                    (pType === 'Object' && (types.includes('BoostTable') || types.includes('StatTable') || types.includes('EffectState'))) ||
-                                    (pType === 'Fraction' && types.includes('UFraction')) ||
-                                    (pType === 'UFraction' && types.includes('Fraction'));
+                                const isMatch = areTypesCompatible(type, pType);
                                 
                                 if (isMatch) {
                                 const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Method);
@@ -134,7 +131,7 @@ export function activate(context: vscode.ExtensionContext) {
                                 item.insertText = new vscode.SnippetString(`${name}: ${escapedVarName}${snippetParams ? ' ' + snippetParams : ''}`);
                                 
                                 const paramsText = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
-                                const returnTypeStr = (data.type === 'List' && (data as any).item_type) ? `List<${(data as any).item_type}>` : data.type;
+                                const returnTypeStr = getDisplayType(data.type, (data as any).item_type);
                                 item.detail = `(Function) ${name}(${paramsText}) -> ${returnTypeStr}`;
                                 items.push(item);
                                 }
@@ -185,7 +182,7 @@ export function activate(context: vscode.ExtensionContext) {
                     item.sortText = ' ' + name;
                     item.range = wordRange;
                     const params = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
-                    const returnTypeStr = (data.type === 'List' && (data as any).item_type) ? `List<${(data as any).item_type}>` : data.type;
+                    const returnTypeStr = getDisplayType(data.type, (data as any).item_type);
                     item.detail = `(Function) ${name}(${params}) -> ${returnTypeStr}`;
                     item.documentation = new vscode.MarkdownString(data.description);
                     
@@ -283,9 +280,7 @@ export function activate(context: vscode.ExtensionContext) {
                                         if (isMoveOnly && parentType !== 'ActiveMove') {
                                             markdownText = `**Move Member \`${lastMember}\`** of \`${parentType}\` *(only applicable if \`ActiveMove\`)*\n\n`;
                                         }
-                                        const memberTypeStr = (memberData.type.includes('List') && (memberData as any).item_type) 
-                                            ? memberData.type.replace('List', `List<${(memberData as any).item_type}>`) 
-                                            : memberData.type;
+                                        const memberTypeStr = getDisplayType(memberData.type, (memberData as any).item_type);
                                         markdownText += `Type: \`${memberTypeStr}\`\n\n${memberData.description}`;
                                         
                                         return new vscode.Hover(new vscode.MarkdownString(markdownText));
@@ -302,12 +297,7 @@ export function activate(context: vscode.ExtensionContext) {
                                     const firstParam = fnData.parameters[0];
                                     if (firstParam) {
                                         const pType = firstParam.type;
-                                        const types = parentType.split(' | ');
-                                        const isMatch = types.includes(pType) || pType === 'Any' ||
-                                            (pType === 'Effect' && types.includes('ActiveMove')) ||
-                                            (pType === 'Object' && (types.includes('BoostTable') || types.includes('StatTable') || types.includes('EffectState'))) ||
-                                            (pType === 'Fraction' && types.includes('UFraction')) ||
-                                            (pType === 'UFraction' && types.includes('Fraction'));
+                                        const isMatch = areTypesCompatible(parentType, pType);
                                         
                                         if (isMatch) {
                                             const params = fnData.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
@@ -316,7 +306,7 @@ export function activate(context: vscode.ExtensionContext) {
                                             
                                             const hoverText = new vscode.MarkdownString();
                                             hoverText.appendMarkdown(`**Pseudo-Method \`${lastMember}\`**\n\n`);
-                                            const returnTypeStr = (fnData.type === 'List' && (fnData as any).item_type) ? `List<${(fnData as any).item_type}>` : fnData.type;
+                                            const returnTypeStr = getDisplayType(fnData.type, (fnData as any).item_type);
                                             hoverText.appendCodeblock(`${lastMember}(${params}) -> ${returnTypeStr}`, 'fxlang');
                                             hoverText.appendMarkdown(`\n\n${fnData.description}`);
                                             if (paramDetails) hoverText.appendMarkdown(`\n\n**Parameters:**\n${paramDetails}`);
@@ -344,7 +334,7 @@ export function activate(context: vscode.ExtensionContext) {
                         
                         const hoverText = new vscode.MarkdownString();
                         hoverText.appendMarkdown(`**Function \`${word2}\`**\n\n`);
-                        const returnTypeStr = (data.type === 'List' && (data as any).item_type) ? `List<${(data as any).item_type}>` : data.type;
+                        const returnTypeStr = getDisplayType(data.type, (data as any).item_type);
                         hoverText.appendCodeblock(`${word2}(${params}) -> ${returnTypeStr}`, 'fxlang');
                         hoverText.appendMarkdown(`\n\n${data.description}`);
                         if (paramDetails) {
@@ -403,7 +393,7 @@ export function activate(context: vscode.ExtensionContext) {
                 if (textBeforeCursor.match(/^\s*"/)) {
                     const quoteRange = document.getWordRangeAtPosition(position, /"[a-zA-Z0-9_]*"?/) || new vscode.Range(position, position);
                     const items: vscode.CompletionItem[] = [];
-                    const modifiers = ['ally', 'any', 'field', 'foe', 'side', 'source'];
+                    const modifiers = EVENT_MODIFIERS;
                     
                     for (const [baseName, data] of Object.entries(metadata.events || {})) {
                         if (baseName.startsWith('is_') || baseName.startsWith('suppress_')) {

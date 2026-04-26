@@ -399,15 +399,15 @@ export function resolveType(chain: string[], symbols: SymbolTable, metadata: Met
         if (!currentType) {
             if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables[varName]) {
                 const vData = metadata.events[eventName].variables[varName];
-                currentType = (vData.type.includes('List') && vData.item_type) ? vData.type.replace('List', `List<${vData.item_type}>`) : vData.type;
+                currentType = getDisplayType(vData.type, vData.item_type);
             } else if (metadata.variables[varName]) {
                 const vData = metadata.variables[varName];
-                currentType = (vData.type.includes('List') && vData.item_type) ? vData.type.replace('List', `List<${vData.item_type}>`) : vData.type;
+                currentType = getDisplayType(vData.type, vData.item_type);
             }
         }
     } else {
         const member = metadata.variable_members[first];
-        if (member) currentType = (member.type.includes('List') && member.item_type) ? member.type.replace('List', `List<${member.item_type}>`) : member.type;
+        if (member) currentType = getDisplayType(member.type, member.item_type);
     }
 
     // Resolve remaining parts
@@ -430,7 +430,7 @@ export function resolveType(chain: string[], symbols: SymbolTable, metadata: Met
         }
         if (!member) return undefined;
         
-        currentType = (member.type.includes('List') && member.item_type) ? member.type.replace('List', `List<${member.item_type}>`) : member.type;
+        currentType = getDisplayType(member.type, member.item_type);
     }
 
     return currentType;
@@ -452,4 +452,27 @@ export function getChainAtPosition(document: vscode.TextDocument, position: vsco
     }
 
     return [];
+}
+
+export const EVENT_MODIFIERS = ['ally', 'any', 'field', 'foe', 'side', 'source'];
+
+export function getDisplayType(typeStr: string, itemType?: string): string {
+    if (typeStr.includes('List') && itemType) {
+        return typeStr.replace('List', `List<${itemType}>`);
+    }
+    return typeStr;
+}
+
+export function areTypesCompatible(parentType: string, paramType: string): boolean {
+    if (paramType === 'Any') return true;
+    const parentTypes = parentType.split(' | ');
+    if (parentTypes.includes(paramType)) return true;
+    
+    // Check specific relaxed rules
+    if (paramType === 'Effect' && parentTypes.includes('ActiveMove')) return true;
+    if (paramType === 'Object' && (parentTypes.includes('BoostTable') || parentTypes.includes('StatTable') || parentTypes.includes('EffectState'))) return true;
+    if (paramType === 'Fraction' && parentTypes.includes('UFraction')) return true;
+    if (paramType === 'UFraction' && parentTypes.includes('Fraction')) return true;
+    
+    return false;
 }
