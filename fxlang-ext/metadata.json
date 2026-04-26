@@ -5295,6 +5295,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "pseudo_weather": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -5348,6 +5352,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "pseudo_weather": {
           "type": "Effect",
           "optional": false
         }
@@ -5641,6 +5649,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "item": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -5696,6 +5708,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "item": {
+          "type": "Effect",
+          "optional": false
         }
       }
     },
@@ -5720,6 +5736,10 @@
           "optional": true
         },
         "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "item": {
           "type": "Effect",
           "optional": false
         }
@@ -6626,6 +6646,10 @@
         "effect": {
           "type": "Effect",
           "optional": false
+        },
+        "catch_rate": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6685,6 +6709,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "damage": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     },
@@ -6887,6 +6915,10 @@
         },
         "effect": {
           "type": "Effect",
+          "optional": false
+        },
+        "catch_rate": {
+          "type": "UFraction",
           "optional": false
         }
       }
@@ -8033,6 +8065,10 @@
         "target": {
           "type": "Mon",
           "optional": true
+        },
+        "damage": {
+          "type": "UFraction",
+          "optional": false
         }
       }
     }

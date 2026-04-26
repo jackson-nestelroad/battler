@@ -141,25 +141,18 @@ function parseInputVars(effectContent) {
           currentEvents.push(em[1]);
         }
         
-        if (rightSide.includes('&[')) {
-          if (rightSide.endsWith('],') || rightSide.endsWith(']')) {
-             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
-             for (const vm of varMatches) {
-               for (const ev of currentEvents) {
-                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
-                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
-               }
-             }
-          } else {
-             insideVars = true;
-             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
-             for (const vm of varMatches) {
-               for (const ev of currentEvents) {
-                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
-                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
-               }
-             }
+        insideVars = true;
+        
+        const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+        for (const vm of varMatches) {
+          for (const ev of currentEvents) {
+            if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
+            inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
           }
+        }
+        
+        if (rightSide.includes(']')) {
+          insideVars = false;
         }
       } else if (insideVars) {
         const varMatches = [...line.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
