@@ -212,25 +212,11 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
         const funcMeta = metadata.functions[funcName];
         if (funcMeta) {
             if (funcMeta.returns_item_from_list) {
-                let argsString = '';
-                const baseFuncMatch = expression.match(/^([a-z0-9_]+)\((.*)\)$/);
-                if (baseFuncMatch) {
-                    if (baseFuncMatch[1] === 'func_call') {
-                        const innerStr = baseFuncMatch[2];
-                        const parts = innerStr.split(':');
-                        if (parts.length > 1) {
-                            argsString = parts.slice(1).join(':').trim();
-                        }
-                    } else {
-                        argsString = baseFuncMatch[2].trim();
-                    }
-                }
+                const argsString = extractFunctionArguments(expression);
                 if (argsString) {
                     const firstArg = argsString.split(',')[0].trim();
                     const listType = inferType(firstArg, symbols, metadata, eventName);
-                    if (listType && listType.startsWith('List<') && listType.endsWith('>')) {
-                        return listType.substring(5, listType.length - 1);
-                    }
+                    return unwrapListType(listType);
                 }
                 return 'unknown';
             }
@@ -343,13 +329,7 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
             const eventName = getEnclosingEvent(document, position, metadata);
             const listType = inferType(expression, symbols, metadata, eventName);
             
-            let innerType = 'unknown';
-            if (listType) {
-                const genericMatch = listType.match(/List<([^>]+)>/);
-                if (genericMatch) {
-                    innerType = genericMatch[1];
-                }
-            }
+            const innerType = unwrapListType(listType);
             
             if (!symbols[varName]) {
                 symbols[varName] = innerType;
@@ -395,12 +375,9 @@ export function resolveType(chain: string[], symbols: SymbolTable, metadata: Met
         // Check local symbol table (static analysis) first
         currentType = symbols[varName];
         if (!currentType) {
-            if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables[varName]) {
-                const vData = metadata.events[eventName].variables[varName];
-                currentType = getDisplayType(vData.type, vData.item_type);
-            } else if (metadata.variables[varName]) {
-                const vData = metadata.variables[varName];
-                currentType = getDisplayType(vData.type, vData.item_type);
+            const varData = getVariableData(varName, metadata, eventName);
+            if (varData) {
+                currentType = getDisplayType(varData.type, varData.item_type);
             }
         }
     } else {
@@ -432,6 +409,53 @@ export function resolveType(chain: string[], symbols: SymbolTable, metadata: Met
     }
 
     return currentType;
+}
+
+export function unwrapListType(typeStr: string | undefined): string {
+    if (!typeStr) return 'unknown';
+    const genericMatch = typeStr.match(/List<([^>]+)>/);
+    if (genericMatch) {
+        return genericMatch[1];
+    }
+    return 'unknown';
+}
+
+export function extractFunctionArguments(expression: string): string {
+    let argsString = '';
+    const baseFuncMatch = expression.match(/^([a-z0-9_]+)\((.*)\)$/);
+    if (baseFuncMatch) {
+        if (baseFuncMatch[1] === 'func_call') {
+            const innerStr = baseFuncMatch[2];
+            const parts = innerStr.split(':');
+            if (parts.length > 1) {
+                argsString = parts.slice(1).join(':').trim();
+            }
+        } else {
+            argsString = baseFuncMatch[2].trim();
+        }
+    }
+    return argsString;
+}
+
+export function getVariableData(varName: string, metadata: Metadata, eventName?: string) {
+    if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables[varName]) {
+        const vData = metadata.events[eventName].variables[varName];
+        return {
+            type: vData.type,
+            optional: vData.optional,
+            item_type: (vData as any).item_type,
+            origin: `Event Context: ${eventName}`
+        };
+    } else if (metadata.variables[varName]) {
+        const vData = metadata.variables[varName];
+        return {
+            type: vData.type,
+            optional: vData.optional,
+            item_type: (vData as any).item_type,
+            origin: 'Built-in / Global'
+        };
+    }
+    return undefined;
 }
 
 export function getChainAtPosition(document: vscode.TextDocument, position: vscode.Position): string[] {

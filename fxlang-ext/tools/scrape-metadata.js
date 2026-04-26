@@ -36,6 +36,148 @@ const EVAL_RS = path.join(
 );
 const OUTPUT_FILE = path.join(__dirname, "..", "metadata.json");
 
+function extractReturnTypes(lines, startIndex, typeMapping) {
+  const returnTypes = new Set();
+  let onlyApplicableToMove = false;
+  
+  for (let j = startIndex; j < Math.min(startIndex + 30, lines.length); j++) {
+    const nextLine = lines[j].trim();
+    
+    if (nextLine.includes('.move_effect()')) {
+      onlyApplicableToMove = true;
+    }
+    
+    if (j > startIndex && (nextLine.match(/^"[a-z0-9_]+"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/) || nextLine.match(/(?:value\.(\w+)_handle\(\)|ValueRef(?:Mut)?::(\w+)).*?(?:\{|=>\s*\{)/))) {
+      break;
+    }
+    
+    const matches = nextLine.matchAll(/\b(?:ValueRef(?:Mut)?|Value)::(\w+)/g);
+    for (const match of matches) {
+      const type = typeMapping[match[1]] || match[1];
+      returnTypes.add(type);
+    }
+  }
+  return { returnTypes, onlyApplicableToMove };
+}
+
+function parseCommonCallbackTypeBitmasks(effectContent, flagsMap) {
+  const commonTypesMap = {};
+  const enumMatch = effectContent.match(/enum CommonCallbackType\s*{([^}]*)}/);
+  if (enumMatch) {
+    const body = enumMatch[1];
+    const assignments = body
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    for (const assignment of assignments) {
+      const parts = assignment.split("=");
+      if (parts.length === 2) {
+        const name = parts[0].trim();
+        const expr = parts[1].replace(/CallbackFlag::/g, "").trim();
+        const components = expr.split("|").map((s) => s.trim());
+        let val = 0;
+        for (const comp of components) {
+          if (flagsMap[comp]) {
+            val |= flagsMap[comp];
+          }
+        }
+        commonTypesMap[name] = val;
+      }
+    }
+  }
+  return commonTypesMap;
+}
+
+function parseBattleEventDescriptions(effectContent) {
+  const events = {};
+  const lines = effectContent.split("\n");
+  let docBuffer = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith("///")) {
+      docBuffer.push(line.replace("///", "").trim());
+    } else if (line.startsWith('#[string = "')) {
+      const stringMatch = line.match(/#\[string = "(\w+)"\]/);
+      if (stringMatch) {
+        const eventName = stringMatch[1];
+        const snakeEventName = eventName
+          .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+          .replace(/^_/, "");
+        events[eventName] = {
+          snakeName: snakeEventName,
+          description: docBuffer.join("\n").trim(),
+          variables: {},
+        };
+      }
+      docBuffer = [];
+    } else if (line === "" || line.startsWith("#[")) {
+      // skip
+    } else {
+      docBuffer = [];
+    }
+  }
+  return events;
+}
+
+function parseInputVars(effectContent) {
+  const inputVarsMap = {};
+  const ivMatch = effectContent.match(/pub fn input_vars\(&self\)\s*->\s*&\[\(&str,\s*ValueType,\s*bool\)\]\s*{([\s\S]*?)^    }/m);
+  if (ivMatch) {
+    const ivBody = ivMatch[1];
+    const ivLines = ivBody.split('\n');
+    let currentEvents = [];
+    let insideVars = false;
+    
+    for (let line of ivLines) {
+      line = line.trim();
+      if (line.includes('=>')) {
+        const arrowIndex = line.indexOf('=>');
+        const leftSide = line.substring(0, arrowIndex).trim();
+        const rightSide = line.substring(arrowIndex + 2).trim();
+        
+        currentEvents = [];
+        const eventMatches = [...leftSide.matchAll(/Self::(\w+)/g)];
+        for (const em of eventMatches) {
+          currentEvents.push(em[1]);
+        }
+        
+        if (rightSide.includes('&[')) {
+          if (rightSide.endsWith('],') || rightSide.endsWith(']')) {
+             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+             for (const vm of varMatches) {
+               for (const ev of currentEvents) {
+                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
+                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+               }
+             }
+          } else {
+             insideVars = true;
+             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+             for (const vm of varMatches) {
+               for (const ev of currentEvents) {
+                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
+                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+               }
+             }
+          }
+        }
+      } else if (insideVars) {
+        const varMatches = [...line.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+        for (const vm of varMatches) {
+          for (const ev of currentEvents) {
+            if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
+            inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+          }
+        }
+        if (line.includes(']')) {
+          insideVars = false;
+        }
+      }
+    }
+  }
+  return inputVarsMap;
+}
+
 function scrapeTypeMappings(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
   const lines = content.split("\n");
@@ -123,26 +265,7 @@ function scrapeVariables(filePath, typeMapping) {
     const memberMatch = line.match(/^"([a-z0-9_]+)"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/);
     if (memberMatch) {
       const memberName = memberMatch[1];
-      const returnTypes = new Set();
-      let onlyApplicableToMove = false;
-      
-      for (let j = i; j < Math.min(i + 30, lines.length); j++) {
-        const nextLine = lines[j].trim();
-        
-        if (nextLine.includes('.move_effect()')) {
-          onlyApplicableToMove = true;
-        }
-        
-        if (j > i && (nextLine.match(/^"[a-z0-9_]+"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/) || nextLine.match(/(?:value\.(\w+)_handle\(\)|ValueRef(?:Mut)?::(\w+)).*?(?:\{|=>\s*\{)/))) {
-          break;
-        }
-        
-        const matches = nextLine.matchAll(/\b(?:ValueRef(?:Mut)?|Value)::(\w+)/g);
-        for (const match of matches) {
-          const type = typeMapping[match[1]] || match[1];
-          returnTypes.add(type);
-        }
-      }
+      const { returnTypes, onlyApplicableToMove } = extractReturnTypes(lines, i, typeMapping);
 
       let returnType = "Undefined";
       let itemType = null;
@@ -395,30 +518,7 @@ function scrapeEvents(effectFilePath, evalFilePath) {
   }
 
   // 2. Parse CommonCallbackType bitmasks
-  const commonTypesMap = {};
-  const enumMatch = effectContent.match(/enum CommonCallbackType\s*{([^}]*)}/);
-  if (enumMatch) {
-    const body = enumMatch[1];
-    const assignments = body
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-    for (const assignment of assignments) {
-      const parts = assignment.split("=");
-      if (parts.length === 2) {
-        const name = parts[0].trim();
-        const expr = parts[1].replace(/CallbackFlag::/g, "").trim();
-        const components = expr.split("|").map((s) => s.trim());
-        let val = 0;
-        for (const comp of components) {
-          if (flagsMap[comp]) {
-            val |= flagsMap[comp];
-          }
-        }
-        commonTypesMap[name] = val;
-      }
-    }
-  }
+  const commonTypesMap = parseCommonCallbackTypeBitmasks(effectContent, flagsMap);
 
   // 3. Map CallbackFlags to Variables from eval.rs
   // We statically map what initialize_vars does based on its code
@@ -469,89 +569,9 @@ function scrapeEvents(effectFilePath, evalFilePath) {
     };
 
   // 4. Parse BattleEvent descriptions
-  const events = {};
-  const lines = effectContent.split("\n");
-  let docBuffer = [];
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (line.startsWith("///")) {
-      docBuffer.push(line.replace("///", "").trim());
-    } else if (line.startsWith('#[string = "')) {
-      const stringMatch = line.match(/#\[string = "(\w+)"\]/);
-      if (stringMatch) {
-        const eventName = stringMatch[1];
-        const snakeEventName = eventName
-          .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
-          .replace(/^_/, "");
-        events[eventName] = {
-          snakeName: snakeEventName,
-          description: docBuffer.join("\n").trim(),
-          variables: {},
-        };
-      }
-      docBuffer = [];
-    } else if (line === "" || line.startsWith("#[")) {
-      // skip
-    } else {
-      docBuffer = [];
-    }
-  }
-  // Parse input_vars globally
-  const inputVarsMap = {};
-  const ivMatch = effectContent.match(/pub fn input_vars\(&self\)\s*->\s*&\[\(&str,\s*ValueType,\s*bool\)\]\s*{([\s\S]*?)^    }/m);
-  if (ivMatch) {
-    const ivBody = ivMatch[1];
-    const ivLines = ivBody.split('\n');
-    let currentEvents = [];
-    let insideVars = false;
-    
-    for (let line of ivLines) {
-      line = line.trim();
-      if (line.includes('=>')) {
-        const arrowIndex = line.indexOf('=>');
-        const leftSide = line.substring(0, arrowIndex).trim();
-        const rightSide = line.substring(arrowIndex + 2).trim();
-        
-        currentEvents = [];
-        const eventMatches = [...leftSide.matchAll(/Self::(\w+)/g)];
-        for (const em of eventMatches) {
-          currentEvents.push(em[1]);
-        }
-        
-        if (rightSide.includes('&[')) {
-          if (rightSide.endsWith('],') || rightSide.endsWith(']')) {
-             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
-             for (const vm of varMatches) {
-               for (const ev of currentEvents) {
-                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
-                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
-               }
-             }
-          } else {
-             insideVars = true;
-             const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
-             for (const vm of varMatches) {
-               for (const ev of currentEvents) {
-                 if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
-                 inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
-               }
-             }
-          }
-        }
-      } else if (insideVars) {
-        const varMatches = [...line.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
-        for (const vm of varMatches) {
-          for (const ev of currentEvents) {
-            if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
-            inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
-          }
-        }
-        if (line.includes(']')) {
-          insideVars = false;
-        }
-      }
-    }
-  }
+  const events = parseBattleEventDescriptions(effectContent);
+  // 5. Parse input_vars globally
+  const inputVarsMap = parseInputVars(effectContent);
   // 5. Map BattleEvent to CommonCallbackType and populate variables
   const validEvents = {};
   const ctfMatch = effectContent.match(
