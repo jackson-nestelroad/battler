@@ -100,6 +100,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 
+    let sessionShowLineNumbers: boolean | undefined = undefined;
+
     function updateDecorations() {
         const editor = vscode.window.activeTextEditor;
         if (!editor) return;
@@ -136,7 +138,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
         editor.setDecorations(marginDecorationType, marginDecorations);
 
-        const showLineNumbers = vscode.workspace.getConfiguration('fxlang').get<boolean>('showLineNumbers', false);
+        let showLineNumbers = sessionShowLineNumbers;
+        if (showLineNumbers === undefined) {
+            showLineNumbers = vscode.workspace.getConfiguration('fxlang').get<boolean>('showLineNumbers', false);
+        }
         if (!showLineNumbers) {
             editor.setDecorations(inlineDecorationType, []);
         } else {
@@ -173,10 +178,13 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     vscode.commands.registerCommand('fxlang.toggleLineNumbers', () => {
-        const config = vscode.workspace.getConfiguration('fxlang');
-        const current = config.get<boolean>('showLineNumbers', false);
-        config.update('showLineNumbers', !current, vscode.ConfigurationTarget.Workspace);
-        vscode.window.showInformationMessage(`fxlang line numbers: ${!current ? 'on' : 'off'}`);
+        let current = sessionShowLineNumbers;
+        if (current === undefined) {
+            current = vscode.workspace.getConfiguration('fxlang').get<boolean>('showLineNumbers', false);
+        }
+        sessionShowLineNumbers = !current;
+        updateDecorations();
+        vscode.window.showInformationMessage(`fxlang line numbers: ${sessionShowLineNumbers ? 'on' : 'off'}`);
     });
 
     vscode.window.onDidChangeActiveTextEditor(editor => {
