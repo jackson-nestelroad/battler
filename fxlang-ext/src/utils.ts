@@ -297,21 +297,6 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
     
     if (blockStartLine === -1) return symbols;
 
-    const eventName = getEnclosingEvent(document, position, metadata);
-    
-    if (metadata.variables) {
-        for (const key in metadata.variables) {
-            symbols[key] = metadata.variables[key].type;
-        }
-    }
-    
-    if (eventName && metadata.events && metadata.events[eventName] && metadata.events[eventName].variables) {
-        const evVars = metadata.events[eventName].variables;
-        for (const key in evVars) {
-            symbols[key] = getDisplayType(evVars[key].type, (evVars[key] as any).item_type);
-        }
-    }
-
     // Extract lines from blockStart to current position
     for (let i = blockStartLine; i <= position.line; i++) {
         let line = document.lineAt(i).text.trim();
@@ -334,7 +319,7 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
 
             const eventName = getEnclosingEvent(document, position, metadata);
             const type = inferType(expression, symbols, metadata, eventName) || 'unknown';
-            if (!symbols[varName]) {
+            if (!getVariableData(varName, metadata, eventName) && !symbols[varName]) {
                 symbols[varName] = type;
             }
         }
@@ -349,7 +334,7 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
             
             const innerType = unwrapListType(listType);
             
-            if (!symbols[varName]) {
+            if (!getVariableData(varName, metadata, eventName) && !symbols[varName]) {
                 symbols[varName] = innerType;
             }
         }
