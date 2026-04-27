@@ -3774,10 +3774,10 @@ fn remove(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::List(list))
 }
 
-/// Gets the index of an item in a list.
+/// Gets the item at a specific index from the list.
 ///
 /// @param {[`ValueType::List`]} list The list.
-/// @param {[`ValueType::Any`]} item The item to find.
+/// @param {[`ValueType::UFraction`]} item The index of the item.
 /// @returns_item_from_list
 fn index(mut context: FunctionContext) -> Result<Option<Value>> {
     let list = context

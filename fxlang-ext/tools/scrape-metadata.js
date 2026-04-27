@@ -276,6 +276,9 @@ function scrapeVariables(filePath, typeMapping) {
         .split("_")
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join("");
+      if (currentType.startsWith("Optional") && currentType.length > 8)
+        currentType = currentType.slice(8);
+
       if (currentType === "Effect" && line.includes("ActiveMove"))
         currentType = "ActiveMove";
 
