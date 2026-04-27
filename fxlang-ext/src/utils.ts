@@ -41,6 +41,20 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
                     currentLineIndex = 1;
                     currentBlockStart = i;
 
+                    if (rawName === 'program') {
+                        for (let j = i - 1; j >= 0; j--) {
+                            const prevLine = document.lineAt(j).text.trim();
+                            const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[\{]/);
+                            if (prevMatch) {
+                                const prevRaw = prevMatch[1];
+                                if (resolveEventName(prevRaw, metadata) && prevRaw !== 'program' && prevRaw !== 'metadata') {
+                                    currentBlockStart = j;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     if (trimmed.endsWith(']') || trimmed.endsWith('],')) {
                         const stringMatches = trimmed.match(/"([^"]*)"/g);
                         if (stringMatches && stringMatches.length > 1) {
