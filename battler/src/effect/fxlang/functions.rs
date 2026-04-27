@@ -1834,10 +1834,9 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let volatile = context
         .pop_front()
-        .wrap_expectation("missing volatile id")?
-        .string()
+        .wrap_expectation("missing volatile")?
+        .effect_id()
         .wrap_error_with_message("invalid volatile")?;
-    let volatile = Id::from(volatile);
     let link_handle = context.link_handle()?;
 
     core_battle_actions::add_volatile(
