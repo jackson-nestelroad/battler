@@ -154,6 +154,20 @@ impl<
             Self::Field(context) => context,
         }
     }
+
+    fn target_handle(&self) -> Option<MonHandle> {
+        match self {
+            Self::ApplyingEffect(context) => Some(context.target_handle()),
+            Self::Effect(_) => None,
+            Self::Mon(context) => Some(context.mon_handle()),
+            Self::PlayerEffect(_) => None,
+            Self::Player(_) => None,
+            Self::SideEffect(_) => None,
+            Self::Side(_) => None,
+            Self::FieldEffect(_) => None,
+            Self::Field(_) => None,
+        }
+    }
 }
 
 fn run_effect_event_with_errors(
@@ -177,8 +191,11 @@ fn run_effect_event_with_errors(
     }
 
     if !event.state_event() {
-        // Mon must on the field for the callback to run.
-        if let Some(effect_mon_handle) = &effect_mon_handle {
+        let target = context.target_handle();
+        // Mon must on the field for the callback to run, unless we are targeting that Mon itself.
+        if let Some(effect_mon_handle) = &effect_mon_handle
+            && target.is_none_or(|target| target != *effect_mon_handle)
+        {
             let context = context
                 .battle_context_mut()
                 .mon_context(*effect_mon_handle)?;
@@ -858,11 +875,7 @@ pub fn run_applying_effect_event(
     input: fxlang::VariableInput,
 ) -> Option<fxlang::Value> {
     let effect = context.effect_handle().clone();
-    let source = context.source_handle();
-    let location = match source {
-        Some(source) => AppliedEffectLocation::Mon(source),
-        None => AppliedEffectLocation::None,
-    };
+    let target = context.target_handle();
     let origin = event_origin_mon_handle(
         event,
         Some(context.target_handle()),
@@ -877,7 +890,7 @@ pub fn run_applying_effect_event(
                 event,
                 fxlang::BattleEventModifier::default(),
                 origin,
-                location,
+                AppliedEffectLocation::Mon(target),
             ),
         ),
         None => run_callback_under_applying_effect(
@@ -888,7 +901,7 @@ pub fn run_applying_effect_event(
                 event,
                 fxlang::BattleEventModifier::default(),
                 origin,
-                location,
+                AppliedEffectLocation::Mon(target),
             ),
         ),
     }

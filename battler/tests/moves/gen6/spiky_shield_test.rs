@@ -71,12 +71,12 @@ fn spiky_shield_protects_user_and_deals_damage() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Chesnaught,player-1,1|name:Spiky Shield|target:Chesnaught,player-1,1",
-            "singleturn|mon:Chesnaught,player-1,1|move:Spiky Shield",
+            "singleturn|mon:Chesnaught,player-1,1|move:Protect",
             "move|mon:Chesnaught,player-2,1|name:Tackle|noanim",
-            "activate|mon:Chesnaught,player-1,1|move:Spiky Shield",
+            "activate|mon:Chesnaught,player-1,1|move:Protect",
             "split|side:1",
-            "damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|health:251/286",
-            "damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|health:88/100",
+            "damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:251/286",
+            "damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:88/100",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -98,7 +98,7 @@ fn spiky_shield_deals_damage_even_if_bypassed() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Chesnaught,player-1,1|name:Spiky Shield|target:Chesnaught,player-1,1",
-            "singleturn|mon:Chesnaught,player-1,1|move:Spiky Shield",
+            "singleturn|mon:Chesnaught,player-1,1|move:Protect",
             "singleturn|mon:Incineroar,player-2,1|condition:Z-Power",
             "move|mon:Incineroar,player-2,1|name:Malicious Moonsault|target:Chesnaught,player-1,1",
             "resisted|mon:Chesnaught,player-1,1",

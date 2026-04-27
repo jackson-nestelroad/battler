@@ -59,10 +59,10 @@ fn kings_shield_protects_from_contact_moves_and_drops_attack() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Aegislash,player-1,1|name:King's Shield|target:Aegislash,player-1,1",
-            "singleturn|mon:Aegislash,player-1,1|move:King's Shield",
+            "singleturn|mon:Aegislash,player-1,1|move:Protect",
             "move|mon:Aegislash,player-2,1|name:Shadow Claw|noanim",
-            "activate|mon:Aegislash,player-1,1|move:King's Shield",
-            "unboost|mon:Aegislash,player-2,1|stat:atk|by:1|from:move:King's Shield",
+            "activate|mon:Aegislash,player-1,1|move:Protect",
+            "unboost|mon:Aegislash,player-2,1|stat:atk|by:1|from:move:King's Shield|of:Aegislash,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

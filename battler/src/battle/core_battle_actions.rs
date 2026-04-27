@@ -1036,7 +1036,7 @@ fn use_active_move_internal(
         );
     }
 
-    if !context.active_move().ignore_all_secondary_effects {
+    if !context.active_move().ignore_all_secondary_effects && context.mon().active {
         let input = fxlang::VariableInput::from_iter([fxlang::Value::List(
             targets
                 .into_iter()
