@@ -592,16 +592,42 @@ class FxEventCompletionItemProvider implements vscode.CompletionItemProvider {
         const metadata = this.getMetadata();
         const line = document.lineAt(position.line).text;
         let insideCallbacks = false;
+        let insideEvent = false;
+        let braceDepth = 0;
         
         for (let i = position.line; i >= 0; i--) {
             const l = document.lineAt(i).text.trim();
+            
+            if (l.includes('}')) {
+                braceDepth++;
+            }
+            if (l.includes(']')) {
+                braceDepth++;
+            }
+            
+            if (l.includes('{')) {
+                braceDepth--;
+            }
+            if (l.includes('[')) {
+                braceDepth--;
+            }
+            
             if (l.match(/^"callbacks"\s*:\s*\{/)) {
                 insideCallbacks = true;
                 break;
             }
+            
+            if (braceDepth < 0) {
+                const keyMatch = l.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\{\[]/);
+                if (keyMatch && keyMatch[1] !== 'callbacks') {
+                    insideEvent = true;
+                    break;
+                }
+                braceDepth = 0;
+            }
         }
         
-        if (!insideCallbacks) return undefined;
+        if (!insideCallbacks || insideEvent) return undefined;
         if (getEnclosingBlockType(document, position) !== 'object') return undefined;
         
         const textBeforeCursor = line.substring(0, position.character);
