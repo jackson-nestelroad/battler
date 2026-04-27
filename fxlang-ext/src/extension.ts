@@ -542,6 +542,19 @@ class FxHoverProvider implements vscode.HoverProvider {
                 if (!wordRange2) return null;
                 const word2 = document.getText(wordRange2);
                 
+                const constants = ['true', 'false', 'undefined', 'stop'];
+                if (constants.includes(word2)) {
+                    const hoverText = new vscode.MarkdownString();
+                    hoverText.appendMarkdown(`**Literal \`${word2}\`**`);
+                    return new vscode.Hover(hoverText);
+                }
+                
+                if (metadata.common_flags && metadata.common_flags.includes(word2)) {
+                    const hoverText = new vscode.MarkdownString();
+                    hoverText.appendMarkdown(`**Common Flag \`${word2}\`**`);
+                    return new vscode.Hover(hoverText);
+                }
+                
                 if (metadata.functions[word2]) {
                     const data = metadata.functions[word2];
                     const params = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
