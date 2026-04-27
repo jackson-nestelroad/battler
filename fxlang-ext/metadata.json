@@ -5219,7 +5219,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "activate": {
       "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5236,7 +5237,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": true
     },
     "activate_field": {
       "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on the field.",
@@ -5249,7 +5251,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "activate_player": {
       "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on a player.",
@@ -5266,7 +5269,8 @@
           "type": "Player",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "activate_side": {
       "description": "Runs when an effect activates.\n\nRuns when activated by a battle effect. Used for shared logic between multiple event\ncallbacks.\n\nRuns in the context of an applying effect on a side.",
@@ -5283,7 +5287,8 @@
           "type": "Side",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "add_pseudo_weather": {
       "description": "Runs when a pseudo-weather is being added to the field.\n\nRuns before the pseudo-weather effect is applied. Can be used to fail the pseudo-weather.\n\nRuns in the context of an applying effect on the field.",
@@ -5300,7 +5305,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "add_type": {
       "description": "Runs when a type is being added to a Mon.\n\nRuns before the type addition is applied. Can be used to fail the type addition.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5321,7 +5327,8 @@
           "type": "Type",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "add_volatile": {
       "description": "Runs after a volatile effect is added to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5342,7 +5349,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_add_pseudo_weather": {
       "description": "Runs after a new pseudo-weather is added to the field.\n\nOnly runs if the pseudo-weather has been added successfully. This event will not undo the\npseudo-weather.\n\nRuns in the context of an applying effect on the field.",
@@ -5359,7 +5367,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_add_volatile": {
       "description": "Runs after a Mon receives a new volatile effect.\n\nOnly runs if the volatile has been added successfully. This event will not undo the\nvolatile.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5380,7 +5389,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_boost": {
       "description": "Runs after stat boosts are applied.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5401,7 +5411,8 @@
           "type": "BoostTable",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_cure_status": {
       "description": "Runs after a Mon's current status is cured.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5418,7 +5429,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_damage": {
       "description": "Runs after a Mon takes damage.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5439,7 +5451,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_each_boost": {
       "description": "Runs after an individual stat boost is applied.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5464,7 +5477,8 @@
           "type": "Fraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_fainted": {
       "description": "Runs after a Mon causes one or more Mons to faint.\n\nRuns in the context of a Mon.",
@@ -5481,7 +5495,8 @@
           "type": "Effect",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_heal": {
       "description": "Runs after a Mon heals.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5502,7 +5517,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_hit": {
       "description": "Runs after a Mon hits another Mon with a move.\n\nRuns on the active move.",
@@ -5519,7 +5535,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_mega_evolution": {
       "description": "Runs after a Mon Mega Evolves.\n\nRuns in the context of a Mon.",
@@ -5528,7 +5545,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_move": {
       "description": "Runs after a Mon finishes using a move.\n\nRuns on the active move and in the context of a move user.",
@@ -5549,7 +5567,8 @@
           "type": "Boolean",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_move_secondary_effects": {
       "description": "Runs after a move's secondary effects have been applied, for all targets the move was\nsuccessful against.\n\nShould be viewed as the last effect the move needs to apply on the target.\n\nRuns on the active move and in the context of a move target.",
@@ -5566,7 +5585,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_move_secondary_effects_damage": {
       "description": "Runs after a move's secondary effects have been applied, for all targets affected by damage.\n\nShould be viewed as the last effect the move needs to apply on the target. Minimal\ndifference with `AfterMove`; the key difference is that Sheer Force prevents this event from\nrunning.\n\nRuns on the active move and in the context of a move target.",
@@ -5591,7 +5611,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_move_secondary_effects_user": {
       "description": "Runs after a move's secondary effects have been applied.\n\nShould be viewed as the last effect the move needs to apply on the user. Minimal difference\nwith `AfterMove`; the key difference is that Sheer Force prevents this event from running.\n\nRuns on the active move and in the context of a move user.",
@@ -5612,7 +5633,8 @@
           "type": "List",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_set_ability": {
       "description": "Runs after a Mon has its ability set.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5633,7 +5655,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_set_item": {
       "description": "Runs after a Mon has its item set.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5654,7 +5677,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_set_status": {
       "description": "Runs after a Mon's status effect is changed.\n\nOnly runs if the status has been set successfully. This event will not undo a status\nchange.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5675,7 +5699,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_substitute_damage": {
       "description": "Runs after damage is applied to a substitute.\n\nHitting a substitute does not trigger ordinary effects that run when a target is hit. Thus,\nthis event is used to cover for scenarios where hitting a substitute should still trigger\nsome callback.\n\nRuns on the active move and in the context of a move target.",
@@ -5692,7 +5717,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_take_item": {
       "description": "Runs after a Mon has its item taken.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5713,7 +5739,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_terastallization": {
       "description": "Runs after a Mon Terastallizes.\n\nRuns in the context of a Mon.",
@@ -5722,7 +5749,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "after_use_item": {
       "description": "Runs after a Mon uses its item.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5743,7 +5771,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "base_power": {
       "description": "Runs when a move's base power is being calculated for a target.\n\nRuns on the active move and in the context of a move target.",
@@ -5764,11 +5793,13 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "battle_end_turn": {
       "description": "Runs before a turn of a battle ends.\n\nRuns in the context of the battle.",
-      "variables": {}
+      "variables": {},
+      "allows_custom_input_vars": false
     },
     "before_charge_move": {
       "description": "Runs when a Mon is using a charge move, on the charging turn.\n\nRuns in the context of a move user.",
@@ -5785,7 +5816,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "before_dynamax": {
       "description": "Runs before a Mon Dynamaxes.\n\nRuns in the context of a Mon.",
@@ -5794,7 +5826,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "before_move": {
       "description": "Runs before a Mon uses a move.\n\nCan prevent the move from being used.\n\nRuns on the active move and in the context of a move user.",
@@ -5811,7 +5844,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "before_switch_in": {
       "description": "Runs when a Mon switches in, prior to `SwitchIn`.\n\nNot really prior to switching in.\n\nRuns in the context of a Mon.",
@@ -5820,7 +5854,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "before_switch_out": {
       "description": "Runs before a Mon switches out.\n\nRuns in the context of a Mon.",
@@ -5829,7 +5864,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "before_terastallization": {
       "description": "Runs before a Mon Terastallizes.\n\nRuns in the context of a Mon.",
@@ -5838,7 +5874,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "before_turn": {
       "description": "Runs before a turn of a battle.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
@@ -5847,7 +5884,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "berry_eating_health": {
       "description": "Runs when determining the health at which the Mon should eat berries.\n\nRuns in the context of a Mon.",
@@ -5860,7 +5898,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "calculate_stat": {
       "description": "Runs when a Mon's stat is being calculated.\n\nRuns in the context of an applying effect on a Mon.",
@@ -5885,7 +5924,8 @@
           "type": "Stat",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "can_dynamax": {
       "description": "Runs when determining if a Mon can Dynamax.\n\nRuns in the context of a Mon.",
@@ -5894,7 +5934,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "can_escape": {
       "description": "Runs when a Mon is attempting to escape from battle.\n\nRuns in the context of a Mon.",
@@ -5903,7 +5944,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "can_heal": {
       "description": "Runs when determining if a Mon can heal.\n\nRuns in the context of a Mon.",
@@ -5912,7 +5954,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "catch": {
       "description": "Runs when a Mon is caught.\n\nRuns on the item (used to catch the Mon) and in the context of a Mon.",
@@ -5921,7 +5964,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "change_boosts": {
       "description": "Runs when a group of stat boosts is being applied to a Mon.\n\nRuns in the context of a Mon.",
@@ -5934,7 +5978,8 @@
           "type": "BoostTable",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "charge_move": {
       "description": "Runs when a Mon is using a charge move, on the charging turn.\n\nRuns on the active move and in the context of a move user.",
@@ -5951,7 +5996,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "clear_terrain": {
       "description": "Runs when the field's terrain is being cleared.\n\nRuns before the terrain effect is cleared. Can be used to fail the clear.\n\nRuns in the context of an applying effect on the field.",
@@ -5964,7 +6010,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "clear_weather": {
       "description": "Runs when the field's weather is being cleared.\n\nRuns before the weather effect is cleared. Can be used to fail the clear.\n\nRuns in the context of an applying effect on the field.",
@@ -5977,7 +6024,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "copy_volatile": {
       "description": "Runs when copying a volatile effect to the target Mon.\n\nRuns on the effect.",
@@ -5994,7 +6042,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "critical_hit": {
       "description": "Runs when a move critical hits a target.\n\nRuns in the context of a move target.",
@@ -6011,7 +6060,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "cure_status": {
       "description": "Runs when a Mon's current status is cured.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6028,7 +6078,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "damage": {
       "description": "Runs when a Mon's damage is being calculated for a target.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6049,7 +6100,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "damaging_hit": {
       "description": "Runs after a Mon hits another Mon with a move, causing a nonzero amount of damage.\n\nRuns once per hit (i.e., multi-hit moves execute one event per hit).\n\nRuns in the context of a move target.",
@@ -6070,7 +6122,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "disable_move": {
       "description": "Runs when determining which moves are disabled.\n\nRuns in the context of a Mon and on the move.",
@@ -6079,7 +6132,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "deduct_pp": {
       "description": "Runs after a move is used that should have PP deducted.\n\nRuns in the context of a move user.",
@@ -6100,7 +6154,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "drag_out": {
       "description": "Runs before a Mon is dragged out of battle.\n\nCan cancel the force switch.\n\nRuns in the context of a Mon.",
@@ -6109,7 +6164,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "duration": {
       "description": "Runs when determining the duration of an effect.\n\nRuns on the effect.",
@@ -6126,7 +6182,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "effectiveness": {
       "description": "Runs when determining the type effectiveness of a move.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
@@ -6151,7 +6208,8 @@
           "type": "Type",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "eat": {
       "description": "Runs when an item is eaten.\n\nRuns on the item.",
@@ -6160,7 +6218,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "eat_item": {
       "description": "Runs when a Mon eats its item.\n\nRuns in the context of a Mon.",
@@ -6181,7 +6240,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "end": {
       "description": "Runs when an effect ends.\n\nRuns on the effect.",
@@ -6198,7 +6258,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "end_battle": {
       "description": "Runs when a Mon is active when the battle has ended.\n\nRuns in the context of a Mon.",
@@ -6207,7 +6268,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "end_turn": {
       "description": "Runs before a turn of a battle ends.\n\nRuns in the context of a Mon.",
@@ -6216,7 +6278,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "exit": {
       "description": "Runs when a Mon exits the battle (is no longer active).\n\nRuns in the context of a Mon.",
@@ -6225,7 +6288,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "faint": {
       "description": "Runs when a Mon faints.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6242,7 +6306,8 @@
           "type": "Effect",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "field_end": {
       "description": "Runs when a field condition ends.\n\nRuns on the field condition.",
@@ -6255,7 +6320,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "field_residual": {
       "description": "Runs at the end of every turn to apply residual effects on the field.\n\nRuns on the field condition.",
@@ -6268,7 +6334,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "field_restart": {
       "description": "Runs when a field condition restarts.\n\nRuns on the field condition.",
@@ -6281,7 +6348,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "field_start": {
       "description": "Runs when a field condition starts.\n\nRuns on the field condition.",
@@ -6294,7 +6362,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "flinch": {
       "description": "Runs when a Mon flinches.\n\nRuns in the context of the target Mon.",
@@ -6303,7 +6372,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "force_effectiveness": {
       "description": "Runs when determining the type effectiveness of an effect, to prevent normal type\neffectiveness from being used.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
@@ -6324,7 +6394,8 @@
           "type": "Fraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "force_escape": {
       "description": "Runs when a Mon is attempting to escape from battle, prior to any speed check.\n\nRuns in the context of a Mon.",
@@ -6333,7 +6404,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "force_types": {
       "description": "Runs when determining the types of a Mon, to force types early.\n\nRuns in the context of a Mon.",
@@ -6346,7 +6418,8 @@
           "type": "List",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "hit": {
       "description": "Runs when a Mon is hit by a move.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move and in the context of a move target.",
@@ -6363,7 +6436,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "hit_field": {
       "description": "Runs when the field is hit by a move.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move.",
@@ -6376,7 +6450,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "hit_side": {
       "description": "Runs when a side is hit by a move.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move and in the context of an applying effect on a side.",
@@ -6393,7 +6468,8 @@
           "type": "Side",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "hit_user": {
       "description": "Runs when a Mon uses a move that defines a user hit effect.\n\nCan fail, but will only fail the move if everything else failed. Can be viewed as part of\nthe applying hit effect.\n\nRuns on the active move.",
@@ -6410,7 +6486,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "ignore_immunity": {
       "description": "Runs when determining if a move should ignore type immunity.\n\nRuns on the active move and in the context of a move target.",
@@ -6427,7 +6504,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "immunity": {
       "description": "Runs when determining if a Mon is immune to some status.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6444,7 +6522,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "invulnerability": {
       "description": "Runs when determining if a Mon is invulnerable to targeting moves.\n\nRuns as the very first step in a move.\n\nRuns in the context of a move target.",
@@ -6461,7 +6540,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_asleep": {
       "description": "Runs when determining if a Mon is asleep.\n\nRuns in the context of a Mon.",
@@ -6470,7 +6550,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_away_from_field": {
       "description": "Runs when determining if a Mon is away from the field (e.g., immobilized by Sky Drop).\n\nRuns in the context of a Mon.",
@@ -6479,7 +6560,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_behind_substitute": {
       "description": "Runs when determining if a Mon is behind a substitute.\n\nRuns in the context of a Mon.",
@@ -6488,7 +6570,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_contact_proof": {
       "description": "Runs when determining if a Mon is protected from making contact with other Mons.\n\nRuns in the context of a Mon.",
@@ -6497,7 +6580,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_grounded": {
       "description": "Runs when determining if a Mon is grounded.\n\nRuns in the context of a Mon.",
@@ -6506,7 +6590,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_immune_to_entry_hazards": {
       "description": "Runs when determining if a Mon is immune to entry hazards.\n\nRuns in the context of a Mon.",
@@ -6515,11 +6600,13 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_raining": {
       "description": "Runs when determining if a weather includes raining.\n\nRuns in the context of a Mon.",
-      "variables": {}
+      "variables": {},
+      "allows_custom_input_vars": false
     },
     "is_semi_invulnerable": {
       "description": "Runs when determining if a Mon is in a semi-invulnerable state.\n\nRuns in the context of a Mon.",
@@ -6528,11 +6615,13 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_snowing": {
       "description": "Runs when determining if a weather includes snowing.\n\nRuns in the context of a Mon.",
-      "variables": {}
+      "variables": {},
+      "allows_custom_input_vars": false
     },
     "is_soundproof": {
       "description": "Runs when determining if a Mon is soundproof.\n\nRuns in the context of a Mon.",
@@ -6541,11 +6630,13 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "is_sunny": {
       "description": "Runs when determining if a weather includes sunny weather.\n\nRuns in the context of a Mon.",
-      "variables": {}
+      "variables": {},
+      "allows_custom_input_vars": false
     },
     "lock_move": {
       "description": "Runs when determining if a Mon is locked into a move.\n\nRuns in the context of a Mon.",
@@ -6554,7 +6645,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_accuracy": {
       "description": "Runs when calculating the accuracy of a move.\n\nRuns in the context of a move target.",
@@ -6575,7 +6667,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_action_speed": {
       "description": "Runs when calculating the speed of an action.\n\nRuns in the context of a Mon.",
@@ -6588,7 +6681,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_atk": {
       "description": "Runs when calculating a Mon's Atk stat.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6609,7 +6703,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_boosts": {
       "description": "Runs when modifying a Mon's stat boosts used for stat calculations.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6630,7 +6725,8 @@
           "type": "BoostTable",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_catch_rate": {
       "description": "Runs when calculating the modified catch rate of a Mon.\n\nRuns in the context of the item and in the context of an applying effect on a Mon.",
@@ -6651,7 +6747,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_crit_chance": {
       "description": "Runs when calculating a move's critical hit chance.\n\nRuns in the context of a move user.",
@@ -6672,7 +6769,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_crit_ratio": {
       "description": "Runs when calculating a move's critical hit ratio.\n\nRuns in the context of a move user.",
@@ -6693,7 +6791,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_damage": {
       "description": "Runs when calculating the damage applied to a Mon.\n\nRuns as the very last step in the regular damage calculation formula.\n\nRuns in the context of a move user.",
@@ -6714,7 +6813,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_def": {
       "description": "Runs when calculating a Mon's Def stat.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6735,7 +6835,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_ev_yield": {
       "description": "Runs when calculating the EV yield gained by a Mon.\n\nRuns in the context of a Mon.",
@@ -6748,7 +6849,8 @@
           "type": "StatTable",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_experience": {
       "description": "Runs when calculating the amount of experience gained by a Mon.\n\nRuns in the context of a Mon.",
@@ -6761,7 +6863,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_friendship_increase": {
       "description": "Runs when calculating the amount of friendship gained by a Mon.\n\nRuns in the context of a Mon.",
@@ -6774,7 +6877,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_move_type": {
       "description": "Runs when modifying the type of a move.\n\nRuns on the move and in the context of a move user.",
@@ -6795,7 +6899,8 @@
           "type": "Type",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_priority": {
       "description": "Runs when determining the priority of a move.\n\nRuns in the context of a move user.",
@@ -6816,7 +6921,8 @@
           "type": "Fraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_secondary_effects": {
       "description": "Runs before applying secondary move effects.\n\nRuns in the context of a move target.",
@@ -6837,7 +6943,8 @@
           "type": "List",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_sp_a": {
       "description": "Runs when calculating a Mon's SpA stat.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6858,7 +6965,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_sp_d": {
       "description": "Runs when calculating a Mon's SpD stat.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6879,7 +6987,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_spe": {
       "description": "Runs when calculating a Mon's Spe stat.\n\nRuns in the context of an applying effect on a Mon.",
@@ -6900,7 +7009,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_species_catch_rate": {
       "description": "Runs when calculating the base species catch rate of a Mon.\n\nRuns in the context of the item and in the context of an applying effect on a Mon.",
@@ -6921,7 +7031,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_stab": {
       "description": "Runs when calculating a move's STAB multiplier.\n\nRuns in the context of a move user.",
@@ -6942,7 +7053,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_target": {
       "description": "Runs before a move is used, to modify the target Mon.\n\nRuns on the active move and in the context of a move user.",
@@ -6959,7 +7071,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "modify_weight": {
       "description": "Runs when calculating a Mon's weight.\n\nRuns in the context of a Mon.",
@@ -6972,7 +7085,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "move_aborted": {
       "description": "Runs when a move is aborted due to failing the BeforeMove event.\n\nRuns on the active move and in the context of a move user.",
@@ -6989,7 +7103,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "move_base_power": {
       "description": "Runs when a move's base power is being calculated for a target.\n\nRuns on the active move.",
@@ -7006,7 +7121,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "move_damage": {
       "description": "Runs when a move's damage is being calculated for a target.\n\nRuns on the active move.",
@@ -7023,7 +7139,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "move_failed": {
       "description": "Runs when a move fails, only on the move itself.\n\nA move fails when it is successfully used by the user, but it does not hit or apply its\nprimary effect to any targets.\n\nRuns on the active move.",
@@ -7040,7 +7157,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "move_target_override": {
       "description": "Runs when a move's target type is determined for a Mon selecting a move.\n\nRuns on the move.",
@@ -7049,7 +7167,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "negate_immunity": {
       "description": "Runs when determining if a Mon's immunity against a single type should be negated.\n\nRuns in the context of a Mon.",
@@ -7062,7 +7181,8 @@
           "type": "Type",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "override_weather": {
       "description": "Runs when determining the effective weather for a Mon. Overrides the weather without looking\nat the actual field weather or weather suppression effects.\n\nRuns in the context of a Mon.",
@@ -7071,7 +7191,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "override_move": {
       "description": "Runs when a Mon uses a move, to override the chosen move.\n\nRuns in the context of a Mon.",
@@ -7084,7 +7205,8 @@
           "type": "String",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "player_try_use_item": {
       "description": "Runs when a player tries to choose to use an item.\n\nRuns on the item.",
@@ -7105,7 +7227,8 @@
           "type": "Object",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "player_use": {
       "description": "Runs when an item is used on a Mon by a player.\n\nRuns on the item.",
@@ -7118,7 +7241,8 @@
           "type": "Object",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "pre_move_effect": {
       "description": "Runs when applying any pre-move effect.\n\nVery similar to `UseMove`, except it runs after the move is announced.\n\nRuns in the context of a move user.",
@@ -7135,7 +7259,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "prepare_hit": {
       "description": "Runs when a Mon is preparing to hit all of its targets with a move.\n\nCan fail the move.\n\nRuns on the active move and in the context of a move user.",
@@ -7152,7 +7277,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "prevent_used_items": {
       "description": "Runs when determining if a Mon can have items used on it.\n\nRuns in the context of a Mon.",
@@ -7161,7 +7287,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "priority_charge_move": {
       "description": "Runs before at the start of the turn, when a move is charging for the turn.\n\nRuns in the context of a Mon.",
@@ -7170,7 +7297,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "redirect_target": {
       "description": "Runs when a move is going to target one Mon but can be redirected towards a different\ntarget.\n\nRuns in the context of a move user.",
@@ -7187,7 +7315,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "residual": {
       "description": "Runs at the end of every turn to apply residual effects.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7204,7 +7333,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "restart": {
       "description": "Runs when a volatile effect is applied to a Mon that already has the volatile effect.\n\nRuns on the effect.",
@@ -7221,7 +7351,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "restore_pp": {
       "description": "Runs when restoring PP to a move.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7242,7 +7373,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "set_ability": {
       "description": "Runs when a Mon's ability is being set.\n\nRuns before the ability is changed. Can be used to fail the ability change.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7263,7 +7395,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "set_item": {
       "description": "Runs when an item is being given to a Mon.\n\nCan prevent the item from being set.\n\nRuns on the item and in the context of an applying effect on a Mon.",
@@ -7284,7 +7417,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "set_last_move": {
       "description": "Runs when the Mon's last move selected is being set.\n\nRuns in the context of a Mon.",
@@ -7293,7 +7427,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "set_status": {
       "description": "Runs when a Mon's status effect is being set.\n\nRuns before the status effect is applied. Can be used to fail the status change.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7314,7 +7449,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "set_terrain": {
       "description": "Runs when the field's terrain is being set.\n\nRuns before the terrain effect is applied. Can be used to fail the terrain.\n\nRuns in the context of an applying effect on the field.",
@@ -7331,7 +7467,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "set_types": {
       "description": "Runs when a Mon's types are being changed.\n\nRuns before the types are applied. Can be used to fail the type change.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7352,7 +7489,8 @@
           "type": "List",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "set_weather": {
       "description": "Runs when the field's weather is being set.\n\nRuns before the weather effect is applied. Can be used to fail the weather.\n\nRuns in the context of an applying effect on the field.",
@@ -7369,7 +7507,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "side_condition_start": {
       "description": "Runs when a side condition starts successfully.\n\nRuns in the context of an applying effect on a side.",
@@ -7390,7 +7529,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "side_end": {
       "description": "Runs when a side condition ends.\n\nRuns in the context of the side condition.",
@@ -7407,7 +7547,8 @@
           "type": "Side",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "side_residual": {
       "description": "Runs at the end of every turn to apply residual effects on the side.\n\nRuns in the context of the side condition.",
@@ -7424,7 +7565,8 @@
           "type": "Side",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "side_restart": {
       "description": "Runs when a side condition restarts.\n\nRuns in the context of the side condition.",
@@ -7441,7 +7583,8 @@
           "type": "Side",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "side_start": {
       "description": "Runs when a side condition starts.\n\nRuns in the context of the side condition.",
@@ -7458,7 +7601,8 @@
           "type": "Side",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "slot_end": {
       "description": "Runs when a slot condition ends.\n\nRuns in the context of the slot condition.",
@@ -7479,7 +7623,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "slot_restart": {
       "description": "Runs when a slot condition restarts.\n\nRuns in the context of the slot condition.",
@@ -7500,7 +7645,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "slot_start": {
       "description": "Runs when a slot condition starts.\n\nRuns in the context of the slot condition.",
@@ -7521,7 +7667,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "stall_move": {
       "description": "Runs when a Mon attempts a stalling move (e.g., Protect).\n\nCan fail the stalling move (assuming the stalling move integrates with the event properly).\n\nRuns in the context of a Mon.",
@@ -7530,7 +7677,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "start": {
       "description": "Runs when an effect starts.\n\nUsed to set up state.\n\nRuns on the effect.",
@@ -7547,11 +7695,13 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "start_battle": {
       "description": "Runs when the battle starts.\n\nRuns in the context of the battle.",
-      "variables": {}
+      "variables": {},
+      "allows_custom_input_vars": false
     },
     "start_using_move": {
       "description": "Runs when Mon starts using a move.\n\nRuns in the context of a Mon.",
@@ -7560,7 +7710,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "stop_using_move": {
       "description": "Runs when Mon stops using a move.\n\nRuns in the context of a Mon.",
@@ -7569,7 +7720,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "sub_priority": {
       "description": "Runs when determining the sub-priority of a move.\n\nRuns in the context of a move user.",
@@ -7590,15 +7742,18 @@
           "type": "Fraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "suppress_field_terrain": {
       "description": "Runs when determining if terrain on the field is suppressed, for some other active effect.\n\nRuns on the effect.",
-      "variables": {}
+      "variables": {},
+      "allows_custom_input_vars": false
     },
     "suppress_field_weather": {
       "description": "Runs when determining if weather on the field is suppressed, for some other active effect.\n\nRuns on the effect.",
-      "variables": {}
+      "variables": {},
+      "allows_custom_input_vars": false
     },
     "suppress_mon_ability": {
       "description": "Runs when determining if a Mon's ability is suppressed, for some other active effect.\n\nRuns on the effect.",
@@ -7607,7 +7762,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "suppress_mon_item": {
       "description": "Runs when determining if the item on the Mon is suppressed, for some other active effect.\n\nRuns on the effect.",
@@ -7616,7 +7772,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "suppress_mon_terrain": {
       "description": "Runs when determining if terrain on the Mon is suppressed, for some other active effect.\n\nRuns on the effect.",
@@ -7625,7 +7782,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "suppress_mon_weather": {
       "description": "Runs when determining if weather on the Mon is suppressed, for some other active effect.\n\nRuns on the effect.",
@@ -7634,7 +7792,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "switch_in": {
       "description": "Runs when a Mon switches in.\n\nRuns in the context of a Mon.",
@@ -7643,7 +7802,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "switching_in": {
       "description": "Runs when a Mon is switching in, prior to `SwitchIn`.\n\nRuns in the context of a Mon.",
@@ -7652,7 +7812,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "switch_out": {
       "description": "Runs when a Mon is switching out.\n\nRuns in the context of a Mon.",
@@ -7661,7 +7822,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "take_item": {
       "description": "Runs when an item is being taken from a Mon.\n\nCan prevent the item from being taken.\n\nRuns on the item and in the context of an applying effect on a Mon.",
@@ -7682,7 +7844,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "trap_mon": {
       "description": "Runs when determining if a Mon is trapped (i.e., cannot switch out).\n\nRuns in the context of a Mon.",
@@ -7691,7 +7854,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_boost": {
       "description": "Runs when a group of stat boosts is being applied to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7712,7 +7876,8 @@
           "type": "BoostTable",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_eat_item": {
       "description": "Runs when a Mon tries to eat its item.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7733,7 +7898,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_heal": {
       "description": "Runs before a Mon is healed for some amount of damage.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7754,7 +7920,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_hit": {
       "description": "Runs when a move is trying to hit a set of targets.\n\nCan fail the move.\n\nRuns on the active move and in the context of a move target.",
@@ -7771,7 +7938,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_hit_field": {
       "description": "Runs when a move is trying to hit the whole field.\n\nCan fail the move.\n\nRuns on the active move and in the context of an applying effect on the field.",
@@ -7784,7 +7952,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_hit_side": {
       "description": "Runs when a move is trying to hit an entire side\n\nCan fail the move.\n\nRuns on the active move and in the context of an applying effect on a side.",
@@ -7801,7 +7970,8 @@
           "type": "Side",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_immunity": {
       "description": "Runs when a move is checking general immunity for its target.\n\nCan fail the move (by marking the target as immune).\n\nRuns in the context of the active move.",
@@ -7818,7 +7988,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_move": {
       "description": "Runs when trying to use a move.\n\nCan fail the move.\n\nRuns on the active move and in the context of a move user.",
@@ -7835,7 +8006,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_primary_hit": {
       "description": "Runs when a move's primary hit is being applied to a target.\n\nUsed to override the core battle engine logic. Can fail the move or return an amount of\ndamage dealt to the target. If zero damage is returned, the core battle engine assumes a\nsubstitute was hit for the purposes of hit effects (i.e., hit effects do not apply to the\ntarget).\n\nRuns in the context of a move target.",
@@ -7852,7 +8024,8 @@
           "type": "ActiveMove",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_use_item": {
       "description": "Runs when a Mon tries to use an item.\n\nRuns in the context of an applying effect on a Mon.",
@@ -7873,7 +8046,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "try_use_move": {
       "description": "Runs when a Mon is trying to use a move on a set of targets.\n\nCan fail the move.\n\nRuns on the active move.",
@@ -7890,7 +8064,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "type_immunity": {
       "description": "Runs when determining if a Mon has immunity against a single type.\n\nRuns in the context of a Mon.",
@@ -7903,7 +8078,8 @@
           "type": "Type",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "types": {
       "description": "Runs when determining the types of a Mon.\n\nRuns in the context of a Mon.",
@@ -7916,7 +8092,8 @@
           "type": "List",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "update": {
       "description": "Runs when miscellaneous Mon effects in the battle could activate.\n\nRuns in the context of a Mon.",
@@ -7925,7 +8102,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "upgrade_move": {
       "description": "Runs when a Mon uses a move, to upgrade the chosen move.\n\nRuns in the context of a move user.",
@@ -7942,7 +8120,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "use": {
       "description": "Runs when an item is used.\n\nRuns on the item.",
@@ -7951,7 +8130,8 @@
           "type": "Mon",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "use_move": {
       "description": "Runs when a Mon uses a move.\n\nCan be used to modify a move when it is used.\n\nRuns on the active move and in the context of a move user.",
@@ -7972,7 +8152,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "use_move_message": {
       "description": "Runs when a custom message should be displayed when a Mon uses a move.\n\nRuns on the active move.",
@@ -7989,7 +8170,8 @@
           "type": "Mon",
           "optional": true
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "validate_mon": {
       "description": "Runs when validating a Mon.\n\nRuns in the context of a Mon.",
@@ -8002,7 +8184,8 @@
           "type": "List",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "validate_team": {
       "description": "Runs when validating a team.\n\nRuns in the context of a player.",
@@ -8015,7 +8198,8 @@
           "type": "List",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "weather": {
       "description": "Runs when weather is activated at the end of each turn.\n\nRuns in the context of an applying effect on a Mon.",
@@ -8032,7 +8216,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "weather_change": {
       "description": "Runs when the weather over a Mon changes.\n\nRuns in the context of an applying effect on a Mon.",
@@ -8049,7 +8234,8 @@
           "type": "Effect",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     },
     "weather_modify_damage": {
       "description": "Runs when calculating the damage applied to a Mon.\n\nRuns in the context of a move user.",
@@ -8070,7 +8256,8 @@
           "type": "UFraction",
           "optional": false
         }
-      }
+      },
+      "allows_custom_input_vars": false
     }
   }
 }

@@ -140,6 +140,51 @@ export function resolveEventName(rawName: string, metadata: Metadata): string | 
     }
     return bestMatch;
 }
+export function getCustomVariables(document: vscode.TextDocument, position: vscode.Position): string[] {
+    const params: string[] = [];
+    
+    for (let i = position.line; i >= 0; i--) {
+        const line = document.lineAt(i).text.trim();
+        
+        if (line.includes('"parameters"')) {
+            const match = line.match(/"parameters"\s*:\s*\[(.*?)\]/);
+            if (match) {
+                const parts = match[1].split(',').map(p => p.trim().replace(/^"/, '').replace(/"$/, ''));
+                for (const p of parts) {
+                    if (p) params.push(p);
+                }
+                return params;
+            }
+            
+            const startMatch = line.match(/"parameters"\s*:\s*\[/);
+            if (startMatch) {
+                for (let j = i + 1; j < document.lineCount; j++) {
+                    const forwardLine = document.lineAt(j).text.trim();
+                    if (forwardLine.includes(']')) {
+                        const beforeBracket = forwardLine.split(']')[0];
+                        const parts = beforeBracket.split(',').map(p => p.trim().replace(/^"/, '').replace(/"$/, ''));
+                        for (const p of parts) {
+                            if (p) params.push(p);
+                        }
+                        break;
+                    }
+                    const parts = forwardLine.split(',').map(p => p.trim().replace(/^"/, '').replace(/"$/, ''));
+                    for (const p of parts) {
+                        if (p) params.push(p);
+                    }
+                }
+                return params;
+            }
+        }
+        
+        const eventMatch = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
+        if (eventMatch && eventMatch[1] !== 'program' && eventMatch[1] !== 'metadata') {
+            break;
+        }
+    }
+    return params;
+}
+
 
 /**
  * Walks backwards from the current position to find the enclosing event key inside a callbacks block.
@@ -151,8 +196,9 @@ export function getEnclosingEvent(document: vscode.TextDocument, position: vscod
         const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
         if (match) {
             const rawName = match[1];
-            if (rawName !== 'program') {
-                return resolveEventName(rawName, metadata);
+            if (rawName !== 'program' && rawName !== 'metadata') {
+                const resolved = resolveEventName(rawName, metadata);
+                if (resolved) return resolved;
             }
         }
         if (line.match(/^"callbacks"\s*:\s*\{/)) {

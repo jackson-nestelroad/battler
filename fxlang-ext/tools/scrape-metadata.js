@@ -170,6 +170,37 @@ function parseInputVars(effectContent) {
   }
   return inputVarsMap;
 }
+function parseAllowsCustomInputVars(effectContent) {
+  const map = {};
+  const match = effectContent.match(/pub fn allows_custom_input_vars\(&self\)\s*->\s*bool\s*{([\s\S]*?)^    }/m);
+  if (match) {
+    const body = match[1];
+    const lines = body.split('\n');
+    let currentEvents = [];
+    
+    for (let line of lines) {
+      line = line.trim();
+      if (line.includes('=>')) {
+        const arrowIndex = line.indexOf('=>');
+        const leftSide = line.substring(0, arrowIndex).trim();
+        const rightSide = line.substring(arrowIndex + 2).trim();
+        
+        currentEvents = [];
+        const eventMatches = [...leftSide.matchAll(/Self::(\w+)/g)];
+        for (const em of eventMatches) {
+          currentEvents.push(em[1]);
+        }
+        
+        const isTrue = rightSide.includes('true');
+        for (const ev of currentEvents) {
+          map[ev] = isTrue;
+        }
+      }
+    }
+  }
+  return map;
+}
+
 
 function scrapeTypeMappings(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
@@ -610,6 +641,8 @@ function scrapeEvents(effectFilePath, evalFilePath) {
   const events = parseBattleEventDescriptions(effectContent);
   // 5. Parse input_vars globally
   const inputVarsMap = parseInputVars(effectContent);
+  const allowsCustomVarsMap = parseAllowsCustomInputVars(effectContent);
+
   // 5. Map BattleEvent to CommonCallbackType and populate variables
   const validEvents = {};
   const ctfMatch = effectContent.match(
@@ -663,6 +696,7 @@ function scrapeEvents(effectFilePath, evalFilePath) {
         validEvents[snakeName] = {
           description: events[eventName].description,
           variables: events[eventName].variables,
+          allows_custom_input_vars: allowsCustomVarsMap[eventName] || false,
         };
       }
     }

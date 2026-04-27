@@ -16,7 +16,8 @@ import {
     getDisplayType,
     areTypesCompatible,
     EVENT_MODIFIERS,
-    getVariableData
+    getVariableData,
+    getCustomVariables
 } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -359,6 +360,17 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
                 }
             }
             
+            const eventMeta = eventName && metadata.events ? metadata.events[eventName] : undefined;
+            if (eventMeta && eventMeta.allows_custom_input_vars) {
+                const customVars = getCustomVariables(document, position);
+                for (const name of customVars) {
+                    const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Variable);
+                    item.sortText = ' ' + name;
+                    item.detail = `(Custom Parameter: unknown)`;
+                    items.push(item);
+                }
+            }
+            
             for (const [name, type] of Object.entries(symbols)) {
                 const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Variable);
                 item.sortText = ' ' + name;
@@ -443,6 +455,17 @@ class FxHoverProvider implements vscode.HoverProvider {
                             type = getDisplayType(varData.type, varData.item_type);
                             optional = varData.optional;
                             origin = varData.origin;
+                        }
+                    }
+                    
+                    if (!type) {
+                        const eventMeta = eventName && metadata.events ? metadata.events[eventName] : undefined;
+                        if (eventMeta && eventMeta.allows_custom_input_vars) {
+                            const customVars = getCustomVariables(document, position);
+                            if (customVars.includes(varName)) {
+                                type = 'unknown';
+                                origin = 'Custom Parameter';
+                            }
                         }
                     }
                     

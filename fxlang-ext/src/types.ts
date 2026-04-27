@@ -36,7 +36,7 @@ export interface Metadata {
     variable_members: Record<string, MemberData>;
     type_members: Record<string, Record<string, MemberData>>;
     functions: Record<string, FunctionData>;
-    events: Record<string, { description: string; variables: Record<string, VariableData> }>;
+    events: Record<string, { description: string; variables: Record<string, VariableData>; allows_custom_input_vars?: boolean }>;
     common_flags: string[];
 }
 
