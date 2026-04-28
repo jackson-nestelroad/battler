@@ -779,6 +779,14 @@ where
                             }
                             "level" => ValueRef::UFraction(context.mon(mon_handle)?.level.into()),
                             "max_hp" => ValueRef::UFraction(context.mon(mon_handle)?.max_hp.into()),
+                            "move_last_turn_failed" => ValueRef::Boolean(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .move_last_turn_outcome
+                                    .map(|outcome| outcome.failed())
+                                    .unwrap_or(false),
+                            ),
                             "move_last_turn_succeeded" => ValueRef::Boolean(
                                 context
                                     .mon(mon_handle)?
@@ -1164,6 +1172,11 @@ where
                                 .judgment
                                 .as_ref()
                                 .map(ValueRef::JudgmentData)
+                                .unwrap_or(ValueRef::Undefined),
+                            "multi_attack" => special_item_data
+                                .multi_attack
+                                .as_ref()
+                                .map(ValueRef::MultiAttackData)
                                 .unwrap_or(ValueRef::Undefined),
                             "natural_gift" => special_item_data
                                 .natural_gift

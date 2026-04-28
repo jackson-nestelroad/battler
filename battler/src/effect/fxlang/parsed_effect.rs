@@ -2,7 +2,10 @@ use alloc::string::String;
 use core::str::FromStr;
 
 use anyhow::Result;
-use hashbrown::HashMap;
+use hashbrown::{
+    HashMap,
+    hash_map::Entry,
+};
 use itertools::Itertools;
 
 use crate::{
@@ -28,6 +31,26 @@ pub struct ParsedCallback {
     pub priority: i32,
     pub sub_order: u32,
     pub metadata: ProgramMetadata,
+}
+
+impl ParsedCallback {
+    /// Extends the callback with another callback, overriding data if applicable.
+    fn extend(&mut self, other: Self) {
+        if !other.program.block.is_empty() {
+            self.program = other.program;
+        }
+
+        // Always override order numbers.
+        //
+        // The previous program may be reused at a different priority.
+        self.order = other.order;
+        self.priority = other.priority;
+        self.sub_order = other.sub_order;
+
+        if other.metadata != ProgramMetadata::default() {
+            self.metadata = other.metadata;
+        }
+    }
 }
 
 impl SpeedOrderable for ParsedCallback {
@@ -64,20 +87,21 @@ impl ParsedEffect {
         let (event, modifier) = Self::callback_name_to_event_key(name)
             .wrap_error_with_format(format_args!("invalid callback {name}"))?;
 
-        if let Some(program) = callback.program() {
-            let program = ParsedProgram::from(program)
-                .wrap_error_with_format(format_args!("error parsing {event} callback"))?;
-            self.callbacks.insert(
-                (event, modifier),
-                ParsedCallback {
-                    program,
-                    order: callback.order(),
-                    priority: callback.priority(),
-                    sub_order: callback.sub_order(),
-                    metadata: callback.metadata().cloned().unwrap_or_default(),
-                },
-            );
-        }
+        let program = match callback.program() {
+            Some(program) => ParsedProgram::from(program)
+                .wrap_error_with_format(format_args!("error parsing {event} callback"))?,
+            None => ParsedProgram::default(),
+        };
+        self.callbacks.insert(
+            (event, modifier),
+            ParsedCallback {
+                program,
+                order: callback.order(),
+                priority: callback.priority(),
+                sub_order: callback.sub_order(),
+                metadata: callback.metadata().cloned().unwrap_or_default(),
+            },
+        );
         Ok(())
     }
 
@@ -141,7 +165,14 @@ impl ParsedEffect {
 
     /// Extends the callbacks for this effect.
     pub fn extend(&mut self, other: Self) {
-        self.callbacks.extend(other.callbacks);
+        for (key, callback) in other.callbacks {
+            match self.callbacks.entry(key) {
+                Entry::Occupied(mut entry) => entry.get_mut().extend(callback),
+                Entry::Vacant(entry) => {
+                    entry.insert(callback);
+                }
+            }
+        }
         self.condition.extend(other.condition);
     }
 

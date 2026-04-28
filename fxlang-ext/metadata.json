@@ -600,6 +600,10 @@
         "description": "",
         "type": "UFraction"
       },
+      "move_last_turn_failed": {
+        "description": "",
+        "type": "Boolean"
+      },
       "move_last_turn_succeeded": {
         "description": "",
         "type": "Boolean"
@@ -949,6 +953,10 @@
       "judgment": {
         "description": "",
         "type": "JudgmentData | Undefined"
+      },
+      "multi_attack": {
+        "description": "",
+        "type": "MultiAttackData | Undefined"
       },
       "natural_gift": {
         "description": "",
@@ -1795,6 +1803,20 @@
     },
     "clear_negative_boosts": {
       "description": "Clears negative boosts from a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to clear.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
+    },
+    "clear_positive_boosts": {
+      "description": "Clears positive boosts from a Mon.",
       "parameters": [
         {
           "name": "mon",
@@ -4642,7 +4664,7 @@
         }
       ],
       "flags": [],
-      "type": "Object",
+      "type": "SpecialItemData",
       "returns_item_from_list": false
     },
     "species_has_flag": {
@@ -5100,7 +5122,7 @@
           "name": "effect",
           "type": "Effect",
           "description": "The effect handle.",
-          "optional": false
+          "optional": true
         },
         {
           "name": "key",

@@ -672,7 +672,7 @@
       "Stalling"
     ],
     "hit_effect": {
-      "volatile_status": "kingsshield"
+      "volatile_status": "protect"
     },
     "z_move": {
       "effect": "zpowerclearnegativeboosts"
@@ -682,7 +682,6 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": ["add_volatile: $target protect link"],
         "on_activate": [
           "if func_call(move_makes_contact: $effect):",
           ["boost: $source 'atk:-1'"]
@@ -834,7 +833,7 @@
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
     "hit_effect": {
-      "volatile_status": "spikyshield"
+      "volatile_status": "protect"
     },
     "z_move": {
       "boosts": {
@@ -846,7 +845,6 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": ["add_volatile: $target protect link"],
         "on_activate": [
           "if func_call(move_makes_contact: $effect):",
           ["damage: $source expr($source.base_max_hp / 8)"]

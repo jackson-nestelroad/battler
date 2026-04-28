@@ -27,7 +27,10 @@
       "duration": 1,
       "delegates": ["condition:weakenthroughprotectionmovebase"],
       "callbacks": {
-        "on_start": ["log_single_turn: with_target"],
+        "on_start": [
+          "log_single_turn: with_target",
+          "add_volatile: $target $source_effect.id link"
+        ],
         "on_try_hit": {
           "priority": 3,
           "program": [
@@ -169,6 +172,44 @@
         "on_before_move": ["add_pseudo_weather: moldbreaker"],
         "on_move_aborted": ["run_event_on_move: AfterMove"],
         "on_after_move": ["remove_pseudo_weather: moldbreaker"]
+      }
+    }
+  },
+  "windingupmovebase": {
+    "name": "Winding Up Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_priority_charge_move": ["add_volatile: $mon windingup"]
+      }
+    }
+  },
+  "sidescreenmovebase": {
+    "name": "Side Screen Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_duration": [
+          "if $source.is_defined and func_call(has_item: $source lightclay):",
+          ["return 8"],
+          "return 5"
+        ],
+        "on_source_modify_damage": [
+          "$category = func_call(value_from_local_data: category)",
+          "if $target == $user or ($category.is_defined and $move.category != $category):",
+          ["return"],
+          "if $move.effect_state.screen_weaken:",
+          ["return"],
+          "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
+          ["return"],
+          "$move.effect_state.screen_weaken = true",
+          "if $format.mons_per_side > 1:",
+          ["return $damage * 2 / 3"],
+          "return $damage / 2"
+        ],
+        "on_side_start": ["log_side_start"],
+        "on_side_end": ["log_side_end"]
       }
     }
   }

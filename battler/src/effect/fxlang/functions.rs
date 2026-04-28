@@ -173,6 +173,7 @@ pub fn run_function(
         "clause_type_value" => clause_type_value(context),
         "clear_boosts" => clear_boosts(context).map(|()| None),
         "clear_negative_boosts" => clear_negative_boosts(context).map(|()| None),
+        "clear_positive_boosts" => clear_positive_boosts(context).map(|()| None),
         "clear_terrain" => clear_terrain(context).map(|val| Some(val)),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
         "clone_active_move" => clone_active_move(context).map(|val| Some(val)),
@@ -3061,6 +3062,16 @@ fn clear_negative_boosts(mut context: FunctionContext) -> Result<()> {
     )
 }
 
+/// Clears positive boosts from a Mon.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to clear.
+fn clear_positive_boosts(mut context: FunctionContext) -> Result<()> {
+    let mon_handle = context.target_handle_positional()?;
+    core_battle_actions::clear_positive_boosts(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+    )
+}
+
 /// Selects a random target for a move.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the move.
@@ -5197,7 +5208,7 @@ fn get_stat(mut context: FunctionContext) -> Result<Value> {
 /// Gets special data for an item.
 ///
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} item The item ID.
-/// @returns {[`ValueType::Object`]} The special item data.
+/// @returns {[`ValueType::SpecialItemData`]} The special item data.
 fn special_item_data(mut context: FunctionContext) -> Result<Value> {
     let item_id = context
         .pop_front()
@@ -5283,7 +5294,7 @@ fn skip_effect_callback(mut context: FunctionContext) -> Result<()> {
 
 /// Gets a value from an effect's local data.
 ///
-/// @param {[`ValueType::Effect`]} effect The effect handle.
+/// @param {[`ValueType::Effect`]} [effect] The effect handle.
 /// @param {[`ValueType::String`]} key The key to retrieve.
 /// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The value from local data.
 fn value_from_local_data(mut context: FunctionContext) -> Result<Option<Value>> {

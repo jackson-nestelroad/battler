@@ -1886,12 +1886,22 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     );
     let crit_ratio = crit_ratio.max(0).min(4);
     let crit_chance = if crit_ratio > 0 {
-        let crit_chance = [0u32, 24, 8, 2, 1][crit_ratio as usize];
-        core_battle_effects::run_event_for_applying_effect_expecting_u32(
-            &mut context.applying_effect_context()?,
+        let crit_chance = [24, 8, 2, 1][(crit_ratio - 1) as usize];
+
+        // Modify chance directly based on fraction, which is easier to reason about.
+        let crit_chance = Fraction::new(1, crit_chance);
+        let crit_chance = core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
+            &mut context.user_applying_effect_context()?,
             fxlang::BattleEvent::ModifyCritChance,
             crit_chance,
-        )
+        );
+
+        // Convert back to integer.
+        if crit_chance < 0 {
+            0
+        } else {
+            crit_chance.min(1u32.into()).inverse().floor()
+        }
     } else {
         0
     };
@@ -5737,6 +5747,22 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> 
         .filter(|(_, val)| *val > 0)
         .collect();
     core_battle_logs::clear_negative_boosts(context)?;
+    Ok(())
+}
+
+/// Clears all positive boosts on the target Mon.
+pub fn clear_positive_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
+    if !context.target().active {
+        return Ok(());
+    }
+    context.target_mut().volatile_state.boosts = context
+        .target()
+        .volatile_state
+        .boosts
+        .non_zero_iter()
+        .filter(|(_, val)| *val < 0)
+        .collect();
+    core_battle_logs::clear_positive_boosts(context)?;
     Ok(())
 }
 

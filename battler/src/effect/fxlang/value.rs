@@ -33,6 +33,7 @@ use battler_data::{
     JudgmentData,
     MoveCategory,
     MoveTarget,
+    MultiAttackData,
     MultihitType,
     NaturalGiftData,
     Nature,
@@ -111,6 +112,7 @@ pub enum ValueType {
     MoveCategory,
     MoveSlot,
     MoveTarget,
+    MultiAttackData,
     MultihitType,
     NaturalGiftData,
     Nature,
@@ -179,6 +181,7 @@ pub enum Value {
     MoveCategory(MoveCategory),
     MoveSlot(MoveSlot),
     MoveTarget(MoveTarget),
+    MultiAttackData(MultiAttackData),
     MultihitType(MultihitType),
     NaturalGiftData(NaturalGiftData),
     Nature(Nature),
@@ -228,6 +231,7 @@ impl Value {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultiAttackData(_) => ValueType::MultiAttackData,
             Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
@@ -325,6 +329,7 @@ impl Value {
             ValueType::MoveCategory => self.move_category().map(Value::MoveCategory),
             ValueType::MoveSlot => self.move_slot().map(Value::MoveSlot),
             ValueType::MoveTarget => self.move_target().map(Value::MoveTarget),
+            ValueType::MultiAttackData => self.multi_attack_data().map(Value::MultiAttackData),
             ValueType::MultihitType => self.multihit_type().map(Value::MultihitType),
             ValueType::NaturalGiftData => self.natural_gift_data().map(Value::NaturalGiftData),
             ValueType::Nature => self.nature().map(Value::Nature),
@@ -767,6 +772,17 @@ impl Value {
         }
     }
 
+    /// Consumes the value into a [`MultiAttackData`].
+    pub fn multi_attack_data(self) -> Result<MultiAttackData> {
+        match self {
+            Self::MultiAttackData(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(
+                val.value_type(),
+                ValueType::MultiAttackData,
+            )),
+        }
+    }
+
     /// Consumes the value into a [`MultihitType`].
     pub fn multihit_type(self) -> Result<MultihitType> {
         match self {
@@ -978,6 +994,7 @@ pub enum MaybeReferenceValue<'eval> {
     MoveCategory(MoveCategory),
     MoveSlot(MoveSlot),
     MoveTarget(MoveTarget),
+    MultiAttackData(MultiAttackData),
     MultihitType(MultihitType),
     NaturalGiftData(NaturalGiftData),
     Nature(Nature),
@@ -1028,6 +1045,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultiAttackData(_) => ValueType::MultiAttackData,
             Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
@@ -1078,6 +1096,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveSlot(val) => Value::MoveSlot(val.clone()),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::MultiAttackData(val) => Value::MultiAttackData(val.clone()),
             Self::MultihitType(val) => Value::MultihitType(*val),
             Self::NaturalGiftData(val) => Value::NaturalGiftData(val.clone()),
             Self::Nature(val) => Value::Nature(*val),
@@ -1183,6 +1202,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
+            Value::MultiAttackData(val) => Self::MultiAttackData(val),
             Value::MultihitType(val) => Self::MultihitType(val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(val),
@@ -1254,6 +1274,7 @@ pub enum ValueRef<'eval> {
     MoveCategory(MoveCategory),
     MoveSlot(&'eval MoveSlot),
     MoveTarget(MoveTarget),
+    MultiAttackData(&'eval MultiAttackData),
     MultihitType(MultihitType),
     NaturalGiftData(&'eval NaturalGiftData),
     Nature(Nature),
@@ -1307,6 +1328,7 @@ impl<'eval> ValueRef<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultiAttackData(_) => ValueType::MultiAttackData,
             Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
@@ -1360,6 +1382,7 @@ impl<'eval> ValueRef<'eval> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::MultiAttackData(val) => Value::MultiAttackData((*val).clone()),
             Self::MultihitType(val) => Value::MultihitType(*val),
             Self::NaturalGiftData(val) => Value::NaturalGiftData((*val).clone()),
             Self::Nature(val) => Value::Nature(*val),
@@ -1524,6 +1547,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
+            Value::MultiAttackData(val) => Self::MultiAttackData(val),
             Value::MultihitType(val) => Self::MultihitType(*val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(*val),
@@ -1631,6 +1655,7 @@ pub enum ValueRefMut<'eval> {
     MoveCategory(&'eval mut MoveCategory),
     MoveSlot(&'eval mut MoveSlot),
     MoveTarget(&'eval mut MoveTarget),
+    MultiAttackData(&'eval mut MultiAttackData),
     MultihitType(&'eval mut MultihitType),
     OptionalMultihitType(&'eval mut Option<MultihitType>),
     NaturalGiftData(&'eval mut NaturalGiftData),
@@ -1697,6 +1722,7 @@ impl<'eval> ValueRefMut<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultiAttackData(_) => ValueType::MultiAttackData,
             Self::MultihitType(_) => ValueType::MultihitType,
             Self::OptionalMultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
@@ -1854,6 +1880,9 @@ impl<'eval> ValueRefMut<'eval> {
             ValueRefMut::MoveTarget(var) => {
                 *var = val.move_target()?;
             }
+            ValueRefMut::MultiAttackData(var) => {
+                *var = val.multi_attack_data()?;
+            }
             ValueRefMut::MultihitType(var) => {
                 *var = val.multihit_type()?;
             }
@@ -1937,6 +1966,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(val),
+            Value::MultiAttackData(val) => Self::MultiAttackData(val),
             Value::MultihitType(val) => Self::MultihitType(val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(val),
@@ -2000,6 +2030,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     MoveCategory(MoveCategory),
     MoveSlot(&'eval MoveSlot),
     MoveTarget(MoveTarget),
+    MultiAttackData(&'eval MultiAttackData),
     MultihitType(MultihitType),
     NaturalGiftData(&'eval NaturalGiftData),
     Nature(Nature),
@@ -2055,6 +2086,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(_) => ValueType::MoveCategory,
             Self::MoveSlot(_) => ValueType::MoveSlot,
             Self::MoveTarget(_) => ValueType::MoveTarget,
+            Self::MultiAttackData(_) => ValueType::MultiAttackData,
             Self::MultihitType(_) => ValueType::MultihitType,
             Self::NaturalGiftData(_) => ValueType::NaturalGiftData,
             Self::Nature(_) => ValueType::Nature,
@@ -2110,6 +2142,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(val) => Value::MoveCategory(*val),
             Self::MoveSlot(val) => Value::MoveSlot((*val).clone()),
             Self::MoveTarget(val) => Value::MoveTarget(*val),
+            Self::MultiAttackData(val) => Value::MultiAttackData((*val).clone()),
             Self::MultihitType(val) => Value::MultihitType(*val),
             Self::NaturalGiftData(val) => Value::NaturalGiftData((*val).clone()),
             Self::Nature(val) => Value::Nature(*val),
@@ -2168,16 +2201,17 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::MoveCategory(_) => 158,
             Self::MoveSlot(_) => 159,
             Self::MoveTarget(_) => 160,
-            Self::MultihitType(_) => 161,
-            Self::NaturalGiftData(_) => 162,
-            Self::Nature(_) => 163,
-            Self::SpecialItemData(_) => 164,
-            Self::Stat(_) => 165,
-            Self::StatTable(_) => 166,
-            Self::TechnoBlastData(_) => 167,
-            Self::TimeOfDay(_) => 168,
-            Self::Type(_) => 169,
-            Self::WildEncounterType(_) => 170,
+            Self::MultiAttackData(_) => 161,
+            Self::MultihitType(_) => 162,
+            Self::NaturalGiftData(_) => 163,
+            Self::Nature(_) => 164,
+            Self::SpecialItemData(_) => 165,
+            Self::Stat(_) => 166,
+            Self::StatTable(_) => 167,
+            Self::TechnoBlastData(_) => 168,
+            Self::TimeOfDay(_) => 169,
+            Self::Type(_) => 170,
+            Self::WildEncounterType(_) => 171,
 
             Self::EffectState(_) => 200,
 
@@ -2652,6 +2686,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::MoveCategory(lhs), Self::MoveCategory(rhs)) => lhs.eq(rhs),
             (Self::MoveSlot(lhs), Self::MoveSlot(rhs)) => lhs.eq(rhs),
             (Self::MoveTarget(lhs), Self::MoveTarget(rhs)) => lhs.eq(rhs),
+            (Self::MultiAttackData(lhs), Self::MultiAttackData(rhs)) => lhs.eq(rhs),
             (Self::MultihitType(lhs), Self::MultihitType(rhs)) => lhs.eq(rhs),
             (Self::NaturalGiftData(lhs), Self::NaturalGiftData(rhs)) => lhs.eq(rhs),
             (Self::Nature(lhs), Self::Nature(rhs)) => lhs.eq(rhs),
@@ -2849,6 +2884,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::MoveCategory(val) => Self::MoveCategory(*val),
             Value::MoveSlot(val) => Self::MoveSlot(val),
             Value::MoveTarget(val) => Self::MoveTarget(*val),
+            Value::MultiAttackData(val) => Self::MultiAttackData(val),
             Value::MultihitType(val) => Self::MultihitType(*val),
             Value::NaturalGiftData(val) => Self::NaturalGiftData(val),
             Value::Nature(val) => Self::Nature(*val),
@@ -2898,6 +2934,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::MoveCategory(val) => Self::MoveCategory(*val),
             MaybeReferenceValue::MoveSlot(val) => Self::MoveSlot(val),
             MaybeReferenceValue::MoveTarget(val) => Self::MoveTarget(*val),
+            MaybeReferenceValue::MultiAttackData(val) => Self::MultiAttackData(val),
             MaybeReferenceValue::MultihitType(val) => Self::MultihitType(*val),
             MaybeReferenceValue::NaturalGiftData(val) => Self::NaturalGiftData(val),
             MaybeReferenceValue::Nature(val) => Self::Nature(*val),
@@ -2953,6 +2990,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::MoveCategory(val) => Self::MoveCategory(val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(val),
+            ValueRef::MultiAttackData(val) => Self::MultiAttackData(val),
             ValueRef::MultihitType(val) => Self::MultihitType(val),
             ValueRef::NaturalGiftData(val) => Self::NaturalGiftData(val),
             ValueRef::Nature(val) => Self::Nature(val),
@@ -3011,6 +3049,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::MoveCategory(val) => Self::MoveCategory(*val),
             ValueRef::MoveSlot(val) => Self::MoveSlot(val),
             ValueRef::MoveTarget(val) => Self::MoveTarget(*val),
+            ValueRef::MultiAttackData(val) => Self::MultiAttackData(val),
             ValueRef::MultihitType(val) => Self::MultihitType(*val),
             ValueRef::NaturalGiftData(val) => Self::NaturalGiftData(val),
             ValueRef::Nature(val) => Self::Nature(*val),

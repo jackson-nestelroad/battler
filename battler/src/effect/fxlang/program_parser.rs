@@ -34,10 +34,27 @@ impl ParsedProgramBlock {
             Self::Branch(blocks) => blocks.iter().map(|block| block.len()).sum(),
         }
     }
+
+    /// Checks if the program is completely empty.
+    ///
+    /// A program is empty only if it consists of empty statements.
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Leaf(tree::Statement::Empty) => true,
+            Self::Leaf(_) => false,
+            Self::Branch(blocks) => blocks.iter().all(|block| block.is_empty()),
+        }
+    }
+}
+
+impl Default for ParsedProgramBlock {
+    fn default() -> Self {
+        Self::Leaf(tree::Statement::default())
+    }
 }
 
 /// A parsed version of [`Program`], which can be evaluated in the context of an ongoing battle.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ParsedProgram {
     pub block: ParsedProgramBlock,
 }

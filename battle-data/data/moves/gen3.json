@@ -343,8 +343,8 @@
       "Punch"
     ],
     "effect": {
+      "delegates": ["condition:windingupmovebase"],
       "callbacks": {
-        "on_priority_charge_move": ["add_volatile: $mon $this.id"],
         "on_before_move": [
           "$volatile_state = func_call(volatile_status_state: $user $this.id)",
           "if !$volatile_state or $volatile_state.lost_focus:",

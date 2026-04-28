@@ -1326,5 +1326,14 @@
         "on_activate": ["add_volatile: $target followme use_source_effect"]
       }
     }
+  },
+  "windingup": {
+    "name": "Winding Up",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_start": ["add_volatile: $target $source_effect link"]
+      }
+    }
   }
 }

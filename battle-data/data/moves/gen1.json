@@ -1240,7 +1240,11 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": ["log_start"],
+        "on_start": [
+          "if func_call(has_type: $target grass):",
+          ["return false"],
+          "log_start"
+        ],
         "on_residual": [
           "# Leech Seed activates as long as there is a Mon in the original source position to heal.",
           "$source = func_call(mon_in_position: $effect_state.source_side $effect_state.source_position)",
@@ -2026,23 +2030,11 @@
       }
     },
     "condition": {
-      "callbacks": {
-        "on_duration": [
-          "if $source.is_defined and func_call(has_item: $source lightclay):",
-          ["return 8"],
-          "return 5"
-        ],
-        "on_source_modify_damage": [
-          "if $target == $user or $move.category != special:",
-          ["return"],
-          "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
-          ["return"],
-          "if $format.mons_per_side > 1:",
-          ["return $damage * 2 / 3"],
-          "return $damage / 2"
-        ],
-        "on_side_start": ["log_side_start"],
-        "on_side_end": ["log_side_end"]
+      "delegates": ["condition:sidescreenmovebase"],
+      "local_data": {
+        "values": {
+          "category": "special"
+        }
       }
     }
   },
@@ -2084,23 +2076,11 @@
       }
     },
     "condition": {
-      "callbacks": {
-        "on_duration": [
-          "if $source.is_defined and func_call(has_item: $source lightclay):",
-          ["return 8"],
-          "return 5"
-        ],
-        "on_source_modify_damage": [
-          "if $target == $user or $move.category != physical:",
-          ["return"],
-          "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
-          ["return"],
-          "if $format.mons_per_side > 1:",
-          ["return $damage * 2 / 3"],
-          "return $damage / 2"
-        ],
-        "on_side_start": ["log_side_start"],
-        "on_side_end": ["log_side_end"]
+      "delegates": ["condition:sidescreenmovebase"],
+      "local_data": {
+        "values": {
+          "category": "physical"
+        }
       }
     }
   },
