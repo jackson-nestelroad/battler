@@ -609,6 +609,7 @@
             ["log_cant", "return false"]
           ]
         },
+        "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
         "on_can_heal": ["return false"],
         "on_try_heal": ["return 0"],
         "on_end": ["log_end"]
