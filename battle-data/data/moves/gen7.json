@@ -430,7 +430,7 @@
     "target": "User",
     "flags": ["FailCopycat", "NoAssist", "NoMetronome", "Stalling"],
     "hit_effect": {
-      "volatile_status": "banefulbunker"
+      "volatile_status": "protect"
     },
     "z_move": {
       "boosts": {
@@ -442,7 +442,6 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": ["add_volatile: $target protect link"],
         "on_activate": [
           "if func_call(move_makes_contact: $effect):",
           ["set_status: $source psn"]
