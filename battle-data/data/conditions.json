@@ -1335,5 +1335,45 @@
         "on_start": ["add_volatile: $target $source_effect link"]
       }
     }
+  },
+  "highlightingsample": {
+    "name": "Highlighting Sample",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 3,
+      "callbacks": {
+        "on_start": ["log_start", "$effect_state.boost = 0"],
+        "on_hit": [
+          "$increment = 1",
+          "if func_call(get_stat: $source atk unmodified) > func_call(get_stat: $target atk unmodified):",
+          ["$increment = $increment + 1"],
+          "if func_call(has_type: $target fire):",
+          ["$increment = $increment + 1"],
+          "log_activate: with_target str('by:{}', $increment)",
+          "$effect_state.boost = $effect_state.boost + $increment"
+        ],
+        "on_modify_damage": [
+          "# Boost damage by 10% (5% outside of Singles) for each boost, incremented when hit, and reset.",
+          "$boost = $effect_state.boost",
+          "$effect_state.boost = 0",
+          "$divisor = 10",
+          "if $format.mons_per_side > 1:",
+          ["$divisor = 20"],
+          "return $damage * ($divisor + $boost) / $divisor"
+        ],
+        "on_disable_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "$move = func_call(get_move: $move_slot.id)",
+            "if !$move:",
+            ["return"],
+            "# TODO: Disable type-changing moves, like Weather Ball in Harsh Sunlight.",
+            "if $move.type == fire:",
+            ["disable_move: $mon $move_slot.id"]
+          ]
+        ],
+        "on_end": ["log_end"]
+      }
+    }
   }
 }
