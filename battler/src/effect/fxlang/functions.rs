@@ -551,10 +551,6 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("no_source_effect")
     }
 
-    fn residual(&mut self) -> bool {
-        self.has_flag("residual")
-    }
-
     fn silent(&mut self) -> bool {
         self.has_flag("silent")
     }
@@ -1318,7 +1314,7 @@ fn log_weather(mut context: FunctionContext) -> Result<()> {
         ),
         None => ("clearweather", Vec::default()),
     };
-    if context.residual() {
+    if context.has_flag("residual") {
         additional.push("residual".to_owned());
     }
 

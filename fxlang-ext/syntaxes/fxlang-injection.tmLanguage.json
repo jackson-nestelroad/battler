@@ -261,7 +261,7 @@
       "name": "string.unquoted"
     },
     "flag": {
-      "match": "\\b(from_effect|link|no_effect|no_events|no_forward|no_source|no_source_effect|residual|silent|use_effect_as_source_effect|use_effect_state_source|use_effect_state_source_as_source|use_effect_state_source_effect|use_effect_state_target|use_effect_state_target_as_source|use_source|use_source_as_origin|use_source_effect|use_target_as_origin|use_target_as_source|with_source|with_source_effect|with_target)\\b",
+      "match": "\\b(from_effect|link|no_effect|no_events|no_forward|no_source|no_source_effect|silent|use_effect_as_source_effect|use_effect_state_source|use_effect_state_source_as_source|use_effect_state_source_effect|use_effect_state_target|use_effect_state_target_as_source|use_source|use_source_as_origin|use_source_effect|use_target_as_origin|use_target_as_source|with_source|with_source_effect|with_target)\\b",
       "name": "string.regexp"
     },
     "special_variants": {
@@ -312,9 +312,6 @@
             }
           }
         }
-
-
-
       ]
     }
   }
