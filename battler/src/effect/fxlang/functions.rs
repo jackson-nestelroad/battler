@@ -5185,6 +5185,8 @@ fn end_item(mut context: FunctionContext) -> Result<()> {
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to query.
 /// @param {[`ValueType::Stat`]} stat The stat to query.
+/// @flag unboosted Ignore boosts.
+/// @flag unmodified Ignore effect modifiers.
 /// @returns {[`ValueType::UFraction`]} The stat value.
 fn get_stat(mut context: FunctionContext) -> Result<Value> {
     let unboosted = context.has_flag("unboosted");

@@ -2494,7 +2494,16 @@
           "optional": false
         }
       ],
-      "flags": [],
+      "flags": [
+        {
+          "name": "unboosted",
+          "description": "Ignore boosts."
+        },
+        {
+          "name": "unmodified",
+          "description": "Ignore effect modifiers."
+        }
+      ],
       "type": "UFraction",
       "returns_item_from_list": false
     },

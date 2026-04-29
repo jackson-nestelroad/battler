@@ -17,7 +17,9 @@
         {
           "begin": "^(\\s*)(\"program\")\\s*:\\s*\\[(?=.*\\])",
           "beginCaptures": {
-            "2": { "name": "support.type.property-name.json" }
+            "2": {
+              "name": "support.type.property-name.json"
+            }
           },
           "end": "\\](?=[^\\]]*$)",
           "patterns": [
@@ -29,7 +31,9 @@
         {
           "begin": "^(\\s*)(\"program\")\\s*:\\s*\\[",
           "beginCaptures": {
-            "2": { "name": "support.type.property-name.json" }
+            "2": {
+              "name": "support.type.property-name.json"
+            }
           },
           "end": "^\\1\\],?",
           "patterns": [
@@ -43,14 +47,18 @@
     "callbacks_block": {
       "begin": "^(\\s*)(\"callbacks\")\\s*:\\s*\\{",
       "beginCaptures": {
-        "2": { "name": "support.type.property-name.json" }
+        "2": {
+          "name": "support.type.property-name.json"
+        }
       },
       "end": "^\\1\\},?",
       "patterns": [
         {
           "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\[(?=.*\\])",
           "beginCaptures": {
-            "2": { "name": "support.type.property-name.json" }
+            "2": {
+              "name": "support.type.property-name.json"
+            }
           },
           "end": "\\](?=[^\\]]*$)",
           "patterns": [
@@ -62,7 +70,9 @@
         {
           "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\[",
           "beginCaptures": {
-            "2": { "name": "support.type.property-name.json" }
+            "2": {
+              "name": "support.type.property-name.json"
+            }
           },
           "end": "^\\1\\],?",
           "patterns": [
@@ -74,7 +84,9 @@
         {
           "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\{(?=.*\\})",
           "beginCaptures": {
-            "2": { "name": "support.type.property-name.json" }
+            "2": {
+              "name": "support.type.property-name.json"
+            }
           },
           "end": "\\}(?=[^\\}]*$)",
           "patterns": [
@@ -84,7 +96,9 @@
             {
               "match": "(\"[a-zA-Z0-9_]+\")\\s*:",
               "captures": {
-                "1": { "name": "support.type.property-name.json" }
+                "1": {
+                  "name": "support.type.property-name.json"
+                }
               }
             },
             {
@@ -95,7 +109,9 @@
         {
           "begin": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:\\s*\\{",
           "beginCaptures": {
-            "2": { "name": "support.type.property-name.json" }
+            "2": {
+              "name": "support.type.property-name.json"
+            }
           },
           "end": "^\\1\\},?",
           "patterns": [
@@ -105,7 +121,9 @@
             {
               "match": "^(\\s*)(\"[a-zA-Z0-9_]+\")\\s*:",
               "captures": {
-                "2": { "name": "support.type.property-name.json" }
+                "2": {
+                  "name": "support.type.property-name.json"
+                }
               }
             },
             {
@@ -115,13 +133,6 @@
         }
       ]
     },
-
-
-
-
-
-
-
     "fxlang_array_element": {
       "begin": "\"",
       "end": "\"",
@@ -133,6 +144,9 @@
     },
     "statement": {
       "patterns": [
+        {
+          "include": "#special_variants"
+        },
         {
           "include": "#comment"
         },
@@ -180,8 +194,6 @@
         }
       ]
     },
-
-
     "literal": {
       "patterns": [
         {
@@ -205,8 +217,12 @@
     "member_access": {
       "match": "(\\.)([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
       "captures": {
-        "1": { "name": "punctuation.accessor" },
-        "2": { "name": "variable.other.constant" }
+        "1": {
+          "name": "punctuation.accessor"
+        },
+        "2": {
+          "name": "variable.other.constant"
+        }
       }
     },
     "function_name": {
@@ -214,17 +230,22 @@
         {
           "match": "\\G\\s*(?!(?:if|else|foreach|in|return|continue|break|has|hasany|and|or|expr|func_call|str)\\b)([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
           "captures": {
-            "1": { "name": "entity.name.function" }
+            "1": {
+              "name": "entity.name.function"
+            }
           }
         },
         {
           "match": "(\\bfunc_call)\\s*\\(\\s*([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
           "captures": {
-            "1": { "name": "keyword.control" },
-            "2": { "name": "entity.name.function" }
+            "1": {
+              "name": "keyword.control"
+            },
+            "2": {
+              "name": "entity.name.function"
+            }
           }
         }
-
       ]
     },
     "string": {
@@ -241,8 +262,60 @@
     },
     "flag": {
       "match": "\\b(from_effect|link|no_effect|no_events|no_forward|no_source|no_source_effect|residual|silent|use_effect_as_source_effect|use_effect_state_source|use_effect_state_source_as_source|use_effect_state_source_effect|use_effect_state_target|use_effect_state_target_as_source|use_source|use_source_as_origin|use_source_effect|use_target_as_origin|use_target_as_source|with_source|with_source_effect|with_target)\\b",
-      "name": "constant.language"
+      "name": "string.regexp"
+    },
+    "special_variants": {
+      "patterns": [
+        {
+          "match": "(?i)(')\\b(normal|fighting|flying|poison|ground|rock|bug|ghost|steel|fire|water|grass|electric|psychic|ice|dragon|dark|fairy|none|stellar)\\b(')",
+          "captures": {
+            "1": {
+              "name": "string.quoted.single"
+            },
+            "2": {
+              "name": "constant.character.escape"
+            },
+            "3": {
+              "name": "string.quoted.single"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(normal|fighting|flying|poison|ground|rock|bug|ghost|steel|fire|water|grass|electric|psychic|ice|dragon|dark|fairy|none|stellar)\\b",
+          "name": "constant.character.escape"
+        },
+        {
+          "match": "(?i)(')\\b(atk|def|spa|spd|spe|acc|eva|spatk|spdef)\\b(?::([\\+\\-]?[0-9]+))?(')",
+          "captures": {
+            "1": {
+              "name": "string.quoted.single"
+            },
+            "2": {
+              "name": "constant.character.escape"
+            },
+            "3": {
+              "name": "constant.numeric"
+            },
+            "4": {
+              "name": "string.quoted.single"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(atk|def|spa|spd|spe|acc|eva|spatk|spdef)\\b(?::([\\+\\-]?[0-9]+))?",
+          "captures": {
+            "1": {
+              "name": "constant.character.escape"
+            },
+            "2": {
+              "name": "constant.numeric"
+            }
+          }
+        }
+
+
+
+      ]
     }
   }
 }
-
