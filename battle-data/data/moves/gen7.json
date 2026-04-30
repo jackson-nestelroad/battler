@@ -1155,6 +1155,15 @@
         "spe": 1
       }
     },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "$weather = func_call(effective_weather: $target)",
+          "if !$weather or !$weather.is_snowing:",
+          ["return false"]
+        ]
+      }
+    },
     "condition": {
       "delegates": ["condition:sidescreenmovebase"]
     }
