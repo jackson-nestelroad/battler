@@ -1359,7 +1359,7 @@
           "$divisor = 10",
           "if $format.mons_per_side > 1:",
           ["$divisor = 20"],
-          "return $damage * ($divisor + $boost) / $divisor"
+          "return $damage * (1 + $boost / $divisor)"
         ],
         "on_disable_move": [
           "foreach $move_slot in $mon.move_slots:",
