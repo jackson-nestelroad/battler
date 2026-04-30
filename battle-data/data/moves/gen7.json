@@ -562,7 +562,7 @@
           ["return false"],
           "$atk = func_call(get_stat: $target atk unmodified)",
           "$boosted = func_call(boost: $target 'atk:-1')",
-          "$healed = func_call(heal: $source $atk)",
+          "$healed = func_call(heal: $source $atk) > 0",
           "return $boosted or $healed"
         ]
       }
@@ -614,6 +614,9 @@
       "Protect",
       "Reflectable"
     ],
+    "hit_effect": {
+      "volatile_status": "spotlight"
+    },
     "z_move": {
       "boosts": {
         "spd": 1
@@ -701,9 +704,7 @@
       }
     },
     "effect": {
-      "callbacks": {
-        "on_try_hit": ["return func_call(has_ability: $target [plus, minus])"]
-      }
+      "delegates": ["move:magneticflux"]
     }
   },
   "throatchop": {
