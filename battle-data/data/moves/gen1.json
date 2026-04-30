@@ -2847,7 +2847,7 @@
           "if $user.is_asleep:",
           ["return false"],
           "if $user.hp == $user.max_hp:",
-          ["log_fail_heal: $user", "return stop"]
+          ["log_fail_heal: $user", "return false"]
         ],
         "on_hit": [
           "if !func_call(set_status: $target slp):",

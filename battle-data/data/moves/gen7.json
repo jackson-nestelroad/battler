@@ -398,8 +398,7 @@
           "$multiplier = 1/2",
           "if func_call(effective_weather: $target) == sandstormweather:",
           ["$multiplier = 2/3"],
-          "if !func_call(heal: $target expr($target.max_hp * $multiplier)):",
-          ["log_fail_heal", "return false"]
+          "return func_call(heal: $target expr($target.max_hp * $multiplier) primary_effect) > 0"
         ]
       }
     }
@@ -528,8 +527,7 @@
           "$multiplier = 1/2",
           "if $target.effective_terrain == grassyterrain:",
           ["$multiplier = 2/3"],
-          "if !func_call(heal: $target expr($target.base_max_hp * $multiplier)):",
-          ["log_fail_heal", "return false"]
+          "return func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect) > 0"
         ]
       }
     }

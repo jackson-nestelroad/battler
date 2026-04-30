@@ -8,7 +8,9 @@
     "target": "User",
     "flags": ["Heal", "Snatch"],
     "hit_effect": {
-      "heal_percent": "50%",
+      "heal_percent": "50%"
+    },
+    "user_effect": {
       "volatile_status": "roost"
     },
     "z_move": {

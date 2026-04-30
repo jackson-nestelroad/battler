@@ -83,7 +83,10 @@ fn tornadus_team() -> Result<TeamData> {
                         "Roost"
                     ],
                     "nature": "Hardy",
-                    "level": 100
+                    "level": 100,
+                    "persistent_battle_data": {
+                        "hp": 100
+                    }
                 }
             ]
         }"#,
@@ -188,8 +191,10 @@ fn reflect_type_copies_none_type_from_typeless_target() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Tornadus,player-2,1|name:Roost|noanim",
-            "fail|mon:Tornadus,player-2,1|what:heal",
+            "move|mon:Tornadus,player-2,1|name:Roost|target:Tornadus,player-2,1",
+            "split|side:1",
+            "heal|mon:Tornadus,player-2,1|health:234/268",
+            "heal|mon:Tornadus,player-2,1|health:88/100",
             "singleturn|mon:Tornadus,player-2,1|move:Roost",
             "move|mon:Starmie,player-1,1|name:Reflect Type|target:Tornadus,player-2,1",
             "typechange|mon:Starmie,player-1,1|types:None",

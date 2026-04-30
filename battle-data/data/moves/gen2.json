@@ -1712,8 +1712,7 @@
           ["$factor = 2/3"],
           "else:",
           ["$factor = 1/4"],
-          "if !func_call(heal: $target expr($target.max_hp * $factor)):",
-          ["log_fail_heal"]
+          "return func_call(heal: $target expr($target.max_hp * $factor) primary_effect) > 0"
         ]
       }
     }

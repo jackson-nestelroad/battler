@@ -525,6 +525,7 @@ mod moves {
     mod gen7 {
         mod baneful_bunker_test;
         mod burn_up_test;
+        mod floral_healing_test;
         mod instruct_test;
         mod shore_up_test;
         mod sparkling_aria_test;

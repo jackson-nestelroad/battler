@@ -102,8 +102,10 @@ fn heals_percent_of_user_hp() {
             "continue",
             "move|mon:Charizard,player-1,1|name:Recover|noanim",
             "fail|mon:Charizard,player-1,1|what:heal",
+            "fail|mon:Charizard,player-1,1",
             "move|mon:Charizard,player-2,1|name:Recover|noanim",
             "fail|mon:Charizard,player-2,1|what:heal",
+            "fail|mon:Charizard,player-2,1",
             "residual",
             "turn|turn:5"
         ]"#,

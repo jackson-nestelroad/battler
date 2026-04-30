@@ -551,6 +551,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.has_flag("no_source_effect")
     }
 
+    fn primary_effect(&mut self) -> bool {
+        self.has_flag("primary_effect")
+    }
+
     fn silent(&mut self) -> bool {
         self.has_flag("silent")
     }
@@ -2200,6 +2204,7 @@ fn clamp_number(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::UFraction`]} amount The amount to heal.
 /// @returns {[`ValueType::UFraction`]} The actual amount healed.
 fn heal(mut context: FunctionContext) -> Result<Value> {
+    let primary_effect = context.primary_effect();
     let mon_handle = context.target_handle_positional()?;
     let damage = context
         .pop_front()
@@ -2209,6 +2214,7 @@ fn heal(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::heal(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         damage,
+        primary_effect,
     )
     .map(|val| Value::UFraction(val.into()))
 }
@@ -2276,6 +2282,7 @@ fn apply_recoil_damage(mut context: FunctionContext) -> Result<()> {
 /// @param {[`ValueType::String`]} status The status ID.
 /// @returns {[`ValueType::Boolean`]} Whether the status was successfully set.
 fn set_status(mut context: FunctionContext) -> Result<Value> {
+    let primary_effect = context.primary_effect();
     let mon_handle = context.target_handle_positional()?;
     let status = context
         .pop_front()
@@ -2287,7 +2294,7 @@ fn set_status(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::try_set_status(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         status,
-        false,
+        primary_effect,
     )
     .map(|val| Value::Boolean(val.success()))
 }

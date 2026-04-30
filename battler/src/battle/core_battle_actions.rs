@@ -2581,6 +2581,7 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
                     None,
                 )?,
                 amount,
+                false,
             )?;
         }
     }
@@ -2614,7 +2615,19 @@ fn force_healing_effect(context: &ApplyingEffectContext) -> bool {
 }
 
 /// Heals a Mon.
-pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
+pub fn heal(
+    context: &mut ApplyingEffectContext,
+    damage: u16,
+    is_primary_move_effect: bool,
+) -> Result<u16> {
+    let healed = heal_internal(context, damage)?;
+    if healed == 0 && is_primary_move_effect {
+        core_battle_logs::fail_heal(&mut context.target_context()?)?;
+    }
+    Ok(healed)
+}
+
+fn heal_internal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     if damage == 0 || context.target().hp == 0 || context.target().hp > context.target().max_hp {
         return Ok(0);
     }
@@ -2720,17 +2733,15 @@ fn apply_move_effects(
                     }
 
                     if let Some(heal_percent) = hit_effect.heal_percent {
-                        if target_context.target_mon().hp >= target_context.target_mon().max_hp {
-                            core_battle_logs::fail_heal(&mut target_context.target_mon_context()?)?;
-                            core_battle_logs::do_not_animate_last_move(
-                                target_context.as_active_move_context_mut(),
-                            );
-                        } else {
-                            let damage = heal_percent * target_context.mon().max_hp;
-                            let damage = damage.round();
-                            heal(&mut target_context.applying_effect_context()?, damage)?;
-                            hit_effect_outcome = MoveOutcomeOnTarget::Success;
-                        }
+                        let damage = heal_percent * target_context.mon().max_hp;
+                        let damage = damage.round();
+                        let healed = heal(
+                            &mut target_context.applying_effect_context()?,
+                            damage,
+                            !is_secondary && !is_self,
+                        )? > 0;
+                        let outcome = MoveOutcomeOnTarget::from(healed);
+                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
                     }
                 }
 

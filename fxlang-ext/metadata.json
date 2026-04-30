@@ -5207,6 +5207,7 @@
     "no_forward",
     "no_source",
     "no_source_effect",
+    "primary_effect",
     "silent",
     "use_effect_as_source_effect",
     "use_effect_state_source",
