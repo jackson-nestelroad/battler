@@ -1353,7 +1353,7 @@
           "$effect_state.boost = $effect_state.boost + $increment"
         ],
         "on_modify_damage": [
-          "# Boost damage by 10% (5% outside of Singles) for each boost, incremented when hit, and reset.",
+          "# Boost damage by 10% (5% outside of Singles) for each boost, then reset.",
           "$boost = $effect_state.boost",
           "$effect_state.boost = 0",
           "$divisor = 10",
