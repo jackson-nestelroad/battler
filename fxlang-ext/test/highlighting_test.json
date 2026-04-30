@@ -133,7 +133,9 @@
               //^^^^^^ keyword.control
             ],
             "# TODO: Disable type-changing moves, like Weather Ball in Harsh Sunlight.",
-            //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.number-sign
+            //^ comment.line.number-sign
+            //  ^^^^ markup.bold.todo
+            //      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.number-sign
             "if $move.type == fire:",
             //^^ keyword.control
             //   ^^^^^ variable.other

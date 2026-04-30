@@ -183,8 +183,20 @@
       ]
     },
     "comment": {
-      "match": "#.*?(?=\"\\s*,?\\s*$)",
-      "name": "comment.line.number-sign"
+      "begin": "#",
+      "beginCaptures": {
+        "0": {
+          "name": "comment.line.number-sign"
+        }
+      },
+      "end": "(?=\"\\s*,?\\s*$)",
+      "name": "comment.line.number-sign",
+      "patterns": [
+        {
+          "match": "\\bTODO\\b",
+          "name": "markup.bold.todo"
+        }
+      ]
     },
     "keyword": {
       "patterns": [
