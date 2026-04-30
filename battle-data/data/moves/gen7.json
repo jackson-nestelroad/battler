@@ -489,7 +489,10 @@
     "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"],
     "effect": {
       "callbacks": {
-        "on_hit": ["if $target.status == brn:", ["cure_status: $target"]]
+        "on_after_move_secondary_effects": [
+          "if $target.status == brn:",
+          ["cure_status: $target"]
+        ]
       }
     }
   },
