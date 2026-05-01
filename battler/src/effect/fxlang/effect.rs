@@ -1715,6 +1715,7 @@ impl BattleEvent {
                     | CallbackFlag::ReturnsSecondaryEffects
                     | CallbackFlag::ReturnsStrings,
             ),
+            Some(ValueType::Undefined) => self.has_flag(CallbackFlag::ReturnsVoid),
             None => self.has_flag(CallbackFlag::ReturnsVoid),
             _ => false,
         }

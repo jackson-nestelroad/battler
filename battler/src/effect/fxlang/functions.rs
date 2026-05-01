@@ -3254,7 +3254,6 @@ fn log_waiting(mut context: FunctionContext) -> Result<()> {
 /// @returns {[`ValueType::Boolean`]} Whether the move was successful.
 fn use_move(mut context: FunctionContext) -> Result<Value> {
     let source_effect = context.source_effect_handle()?;
-    let indirect = context.has_flag("indirect");
     let mon_handle = context.target_handle_positional()?;
     let move_id = context
         .pop_front()
@@ -3280,7 +3279,7 @@ fn use_move(mut context: FunctionContext) -> Result<Value> {
         &move_id,
         target_handle,
         source_effect.as_ref(),
-        !indirect,
+        true,
     )
     .map(|val| Value::Boolean(val))
 }

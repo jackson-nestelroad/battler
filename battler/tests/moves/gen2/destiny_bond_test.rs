@@ -175,3 +175,35 @@ fn destiny_bond_resets_when_using_another_move() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn destiny_bond_fails_if_used_twice_in_a_row() {
+    let mut battle = make_battle(0, level_50_team().unwrap(), level_100_team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Wobbuffet,player-2,1|name:Dark Pulse|target:Wobbuffet,player-1,1",
+            "supereffective|mon:Wobbuffet,player-1,1",
+            "split|side:0",
+            "damage|mon:Wobbuffet,player-1,1|health:102/250",
+            "damage|mon:Wobbuffet,player-1,1|health:41/100",
+            "move|mon:Wobbuffet,player-1,1|name:Destiny Bond|target:Wobbuffet,player-1,1",
+            "singlemove|mon:Wobbuffet,player-1,1|move:Destiny Bond",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Wobbuffet,player-1,1|name:Destiny Bond|noanim",
+            "fail|mon:Wobbuffet,player-1,1",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}

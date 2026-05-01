@@ -729,10 +729,11 @@
             ["disable_move: $mon $move_slot.id"]
           ]
         ],
-        "on_use_move": [
+        "on_before_move": [
           "if !$move.upgraded and func_call(move_has_flag: $move sound):",
           ["log_cant", "return false"]
         ],
+        "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
         "on_end": ["log_end: silent"]
       }
     }

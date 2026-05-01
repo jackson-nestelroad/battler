@@ -55,6 +55,7 @@ use crate::{
     },
     general_error,
     integer_overflow_error,
+    moves::UpgradedMoveSource,
 };
 
 /// A registry of variables for an fxlang program evaluation.
@@ -527,6 +528,12 @@ where
                                 .flatten()
                                 .map(|val| ValueRef::TempString(val.to_string()))
                                 .unwrap_or(ValueRef::Undefined),
+                            "upgraded_z_move" => ValueRef::Boolean(
+                                match context.active_move(active_move_handle)?.upgraded {
+                                    Some(UpgradedMoveSource::ZMove { .. }) => true,
+                                    _ => false,
+                                },
+                            ),
                             "user_effect" => context
                                 .active_move(active_move_handle)?
                                 .data

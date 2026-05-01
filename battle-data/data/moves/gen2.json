@@ -685,6 +685,11 @@
     "z_move": {
       "effect": "zpowerredirect"
     },
+    "effect": {
+      "callbacks": {
+        "on_prepare_hit": ["return !func_call(remove_volatile: $user $this.id)"]
+      }
+    },
     "condition": {
       "callbacks": {
         "on_start": ["log_single_move: with_target"],
@@ -696,7 +701,11 @@
         ],
         "on_before_move": {
           "priority": 999,
-          "program": ["remove_volatile: $user $this.id"]
+          "program": [
+            "if $move.id == $this.id:",
+            ["return"],
+            "remove_volatile: $user $this.id"
+          ]
         }
       }
     }
