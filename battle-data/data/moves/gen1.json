@@ -3076,7 +3076,7 @@
   "struggle": {
     "name": "Struggle",
     "category": "Physical",
-    "primary_type": "Normal",
+    "primary_type": "None",
     "base_power": 50,
     "accuracy": "exempt",
     "pp": 1,
@@ -3099,8 +3099,7 @@
       "percent": "1/4",
       "base": "userbasemaxhp",
       "struggle": true
-    },
-    "typeless": true
+    }
   },
   "recharge": {
     "name": "Recharge",

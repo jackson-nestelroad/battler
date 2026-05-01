@@ -847,7 +847,7 @@ fn effective_move_type(
             return Ok(typ);
         }
         let typ = mov.data.primary_type;
-        if mov.data.typeless {
+        if typ == Type::None {
             return Ok(typ);
         }
         typ
@@ -2015,7 +2015,7 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
     if context
         .effect()
         .move_effect()
-        .map(|mov| mov.data.typeless)
+        .map(|mov| mov.data.primary_type == Type::None)
         .unwrap_or(false)
     {
         return Ok(0);
@@ -2107,7 +2107,7 @@ fn modify_damage(
     // STAB.
     let move_type = context.active_move().data.primary_type;
     let stab = context.active_move().data.force_stab
-        || (!context.active_move().data.typeless
+        || (context.active_move().data.primary_type != Type::None
             && (mon_states::has_type(context.as_mon_context_mut(), move_type)
                 || mon_states::has_type_before_forced_types(
                     context.as_mon_context_mut(),
@@ -3407,7 +3407,7 @@ pub fn try_set_status(
 }
 
 fn ignore_type_immunity(context: &mut ActiveTargetContext) -> Result<bool> {
-    let ignore_immunity = context.active_move().data.typeless
+    let ignore_immunity = context.active_move().data.primary_type == Type::None
         || context.active_move().data.category == MoveCategory::Status;
     let target = context.target_mon_handle();
     let ignore_immunity = core_battle_effects::run_active_move_event_expecting_bool(

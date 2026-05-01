@@ -970,8 +970,8 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if func_call(cure_status: $target):",
-          ["return stop"],
+          "if !func_call(cure_status: $target):",
+          ["return false"],
           "heal: $source expr($source.max_hp / 2)"
         ]
       }
@@ -993,8 +993,6 @@
           "if $types.is_empty:",
           ["return"],
           "$type = func_call(index: $types 0)",
-          "if $type == none:",
-          ["return"],
           "return $type"
         ]
       }
@@ -1415,7 +1413,7 @@
       "callbacks": {
         "on_before_move": [
           "$volatile_state = func_call(volatile_status_state: $user $this.id)",
-          "if !$volatile_state or $volatile_state.hit:",
+          "if !$volatile_state or !$volatile_state.hit:",
           ["log_cant", "return false"]
         ]
       }

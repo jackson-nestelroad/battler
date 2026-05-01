@@ -286,7 +286,7 @@
         "on_modify_move_type": {
           "priority": 1,
           "program": [
-            "if $effect.typeless or func_call(effect_has_event_callback: $effect ModifyMoveType):",
+            "if $effect.type == none or func_call(effect_has_event_callback: $effect ModifyMoveType):",
             ["return"],
             "if $effect_state.is_defined:",
             ["$effect_state.normalized = true"],

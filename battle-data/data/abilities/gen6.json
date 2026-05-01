@@ -74,7 +74,7 @@
           ["return"],
           "if $move.effect_state.reflected or func_call(move_has_flag: $move future) or func_call(move_has_flag: $move callsmove):",
           ["return"],
-          "if $move.typeless:",
+          "if $move.type == none:",
           ["return"],
           "if !func_call(set_types: $user [$move.type]):",
           ["return"],

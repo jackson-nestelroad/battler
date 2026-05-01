@@ -369,13 +369,6 @@ where
                             .move_effect()
                             .map(|mov| ValueRef::Type(mov.data.primary_type))
                             .unwrap_or(ValueRef::Undefined),
-                            "typeless" => CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
-                            .move_effect()
-                            .map(|mov| ValueRef::Boolean(mov.data.typeless))
-                            .unwrap_or(ValueRef::Undefined),
                             "z_move_base_power" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,

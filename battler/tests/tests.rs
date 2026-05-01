@@ -523,12 +523,18 @@ mod moves {
     }
 
     mod gen7 {
+        mod aurora_veil_test;
         mod baneful_bunker_test;
+        mod beak_blast_test;
         mod burn_up_test;
+        mod core_enforcer_test;
         mod floral_healing_test;
         mod instruct_test;
         mod laser_focus_test;
         mod pollen_puff_test;
+        mod purify_test;
+        mod revelation_dance_test;
+        mod shell_trap_test;
         mod shore_up_test;
         mod sparkling_aria_test;
         mod speed_swap_test;

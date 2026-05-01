@@ -187,11 +187,6 @@
         "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
-      "typeless": {
-        "description": "",
-        "type": "Boolean | Undefined",
-        "only_applicable_to_move": true
-      },
       "z_move_base_power": {
         "description": "",
         "type": "UFraction | Undefined",
