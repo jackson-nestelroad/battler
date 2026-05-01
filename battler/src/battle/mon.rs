@@ -1994,7 +1994,7 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        Mon::set_stats(context, stats, false)?;
+        Mon::set_stats(context, stats, true)?;
 
         Ok(())
     }

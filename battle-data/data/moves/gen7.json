@@ -879,11 +879,7 @@
       "base_power": 130
     },
     "effect": {
-      "callbacks": {
-        "on_move_base_power": [
-          "return $move.base_power + 20 * $source.positive_boosts"
-        ]
-      }
+      "delegates": ["move:storedpower"]
     }
   },
   "burnup": {
@@ -935,7 +931,12 @@
     },
     "effect": {
       "callbacks": {
-        "on_hit": ["swap_boosts: $target $source spe"]
+        "on_hit": [
+          "$spe = $target.stats.spe",
+          "$target.stats.spe = $source.stats.spe",
+          "$source.stats.spe = $spe",
+          "log_activate: with_target with_source"
+        ]
       }
     }
   },
