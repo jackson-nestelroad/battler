@@ -3225,7 +3225,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
             preventable: preventable.then_some(preventable),
         },
     )
-    .map(|val| Value::Boolean(val))
+    .map(|result| Value::Boolean(result.success()))
 }
 
 /// Logs that a Mon is waiting.

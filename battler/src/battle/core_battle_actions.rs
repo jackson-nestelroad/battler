@@ -534,7 +534,7 @@ fn do_move_internal(
     let context = context.as_mon_context_mut();
 
     // Use the move.
-    use_active_move(
+    let result = use_active_move(
         context,
         active_move_handle,
         target,
@@ -542,19 +542,16 @@ fn do_move_internal(
         UseActiveMoveOptions::default(),
     )?;
 
+    if !result.used() {
+        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
+    }
+
     let this_move_is_the_last_selected = context
         .mon()
         .volatile_state
         .last_move_selected
         .as_ref()
         .is_some_and(|last_move| last_move == &selected_move_id);
-
-    let this_move_is_the_last_used = context
-        .mon()
-        .volatile_state
-        .last_move_used
-        .as_ref()
-        .is_some_and(|last_move| last_move == &active_move_handle);
 
     // Set the last move of the user only if they selected it for use.
     //
@@ -567,7 +564,7 @@ fn do_move_internal(
     //
     // If you really want the last move used regardless of selection, you should use
     // `last_move_used`, which is set for all external moves on any turn with no preconditions.
-    if this_move_is_the_last_selected {
+    if result.used() && this_move_is_the_last_selected {
         // Some moves, like charging moves, do not count as the last move until the last turn.
         let set_last_move = core_battle_effects::run_event_for_mon(
             context,
@@ -585,7 +582,7 @@ fn do_move_internal(
     // Note that charging moves have their PP deducted on the last turn of use, as opposed to the
     // first (default). The effect of such a move should hook into this event to ensure PP is not
     // continually deducted every turn.
-    if this_move_is_the_last_selected && this_move_is_the_last_used && locked_move_before.is_none()
+    if result.used() && this_move_is_the_last_selected && locked_move_before.is_none()
         || context
             .as_battle_context()
             .active_move(active_move_handle)?
@@ -633,6 +630,7 @@ pub fn use_move(
             ..Default::default()
         },
     )
+    .map(|result| result.success())
 }
 
 /// Options for [`use_active_move`].
@@ -661,6 +659,33 @@ impl Default for UseActiveMoveOptions {
             external: false,
             directly_used: true,
             preventable: None,
+        }
+    }
+}
+
+/// Result for [`use_active_move`].
+#[derive(Debug, Clone)]
+pub enum UseActiveMoveResult {
+    /// The move was not used.
+    NotUsed,
+    /// The move failed.
+    Failed,
+    /// The move succeeded.
+    Success,
+}
+
+impl UseActiveMoveResult {
+    pub fn success(&self) -> bool {
+        match self {
+            Self::Success => true,
+            _ => false,
+        }
+    }
+
+    pub fn used(&self) -> bool {
+        match self {
+            Self::NotUsed => false,
+            _ => true,
         }
     }
 }
@@ -704,7 +729,7 @@ pub fn use_active_move(
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     options: UseActiveMoveOptions,
-) -> Result<bool> {
+) -> Result<UseActiveMoveResult> {
     run_in_using_move_state(context, |context| {
         use_active_move_with_using_move_state(
             context,
@@ -722,9 +747,9 @@ fn use_active_move_with_using_move_state(
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     options: UseActiveMoveOptions,
-) -> Result<bool> {
+) -> Result<UseActiveMoveResult> {
     if options.directly_used && (!context.mon().active || context.mon().hp == 0) {
-        return Ok(false);
+        return Ok(UseActiveMoveResult::Failed);
     }
 
     if options.directly_used {
@@ -751,7 +776,7 @@ fn use_active_move_with_using_move_state(
                 .get_effect_handle_by_id(&Id::from(locked_move.as_str()))?
                 .clone();
             core_battle_logs::cant(context.as_mon_context_mut(), effect, None)?;
-            return Ok(false);
+            return Ok(UseActiveMoveResult::NotUsed);
         }
 
         if !core_battle_effects::run_event_for_applying_effect(
@@ -776,8 +801,7 @@ fn use_active_move_with_using_move_state(
                 fxlang::BattleEvent::MoveAborted,
                 fxlang::VariableInput::default(),
             );
-            context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
-            return Ok(false);
+            return Ok(UseActiveMoveResult::NotUsed);
         }
     }
 
@@ -829,7 +853,11 @@ fn use_active_move_with_using_move_state(
 
     context.battle_mut().set_last_move(Some(active_move_handle));
 
-    Ok(outcome.success())
+    Ok(if outcome.success() {
+        UseActiveMoveResult::Success
+    } else {
+        UseActiveMoveResult::Failed
+    })
 }
 
 fn effective_move_type(
@@ -6328,12 +6356,10 @@ pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
         &mega_evolution.species,
         FormeChangeType::MegaEvolution,
     )? {
-        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(false);
     }
 
     context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::MegaEvolution);
-    context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Success);
 
     core_battle_effects::run_event_for_mon(
         context,
@@ -6382,12 +6408,10 @@ pub fn ultra_burst(context: &mut MonContext) -> Result<bool> {
         &ultra_burst.species,
         FormeChangeType::UltraBurst,
     )? {
-        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(false);
     }
 
     context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::UltraBurst);
-    context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Success);
     context.player_mut().can_ultra_burst = false;
     Ok(true)
 }
