@@ -549,6 +549,13 @@ fn do_move_internal(
         .as_ref()
         .is_some_and(|last_move| last_move == &selected_move_id);
 
+    let this_move_is_the_last_used = context
+        .mon()
+        .volatile_state
+        .last_move_used
+        .as_ref()
+        .is_some_and(|last_move| last_move == &active_move_handle);
+
     // Set the last move of the user only if they selected it for use.
     //
     // Locked moves (like Razor Wind) can be used externally by other moves (like Mirror Move). The
@@ -578,7 +585,7 @@ fn do_move_internal(
     // Note that charging moves have their PP deducted on the last turn of use, as opposed to the
     // first (default). The effect of such a move should hook into this event to ensure PP is not
     // continually deducted every turn.
-    if this_move_is_the_last_selected && locked_move_before.is_none()
+    if this_move_is_the_last_selected && this_move_is_the_last_used && locked_move_before.is_none()
         || context
             .as_battle_context()
             .active_move(active_move_handle)?
@@ -774,7 +781,7 @@ fn use_active_move_with_using_move_state(
         }
     }
 
-    if options.directly_used {
+    if options.directly_used && !options.external {
         context.mon_mut().volatile_state.last_move_used = Some(context.active_move_handle());
     }
 
