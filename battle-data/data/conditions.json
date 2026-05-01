@@ -1273,7 +1273,7 @@
           "if $move.category == status:",
           ["add_attribute_to_last_move: zpower"],
           "if $move.z_power_boosts.is_defined:",
-          ["boost: $target $move.z_power_boosts"],
+          ["boost: $user $move.z_power_boosts"],
           "else if $move.z_power_effect.is_defined:",
           ["activate_applying_effect: $move.z_power_effect"]
         ]

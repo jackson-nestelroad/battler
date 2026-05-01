@@ -273,6 +273,11 @@
         "type": "String | Undefined",
         "only_applicable_to_active_move": true
       },
+      "upgraded_z_move": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
       "user_effect": {
         "description": "",
         "type": "HitEffect | Undefined",
@@ -342,6 +347,10 @@
       "upgraded_base_move": {
         "description": "",
         "type": "String | Undefined"
+      },
+      "upgraded_z_move": {
+        "description": "",
+        "type": "Boolean"
       },
       "user_effect": {
         "description": "",
