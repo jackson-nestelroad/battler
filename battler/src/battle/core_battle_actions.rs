@@ -781,7 +781,8 @@ fn use_active_move_with_using_move_state(
         }
     }
 
-    if options.directly_used && !options.external {
+    // The move has officially been used.
+    if options.directly_used {
         context.mon_mut().volatile_state.last_move_used = Some(context.active_move_handle());
     }
 
