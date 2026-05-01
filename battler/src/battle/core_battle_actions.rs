@@ -2733,7 +2733,7 @@ fn apply_move_effects(
                     }
 
                     if let Some(heal_percent) = hit_effect.heal_percent {
-                        let damage = heal_percent * target_context.mon().max_hp;
+                        let damage = heal_percent * target_context.mon().base_max_hp;
                         let damage = damage.round();
                         let healed = heal(
                             &mut target_context.applying_effect_context()?,

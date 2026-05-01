@@ -750,10 +750,10 @@
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "if func_call(is_ally: $source $target):",
+          "if func_call(is_ally: $user $target):",
           [
             "$move.base_power = 0",
-            "# Note: heal_percent uses max_hp, but we may need to use base_max_hp.",
+            "$move.hit_effect = func_call(hit_effect)",
             "$move.hit_effect.heal_percent = 1/2",
             "$move.effect_state.infiltrates = true"
           ]

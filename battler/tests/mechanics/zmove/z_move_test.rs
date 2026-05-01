@@ -531,7 +531,7 @@ fn z_power_applies_even_if_move_fails() {
             "continue",
             "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
             "move|mon:Pikachu,player-1,1|name:Hypnosis|zpower|noanim",
-            "boost|mon:Eevee,player-2,1|stat:spe|by:1|from:Z-Power|of:Pikachu,player-1,1",
+            "boost|mon:Pikachu,player-1,1|stat:spe|by:1|from:Z-Power",
             "fail|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:3"
@@ -555,7 +555,7 @@ fn z_power_applies_even_if_move_fails_due_to_immunity() {
         r#"[
             "singleturn|mon:Eevee,player-2,1|condition:Z-Power",
             "move|mon:Eevee,player-2,1|name:Thunder Wave|zpower|noanim",
-            "boost|mon:Pikachu,player-1,1|stat:spd|by:1|from:Z-Power|of:Eevee,player-2,1",
+            "boost|mon:Eevee,player-2,1|stat:spd|by:1|from:Z-Power",
             "immune|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:2"

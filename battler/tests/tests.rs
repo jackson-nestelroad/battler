@@ -528,6 +528,7 @@ mod moves {
         mod floral_healing_test;
         mod instruct_test;
         mod laser_focus_test;
+        mod pollen_puff_test;
         mod shore_up_test;
         mod sparkling_aria_test;
         mod spotlight_test;
