@@ -39,18 +39,24 @@ const OUTPUT_FILE = path.join(__dirname, "..", "metadata.json");
 function extractReturnTypes(lines, startIndex, typeMapping) {
   const returnTypes = new Set();
   let onlyApplicableToMove = false;
-  
+
   for (let j = startIndex; j < Math.min(startIndex + 30, lines.length); j++) {
     const nextLine = lines[j].trim();
-    
-    if (nextLine.includes('.move_effect()')) {
+
+    if (nextLine.includes(".move_effect()")) {
       onlyApplicableToMove = true;
     }
-    
-    if (j > startIndex && (nextLine.match(/^"[a-z0-9_]+"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/) || nextLine.match(/(?:value\.(\w+)_handle\(\)|ValueRef(?:Mut)?::(\w+)).*?(?:\{|=>\s*\{)/))) {
+
+    if (
+      j > startIndex &&
+      (nextLine.match(/^"[a-z0-9_]+"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/) ||
+        nextLine.match(
+          /(?:value\.(\w+)_handle\(\)|ValueRef(?:Mut)?::(\w+)).*?(?:\{|=>\s*\{)/,
+        ))
+    ) {
       break;
     }
-    
+
     const matches = nextLine.matchAll(/\b(?:ValueRef(?:Mut)?|Value)::(\w+)/g);
     for (const match of matches) {
       const type = typeMapping[match[1]] || match[1];
@@ -102,7 +108,8 @@ function parseBattleEventDescriptions(effectContent) {
         const eventName = stringMatch[1];
         const snakeEventName = eventName
           .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
-          .replace(/^_/, "");
+          .replace(/^_/, "")
+          .replace(/sp_([ad])$/, "sp$1");
         events[eventName] = {
           snakeName: snakeEventName,
           description: docBuffer.join("\n").trim(),
@@ -121,48 +128,62 @@ function parseBattleEventDescriptions(effectContent) {
 
 function parseInputVars(effectContent) {
   const inputVarsMap = {};
-  const ivMatch = effectContent.match(/pub fn input_vars\(&self\)\s*->\s*&\[\(&str,\s*ValueType,\s*bool\)\]\s*{([\s\S]*?)^    }/m);
+  const ivMatch = effectContent.match(
+    /pub fn input_vars\(&self\)\s*->\s*&\[\(&str,\s*ValueType,\s*bool\)\]\s*{([\s\S]*?)^    }/m,
+  );
   if (ivMatch) {
     const ivBody = ivMatch[1];
-    const ivLines = ivBody.split('\n');
+    const ivLines = ivBody.split("\n");
     let currentEvents = [];
     let insideVars = false;
-    
+
     for (let line of ivLines) {
       line = line.trim();
-      if (line.includes('=>')) {
-        const arrowIndex = line.indexOf('=>');
+      if (line.includes("=>")) {
+        const arrowIndex = line.indexOf("=>");
         const leftSide = line.substring(0, arrowIndex).trim();
         const rightSide = line.substring(arrowIndex + 2).trim();
-        
+
         currentEvents = [];
         const eventMatches = [...leftSide.matchAll(/Self::(\w+)/g)];
         for (const em of eventMatches) {
           currentEvents.push(em[1]);
         }
-        
+
         insideVars = true;
-        
-        const varMatches = [...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+
+        const varMatches = [
+          ...rightSide.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g),
+        ];
         for (const vm of varMatches) {
           for (const ev of currentEvents) {
             if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
-            inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+            inputVarsMap[ev].push({
+              name: vm[1],
+              type: vm[2],
+              optional: vm[3] === "false",
+            });
           }
         }
-        
-        if (rightSide.includes(']')) {
+
+        if (rightSide.includes("]")) {
           insideVars = false;
         }
       } else if (insideVars) {
-        const varMatches = [...line.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g)];
+        const varMatches = [
+          ...line.matchAll(/\("(\w+)",\s*ValueType::(\w+),\s*(\w+)\)/g),
+        ];
         for (const vm of varMatches) {
           for (const ev of currentEvents) {
             if (!inputVarsMap[ev]) inputVarsMap[ev] = [];
-            inputVarsMap[ev].push({ name: vm[1], type: vm[2], optional: vm[3] === 'false' });
+            inputVarsMap[ev].push({
+              name: vm[1],
+              type: vm[2],
+              optional: vm[3] === "false",
+            });
           }
         }
-        if (line.includes(']')) {
+        if (line.includes("]")) {
           insideVars = false;
         }
       }
@@ -172,26 +193,28 @@ function parseInputVars(effectContent) {
 }
 function parseAllowsCustomInputVars(effectContent) {
   const map = {};
-  const match = effectContent.match(/pub fn allows_custom_input_vars\(&self\)\s*->\s*bool\s*{([\s\S]*?)^    }/m);
+  const match = effectContent.match(
+    /pub fn allows_custom_input_vars\(&self\)\s*->\s*bool\s*{([\s\S]*?)^    }/m,
+  );
   if (match) {
     const body = match[1];
-    const lines = body.split('\n');
+    const lines = body.split("\n");
     let currentEvents = [];
-    
+
     for (let line of lines) {
       line = line.trim();
-      if (line.includes('=>')) {
-        const arrowIndex = line.indexOf('=>');
+      if (line.includes("=>")) {
+        const arrowIndex = line.indexOf("=>");
         const leftSide = line.substring(0, arrowIndex).trim();
         const rightSide = line.substring(arrowIndex + 2).trim();
-        
+
         currentEvents = [];
         const eventMatches = [...leftSide.matchAll(/Self::(\w+)/g)];
         for (const em of eventMatches) {
           currentEvents.push(em[1]);
         }
-        
-        const isTrue = rightSide.includes('true');
+
+        const isTrue = rightSide.includes("true");
         for (const ev of currentEvents) {
           map[ev] = isTrue;
         }
@@ -200,7 +223,6 @@ function parseAllowsCustomInputVars(effectContent) {
   }
   return map;
 }
-
 
 function scrapeTypeMappings(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
@@ -220,8 +242,8 @@ function scrapeTypeMappings(filePath) {
 
     if (insideValueType) {
       for (const char of line) {
-        if (char === '{') openBrackets++;
-        if (char === '}') openBrackets--;
+        if (char === "{") openBrackets++;
+        if (char === "}") openBrackets--;
       }
       if (openBrackets <= 0) {
         insideValueType = false;
@@ -289,10 +311,16 @@ function scrapeVariables(filePath, typeMapping) {
 
     // Check for member match arms
     // Matches: "id" => ...
-    const memberMatch = line.match(/^"([a-z0-9_]+)"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/);
+    const memberMatch = line.match(
+      /^"([a-z0-9_]+)"(?:\s*\|\s*"[a-z0-9_]+")*\s*=>/,
+    );
     if (memberMatch) {
       const memberName = memberMatch[1];
-      const { returnTypes, onlyApplicableToMove } = extractReturnTypes(lines, i, typeMapping);
+      const { returnTypes, onlyApplicableToMove } = extractReturnTypes(
+        lines,
+        i,
+        typeMapping,
+      );
 
       let returnType = "Undefined";
       let itemType = null;
@@ -326,22 +354,32 @@ function scrapeVariables(filePath, typeMapping) {
       } else {
         if (metadata.types[currentType][memberName]) {
           const existingType = metadata.types[currentType][memberName].type;
-          const existingItemType = metadata.types[currentType][memberName].item_type;
-          const existingMoveOnly = metadata.types[currentType][memberName].only_applicable_to_move;
-          const existingActiveMoveOnly = metadata.types[currentType][memberName].only_applicable_to_active_move;
-          
+          const existingItemType =
+            metadata.types[currentType][memberName].item_type;
+          const existingMoveOnly =
+            metadata.types[currentType][memberName].only_applicable_to_move;
+          const existingActiveMoveOnly =
+            metadata.types[currentType][memberName]
+              .only_applicable_to_active_move;
+
           if (existingItemType && !memberData.item_type) {
             memberData.item_type = existingItemType;
           }
           if (existingMoveOnly && !memberData.only_applicable_to_move) {
             memberData.only_applicable_to_move = true;
           }
-          if (existingActiveMoveOnly && !memberData.only_applicable_to_active_move) {
+          if (
+            existingActiveMoveOnly &&
+            !memberData.only_applicable_to_active_move
+          ) {
             memberData.only_applicable_to_active_move = true;
           }
-          
+
           if (existingType !== returnType) {
-            const types = new Set([...existingType.split(" | "), ...returnType.split(" | ")]);
+            const types = new Set([
+              ...existingType.split(" | "),
+              ...returnType.split(" | "),
+            ]);
             if (types.size > 1 && types.has("Undefined")) {
               types.delete("Undefined");
               memberData.type = Array.from(types).join(" | ") + " | Undefined";
@@ -354,26 +392,37 @@ function scrapeVariables(filePath, typeMapping) {
 
         if (currentType === "ActiveMove") {
           if (!metadata.types["Effect"]) metadata.types["Effect"] = {};
-          const effectMemberData = { ...memberData, only_applicable_to_active_move: true };
-          
+          const effectMemberData = {
+            ...memberData,
+            only_applicable_to_active_move: true,
+          };
+
           if (metadata.types["Effect"][memberName]) {
             const existingType = metadata.types["Effect"][memberName].type;
-            const existingItemType = metadata.types["Effect"][memberName].item_type;
-            const existingMoveOnly = metadata.types["Effect"][memberName].only_applicable_to_move;
-            const existingActiveMoveOnly = metadata.types["Effect"][memberName].only_applicable_to_active_move;
-            
+            const existingItemType =
+              metadata.types["Effect"][memberName].item_type;
+            const existingMoveOnly =
+              metadata.types["Effect"][memberName].only_applicable_to_move;
+            const existingActiveMoveOnly =
+              metadata.types["Effect"][memberName]
+                .only_applicable_to_active_move;
+
             if (existingItemType && !effectMemberData.item_type) {
               effectMemberData.item_type = existingItemType;
             }
             if (existingMoveOnly) {
               effectMemberData.only_applicable_to_move = true;
             }
-            
+
             if (existingType !== returnType) {
-              const types = new Set([...existingType.split(" | "), ...returnType.split(" | ")]);
+              const types = new Set([
+                ...existingType.split(" | "),
+                ...returnType.split(" | "),
+              ]);
               if (types.size > 1 && types.has("Undefined")) {
                 types.delete("Undefined");
-                effectMemberData.type = Array.from(types).join(" | ") + " | Undefined";
+                effectMemberData.type =
+                  Array.from(types).join(" | ") + " | Undefined";
               } else {
                 effectMemberData.type = Array.from(types).join(" | ");
               }
@@ -391,7 +440,10 @@ function scrapeVariables(filePath, typeMapping) {
   if (metadata.types["Effect"]) {
     for (const key in metadata.types["Effect"]) {
       const member = metadata.types["Effect"][key];
-      if (member.only_applicable_to_move || member.only_applicable_to_active_move) {
+      if (
+        member.only_applicable_to_move ||
+        member.only_applicable_to_active_move
+      ) {
         if (!member.type.includes("Undefined")) {
           member.type += " | Undefined";
         }
@@ -450,7 +502,12 @@ function scrapeFunctions(filePath) {
       const extName = match[1];
       let intName = match[2];
 
-      if (!intName || intName === "{" || intName === "Ok" || intName === "Some") {
+      if (
+        !intName ||
+        intName === "{" ||
+        intName === "Ok" ||
+        intName === "Some"
+      ) {
         const fnMatches = [...line.matchAll(/([a-zA-Z0-9_]+)\(/g)];
         let found = false;
         for (const fnMatch of fnMatches) {
@@ -461,7 +518,7 @@ function scrapeFunctions(filePath) {
             break;
           }
         }
-        
+
         if (!found) {
           for (let j = i + 1; j < lines.length; j++) {
             const nextLine = lines[j].trim();
@@ -590,7 +647,10 @@ function scrapeEvents(effectFilePath, evalFilePath) {
   }
 
   // 2. Parse CommonCallbackType bitmasks
-  const commonTypesMap = parseCommonCallbackTypeBitmasks(effectContent, flagsMap);
+  const commonTypesMap = parseCommonCallbackTypeBitmasks(
+    effectContent,
+    flagsMap,
+  );
 
   // 3. Map CallbackFlags to Variables from eval.rs
   // We statically map what initialize_vars does based on its code
@@ -675,23 +735,26 @@ function scrapeEvents(effectFilePath, evalFilePath) {
         // Add variables from input_vars()
         if (inputVarsMap[eventName]) {
           const typeMap = {
-            'UFraction': 'UFraction',
-            'Fraction': 'Fraction',
-            'Boolean': 'Boolean',
-            'String': 'String',
-            'Effect': 'Effect',
-            'Mon': 'Mon',
-            'List': 'List',
-            'Object': 'Object',
-            'Type': 'Type',
-            'BoostTable': 'BoostTable',
-            'StatTable': 'StatTable',
-            'Stat': 'Stat',
-            'Boost': 'Boost'
+            UFraction: "UFraction",
+            Fraction: "Fraction",
+            Boolean: "Boolean",
+            String: "String",
+            Effect: "Effect",
+            Mon: "Mon",
+            List: "List",
+            Object: "Object",
+            Type: "Type",
+            BoostTable: "BoostTable",
+            StatTable: "StatTable",
+            Stat: "Stat",
+            Boost: "Boost",
           };
           for (const v of inputVarsMap[eventName]) {
             const type = typeMap[v.type] || v.type;
-            events[eventName].variables[v.name] = { type, optional: v.optional };
+            events[eventName].variables[v.name] = {
+              type,
+              optional: v.optional,
+            };
           }
         }
 

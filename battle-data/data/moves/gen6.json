@@ -157,7 +157,7 @@
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects_user": [
-          "if !$target or $target.fainted or $target.hp == 0:",
+          "if $target.is_defined and ($target.fainted or $target.hp == 0):",
           ["boost: $user 'atk:3'"]
         ]
       }

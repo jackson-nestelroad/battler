@@ -649,6 +649,10 @@
         "description": "",
         "type": "String"
       },
+      "original_base_species": {
+        "description": "",
+        "type": "String"
+      },
       "original_item": {
         "description": "",
         "type": "String | Undefined"
@@ -1006,6 +1010,12 @@
       }
     },
     "JudgmentData": {
+      "type": {
+        "description": "",
+        "type": "Type"
+      }
+    },
+    "MultiAttackData": {
       "type": {
         "description": "",
         "type": "Type"
@@ -6971,7 +6981,7 @@
       },
       "allows_custom_input_vars": false
     },
-    "modify_sp_a": {
+    "modify_spa": {
       "description": "Runs when calculating a Mon's SpA stat.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
         "target": {
@@ -6993,7 +7003,7 @@
       },
       "allows_custom_input_vars": false
     },
-    "modify_sp_d": {
+    "modify_spd": {
       "description": "Runs when calculating a Mon's SpD stat.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
         "target": {

@@ -845,6 +845,9 @@ where
                             "original_base_ability" => ValueRef::TempString(
                                 context.mon(mon_handle)?.original_base_ability.to_string(),
                             ),
+                            "original_base_species" => ValueRef::TempString(
+                                context.mon(mon_handle)?.original_base_species.to_string(),
+                            ),
                             "original_item" => context
                                 .mon(mon_handle)?
                                 .original_item
