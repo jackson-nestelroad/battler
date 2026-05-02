@@ -221,7 +221,55 @@
   },
   "rkssystem": {
     "name": "RKS System",
-    "flags": ["Permanent"]
+    "flags": ["Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_types": {
+          "order": 1,
+          "program": [
+            "# Each Silvally forme has its own species data, so the type of each forme is actually set directly by the forme.",
+            "# RKS System technically alters the Mon's type directly, so we implement dynamic type changing logic here as well.",
+            "if $mon.transformed or !$mon.item:",
+            ["return $types"],
+            "$type = normal",
+            "$data = func_call(special_item_data: $mon.item)",
+            "if $data.is_defined and $data.multi_attack:",
+            ["$type = $data.multi_attack.type.to_string"],
+            "return [$type]"
+          ]
+        },
+        "on_update": [
+          "# Ensure Silvally is the correct forme.",
+          "# Note that when team validation is used, Silvally is forced into the correct forme.",
+          "if func_call(base_species: $mon) != silvally or $mon.transformed or !$mon.item:",
+          ["return"],
+          "$type = normal",
+          "$data = func_call(special_item_data: $mon.item)",
+          "if $data.is_defined and $data.multi_attack.is_defined:",
+          ["$type = $data.multi_attack.type.to_string"],
+          "$species = func_call(get_species: str('silvally-{}', $type))",
+          "if !$species:",
+          ["return"],
+          "if $mon.species != $species.id:",
+          ["forme_change: $mon $species.id permanent"]
+        ],
+        "on_take_item": [
+          "# Item cannot be taken if RKS System is using it.",
+          "if $target.transformed:",
+          ["return"],
+          "$data = func_call(special_item_data: $item.id)",
+          "return !$data or !$data.multi_attack"
+        ],
+        "on_set_item": [
+          "# Item cannot be given if RKS System would use it.",
+          "if $target.transformed:",
+          ["return"],
+          "$data = func_call(special_item_data: $item.id)",
+          "return !$data or !$data.multi_attack"
+        ],
+        "on_set_types": ["return false"]
+      }
+    }
   },
   "electricsurge": {
     "name": "Electric Surge",

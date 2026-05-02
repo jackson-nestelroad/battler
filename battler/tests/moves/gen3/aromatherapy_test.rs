@@ -145,10 +145,10 @@ fn aromatherapy_cures_all_statuses_on_side() {
             "continue",
             "move|mon:Miltank,player-1,1|name:Aromatherapy",
             "activate|move:Aromatherapy|of:Miltank,player-1,1",
-            "curestatus|mon:Miltank,player-1,1|status:Bad Poison",
-            "curestatus|mon:Sceptile,player-1|status:Paralysis",
-            "curestatus|mon:Blaziken,player-1|status:Sleep",
-            "curestatus|mon:Swampert,player-1|status:Bad Poison",
+            "curestatus|mon:Miltank,player-1,1|status:Bad Poison|from:move:Aromatherapy",
+            "curestatus|mon:Sceptile,player-1|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1",
+            "curestatus|mon:Blaziken,player-1|status:Sleep|from:move:Aromatherapy|of:Miltank,player-1,1",
+            "curestatus|mon:Swampert,player-1|status:Bad Poison|from:move:Aromatherapy|of:Miltank,player-1,1",
             "residual",
             "turn|turn:6"
         ]"#,
@@ -184,7 +184,7 @@ fn aromatherapy_activates_ally_sap_sipper() {
             "move|mon:Miltank,player-1,1|name:Aromatherapy",
             "boost|mon:Sceptile,player-1,2|stat:atk|by:1|from:ability:Sap Sipper",
             "activate|move:Aromatherapy|of:Miltank,player-1,1",
-            "curestatus|mon:Sceptile,player-1,2|status:Paralysis",
+            "curestatus|mon:Sceptile,player-1,2|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1",
             "residual",
             "turn|turn:3"
         ]"#,

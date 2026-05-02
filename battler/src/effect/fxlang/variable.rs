@@ -1218,6 +1218,11 @@ where
                             "type" => ValueRef::Type(judgment_data.typ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
+                    } else if let ValueRef::MultiAttackData(multi_attack_data) = value {
+                        value = match *member {
+                            "type" => ValueRef::Type(multi_attack_data.typ),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
                     } else if let ValueRef::TechnoBlastData(techno_blast_data) = value {
                         value = match *member {
                             "type" => ValueRef::Type(techno_blast_data.typ),
