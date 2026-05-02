@@ -238,7 +238,7 @@
       "callbacks": {
         "on_try_hit": [
           "if $target != $source and func_call(is_ally: $target $source):",
-          ["log_activate: with_target", "return stop"]
+          ["log_activate: with_target", "return stopfail"]
         ]
       }
     }
@@ -285,7 +285,7 @@
       "callbacks": {
         "on_try_hit": [
           "if func_call(move_has_flag: $move powder) and $target != $source and func_call(check_immunity: $target powderdust):",
-          ["log_immune: $target from_effect", "return stop"]
+          ["log_immune: $target from_effect", "return stopfail"]
         ]
       }
     }
@@ -485,7 +485,7 @@
             ["return"],
             "if !func_call(boost: $target 'atk:1'):",
             ["log_immune: $target from_effect"],
-            "return stop"
+            "return stopfail"
           ]
         },
         "on_side_try_hit_side": [

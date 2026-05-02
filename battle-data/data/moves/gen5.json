@@ -243,7 +243,7 @@
       "callbacks": {
         "on_try_use_move": [
           "if func_call(has_pseudo_weather: gravity):",
-          ["do_not_animate_last_move", "log_cant", "return stop"]
+          ["do_not_animate_last_move", "log_cant", "return stopfail"]
         ]
       }
     },
@@ -918,7 +918,8 @@
           "$multiplier = 1/2",
           "if $move.effect_state.multiplier.is_defined:",
           ["$multiplier = $move.effect_state.multiplier"],
-          "return func_call(heal: $target expr($target.base_max_hp * $multiplier)) > 0"
+          "if !func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect):",
+          ["return stop"]
         ]
       }
     }

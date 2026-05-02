@@ -21,7 +21,7 @@
           [
             "if !func_call(boost: $target 'spe:1'):",
             ["log_immune: $target from_effect"],
-            "return stop"
+            "return stopfail"
           ]
         ]
       }
@@ -629,7 +629,7 @@
           ["return"],
           "if !func_call(boost: $target 'spa:1'):",
           ["log_immune: $target from_effect"],
-          "return stop"
+          "return stopfail"
         ],
         "on_any_redirect_target": [
           "if $move.type != water or func_call(move_has_flag: $move pledgecombo):",

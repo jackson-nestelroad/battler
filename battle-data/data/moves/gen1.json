@@ -265,6 +265,7 @@
     "condition": {
       "duration": 2,
       "callbacks": {
+        "is_grounded": ["return false"],
         "is_semi_invulnerable": ["return true"],
         "on_invulnerability": [
           "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
@@ -2847,11 +2848,11 @@
           "if $user.is_asleep:",
           ["return false"],
           "if $user.hp == $user.max_hp:",
-          ["log_fail_heal: $user", "return false"]
+          ["log_fail_heal: $user", "return stopfail"]
         ],
         "on_hit": [
           "if !func_call(set_status: $target slp):",
-          ["return false"],
+          ["return stop"],
           "$status_state = func_call(status_effect_state: $target)",
           "$status_state.total_time = 3",
           "$status_state.time = 3",
@@ -3020,7 +3021,7 @@
       "callbacks": {
         "on_try_hit": [
           "if func_call(has_volatile: $source substitute) or $source.hp <= $source.max_hp / 4 or $source.max_hp == 1:",
-          ["log_fail: $source", "return stop"]
+          ["log_fail: $source", "return stopfail"]
         ],
         "on_hit": ["direct_damage: $target expr($target.max_hp / 4)"]
       }

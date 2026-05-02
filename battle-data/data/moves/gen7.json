@@ -398,7 +398,8 @@
           "$multiplier = 1/2",
           "if func_call(effective_weather: $target) == sandstormweather:",
           ["$multiplier = 2/3"],
-          "return func_call(heal: $target expr($target.max_hp * $multiplier) primary_effect) > 0"
+          "if !func_call(heal: $target expr($target.max_hp * $multiplier) primary_effect):",
+          ["return stop"]
         ]
       }
     }
@@ -527,7 +528,8 @@
           "$multiplier = 1/2",
           "if $target.effective_terrain == grassyterrain:",
           ["$multiplier = 2/3"],
-          "return func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect) > 0"
+          "if !func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect):",
+          ["return stop"]
         ]
       }
     }
@@ -899,7 +901,7 @@
           ["return"],
           "log_fail: $user",
           "do_not_animate_last_move",
-          "return stop"
+          "return stopfail"
         ],
         "on_hit_user": [
           "# Remove Fire type.",

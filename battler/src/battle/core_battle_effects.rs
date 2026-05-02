@@ -2612,11 +2612,10 @@ pub fn run_active_move_event_expecting_move_event_result(
     context: &mut ActiveMoveContext,
     event: fxlang::BattleEvent,
     target: MoveTargetForEvent,
-) -> MoveEventResult {
-    match run_active_move_event(context, event, target, fxlang::VariableInput::default()) {
-        Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
-        None => MoveEventResult::Advance,
-    }
+) -> Option<MoveEventResult> {
+    run_active_move_event(context, event, target, fxlang::VariableInput::default())?
+        .move_result()
+        .ok()
 }
 
 /// Runs an event on an active [`Move`][`crate::moves::Move`].
@@ -3200,16 +3199,15 @@ pub fn run_event_for_applying_effect_expecting_boost_table(
 pub fn run_event_for_applying_effect_expecting_move_event_result(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
-) -> MoveEventResult {
-    match run_event_for_applying_effect_internal(
+) -> Option<MoveEventResult> {
+    run_event_for_applying_effect_internal(
         context,
         event,
         fxlang::VariableInput::default(),
         &RunCallbacksOptions::default(),
-    ) {
-        Some(result) => result.move_result().unwrap_or(MoveEventResult::Advance),
-        None => MoveEventResult::Advance,
-    }
+    )?
+    .move_result()
+    .ok()
 }
 
 /// Runs an event on the [`CoreBattle`] for an applying effect.
@@ -3582,12 +3580,10 @@ pub fn run_event_for_side_effect_expecting_move_event_result(
     context: &mut SideEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
-) -> MoveEventResult {
-    match run_event_for_side_effect_internal(context, event, input, &RunCallbacksOptions::default())
-    {
-        Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
-        None => MoveEventResult::Advance,
-    }
+) -> Option<MoveEventResult> {
+    run_event_for_side_effect_internal(context, event, input, &RunCallbacksOptions::default())?
+        .move_result()
+        .ok()
 }
 
 /// Runs an event on the [`CoreBattle`] for a field-applying effect.
@@ -3611,16 +3607,10 @@ pub fn run_event_for_field_effect_expecting_move_event_result(
     context: &mut FieldEffectContext,
     event: fxlang::BattleEvent,
     input: fxlang::VariableInput,
-) -> MoveEventResult {
-    match run_event_for_field_effect_internal(
-        context,
-        event,
-        input,
-        &RunCallbacksOptions::default(),
-    ) {
-        Some(value) => value.move_result().unwrap_or(MoveEventResult::Advance),
-        None => MoveEventResult::Advance,
-    }
+) -> Option<MoveEventResult> {
+    run_event_for_field_effect_internal(context, event, input, &RunCallbacksOptions::default())?
+        .move_result()
+        .ok()
 }
 
 /// Runs an event on the [`CoreBattle`].

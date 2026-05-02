@@ -1611,16 +1611,29 @@ fn has_item(mut context: FunctionContext) -> Result<Value> {
 /// @returns {[`ValueType::Boolean`]} Whether the Mon has the volatile effect.
 fn has_volatile(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
-    let volatile = context
+
+    let volatiles = context
         .pop_front()
-        .wrap_expectation("missing volatile id")?
-        .string()
-        .map(|ability| Id::from(ability))
-        .wrap_error_with_message("invalid volatile id")?;
-    Ok(Value::Boolean(Mon::has_volatile(
-        &mut context.mon_context(mon_handle)?,
-        &volatile,
-    )))
+        .wrap_expectation("missing volatile or volatiles")?;
+    let volatiles = if volatiles.is_list() {
+        volatiles
+            .list()
+            .wrap_error_with_message("invalid volatile list")?
+            .into_iter()
+            .map(|val| Ok(Id::from(val.string()?)))
+            .collect::<Result<Vec<_>>>()
+            .wrap_error_with_message("invalid volatile list")?
+    } else {
+        Vec::from_iter([Id::from(
+            volatiles
+                .string()
+                .wrap_error_with_message("invalid volatile")?,
+        )])
+    };
+    let mut context = context.mon_context(mon_handle)?;
+    Ok(Value::Boolean(volatiles.into_iter().any(|volatile| {
+        Mon::has_volatile(&mut context, &volatile)
+    })))
 }
 
 /// Cures a Mon's status condition.
@@ -3225,7 +3238,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
             preventable: preventable.then_some(preventable),
         },
     )
-    .map(|result| Value::Boolean(result.success()))
+    .map(|result| Value::Boolean(result.outcome().success()))
 }
 
 /// Logs that a Mon is waiting.

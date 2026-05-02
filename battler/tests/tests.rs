@@ -539,6 +539,7 @@ mod moves {
         mod sparkling_aria_test;
         mod speed_swap_test;
         mod spotlight_test;
+        mod stomping_tantrum_test;
         mod strength_sap_test;
         mod throat_chop_test;
         mod toxic_thread_test;

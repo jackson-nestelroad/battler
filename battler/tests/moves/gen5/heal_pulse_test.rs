@@ -167,7 +167,7 @@ fn heal_pulse_fails_at_full_hp() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Reuniclus,player-1,1|name:Heal Pulse|noanim",
-            "fail|mon:Reuniclus,player-1,1",
+            "fail|mon:Reuniclus,player-2,1|what:heal",
             "residual",
             "turn|turn:2"
         ]"#,

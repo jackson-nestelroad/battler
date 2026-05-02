@@ -547,7 +547,7 @@
           "program": [
             "log_cant",
             "remove_volatile: $user $this.id",
-            "return false"
+            "return stop"
           ]
         },
         "on_lock_move": ["return recharge"]
@@ -662,7 +662,7 @@
           [
             "log_fail: $user from_effect",
             "do_not_animate_last_move",
-            "return stop"
+            "return stopfail"
           ]
         ],
         "on_source_weather_modify_damage": [
@@ -730,7 +730,7 @@
           [
             "log_fail: $user from_effect",
             "do_not_animate_last_move",
-            "return stop"
+            "return stopfail"
           ]
         ],
         "on_source_weather_modify_damage": [
@@ -1170,7 +1170,7 @@
           "log_activate: with_target use_source_effect",
           "# During Sky Drop, both the target and user have the Fly volatile.",
           "# Only the user should have the volatile removed, which cascade removes all other effects.",
-          "if func_call(has_volatile: $target fly) and func_call(has_volatile: $target twoturnmove):",
+          "if func_call(has_volatile: $target [fly, bounce]) and func_call(has_volatile: $target twoturnmove):",
           ["remove_volatile: $target fly", "cancel_move: $target"],
           "remove_volatile: $target magnetrise",
           "remove_volatile: $target telekinesis"

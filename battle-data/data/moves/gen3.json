@@ -179,7 +179,7 @@
           ["$heal_percent = 1"],
           "$heal_amount = $target.max_hp * $heal_percent",
           "if !func_call(heal: $target $heal_amount):",
-          ["return false"],
+          ["return stop"],
           "remove_volatile: $target stockpile"
         ]
       }

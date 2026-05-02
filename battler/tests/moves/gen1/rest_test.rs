@@ -92,7 +92,6 @@ fn rest_heals_and_causes_sleep_for_three_turns() {
         r#"[
             "move|mon:Charizard,player-1,1|name:Rest|noanim",
             "fail|mon:Charizard,player-1,1|what:heal",
-            "fail|mon:Charizard,player-1,1",
             "residual",
             "turn|turn:2",
             "continue",

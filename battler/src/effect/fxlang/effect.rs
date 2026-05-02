@@ -230,11 +230,6 @@ enum CommonCallbackType {
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsVoid,
 
-    MoveSideResult = CallbackFlag::TakesSide
-        | CallbackFlag::TakesSourceMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsBoolean
-        | CallbackFlag::ReturnsVoid,
     MoveSideControllingResult = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
@@ -242,11 +237,6 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
 
-    MoveFieldResult = CallbackFlag::TakesSourceMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsMoveResult
-        | CallbackFlag::ReturnsBoolean
-        | CallbackFlag::ReturnsVoid,
     MoveFieldControllingResult = CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsBoolean
@@ -1405,7 +1395,7 @@ impl BattleEvent {
             Self::BattleEndTurn => CommonCallbackType::NoContextVoid as u32,
             Self::BeforeChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
-            Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::BeforeMove => CommonCallbackType::SourceMoveControllingResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTerastallization => CommonCallbackType::MonResult as u32,
@@ -1445,10 +1435,10 @@ impl BattleEvent {
             Self::ForceEffectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ForceEscape => CommonCallbackType::MonResult as u32,
             Self::ForceTypes => CommonCallbackType::MonTypes as u32,
-            Self::Hit => CommonCallbackType::MoveResult as u32,
-            Self::HitField => CommonCallbackType::MoveFieldResult as u32,
-            Self::HitSide => CommonCallbackType::MoveSideResult as u32,
-            Self::HitUser => CommonCallbackType::MoveResult as u32,
+            Self::Hit => CommonCallbackType::MoveControllingResult as u32,
+            Self::HitField => CommonCallbackType::MoveFieldControllingResult as u32,
+            Self::HitSide => CommonCallbackType::MoveSideControllingResult as u32,
+            Self::HitUser => CommonCallbackType::MoveControllingResult as u32,
             Self::IgnoreImmunity => CommonCallbackType::MoveResult as u32,
             Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Invulnerability => CommonCallbackType::MoveResult as u32,
