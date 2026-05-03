@@ -6873,27 +6873,31 @@ fn z_move(
             }
         }
         Some(ZCrystalSource::Type(move_type)) if external => {
-            let id = match move_data.primary_type {
-                Type::Flying => "supersonicskystrike",
-                Type::Dark => "blackholeeclipse",
-                Type::Fire => "infernooverdrive",
-                Type::Bug => "savagespinout",
-                Type::Water => "hydrovortex",
-                Type::Ice => "subzeroslammer",
-                Type::Fighting => "alloutpummeling",
-                Type::Electric => "gigavolthavoc",
-                Type::Psychic => "shatteredpsyche",
-                Type::Poison => "aciddownpour",
-                Type::Grass => "bloomdoom",
-                Type::Ghost => "neverendingnightmare",
-                Type::Ground => "tectonicrage",
-                Type::Rock => "continentalcrush",
-                Type::Fairy => "twinkletackle",
-                Type::Steel => "corkscrewcrash",
-                Type::Normal | Type::None | Type::Stellar => "breakneckblitz",
-                Type::Dragon => "devastatingdrake",
-            };
-            Some(Id::from(id))
+            if move_data.category == MoveCategory::Status {
+                Some(move_id.clone())
+            } else {
+                let id = match move_data.primary_type {
+                    Type::Flying => "supersonicskystrike",
+                    Type::Dark => "blackholeeclipse",
+                    Type::Fire => "infernooverdrive",
+                    Type::Bug => "savagespinout",
+                    Type::Water => "hydrovortex",
+                    Type::Ice => "subzeroslammer",
+                    Type::Fighting => "alloutpummeling",
+                    Type::Electric => "gigavolthavoc",
+                    Type::Psychic => "shatteredpsyche",
+                    Type::Poison => "aciddownpour",
+                    Type::Grass => "bloomdoom",
+                    Type::Ghost => "neverendingnightmare",
+                    Type::Ground => "tectonicrage",
+                    Type::Rock => "continentalcrush",
+                    Type::Fairy => "twinkletackle",
+                    Type::Steel => "corkscrewcrash",
+                    Type::Normal | Type::None | Type::Stellar => "breakneckblitz",
+                    Type::Dragon => "devastatingdrake",
+                };
+                Some(Id::from(id))
+            }
         }
         _ => None,
     };

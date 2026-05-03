@@ -899,6 +899,33 @@ fn metronome_upgrades_used_move_to_z_move() {
 }
 
 #[test]
+fn metronome_upgrades_used_move_to_z_status_move() {
+    let mut pikachu = pikachu().unwrap();
+    pikachu.members[0].item = Some("Normalium Z".to_owned());
+    let mut battle = make_battle(4, BattleType::Singles, pikachu, eevee().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 13,zmove"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "move|mon:Pikachu,player-1,1|name:Metronome|target:Pikachu,player-1,1|zpower",
+            "move|mon:Pikachu,player-1,1|name:Mist|from:move:Metronome|zpower",
+            "sidestart|side:0|move:Mist",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
 fn encore_does_not_override_z_move() {
     let mut eevee = eevee().unwrap();
     eevee.members[0].item = Some("Darkinium Z".to_owned());
