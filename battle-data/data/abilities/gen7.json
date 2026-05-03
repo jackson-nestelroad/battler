@@ -414,19 +414,7 @@
     "name": "Queenly Majesty",
     "flags": [],
     "effect": {
-      "callbacks": {
-        "on_foe_try_move": [
-          "$target_all_exceptions = [perishsong, flowershield, rototiller]",
-          "if $move.target == foeside or ($move.target == all and !($target_all_exceptions has $move.id)):",
-          ["return"],
-          "if $move.priority == 0:",
-          ["return"],
-          "if !$target.is_defined or !func_call(is_ally: $target $effect_state.target):",
-          ["return"],
-          "log_cant: with_source use_effect_state_target_as_source",
-          "return false"
-        ]
-      }
+      "delegates": ["ability:dazzling"]
     }
   },
   "innardsout": {
@@ -499,23 +487,71 @@
   },
   "battery": {
     "name": "Battery",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_base_power": [
+          "if $source != $effect_state.target and func_call(is_ally: $source $effect_state.target) and $move.category == special:",
+          ["return $base_power * 13/10"]
+        ]
+      }
+    }
   },
   "fluffy": {
     "name": "Fluffy",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": [
+          "$multiplier = 1",
+          "if func_call(move_makes_contact: $move):",
+          ["$multiplier = $multiplier / 2"],
+          "if $move.type == fire:",
+          ["$multiplier = $multiplier * 2"],
+          "return $damage * $multiplier"
+        ]
+      }
+    }
   },
   "dazzling": {
     "name": "Dazzling",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_foe_try_move": [
+          "$target_all_exceptions = [perishsong, flowershield, rototiller]",
+          "if $move.target == foeside or ($move.target == all and !($target_all_exceptions has $move.id)):",
+          ["return"],
+          "if $move.priority == 0:",
+          ["return"],
+          "if !$target.is_defined or !func_call(is_ally: $target $effect_state.target):",
+          ["return"],
+          "log_cant: with_source use_effect_state_target_as_source",
+          "return false"
+        ]
+      }
+    }
   },
   "soulheart": {
     "name": "Soul-Heart",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_faint": ["boost: $effect_state.target 'spa:1'"]
+      }
+    }
   },
   "tanglinghair": {
     "name": "Tangling Hair",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move):",
+          ["log_ability", "boost: $source 'spe:-1'"]
+        ]
+      }
+    }
   },
   "receiver": {
     "name": "Receiver",
