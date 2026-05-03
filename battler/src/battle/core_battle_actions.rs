@@ -439,9 +439,22 @@ fn do_move(
     Ok(())
 }
 
+fn upgrade_move(context: &mut ActiveMoveContext) -> Result<MoveHandle> {
+    // Upgrade the move if applicable (e.g., Z-Moves, Max Moves).
+    if let Some(upgraded_move_handle) =
+        core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
+            &mut context.user_applying_effect_context(None)?,
+            fxlang::BattleEvent::UpgradeMove,
+        )
+    {
+        return Ok(upgraded_move_handle);
+    }
+    Ok(context.active_move_handle())
+}
+
 fn do_move_internal(
     context: &mut MonContext,
-    mut active_move_handle: MoveHandle,
+    active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
@@ -457,17 +470,8 @@ fn do_move_internal(
         .id()
         .clone();
 
-    // Upgrade the move if applicable (e.g., Z-Moves, Max Moves).
-    if let Some(upgraded_move_handle) =
-        core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
-            &mut context
-                .active_move_context(active_move_handle)?
-                .user_applying_effect_context(None)?,
-            fxlang::BattleEvent::UpgradeMove,
-        )
-    {
-        active_move_handle = upgraded_move_handle;
-    }
+    let mut active_move_handle =
+        upgrade_move(&mut context.active_move_context(active_move_handle)?)?;
 
     let move_id = context
         .as_battle_context()
@@ -483,25 +487,36 @@ fn do_move_internal(
         original_target,
     )?;
 
-    if let Some(change_move) = core_battle_effects::run_event_for_mon_expecting_string(
-        context,
-        fxlang::BattleEvent::OverrideMove,
-        fxlang::VariableInput::from_iter([fxlang::Value::String(move_id.to_string())]),
-    ) && &change_move != move_id.as_ref()
+    // Upgraded moves cannot be overridden.
+    if context
+        .as_battle_context()
+        .active_move(active_move_handle)?
+        .upgraded
+        .is_none()
     {
-        active_move_handle = CoreBattle::register_active_move_by_id(
-            context.as_battle_context_mut(),
-            &Id::from(change_move),
-            mon_handle,
-        )?;
-        let mon_handle = context.mon_handle();
-        let move_target = context
-            .as_battle_context()
-            .active_move(active_move_handle)?
-            .data
-            .target;
-        target =
-            CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_target)?;
+        if let Some(change_move) = core_battle_effects::run_event_for_mon_expecting_string(
+            context,
+            fxlang::BattleEvent::OverrideMove,
+            fxlang::VariableInput::from_iter([fxlang::Value::String(move_id.to_string())]),
+        ) && &change_move != move_id.as_ref()
+        {
+            active_move_handle = CoreBattle::register_active_move_by_id(
+                context.as_battle_context_mut(),
+                &Id::from(change_move),
+                mon_handle,
+            )?;
+            let mon_handle = context.mon_handle();
+            let move_target = context
+                .as_battle_context()
+                .active_move(active_move_handle)?
+                .data
+                .target;
+            target = CoreBattle::random_target(
+                context.as_battle_context_mut(),
+                mon_handle,
+                move_target,
+            )?;
+        }
     }
 
     context.mon_mut().set_active_move(active_move_handle);
@@ -625,6 +640,24 @@ pub fn use_move(
         move_id,
         mon_handle,
     )?;
+
+    // Upgrade the move if the source move upgraded.
+    let active_move_handle = match source_effect {
+        Some(EffectHandle::ActiveMove(source_move_handle, _)) => {
+            if context
+                .as_battle_context()
+                .active_move(*source_move_handle)?
+                .upgraded
+                .is_some()
+            {
+                upgrade_move(&mut context.active_move_context(active_move_handle)?)?
+            } else {
+                active_move_handle
+            }
+        }
+        _ => active_move_handle,
+    };
+
     use_active_move(
         context,
         active_move_handle,
@@ -6795,13 +6828,13 @@ pub fn z_move_by_move_data(
     context: &mut MonContext,
     move_id: &Id,
     move_data: &MoveData,
-    allow_type_change: bool,
+    external: bool,
 ) -> Result<Option<Id>> {
     let z_crystal = match usable_z_crystal(context)? {
         Some(z_crystal) => z_crystal,
         None => return Ok(None),
     };
-    z_move(context, move_id, move_data, &z_crystal, allow_type_change)
+    z_move(context, move_id, move_data, &z_crystal, external)
 }
 
 /// Looks up the Z-Move for the given move data and Z-Crystal.
@@ -6810,20 +6843,22 @@ fn z_move(
     move_id: &Id,
     move_data: &MoveData,
     z_crystal: &ZCrystalData,
-    allow_type_change: bool,
+    external: bool,
 ) -> Result<Option<Id>> {
-    let index = match context.mon().move_slot_index(move_id) {
-        Some(index) => index,
-        None => return Ok(None),
-    };
-    let move_slot = context
-        .mon()
-        .volatile_state
-        .move_slots
-        .get(index)
-        .wrap_expectation_with_format(format_args!("expected move slot at index {index}"))?;
-    if move_slot.pp == 0 {
-        return Ok(None);
+    if !external {
+        let index = match context.mon().move_slot_index(move_id) {
+            Some(index) => index,
+            None => return Ok(None),
+        };
+        let move_slot = context
+            .mon()
+            .volatile_state
+            .move_slots
+            .get(index)
+            .wrap_expectation_with_format(format_args!("expected move slot at index {index}"))?;
+        if move_slot.pp == 0 {
+            return Ok(None);
+        }
     }
 
     let z_move = match &z_crystal.source {
@@ -6837,7 +6872,7 @@ fn z_move(
                 Some(Id::from(z_crystal.into.as_str()))
             }
         }
-        Some(ZCrystalSource::Type(move_type)) if allow_type_change => {
+        Some(ZCrystalSource::Type(move_type)) if external => {
             let id = match move_data.primary_type {
                 Type::Flying => "supersonicskystrike",
                 Type::Dark => "blackholeeclipse",
