@@ -2744,7 +2744,7 @@
       "callbacks": {
         "on_use_move": [
           "if $move.multihit.is_defined and $move.multihit.max > 4:",
-          ["$move.multihit = [4,   $move.multihit.max]"],
+          ["$move.multihit = [4, $move.multihit.max]"],
           "$move.multiaccuracy = false"
         ]
       }
