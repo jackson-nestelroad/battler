@@ -223,6 +223,9 @@ pub struct Move {
     /// The index of the last move log associated with this move.
     pub last_move_log: Option<usize>,
 
+    /// Original HPs of all targets before applying move hits.
+    pub target_original_hps: HashMap<MonHandle, u16>,
+
     /// Fxlang effect state.
     pub effect_state: fxlang::EffectState,
     /// Whether or not the move is unlinked from the original data.
@@ -272,6 +275,7 @@ impl Move {
             upgraded: None,
             ignore_all_secondary_effects: false,
             last_move_log: None,
+            target_original_hps: HashMap::default(),
             effect_state: fxlang::EffectState::default(),
             unlinked,
             secondary_effects: HashMap::default(),

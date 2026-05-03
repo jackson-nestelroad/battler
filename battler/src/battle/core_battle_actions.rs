@@ -12,7 +12,6 @@ use battler_data::{
     BoostOrderIterator,
     BoostTable,
     BoostTableEntries,
-    ConditionType,
     Fraction,
     Id,
     Identifiable,
@@ -1552,7 +1551,7 @@ fn move_hit_loop(
         }
     };
 
-    let original_hps = targets
+    context.active_move_mut().target_original_hps = targets
         .iter()
         .map(|target| {
             Ok((
@@ -1637,7 +1636,9 @@ fn move_hit_loop(
 
         for target in &targets {
             let total_damage = context.active_move().total_damage(target.handle);
-            let original_hp = *original_hps
+            let original_hp = *context
+                .active_move()
+                .target_original_hps
                 .get(&target.handle)
                 .wrap_expectation("expected target original hp")?;
             core_battle_effects::run_active_move_event_expecting_void(
@@ -1858,7 +1859,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     // Type immunity.
     let move_type = context.active_move().data.primary_type;
     let ignore_immunity = ignore_type_immunity(context)?;
-    if !ignore_immunity && Mon::is_immune(&mut context.target_mon_context()?, move_type)? {
+    if !ignore_immunity && check_type_immunity(&mut context.target_mon_context()?, move_type)? {
         return Ok(MoveOutcomeOnTarget::Failure);
     }
 
@@ -2235,6 +2236,19 @@ pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -
     Ok(())
 }
 
+/// Checks if the target is immune to the type.
+pub fn check_type_immunity(context: &mut MonContext, typ: Type) -> Result<bool> {
+    Mon::is_immune(context, typ)
+}
+
+/// Checks if the target is immune to the move.
+pub fn check_move_immunity(context: &mut ActiveMoveContext, target: MonHandle) -> Result<bool> {
+    let move_type = context.active_move().data.primary_type;
+    let ignore_immunity = ignore_type_immunity(&mut context.target_context(target)?)?;
+    let mut target_context = context.target_mon_context(target)?;
+    let immune = !ignore_immunity && check_type_immunity(&mut target_context, move_type)?;
+    Ok(immune)
+}
 mod direct_move_step {
     use core::ops::Mul;
 
@@ -2253,7 +2267,6 @@ mod direct_move_step {
         battle::{
             ActiveMoveContext,
             ActiveTargetContext,
-            Mon,
             MoveEventResult,
             MoveOutcome,
             core_battle_actions,
@@ -2311,15 +2324,9 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        let move_type = context.active_move().data.primary_type;
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            let ignore_immunity = core_battle_actions::ignore_type_immunity(
-                &mut context.target_context(target.handle)?,
-            )?;
-            let mut target_context = context.target_mon_context(target.handle)?;
-            let immune = !ignore_immunity && Mon::is_immune(&mut target_context, move_type)?;
-            if immune {
-                core_battle_logs::immune(&mut target_context, None)?;
+            if core_battle_actions::check_move_immunity(context, target.handle)? {
+                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -2542,13 +2549,9 @@ fn apply_spread_damage(
         }
 
         if context.effect().id() != &Id::from("strugglerecoil") {
-            if let Some(condition) = context.effect().condition() {
-                if condition.data.condition_type == ConditionType::Weather {
-                    if check_immunity(&mut context)? {
-                        *damage = 0;
-                        continue;
-                    }
-                }
+            if check_immunity(&mut context)? {
+                *damage = 0;
+                continue;
             }
             *damage = core_battle_effects::run_event_for_applying_effect_expecting_u16(
                 &mut context,
@@ -6174,10 +6177,11 @@ pub fn end_illusion(context: &mut ApplyingEffectContext) -> Result<bool> {
 }
 
 /// The type of forme change being applied to a Mon in [`forme_change`].
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FormeChangeType {
     Temporary,
     Permanent,
+    PermanentRevertOnExit,
     MegaEvolution,
     PrimalReversion,
     UltraBurst,
@@ -6188,9 +6192,11 @@ impl FormeChangeType {
     pub fn permanent(&self) -> bool {
         match self {
             Self::Temporary | Self::Gigantamax => false,
-            Self::Permanent | Self::MegaEvolution | Self::PrimalReversion | Self::UltraBurst => {
-                true
-            }
+            Self::Permanent
+            | Self::PermanentRevertOnExit
+            | Self::MegaEvolution
+            | Self::PrimalReversion
+            | Self::UltraBurst => true,
         }
     }
 }
@@ -6228,7 +6234,9 @@ pub fn forme_change(
     }
 
     match forme_change_type {
-        FormeChangeType::Temporary | FormeChangeType::Permanent => {
+        FormeChangeType::Temporary
+        | FormeChangeType::Permanent
+        | FormeChangeType::PermanentRevertOnExit => {
             core_battle_logs::forme_change(context)?;
         }
         FormeChangeType::MegaEvolution => {
@@ -6251,6 +6259,10 @@ pub fn forme_change(
         set_ability(context, &new_ability, false, true, true)?;
     }
 
+    if forme_change_type == FormeChangeType::PermanentRevertOnExit {
+        context.target_mut().revert_forme_change_on_exit = true;
+    }
+
     Ok(true)
 }
 
@@ -6265,7 +6277,7 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
             | MonSpecialFormeChangeType::UltraBurst
             | MonSpecialFormeChangeType::Gigantamax,
         ) => true,
-        None => false,
+        None => context.target().revert_forme_change_on_exit,
     };
     let needs_revert = needs_mechanic_revert || needs_forme_change_revert;
     if !needs_revert {
@@ -6280,14 +6292,19 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
 
-    if let Some(special_forme_change_type) = context.target().special_forme_change_type {
-        let base_species_update = match special_forme_change_type {
+    let revert_forme = context.target().special_forme_change_type.is_some()
+        || context.target().revert_forme_change_on_exit;
+    let base_species_update = match context.target().special_forme_change_type {
+        Some(special_forme_change_type) => match special_forme_change_type {
             MonSpecialFormeChangeType::MegaEvolution
             | MonSpecialFormeChangeType::PrimalReversion
             | MonSpecialFormeChangeType::UltraBurst => true,
             MonSpecialFormeChangeType::Gigantamax => false,
-        };
+        },
+        None => context.target().revert_forme_change_on_exit,
+    };
 
+    if revert_forme {
         let species = context.target().original_base_species.clone();
         let ability = context.target().original_base_ability.clone();
 
@@ -6300,22 +6317,24 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
             }
         }
 
-        match special_forme_change_type {
-            MonSpecialFormeChangeType::MegaEvolution => {
+        match context.target().special_forme_change_type {
+            Some(MonSpecialFormeChangeType::MegaEvolution) => {
                 core_battle_logs::revert_mega_evolution(context)?;
             }
-            MonSpecialFormeChangeType::PrimalReversion => {
+            Some(MonSpecialFormeChangeType::PrimalReversion) => {
                 core_battle_logs::revert_primal_reversion(context)?;
             }
-            MonSpecialFormeChangeType::UltraBurst => {
+            Some(MonSpecialFormeChangeType::UltraBurst) => {
                 core_battle_logs::revert_ultra_burst(context)?;
             }
-            MonSpecialFormeChangeType::Gigantamax => {
+            Some(MonSpecialFormeChangeType::Gigantamax) => {
                 core_battle_logs::revert_gigantamax(context)?;
             }
+            None => (),
         }
 
         context.target_mut().special_forme_change_type = None;
+        context.target_mut().revert_forme_change_on_exit = false;
     }
 
     if context.target().dynamaxed {

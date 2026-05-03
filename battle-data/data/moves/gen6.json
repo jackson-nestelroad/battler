@@ -794,15 +794,7 @@
     "priority": 1,
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
-    "multihit": [2, 5],
-    "effect": {
-      "callbacks": {
-        "on_move_base_power": [
-          "if $source.species == greninjaash and func_call(has_ability: $source battlebond) and !$source.transformed:",
-          ["return $move.base_power + 5"]
-        ]
-      }
-    }
+    "multihit": [2, 5]
   },
   "mysticalfire": {
     "name": "Mystical Fire",

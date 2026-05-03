@@ -845,6 +845,10 @@
         "description": "",
         "type": "UFraction"
       },
+      "mons_left": {
+        "description": "",
+        "type": "UFraction"
+      },
       "players": {
         "description": "",
         "type": "List",
@@ -1742,6 +1746,26 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
+    "check_move_immunity": {
+      "description": "Checks if a Mon is immune to a move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "move",
+          "type": "ActiveMove",
+          "description": "The move to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
+      "returns_item_from_list": false
+    },
     "clamp_number": {
       "description": "Clamps a number between a minimum and maximum value.",
       "parameters": [
@@ -2376,6 +2400,10 @@
         {
           "name": "permanent",
           "description": "If set, the forme change is permanent."
+        },
+        {
+          "name": "revertible",
+          "description": "If set with the `permanent` flag, the forme change will revert on exit."
         }
       ],
       "type": "Boolean",
@@ -3625,6 +3653,26 @@
           "type": "String | Effect",
           "description": "The move ID to check.",
           "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction | Undefined",
+      "returns_item_from_list": false
+    },
+    "move_target_original_hp": {
+      "description": "Reads the target's original HP before the move applied any hits.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
         }
       ],
       "flags": [],
@@ -5015,6 +5063,26 @@
       ],
       "flags": [],
       "type": "Fraction | Undefined",
+      "returns_item_from_list": false
+    },
+    "undynamaxed_hp_calculation": {
+      "description": "Calculates the un-Dynamaxed HP for a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        },
+        {
+          "name": "hp",
+          "type": "UFraction",
+          "description": "HP value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction",
       "returns_item_from_list": false
     },
     "use_active_move": {

@@ -304,19 +304,102 @@
   },
   "disguise": {
     "name": "Disguise",
-    "flags": ["Permanent"]
+    "flags": ["Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_damage": {
+          "priority": 1,
+          "program": [
+            "if !$effect.is_move or !([mimikyu, mimikyutotemdisguised] has $target.species) or $target.transformed:",
+            ["return"],
+            "activate_ability",
+            "return 0"
+          ]
+        },
+        "on_activate": [
+          "$species = mimikyubusted",
+          "if $target.species == mimikyutotemdisguised:",
+          ["$species = mimikyutotembusted"],
+          "forme_change: $target $species permanent",
+          "damage: $target expr($target.base_max_hp / 8)"
+        ],
+        "on_critical_hit": [
+          "if !([mimikyu, mimikyutotemdisguised] has $target.species) or $target.transformed:",
+          ["return"],
+          "if func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          ["return"],
+          "if !func_call(check_move_immunity: $target $move):",
+          ["return"],
+          "return false"
+        ],
+        "on_effectiveness": [
+          "if $effect.category == status:",
+          ["return"],
+          "if !func_call(run_event_on_mon_ability: CriticalHit):",
+          ["return 0"]
+        ]
+      }
+    }
   },
   "battlebond": {
     "name": "Battle Bond",
-    "flags": ["Permanent"]
+    "flags": ["Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_after_fainted": [
+          "if !$effect or !$effect.is_move:",
+          ["return"],
+          "if $mon.species != greninjabattlebond or $mon.hp == 0 or $mon.transformed or $mon.foe_side.mons_left == 0:",
+          ["return"],
+          "if $mon.effect_state.battle_bond_triggered:",
+          ["return"],
+          "activate_ability"
+        ],
+        "on_activate": [
+          "log_activate: with_target",
+          "boost: $target 'atk:1' 'spa:1' 'spe:1'",
+          "forme_change: greninjabattlebond greninjaash permanent"
+        ],
+        "on_use_move": [
+          "if $move.id == watershuriken and $source.species == greninjaash and !$source.transformed:",
+          ["$move.base_power = $move.base_power + 5", "$move.multihit = 3"]
+        ]
+      }
+    }
   },
   "powerconstruct": {
     "name": "Power Construct",
-    "flags": ["Permanent"]
+    "flags": ["Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "$base_species = func_call(base_species: $target)",
+          "if $base_species != zygarde or $target.transformed or $target.hp == 0:",
+          ["return"],
+          "if $target.species == zygardecomplete or $target.hp > $target.max_hp / 2:",
+          ["return"],
+          "forme_change: $target zygardecomplete permanent revertible"
+        ]
+      }
+    }
   },
   "corrosion": {
     "name": "Corrosion",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_immunity": {
+          "order": 1,
+          "program": [
+            "if [psn, tox] has $effect.id:",
+            [
+              "skip_effect_callback: poisontype",
+              "skip_effect_callback: steeltype"
+            ]
+          ]
+        }
+      }
+    }
   },
   "comatose": {
     "name": "Comatose",
@@ -329,11 +412,41 @@
   },
   "queenlymajesty": {
     "name": "Queenly Majesty",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_foe_try_move": [
+          "$target_all_exceptions = [perishsong, flowershield, rototiller]",
+          "if $move.target == foeside or ($move.target == all and !($target_all_exceptions has $move.id)):",
+          ["return"],
+          "if $move.priority == 0:",
+          ["return"],
+          "if !$target.is_defined or !func_call(is_ally: $target $effect_state.target):",
+          ["return"],
+          "log_cant: with_source use_effect_state_target_as_source",
+          "return false"
+        ]
+      }
+    }
   },
   "innardsout": {
     "name": "Innards Out",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": {
+          "order": 1,
+          "program": [
+            "if $target.hp > 0:",
+            ["return"],
+            "$original_hp = func_call(move_target_original_hp: $move $target",
+            "if !$original_hp:",
+            ["return"],
+            "damage: $source func_call(undynamaxed_hp_calculation: $target $original_hp)"
+          ]
+        }
+      }
+    }
   },
   "dancer": {
     "name": "Dancer",

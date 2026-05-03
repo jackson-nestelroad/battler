@@ -671,6 +671,7 @@ pub struct Mon {
 
     pub learnable_moves: Vec<Id>,
 
+    pub revert_forme_change_on_exit: bool,
     pub special_forme_change_type: Option<MonSpecialFormeChangeType>,
     pub dynamaxed: bool,
     pub terastallized: Option<Type>,
@@ -778,6 +779,7 @@ impl Mon {
             volatile_state: MonVolatileState::default(),
             active_move: None,
             learnable_moves: Vec::default(),
+            revert_forme_change_on_exit: false,
             special_forme_change_type: None,
             dynamaxed: false,
             terastallized: None,
@@ -1967,10 +1969,15 @@ impl Mon {
 
     /// The current un-Dynamaxed HP of the Mon.
     pub fn undynamaxed_hp(&self) -> u16 {
+        self.undynamaxed_hp_calculation(self.hp)
+    }
+
+    /// Calculates the un-Dynamaxed HP for a given value.
+    pub fn undynamaxed_hp_calculation(&self, hp: u16) -> u16 {
         if self.dynamaxed {
-            (Fraction::new(self.base_max_hp, self.max_hp) * self.hp).ceil()
+            (Fraction::new(self.base_max_hp, self.max_hp) * hp).ceil()
         } else {
-            self.hp
+            hp
         }
     }
 

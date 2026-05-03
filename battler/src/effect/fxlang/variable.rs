@@ -32,6 +32,7 @@ use crate::{
         Mon,
         MonExitType,
         Player,
+        Side,
         mon_states,
         weather_states,
     },
@@ -1087,6 +1088,13 @@ where
                                 TryInto::<u64>::try_into(side)
                                     .map_err(integer_overflow_error)?
                                     .into(),
+                            ),
+                            "mons_left" => ValueRef::UFraction(
+                                TryInto::<u64>::try_into(Side::mons_left(
+                                    &mut context.battle_context_mut().side_context(side)?,
+                                )?)
+                                .map_err(integer_overflow_error)?
+                                .into(),
                             ),
                             "players" => ValueRef::TempList(
                                 context

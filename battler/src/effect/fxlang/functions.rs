@@ -168,6 +168,7 @@ pub fn run_function(
         "cancel_move" => cancel_move(context).map(|val| Some(val)),
         "chance" => chance(context).map(|val| Some(val)),
         "check_immunity" => check_immunity(context).map(|val| Some(val)),
+        "check_move_immunity" => check_move_immunity(context).map(|val| Some(val)),
         "clamp_number" => clamp_number(context).map(|val| Some(val)),
         "clause_integer_value" => clause_integer_value(context),
         "clause_type_value" => clause_type_value(context),
@@ -279,6 +280,7 @@ pub fn run_function(
         "move_slot" => move_slot(context).map(|val| Some(val)),
         "move_slot_at_index" => move_slot_at_index(context),
         "move_slot_index" => move_slot_index(context),
+        "move_target_original_hp" => move_target_original_hp(context),
         "new_active_move" => new_active_move(context).map(|val| Some(val)),
         "new_active_move_from_local_data" => {
             new_active_move_from_local_data(context).map(|val| Some(val))
@@ -359,6 +361,7 @@ pub fn run_function(
         "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
         "type_modifier" => type_modifier(context).map(|val| Some(val)),
         "type_modifier_against_target" => type_modifier_against_target(context),
+        "undynamaxed_hp_calculation" => undynamaxed_hp_calculation(context).map(|val| Some(val)),
         "use_active_move" => use_active_move(context).map(|val| Some(val)),
         "use_given_item" => use_given_item(context).map(|val| Some(val)),
         "use_item" => use_item(context).map(|val| Some(val)),
@@ -2877,6 +2880,25 @@ fn move_hit_data_has_flag_against_target(mut context: FunctionContext) -> Result
             .unwrap_or(false),
     ))
 }
+/// Reads the target's original HP before the move applied any hits.
+///
+/// @param {[`ValueType::Effect`]} active_move The active move.
+/// @param {[`ValueType::Mon`]} [mon] The target Mon.
+/// @returns {[`ValueType::UFraction`] | [`ValueType::Undefined`]} The target's original HP.
+fn move_target_original_hp(mut context: FunctionContext) -> Result<Option<Value>> {
+    let active_move_handle = context
+        .pop_front()
+        .wrap_expectation("missing active move")?
+        .active_move()
+        .wrap_error_with_message("invalid active move")?;
+    let mon_handle = context.target_handle_positional()?;
+    Ok(context
+        .evaluation_context()
+        .active_move(active_move_handle)?
+        .target_original_hps
+        .get(&mon_handle)
+        .map(|hp| Value::UFraction((*hp).into())))
+}
 
 /// Gets all active Mons in the battle.
 ///
@@ -4004,6 +4026,28 @@ fn check_immunity(mut context: FunctionContext) -> Result<Value> {
     .map(|val| Value::Boolean(val))
 }
 
+/// Checks if a Mon is immune to a move.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to check.
+/// @param {[`ValueType::ActiveMove`]} move The move to check.
+/// @returns {[`ValueType::Boolean`]} Whether the Mon is immune.
+fn check_move_immunity(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let move_handle = context
+        .pop_front()
+        .wrap_expectation("missing move")?
+        .active_move()
+        .wrap_error_with_message("invalid move")?;
+
+    core_battle_actions::check_move_immunity(
+        &mut context
+            .evaluation_context_mut()
+            .active_move_context(move_handle)?,
+        mon_handle,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
 /// Modifies the type of an active move.
 ///
 /// @param {[`ValueType::Effect`]} [active_move] The active move to modify.
@@ -4764,9 +4808,11 @@ fn type_chart_immunity(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} forme The new forme ID.
 /// @flag permanent If set, the forme change is permanent.
+/// @flag revertible If set with the `permanent` flag, the forme change will revert on exit.
 /// @returns {[`ValueType::Boolean`]} Whether the forme was successfully changed.
 fn forme_change(mut context: FunctionContext) -> Result<Value> {
     let permanent = context.has_flag("permanent");
+    let revertible = context.has_flag("revertible");
     let target = context.target_handle_positional()?;
     let forme = context
         .pop_front()
@@ -4777,7 +4823,9 @@ fn forme_change(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::forme_change(
         &mut context.forward_to_applying_effect_context_with_target(target)?,
         &forme,
-        if permanent {
+        if permanent && revertible {
+            core_battle_actions::FormeChangeType::PermanentRevertOnExit
+        } else if permanent {
             core_battle_actions::FormeChangeType::Permanent
         } else {
             core_battle_actions::FormeChangeType::Temporary
@@ -5667,4 +5715,25 @@ fn end_battle(mut context: FunctionContext) -> Result<()> {
         None => None,
     };
     CoreBattle::end_battle(context.battle_context_mut(), winning_side)
+}
+
+/// Calculates the un-Dynamaxed HP for a Mon.
+///
+/// @param {[`ValueType::Mon`]} [mon] The target Mon.
+/// @param {[`ValueType::UFraction`]} hp HP value.
+/// @returns {[`ValueType::UFraction`]} Un-Dynamaxed HP value.
+fn undynamaxed_hp_calculation(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let hp = context
+        .pop_front()
+        .wrap_expectation("missing hp")?
+        .integer_u16()
+        .wrap_error_with_message("invalid hp")?;
+    Ok(Value::UFraction(
+        context
+            .evaluation_context()
+            .mon(mon_handle)?
+            .undynamaxed_hp_calculation(hp)
+            .into(),
+    ))
 }
