@@ -4823,10 +4823,12 @@ fn forme_change(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::forme_change(
         &mut context.forward_to_applying_effect_context_with_target(target)?,
         &forme,
-        if permanent && revertible {
-            core_battle_actions::FormeChangeType::PermanentRevertOnExit
-        } else if permanent {
-            core_battle_actions::FormeChangeType::Permanent
+        if permanent {
+            if revertible {
+                core_battle_actions::FormeChangeType::PermanentRevertOnExit
+            } else {
+                core_battle_actions::FormeChangeType::Permanent
+            }
         } else {
             core_battle_actions::FormeChangeType::Temporary
         },
