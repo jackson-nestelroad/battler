@@ -51,41 +51,90 @@ pub type StatMap<T> = HashMap<Stat, T>;
 /// A table of stat values.
 pub type PartialStatTable = StatMap<u16>;
 
-fn next_stat_for_iterator(stat: Stat) -> Option<Stat> {
-    match stat {
-        Stat::HP => Some(Stat::Atk),
-        Stat::Atk => Some(Stat::Def),
-        Stat::Def => Some(Stat::SpAtk),
-        Stat::SpAtk => Some(Stat::SpDef),
-        Stat::SpDef => Some(Stat::Spe),
-        Stat::Spe => None,
-    }
+/// Trait for getting a stat from a container.
+pub trait ContainsOptionalStats<T> {
+    fn get_stat(&self, stat: Stat) -> Option<(Stat, T)>;
 }
 
-/// Iterator over the entries of a [`StatTable`].
-pub struct StatTableEntries<'s> {
-    table: &'s StatTable,
-    next_stat: Option<Stat>,
+/// Iterator type for iterating over [`Stat`]s in a consistent order.
+pub struct StatOrderIterator {
+    next: Option<Stat>,
 }
 
-impl<'s> StatTableEntries<'s> {
-    /// Creates a new iterator over the entries of a [`StatTable`].
-    fn new(table: &'s StatTable) -> Self {
+impl StatOrderIterator {
+    /// Creates a new stat iterator.
+    pub fn new() -> Self {
         Self {
-            table,
-            next_stat: Some(Stat::HP),
+            next: Some(Stat::HP),
         }
     }
+
+    fn next_internal(&mut self) -> Option<Stat> {
+        let out = self.next;
+        self.next = match self.next {
+            Some(Stat::HP) => Some(Stat::Atk),
+            Some(Stat::Atk) => Some(Stat::Def),
+            Some(Stat::Def) => Some(Stat::SpAtk),
+            Some(Stat::SpAtk) => Some(Stat::SpDef),
+            Some(Stat::SpDef) => Some(Stat::Spe),
+            None | Some(Stat::Spe) => None,
+        };
+        out
+    }
 }
 
-impl<'s> Iterator for StatTableEntries<'s> {
-    type Item = (Stat, u16);
+impl Iterator for StatOrderIterator {
+    type Item = Stat;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_internal()
+    }
+}
+
+/// Iterator over the entries of a [`StatTable`] (or similar container) in a stable order.
+pub struct StatTableEntries<'s, S, T>
+where
+    S: ContainsOptionalStats<T>,
+    T: Copy,
+{
+    table: &'s S,
+    stat_iter: StatOrderIterator,
+    _phantom: core::marker::PhantomData<T>,
+}
+
+impl<'s, S, T> StatTableEntries<'s, S, T>
+where
+    S: ContainsOptionalStats<T>,
+    T: Copy,
+{
+    /// Creates a new iterator over the entries of a [`StatTable`].
+    pub fn new(table: &'s S) -> Self {
+        Self {
+            table,
+            stat_iter: StatOrderIterator::new(),
+            _phantom: core::marker::PhantomData,
+        }
+    }
+
+    fn next_entry(&mut self) -> Option<(Stat, T)> {
+        while let Some(stat) = self.stat_iter.next() {
+            let entry = self.table.get_stat(stat);
+            if entry.is_some() {
+                return entry;
+            }
+        }
+        None
+    }
+}
+
+impl<'s, S, T> Iterator for StatTableEntries<'s, S, T>
+where
+    S: ContainsOptionalStats<T>,
+    T: Copy,
+{
+    type Item = (Stat, T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let stat = self.next_stat?;
-        let value = self.table.get(stat);
-        self.next_stat = next_stat_for_iterator(stat);
-        Some((stat, value))
+        self.next_entry()
     }
 }
 
@@ -135,13 +184,18 @@ impl StatTable {
     }
 
     /// Creates an iterator over all stat entries.
-    pub fn entries<'s>(&'s self) -> StatTableEntries<'s> {
+    pub fn iter<'s>(&'s self) -> StatTableEntries<'s, Self, u16> {
         StatTableEntries::new(self)
+    }
+
+    /// Alias for [`Self::iter`].
+    pub fn entries<'s>(&'s self) -> StatTableEntries<'s, Self, u16> {
+        self.iter()
     }
 
     /// Creates an iterator over all stat values.
     pub fn values<'s>(&'s self) -> impl Iterator<Item = u16> + 's {
-        self.entries().map(|(_, value)| value)
+        self.iter().map(|(_, value)| value)
     }
 
     /// Sums up all stats in the table.
@@ -189,23 +243,48 @@ impl FromIterator<(Stat, u16)> for StatTable {
     }
 }
 
+impl<T: Copy> ContainsOptionalStats<T> for StatMap<T> {
+    fn get_stat(&self, stat: Stat) -> Option<(Stat, T)> {
+        self.get(&stat).map(|val| (stat, *val))
+    }
+}
+
+impl ContainsOptionalStats<u16> for StatTable {
+    fn get_stat(&self, stat: Stat) -> Option<(Stat, u16)> {
+        Some((stat, self.get(stat)))
+    }
+}
+
 impl<'s> IntoIterator for &'s StatTable {
-    type IntoIter = StatTableEntries<'s>;
+    type IntoIter = StatTableEntries<'s, StatTable, u16>;
     type Item = (Stat, u16);
     fn into_iter(self) -> Self::IntoIter {
-        self.entries()
+        self.iter()
     }
 }
 
 #[cfg(test)]
 mod stat_test {
     use crate::{
+        StatOrderIterator,
         mons::Stat,
         test_util::{
             test_string_deserialization,
             test_string_serialization,
         },
     };
+
+    #[test]
+    fn iterates_in_order() {
+        let mut iter = StatOrderIterator::new();
+        assert_eq!(iter.next(), Some(Stat::HP));
+        assert_eq!(iter.next(), Some(Stat::Atk));
+        assert_eq!(iter.next(), Some(Stat::Def));
+        assert_eq!(iter.next(), Some(Stat::SpAtk));
+        assert_eq!(iter.next(), Some(Stat::SpDef));
+        assert_eq!(iter.next(), Some(Stat::Spe));
+        assert_eq!(iter.next(), None);
+    }
 
     #[test]
     fn serializes_to_string() {

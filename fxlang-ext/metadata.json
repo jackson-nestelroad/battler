@@ -1554,6 +1554,29 @@
       "type": "String",
       "returns_item_from_list": false
     },
+    "best_stat": {
+      "description": "Gets a Mon's best stat.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to query.",
+          "optional": true
+        }
+      ],
+      "flags": [
+        {
+          "name": "unboosted",
+          "description": "Ignore boosts."
+        },
+        {
+          "name": "unmodified",
+          "description": "Ignore effect modifiers."
+        }
+      ],
+      "type": "Stat",
+      "returns_item_from_list": false
+    },
     "boost": {
       "description": "Boosts or unboosts a Mon's stats.",
       "parameters": [
@@ -7944,6 +7967,24 @@
           "optional": false
         },
         "item": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "terrain_change": {
+      "description": "Runs when the terrain over a Mon changes.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
           "type": "Effect",
           "optional": false
         }

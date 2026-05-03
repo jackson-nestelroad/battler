@@ -28,9 +28,11 @@ pub use shiny_chance::ShinyChance;
 pub use species_data::SpeciesData;
 pub use species_flag::SpeciesFlag;
 pub use stat::{
+    ContainsOptionalStats,
     PartialStatTable,
     Stat,
     StatMap,
+    StatOrderIterator,
     StatTable,
     StatTableEntries,
 };

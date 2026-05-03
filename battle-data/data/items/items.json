@@ -2274,7 +2274,17 @@
         "power": 10
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_item: TerrainChange"],
+        "on_terrain_change": [
+          "if $target.effective_terrain == electricterrain:",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'def:1' no_forward"]
+      }
+    }
   },
   "psychicseed": {
     "name": "Psychic Seed",
@@ -2283,7 +2293,17 @@
         "power": 10
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_item: TerrainChange"],
+        "on_terrain_change": [
+          "if $target.effective_terrain == psychicterrain:",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'spd:1' no_forward"]
+      }
+    }
   },
   "mistyseed": {
     "name": "Misty Seed",
@@ -2292,7 +2312,17 @@
         "power": 10
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_item: TerrainChange"],
+        "on_terrain_change": [
+          "if $target.effective_terrain == mistyterrain:",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'spd:1' no_forward"]
+      }
+    }
   },
   "grassyseed": {
     "name": "Grassy Seed",
@@ -2301,7 +2331,17 @@
         "power": 10
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_item: TerrainChange"],
+        "on_terrain_change": [
+          "if $target.effective_terrain == grassyterrain:",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'def:1' no_forward"]
+      }
+    }
   },
   "fightingmemory": {
     "name": "Fighting Memory",

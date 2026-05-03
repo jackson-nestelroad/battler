@@ -29,6 +29,7 @@ use battler_data::{
     Nature,
     PartialStatTable,
     Stat,
+    StatOrderIterator,
     StatTable,
     SwitchType,
     Type,
@@ -1415,6 +1416,18 @@ impl Mon {
         unmodified: bool,
     ) -> Result<u16> {
         Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None)
+    }
+
+    /// Gets the Mon's best stat based on its current stat values.
+    pub fn best_stat(context: &mut MonContext, unboosted: bool, unmodified: bool) -> Result<Stat> {
+        Ok(StatOrderIterator::new()
+            .filter(|stat| *stat != Stat::HP)
+            .map(|stat| Mon::get_stat(context, stat, unboosted, unmodified).map(|val| (stat, val)))
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .max_by_key(|(_, val)| *val)
+            .wrap_expectation("best stat yielded no stats")?
+            .0)
     }
 
     /// Calculates the speed value to use for battle action ordering.

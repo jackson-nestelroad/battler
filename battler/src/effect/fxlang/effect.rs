@@ -1216,6 +1216,11 @@ pub enum BattleEvent {
     /// Runs on the item and in the context of an applying effect on a Mon.
     #[string = "TakeItem"]
     TakeItem,
+    /// Runs when the terrain over a Mon changes.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "TerrainChange"]
+    TerrainChange,
     /// Runs when determining if a Mon is trapped (i.e., cannot switch out).
     ///
     /// Runs in the context of a Mon.
@@ -1525,6 +1530,7 @@ impl BattleEvent {
             Self::SwitchingIn => CommonCallbackType::MonVoid as u32,
             Self::SwitchOut => CommonCallbackType::MonVoid as u32,
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::TerrainChange => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
             Self::TryEatItem => CommonCallbackType::ApplyingEffectResult as u32,

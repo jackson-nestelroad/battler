@@ -4581,7 +4581,10 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
         return Ok(false);
     }
 
-    // TODO: TerrainChange event.
+    core_battle_effects::run_event_for_each_active_mon_with_effect(
+        context.as_effect_context_mut(),
+        fxlang::BattleEvent::TerrainChange,
+    )?;
 
     // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
     if context

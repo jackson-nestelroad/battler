@@ -382,14 +382,23 @@
   },
   "bigmalasada": {
     "name": "Big Malasada",
-    "flags": ["Medicine"]
+    "flags": ["Medicine"],
+    "effect": {
+      "delegates": ["item:fullheal"]
+    }
   },
   "pewtercrunchies": {
     "name": "Pewter Crunchies",
-    "flags": ["Medicine"]
+    "flags": ["Medicine"],
+    "effect": {
+      "delegates": ["item:fullheal"]
+    }
   },
   "maxhoney": {
     "name": "Max Honey",
-    "flags": ["Medicine"]
+    "flags": ["Medicine"],
+    "effect": {
+      "delegates": ["item:maxrevive"]
+    }
   }
 }

@@ -156,6 +156,7 @@ pub fn run_function(
         "apply_drain" => apply_drain(context).map(|()| None),
         "apply_recoil_damage" => apply_recoil_damage(context).map(|()| None),
         "base_species" => base_species(context).map(|val| Some(val)),
+        "best_stat" => best_stat(context).map(|val| Some(val)),
         "boost" => boost(context).map(|val| Some(val)),
         "boost_table" => boost_table(context).map(|val| Some(val)),
         "boostable_stats" => Ok(Some(boostable_stats())),
@@ -5270,6 +5271,25 @@ fn get_stat(mut context: FunctionContext) -> Result<Value> {
         unmodified,
     )
     .map(|val| Value::UFraction(val.into()))
+}
+
+/// Gets a Mon's best stat.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to query.
+/// @flag unboosted Ignore boosts.
+/// @flag unmodified Ignore effect modifiers.
+/// @returns {[`ValueType::Stat`]} The best stat.
+fn best_stat(mut context: FunctionContext) -> Result<Value> {
+    let unboosted = context.has_flag("unboosted");
+    let unmodified = context.has_flag("unmodified");
+    let target_handle = context.target_handle_positional()?;
+
+    Mon::best_stat(
+        &mut context.mon_context(target_handle)?,
+        unboosted,
+        unmodified,
+    )
+    .map(|stat| Value::Stat(stat.into()))
 }
 
 /// Gets special data for an item.
