@@ -183,14 +183,7 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "Mirror",
-      "NoMetronome",
-      "Protect",
-      "SleepUsable",
-      "Sound"
-    ],
+    "flags": ["BypassSubstitute", "Mirror", "NoMetronome", "Protect", "SleepUsable", "Sound"],
     "secondary_effects": [
       {
         "chance": "30%",
@@ -221,16 +214,10 @@
     },
     "effect": {
       "callbacks": {
-        "on_move_target_override": [
-          "if !func_call(has_type: $mon ghost):",
-          ["return user"]
-        ],
+        "on_move_target_override": ["if !func_call(has_type: $mon ghost):", ["return user"]],
         "on_use_move": [
           "if !func_call(has_type: $user ghost):",
-          [
-            "$move.target = user",
-            "set_z_power_boosts: $move func_call(boost_table: 'atk:1')"
-          ],
+          ["$move.target = user", "set_z_power_boosts: $move func_call(boost_table: 'atk:1')"],
           "else if func_call(is_ally: $user $selected_target):",
           ["$move.target = randomnormal"]
         ],
@@ -701,11 +688,7 @@
         ],
         "on_before_move": {
           "priority": 999,
-          "program": [
-            "if $move.id == $this.id:",
-            ["return"],
-            "remove_volatile: $user $this.id"
-          ]
+          "program": ["if $move.id == $this.id:", ["return"], "remove_volatile: $user $this.id"]
         }
       }
     }
@@ -726,10 +709,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": [
-          "if func_call(has_volatile: $target $this.id):",
-          ["return false"]
-        ],
+        "on_try_hit": ["if func_call(has_volatile: $target $this.id):", ["return false"]],
         "on_hit": [
           "if !$effect_state.activate:",
           ["$effect_state.activate = true", "log_field_activate"]
@@ -739,7 +719,7 @@
     "condition": {
       "duration": 4,
       "callbacks": {
-        "on_residual": ["log_start: str('perish:{}', $effect_state.duration)"],
+        "on_residual": ["log_start: str('perish:{}',   $effect_state.duration)"],
         "on_end": ["log_start: 'perish:0'", "faint: $target"]
       }
     }
@@ -1197,13 +1177,7 @@
     "accuracy": "exempt",
     "pp": 5,
     "target": "AllyTeam",
-    "flags": [
-      "BypassMaxGuard",
-      "BypassSubstitute",
-      "Distance",
-      "Snatch",
-      "Sound"
-    ],
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Distance", "Snatch", "Sound"],
     "z_move": {
       "effect": "zpowerheal"
     },
@@ -1215,10 +1189,7 @@
           "foreach $ally in func_call(all_mons_on_side: $source.side):",
           [
             "if $ally == $source or !$ally.is_soundproof:",
-            [
-              "$cured = func_call(cure_status: $ally)",
-              "$success = $success or $cured"
-            ]
+            ["$cured = func_call(cure_status: $ally)", "$success = $success or $cured"]
           ],
           "return $success"
         ]
@@ -1238,9 +1209,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_move_base_power": [
-          "return func_call(max: 1 expr($source.friendship * 10 / 25))"
-        ]
+        "on_move_base_power": ["return func_call(max: 1 expr($source.friendship * 10 / 25))"]
       }
     }
   },
@@ -1408,9 +1377,7 @@
           "else:",
           ["$effect_state.magnitude = 10", "$move.base_power = 150"]
         ],
-        "on_use_move_message": [
-          "log_activate: str('magnitude:{}', $effect_state.magnitude)"
-        ]
+        "on_use_move_message": ["log_activate: str('magnitude:{}',   $effect_state.magnitude)"]
       }
     }
   },
@@ -1489,13 +1456,7 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "FailEncore",
-      "Mirror",
-      "Protect",
-      "Reflectable"
-    ],
+    "flags": ["BypassSubstitute", "FailEncore", "Mirror", "Protect", "Reflectable"],
     "hit_effect": {
       "volatile_status": "encore"
     },
@@ -1528,10 +1489,7 @@
           "if func_call(will_move_this_turn: $target):",
           ["$effect_state.duration = $effect_state.duration + 1"]
         ],
-        "on_override_move": [
-          "if $move != $effect_state.move:",
-          ["return $effect_state.move"]
-        ],
+        "on_override_move": ["if $move != $effect_state.move:", ["return $effect_state.move"]],
         "on_residual": [
           "$index = func_call(move_slot_index: $target $effect_state.move)",
           "if $index.is_defined:",
@@ -1544,10 +1502,7 @@
           "if !func_call(has_move: $mon $effect_state.move):",
           ["return"],
           "foreach $move_slot in $mon.move_slots:",
-          [
-            "if $move_slot.id != $effect_state.move:",
-            ["disable_move: $mon $move_slot.id"]
-          ]
+          ["if $move_slot.id != $effect_state.move:", ["disable_move: $mon $move_slot.id"]]
         ]
       }
     }

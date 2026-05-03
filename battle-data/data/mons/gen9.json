@@ -2557,11 +2557,7 @@
       "spe": 82
     },
     "base_forme": "Curly",
-    "formes": [
-      "Tatsugiri-Droopy",
-      "Tatsugiri-Stretchy",
-      "Tatsugiri-Curly-Mega"
-    ],
+    "formes": ["Tatsugiri-Droopy", "Tatsugiri-Stretchy", "Tatsugiri-Curly-Mega"],
     "flags": [],
     "learnset": {}
   },
@@ -3881,11 +3877,7 @@
       "spd": 96,
       "spe": 110
     },
-    "formes": [
-      "Ogerpon-Wellspring-Mask",
-      "Ogerpon-Hearthflame-Mask",
-      "Ogerpon-Cornerstone-Mask"
-    ],
+    "formes": ["Ogerpon-Wellspring-Mask", "Ogerpon-Hearthflame-Mask", "Ogerpon-Cornerstone-Mask"],
     "flags": [],
     "learnset": {}
   },

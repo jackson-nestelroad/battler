@@ -221,14 +221,7 @@
     "pp": 20,
     "priority": -6,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "FailCopycat",
-      "Mirror",
-      "NoAssist",
-      "Reflectable",
-      "Wind"
-    ],
+    "flags": ["BypassSubstitute", "FailCopycat", "Mirror", "NoAssist", "Reflectable", "Wind"],
     "hit_effect": {
       "target": {
         "force_switch": true
@@ -272,10 +265,7 @@
           ["return"],
           "return false"
         ],
-        "on_source_modify_damage": [
-          "if [gust, twister] has $move.id:",
-          ["return $damage * 2"]
-        ]
+        "on_source_modify_damage": ["if [gust, twister] has $move.id:", ["return $damage * 2"]]
       }
     }
   },
@@ -365,9 +355,7 @@
     "flags": ["Contact", "CrashDamage", "Gravity", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_failed": [
-          "damage: $user expr($user.base_max_hp / 2) $this.condition"
-        ]
+        "on_move_failed": ["damage: $user expr($user.base_max_hp / 2) $this.condition"]
       }
     }
   },
@@ -702,14 +690,7 @@
     "accuracy": 55,
     "pp": 15,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "Mirror",
-      "Protect",
-      "Reflectable",
-      "SleepInducing",
-      "Sound"
-    ],
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "SleepInducing", "Sound"],
     "hit_effect": {
       "status": "slp"
     },
@@ -780,32 +761,21 @@
           ["return false"],
           "# Ensure the target's last move can be disbled.",
           "foreach $move_slot in $target.move_slots:",
-          [
-            "if $move_slot.id == $target.last_move.id and $move_slot.pp == 0:",
-            ["return false"]
-          ],
+          ["if $move_slot.id == $target.last_move.id and $move_slot.pp == 0:", ["return false"]],
           "if $source_effect.is_ability:",
-          [
-            "log_start: with_source_effect str('disabledmove:{}', $target.last_move.name)"
-          ],
+          ["log_start: with_source_effect str('disabledmove:{}', $target.last_move.name)"],
           "else:",
-          ["log_start: str('disabledmove:{}', $target.last_move.name)"],
+          ["log_start: str('disabledmove:{}',   $target.last_move.name)"],
           "$effect_state.move = $target.last_move.id"
         ],
         "on_end": ["log_end"],
         "on_before_move": {
           "priority": 7,
-          "program": [
-            "if $move.id == $effect_state.move:",
-            ["log_cant", "return false"]
-          ]
+          "program": ["if $move.id == $effect_state.move:", ["log_cant", "return false"]]
         },
         "on_disable_move": [
           "foreach $move_slot in $mon.move_slots:",
-          [
-            "if $move_slot.id == $effect_state.move:",
-            ["disable_move: $mon $move_slot.id"]
-          ]
+          ["if $move_slot.id == $effect_state.move:", ["disable_move: $mon $move_slot.id"]]
         ]
       }
     }
@@ -892,10 +862,7 @@
           "foreach $stat in func_call(boostable_stats):",
           [
             "if func_call(get_boost: $boosts $stat) < 0:",
-            [
-              "$boosts = func_call(set_boost: $boosts $stat 0)",
-              "$activated = true"
-            ]
+            ["$boosts = func_call(set_boost: $boosts $stat 0)", "$activated = true"]
           ],
           "if $activated:",
           ["log_activate: with_target"],
@@ -1121,14 +1088,7 @@
     "pp": 20,
     "priority": -5,
     "target": "Scripted",
-    "flags": [
-      "Contact",
-      "FailCopycat",
-      "FailMeFirst",
-      "NoAssist",
-      "NoMetronome",
-      "Protect"
-    ],
+    "flags": ["Contact", "FailCopycat", "FailMeFirst", "NoAssist", "NoMetronome", "Protect"],
     "max_move": {
       "base_power": 75
     },
@@ -1241,11 +1201,7 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": [
-          "if func_call(has_type: $target grass):",
-          ["return false"],
-          "log_start"
-        ],
+        "on_start": ["if func_call(has_type: $target grass):", ["return false"], "log_start"],
         "on_residual": [
           "# Leech Seed activates as long as there is a Mon in the original source position to heal.",
           "$source = func_call(mon_in_position: $effect_state.source_side $effect_state.source_position)",
@@ -1560,15 +1516,7 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": [
-      "Charge",
-      "Contact",
-      "FailInstruct",
-      "Mirror",
-      "NoAssist",
-      "NoSleepTalk",
-      "Protect"
-    ],
+    "flags": ["Charge", "Contact", "FailInstruct", "Mirror", "NoAssist", "NoSleepTalk", "Protect"],
     "effect": {
       "delegates": ["condition:chargemovebase"]
     },
@@ -1753,10 +1701,7 @@
           ["return func_call(can_escape: $user)"],
           "return func_call(can_switch: $user.player)"
         ],
-        "on_hit": [
-          "if $target.player.can_escape:",
-          ["return func_call(escape: $target)"]
-        ]
+        "on_hit": ["if $target.player.can_escape:", ["return func_call(escape: $target)"]]
       }
     }
   },
@@ -1909,10 +1854,7 @@
           "if $effect_state.boosted has $move.id:",
           ["return $damage * 2"]
         ],
-        "on_accuracy_exempt": [
-          "if $effect_state.boosted has $move.id:",
-          ["return false"]
-        ]
+        "on_accuracy_exempt": ["if $effect_state.boosted has $move.id:", ["return false"]]
       }
     }
   },
@@ -2398,14 +2340,7 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": [
-      "Charge",
-      "Contact",
-      "FailInstruct",
-      "Mirror",
-      "NoSleepTalk",
-      "Protect"
-    ],
+    "flags": ["Charge", "Contact", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "effect": {
       "delegates": ["condition:chargemovebase"],
       "callbacks": {
@@ -2509,9 +2444,7 @@
     "flags": ["Contact", "CrashDamage", "Gravity", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_failed": [
-          "damage: $user expr($user.base_max_hp / 2) $this.condition"
-        ]
+        "on_move_failed": ["damage: $user expr($user.base_max_hp / 2) $this.condition"]
       }
     }
   },
@@ -2612,14 +2545,7 @@
     "accuracy": 90,
     "pp": 5,
     "target": "Any",
-    "flags": [
-      "Charge",
-      "Distance",
-      "FailInstruct",
-      "Mirror",
-      "NoSleepTalk",
-      "Protect"
-    ],
+    "flags": ["Charge", "Distance", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "secondary_effects": [
       {
         "chance": "30%",
@@ -2640,14 +2566,7 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "Normal",
-    "flags": [
-      "FailCopycat",
-      "FailEncore",
-      "FailInstruct",
-      "FailMimic",
-      "NoAssist",
-      "NoMetronome"
-    ],
+    "flags": ["FailCopycat", "FailEncore", "FailInstruct", "FailMimic", "NoAssist", "NoMetronome"],
     "z_move": {
       "effect": "zpowerheal"
     },
@@ -2739,9 +2658,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_damage": [
-          "return func_call(random: 50 151) * $source.level / 100"
-        ]
+        "on_move_damage": ["return func_call(random: 50 151) * $source.level / 100"]
       }
     }
   },
@@ -2986,9 +2903,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_damage": [
-          "return func_call(max: expr($target.undynamaxed_hp / 2) 1)"
-        ]
+        "on_move_damage": ["return func_call(max: expr($target.undynamaxed_hp / 2) 1)"]
       }
     }
   },
@@ -3050,11 +2965,7 @@
           "$move.total_damage = $move.total_damage + $damage",
           "# Break the substitute when HP falls to 0.",
           "if $effect_state.hp == 0:",
-          [
-            "if $move.ohko:",
-            ["log_ohko: $target"],
-            "remove_volatile: $target substitute"
-          ],
+          ["if $move.ohko:", ["log_ohko: $target"], "remove_volatile: $target substitute"],
           "else:",
           ["log_activate: with_target damage"],
           "# Some move effects still apply.",

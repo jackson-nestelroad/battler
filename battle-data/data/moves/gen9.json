@@ -10,10 +10,7 @@
     "flags": ["Mirror", "MustPressure", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_base_power": [
-          "if $source.terastallized == stellar:",
-          ["return 100"]
-        ],
+        "on_move_base_power": ["if $source.terastallized == stellar:", ["return 100"]],
         "on_modify_move_type": [
           "if $user.terastallized.is_defined:",
           ["return $user.terastallized"]

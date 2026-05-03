@@ -21,6 +21,9 @@ pub enum AbilityFlag {
     /// Cannot be overwritten by Entrainment.
     #[string = "NoEntrainmentTarget"]
     NoEntrainmentTarget,
+    /// Cannot be copied by Receiver.
+    #[string = "NoReceiver"]
+    NoReceiver,
     /// Cannot be copied by Role Play.
     #[string = "NoRolePlay"]
     NoRolePlay,

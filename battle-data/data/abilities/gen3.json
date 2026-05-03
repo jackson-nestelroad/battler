@@ -38,10 +38,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_residual": [
-          "if $target.active_turns > 0:",
-          ["boost: $target 'spe:1'"]
-        ]
+        "on_residual": ["if $target.active_turns > 0:", ["boost: $target 'spe:1'"]]
       }
     }
   },
@@ -59,10 +56,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_try_hit": [
-          "if $move.ohko:",
-          ["log_immune: $target from_effect", "return stopfail"]
-        ],
+        "on_try_hit": ["if $move.ohko:", ["log_immune: $target from_effect", "return stopfail"]],
         "on_damage": {
           "priority": -100,
           "program": [
@@ -80,10 +74,7 @@
       "callbacks": {
         "on_any_try_move": [
           "if [explosion, mindblown, mistyexplosion, selfdestruct] has $move.id:",
-          [
-            "log_cant: with_source use_effect_state_target_as_source",
-            "return false"
-          ]
+          ["log_cant: with_source use_effect_state_target_as_source", "return false"]
         ],
         "on_any_damage": ["if $effect.id == aftermath:", ["return 0"]]
       }
@@ -111,10 +102,7 @@
     "effect": {
       "callbacks": {
         "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]],
-        "on_modify_accuracy": [
-          "if $field.weather == sandstormweather:",
-          ["return $acc * 4/5"]
-        ]
+        "on_modify_accuracy": ["if $field.weather == sandstormweather:", ["return $acc * 4/5"]]
       }
     }
   },
@@ -243,10 +231,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_update": [
-          "if $mon.status == psn or $mon.status == tox:",
-          ["cure_status: $mon"]
-        ],
+        "on_update": ["if $mon.status == psn or $mon.status == tox:", ["cure_status: $mon"]],
         "on_set_status": [
           "if $status.id != psn and $status.id != tox:",
           ["return"],
@@ -262,10 +247,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "if $effect_state.activated:",
-          ["add_volatile: $target $this.id"]
-        ],
+        "on_start": ["if $effect_state.activated:", ["add_volatile: $target $this.id"]],
         "on_try_hit": [
           "if $target == $source or $move.type != fire:",
           ["return"],
@@ -288,14 +270,8 @@
           "log_start"
         ],
         "on_end": ["log_end: silent"],
-        "on_modify_atk": [
-          "if $effect.is_defined and $effect.type == fire:",
-          ["return $atk * 3/2"]
-        ],
-        "on_modify_spa": [
-          "if $effect.is_defined and $effect.type == fire:",
-          ["return $spa * 3/2"]
-        ]
+        "on_modify_atk": ["if $effect.is_defined and $effect.type == fire:", ["return $atk * 3/2"]],
+        "on_modify_spa": ["if $effect.is_defined and $effect.type == fire:", ["return $spa * 3/2"]]
       }
     }
   },
@@ -394,7 +370,7 @@
   },
   "wonderguard": {
     "name": "Wonder Guard",
-    "flags": ["Breakable", "NoRolePlay", "NoSkillSwap"],
+    "flags": ["Breakable", "NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap"],
     "effect": {
       "callbacks": {
         "on_try_hit": [
@@ -570,7 +546,7 @@
   },
   "trace": {
     "name": "Trace",
-    "flags": ["NoEntrainment", "NoRolePlay", "NoTrace"],
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_update": [
@@ -659,7 +635,7 @@
   },
   "soundproof": {
     "name": "Soundproof",
-    "flags": [],
+    "flags": ["Breakable"],
     "effect": {
       "callbacks": {
         "is_soundproof": ["return true"],
@@ -675,10 +651,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_weather": [
-          "if $effect.is_raining:",
-          ["heal: $target expr($target.base_max_hp / 16)"]
-        ]
+        "on_weather": ["if $effect.is_raining:", ["heal: $target expr($target.base_max_hp / 16)"]]
       }
     }
   },
@@ -837,10 +810,7 @@
     "effect": {
       "callbacks": {
         "on_modify_atk": ["return $atk * 3/2"],
-        "on_source_modify_accuracy": [
-          "if $move.category == physical:",
-          ["return $acc * 4/5"]
-        ]
+        "on_source_modify_accuracy": ["if $move.category == physical:", ["return $acc * 4/5"]]
       }
     }
   },
@@ -880,7 +850,7 @@
   },
   "forecast": {
     "name": "Forecast",
-    "flags": ["NoEntrainment", "NoRolePlay", "NoTrace"],
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: WeatherChange"],

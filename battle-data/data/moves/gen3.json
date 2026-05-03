@@ -30,14 +30,7 @@
     "accuracy": 100,
     "pp": 10,
     "target": "RandomNormal",
-    "flags": [
-      "BypassSubstitute",
-      "FailInstruct",
-      "Mirror",
-      "NoSleepTalk",
-      "Protect",
-      "Sound"
-    ],
+    "flags": ["BypassSubstitute", "FailInstruct", "Mirror", "NoSleepTalk", "Protect", "Sound"],
     "user_effect": {
       "volatile_status": "uproar"
     },
@@ -47,10 +40,7 @@
         "on_start": [
           "log_start",
           "foreach $mon in func_call(all_active_mons):",
-          [
-            "if !$mon.is_soundproof and $mon.status == slp:",
-            ["cure_status: $mon"]
-          ]
+          ["if !$mon.is_soundproof and $mon.status == slp:", ["cure_status: $mon"]]
         ],
         "on_residual": [
           "if $target.last_move.is_defined and $target.last_move.id == struggle:",
@@ -355,14 +345,8 @@
     "condition": {
       "duration": 1,
       "callbacks": {
-        "on_start": [
-          "$effect_state.lost_focus = false",
-          "log_single_turn: with_target"
-        ],
-        "on_hit": [
-          "if $move.category != status:",
-          ["$effect_state.lost_focus = true"]
-        ],
+        "on_start": ["$effect_state.lost_focus = false", "log_single_turn: with_target"],
+        "on_hit": ["if $move.category != status:", ["$effect_state.lost_focus = true"]],
         "on_add_volatile": ["if $volatile.id == flinch:", ["return false"]]
       }
     }
@@ -378,10 +362,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_base_power": [
-          "if $target.status == par:",
-          ["return $move.base_power * 2"]
-        ],
+        "on_move_base_power": ["if $target.status == par:", ["return $move.base_power * 2"]],
         "on_hit": ["if $target.status == par:", ["cure_status: $target"]]
       }
     }
@@ -504,10 +485,7 @@
           ["log_start"],
           "return true"
         ],
-        "on_source_base_power": [
-          "if $move.type == electric:",
-          ["return $base_power * 2"]
-        ],
+        "on_source_base_power": ["if $move.type == electric:", ["return $base_power * 2"]],
         "on_move_aborted": ["run_event_on_move: AfterMove"],
         "on_after_move": [
           "if $move.type == electric and $move.id != $this.id:",
@@ -536,10 +514,7 @@
     "condition": {
       "duration": 3,
       "callbacks": {
-        "on_duration": [
-          "if !func_call(will_move_this_turn: $target):",
-          ["return 4"]
-        ],
+        "on_duration": ["if !func_call(will_move_this_turn: $target):", ["return 4"]],
         "on_start": ["log_start"],
         "on_end": ["log_end"],
         "on_disable_move": [
@@ -577,26 +552,19 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": [
-          "return $target.newly_switched or func_call(will_move_this_turn: $target)"
-        ]
+        "on_try_hit": ["return $target.newly_switched or func_call(will_move_this_turn: $target)"]
       }
     },
     "condition": {
       "duration": 1,
       "callbacks": {
-        "on_start": [
-          "$effect_state.multiplier = 3/2",
-          "log_single_turn: with_target with_source"
-        ],
+        "on_start": ["$effect_state.multiplier = 3/2", "log_single_turn: with_target with_source"],
         "on_restart": [
           "$effect_state.multiplier = $effect_state.multiplier * 3/2",
           "log_single_turn: with_target with_source",
           "return true"
         ],
-        "on_source_base_power": [
-          "return $base_power * $effect_state.multiplier"
-        ]
+        "on_source_base_power": ["return $base_power * $effect_state.multiplier"]
       }
     }
   },
@@ -615,9 +583,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_immunity": [
-          "return !func_call(has_ability: $target stickyhold)"
-        ],
+        "on_try_immunity": ["return !func_call(has_ability: $target stickyhold)"],
         "on_try_hit": [
           "# No items.",
           "if !$source.item and !$target.item:",
@@ -670,10 +636,7 @@
           "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $source.ability permanent) or func_call(ability_has_flag: $target.ability noroleplay):",
           ["return false"]
         ],
-        "on_hit": [
-          "if !func_call(set_ability: $source $target.ability):",
-          ["return false"]
-        ]
+        "on_hit": ["if !func_call(set_ability: $source $target.ability):", ["return false"]]
       }
     }
   },
@@ -918,7 +881,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $target.status.is_defined or func_call(check_immunity: $target slp):",
+          "if $target.status.is_defined or $target.is_asleep or func_call(check_immunity: $target slp):",
           ["return false"]
         ]
       }
@@ -928,10 +891,7 @@
       "duration": 2,
       "callbacks": {
         "on_start": ["log_start: with_source"],
-        "on_end": [
-          "log_end: silent",
-          "set_status: $target slp $effect_state.source"
-        ]
+        "on_end": ["log_end: silent", "set_status: $target slp $effect_state.source"]
       }
     }
   },
@@ -952,11 +912,7 @@
           ["return"],
           "return $move.base_power * 3/2"
         ],
-        "on_after_hit": [
-          "if $source.hp == 0:",
-          ["return"],
-          "take_item: $target"
-        ]
+        "on_after_hit": ["if $source.hp == 0:", ["return"], "take_item: $target"]
       }
     }
   },
@@ -989,9 +945,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_base_power": [
-          "return $move.base_power * $source.hp / $source.max_hp"
-        ]
+        "on_move_base_power": ["return $move.base_power * $source.hp / $source.max_hp"]
       }
     }
   },
@@ -1031,10 +985,7 @@
             "set_ability: $target $source_ability silent"
           ],
           "else:",
-          [
-            "set_ability: $source $target_ability",
-            "set_ability: $target $source_ability"
-          ]
+          ["set_ability: $source $target_ability", "set_ability: $target $source_ability"]
         ]
       }
     }
@@ -1133,13 +1084,7 @@
     "pp": 10,
     "priority": 4,
     "target": "User",
-    "flags": [
-      "BypassSubstitute",
-      "FailCopycat",
-      "MustPressure",
-      "NoAssist",
-      "NoMetronome"
-    ],
+    "flags": ["BypassSubstitute", "FailCopycat", "MustPressure", "NoAssist", "NoMetronome"],
     "hit_effect": {
       "volatile_status": "snatch"
     },
@@ -1185,29 +1130,19 @@
           "else if $terrain == grassyterrain:",
           ["$secondary_effect.target.status = slp"],
           "else if $terrain == mistyterrain:",
-          [
-            "$secondary_effect.target.boosts = func_call(boost_table: 'spa:-1')"
-          ],
+          ["$secondary_effect.target.boosts = func_call(boost_table: 'spa:-1')"],
           "else if $terrain == psychicterrain:",
-          [
-            "$secondary_effect.target.boosts = func_call(boost_table: 'spe:-1')"
-          ],
+          ["$secondary_effect.target.boosts = func_call(boost_table: 'spe:-1')"],
           "else if $field.environment == cave:",
           ["$secondary_effect.target.volatile_status = flinch"],
           "else if $field.environment == sand:",
-          [
-            "$secondary_effect.target.boosts = func_call(boost_table: 'acc:-1')"
-          ],
+          ["$secondary_effect.target.boosts = func_call(boost_table: 'acc:-1')"],
           "else if $field.environment == water:",
-          [
-            "$secondary_effect.target.boosts = func_call(boost_table: 'atk:-1')"
-          ],
+          ["$secondary_effect.target.boosts = func_call(boost_table: 'atk:-1')"],
           "else if $field.environment == ice:",
           ["$secondary_effect.target.status = frz"],
           "else if $field.environment == sky:",
-          [
-            "$secondary_effect.target.boosts = func_call(boost_table: 'spe:-1')"
-          ],
+          ["$secondary_effect.target.boosts = func_call(boost_table: 'spe:-1')"],
           "else if $field.environment == grass:",
           ["$secondary_effect.target.status = slp"],
           "else if $field.environment == volcano:",
@@ -1227,15 +1162,7 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": [
-      "Charge",
-      "Contact",
-      "FailInstruct",
-      "Mirror",
-      "NoAssist",
-      "NoSleepTalk",
-      "Protect"
-    ],
+    "flags": ["Charge", "Contact", "FailInstruct", "Mirror", "NoAssist", "NoSleepTalk", "Protect"],
     "effect": {
       "delegates": ["condition:chargemovebase"]
     },
@@ -1247,15 +1174,8 @@
           "if $effect.id == sandstormweather or $effect.id == hailweather:",
           ["return false"]
         ],
-        "on_invulnerability": [
-          "if [surf, whirlpool] has $move.id:",
-          ["return"],
-          "return false"
-        ],
-        "on_source_modify_damage": [
-          "if [surf, whirlpool] has $move.id:",
-          ["return $damage * 2"]
-        ]
+        "on_invulnerability": ["if [surf, whirlpool] has $move.id:", ["return"], "return false"],
+        "on_source_modify_damage": ["if [surf, whirlpool] has $move.id:", ["return $damage * 2"]]
       }
     }
   },
@@ -1447,10 +1367,7 @@
       "duration": 5,
       "callbacks": {
         "on_field_start": ["log_field_start: with_source"],
-        "on_base_power": [
-          "if $move.type == electric:",
-          ["return $base_power / 3"]
-        ],
+        "on_base_power": ["if $move.type == electric:", ["return $base_power / 3"]],
         "on_field_end": ["log_field_end"]
       }
     }
@@ -1463,14 +1380,7 @@
     "accuracy": 90,
     "pp": 20,
     "target": "Normal",
-    "flags": [
-      "Bullet",
-      "Contact",
-      "FailInstruct",
-      "Mirror",
-      "NoParentalBond",
-      "Protect"
-    ],
+    "flags": ["Bullet", "Contact", "FailInstruct", "Mirror", "NoParentalBond", "Protect"],
     "effect": {
       "delegates": ["move:rollout"]
     },
@@ -1650,10 +1560,7 @@
           "else if $weather.id == sandstormweather:",
           ["return rock"]
         ],
-        "on_move_base_power": [
-          "if $move.type != normal:",
-          ["return $move.base_power * 2"]
-        ]
+        "on_move_base_power": ["if $move.type != normal:", ["return $move.base_power * 2"]]
       }
     }
   },
@@ -1665,11 +1572,11 @@
     "pp": 5,
     "target": "AllyTeam",
     "flags": ["BypassMaxGuard", "Distance", "Snatch"],
-    "z_move": {
-      "effect": "zpowerheal"
-    },
     "hit_effect": {
       "side_condition": "aromatherapy"
+    },
+    "z_move": {
+      "effect": "zpowerheal"
     },
     "condition": {
       "duration": 0,
@@ -1680,10 +1587,7 @@
           "foreach $ally in func_call(all_mons_on_side: $source.side):",
           [
             "if $ally == $source or !$ally.is_behind_substitute or $move.effect_state.infiltrates:",
-            [
-              "$cured = func_call(cure_status: $ally)",
-              "$success = $success or $cured"
-            ]
+            ["$cured = func_call(cure_status: $ally)", "$success = $success or $cured"]
           ],
           "return $success"
         ]
@@ -1821,14 +1725,7 @@
     "accuracy": 55,
     "pp": 15,
     "target": "Normal",
-    "flags": [
-      "BypassSubstitute",
-      "Mirror",
-      "Protect",
-      "Reflectable",
-      "SleepInducing",
-      "Sound"
-    ],
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "SleepInducing", "Sound"],
     "hit_effect": {
       "status": "slp"
     },
@@ -1889,9 +1786,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_move_base_power": [
-          "return $move.base_power * $source.hp / $source.max_hp"
-        ]
+        "on_move_base_power": ["return $move.base_power * $source.hp / $source.max_hp"]
       }
     }
   },

@@ -23,10 +23,7 @@
           "if $target.status != psn && $target.status != tox:",
           ["return false"]
         ],
-        "on_player_use": [
-          "if $mon.status == psn or $mon.status == tox:",
-          ["cure_status: $mon"]
-        ]
+        "on_player_use": ["if $mon.status == psn or $mon.status == tox:", ["cure_status: $mon"]]
       }
     }
   },
@@ -36,10 +33,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if $target.status != brn:",
-          ["return false"]
-        ],
+        "on_player_try_use_item": ["if $target.status != brn:", ["return false"]],
         "on_player_use": ["if $mon.status == brn:", ["cure_status: $mon"]]
       }
     }
@@ -50,10 +44,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if $target.status != frz:",
-          ["return false"]
-        ],
+        "on_player_try_use_item": ["if $target.status != frz:", ["return false"]],
         "on_player_use": ["if $mon.status == frz:", ["cure_status: $mon"]]
       }
     }
@@ -64,10 +55,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if $target.status != slp:",
-          ["return false"]
-        ],
+        "on_player_try_use_item": ["if $target.status != slp:", ["return false"]],
         "on_player_use": ["if $mon.status == slp:", ["cure_status: $mon"]]
       }
     }
@@ -78,10 +66,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if $target.status != par:",
-          ["return false"]
-        ],
+        "on_player_try_use_item": ["if $target.status != par:", ["return false"]],
         "on_player_use": ["if $mon.status == par:", ["cure_status: $mon"]]
       }
     }
@@ -156,10 +141,7 @@
           "if !$target.status and !func_call(has_volatile: $target confusion):",
           ["return false"]
         ],
-        "on_player_use": [
-          "cure_status: $mon",
-          "remove_volatile: $mon confusion"
-        ]
+        "on_player_use": ["cure_status: $mon", "remove_volatile: $mon confusion"]
       }
     }
   },

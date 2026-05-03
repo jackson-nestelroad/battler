@@ -9,10 +9,7 @@
           "if func_call(has_side_condition: $target.side mist):",
           ["return false"]
         ],
-        "on_player_use": [
-          "add_side_condition: $mon.side mist",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_use": ["add_side_condition: $mon.side mist", "increase_friendship: $mon 1 1 0"]
       }
     }
   },
@@ -26,10 +23,7 @@
           "if func_call(has_volatile: $target focusenergy):",
           ["return false"]
         ],
-        "on_player_use": [
-          "add_volatile: $mon focusenergy",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_use": ["add_volatile: $mon focusenergy", "increase_friendship: $mon 1 1 0"]
       }
     }
   },
@@ -39,14 +33,8 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if !func_call(can_boost: $target 'atk:2'):",
-          ["return false"]
-        ],
-        "on_player_use": [
-          "boost: $mon 'atk:2'",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_try_use_item": ["if !func_call(can_boost: $target 'atk:2'):", ["return false"]],
+        "on_player_use": ["boost: $mon 'atk:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
   },
@@ -56,14 +44,8 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if !func_call(can_boost: $target 'def:2'):",
-          ["return false"]
-        ],
-        "on_player_use": [
-          "boost: $mon 'def:2'",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_try_use_item": ["if !func_call(can_boost: $target 'def:2'):", ["return false"]],
+        "on_player_use": ["boost: $mon 'def:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
   },
@@ -73,14 +55,8 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if !func_call(can_boost: $target 'spe:2'):",
-          ["return false"]
-        ],
-        "on_player_use": [
-          "boost: $mon 'spe:2'",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_try_use_item": ["if !func_call(can_boost: $target 'spe:2'):", ["return false"]],
+        "on_player_use": ["boost: $mon 'spe:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
   },
@@ -90,14 +66,8 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if !func_call(can_boost: $target 'acc:2'):",
-          ["return false"]
-        ],
-        "on_player_use": [
-          "boost: $mon 'acc:2'",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_try_use_item": ["if !func_call(can_boost: $target 'acc:2'):", ["return false"]],
+        "on_player_use": ["boost: $mon 'acc:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
   },
@@ -107,14 +77,8 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if !func_call(can_boost: $target 'spa:2'):",
-          ["return false"]
-        ],
-        "on_player_use": [
-          "boost: $mon 'spa:2'",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_try_use_item": ["if !func_call(can_boost: $target 'spa:2'):", ["return false"]],
+        "on_player_use": ["boost: $mon 'spa:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
   },
@@ -124,14 +88,8 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "if !func_call(can_boost: $target 'spd:2'):",
-          ["return false"]
-        ],
-        "on_player_use": [
-          "boost: $mon 'spd:2'",
-          "increase_friendship: $mon 1 1 0"
-        ]
+        "on_player_try_use_item": ["if !func_call(can_boost: $target 'spd:2'):", ["return false"]],
+        "on_player_use": ["boost: $mon 'spd:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
   },

@@ -6,11 +6,7 @@
       "callbacks": {
         "on_try_boost": [
           "if $effect.id == intimidate and $boosts.atk != 0:",
-          [
-            "$boosts.atk = 0",
-            "log_fail_unboost: from_effect atk",
-            "return $boosts"
-          ]
+          ["$boosts.atk = 0", "log_fail_unboost: from_effect atk", "return $boosts"]
         ]
       }
     }

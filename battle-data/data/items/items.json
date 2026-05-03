@@ -82,10 +82,7 @@
         "on_update": [
           "$activate = false",
           "foreach $stat in func_call(boostable_stats):",
-          [
-            "if func_call(get_boost: $mon.boosts $stat) < 0:",
-            ["$activate = true"]
-          ],
+          ["if func_call(get_boost: $mon.boosts $stat) < 0:", ["$activate = true"]],
           "if $activate:",
           ["use_item: $mon"]
         ],
@@ -124,10 +121,7 @@
         "on_sub_priority": {
           "order": 1,
           "priority": -1,
-          "program": [
-            "if func_call(chance: 1 5):",
-            ["log_activate: with_target", "return 1"]
-          ]
+          "program": ["if func_call(chance: 1 5):", ["log_activate: with_target", "return 1"]]
         }
       }
     }
@@ -156,10 +150,7 @@
           "$activate = false",
           "$conditions = [attract, taunt, encore, torment, disable, healblock]",
           "foreach $condition in $conditions:",
-          [
-            "if func_call(has_volatile: $mon $condition):",
-            ["$activate = true"]
-          ],
+          ["if func_call(has_volatile: $mon $condition):", ["$activate = true"]],
           "if $activate:",
           ["use_item: $mon"]
         ],
@@ -743,10 +734,7 @@
     "name": "Red Orb",
     "flags": [],
     "effect": {
-      "delegates": [
-        "condition:untakablebyspeciesitembase",
-        "condition:primalreversionitembase"
-      ],
+      "delegates": ["condition:untakablebyspeciesitembase", "condition:primalreversionitembase"],
       "local_data": {
         "values": {
           "species": "groudon",
@@ -759,10 +747,7 @@
     "name": "Blue Orb",
     "flags": [],
     "effect": {
-      "delegates": [
-        "condition:untakablebyspeciesitembase",
-        "condition:primalreversionitembase"
-      ],
+      "delegates": ["condition:untakablebyspeciesitembase", "condition:primalreversionitembase"],
       "local_data": {
         "values": {
           "species": "kyogre",
@@ -883,10 +868,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_source_base_power": [
-          "if $move.category == physical:",
-          ["return $base_power * 11/10"]
-        ]
+        "on_source_base_power": ["if $move.category == physical:", ["return $base_power * 11/10"]]
       }
     }
   },
@@ -900,10 +882,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_source_base_power": [
-          "if $move.category == special:",
-          ["return $base_power * 11/10"]
-        ]
+        "on_source_base_power": ["if $move.category == special:", ["return $base_power * 11/10"]]
       }
     }
   },
@@ -966,11 +945,7 @@
       "callbacks": {
         "on_charge_move": {
           "priority": -1,
-          "program": [
-            "if !func_call(use_item: $user):",
-            ["return"],
-            "return false"
-          ]
+          "program": ["if !func_call(use_item: $user):", ["return"], "return false"]
         }
       }
     }
@@ -1978,14 +1953,8 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_modify_def": [
-          "if $target.not_fully_evolved:",
-          ["return $def * 3/2"]
-        ],
-        "on_modify_spd": [
-          "if $target.not_fully_evolved:",
-          ["return $spd * 3/2"]
-        ]
+        "on_modify_def": ["if $target.not_fully_evolved:", ["return $def * 3/2"]],
+        "on_modify_spd": ["if $target.not_fully_evolved:", ["return $spd * 3/2"]]
       }
     }
   },
@@ -2675,10 +2644,7 @@
           ["log_block: with_target", "$effect_state.logged_for_trace = true"],
           "return false"
         ],
-        "on_try_hit": [
-          "if $move.id == gastroacid:",
-          ["log_block: with_target", "return false"]
-        ]
+        "on_try_hit": ["if $move.id == gastroacid:", ["log_block: with_target", "return false"]]
       }
     },
     "condition": {
@@ -2738,7 +2704,7 @@
       "callbacks": {
         "on_use_move": [
           "if $move.multihit.is_defined and $move.multihit.max > 4:",
-          ["$move.multihit = [4, $move.multihit.max]"],
+          ["$move.multihit = [4,   $move.multihit.max]"],
           "$move.multiaccuracy = false"
         ]
       }

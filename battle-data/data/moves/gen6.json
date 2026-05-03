@@ -78,10 +78,7 @@
     ],
     "effect": {
       "callbacks": {
-        "on_disable_move": [
-          "if !$mon.ate_item:",
-          ["disable_move: $mon $this.id"]
-        ]
+        "on_disable_move": ["if !$mon.ate_item:", ["disable_move: $mon $this.id"]]
       }
     }
   },
@@ -171,19 +168,9 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": [
-      "Charge",
-      "Contact",
-      "FailInstruct",
-      "Mirror",
-      "NoAssist",
-      "NoSleepTalk"
-    ],
+    "flags": ["Charge", "Contact", "FailInstruct", "Mirror", "NoAssist", "NoSleepTalk"],
     "effect": {
-      "delegates": [
-        "condition:chargemovebase",
-        "condition:breakprotectmovebase"
-      ]
+      "delegates": ["condition:chargemovebase", "condition:breakprotectmovebase"]
     },
     "condition": {
       "duration": 2,
@@ -467,10 +454,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_duration": [
-          "if func_call(has_item: $source terrainextender):",
-          ["return 8"]
-        ],
+        "on_duration": ["if func_call(has_item: $source terrainextender):", ["return 8"]],
         "on_field_start": [
           "if !$source:",
           ["return"],
@@ -510,10 +494,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_duration": [
-          "if func_call(has_item: $source terrainextender):",
-          ["return 8"]
-        ],
+        "on_duration": ["if func_call(has_item: $source terrainextender):", ["return 8"]],
         "on_field_start": [
           "if !$source:",
           ["return"],
@@ -523,10 +504,7 @@
           ["log_field_start"]
         ],
         "on_field_end": ["log_field_end"],
-        "on_base_power": [
-          "if $move.type == dragon:",
-          ["return $base_power * 1/2"]
-        ],
+        "on_base_power": ["if $move.type == dragon:", ["return $base_power * 1/2"]],
         "on_set_status": [
           "if $effect.id == yawn or ($effect.is_move and !$effect.is_move_secondary):",
           ["log_activate: with_target"],
@@ -664,13 +642,7 @@
     "pp": 10,
     "priority": 4,
     "target": "User",
-    "flags": [
-      "FailCopycat",
-      "FailInstruct",
-      "NoAssist",
-      "NoMetronome",
-      "Stalling"
-    ],
+    "flags": ["FailCopycat", "FailInstruct", "NoAssist", "NoMetronome", "Stalling"],
     "hit_effect": {
       "volatile_status": "protect"
     },
@@ -682,10 +654,7 @@
     },
     "condition": {
       "callbacks": {
-        "on_activate": [
-          "if func_call(move_makes_contact: $effect):",
-          ["boost: $source 'atk:-1'"]
-        ]
+        "on_activate": ["if func_call(move_makes_contact: $effect):", ["boost: $source 'atk:-1'"]]
       }
     }
   },
@@ -715,13 +684,7 @@
     "accuracy": "exempt",
     "pp": 20,
     "target": "Normal",
-    "flags": [
-      "BypassMaxGuard",
-      "BypassSubstitute",
-      "Mirror",
-      "Reflectable",
-      "Sound"
-    ],
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Mirror", "Reflectable", "Sound"],
     "hit_effect": {
       "boosts": {
         "spa": -1
@@ -904,7 +867,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return [psn, tox] has $target.status"]
+        "on_try_hit": ["return [psn,   tox] has $target.status"]
       }
     }
   },
@@ -931,11 +894,7 @@
         "on_start": ["log_single_turn: with_target"],
         "on_try_move": [
           "if $move.type == fire:",
-          [
-            "log_activate: with_target",
-            "damage: $user expr($user.max_hp / 4)",
-            "return false"
-          ]
+          ["log_activate: with_target", "damage: $user expr($user.max_hp / 4)", "return false"]
         ]
       }
     }
@@ -989,7 +948,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return func_call(has_ability: $target [plus, minus])"]
+        "on_try_hit": ["return func_call(has_ability: $target [plus,   minus])"]
       }
     }
   },
@@ -1035,10 +994,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_duration": [
-          "if func_call(has_item: $source terrainextender):",
-          ["return 8"]
-        ],
+        "on_duration": ["if func_call(has_item: $source terrainextender):", ["return 8"]],
         "on_field_start": [
           "if !$source:",
           ["return"],
@@ -1060,10 +1016,7 @@
           "if $volatile.id == yawn:",
           ["log_activate: with_target", "return false"]
         ],
-        "on_source_base_power": [
-          "if $move.type == electric:",
-          ["return $base_power * 13/10"]
-        ]
+        "on_source_base_power": ["if $move.type == electric:", ["return $base_power * 13/10"]]
       }
     }
   },
@@ -1084,14 +1037,7 @@
     "accuracy": "exempt",
     "pp": 40,
     "target": "User",
-    "flags": [
-      "FailCopycat",
-      "FailInstruct",
-      "FailMimic",
-      "NoAssist",
-      "NoMetronome",
-      "NoSleepTalk"
-    ],
+    "flags": ["FailCopycat", "FailInstruct", "FailMimic", "NoAssist", "NoMetronome", "NoSleepTalk"],
     "z_move": {
       "boosts": {
         "atk": 1,

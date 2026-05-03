@@ -173,10 +173,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_ally_set_status": [
-          "if $status.id == slp:",
-          ["log_block: with_target", "return false"]
-        ],
+        "on_ally_set_status": ["if $status.id == slp:", ["log_block: with_target", "return false"]],
         "on_ally_add_volatile": [
           "if $volatile.id == yawn:",
           [
@@ -190,13 +187,7 @@
   },
   "stancechange": {
     "name": "Stance Change",
-    "flags": [
-      "NoEntrainment",
-      "NoRolePlay",
-      "NoTrace",
-      "NoSkillSwap",
-      "Permanent"
-    ],
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
     "effect": {
       "callbacks": {
         "on_use_move": [
@@ -234,10 +225,7 @@
           "if func_call(move_has_flag: $move pulse):",
           ["return $base_power * 3/2"]
         ],
-        "on_prepare_hit": [
-          "if $move.id == healpulse:",
-          ["$move.effect_state.multiplier = 3/4"]
-        ]
+        "on_prepare_hit": ["if $move.id == healpulse:", ["$move.effect_state.multiplier = 3/4"]]
       }
     }
   },
@@ -246,10 +234,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_modify_def": [
-          "if $target.effective_terrain == grassyterrain:",
-          ["return $def * 3/2"]
-        ]
+        "on_modify_def": ["if $target.effective_terrain == grassyterrain:", ["return $def * 3/2"]]
       }
     }
   },
@@ -378,10 +363,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "$effect_state.active = true",
-          "set_weather: heavyrainweather"
-        ],
+        "on_start": ["$effect_state.active = true", "set_weather: heavyrainweather"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
           "if $field.weather == heavyrainweather and !($strong_weathers has $weather):",
@@ -402,10 +384,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "$effect_state.active = true",
-          "set_weather: extremelyharshsunlight"
-        ],
+        "on_start": ["$effect_state.active = true", "set_weather: extremelyharshsunlight"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
           "if $field.weather == extremelyharshsunlight and !($strong_weathers has $weather):",

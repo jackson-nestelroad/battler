@@ -518,12 +518,7 @@
       "z_crystal": {
         "from": "Play Rough",
         "into": "Let's Snuggle Forever",
-        "users": [
-          "Mimikyu",
-          "Mimikyu-Busted",
-          "Mimikyu-Totem",
-          "Mimikyu-Busted-Totem"
-        ]
+        "users": ["Mimikyu", "Mimikyu-Busted", "Mimikyu-Totem", "Mimikyu-Busted-Totem"]
       }
     },
     "flags": [],

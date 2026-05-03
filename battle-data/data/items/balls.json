@@ -57,10 +57,7 @@
     "flags": ["Ball"],
     "effect": {
       "callbacks": {
-        "on_modify_catch_rate": [
-          "if $field.environment == water:",
-          ["return $catch_rate * 7/2"]
-        ]
+        "on_modify_catch_rate": ["if $field.environment == water:", ["return $catch_rate * 7/2"]]
       }
     }
   },
@@ -151,10 +148,7 @@
     "flags": ["Ball"],
     "effect": {
       "callbacks": {
-        "on_modify_catch_rate": [
-          "if $battle.turn == 1:",
-          ["return $catch_rate * 5"]
-        ]
+        "on_modify_catch_rate": ["if $battle.turn == 1:", ["return $catch_rate * 5"]]
       }
     }
   },
@@ -233,10 +227,7 @@
     "flags": ["Ball"],
     "effect": {
       "callbacks": {
-        "on_modify_catch_rate": [
-          "if $target.base_stats.spe >= 100:",
-          ["return $catch_rate * 4"]
-        ]
+        "on_modify_catch_rate": ["if $target.base_stats.spe >= 100:", ["return $catch_rate * 4"]]
       }
     }
   },
@@ -281,10 +272,7 @@
     "flags": ["Ball"],
     "effect": {
       "callbacks": {
-        "on_modify_catch_rate": [
-          "if $target.is_asleep:",
-          ["return $catch_rate * 4"]
-        ]
+        "on_modify_catch_rate": ["if $target.is_asleep:", ["return $catch_rate * 4"]]
       }
     }
   },

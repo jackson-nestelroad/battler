@@ -7364,11 +7364,7 @@
       "spe": 96
     },
     "base_forme": "Disguised",
-    "formes": [
-      "Mimikyu-Busted",
-      "Mimikyu-Totem-Disguised",
-      "Mimikyu-Totem-Busted"
-    ],
+    "formes": ["Mimikyu-Busted", "Mimikyu-Totem-Disguised", "Mimikyu-Totem-Busted"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
