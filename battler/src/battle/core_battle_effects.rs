@@ -50,6 +50,8 @@ use crate::{
     general_error,
 };
 
+/// Options for running an event.
+#[derive(Debug)]
 pub struct RunEventOptions {
     /// Forces the first value to be returned, short circuiting the event evaluation.
     ///
@@ -69,7 +71,9 @@ impl Default for RunEventOptions {
     }
 }
 
+/// Options for running a single event callback on an effect.
 pub struct RunEffectEventOptions {
+    /// Overrides the effect that the event callback is triggered on.
     pub effect: Option<AppliedEffectHandle>,
 }
 
@@ -90,11 +94,11 @@ enum AllEffectsTarget {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct CallbackHandle {
-    pub applied_effect_handle: AppliedEffectHandle,
-    pub event: fxlang::BattleEvent,
-    pub event_origin_mon_handle: Option<MonHandle>,
-    pub modifier: fxlang::BattleEventModifier,
-    pub suppressed: bool,
+    applied_effect_handle: AppliedEffectHandle,
+    event: fxlang::BattleEvent,
+    event_origin_mon_handle: Option<MonHandle>,
+    modifier: fxlang::BattleEventModifier,
+    suppressed: bool,
 }
 
 impl CallbackHandle {
@@ -2083,6 +2087,7 @@ fn event_origin_mon_handle(
     }
 }
 
+/// Triggers an event, running all event callbacks on impacted battle effects.
 #[allow(private_bounds)]
 pub fn run_event_with_options<'battle, 'data, Context, Input, Output>(
     context: &mut Context,
@@ -2111,6 +2116,7 @@ where
     Output::from_fxlang_value(result)
 }
 
+/// Triggers an event, running all event callbacks on impacted battle effects.
 #[allow(private_bounds)]
 pub fn run_event_with_input<'battle, 'data, Context, Input, Output>(
     context: &mut Context,
@@ -2126,6 +2132,10 @@ where
     run_event_with_options(context, event, input, RunEventOptions::default())
 }
 
+/// Triggers an event, running all event callbacks on impacted battle effects.
+///
+/// Functionally the same as [`run_event_with_input`], except the input value is used as the default
+/// for the output value. This function is largely supplied as a convenience.
 #[allow(private_bounds)]
 pub fn run_event_with_relay<'battle, 'data, Context, InputOutput>(
     context: &mut Context,
@@ -2147,6 +2157,7 @@ where
     .unwrap_or(input)
 }
 
+/// Triggers an event, running all event callbacks on impacted battle effects.
 #[allow(private_bounds)]
 pub fn run_event<'battle, 'data, Context, Output>(
     context: &mut Context,
@@ -2160,6 +2171,7 @@ where
     run_event_with_options(context, event, (), RunEventOptions::default())
 }
 
+/// Runs an event callback for a single effect.
 #[allow(private_bounds)]
 pub fn run_effect_event_with_options<'battle, 'data, Context, Input, Output>(
     context: &mut Context,
@@ -2223,6 +2235,7 @@ where
     Output::from_fxlang_value(output)
 }
 
+/// Runs an event callback for a single effect.
 #[allow(private_bounds)]
 pub fn run_effect_event_with_input<'battle, 'data, Context, Input, Output>(
     context: &mut Context,
@@ -2238,6 +2251,7 @@ where
     run_effect_event_with_options(context, event, input, RunEffectEventOptions::default())
 }
 
+/// Runs an event callback for a single effect.
 #[allow(private_bounds)]
 pub fn run_effect_event<'battle, 'data, Context, Output>(
     context: &mut Context,
@@ -2322,6 +2336,7 @@ fn run_callback_against_active_move(
     }
 }
 
+/// Runs an event callback for a single active move.
 #[allow(private_bounds)]
 pub fn run_active_move_event_with_input<Input, Output>(
     context: &mut ActiveMoveContext,
@@ -2350,6 +2365,7 @@ where
     Output::from_fxlang_value(output)
 }
 
+/// Runs an event callback for a single active move.
 #[allow(private_bounds)]
 pub fn run_active_move_event<Output>(
     context: &mut ActiveMoveContext,
@@ -2362,6 +2378,7 @@ where
     run_active_move_event_with_input(context, event, target, ())
 }
 
+/// Runs an event, triggered by an effect, for each active Mon on the field.
 pub fn run_event_for_each_active_mon_with_effect(
     context: &mut EffectContext,
     event: fxlang::BattleEvent,
@@ -2377,6 +2394,7 @@ pub fn run_event_for_each_active_mon_with_effect(
     Ok(())
 }
 
+/// Runs an event for each active Mon on the field.
 pub fn run_event_for_each_active_mon(
     context: &mut Context,
     event: fxlang::BattleEvent,
