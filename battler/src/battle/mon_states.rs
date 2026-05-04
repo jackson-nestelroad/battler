@@ -17,7 +17,7 @@ use crate::{
         Field,
         MonContext,
         MonHandle,
-        core_battle_effects_2,
+        core_battle_effects,
     },
     effect::fxlang,
 };
@@ -64,7 +64,7 @@ pub fn effective_types_no_added_type(context: &mut MonContext) -> Vec<Type> {
         return effective_types_no_added_type;
     }
     let effective_types_no_added_type = {
-        let types = core_battle_effects_2::run_event_with_relay::<_, Vec<Type>>(
+        let types = core_battle_effects::run_event_with_relay::<_, Vec<Type>>(
             context,
             fxlang::BattleEvent::ForceTypes,
             Vec::default(),
@@ -101,7 +101,7 @@ fn effective_types_before_forced_types(context: &mut MonContext, added_type: boo
         types.push(added_type);
     }
     let effective_types_before_forced_types = {
-        let types = core_battle_effects_2::run_event_with_relay::<_, Vec<Type>>(
+        let types = core_battle_effects::run_event_with_relay::<_, Vec<Type>>(
             context,
             fxlang::BattleEvent::Types,
             types,
@@ -144,7 +144,7 @@ pub fn berry_eating_health(context: &mut MonContext) -> u16 {
     }
     let berry_eating_health = {
         let health = context.mon().max_hp / 4;
-        core_battle_effects_2::run_event_with_relay::<_, u16>(
+        core_battle_effects::run_event_with_relay::<_, u16>(
             context,
             fxlang::BattleEvent::BerryEatingHealth,
             health,
@@ -165,11 +165,11 @@ pub fn can_heal(context: &mut MonContext) -> bool {
     if let Some(can_heal) = context.mon().volatile_state.effect_cache.can_heal {
         return can_heal;
     }
-    let can_heal = *core_battle_effects_2::run_event_with_options::<_, _, DefaultTrueBool>(
+    let can_heal = *core_battle_effects::run_event_with_options::<_, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::CanHeal,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -183,11 +183,11 @@ pub fn is_asleep(context: &mut MonContext) -> bool {
     if let Some(is_asleep) = context.mon().volatile_state.effect_cache.is_asleep {
         return is_asleep;
     }
-    let is_asleep = core_battle_effects_2::run_event_with_options::<_, _, bool>(
+    let is_asleep = core_battle_effects::run_event_with_options::<_, _, bool>(
         context,
         fxlang::BattleEvent::IsAsleep,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -202,11 +202,11 @@ pub fn is_away_from_field(context: &mut MonContext) -> bool {
     if let Some(is_away_from_field) = context.mon().volatile_state.effect_cache.is_away_from_field {
         return is_away_from_field;
     }
-    let is_away_from_field = core_battle_effects_2::run_event_with_options::<_, _, bool>(
+    let is_away_from_field = core_battle_effects::run_event_with_options::<_, _, bool>(
         context,
         fxlang::BattleEvent::IsAwayFromField,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -229,11 +229,11 @@ pub fn is_behind_substitute(context: &mut MonContext) -> bool {
     {
         return is_behind_substitute;
     }
-    let is_behind_substitute = core_battle_effects_2::run_event_with_options::<_, _, bool>(
+    let is_behind_substitute = core_battle_effects::run_event_with_options::<_, _, bool>(
         context,
         fxlang::BattleEvent::IsBehindSubstitute,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -251,11 +251,11 @@ pub fn is_contact_proof(context: &mut MonContext) -> bool {
     if let Some(is_contact_proof) = context.mon().volatile_state.effect_cache.is_contact_proof {
         return is_contact_proof;
     }
-    let is_contact_proof = core_battle_effects_2::run_event_with_options::<_, _, bool>(
+    let is_contact_proof = core_battle_effects::run_event_with_options::<_, _, bool>(
         context,
         fxlang::BattleEvent::IsContactProof,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -273,11 +273,11 @@ pub fn is_grounded(context: &mut MonContext) -> bool {
     if let Some(is_grounded) = context.mon().volatile_state.effect_cache.is_grounded {
         return is_grounded;
     }
-    let is_grounded = *core_battle_effects_2::run_event_with_options::<_, _, DefaultTrueBool>(
+    let is_grounded = *core_battle_effects::run_event_with_options::<_, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::IsGrounded,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -296,11 +296,11 @@ pub fn is_immune_to_entry_hazards(context: &mut MonContext) -> bool {
     {
         return is_immune_to_entry_hazards;
     }
-    let is_immune_to_entry_hazards = core_battle_effects_2::run_event_with_options::<_, _, bool>(
+    let is_immune_to_entry_hazards = core_battle_effects::run_event_with_options::<_, _, bool>(
         context,
         fxlang::BattleEvent::IsImmuneToEntryHazards,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -318,11 +318,11 @@ pub fn is_soundproof(context: &mut MonContext) -> bool {
     if let Some(is_soundproof) = context.mon().volatile_state.effect_cache.is_soundproof {
         return is_soundproof;
     }
-    let is_soundproof = core_battle_effects_2::run_event_with_options::<_, _, bool>(
+    let is_soundproof = core_battle_effects::run_event_with_options::<_, _, bool>(
         context,
         fxlang::BattleEvent::IsSoundproof,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -341,11 +341,11 @@ pub fn is_semi_invulnerable(context: &mut MonContext) -> bool {
     {
         return is_semi_invulnerable;
     }
-    let is_semi_invulnerable = core_battle_effects_2::run_event_with_options::<_, _, bool>(
+    let is_semi_invulnerable = core_battle_effects::run_event_with_options::<_, _, bool>(
         context,
         fxlang::BattleEvent::IsSemiInvulnerable,
         (),
-        core_battle_effects_2::RunEventOptions {
+        core_battle_effects::RunEventOptions {
             return_first_value: true,
             ..Default::default()
         },
@@ -372,7 +372,7 @@ pub fn override_weather(context: &mut MonContext) -> Option<Id> {
         return override_weather;
     }
     let override_weather = {
-        if let Some(weather) = core_battle_effects_2::run_event::<_, Option<String>>(
+        if let Some(weather) = core_battle_effects::run_event::<_, Option<String>>(
             context,
             fxlang::BattleEvent::OverrideWeather,
         ) {
@@ -419,11 +419,11 @@ fn effective_weather_no_override(context: &mut MonContext) -> Option<Id> {
         return effective_weather;
     }
     let effective_weather = {
-        if core_battle_effects_2::run_event_with_options::<_, _, bool>(
+        if core_battle_effects::run_event_with_options::<_, _, bool>(
             context,
             fxlang::BattleEvent::SuppressMonWeather,
             (),
-            core_battle_effects_2::RunEventOptions {
+            core_battle_effects::RunEventOptions {
                 return_first_value: true,
                 ..Default::default()
             },
@@ -458,11 +458,11 @@ pub fn effective_terrain(context: &mut MonContext) -> Option<Id> {
     let effective_terrain = {
         if !is_grounded(context) || is_semi_invulnerable(context) {
             None
-        } else if core_battle_effects_2::run_event_with_options::<_, _, bool>(
+        } else if core_battle_effects::run_event_with_options::<_, _, bool>(
             context,
             fxlang::BattleEvent::SuppressMonTerrain,
             (),
-            core_battle_effects_2::RunEventOptions {
+            core_battle_effects::RunEventOptions {
                 return_first_value: true,
                 ..Default::default()
             },
@@ -497,11 +497,11 @@ fn check_ability_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
     }
     let ability = context.mon().volatile_state.ability.id.clone();
     let (effective_ability, can_suppress_ability) = {
-        let suppress_ability = core_battle_effects_2::run_event_with_options::<_, _, Option<bool>>(
+        let suppress_ability = core_battle_effects::run_event_with_options::<_, _, Option<bool>>(
             context,
             fxlang::BattleEvent::SuppressMonAbility,
             (),
-            core_battle_effects_2::RunEventOptions {
+            core_battle_effects::RunEventOptions {
                 return_first_value: true,
                 ..Default::default()
             },
@@ -553,11 +553,11 @@ fn check_item_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
         None => return (None, false),
     };
     let (effective_item, can_suppress_item) = {
-        let suppress_item = core_battle_effects_2::run_event_with_options::<_, _, Option<bool>>(
+        let suppress_item = core_battle_effects::run_event_with_options::<_, _, Option<bool>>(
             context,
             fxlang::BattleEvent::SuppressMonItem,
             (),
-            core_battle_effects_2::RunEventOptions {
+            core_battle_effects::RunEventOptions {
                 return_first_value: true,
                 ..Default::default()
             },

@@ -78,7 +78,7 @@ use crate::{
         TeamAction,
         TeamActionInput,
         core_battle_actions,
-        core_battle_effects_2,
+        core_battle_effects,
         mon_states,
     },
     common::Captures,
@@ -1614,7 +1614,7 @@ impl Player {
                 || (item_is_ball
                     && mon_states::is_semi_invulnerable(&mut context.target_context()?));
             let cannot_be_used = cannot_be_used
-                || !core_battle_effects_2::run_effect_event_with_input::<_, _, Option<bool>>(
+                || !core_battle_effects::run_effect_event_with_input::<_, _, Option<bool>>(
                     &mut context,
                     fxlang::BattleEvent::PlayerTryUseItem,
                     input.input_for_fxlang_callback(),

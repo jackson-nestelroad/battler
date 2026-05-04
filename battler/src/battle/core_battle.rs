@@ -76,7 +76,7 @@ use crate::{
         TeamPreviewRequest,
         TurnRequest,
         core_battle_actions,
-        core_battle_effects_2,
+        core_battle_effects,
         core_battle_logs,
         evaluate_outside_effect,
         shift,
@@ -819,7 +819,7 @@ impl<'d> CoreBattle<'d> {
         // REQUIRED to use update_team. Then, validation can occur in the core battle engine, and
         // the interface into the battle engine can do additional validation (i.e., the player is
         // not using Mons it does not truly own).
-        let mut problems = core_battle_effects_2::run_event_with_relay::<_, Vec<String>>(
+        let mut problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
             context,
             fxlang::BattleEvent::ValidateTeam,
             Vec::default(),
@@ -830,7 +830,7 @@ impl<'d> CoreBattle<'d> {
         for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
             let mut context = context.mon_context(mon)?;
 
-            let mut mon_problems = core_battle_effects_2::run_event_with_relay::<_, Vec<String>>(
+            let mut mon_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
                 &mut context,
                 fxlang::BattleEvent::ValidateMon,
                 Vec::default(),
@@ -1340,10 +1340,7 @@ impl<'d> CoreBattle<'d> {
                     None,
                 )?)?;
 
-                core_battle_effects_2::run_event::<_, ()>(
-                    context,
-                    fxlang::BattleEvent::StartBattle,
-                );
+                core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::StartBattle);
 
                 context.battle_mut().mid_turn = true;
             }
@@ -1395,11 +1392,11 @@ impl<'d> CoreBattle<'d> {
                     None,
                     None,
                 )?;
-                core_battle_effects_2::run_effect_event::<_, ()>(
+                core_battle_effects::run_effect_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
                 );
-                core_battle_effects_2::run_event::<_, ()>(
+                core_battle_effects::run_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
                 );
@@ -1409,7 +1406,7 @@ impl<'d> CoreBattle<'d> {
                 if !context.mon().active || !context.mon().active {
                     return Ok(());
                 }
-                core_battle_effects_2::run_effect_event::<_, ()>(
+                core_battle_effects::run_effect_event::<_, ()>(
                     &mut context.applying_effect_context(
                         EffectHandle::InactiveMove(action.id.clone()),
                         None,
@@ -1458,11 +1455,11 @@ impl<'d> CoreBattle<'d> {
             Action::Residual => {
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
-                core_battle_effects_2::run_event_with_options::<_, _, ()>(
+                core_battle_effects::run_event_with_options::<_, _, ()>(
                     context,
                     fxlang::BattleEvent::Residual,
                     (),
-                    core_battle_effects_2::RunEventOptions {
+                    core_battle_effects::RunEventOptions {
                         residual: true,
                         ..Default::default()
                     },
@@ -1779,11 +1776,8 @@ impl<'d> CoreBattle<'d> {
 
         context.battle_mut().registry.next_turn()?;
 
-        core_battle_effects_2::run_event_for_each_active_mon(
-            context,
-            fxlang::BattleEvent::EndTurn,
-        )?;
-        core_battle_effects_2::run_event::<_, ()>(context, fxlang::BattleEvent::BattleEndTurn);
+        core_battle_effects::run_event_for_each_active_mon(context, fxlang::BattleEvent::EndTurn)?;
+        core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::BattleEndTurn);
 
         // Some clauses may forcefully end the battle at the end of a turn.
         if context.battle().ended {
@@ -1928,7 +1922,7 @@ impl<'d> CoreBattle<'d> {
             let priority = context.active_move().data.priority as i32;
             let mut context = context.user_applying_effect_context(None)?;
 
-            let priority = core_battle_effects_2::run_event_with_relay::<_, i32>(
+            let priority = core_battle_effects::run_event_with_relay::<_, i32>(
                 &mut context,
                 fxlang::BattleEvent::ModifyPriority,
                 priority,
@@ -1936,7 +1930,7 @@ impl<'d> CoreBattle<'d> {
 
             action.priority = priority;
 
-            action.sub_priority = core_battle_effects_2::run_event_with_relay::<_, i32>(
+            action.sub_priority = core_battle_effects::run_event_with_relay::<_, i32>(
                 &mut context,
                 fxlang::BattleEvent::SubPriority,
                 0,
@@ -2329,17 +2323,17 @@ impl<'d> CoreBattle<'d> {
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
             match entry.effect.clone() {
-                Some(effect) => core_battle_effects_2::run_event::<_, ()>(
+                Some(effect) => core_battle_effects::run_event::<_, ()>(
                     &mut context.applying_effect_context(effect, entry.source, None)?,
                     fxlang::BattleEvent::Faint,
                 ),
-                None => core_battle_effects_2::run_event::<_, ()>(
+                None => core_battle_effects::run_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::Faint,
                 ),
             };
 
-            core_battle_effects_2::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
+            core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
@@ -2351,7 +2345,7 @@ impl<'d> CoreBattle<'d> {
 
         if !context.battle().ending {
             for ((mon_handle, effect), count) in fainted_count_by_source {
-                core_battle_effects_2::run_event_with_input::<_, _, ()>(
+                core_battle_effects::run_event_with_input::<_, _, ()>(
                     &mut context.mon_context(mon_handle)?,
                     fxlang::BattleEvent::AfterFainted,
                     [
@@ -2385,7 +2379,7 @@ impl<'d> CoreBattle<'d> {
             let mon_handle = context.mon_handle();
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
-            core_battle_effects_2::run_effect_event::<_, ()>(
+            core_battle_effects::run_effect_event::<_, ()>(
                 &mut context.applying_effect_context(
                     EffectHandle::Item(entry.item.clone()),
                     None,
@@ -2393,9 +2387,9 @@ impl<'d> CoreBattle<'d> {
                 )?,
                 fxlang::BattleEvent::Catch,
             );
-            core_battle_effects_2::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Catch);
+            core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Catch);
 
-            core_battle_effects_2::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
+            core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
@@ -2581,7 +2575,7 @@ impl<'d> CoreBattle<'d> {
 
     /// Updates the battle, triggering any miscellaneous effects on Mons that could activate.
     pub fn update(context: &mut Context) -> Result<()> {
-        core_battle_effects_2::run_event_for_each_active_mon_with_effect(
+        core_battle_effects::run_event_for_each_active_mon_with_effect(
             &mut context.effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
             fxlang::BattleEvent::Update,
         )

@@ -62,7 +62,7 @@ use crate::{
         Side,
         SideEffectContext,
         core_battle_actions,
-        core_battle_effects_2,
+        core_battle_effects,
         core_battle_logs,
         mon_states,
     },
@@ -1902,7 +1902,7 @@ fn run_event(mut context: FunctionContext) -> Result<Value> {
 
     match context.evaluation_context_mut() {
         EvaluationContext::ApplyingEffect(_) => {
-            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+            Ok(Value::Boolean(*core_battle_effects::run_event::<
                 _,
                 DefaultTrueBool,
             >(
@@ -1911,19 +1911,19 @@ fn run_event(mut context: FunctionContext) -> Result<Value> {
             )))
         }
         EvaluationContext::PlayerEffect(context) => {
-            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+            Ok(Value::Boolean(*core_battle_effects::run_event::<
                 _,
                 DefaultTrueBool,
             >(context, event)))
         }
         EvaluationContext::SideEffect(context) => {
-            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+            Ok(Value::Boolean(*core_battle_effects::run_event::<
                 _,
                 DefaultTrueBool,
             >(context, event)))
         }
         EvaluationContext::FieldEffect(context) => {
-            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+            Ok(Value::Boolean(*core_battle_effects::run_event::<
                 _,
                 DefaultTrueBool,
             >(context, event)))
@@ -1945,7 +1945,7 @@ fn run_event_for_mon(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+    Ok(Value::Boolean(*core_battle_effects::run_event::<
         _,
         DefaultTrueBool,
     >(&mut context.target_context()?, event)))
@@ -1961,7 +1961,7 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<()> {
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    core_battle_effects_2::run_event_for_each_active_mon_with_effect(
+    core_battle_effects::run_event_for_each_active_mon_with_effect(
         &mut context.effect_context()?,
         event,
     )
@@ -1983,7 +1983,7 @@ fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<Option<Value
     let target_handle = context.target_handle();
     let ability = mon_states::effective_ability(&mut context.target_context()?);
     match ability {
-        Some(ability) => Ok(core_battle_effects_2::run_effect_event_with_options::<
+        Some(ability) => Ok(core_battle_effects::run_effect_event_with_options::<
             _,
             _,
             Option<Value>,
@@ -1991,7 +1991,7 @@ fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<Option<Value
             &mut context,
             event,
             (),
-            core_battle_effects_2::RunEffectEventOptions {
+            core_battle_effects::RunEffectEventOptions {
                 effect: Some(AppliedEffectHandle::new(
                     EffectHandle::Ability(ability),
                     AppliedEffectLocation::MonAbility(target_handle),
@@ -2018,7 +2018,7 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> 
     let target_handle = context.target_handle();
     let item = mon_states::effective_item(&mut context.target_context()?);
     match item {
-        Some(item) => Ok(core_battle_effects_2::run_effect_event_with_options::<
+        Some(item) => Ok(core_battle_effects::run_effect_event_with_options::<
             _,
             _,
             Option<Value>,
@@ -2026,7 +2026,7 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> 
             &mut context,
             event,
             (),
-            core_battle_effects_2::RunEffectEventOptions {
+            core_battle_effects::RunEffectEventOptions {
                 effect: Some(AppliedEffectHandle::new(
                     EffectHandle::Item(item),
                     AppliedEffectLocation::MonItem(target_handle),
@@ -2062,7 +2062,7 @@ fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<Option<Valu
         .battle_mut()
         .get_effect_handle_by_id(&status)?
         .clone();
-    Ok(core_battle_effects_2::run_effect_event_with_options::<
+    Ok(core_battle_effects::run_effect_event_with_options::<
         _,
         _,
         Option<Value>,
@@ -2070,7 +2070,7 @@ fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<Option<Valu
         &mut context,
         event,
         (),
-        core_battle_effects_2::RunEffectEventOptions {
+        core_battle_effects::RunEffectEventOptions {
             effect: Some(AppliedEffectHandle::new(
                 effect_handle,
                 AppliedEffectLocation::MonVolatile(target_handle),
@@ -2104,16 +2104,16 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
     let target = match (target_handle, side_index) {
         (Some(target_handle), _) => {
             if target_handle == user_handle {
-                core_battle_effects_2::MoveTargetForEvent::UserWithTarget(source_handle)
+                core_battle_effects::MoveTargetForEvent::UserWithTarget(source_handle)
             } else {
-                core_battle_effects_2::MoveTargetForEvent::Mon(target_handle)
+                core_battle_effects::MoveTargetForEvent::Mon(target_handle)
             }
         }
-        (None, Some(side_index)) => core_battle_effects_2::MoveTargetForEvent::Side(side_index),
-        (None, None) => core_battle_effects_2::MoveTargetForEvent::None,
+        (None, Some(side_index)) => core_battle_effects::MoveTargetForEvent::Side(side_index),
+        (None, None) => core_battle_effects::MoveTargetForEvent::None,
     };
 
-    Ok(core_battle_effects_2::run_active_move_event::<Option<Value>>(&mut context, event, target))
+    Ok(core_battle_effects::run_active_move_event::<Option<Value>>(&mut context, event, target))
 }
 
 /// Prevents the last move from being animated.
@@ -5635,7 +5635,7 @@ fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
 
     let ability = mon_states::effective_ability(&mut context.target_context()?);
     match ability {
-        Some(ability) => Ok(core_battle_effects_2::run_effect_event_with_options::<
+        Some(ability) => Ok(core_battle_effects::run_effect_event_with_options::<
             _,
             _,
             Option<Value>,
@@ -5643,7 +5643,7 @@ fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
             &mut context,
             BattleEvent::Activate,
             input,
-            core_battle_effects_2::RunEffectEventOptions {
+            core_battle_effects::RunEffectEventOptions {
                 effect: Some(AppliedEffectHandle::new(
                     EffectHandle::Ability(ability),
                     AppliedEffectLocation::MonAbility(target_handle),
@@ -5671,7 +5671,7 @@ fn activate_applying_effect(mut context: FunctionContext) -> Result<Option<Value
         .battle_mut()
         .get_effect_handle_by_id(&effect)?
         .clone();
-    Ok(core_battle_effects_2::run_effect_event::<_, Option<Value>>(
+    Ok(core_battle_effects::run_effect_event::<_, Option<Value>>(
         &mut context
             .forward_to_applying_effect_context_with_effect_and_target(effect, target_handle)?,
         BattleEvent::Activate,
