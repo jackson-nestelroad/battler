@@ -21,6 +21,7 @@ use anyhow::Result;
 use battler_data::{
     Boost,
     BoostTable,
+    DefaultTrueBool,
     Fraction,
     Gender,
     Id,
@@ -1303,12 +1304,12 @@ impl Mon {
         let mut value = context.mon().volatile_state.stats.get(stat);
 
         if !unmodified {
-            value = core_battle_effects::run_event_for_mon_expecting_u16(
+            value = core_battle_effects_2::run_event_with_input::<_, _, Option<u16>>(
                 context,
                 fxlang::BattleEvent::CalculateStat,
-                value,
-                fxlang::VariableInput::from_iter([fxlang::Value::Stat(stat)]),
-            );
+                [value.into(), stat.into()],
+            )
+            .unwrap_or(value);
         }
 
         if !unboosted {
@@ -1331,7 +1332,7 @@ impl Mon {
                         boosts,
                     )
                 }
-                None => core_battle_effects::run_event_for_mon_expecting_boost_table(
+                None => core_battle_effects_2::run_event_with_relay::<_, BoostTable>(
                     &mut context.as_battle_context_mut().mon_context(stat_user)?,
                     fxlang::BattleEvent::ModifyBoosts,
                     boosts,
@@ -1374,11 +1375,10 @@ impl Mon {
                             value,
                         )
                     }
-                    None => core_battle_effects::run_event_for_mon_expecting_u16(
+                    None => core_battle_effects_2::run_event_with_relay::<_, u16>(
                         context,
                         modify_event,
                         value,
-                        fxlang::VariableInput::default(),
                     ),
                 }
             }
@@ -1434,11 +1434,10 @@ impl Mon {
     /// Calculates the speed value to use for battle action ordering.
     pub fn action_speed(context: &mut MonContext) -> Result<u16> {
         let speed = Self::get_stat(context, Stat::Spe, false, false)?;
-        let speed = core_battle_effects::run_event_for_mon_expecting_u16(
+        let speed = core_battle_effects_2::run_event_with_relay::<_, u16>(
             context,
             fxlang::BattleEvent::ModifyActionSpeed,
             speed,
-            fxlang::VariableInput::default(),
         );
         Ok(speed)
     }
@@ -1494,7 +1493,7 @@ impl Mon {
 
     /// Calculates the Mon's weight.
     pub fn get_weight(context: &mut MonContext) -> u32 {
-        core_battle_effects::run_event_for_mon_expecting_u32(
+        core_battle_effects_2::run_event_with_relay::<_, u32>(
             context,
             fxlang::BattleEvent::ModifyWeight,
             context.mon().volatile_state.weight,
@@ -2332,7 +2331,7 @@ impl Mon {
     /// Increases friendship based on the current friendship level.
     pub fn increase_friendship(context: &mut MonContext, delta: [u8; 3]) {
         let delta = delta[(context.mon().friendship / 100) as usize];
-        let delta = core_battle_effects::run_event_for_mon_expecting_u8(
+        let delta = core_battle_effects_2::run_event_with_relay::<_, u8>(
             context,
             fxlang::BattleEvent::ModifyFriendshipIncrease,
             delta,
@@ -2359,18 +2358,18 @@ impl Mon {
             return Ok(false);
         }
 
-        if !core_battle_effects::run_event_for_mon(
+        if !*core_battle_effects_2::run_event_with_input::<_, _, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::NegateImmunity,
-            fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+            typ,
         ) {
             return Ok(false);
         }
 
-        if !core_battle_effects::run_event_for_mon(
+        if !*core_battle_effects_2::run_event_with_input::<_, _, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::TypeImmunity,
-            fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+            typ,
         ) {
             return Ok(true);
         }
@@ -2584,11 +2583,7 @@ impl Mon {
             move_slot.disabled = false;
         }
 
-        core_battle_effects::run_event_for_mon(
-            context,
-            fxlang::BattleEvent::DisableMove,
-            fxlang::VariableInput::default(),
-        );
+        core_battle_effects_2::run_event::<_, ()>(context, fxlang::BattleEvent::DisableMove);
 
         for move_slot in context.mon_mut().volatile_state.move_slots.clone() {
             core_battle_effects_2::run_effect_event::<_, ()>(
@@ -2607,10 +2602,13 @@ impl Mon {
             core_battle_actions::trap_mon(context)?;
         }
 
-        if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        if core_battle_effects_2::run_event_with_options::<_, _, bool>(
             context,
             fxlang::BattleEvent::PreventUsedItems,
-            false,
+            (),
+            core_battle_effects_2::RunEventOptions {
+                return_first_value: true,
+            },
         ) {
             context.mon_mut().next_turn_state.cannot_receive_items = true;
         }
@@ -2636,10 +2634,9 @@ impl Mon {
             context.mon_mut().next_turn_state.can_terastallize = true;
         }
 
-        if let Some(locked_move) = core_battle_effects::run_event_for_mon_expecting_string(
+        if let Some(locked_move) = core_battle_effects_2::run_event::<_, Option<String>>(
             context,
             fxlang::BattleEvent::LockMove,
-            fxlang::VariableInput::default(),
         ) {
             context.mon_mut().next_turn_state.locked_move = Some(locked_move);
 
@@ -2778,10 +2775,13 @@ impl Mon {
 
     /// Checks if the Mon is trapped.
     pub fn trapped(context: &mut MonContext) -> Result<bool> {
-        let trapped = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        let trapped = core_battle_effects_2::run_event_with_options::<_, _, bool>(
             context,
             fxlang::BattleEvent::TrapMon,
-            false,
+            (),
+            core_battle_effects_2::RunEventOptions {
+                return_first_value: true,
+            },
         );
         Ok(trapped)
     }
@@ -2789,22 +2789,30 @@ impl Mon {
     /// Checks if the Mon can escape from battle.
     pub fn can_escape(context: &mut MonContext) -> Result<bool> {
         let can_escape = !Self::trapped(context)?;
-        let can_escape = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        let can_escape = core_battle_effects_2::run_event_with_options::<_, _, Option<bool>>(
             context,
             fxlang::BattleEvent::CanEscape,
-            can_escape,
-        );
+            (),
+            core_battle_effects_2::RunEventOptions {
+                return_first_value: true,
+            },
+        )
+        .unwrap_or(can_escape);
         Ok(can_escape)
     }
 
     /// Checks if the Mon can Dynamax, based on its own effects.
     pub fn can_dynamax(context: &mut MonContext) -> Result<bool> {
         let can_dynamax = true;
-        let can_dynamax = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        let can_dynamax = core_battle_effects_2::run_event_with_options::<_, _, Option<bool>>(
             context,
             fxlang::BattleEvent::CanDynamax,
-            can_dynamax,
-        );
+            (),
+            core_battle_effects_2::RunEventOptions {
+                return_first_value: true,
+            },
+        )
+        .unwrap_or(can_dynamax);
         Ok(can_dynamax)
     }
 

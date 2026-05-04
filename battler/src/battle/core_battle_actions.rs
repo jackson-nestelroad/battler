@@ -815,21 +815,19 @@ fn use_active_move_with_using_move_state(
             fxlang::BattleEvent::BeforeMove,
         );
         let before_move_result = if before_move_result.advance() {
-            core_battle_effects::run_active_move_event_expecting_move_event_result(
+            core_battle_effects_2::run_active_move_event::<MoveEventResult>(
                 &mut context,
                 fxlang::BattleEvent::BeforeMove,
-                core_battle_effects::MoveTargetForEvent::User,
+                core_battle_effects_2::MoveTargetForEvent::User,
             )
-            .unwrap_or(MoveEventResult::Advance)
         } else {
             before_move_result
         };
         if !before_move_result.advance() {
-            core_battle_effects::run_active_move_event_expecting_void(
+            core_battle_effects_2::run_active_move_event::<()>(
                 &mut context,
                 fxlang::BattleEvent::MoveAborted,
-                core_battle_effects::MoveTargetForEvent::None,
-                fxlang::VariableInput::default(),
+                core_battle_effects_2::MoveTargetForEvent::None,
             );
             core_battle_effects_2::run_event::<_, ()>(
                 &mut context.user_applying_effect_context(None)?,
@@ -861,11 +859,11 @@ fn use_active_move_with_using_move_state(
             .set_last_successful_move(Some(active_move_handle));
     }
 
-    core_battle_effects::run_active_move_event_expecting_void(
+    core_battle_effects_2::run_active_move_event_with_input::<_, ()>(
         &mut context,
         fxlang::BattleEvent::AfterMove,
-        core_battle_effects::MoveTargetForEvent::User,
-        fxlang::VariableInput::from_iter([fxlang::Value::Boolean(outcome.success())]),
+        core_battle_effects_2::MoveTargetForEvent::User,
+        outcome.success(),
     );
     core_battle_effects_2::run_event_with_input::<_, _, ()>(
         &mut context.user_applying_effect_context(target)?,
@@ -981,10 +979,10 @@ fn use_active_move_internal(
         .map(fxlang::Value::Mon)
         .unwrap_or(fxlang::Value::Undefined)]);
 
-    core_battle_effects::run_active_move_event_expecting_void(
+    core_battle_effects_2::run_active_move_event_with_input::<_, ()>(
         context,
         fxlang::BattleEvent::UseMove,
-        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
+        core_battle_effects_2::MoveTargetForEvent::UserWithTarget(target),
         use_move_input.clone(),
     );
 
@@ -1019,12 +1017,11 @@ fn use_active_move_internal(
 
     // TODO: Targeted event.
 
-    let try_move_result = core_battle_effects::run_active_move_event_expecting_move_event_result(
+    let try_move_result = core_battle_effects_2::run_active_move_event::<MoveEventResult>(
         context,
         fxlang::BattleEvent::TryMove,
-        core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
-    )
-    .unwrap_or(MoveEventResult::Advance);
+        core_battle_effects_2::MoveTargetForEvent::UserWithTarget(target),
+    );
     let try_move_result = if try_move_result.advance() {
         core_battle_effects_2::run_event::<_, MoveEventResult>(
             &mut context.user_applying_effect_context(target)?,
@@ -1041,11 +1038,10 @@ fn use_active_move_internal(
         return Ok(MoveOutcome::from(try_move_result));
     }
 
-    core_battle_effects::run_active_move_event_expecting_void(
+    core_battle_effects_2::run_active_move_event::<()>(
         context,
         fxlang::BattleEvent::UseMoveMessage,
-        core_battle_effects::MoveTargetForEvent::User,
-        fxlang::VariableInput::default(),
+        core_battle_effects_2::MoveTargetForEvent::User,
     );
 
     if context.active_move().data.self_destruct == Some(SelfDestructType::Always) {
@@ -1082,31 +1078,24 @@ fn use_active_move_internal(
     if !outcome.success() {
         core_battle_logs::do_not_animate_last_move(context);
 
-        core_battle_effects::run_active_move_event_expecting_void(
+        core_battle_effects_2::run_active_move_event::<()>(
             context,
             fxlang::BattleEvent::MoveFailed,
-            core_battle_effects::MoveTargetForEvent::User,
-            fxlang::VariableInput::default(),
+            core_battle_effects_2::MoveTargetForEvent::User,
         );
     }
 
     if !context.active_move().ignore_all_secondary_effects && context.mon().active {
-        let input = fxlang::VariableInput::from_iter([fxlang::Value::List(
-            targets
-                .into_iter()
-                .map(|target| fxlang::Value::Mon(target))
-                .collect(),
-        )]);
-        core_battle_effects::run_active_move_event_expecting_void(
+        core_battle_effects_2::run_active_move_event_with_input::<_, ()>(
             context,
             fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
-            core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
-            input.clone(),
+            core_battle_effects_2::MoveTargetForEvent::UserWithTarget(target),
+            targets.clone(),
         );
         core_battle_effects_2::run_event_with_input::<_, _, ()>(
             &mut context.user_applying_effect_context(target)?,
             fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
-            input,
+            targets,
         );
     }
 
@@ -1232,20 +1221,18 @@ pub fn get_move_targets(
 
 /// Runs all events prior to a move hitting any targets.
 fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveEventResult> {
-    let result = core_battle_effects::run_active_move_event_expecting_move_event_result(
+    let result = core_battle_effects_2::run_active_move_event::<MoveEventResult>(
         context,
         fxlang::BattleEvent::TryUseMove,
-        core_battle_effects::MoveTargetForEvent::User,
-    )
-    .unwrap_or(MoveEventResult::Advance);
+        core_battle_effects_2::MoveTargetForEvent::User,
+    );
 
     let result = if result.advance() {
-        core_battle_effects::run_active_move_event_expecting_move_event_result(
+        core_battle_effects_2::run_active_move_event::<MoveEventResult>(
             context,
             fxlang::BattleEvent::PrepareHit,
-            core_battle_effects::MoveTargetForEvent::User,
+            core_battle_effects_2::MoveTargetForEvent::User,
         )
-        .unwrap_or(MoveEventResult::Advance)
     } else {
         result
     };
@@ -1633,11 +1620,10 @@ fn move_hit_loop(
 
     if !context.active_move().ignore_all_secondary_effects {
         for target in targets.iter().filter(|target| target.outcome.success()) {
-            core_battle_effects::run_active_move_event_expecting_void(
+            core_battle_effects_2::run_active_move_event::<()>(
                 context,
                 fxlang::BattleEvent::AfterMoveSecondaryEffects,
-                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                fxlang::VariableInput::default(),
+                core_battle_effects_2::MoveTargetForEvent::Mon(target.handle),
             );
             core_battle_effects_2::run_event::<_, ()>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
@@ -1652,22 +1638,16 @@ fn move_hit_loop(
                 .target_original_hps
                 .get(&target.handle)
                 .wrap_expectation("expected target original hp")?;
-            core_battle_effects::run_active_move_event_expecting_void(
+            core_battle_effects_2::run_active_move_event_with_input::<_, ()>(
                 context,
                 fxlang::BattleEvent::AfterMoveSecondaryEffectsDamage,
-                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                fxlang::VariableInput::from_iter([
-                    fxlang::Value::UFraction(total_damage.into()),
-                    fxlang::Value::UFraction(original_hp.into()),
-                ]),
+                core_battle_effects_2::MoveTargetForEvent::Mon(target.handle),
+                [total_damage.into(), original_hp.into()],
             );
             core_battle_effects_2::run_event_with_input::<_, _, ()>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::AfterMoveSecondaryEffectsDamage,
-                [
-                    fxlang::Value::UFraction(total_damage.into()),
-                    fxlang::Value::UFraction(original_hp.into()),
-                ],
+                [total_damage.into(), original_hp.into()],
             );
         }
     }
@@ -1704,43 +1684,34 @@ fn move_hit(
 fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
     let move_target = context.active_move().data.target.clone();
     let try_move_result = match move_target {
-        MoveTarget::Field => {
-            core_battle_effects::run_active_move_event_expecting_move_event_result(
-                context,
-                fxlang::BattleEvent::TryHitField,
-                core_battle_effects::MoveTargetForEvent::None,
-            )
-            .unwrap_or(MoveEventResult::Advance)
-        }
+        MoveTarget::Field => core_battle_effects_2::run_active_move_event::<MoveEventResult>(
+            context,
+            fxlang::BattleEvent::TryHitField,
+            core_battle_effects_2::MoveTargetForEvent::None,
+        ),
         MoveTarget::AllySide | MoveTarget::AllyTeam => {
-            core_battle_effects::run_active_move_event_expecting_move_event_result(
+            core_battle_effects_2::run_active_move_event::<MoveEventResult>(
                 context,
                 fxlang::BattleEvent::TryHitSide,
-                core_battle_effects::MoveTargetForEvent::Side(context.side().index),
+                core_battle_effects_2::MoveTargetForEvent::Side(context.side().index),
             )
-            .unwrap_or(MoveEventResult::Advance)
         }
-        MoveTarget::FoeSide => {
-            core_battle_effects::run_active_move_event_expecting_move_event_result(
-                context,
-                fxlang::BattleEvent::TryHitSide,
-                core_battle_effects::MoveTargetForEvent::Side(context.foe_side().index),
-            )
-            .unwrap_or(MoveEventResult::Advance)
-        }
+        MoveTarget::FoeSide => core_battle_effects_2::run_active_move_event::<MoveEventResult>(
+            context,
+            fxlang::BattleEvent::TryHitSide,
+            core_battle_effects_2::MoveTargetForEvent::Side(context.foe_side().index),
+        ),
         _ => {
             let mut result: Option<MoveEventResult> = None;
             for target in targets.iter_mut() {
                 if !target.outcome.hit() {
                     continue;
                 }
-                let target_result =
-                    core_battle_effects::run_active_move_event_expecting_move_event_result(
-                        context,
-                        fxlang::BattleEvent::TryHit,
-                        core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                    )
-                    .unwrap_or(MoveEventResult::Advance);
+                let target_result = core_battle_effects_2::run_active_move_event::<MoveEventResult>(
+                    context,
+                    fxlang::BattleEvent::TryHit,
+                    core_battle_effects_2::MoveTargetForEvent::Mon(target.handle),
+                );
                 if !target_result.advance() {
                     target.outcome = target_result.into();
                 }
@@ -1808,11 +1779,10 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
             fxlang::BattleEvent::DamagingHit,
             target.outcome.damage(),
         );
-        core_battle_effects::run_active_move_event_expecting_void(
+        core_battle_effects_2::run_active_move_event::<()>(
             context,
             fxlang::BattleEvent::AfterHit,
-            core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-            fxlang::VariableInput::default(),
+            core_battle_effects_2::MoveTargetForEvent::Mon(target.handle),
         );
     }
 
@@ -1876,10 +1846,10 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     }
 
     let target_handle = context.target_mon_handle();
-    if let Some(damage) = core_battle_effects::run_active_move_event_expecting_u16(
+    if let Some(damage) = core_battle_effects_2::run_active_move_event::<Option<u16>>(
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::MoveDamage,
-        core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+        core_battle_effects_2::MoveTargetForEvent::Mon(target_handle),
     ) {
         return Ok(MoveOutcomeOnTarget::Damage(damage));
     }
@@ -1890,10 +1860,10 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     }
 
     let mut base_power = context.active_move().data.base_power;
-    if let Some(dynamic_base_power) = core_battle_effects::run_active_move_event_expecting_u32(
+    if let Some(dynamic_base_power) = core_battle_effects_2::run_active_move_event::<Option<u32>>(
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::MoveBasePower,
-        core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+        core_battle_effects_2::MoveTargetForEvent::Mon(target_handle),
     ) {
         base_power = dynamic_base_power;
     }
@@ -2074,16 +2044,15 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         let modifier = context.battle().check_type_effectiveness(offense, defense);
 
         let modifier = match context.active_move_context()? {
-            Some(mut context) => core_battle_effects::run_active_move_event_expecting_i8(
-                &mut context,
-                fxlang::BattleEvent::Effectiveness,
-                core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-                fxlang::VariableInput::from_iter([
-                    fxlang::Value::Fraction(modifier.into()),
-                    fxlang::Value::Type(defense),
-                ]),
-            )
-            .unwrap_or(modifier),
+            Some(mut context) => {
+                core_battle_effects_2::run_active_move_event_with_input::<_, Option<i8>>(
+                    &mut context,
+                    fxlang::BattleEvent::Effectiveness,
+                    core_battle_effects_2::MoveTargetForEvent::Mon(target_handle),
+                    [modifier.into(), defense.into()],
+                )
+                .unwrap_or(modifier)
+            }
             None => modifier,
         };
 
@@ -2275,7 +2244,6 @@ mod direct_move_step {
             MoveEventResult,
             MoveOutcome,
             core_battle_actions,
-            core_battle_effects,
             core_battle_effects_2,
             core_battle_logs,
             mon_states,
@@ -2349,15 +2317,13 @@ mod direct_move_step {
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            let immune = !core_battle_effects::run_active_move_event_expecting_bool(
+            let immune = !*core_battle_effects_2::run_active_move_event::<DefaultTrueBool>(
                 context,
                 fxlang::BattleEvent::TryImmunity,
-                core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-            )
-            .unwrap_or(true)
-                || core_battle_actions::check_immunity(
-                    &mut context.applying_effect_context_for_target(target.handle)?,
-                )?;
+                core_battle_effects_2::MoveTargetForEvent::Mon(target.handle),
+            ) || core_battle_actions::check_immunity(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+            )?;
 
             if immune {
                 core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
@@ -2890,10 +2856,10 @@ fn apply_move_effects(
 
         if target_context.is_self() {
             if let Some(hit_result) =
-                core_battle_effects::run_active_move_event_expecting_move_event_result(
+                core_battle_effects_2::run_active_move_event::<Option<MoveEventResult>>(
                     target_context.as_active_move_context_mut(),
                     fxlang::BattleEvent::HitUser,
-                    core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+                    core_battle_effects_2::MoveTargetForEvent::Mon(target_handle),
                 )
             {
                 hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
@@ -2903,10 +2869,10 @@ fn apply_move_effects(
             match move_target {
                 MoveTarget::Field => {
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_move_event_result(
+                        core_battle_effects_2::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::HitField,
-                            core_battle_effects::MoveTargetForEvent::Field,
+                            core_battle_effects_2::MoveTargetForEvent::Field,
                         )
                     {
                         hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
@@ -2915,10 +2881,10 @@ fn apply_move_effects(
                 MoveTarget::AllySide | MoveTarget::AllyTeam => {
                     let side = target_context.side().index;
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_move_event_result(
+                        core_battle_effects_2::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::HitSide,
-                            core_battle_effects::MoveTargetForEvent::Side(side),
+                            core_battle_effects_2::MoveTargetForEvent::Side(side),
                         )
                     {
                         hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
@@ -2927,10 +2893,10 @@ fn apply_move_effects(
                 MoveTarget::FoeSide => {
                     let side = target_context.foe_side().index;
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_move_event_result(
+                        core_battle_effects_2::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::HitSide,
-                            core_battle_effects::MoveTargetForEvent::Side(side),
+                            core_battle_effects_2::MoveTargetForEvent::Side(side),
                         )
                     {
                         hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
@@ -2938,10 +2904,10 @@ fn apply_move_effects(
                 }
                 _ => {
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_move_event_result(
+                        core_battle_effects_2::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::Hit,
-                            core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+                            core_battle_effects_2::MoveTargetForEvent::Mon(target_handle),
                         )
                     {
                         hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
@@ -3447,10 +3413,10 @@ fn ignore_type_immunity(context: &mut ActiveTargetContext) -> Result<bool> {
     let ignore_immunity = context.active_move().data.primary_type == Type::None
         || context.active_move().data.category == MoveCategory::Status;
     let target = context.target_mon_handle();
-    let ignore_immunity = core_battle_effects::run_active_move_event_expecting_bool(
+    let ignore_immunity = core_battle_effects_2::run_active_move_event::<Option<bool>>(
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::IgnoreImmunity,
-        core_battle_effects::MoveTargetForEvent::Mon(target),
+        core_battle_effects_2::MoveTargetForEvent::Mon(target),
     )
     .unwrap_or(ignore_immunity);
     let ignore_immunity = core_battle_effects_2::run_event_with_options::<_, _, Option<bool>>(

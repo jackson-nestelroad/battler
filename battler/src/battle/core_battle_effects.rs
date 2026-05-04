@@ -2188,6 +2188,7 @@ fn run_residual_callbacks_with_errors(
         }
 
         match callback_handle.applied_effect_handle.location {
+            AppliedEffectLocation::ActiveMove(_) => unimplemented!(),
             AppliedEffectLocation::None => {
                 run_callback_with_errors(
                     UpcomingEvaluationContext::Effect(context.into()),

@@ -1948,11 +1948,10 @@ fn run_event_for_mon(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    Ok(Value::Boolean(core_battle_effects::run_event_for_mon(
-        &mut context.target_context()?,
-        event,
-        VariableInput::default(),
-    )))
+    Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+        _,
+        DefaultTrueBool,
+    >(&mut context.target_context()?, event)))
 }
 
 /// Runs an event on each active Mon.
@@ -2058,21 +2057,16 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
     let target = match (target_handle, side_index) {
         (Some(target_handle), _) => {
             if target_handle == user_handle {
-                core_battle_effects::MoveTargetForEvent::UserWithTarget(source_handle)
+                core_battle_effects_2::MoveTargetForEvent::UserWithTarget(source_handle)
             } else {
-                core_battle_effects::MoveTargetForEvent::Mon(target_handle)
+                core_battle_effects_2::MoveTargetForEvent::Mon(target_handle)
             }
         }
-        (None, Some(side_index)) => core_battle_effects::MoveTargetForEvent::Side(side_index),
-        (None, None) => core_battle_effects::MoveTargetForEvent::None,
+        (None, Some(side_index)) => core_battle_effects_2::MoveTargetForEvent::Side(side_index),
+        (None, None) => core_battle_effects_2::MoveTargetForEvent::None,
     };
 
-    Ok(core_battle_effects::run_active_move_event(
-        &mut context,
-        event,
-        target,
-        VariableInput::default(),
-    ))
+    Ok(core_battle_effects_2::run_active_move_event::<Option<Value>>(&mut context, event, target))
 }
 
 /// Prevents the last move from being animated.

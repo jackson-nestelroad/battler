@@ -17,6 +17,7 @@ use battler_data::{
 
 use crate::{
     battle::{
+        ActiveMoveContext,
         ApplyingEffectContext,
         Context,
         CoreBattle,
@@ -306,6 +307,12 @@ impl OptionalEventOutput for Vec<String> {
     }
 }
 
+impl OptionalEventOutput for Vec<Type> {
+    fn from_fxlang_value(val: Option<fxlang::Value>) -> Option<Self> {
+        val.map(|val| val.types_list().ok()).flatten()
+    }
+}
+
 impl OptionalEventOutput for Type {
     fn from_fxlang_value(val: Option<fxlang::Value>) -> Option<Self> {
         val.map(|val| val.mon_type().ok()).flatten()
@@ -417,12 +424,66 @@ where
     }
 }
 
+impl<'battle, 'data> EventContext<'battle, 'data> for SideEffectContext<'_, '_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn all_effects_target(&self) -> AllEffectsTarget {
+        AllEffectsTarget::Side(self.side().index)
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Side(self.side().index)
+    }
+
+    fn effect(&self) -> Option<EffectHandle> {
+        Some(self.effect_handle().clone())
+    }
+
+    fn source(&self) -> Option<MonHandle> {
+        self.source_handle()
+    }
+
+    fn target(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn as_battle_context_mut(&mut self) -> &mut Context<'battle, 'data> {
+        self.as_battle_context_mut()
+    }
+
+    fn source_event_context(&mut self) -> Result<Option<impl EventContext<'battle, 'data>>> {
+        self.source_side_effect_context()
+    }
+
+    fn into_upcoming_evaluation_context(
+        &mut self,
+    ) -> UpcomingEvaluationContext<'_, 'battle, 'data> {
+        // SAFETY: UpcomingEvaluationContext uses the lifetime of a mutable borrow of self, so
+        // UpcomingEvaluationContext cannot outlive self.
+        let context = unsafe {
+            core::mem::transmute::<&mut Self, &mut SideEffectContext<'_, '_, 'battle, 'data>>(self)
+        };
+        UpcomingEvaluationContext::SideEffect(context.into())
+    }
+}
+
 trait RequiredEffectEventContext<'battle, 'data>: EventContext<'battle, 'data> {
     fn effect(&self) -> EffectHandle;
 }
 
 impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
     for ApplyingEffectContext<'_, '_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn effect(&self) -> EffectHandle {
+        self.effect_handle().clone()
+    }
+}
+
+impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
+    for SideEffectContext<'_, '_, 'battle, 'data>
 where
     'data: 'battle,
 {
@@ -630,7 +691,7 @@ fn run_effect_event_by_handle(
             let effect_name =
                 match CoreBattle::get_effect_by_handle(context.battle_context(), effect) {
                     Ok(effect) => effect.name().to_owned(),
-                    Err(_) => format!("{:?}", effect),
+                    Err(_) => format!("{effect:?}"),
                 };
             core_battle_logs::debug_event_failure(
                 context.battle_context_mut(),
@@ -644,14 +705,14 @@ fn run_effect_event_by_handle(
 }
 
 fn run_callback_with_errors(
-    mut context: UpcomingEvaluationContext,
+    context: &mut UpcomingEvaluationContext,
     input: fxlang::VariableInput,
     event_state: &fxlang::EventState,
     callback_handle: CallbackHandle,
 ) -> Result<Option<fxlang::Value>> {
     // Run the event callback for the event.
     let result = run_effect_event_by_handle(
-        &mut context,
+        context,
         &callback_handle.applied_effect_handle.effect_handle,
         callback_handle.event,
         callback_handle.modifier,
@@ -668,15 +729,47 @@ fn run_callback_with_errors(
     Ok(result.value)
 }
 
+fn run_callback(
+    mut context: UpcomingEvaluationContext,
+    input: fxlang::VariableInput,
+    callback_handle: CallbackHandle,
+) -> Option<fxlang::Value> {
+    let event = callback_handle.event;
+    let effect = callback_handle.applied_effect_handle.effect_handle.clone();
+    match run_callback_with_errors(
+        &mut context,
+        input,
+        &fxlang::EventState::default(),
+        callback_handle,
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            let effect_name =
+                match CoreBattle::get_effect_by_handle(context.battle_context(), &effect) {
+                    Ok(effect) => effect.name().to_owned(),
+                    Err(_) => format!("{effect:?}"),
+                };
+            core_battle_logs::debug_event_failure(
+                context.battle_context_mut(),
+                event,
+                &effect_name,
+                &&format!("{error:#}"),
+            );
+            None
+        }
+    }
+}
+
 fn run_callbacks_with_forwarding_input_with_errors(
-    context: UpcomingEvaluationContext,
+    mut context: UpcomingEvaluationContext,
     input: &mut fxlang::VariableInput,
     event_state: &fxlang::EventState,
     callback_handle: CallbackHandle,
     options: &RunEventOptions,
 ) -> Result<Option<fxlang::Value>> {
     let event = callback_handle.event;
-    let value = run_callback_with_errors(context, input.clone(), event_state, callback_handle)?;
+    let value =
+        run_callback_with_errors(&mut context, input.clone(), event_state, callback_handle)?;
     // Support for early exit.
     if let Some(value) = value {
         if value.signals_early_exit() || options.return_first_value {
@@ -1737,26 +1830,20 @@ where
 
     let source_context = context.source_event_context();
     let output = match source_context {
-        Ok(Some(mut context)) => run_callback_with_errors(
+        Ok(Some(mut context)) => run_callback(
             context.into_upcoming_evaluation_context(),
             input.into_fxlang_input(),
-            &fxlang::EventState::default(),
             callback,
-        )
-        .ok()
-        .flatten(),
+        ),
         _ => {
             // The borrow checker does not allow context to be used while source_context exists, so
             // drop it early.
             drop(source_context);
-            run_callback_with_errors(
+            run_callback(
                 context.into_upcoming_evaluation_context(),
                 input.into_fxlang_input(),
-                &fxlang::EventState::default(),
                 callback,
             )
-            .ok()
-            .flatten()
         }
     };
 
@@ -1774,4 +1861,115 @@ where
     Output: EventOutput,
 {
     run_effect_event_with_input(context, event, ())
+}
+
+/// The target of a move for effect callbacks that run directly on an active move.
+pub enum MoveTargetForEvent {
+    /// The effect runs with no target.
+    None,
+    /// The effect runs with respect to the user of the move.
+    ///
+    /// This does not mean the target of the move is the user.
+    User,
+    /// The effect runs with respect to the user of the move, additionally with an optional target
+    /// if one is available.
+    UserWithTarget(Option<MonHandle>),
+    /// The effect runs with respect to a single target of the move.
+    Mon(MonHandle),
+    /// The effect runs with respect to the target side of the move.
+    Side(usize),
+    /// The effect runs with respect to the field as a whole.
+    Field,
+}
+
+fn run_callback_against_active_move_with_errors(
+    context: &mut ActiveMoveContext,
+    target: MoveTargetForEvent,
+    input: fxlang::VariableInput,
+    callback_handle: CallbackHandle,
+) -> Result<Option<fxlang::Value>> {
+    let context = match target {
+        MoveTargetForEvent::None => {
+            UpcomingEvaluationContext::Effect(context.effect_context()?.into())
+        }
+        MoveTargetForEvent::User => UpcomingEvaluationContext::ApplyingEffect(
+            context.user_applying_effect_context(None)?.into(),
+        ),
+        MoveTargetForEvent::UserWithTarget(target) => UpcomingEvaluationContext::ApplyingEffect(
+            context.user_applying_effect_context(target)?.into(),
+        ),
+        MoveTargetForEvent::Mon(target) => UpcomingEvaluationContext::ApplyingEffect(
+            context.applying_effect_context_for_target(target)?.into(),
+        ),
+        MoveTargetForEvent::Side(side) => {
+            UpcomingEvaluationContext::SideEffect(context.side_effect_context(side)?.into())
+        }
+        MoveTargetForEvent::Field => {
+            UpcomingEvaluationContext::FieldEffect(context.field_effect_context()?.into())
+        }
+    };
+
+    Ok(run_callback(context, input, callback_handle))
+}
+
+fn run_callback_against_active_move(
+    context: &mut ActiveMoveContext,
+    target: MoveTargetForEvent,
+    input: fxlang::VariableInput,
+    callback_handle: CallbackHandle,
+) -> Option<fxlang::Value> {
+    let event = callback_handle.event;
+    match run_callback_against_active_move_with_errors(context, target, input, callback_handle) {
+        Ok(value) => value,
+        Err(error) => {
+            let move_name = context.active_move().data.name.clone();
+            core_battle_logs::debug_event_failure(
+                context.as_battle_context_mut(),
+                event,
+                &move_name,
+                &&format!("{error:#}"),
+            );
+            None
+        }
+    }
+}
+
+#[allow(private_bounds)]
+pub fn run_active_move_event_with_input<Input, Output>(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+    target: MoveTargetForEvent,
+    input: Input,
+) -> Output
+where
+    Input: EventInput,
+    Output: EventOutput,
+{
+    let effect = context.effect_handle();
+    let origin = Some(context.mon_handle());
+
+    let callback = CallbackHandle::new(
+        effect,
+        event,
+        fxlang::BattleEventModifier::default(),
+        origin,
+        AppliedEffectLocation::ActiveMove(context.active_move_handle()),
+    );
+
+    let output =
+        run_callback_against_active_move(context, target, input.into_fxlang_input(), callback);
+
+    Output::from_fxlang_value(output)
+}
+
+#[allow(private_bounds)]
+pub fn run_active_move_event<Output>(
+    context: &mut ActiveMoveContext,
+    event: fxlang::BattleEvent,
+    target: MoveTargetForEvent,
+) -> Output
+where
+    Output: EventOutput,
+{
+    run_active_move_event_with_input(context, event, target, ())
 }

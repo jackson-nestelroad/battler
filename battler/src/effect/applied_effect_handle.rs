@@ -4,9 +4,11 @@ use crate::{
     battle::{
         EffectContext,
         MonHandle,
+        MoveHandle,
         core_battle_actions,
     },
     effect::{
+        ActiveMoveEffectStateConnector,
         EffectHandle,
         MonAbilityEffectStateConnector,
         MonItemEffectStateConnector,
@@ -29,6 +31,7 @@ use crate::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AppliedEffectLocation {
     None,
+    ActiveMove(MoveHandle),
     Mon(MonHandle),
     MonAbility(MonHandle),
     MonInactiveMove(MonHandle),
@@ -110,6 +113,9 @@ impl AppliedEffectHandle {
     pub fn effect_state_connector(&self) -> Option<fxlang::DynamicEffectStateConnector> {
         match self.location {
             AppliedEffectLocation::None => None,
+            AppliedEffectLocation::ActiveMove(mov) => {
+                Some(ActiveMoveEffectStateConnector::new(mov).make_dynamic())
+            }
             // Note that Mons have an effect state, though we don't attach it to event callbacks.
             AppliedEffectLocation::Mon(_) => None,
             AppliedEffectLocation::MonAbility(mon) => {
@@ -160,6 +166,7 @@ impl AppliedEffectHandle {
     pub fn end(&self, context: &mut EffectContext) -> Result<bool> {
         match self.location {
             AppliedEffectLocation::None
+            | AppliedEffectLocation::ActiveMove(_)
             | AppliedEffectLocation::Mon(_)
             | AppliedEffectLocation::MonAbility(_)
             | AppliedEffectLocation::MonInactiveMove(_)

@@ -151,8 +151,9 @@ impl Display for ValueType {
 /// An fxlang value.
 ///
 /// Owned and storable.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub enum Value {
+    #[default]
     Undefined,
     Boolean(bool),
     Fraction(Fraction<i64>),
@@ -1055,9 +1056,27 @@ impl From<BoostTable> for Value {
     }
 }
 
+impl From<Stat> for Value {
+    fn from(value: Stat) -> Self {
+        Self::Stat(value)
+    }
+}
+
 impl From<StatTable> for Value {
     fn from(value: StatTable) -> Self {
         Self::StatTable(value)
+    }
+}
+
+impl From<Type> for Value {
+    fn from(value: Type) -> Self {
+        Self::Type(value)
+    }
+}
+
+impl From<Vec<MonHandle>> for Value {
+    fn from(value: Vec<MonHandle>) -> Self {
+        Self::List(value.into_iter().map(|mon| Value::Mon(mon)).collect())
     }
 }
 
@@ -1078,9 +1097,9 @@ impl From<Vec<String>> for Value {
     }
 }
 
-impl From<Type> for Value {
-    fn from(value: Type) -> Self {
-        Self::Type(value)
+impl From<Vec<Type>> for Value {
+    fn from(value: Vec<Type>) -> Self {
+        Self::List(value.into_iter().map(|typ| Value::Type(typ)).collect())
     }
 }
 

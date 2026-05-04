@@ -2318,22 +2318,17 @@ impl<'d> CoreBattle<'d> {
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
             match entry.effect.clone() {
-                Some(effect) => core_battle_effects_2::run_event::<_, bool>(
+                Some(effect) => core_battle_effects_2::run_event::<_, ()>(
                     &mut context.applying_effect_context(effect, entry.source, None)?,
                     fxlang::BattleEvent::Faint,
                 ),
-                None => core_battle_effects::run_event_for_mon(
+                None => core_battle_effects_2::run_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::Faint,
-                    fxlang::VariableInput::default(),
                 ),
             };
 
-            core_battle_effects::run_event_for_mon(
-                &mut context,
-                fxlang::BattleEvent::Exit,
-                fxlang::VariableInput::default(),
-            );
+            core_battle_effects_2::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
@@ -2345,18 +2340,13 @@ impl<'d> CoreBattle<'d> {
 
         if !context.battle().ending {
             for ((mon_handle, effect), count) in fainted_count_by_source {
-                core_battle_effects::run_event_for_mon(
+                core_battle_effects_2::run_event_with_input::<_, _, ()>(
                     &mut context.mon_context(mon_handle)?,
                     fxlang::BattleEvent::AfterFainted,
-                    match effect {
-                        Some(effect) => fxlang::VariableInput::from_iter([
-                            fxlang::Value::UFraction(count.into()),
-                            fxlang::Value::Effect(effect),
-                        ]),
-                        None => fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
-                            count.into(),
-                        )]),
-                    },
+                    [
+                        count.into(),
+                        effect.map(|val| val.into()).unwrap_or_default(),
+                    ],
                 );
             }
         }
@@ -2392,17 +2382,9 @@ impl<'d> CoreBattle<'d> {
                 )?,
                 fxlang::BattleEvent::Catch,
             );
-            core_battle_effects::run_event_for_mon(
-                &mut context,
-                fxlang::BattleEvent::Catch,
-                fxlang::VariableInput::default(),
-            );
+            core_battle_effects_2::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Catch);
 
-            core_battle_effects::run_event_for_mon(
-                &mut context,
-                fxlang::BattleEvent::Exit,
-                fxlang::VariableInput::default(),
-            );
+            core_battle_effects_2::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
