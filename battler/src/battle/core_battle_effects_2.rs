@@ -49,13 +49,25 @@ use crate::{
 
 pub struct RunEventOptions {
     pub return_first_value: bool,
+    pub residual: bool,
 }
 
 impl Default for RunEventOptions {
     fn default() -> Self {
         Self {
             return_first_value: false,
+            residual: false,
         }
+    }
+}
+
+pub struct RunEffectEventOptions {
+    pub location: Option<AppliedEffectLocation>,
+}
+
+impl Default for RunEffectEventOptions {
+    fn default() -> Self {
+        Self { location: None }
     }
 }
 
@@ -380,6 +392,50 @@ where
     }
 }
 
+impl<'battle, 'data> EventContext<'battle, 'data> for EffectContext<'_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn all_effects_target(&self) -> AllEffectsTarget {
+        AllEffectsTarget::Field
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::None
+    }
+
+    fn effect(&self) -> Option<EffectHandle> {
+        Some(self.effect_handle().clone())
+    }
+
+    fn source(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn target(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn as_battle_context_mut(&mut self) -> &mut Context<'battle, 'data> {
+        self.as_battle_context_mut()
+    }
+
+    fn source_event_context(&mut self) -> Result<Option<impl EventContext<'battle, 'data>>> {
+        self.source_effect_context()
+    }
+
+    fn into_upcoming_evaluation_context(
+        &mut self,
+    ) -> UpcomingEvaluationContext<'_, 'battle, 'data> {
+        // SAFETY: UpcomingEvaluationContext uses the lifetime of a mutable borrow of self, so
+        // UpcomingEvaluationContext cannot outlive self.
+        let context = unsafe {
+            core::mem::transmute::<&mut Self, &mut EffectContext<'_, 'battle, 'data>>(self)
+        };
+        UpcomingEvaluationContext::Effect(context.into())
+    }
+}
+
 impl<'battle, 'data> EventContext<'battle, 'data> for MonContext<'_, '_, '_, 'battle, 'data>
 where
     'data: 'battle,
@@ -421,6 +477,52 @@ where
             core::mem::transmute::<&mut Self, &mut MonContext<'_, '_, '_, 'battle, 'data>>(self)
         };
         UpcomingEvaluationContext::Mon(context.into())
+    }
+}
+
+impl<'battle, 'data> EventContext<'battle, 'data> for PlayerEffectContext<'_, '_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn all_effects_target(&self) -> AllEffectsTarget {
+        AllEffectsTarget::Player(self.player().index)
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Player(self.player().index)
+    }
+
+    fn effect(&self) -> Option<EffectHandle> {
+        Some(self.effect_handle().clone())
+    }
+
+    fn source(&self) -> Option<MonHandle> {
+        self.source_handle()
+    }
+
+    fn target(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn as_battle_context_mut(&mut self) -> &mut Context<'battle, 'data> {
+        self.as_battle_context_mut()
+    }
+
+    fn source_event_context(&mut self) -> Result<Option<impl EventContext<'battle, 'data>>> {
+        self.source_player_effect_context()
+    }
+
+    fn into_upcoming_evaluation_context(
+        &mut self,
+    ) -> UpcomingEvaluationContext<'_, 'battle, 'data> {
+        // SAFETY: UpcomingEvaluationContext uses the lifetime of a mutable borrow of self, so
+        // UpcomingEvaluationContext cannot outlive self.
+        let context = unsafe {
+            core::mem::transmute::<&mut Self, &mut PlayerEffectContext<'_, '_, 'battle, 'data>>(
+                self,
+            )
+        };
+        UpcomingEvaluationContext::PlayerEffect(context.into())
     }
 }
 
@@ -468,6 +570,92 @@ where
     }
 }
 
+impl<'battle, 'data> EventContext<'battle, 'data> for FieldEffectContext<'_, '_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn all_effects_target(&self) -> AllEffectsTarget {
+        AllEffectsTarget::Field
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Field
+    }
+
+    fn effect(&self) -> Option<EffectHandle> {
+        Some(self.effect_handle().clone())
+    }
+
+    fn source(&self) -> Option<MonHandle> {
+        self.source_handle()
+    }
+
+    fn target(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn as_battle_context_mut(&mut self) -> &mut Context<'battle, 'data> {
+        self.as_battle_context_mut()
+    }
+
+    fn source_event_context(&mut self) -> Result<Option<impl EventContext<'battle, 'data>>> {
+        self.source_field_effect_context()
+    }
+
+    fn into_upcoming_evaluation_context(
+        &mut self,
+    ) -> UpcomingEvaluationContext<'_, 'battle, 'data> {
+        // SAFETY: UpcomingEvaluationContext uses the lifetime of a mutable borrow of self, so
+        // UpcomingEvaluationContext cannot outlive self.
+        let context = unsafe {
+            core::mem::transmute::<&mut Self, &mut FieldEffectContext<'_, '_, 'battle, 'data>>(self)
+        };
+        UpcomingEvaluationContext::FieldEffect(context.into())
+    }
+}
+impl<'battle, 'data> EventContext<'battle, 'data> for Context<'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn all_effects_target(&self) -> AllEffectsTarget {
+        AllEffectsTarget::Field
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Field
+    }
+
+    fn effect(&self) -> Option<EffectHandle> {
+        None
+    }
+
+    fn source(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn target(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn as_battle_context_mut(&mut self) -> &mut Context<'battle, 'data> {
+        self
+    }
+
+    fn source_event_context(&mut self) -> Result<Option<impl EventContext<'battle, 'data>>> {
+        Ok(Option::<Self>::None)
+    }
+
+    fn into_upcoming_evaluation_context(
+        &mut self,
+    ) -> UpcomingEvaluationContext<'_, 'battle, 'data> {
+        // SAFETY: UpcomingEvaluationContext uses the lifetime of a mutable borrow of self, so
+        // UpcomingEvaluationContext cannot outlive self.
+        let context =
+            unsafe { core::mem::transmute::<&mut Self, &mut Context<'battle, 'data>>(self) };
+        UpcomingEvaluationContext::Field(context.into())
+    }
+}
+
 trait RequiredEffectEventContext<'battle, 'data>: EventContext<'battle, 'data> {
     fn effect(&self) -> EffectHandle;
 }
@@ -483,7 +671,37 @@ where
 }
 
 impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
+    for EffectContext<'_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn effect(&self) -> EffectHandle {
+        self.effect_handle().clone()
+    }
+}
+
+impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
+    for PlayerEffectContext<'_, '_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn effect(&self) -> EffectHandle {
+        self.effect_handle().clone()
+    }
+}
+
+impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
     for SideEffectContext<'_, '_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn effect(&self) -> EffectHandle {
+        self.effect_handle().clone()
+    }
+}
+
+impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
+    for FieldEffectContext<'_, '_, 'battle, 'data>
 where
     'data: 'battle,
 {
@@ -1683,7 +1901,11 @@ where
     'data: 'battle,
     Context: EventContext<'battle, 'data>,
 {
-    let target = context.all_effects_target();
+    let target = if options.residual {
+        AllEffectsTarget::Residual
+    } else {
+        context.all_effects_target()
+    };
     let source = context.source();
     let origin = event_origin_mon_handle(event, context.target(), context.source());
 
@@ -1972,4 +2194,29 @@ where
     Output: EventOutput,
 {
     run_active_move_event_with_input(context, event, target, ())
+}
+
+pub fn run_event_for_each_active_mon_with_effect(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+) -> Result<()> {
+    for mon_handle in
+        CoreBattle::all_active_mon_handles_in_speed_order(context.as_battle_context_mut())?
+    {
+        run_event::<_, ()>(
+            &mut context.applying_effect_context(None, mon_handle)?,
+            event,
+        );
+    }
+    Ok(())
+}
+
+pub fn run_event_for_each_active_mon(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+) -> Result<()> {
+    for mon_handle in CoreBattle::all_active_mon_handles_in_speed_order(context)? {
+        run_event::<_, ()>(&mut context.mon_context(mon_handle)?, event);
+    }
+    Ok(())
 }

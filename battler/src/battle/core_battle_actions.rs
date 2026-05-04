@@ -437,6 +437,7 @@ fn upgrade_move(context: &mut ActiveMoveContext) -> Result<MoveHandle> {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+                ..Default::default()
             },
         )
     {
@@ -848,6 +849,7 @@ fn use_active_move_with_using_move_state(
         target,
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
 
@@ -1199,6 +1201,7 @@ pub fn get_move_targets(
                     target,
                     core_battle_effects_2::RunEventOptions {
                         return_first_value: true,
+                        ..Default::default()
                     },
                 )
                 .unwrap_or(target);
@@ -1266,30 +1269,20 @@ fn try_indirect_move(
 
     let move_target = context.active_move().data.target;
     let try_move_result = match move_target {
-        MoveTarget::Field => {
-            core_battle_effects::run_event_for_field_effect_expecting_move_event_result(
-                &mut context.field_effect_context()?,
-                fxlang::BattleEvent::TryHitField,
-                fxlang::VariableInput::default(),
-            )
-            .unwrap_or(MoveEventResult::Advance)
-        }
+        MoveTarget::Field => core_battle_effects_2::run_event::<_, MoveEventResult>(
+            &mut context.field_effect_context()?,
+            fxlang::BattleEvent::TryHitField,
+        ),
         MoveTarget::AllySide | MoveTarget::AllyTeam => {
-            core_battle_effects::run_event_for_side_effect_expecting_move_event_result(
+            core_battle_effects_2::run_event::<_, MoveEventResult>(
                 &mut context.side_effect_context(context.side().index)?,
                 fxlang::BattleEvent::TryHitSide,
-                fxlang::VariableInput::default(),
             )
-            .unwrap_or(MoveEventResult::Advance)
         }
-        MoveTarget::FoeSide => {
-            core_battle_effects::run_event_for_side_effect_expecting_move_event_result(
-                &mut context.side_effect_context(context.foe_side().index)?,
-                fxlang::BattleEvent::TryHitSide,
-                fxlang::VariableInput::default(),
-            )
-            .unwrap_or(MoveEventResult::Advance)
-        }
+        MoveTarget::FoeSide => core_battle_effects_2::run_event::<_, MoveEventResult>(
+            &mut context.side_effect_context(context.foe_side().index)?,
+            fxlang::BattleEvent::TryHitSide,
+        ),
         _ => {
             return Err(general_error(format!(
                 "move against target {move_target} applied indirectly, but it should directly hit target mons"
@@ -2268,6 +2261,7 @@ mod direct_move_step {
                 (),
                 core_battle_effects_2::RunEventOptions {
                     return_first_value: true,
+                    ..Default::default()
                 },
             ) {
                 target.outcome = MoveOutcome::Failed;
@@ -2429,6 +2423,7 @@ mod direct_move_step {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+                ..Default::default()
             },
         ) {
             accuracy = Accuracy::Exempt;
@@ -3425,6 +3420,7 @@ fn ignore_type_immunity(context: &mut ActiveTargetContext) -> Result<bool> {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     )
     .unwrap_or(ignore_immunity);
@@ -3883,10 +3879,10 @@ pub fn add_side_condition(
 
     core_battle_logs::add_side_condition(context, &condition)?;
 
-    core_battle_effects::run_event_for_side_effect(
+    core_battle_effects_2::run_event_with_input::<SideEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::SideConditionStart,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(side_condition_handle.clone())]),
+        side_condition_handle.clone(),
     );
 
     // If the duration is EXPLICITLY zero, then we remove the side condition immediately.
@@ -4349,10 +4345,10 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
         return Ok(false);
     }
 
-    if !core_battle_effects::run_event_for_field_effect(
+    if !*core_battle_effects_2::run_event_with_input::<FieldEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::SetWeather,
-        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(weather_handle.clone()))]),
+        weather_handle.clone(),
     ) {
         return Ok(false);
     }
@@ -4430,10 +4426,9 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
     });
 
     if let Some(weather) = context.battle().field.weather.clone() {
-        if !core_battle_effects::run_event_for_field_effect(
+        if !*core_battle_effects_2::run_event::<FieldEffectContext, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::ClearWeather,
-            fxlang::VariableInput::default(),
         ) {
             return Ok(false);
         }
@@ -4496,10 +4491,10 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
         return Ok(false);
     }
 
-    if !core_battle_effects::run_event_for_field_effect(
+    if !*core_battle_effects_2::run_event_with_input::<FieldEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::SetTerrain,
-        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(terrain_handle.clone()))]),
+        terrain_handle.clone(),
     ) {
         return Ok(false);
     }
@@ -4577,10 +4572,9 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
     });
 
     if let Some(terrain) = context.battle().field.terrain.clone() {
-        if !core_battle_effects::run_event_for_field_effect(
+        if !*core_battle_effects_2::run_event::<FieldEffectContext, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::ClearTerrain,
-            fxlang::VariableInput::default(),
         ) {
             return Ok(false);
         }
@@ -4667,10 +4661,10 @@ pub fn add_pseudo_weather(
         return Ok(true);
     }
 
-    if !core_battle_effects::run_event_for_field_effect(
+    if !*core_battle_effects_2::run_event_with_input::<FieldEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::AddPseudoWeather,
-        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(pseudo_weather_handle.clone()))]),
+        pseudo_weather_handle.clone(),
     ) {
         return Ok(false);
     }
@@ -4733,10 +4727,10 @@ pub fn add_pseudo_weather(
         return Ok(false);
     }
 
-    core_battle_effects::run_event_for_field_effect(
+    core_battle_effects_2::run_event_with_input::<FieldEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::AfterAddPseudoWeather,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
+        fxlang::Value::Effect(effect_handle),
     );
 
     if let Some(link_to) = link_to {

@@ -1910,27 +1910,24 @@ fn run_event(mut context: FunctionContext) -> Result<Value> {
                 event,
             )))
         }
-        EvaluationContext::PlayerEffect(context) => Ok(Value::Boolean(
-            core_battle_effects::run_event_for_player_effect(
-                context,
-                event,
-                VariableInput::default(),
-            ),
-        )),
-        EvaluationContext::SideEffect(context) => Ok(Value::Boolean(
-            core_battle_effects::run_event_for_side_effect(
-                context,
-                event,
-                VariableInput::default(),
-            ),
-        )),
-        EvaluationContext::FieldEffect(context) => Ok(Value::Boolean(
-            core_battle_effects::run_event_for_field_effect(
-                context,
-                event,
-                VariableInput::default(),
-            ),
-        )),
+        EvaluationContext::PlayerEffect(context) => {
+            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+                _,
+                DefaultTrueBool,
+            >(context, event)))
+        }
+        EvaluationContext::SideEffect(context) => {
+            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+                _,
+                DefaultTrueBool,
+            >(context, event)))
+        }
+        EvaluationContext::FieldEffect(context) => {
+            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+                _,
+                DefaultTrueBool,
+            >(context, event)))
+        }
         EvaluationContext::Effect(_) => {
             Err(general_error("effect must have a target to run an event"))
         }
@@ -1964,7 +1961,7 @@ fn run_event_for_each_active_mon(mut context: FunctionContext) -> Result<()> {
         .string()
         .wrap_error_with_message("invalid event")?;
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
+    core_battle_effects_2::run_event_for_each_active_mon_with_effect(
         &mut context.effect_context()?,
         event,
     )

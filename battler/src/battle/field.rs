@@ -14,7 +14,7 @@ use serde_string_enum::{
 use crate::{
     battle::{
         Context,
-        core_battle_effects,
+        core_battle_effects_2,
     },
     effect::fxlang,
 };
@@ -143,9 +143,14 @@ impl Field {
             return effective_terrain;
         }
         let effective_terrain = {
-            if core_battle_effects::run_event_for_battle_expecting_bool_quick_return(
+            if core_battle_effects_2::run_event_with_options::<_, _, bool>(
                 context,
                 fxlang::BattleEvent::SuppressFieldTerrain,
+                (),
+                core_battle_effects_2::RunEventOptions {
+                    return_first_value: true,
+                    ..Default::default()
+                },
             ) {
                 None
             } else {
@@ -170,9 +175,14 @@ impl Field {
             return effective_weather;
         }
         let effective_weather = {
-            if core_battle_effects::run_event_for_battle_expecting_bool_quick_return(
+            if core_battle_effects_2::run_event_with_options::<_, _, bool>(
                 context,
                 fxlang::BattleEvent::SuppressFieldWeather,
+                (),
+                core_battle_effects_2::RunEventOptions {
+                    return_first_value: true,
+                    ..Default::default()
+                },
             ) {
                 None
             } else {

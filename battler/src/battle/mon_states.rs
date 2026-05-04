@@ -171,6 +171,7 @@ pub fn can_heal(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context.mon_mut().volatile_state.effect_cache.can_heal = Some(can_heal);
@@ -188,6 +189,7 @@ pub fn is_asleep(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context.mon_mut().volatile_state.effect_cache.is_asleep = Some(is_asleep);
@@ -206,6 +208,7 @@ pub fn is_away_from_field(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context
@@ -232,6 +235,7 @@ pub fn is_behind_substitute(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context
@@ -253,6 +257,7 @@ pub fn is_contact_proof(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context
@@ -274,6 +279,7 @@ pub fn is_grounded(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context.mon_mut().volatile_state.effect_cache.is_grounded = Some(is_grounded);
@@ -296,6 +302,7 @@ pub fn is_immune_to_entry_hazards(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context
@@ -317,6 +324,7 @@ pub fn is_soundproof(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context.mon_mut().volatile_state.effect_cache.is_soundproof = Some(is_soundproof);
@@ -339,6 +347,7 @@ pub fn is_semi_invulnerable(context: &mut MonContext) -> bool {
         (),
         core_battle_effects_2::RunEventOptions {
             return_first_value: true,
+            ..Default::default()
         },
     );
     context
@@ -416,6 +425,7 @@ fn effective_weather_no_override(context: &mut MonContext) -> Option<Id> {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+                ..Default::default()
             },
         ) {
             None
@@ -454,6 +464,7 @@ pub fn effective_terrain(context: &mut MonContext) -> Option<Id> {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+                ..Default::default()
             },
         ) {
             None
@@ -492,6 +503,7 @@ fn check_ability_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+                ..Default::default()
             },
         );
         match suppress_ability {
@@ -547,6 +559,7 @@ fn check_item_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+                ..Default::default()
             },
         );
         match suppress_item {

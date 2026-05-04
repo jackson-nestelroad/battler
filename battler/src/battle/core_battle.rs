@@ -1340,7 +1340,7 @@ impl<'d> CoreBattle<'d> {
                     None,
                 )?)?;
 
-                core_battle_effects::run_event_for_battle(
+                core_battle_effects_2::run_event::<_, ()>(
                     context,
                     fxlang::BattleEvent::StartBattle,
                 );
@@ -1771,8 +1771,11 @@ impl<'d> CoreBattle<'d> {
 
         context.battle_mut().registry.next_turn()?;
 
-        core_battle_effects::run_event_for_each_active_mon(context, fxlang::BattleEvent::EndTurn)?;
-        core_battle_effects::run_event_for_battle(context, fxlang::BattleEvent::BattleEndTurn);
+        core_battle_effects_2::run_event_for_each_active_mon(
+            context,
+            fxlang::BattleEvent::EndTurn,
+        )?;
+        core_battle_effects_2::run_event::<_, ()>(context, fxlang::BattleEvent::BattleEndTurn);
 
         // Some clauses may forcefully end the battle at the end of a turn.
         if context.battle().ended {

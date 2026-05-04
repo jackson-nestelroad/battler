@@ -45,6 +45,7 @@ pub enum AppliedEffectLocation {
     MonType(MonHandle),
     MonVolatile(MonHandle),
     MonWeather(MonHandle),
+    Player(usize),
     PseudoWeather,
     Side(usize),
     SideCondition(usize),
@@ -135,6 +136,7 @@ impl AppliedEffectHandle {
             AppliedEffectLocation::MonVolatile(mon) => self.effect_handle.try_id().map(|id| {
                 MonVolatileStatusEffectStateConnector::new(mon, id.clone()).make_dynamic()
             }),
+            AppliedEffectLocation::Player(_) => None,
             AppliedEffectLocation::PseudoWeather | AppliedEffectLocation::MonPseudoWeather(_) => {
                 self.effect_handle
                     .try_id()
@@ -173,7 +175,8 @@ impl AppliedEffectHandle {
             | AppliedEffectLocation::MonItem(_)
             | AppliedEffectLocation::MonType(_)
             | AppliedEffectLocation::Side(_)
-            | AppliedEffectLocation::Field => Ok(false),
+            | AppliedEffectLocation::Field
+            | AppliedEffectLocation::Player(_) => Ok(false),
             AppliedEffectLocation::MonStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
                 core_battle_actions::clear_status(&mut context)

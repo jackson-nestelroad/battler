@@ -2047,16 +2047,16 @@ impl<'effect, 'context, 'battle, 'data> PlayerEffectContext<'effect, 'context, '
         )
     }
 
-    /// Creates a new [`SideEffectContext`] for the source effect with the same target side, scoped
-    /// to the lifetime of this context.
-    pub fn source_side_effect_context<'side_effect>(
+    /// Creates a new [`PlayerEffectContext`] for the source effect with the same target player,
+    /// scoped to the lifetime of this context.
+    pub fn source_player_effect_context<'side_effect>(
         &'side_effect mut self,
-    ) -> Result<Option<SideEffectContext<'side_effect, 'side_effect, 'battle, 'data>>> {
+    ) -> Result<Option<PlayerEffectContext<'side_effect, 'side_effect, 'battle, 'data>>> {
         match self.source_effect_handle().cloned() {
             Some(source_effect_handle) => {
                 let player = unsafe { &*self.player }.index;
                 let source_handle = self.source_handle;
-                Ok(Some(self.as_battle_context_mut().side_effect_context(
+                Ok(Some(self.as_battle_context_mut().player_effect_context(
                     source_effect_handle,
                     player,
                     source_handle,

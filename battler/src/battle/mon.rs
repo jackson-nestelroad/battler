@@ -2608,6 +2608,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+.. Default::default()
             },
         ) {
             context.mon_mut().next_turn_state.cannot_receive_items = true;
@@ -2781,6 +2782,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+.. Default::default()
             },
         );
         Ok(trapped)
@@ -2795,6 +2797,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+.. Default::default()
             },
         )
         .unwrap_or(can_escape);
@@ -2810,6 +2813,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
+.. Default::default()
             },
         )
         .unwrap_or(can_dynamax);
