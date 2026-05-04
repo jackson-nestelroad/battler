@@ -62,6 +62,7 @@ use crate::{
         },
         core_battle_actions,
         core_battle_effects,
+        core_battle_effects_2,
         core_battle_logs,
         mon_states,
     },
@@ -1319,7 +1320,7 @@ impl Mon {
 
             let boosts = match &calculate_stat_context {
                 Some(calculate_stat_context) => {
-                    core_battle_effects::run_event_for_applying_effect_expecting_boost_table(
+                    core_battle_effects_2::run_event_with_relay::<_, BoostTable>(
                         &mut context.as_battle_context_mut().applying_effect_context(
                             calculate_stat_context.effect.clone(),
                             Some(calculate_stat_context.source),
@@ -1362,7 +1363,7 @@ impl Mon {
                 value = match calculate_stat_context {
                     Some(calculate_stat_context) => {
                         let mon_handle = context.mon_handle();
-                        core_battle_effects::run_event_for_applying_effect_expecting_u16(
+                        core_battle_effects_2::run_event_with_relay::<_, u16>(
                             &mut context.as_battle_context_mut().applying_effect_context(
                                 calculate_stat_context.effect,
                                 Some(calculate_stat_context.source),
@@ -2590,14 +2591,13 @@ impl Mon {
         );
 
         for move_slot in context.mon_mut().volatile_state.move_slots.clone() {
-            core_battle_effects::run_applying_effect_event_expecting_void(
+            core_battle_effects_2::run_effect_event::<_, ()>(
                 &mut context.applying_effect_context(
                     EffectHandle::InactiveMove(move_slot.id.clone()),
                     None,
                     None,
                 )?,
                 fxlang::BattleEvent::DisableMove,
-                fxlang::VariableInput::default(),
             );
         }
 

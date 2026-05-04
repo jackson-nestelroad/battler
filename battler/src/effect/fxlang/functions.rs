@@ -19,6 +19,7 @@ use battler_data::{
     Boost,
     BoostOrderIterator,
     BoostTable,
+    DefaultTrueBool,
     HitEffect,
     Id,
     Identifiable,
@@ -62,6 +63,7 @@ use crate::{
         SideEffectContext,
         core_battle_actions,
         core_battle_effects,
+        core_battle_effects_2,
         core_battle_logs,
         mon_states,
     },
@@ -1899,13 +1901,15 @@ fn run_event(mut context: FunctionContext) -> Result<Value> {
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
 
     match context.evaluation_context_mut() {
-        EvaluationContext::ApplyingEffect(_) => Ok(Value::Boolean(
-            core_battle_effects::run_event_for_applying_effect(
+        EvaluationContext::ApplyingEffect(_) => {
+            Ok(Value::Boolean(*core_battle_effects_2::run_event::<
+                _,
+                DefaultTrueBool,
+            >(
                 &mut context.forward_to_applying_effect_context()?,
                 event,
-                VariableInput::default(),
-            ),
-        )),
+            )))
+        }
         EvaluationContext::PlayerEffect(context) => Ok(Value::Boolean(
             core_battle_effects::run_event_for_player_effect(
                 context,
@@ -5608,11 +5612,10 @@ fn activate_applying_effect(mut context: FunctionContext) -> Result<Option<Value
         .battle_mut()
         .get_effect_handle_by_id(&effect)?
         .clone();
-    Ok(core_battle_effects::run_applying_effect_event(
+    Ok(core_battle_effects_2::run_effect_event::<_, Option<Value>>(
         &mut context
             .forward_to_applying_effect_context_with_effect_and_target(effect, target_handle)?,
         BattleEvent::Activate,
-        VariableInput::default(),
     ))
 }
 

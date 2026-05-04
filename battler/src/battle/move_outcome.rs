@@ -59,7 +59,6 @@ impl From<MoveEventResult> for MoveOutcome {
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum MoveOutcomeOnTarget {
     /// It is unknown how the move affected the target.
-    #[default]
     Unknown,
     /// The move failed to do anything to the target.
     Failure,
@@ -68,6 +67,7 @@ pub enum MoveOutcomeOnTarget {
     /// The move hit a Substitute.
     HitSubstitute,
     /// The move successfully hit the target.
+    #[default]
     Success,
     /// The move successfully dealt damage to the target.
     Damage(u16),
@@ -154,7 +154,14 @@ impl From<MoveEventResult> for MoveOutcomeOnTarget {
 
 /// The result of a move event, which indicates how the rest of the move should be handled.
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
 )]
 pub enum MoveEventResult {
     /// Fail the move immediately.
@@ -169,6 +176,7 @@ pub enum MoveEventResult {
     Stop,
     /// Continue the move.
     #[string = "continue"]
+    #[default]
     Advance,
 }
 

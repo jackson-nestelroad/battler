@@ -959,6 +959,131 @@ impl Value {
     }
 }
 
+impl From<bool> for Value {
+    fn from(value: bool) -> Self {
+        Self::Boolean(value)
+    }
+}
+
+impl From<u8> for Value {
+    fn from(value: u8) -> Self {
+        Self::UFraction(value.into())
+    }
+}
+
+impl From<u16> for Value {
+    fn from(value: u16) -> Self {
+        Self::UFraction(value.into())
+    }
+}
+
+impl From<u32> for Value {
+    fn from(value: u32) -> Self {
+        Self::UFraction(value.into())
+    }
+}
+
+impl From<u64> for Value {
+    fn from(value: u64) -> Self {
+        Self::UFraction(value.into())
+    }
+}
+
+impl From<i8> for Value {
+    fn from(value: i8) -> Self {
+        Self::Fraction(value.into())
+    }
+}
+
+impl From<i16> for Value {
+    fn from(value: i16) -> Self {
+        Self::Fraction(value.into())
+    }
+}
+
+impl From<i32> for Value {
+    fn from(value: i32) -> Self {
+        Self::Fraction(value.into())
+    }
+}
+
+impl From<i64> for Value {
+    fn from(value: i64) -> Self {
+        Self::Fraction(value.into())
+    }
+}
+
+impl From<Fraction<u32>> for Value {
+    fn from(value: Fraction<u32>) -> Self {
+        Self::UFraction(value.convert())
+    }
+}
+
+impl From<Fraction<u64>> for Value {
+    fn from(value: Fraction<u64>) -> Self {
+        Self::UFraction(value)
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Self::String(value)
+    }
+}
+
+impl From<MonHandle> for Value {
+    fn from(value: MonHandle) -> Self {
+        Self::Mon(value)
+    }
+}
+
+impl From<EffectHandle> for Value {
+    fn from(value: EffectHandle) -> Self {
+        Self::Effect(value)
+    }
+}
+
+impl From<Boost> for Value {
+    fn from(value: Boost) -> Self {
+        Self::Boost(value)
+    }
+}
+
+impl From<BoostTable> for Value {
+    fn from(value: BoostTable) -> Self {
+        Self::BoostTable(value)
+    }
+}
+
+impl From<StatTable> for Value {
+    fn from(value: StatTable) -> Self {
+        Self::StatTable(value)
+    }
+}
+
+impl From<Vec<SecondaryEffectData>> for Value {
+    fn from(value: Vec<SecondaryEffectData>) -> Self {
+        Self::List(
+            value
+                .into_iter()
+                .map(|secondary_effect| Value::SecondaryHitEffect(secondary_effect))
+                .collect(),
+        )
+    }
+}
+
+impl From<Vec<String>> for Value {
+    fn from(value: Vec<String>) -> Self {
+        Self::List(value.into_iter().map(|str| Value::String(str)).collect())
+    }
+}
+
+impl From<Type> for Value {
+    fn from(value: Type) -> Self {
+        Self::Type(value)
+    }
+}
+
 /// A [`Value`] that could also be a reference to a value.
 ///
 /// This is the real value type used in fxlang evaluation, because the language supports passing

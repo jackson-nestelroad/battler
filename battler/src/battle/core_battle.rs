@@ -77,6 +77,7 @@ use crate::{
         TurnRequest,
         core_battle_actions,
         core_battle_effects,
+        core_battle_effects_2,
         core_battle_logs,
         evaluate_outside_effect,
         shift,
@@ -829,9 +830,10 @@ impl<'d> CoreBattle<'d> {
         for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
             let mut context = context.mon_context(mon)?;
 
-            let mut mon_problems = core_battle_effects::run_event_for_mon_expecting_string_list(
+            let mut mon_problems = core_battle_effects_2::run_event_with_relay::<_, Vec<String>>(
                 &mut context,
                 fxlang::BattleEvent::ValidateMon,
+                Vec::default(),
             );
             problems.append(&mut mon_problems);
         }
@@ -1393,15 +1395,13 @@ impl<'d> CoreBattle<'d> {
                     None,
                     None,
                 )?;
-                core_battle_effects::run_applying_effect_event(
+                core_battle_effects_2::run_effect_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
-                    fxlang::VariableInput::default(),
                 );
-                core_battle_effects::run_event_for_applying_effect(
+                core_battle_effects_2::run_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
-                    fxlang::VariableInput::default(),
                 );
             }
             Action::PriorityChargeMove(action) => {
@@ -1409,14 +1409,13 @@ impl<'d> CoreBattle<'d> {
                 if !context.mon().active || !context.mon().active {
                     return Ok(());
                 }
-                core_battle_effects::run_applying_effect_event(
+                core_battle_effects_2::run_effect_event::<_, ()>(
                     &mut context.applying_effect_context(
                         EffectHandle::InactiveMove(action.id.clone()),
                         None,
                         None,
                     )?,
                     fxlang::BattleEvent::PriorityChargeMove,
-                    fxlang::VariableInput::default(),
                 );
             }
             Action::MegaEvo(action) => {
@@ -1918,7 +1917,7 @@ impl<'d> CoreBattle<'d> {
             let priority = context.active_move().data.priority as i32;
             let mut context = context.user_applying_effect_context(None)?;
 
-            let priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
+            let priority = core_battle_effects_2::run_event_with_relay::<_, i32>(
                 &mut context,
                 fxlang::BattleEvent::ModifyPriority,
                 priority,
@@ -1926,7 +1925,7 @@ impl<'d> CoreBattle<'d> {
 
             action.priority = priority;
 
-            action.sub_priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
+            action.sub_priority = core_battle_effects_2::run_event_with_relay::<_, i32>(
                 &mut context,
                 fxlang::BattleEvent::SubPriority,
                 0,
@@ -2319,10 +2318,9 @@ impl<'d> CoreBattle<'d> {
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
             match entry.effect.clone() {
-                Some(effect) => core_battle_effects::run_event_for_applying_effect(
+                Some(effect) => core_battle_effects_2::run_event::<_, bool>(
                     &mut context.applying_effect_context(effect, entry.source, None)?,
                     fxlang::BattleEvent::Faint,
-                    fxlang::VariableInput::default(),
                 ),
                 None => core_battle_effects::run_event_for_mon(
                     &mut context,
@@ -2386,14 +2384,13 @@ impl<'d> CoreBattle<'d> {
             let mon_handle = context.mon_handle();
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
-            core_battle_effects::run_applying_effect_event_expecting_void(
+            core_battle_effects_2::run_effect_event::<_, ()>(
                 &mut context.applying_effect_context(
                     EffectHandle::Item(entry.item.clone()),
                     None,
                     None,
                 )?,
                 fxlang::BattleEvent::Catch,
-                fxlang::VariableInput::default(),
             );
             core_battle_effects::run_event_for_mon(
                 &mut context,
