@@ -229,6 +229,11 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsVoid,
+    SideEffectModifier = CallbackFlag::TakesSide
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsVoid,
 
     MoveSideControllingResult = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
@@ -255,6 +260,10 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsVoid,
     FieldEffectVoid =
         CallbackFlag::TakesSourceMon | CallbackFlag::TakesEffect | CallbackFlag::ReturnsVoid,
+    FieldEffectModifier = CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsVoid,
 }
 
 /// A modifier on a [`BattleEvent`].
@@ -879,6 +888,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyDef"]
     ModifyDef,
+    /// Runs when calculating the duration of a condition applying to a Mon.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "ModifyDuration"]
+    ModifyDuration,
     /// Runs when calculating the EV yield gained by a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -889,6 +903,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ModifyExperience"]
     ModifyExperience,
+    /// Runs when calculating the duration of a condition applying to the field.
+    ///
+    /// Runs in the context of an applying effect on the field.
+    #[string = "ModifyFieldDuration"]
+    ModifyFieldDuration,
     /// Runs when calculating the amount of friendship gained by a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -909,6 +928,11 @@ pub enum BattleEvent {
     /// Runs in the context of a move target.
     #[string = "ModifySecondaryEffects"]
     ModifySecondaryEffects,
+    /// Runs when calculating the duration of a condition applying to a side.
+    ///
+    /// Runs in the context of an applying effect on a side.
+    #[string = "ModifySideDuration"]
+    ModifySideDuration,
     /// Runs when calculating a Mon's SpA stat.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1467,13 +1491,16 @@ impl BattleEvent {
             Self::ModifyCritChance => CommonCallbackType::MoveModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::MoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
+            Self::ModifyDuration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyDef => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifyEvYield => CommonCallbackType::MonStatTableModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
+            Self::ModifyFieldDuration => CommonCallbackType::FieldEffectModifier as u32,
             Self::ModifyFriendshipIncrease => CommonCallbackType::MonModifier as u32,
             Self::ModifyMoveType => CommonCallbackType::SourceEffectType as u32,
             Self::ModifyPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
+            Self::ModifySideDuration => CommonCallbackType::SideEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1646,6 +1673,9 @@ impl BattleEvent {
                 &[("damage", ValueType::UFraction, true)]
             }
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
+            Self::ModifyDuration | Self::ModifySideDuration | Self::ModifyFieldDuration => {
+                &[("duration", ValueType::UFraction, false)]
+            }
             Self::ModifyEvYield => &[("evs", ValueType::StatTable, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],

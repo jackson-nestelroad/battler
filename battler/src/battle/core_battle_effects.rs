@@ -908,6 +908,8 @@ pub fn run_applying_effect_event(
 }
 
 /// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`u64`].
 pub fn run_applying_effect_event_expecting_u64(
     context: &mut ApplyingEffectContext,
     event: fxlang::BattleEvent,
@@ -915,6 +917,114 @@ pub fn run_applying_effect_event_expecting_u64(
 ) -> Option<u64> {
     run_applying_effect_event(context, event, input)?
         .integer_u64()
+        .ok()
+}
+
+/// Runs an event on the applying [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`u8`].
+pub fn run_applying_effect_event_expecting_u8(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<u8> {
+    run_applying_effect_event(context, event, input)?
+        .integer_u8()
+        .ok()
+}
+
+/// Runs an event on the side [`Effect`][`crate::effect::Effect`].
+pub fn run_side_effect_event(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let side = context.side().index;
+    let effect = context.effect_handle().clone();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
+    match context.source_side_effect_context().ok()? {
+        Some(mut context) => run_callback_under_side_effect(
+            &mut context,
+            input,
+            CallbackHandle::new(
+                effect,
+                event,
+                fxlang::BattleEventModifier::default(),
+                origin,
+                AppliedEffectLocation::Side(side),
+            ),
+        ),
+        None => run_callback_under_side_effect(
+            context,
+            input,
+            CallbackHandle::new(
+                effect,
+                event,
+                fxlang::BattleEventModifier::default(),
+                origin,
+                AppliedEffectLocation::Side(side),
+            ),
+        ),
+    }
+}
+
+/// Runs an event on the field [`Effect`][`crate::effect::Effect`].
+pub fn run_field_effect_event(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<fxlang::Value> {
+    let effect = context.effect_handle().clone();
+    let origin = event_origin_mon_handle(event, None, context.source_handle());
+    match context.source_field_effect_context().ok()? {
+        Some(mut context) => run_callback_under_field_effect(
+            &mut context,
+            input,
+            CallbackHandle::new(
+                effect,
+                event,
+                fxlang::BattleEventModifier::default(),
+                origin,
+                AppliedEffectLocation::Field,
+            ),
+        ),
+        None => run_callback_under_field_effect(
+            context,
+            input,
+            CallbackHandle::new(
+                effect,
+                event,
+                fxlang::BattleEventModifier::default(),
+                origin,
+                AppliedEffectLocation::Field,
+            ),
+        ),
+    }
+}
+
+/// Runs an event on the side [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`u8`].
+pub fn run_side_effect_event_expecting_u8(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<u8> {
+    run_side_effect_event(context, event, input)?
+        .integer_u8()
+        .ok()
+}
+
+/// Runs an event on the field [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`u8`].
+pub fn run_field_effect_event_expecting_u8(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<u8> {
+    run_field_effect_event(context, event, input)?
+        .integer_u8()
         .ok()
 }
 
@@ -928,6 +1038,17 @@ pub fn run_effect_event_expecting_bool(
     run_effect_event(context, event, fxlang::VariableInput::default())?
         .boolean()
         .ok()
+}
+
+/// Runs an event on the [`Effect`][`crate::effect::Effect`].
+///
+/// Expects a [`u8`].
+pub fn run_effect_event_expecting_u8(
+    context: &mut EffectContext,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+) -> Option<u8> {
+    run_effect_event(context, event, input)?.integer_u8().ok()
 }
 
 /// Runs an event on the [`Effect`][`crate::effect::Effect`].
@@ -2075,7 +2196,19 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
-            AppliedEffectLocation::MonAbility(mon) => {
+            AppliedEffectLocation::Mon(mon)
+            | AppliedEffectLocation::MonAbility(mon)
+            | AppliedEffectLocation::MonInactiveMove(mon)
+            | AppliedEffectLocation::MonItem(mon)
+            | AppliedEffectLocation::MonPseudoWeather(mon)
+            | AppliedEffectLocation::MonSideCondition(_, mon)
+            | AppliedEffectLocation::MonSlotCondition(_, _, mon)
+            | AppliedEffectLocation::MonStatus(mon)
+            | AppliedEffectLocation::MonTerastallization(mon)
+            | AppliedEffectLocation::MonTerrain(mon)
+            | AppliedEffectLocation::MonType(mon)
+            | AppliedEffectLocation::MonVolatile(mon)
+            | AppliedEffectLocation::MonWeather(mon) => {
                 let context = context.applying_effect_context(None, mon)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::ApplyingEffect(context.into()),
@@ -2084,115 +2217,9 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
-            AppliedEffectLocation::MonInactiveMove(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonItem(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonPseudoWeather(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonStatus(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonTerastallization(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::Mon(mon) | AppliedEffectLocation::MonType(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonSideCondition(_, mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonSlotCondition(_, _, mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonTerrain(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonVolatile(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::MonWeather(mon) => {
-                let context = context.applying_effect_context(None, mon)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::ApplyingEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::PseudoWeather => {
-                let context = context.field_effect_context(None)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::FieldEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::SideCondition(side) => {
+            AppliedEffectLocation::Side(side)
+            | AppliedEffectLocation::SideCondition(side)
+            | AppliedEffectLocation::SlotCondition(side, _) => {
                 let context = context.side_effect_context(side, None)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::SideEffect(context.into()),
@@ -2201,25 +2228,10 @@ fn run_residual_callbacks_with_errors(
                     callback_handle,
                 )?;
             }
-            AppliedEffectLocation::SlotCondition(side, _) => {
-                let context = context.side_effect_context(side, None)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::SideEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::Terrain => {
-                let context = context.field_effect_context(None)?;
-                run_callback_with_errors(
-                    UpcomingEvaluationContext::FieldEffect(context.into()),
-                    fxlang::VariableInput::default(),
-                    &event_state,
-                    callback_handle,
-                )?;
-            }
-            AppliedEffectLocation::Weather => {
+            AppliedEffectLocation::Field
+            | AppliedEffectLocation::PseudoWeather
+            | AppliedEffectLocation::Terrain
+            | AppliedEffectLocation::Weather => {
                 let context = context.field_effect_context(None)?;
                 run_callback_with_errors(
                     UpcomingEvaluationContext::FieldEffect(context.into()),
@@ -3080,6 +3092,27 @@ pub fn run_event_for_applying_effect_expecting_u8(
 
 /// Runs an event on the [`CoreBattle`] for an applying effect.
 ///
+/// Expects an optional integer that can fit in a [`u8`].
+pub fn run_event_for_applying_effect_expecting_optional_u8(
+    context: &mut ApplyingEffectContext,
+    event: fxlang::BattleEvent,
+    input: Option<u8>,
+) -> Option<u8> {
+    match run_event_for_applying_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([input
+            .map(|val| fxlang::Value::UFraction(val.into()))
+            .unwrap_or(fxlang::Value::Undefined)]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u8().map(|val| Some(val)).unwrap_or(input),
+        None => input,
+    }
+}
+
+/// Runs an event on the [`CoreBattle`] for an applying effect.
+///
 /// Expects an integer that can fit in an [`i8`].
 pub fn run_event_for_applying_effect_expecting_i8(
     context: &mut ApplyingEffectContext,
@@ -3586,6 +3619,27 @@ pub fn run_event_for_side_effect_expecting_move_event_result(
         .ok()
 }
 
+/// Runs an event on the [`CoreBattle`] for a side-applying effect.
+///
+/// Expects an optional integer that can fit in a [`u8`].
+pub fn run_event_for_side_effect_expecting_optional_u8(
+    context: &mut SideEffectContext,
+    event: fxlang::BattleEvent,
+    input: Option<u8>,
+) -> Option<u8> {
+    match run_event_for_side_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([input
+            .map(|val| fxlang::Value::UFraction(val.into()))
+            .unwrap_or(fxlang::Value::Undefined)]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u8().map(|val| Some(val)).unwrap_or(input),
+        None => input,
+    }
+}
+
 /// Runs an event on the [`CoreBattle`] for a field-applying effect.
 ///
 /// Returns `true` if all event handlers succeeded (i.e., did not return `false`).
@@ -3611,6 +3665,27 @@ pub fn run_event_for_field_effect_expecting_move_event_result(
     run_event_for_field_effect_internal(context, event, input, &RunCallbacksOptions::default())?
         .move_result()
         .ok()
+}
+
+/// Runs an event on the [`CoreBattle`] for a field-applying effect.
+///
+/// Expects an optional integer that can fit in a [`u8`].
+pub fn run_event_for_field_effect_expecting_optional_u8(
+    context: &mut FieldEffectContext,
+    event: fxlang::BattleEvent,
+    input: Option<u8>,
+) -> Option<u8> {
+    match run_event_for_field_effect_internal(
+        context,
+        event,
+        fxlang::VariableInput::from_iter([input
+            .map(|val| fxlang::Value::UFraction(val.into()))
+            .unwrap_or(fxlang::Value::Undefined)]),
+        &RunCallbacksOptions::default(),
+    ) {
+        Some(value) => value.integer_u8().map(|val| Some(val)).unwrap_or(input),
+        None => input,
+    }
 }
 
 /// Runs an event on the [`CoreBattle`].
