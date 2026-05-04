@@ -20,3 +20,5 @@ target/
 .npm_cache/
 node_modules/
 fxlang-ext/out/
+
+.antigravity/
