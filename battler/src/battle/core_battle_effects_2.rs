@@ -10,10 +10,12 @@ use battler_data::{
     BoostTable,
     DefaultTrueBool,
     Fraction,
+    MoveTarget,
     SecondaryEffectData,
     StatTable,
     Type,
 };
+use hashbrown::HashSet;
 
 use crate::{
     battle::{
@@ -45,10 +47,16 @@ use crate::{
             CallbackFlag,
         },
     },
+    general_error,
 };
 
 pub struct RunEventOptions {
+    /// Forces the first value to be returned, short circuiting the event evaluation.
+    ///
+    /// Subsequent callbacks are not run at all.
     pub return_first_value: bool,
+
+    /// Signifies that the event should apply to all effects on the field at the end of a turn.
     pub residual: bool,
 }
 
@@ -62,12 +70,12 @@ impl Default for RunEventOptions {
 }
 
 pub struct RunEffectEventOptions {
-    pub location: Option<AppliedEffectLocation>,
+    pub effect: Option<AppliedEffectHandle>,
 }
 
 impl Default for RunEffectEventOptions {
     fn default() -> Self {
-        Self { location: None }
+        Self { effect: None }
     }
 }
 
@@ -300,6 +308,12 @@ impl OptionalEventOutput for MoveOutcomeOnTarget {
     }
 }
 
+impl OptionalEventOutput for MoveTarget {
+    fn from_fxlang_value(val: Option<fxlang::Value>) -> Option<Self> {
+        val.map(|val| val.move_target().ok()).flatten()
+    }
+}
+
 impl OptionalEventOutput for StatTable {
     fn from_fxlang_value(val: Option<fxlang::Value>) -> Option<Self> {
         val.map(|val| val.stat_table().ok()).flatten()
@@ -526,6 +540,50 @@ where
     }
 }
 
+impl<'battle, 'data> EventContext<'battle, 'data> for PlayerContext<'_, '_, 'battle, 'data>
+where
+    'data: 'battle,
+{
+    fn all_effects_target(&self) -> AllEffectsTarget {
+        AllEffectsTarget::Player(self.player().index)
+    }
+
+    fn applied_effect_location(&self) -> AppliedEffectLocation {
+        AppliedEffectLocation::Player(self.player().index)
+    }
+
+    fn effect(&self) -> Option<EffectHandle> {
+        None
+    }
+
+    fn source(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn target(&self) -> Option<MonHandle> {
+        None
+    }
+
+    fn as_battle_context_mut(&mut self) -> &mut Context<'battle, 'data> {
+        self.as_battle_context_mut()
+    }
+
+    fn source_event_context(&mut self) -> Result<Option<impl EventContext<'battle, 'data>>> {
+        Ok(Option::<Self>::None)
+    }
+
+    fn into_upcoming_evaluation_context(
+        &mut self,
+    ) -> UpcomingEvaluationContext<'_, 'battle, 'data> {
+        // SAFETY: UpcomingEvaluationContext uses the lifetime of a mutable borrow of self, so
+        // UpcomingEvaluationContext cannot outlive self.
+        let context = unsafe {
+            core::mem::transmute::<&mut Self, &mut PlayerContext<'_, '_, 'battle, 'data>>(self)
+        };
+        UpcomingEvaluationContext::Player(context.into())
+    }
+}
+
 impl<'battle, 'data> EventContext<'battle, 'data> for SideEffectContext<'_, '_, 'battle, 'data>
 where
     'data: 'battle,
@@ -656,60 +714,6 @@ where
     }
 }
 
-trait RequiredEffectEventContext<'battle, 'data>: EventContext<'battle, 'data> {
-    fn effect(&self) -> EffectHandle;
-}
-
-impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
-    for ApplyingEffectContext<'_, '_, 'battle, 'data>
-where
-    'data: 'battle,
-{
-    fn effect(&self) -> EffectHandle {
-        self.effect_handle().clone()
-    }
-}
-
-impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
-    for EffectContext<'_, 'battle, 'data>
-where
-    'data: 'battle,
-{
-    fn effect(&self) -> EffectHandle {
-        self.effect_handle().clone()
-    }
-}
-
-impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
-    for PlayerEffectContext<'_, '_, 'battle, 'data>
-where
-    'data: 'battle,
-{
-    fn effect(&self) -> EffectHandle {
-        self.effect_handle().clone()
-    }
-}
-
-impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
-    for SideEffectContext<'_, '_, 'battle, 'data>
-where
-    'data: 'battle,
-{
-    fn effect(&self) -> EffectHandle {
-        self.effect_handle().clone()
-    }
-}
-
-impl<'battle, 'data> RequiredEffectEventContext<'battle, 'data>
-    for FieldEffectContext<'_, '_, 'battle, 'data>
-where
-    'data: 'battle,
-{
-    fn effect(&self) -> EffectHandle {
-        self.effect_handle().clone()
-    }
-}
-
 enum UpcomingEvaluationContext<'context, 'battle, 'data>
 where
     'data: 'battle,
@@ -723,6 +727,7 @@ where
     PlayerEffect(MaybeOwnedMut<'context, PlayerEffectContext<'context, 'context, 'battle, 'data>>),
     Player(MaybeOwnedMut<'context, PlayerContext<'context, 'context, 'battle, 'data>>),
     SideEffect(MaybeOwnedMut<'context, SideEffectContext<'context, 'context, 'battle, 'data>>),
+    #[allow(unused)]
     Side(MaybeOwnedMut<'context, SideContext<'context, 'battle, 'data>>),
     FieldEffect(MaybeOwnedMut<'context, FieldEffectContext<'context, 'context, 'battle, 'data>>),
     Field(MaybeOwnedMut<'context, Context<'battle, 'data>>),
@@ -994,10 +999,16 @@ fn run_callbacks_with_forwarding_input_with_errors(
             return Ok(Some(value));
         }
 
+        let should_not_relay_output = event.has_flag(CallbackFlag::ReturnsBoolean)
+            && event
+                .input_vars()
+                .get(0)
+                .is_some_and(|input| input.1 != fxlang::ValueType::Boolean);
+
         // Pass the output to the next effect.
         //
         // Events that return a boolean likely do not want to do this.
-        if !event.has_flag(CallbackFlag::ReturnsBoolean) {
+        if !should_not_relay_output {
             if let Some(forward_input) = input.get_mut(0) {
                 *forward_input = value;
             } else {
@@ -1047,6 +1058,123 @@ where
 
     // The first input variable is always returned as the result.
     Ok(input.get(0).cloned())
+}
+
+fn run_residual_callbacks_with_errors<'battle, 'data, Context>(
+    context: &mut Context,
+    callbacks: Vec<CallbackHandle>,
+) -> Result<()>
+where
+    'data: 'battle,
+    Context: EventContext<'battle, 'data>,
+{
+    // Ensure we only decrease the duration of each event once.
+    let mut duration_decreased = HashSet::new();
+
+    let event_state = fxlang::EventState::default();
+    for callback_handle in callbacks {
+        if let Some(id) = callback_handle.applied_effect_handle.effect_handle.try_id() {
+            if let Some(id) = context
+                .as_battle_context_mut()
+                .battle_mut()
+                .resolve_effect_id(id)
+                && !event_state.effect_should_run(id.as_ref())
+            {
+                continue;
+            }
+        }
+
+        if context.as_battle_context_mut().battle().ending() {
+            break;
+        }
+
+        let mut context = match context.as_battle_context_mut().effect_context(
+            callback_handle.applied_effect_handle.effect_handle.clone(),
+            None,
+        ) {
+            Ok(context) => context,
+            Err(_) => continue,
+        };
+
+        let mut ended = false;
+        if duration_decreased.insert((
+            callback_handle.applied_effect_handle.effect_handle.clone(),
+            callback_handle
+                .applied_effect_handle
+                .location
+                .for_residual(),
+        )) {
+            if let Some(effect_state_connector) = callback_handle
+                .applied_effect_handle
+                .effect_state_connector()
+            {
+                if effect_state_connector.exists(context.as_battle_context_mut())? {
+                    let effect_state =
+                        effect_state_connector.get_mut(context.as_battle_context_mut())?;
+                    if let Some(duration) = effect_state.duration() {
+                        let duration = if duration > 0 { duration - 1 } else { duration };
+                        effect_state.set_duration(duration);
+                        if duration == 0 {
+                            ended = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ended {
+            if callback_handle.applied_effect_handle.end(&mut context)? {
+                continue;
+            }
+        }
+
+        let mut context = match callback_handle.applied_effect_handle.location {
+            AppliedEffectLocation::None => UpcomingEvaluationContext::Effect(context.into()),
+            AppliedEffectLocation::ActiveMove(_) => {
+                return Err(general_error(
+                    "residual callback cannot apply to an active move",
+                ));
+            }
+            AppliedEffectLocation::Mon(mon)
+            | AppliedEffectLocation::MonAbility(mon)
+            | AppliedEffectLocation::MonInactiveMove(mon)
+            | AppliedEffectLocation::MonItem(mon)
+            | AppliedEffectLocation::MonPseudoWeather(mon)
+            | AppliedEffectLocation::MonSideCondition(_, mon)
+            | AppliedEffectLocation::MonSlotCondition(_, _, mon)
+            | AppliedEffectLocation::MonStatus(mon)
+            | AppliedEffectLocation::MonTerastallization(mon)
+            | AppliedEffectLocation::MonTerrain(mon)
+            | AppliedEffectLocation::MonType(mon)
+            | AppliedEffectLocation::MonVolatile(mon)
+            | AppliedEffectLocation::MonWeather(mon) => UpcomingEvaluationContext::ApplyingEffect(
+                context.applying_effect_context(None, mon)?.into(),
+            ),
+            AppliedEffectLocation::Player(player) => UpcomingEvaluationContext::PlayerEffect(
+                context.player_effect_context(player, None)?.into(),
+            ),
+            AppliedEffectLocation::Side(side)
+            | AppliedEffectLocation::SideCondition(side)
+            | AppliedEffectLocation::SlotCondition(side, _) => {
+                UpcomingEvaluationContext::SideEffect(
+                    context.side_effect_context(side, None)?.into(),
+                )
+            }
+            AppliedEffectLocation::Field
+            | AppliedEffectLocation::PseudoWeather
+            | AppliedEffectLocation::Terrain
+            | AppliedEffectLocation::Weather => {
+                UpcomingEvaluationContext::FieldEffect(context.field_effect_context(None)?.into())
+            }
+        };
+        run_callback_with_errors(
+            &mut context,
+            fxlang::VariableInput::default(),
+            &event_state,
+            callback_handle,
+        )?;
+    }
+    Ok(())
 }
 
 mod callbacks {
@@ -1935,7 +2063,12 @@ where
     )?;
     callbacks.dedup();
 
-    run_callbacks_with_errors(context, input, options, callbacks)
+    if options.residual {
+        run_residual_callbacks_with_errors(context, callbacks)?;
+        Ok(None)
+    } else {
+        run_callbacks_with_errors(context, input, options, callbacks)
+    }
 }
 
 fn event_origin_mon_handle(
@@ -2028,18 +2161,30 @@ where
 }
 
 #[allow(private_bounds)]
-pub fn run_effect_event_with_input<'battle, 'data, Context, Input, Output>(
+pub fn run_effect_event_with_options<'battle, 'data, Context, Input, Output>(
     context: &mut Context,
     event: fxlang::BattleEvent,
     input: Input,
+    options: RunEffectEventOptions,
 ) -> Output
 where
     'data: 'battle,
-    Context: RequiredEffectEventContext<'battle, 'data>,
+    Context: EventContext<'battle, 'data>,
     Input: EventInput,
     Output: EventOutput,
 {
-    let effect = <Context as RequiredEffectEventContext>::effect(context);
+    let effect_override = options.effect.is_some();
+    let (effect, location) = match options.effect {
+        Some(effect) => (Some(effect.effect_handle), effect.location),
+        None => (context.effect(), context.applied_effect_location()),
+    };
+
+    // If the effect simply does not exist, we do not have any callback to run.
+    let effect = match effect {
+        Some(effect) => effect,
+        None => return EventOutput::from_fxlang_value(None),
+    };
+
     let origin = event_origin_mon_handle(event, context.target(), context.source());
 
     let callback = CallbackHandle::new(
@@ -2047,10 +2192,16 @@ where
         event,
         fxlang::BattleEventModifier::default(),
         origin,
-        context.applied_effect_location(),
+        location,
     );
 
-    let source_context = context.source_event_context();
+    // If running against a specific effect, do not use the source context.
+    let source_context = if effect_override {
+        Ok(None)
+    } else {
+        context.source_event_context()
+    };
+
     let output = match source_context {
         Ok(Some(mut context)) => run_callback(
             context.into_upcoming_evaluation_context(),
@@ -2073,13 +2224,28 @@ where
 }
 
 #[allow(private_bounds)]
+pub fn run_effect_event_with_input<'battle, 'data, Context, Input, Output>(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+    input: Input,
+) -> Output
+where
+    'data: 'battle,
+    Context: EventContext<'battle, 'data>,
+    Input: EventInput,
+    Output: EventOutput,
+{
+    run_effect_event_with_options(context, event, input, RunEffectEventOptions::default())
+}
+
+#[allow(private_bounds)]
 pub fn run_effect_event<'battle, 'data, Context, Output>(
     context: &mut Context,
     event: fxlang::BattleEvent,
 ) -> Output
 where
     'data: 'battle,
-    Context: RequiredEffectEventContext<'battle, 'data>,
+    Context: EventContext<'battle, 'data>,
     Output: EventOutput,
 {
     run_effect_event_with_input(context, event, ())

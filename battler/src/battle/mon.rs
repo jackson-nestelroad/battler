@@ -62,7 +62,6 @@ use crate::{
             FaintEntry,
         },
         core_battle_actions,
-        core_battle_effects,
         core_battle_effects_2,
         core_battle_logs,
         mon_states,
@@ -70,6 +69,7 @@ use crate::{
     battle_log_entry,
     dex::Dex,
     effect::{
+        AppliedEffectHandle,
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
@@ -244,17 +244,25 @@ pub struct MonMoveSlotData {
 
 impl MonMoveSlotData {
     pub fn from(context: &mut MonContext, move_slot: &MoveSlot) -> Result<Self> {
+        let mon_handle = context.mon_handle();
         let mov = context.battle().dex.moves.get_by_id(&move_slot.id)?;
         let name = mov.data.name.clone();
         let id = mov.id().clone();
         // Some moves may have a special target, depending on the user's type (e.g., Curse).
         let (target, typ) = core_battle_actions::run_in_using_move_state(context, |context| {
-            let target = core_battle_effects::run_mon_effect_event_expecting_move_target(
-                context,
-                fxlang::BattleEvent::MoveTargetOverride,
-                &EffectHandle::InactiveMove(move_slot.id.clone()),
-            )
-            .unwrap_or(move_slot.target);
+            let target =
+                core_battle_effects_2::run_effect_event_with_options::<_, _, Option<MoveTarget>>(
+                    context,
+                    fxlang::BattleEvent::MoveTargetOverride,
+                    (),
+                    core_battle_effects_2::RunEffectEventOptions {
+                        effect: Some(AppliedEffectHandle::new(
+                            EffectHandle::InactiveMove(move_slot.id.clone()),
+                            AppliedEffectLocation::MonInactiveMove(mon_handle),
+                        )),
+                    },
+                )
+                .unwrap_or(move_slot.target);
             let typ =
                 core_battle_actions::move_type_for_display(context, &id).unwrap_or(move_slot.typ);
             (target, typ)
@@ -2608,7 +2616,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
-.. Default::default()
+                ..Default::default()
             },
         ) {
             context.mon_mut().next_turn_state.cannot_receive_items = true;
@@ -2782,7 +2790,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
-.. Default::default()
+                ..Default::default()
             },
         );
         Ok(trapped)
@@ -2797,7 +2805,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
-.. Default::default()
+                ..Default::default()
             },
         )
         .unwrap_or(can_escape);
@@ -2813,7 +2821,7 @@ impl Mon {
             (),
             core_battle_effects_2::RunEventOptions {
                 return_first_value: true,
-.. Default::default()
+                ..Default::default()
             },
         )
         .unwrap_or(can_dynamax);

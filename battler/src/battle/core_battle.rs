@@ -76,7 +76,6 @@ use crate::{
         TeamPreviewRequest,
         TurnRequest,
         core_battle_actions,
-        core_battle_effects,
         core_battle_effects_2,
         core_battle_logs,
         evaluate_outside_effect,
@@ -820,9 +819,10 @@ impl<'d> CoreBattle<'d> {
         // REQUIRED to use update_team. Then, validation can occur in the core battle engine, and
         // the interface into the battle engine can do additional validation (i.e., the player is
         // not using Mons it does not truly own).
-        let mut problems = core_battle_effects::run_event_for_player_expecting_string_list(
+        let mut problems = core_battle_effects_2::run_event_with_relay::<_, Vec<String>>(
             context,
             fxlang::BattleEvent::ValidateTeam,
+            Vec::default(),
         );
         if context.player().team_size() == 0 {
             problems.push("Empty team is not allowed.".to_owned());
@@ -1458,7 +1458,15 @@ impl<'d> CoreBattle<'d> {
             Action::Residual => {
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
-                core_battle_effects::run_event_for_residual(context, fxlang::BattleEvent::Residual);
+                core_battle_effects_2::run_event_with_options::<_, _, ()>(
+                    context,
+                    fxlang::BattleEvent::Residual,
+                    (),
+                    core_battle_effects_2::RunEventOptions {
+                        residual: true,
+                        ..Default::default()
+                    },
+                );
                 context.battle_mut().log(battle_log_entry!("residual"));
             }
             Action::Experience(action) => {
@@ -2573,7 +2581,7 @@ impl<'d> CoreBattle<'d> {
 
     /// Updates the battle, triggering any miscellaneous effects on Mons that could activate.
     pub fn update(context: &mut Context) -> Result<()> {
-        core_battle_effects::run_event_for_each_active_mon_with_effect(
+        core_battle_effects_2::run_event_for_each_active_mon_with_effect(
             &mut context.effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
             fxlang::BattleEvent::Update,
         )

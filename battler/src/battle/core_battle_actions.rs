@@ -74,7 +74,6 @@ use crate::{
         Side,
         SideEffectContext,
         SwitchEventsAction,
-        core_battle_effects,
         core_battle_effects_2,
         core_battle_logs,
         modify_32,
@@ -336,13 +335,21 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
         .cloned()
         .collect::<Vec<_>>();
     for volatile in copied {
-        if !core_battle_effects::run_mon_volatile_event_expecting_bool(
+        let effect_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&volatile)?
+            .clone();
+        if !*core_battle_effects_2::run_effect_event_with_options::<_, _, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::CopyVolatile,
-            &volatile,
-        )
-        .unwrap_or(true)
-        {
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    effect_handle,
+                    AppliedEffectLocation::MonVolatile(context.target_handle()),
+                )),
+            },
+        ) {
             context
                 .target_mut()
                 .volatile_state
@@ -3367,19 +3374,39 @@ pub fn try_set_status(
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_mon_status_event_expecting_u8(
+    if let Some(duration) = core_battle_effects_2::run_effect_event_with_options::<
+        ApplyingEffectContext,
+        _,
+        Option<u8>,
+    >(
         context,
         fxlang::BattleEvent::Duration,
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                status_effect_handle.clone(),
+                AppliedEffectLocation::MonStatus(target_handle),
+            )),
+        },
     ) {
         context.target_mut().status_state.set_duration(duration);
     }
 
-    if !core_battle_effects::run_mon_status_event_expecting_bool(
+    if !*core_battle_effects_2::run_effect_event_with_options::<
+        ApplyingEffectContext,
+        _,
+        DefaultTrueBool,
+    >(
         context,
         fxlang::BattleEvent::Start,
-    )
-    .unwrap_or(true)
-    {
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                status_effect_handle.clone(),
+                AppliedEffectLocation::MonStatus(target_handle),
+            )),
+        },
+    ) {
         context.target_mut().status = previous_status;
         context.target_mut().status_state = previous_status_state;
         return Ok(ApplyMoveEffectResult::Failed);
@@ -3520,24 +3547,29 @@ pub fn add_volatile(
         .wrap_expectation("volatile must have an id")?
         .clone();
 
+    let target_handle = context.target_handle();
+
     if context
         .target()
         .volatile_state
         .volatiles
         .contains_key(&volatile)
     {
-        if !core_battle_effects::run_mon_volatile_event_expecting_bool(
+        if !core_battle_effects_2::run_effect_event_with_options::<ApplyingEffectContext, _, bool>(
             context,
             fxlang::BattleEvent::Restart,
-            &volatile,
-        )
-        .unwrap_or(false)
-        {
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    volatile_status_handle.clone(),
+                    AppliedEffectLocation::MonVolatile(target_handle),
+                )),
+            },
+        ) {
             return Ok(false);
         }
 
         if let Some(link_to) = link_to {
-            let target_handle = context.target_handle();
             LinkedEffectsManager::link(
                 context.as_battle_context_mut(),
                 link_to,
@@ -3596,10 +3628,20 @@ pub fn add_volatile(
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_mon_volatile_event_expecting_u8(
+    if let Some(duration) = core_battle_effects_2::run_effect_event_with_options::<
+        ApplyingEffectContext,
+        _,
+        Option<u8>,
+    >(
         context,
         fxlang::BattleEvent::Duration,
-        &volatile,
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                volatile_status_handle.clone(),
+                AppliedEffectLocation::MonVolatile(target_handle),
+            )),
+        },
     ) {
         context
             .target_mut()
@@ -3610,13 +3652,21 @@ pub fn add_volatile(
             .set_duration(duration);
     }
 
-    if !core_battle_effects::run_mon_volatile_event_expecting_bool(
+    if !*core_battle_effects_2::run_effect_event_with_options::<
+        ApplyingEffectContext,
+        _,
+        DefaultTrueBool,
+    >(
         context,
         fxlang::BattleEvent::Start,
-        &volatile,
-    )
-    .unwrap_or(true)
-    {
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                volatile_status_handle.clone(),
+                AppliedEffectLocation::MonVolatile(target_handle),
+            )),
+        },
+    ) {
         context
             .target_mut()
             .volatile_state
@@ -3703,17 +3753,24 @@ pub fn remove_volatile(
         return Ok(true);
     }
 
-    core_battle_effects::run_mon_volatile_event_expecting_void(
+    let target_handle = context.target_handle();
+
+    core_battle_effects_2::run_effect_event_with_options::<ApplyingEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::End,
-        &volatile,
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                volatile_status_handle.clone(),
+                AppliedEffectLocation::MonVolatile(target_handle),
+            )),
+        },
     );
 
-    let mon_handle = context.target_handle();
     LinkedEffectsManager::remove(
         context.as_effect_context_mut(),
         volatile_status_handle,
-        AppliedEffectLocation::MonVolatile(mon_handle),
+        AppliedEffectLocation::MonVolatile(target_handle),
     )?;
 
     context
@@ -3789,19 +3846,24 @@ pub fn add_side_condition(
         .wrap_expectation("side condition must have an id")?
         .clone();
 
+    let side = context.side().index;
+
     if context.side().conditions.contains_key(&condition) {
-        if !core_battle_effects::run_side_condition_event_expecting_bool(
+        if !core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, bool>(
             context,
             fxlang::BattleEvent::SideRestart,
-            &condition,
-        )
-        .unwrap_or(false)
-        {
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    side_condition_handle.clone(),
+                    AppliedEffectLocation::SideCondition(side),
+                )),
+            },
+        ) {
             return Ok(false);
         }
 
         if let Some(link_to) = link_to {
-            let side = context.side().index;
             LinkedEffectsManager::link(
                 context.as_battle_context_mut(),
                 link_to,
@@ -3841,11 +3903,19 @@ pub fn add_side_condition(
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_side_condition_event_expecting_u8(
-        context,
-        fxlang::BattleEvent::Duration,
-        &condition,
-    ) {
+    if let Some(duration) =
+        core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, Option<u8>>(
+            context,
+            fxlang::BattleEvent::Duration,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    side_condition_handle.clone(),
+                    AppliedEffectLocation::SideCondition(side),
+                )),
+            },
+        )
+    {
         context
             .side_mut()
             .conditions
@@ -3854,13 +3924,17 @@ pub fn add_side_condition(
             .set_duration(duration);
     }
 
-    if !core_battle_effects::run_side_condition_event_expecting_bool(
+    if !*core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::SideStart,
-        &condition,
-    )
-    .unwrap_or(true)
-    {
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                side_condition_handle.clone(),
+                AppliedEffectLocation::SideCondition(side),
+            )),
+        },
+    ) {
         context.side_mut().conditions.remove(&condition);
         return Ok(false);
     }
@@ -3920,13 +3994,20 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
         return Ok(false);
     }
 
-    core_battle_effects::run_side_condition_event_expecting_void(
+    let side = context.side().index;
+
+    core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::SideEnd,
-        &condition,
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                side_condition_handle.clone(),
+                AppliedEffectLocation::SideCondition(side),
+            )),
+        },
     );
 
-    let side = context.side().index;
     LinkedEffectsManager::remove(
         context.as_effect_context_mut(),
         side_condition_handle,
@@ -4380,7 +4461,17 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
     }
 
     if let Some(duration) =
-        core_battle_effects::run_weather_event_expecting_u8(context, fxlang::BattleEvent::Duration)
+        core_battle_effects_2::run_effect_event_with_options::<FieldEffectContext, _, Option<u8>>(
+            context,
+            fxlang::BattleEvent::Duration,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    weather_handle.clone(),
+                    AppliedEffectLocation::Weather,
+                )),
+            },
+        )
     {
         context
             .battle_mut()
@@ -4389,18 +4480,27 @@ pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<boo
             .set_duration(duration);
     }
 
-    if !core_battle_effects::run_weather_event_expecting_bool(
+    if !*core_battle_effects_2::run_effect_event_with_options::<
+        FieldEffectContext,
+        _,
+        DefaultTrueBool,
+    >(
         context,
         fxlang::BattleEvent::FieldStart,
-    )
-    .unwrap_or(true)
-    {
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                weather_handle.clone(),
+                AppliedEffectLocation::Weather,
+            )),
+        },
+    ) {
         context.battle_mut().field.weather = previous_weather;
         context.battle_mut().field.weather_state = previous_weather_state;
         return Ok(false);
     }
 
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
+    core_battle_effects_2::run_event_for_each_active_mon_with_effect(
         context.as_effect_context_mut(),
         fxlang::BattleEvent::WeatherChange,
     )?;
@@ -4432,9 +4532,22 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
         ) {
             return Ok(false);
         }
-        core_battle_effects::run_weather_event_expecting_void(
+
+        let weather_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&weather)?
+            .clone();
+
+        core_battle_effects_2::run_effect_event_with_options::<FieldEffectContext, _, ()>(
             context,
             fxlang::BattleEvent::FieldEnd,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    weather_handle.clone(),
+                    AppliedEffectLocation::Weather,
+                )),
+            },
         );
 
         LinkedEffectsManager::remove_by_id(
@@ -4458,7 +4571,7 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
         )?;
     }
 
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
+    core_battle_effects_2::run_event_for_each_active_mon_with_effect(
         context.as_effect_context_mut(),
         fxlang::BattleEvent::WeatherChange,
     )?;
@@ -4526,7 +4639,17 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
     }
 
     if let Some(duration) =
-        core_battle_effects::run_terrain_event_expecting_u8(context, fxlang::BattleEvent::Duration)
+        core_battle_effects_2::run_effect_event_with_options::<FieldEffectContext, _, Option<u8>>(
+            context,
+            fxlang::BattleEvent::Duration,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    terrain_handle.clone(),
+                    AppliedEffectLocation::Terrain,
+                )),
+            },
+        )
     {
         context
             .battle_mut()
@@ -4535,18 +4658,27 @@ pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<boo
             .set_duration(duration);
     }
 
-    if !core_battle_effects::run_terrain_event_expecting_bool(
+    if !*core_battle_effects_2::run_effect_event_with_options::<
+        FieldEffectContext,
+        _,
+        DefaultTrueBool,
+    >(
         context,
         fxlang::BattleEvent::FieldStart,
-    )
-    .unwrap_or(true)
-    {
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                terrain_handle.clone(),
+                AppliedEffectLocation::Terrain,
+            )),
+        },
+    ) {
         context.battle_mut().field.terrain = previous_terrain;
         context.battle_mut().field.terrain_state = previous_terrain_state;
         return Ok(false);
     }
 
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
+    core_battle_effects_2::run_event_for_each_active_mon_with_effect(
         context.as_effect_context_mut(),
         fxlang::BattleEvent::TerrainChange,
     )?;
@@ -4578,9 +4710,22 @@ pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
         ) {
             return Ok(false);
         }
-        core_battle_effects::run_terrain_event_expecting_void(
+
+        let terrain_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&terrain)?
+            .clone();
+
+        core_battle_effects_2::run_effect_event_with_options::<FieldEffectContext, _, ()>(
             context,
             fxlang::BattleEvent::FieldEnd,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    terrain_handle.clone(),
+                    AppliedEffectLocation::Terrain,
+                )),
+            },
         );
 
         LinkedEffectsManager::remove_by_id(
@@ -4638,12 +4783,18 @@ pub fn add_pseudo_weather(
         .pseudo_weathers
         .contains_key(&pseudo_weather)
     {
-        let restart = core_battle_effects::run_pseudo_weather_event_expecting_bool(
-            context,
-            fxlang::BattleEvent::FieldRestart,
-            &pseudo_weather,
-        )
-        .unwrap_or(false);
+        let restart =
+            core_battle_effects_2::run_effect_event_with_options::<FieldEffectContext, _, bool>(
+                context,
+                fxlang::BattleEvent::FieldRestart,
+                (),
+                core_battle_effects_2::RunEffectEventOptions {
+                    effect: Some(AppliedEffectHandle::new(
+                        pseudo_weather_handle.clone(),
+                        AppliedEffectLocation::PseudoWeather,
+                    )),
+                },
+            );
         if !restart {
             return Ok(false);
         }
@@ -4698,11 +4849,19 @@ pub fn add_pseudo_weather(
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_pseudo_weather_event_expecting_u8(
-        context,
-        fxlang::BattleEvent::Duration,
-        &pseudo_weather,
-    ) {
+    if let Some(duration) =
+        core_battle_effects_2::run_effect_event_with_options::<FieldEffectContext, _, Option<u8>>(
+            context,
+            fxlang::BattleEvent::Duration,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    pseudo_weather_handle.clone(),
+                    AppliedEffectLocation::PseudoWeather,
+                )),
+            },
+        )
+    {
         context
             .battle_mut()
             .field
@@ -4712,13 +4871,21 @@ pub fn add_pseudo_weather(
             .set_duration(duration);
     }
 
-    if !core_battle_effects::run_pseudo_weather_event_expecting_bool(
+    if !*core_battle_effects_2::run_effect_event_with_options::<
+        FieldEffectContext,
+        _,
+        DefaultTrueBool,
+    >(
         context,
         fxlang::BattleEvent::FieldStart,
-        &pseudo_weather,
-    )
-    .unwrap_or(true)
-    {
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                pseudo_weather_handle.clone(),
+                AppliedEffectLocation::PseudoWeather,
+            )),
+        },
+    ) {
         context
             .battle_mut()
             .field
@@ -4787,10 +4954,16 @@ pub fn remove_pseudo_weather(
         return Ok(false);
     }
 
-    core_battle_effects::run_pseudo_weather_event_expecting_void(
+    core_battle_effects_2::run_effect_event_with_options::<FieldEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::FieldEnd,
-        &pseudo_weather,
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                pseudo_weather_handle.clone(),
+                AppliedEffectLocation::PseudoWeather,
+            )),
+        },
     );
 
     LinkedEffectsManager::remove_by_id(
@@ -4845,7 +5018,20 @@ pub fn end_ability_even_if_exiting(
         core_battle_logs::ability_end(context)?;
     }
 
-    core_battle_effects::run_mon_ability_event_expecting_void(context, fxlang::BattleEvent::End);
+    if let Some(ability) = mon_states::effective_ability(&mut context.target_context()?) {
+        let target_handle = context.target_handle();
+        core_battle_effects_2::run_effect_event_with_options::<ApplyingEffectContext, _, bool>(
+            context,
+            fxlang::BattleEvent::End,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    EffectHandle::Ability(ability),
+                    AppliedEffectLocation::MonAbility(target_handle),
+                )),
+            },
+        );
+    }
 
     Ok(())
 }
@@ -4868,15 +5054,27 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
         return Ok(());
     }
 
-    // Ability is suppressed.
-    if mon_states::effective_ability(&mut context.target_context()?).is_none() {
-        return Ok(());
-    }
+    // Check if ability is suppressed.
+    let ability = match mon_states::effective_ability(&mut context.target_context()?) {
+        Some(ability) => ability,
+        None => return Ok(()),
+    };
 
     if !silent {
         core_battle_logs::ability(context)?;
     }
-    core_battle_effects::run_mon_ability_event_expecting_void(context, fxlang::BattleEvent::Start);
+    let target_handle = context.target_handle();
+    core_battle_effects_2::run_effect_event_with_options::<ApplyingEffectContext, _, bool>(
+        context,
+        fxlang::BattleEvent::Start,
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                EffectHandle::Ability(ability),
+                AppliedEffectLocation::MonAbility(target_handle),
+            )),
+        },
+    );
     Ok(())
 }
 
@@ -4973,25 +5171,29 @@ pub fn add_slot_condition(
         .wrap_expectation("slot condition must have an id")?
         .clone();
 
+    let side = context.side().index;
+
     if context
         .side()
         .slot_conditions
         .get(&slot)
         .is_some_and(|conditions| conditions.contains_key(&condition))
     {
-        if !core_battle_effects::run_slot_condition_event_expecting_bool(
+        if !core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, bool>(
             context,
             fxlang::BattleEvent::SlotRestart,
-            slot,
-            &condition,
-        )
-        .unwrap_or(false)
-        {
+            slot as u64,
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    slot_condition_handle.clone(),
+                    AppliedEffectLocation::SlotCondition(side, slot),
+                )),
+            },
+        ) {
             return Ok(false);
         }
 
         if let Some(link_to) = link_to {
-            let side = context.side().index;
             LinkedEffectsManager::link(
                 context.as_battle_context_mut(),
                 link_to,
@@ -5035,12 +5237,19 @@ pub fn add_slot_condition(
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_slot_condition_event_expecting_u8(
-        context,
-        fxlang::BattleEvent::Duration,
-        slot,
-        &condition,
-    ) {
+    if let Some(duration) =
+        core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, Option<u8>>(
+            context,
+            fxlang::BattleEvent::Duration,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    slot_condition_handle.clone(),
+                    AppliedEffectLocation::SlotCondition(side, slot),
+                )),
+            },
+        )
+    {
         context
             .side_mut()
             .slot_conditions
@@ -5051,14 +5260,17 @@ pub fn add_slot_condition(
             .set_duration(duration);
     }
 
-    if !core_battle_effects::run_slot_condition_event_expecting_bool(
+    if !*core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::SlotStart,
-        slot,
-        &condition,
-    )
-    .unwrap_or(true)
-    {
+        slot as u64,
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                slot_condition_handle.clone(),
+                AppliedEffectLocation::SlotCondition(side, slot),
+            )),
+        },
+    ) {
         context
             .side_mut()
             .slot_conditions
@@ -5131,14 +5343,20 @@ pub fn remove_slot_condition(
         return Ok(false);
     }
 
-    core_battle_effects::run_slot_condition_event_expecting_void(
+    let side = context.side().index;
+
+    core_battle_effects_2::run_effect_event_with_options::<SideEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::SlotEnd,
-        slot,
-        &condition,
+        slot as u64,
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                slot_condition_handle.clone(),
+                AppliedEffectLocation::SlotCondition(side, slot),
+            )),
+        },
     );
 
-    let side = context.side().index;
     LinkedEffectsManager::remove(
         context.as_effect_context_mut(),
         slot_condition_handle,
@@ -5219,8 +5437,21 @@ fn end_item_internal(
         EndItemType::Use => Some(fxlang::BattleEvent::Use),
         EndItemType::Eat => Some(fxlang::BattleEvent::Eat),
     };
-    if let Some(event) = event {
-        core_battle_effects::run_mon_item_event_expecting_void(context, event);
+    if let Some(event) = event
+        && let Some(item) = mon_states::effective_item(&mut context.target_context()?)
+    {
+        let target_handle = context.target_handle();
+        core_battle_effects_2::run_effect_event_with_options::<ApplyingEffectContext, _, ()>(
+            context,
+            event,
+            (),
+            core_battle_effects_2::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    EffectHandle::Item(item),
+                    AppliedEffectLocation::MonItem(target_handle),
+                )),
+            },
+        );
     }
 
     Ok(())
@@ -5264,12 +5495,24 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         core_battle_logs::item(context)?;
     }
 
-    // Item is suppressed.
-    if mon_states::effective_item(&mut context.target_context()?).is_none() {
-        return Ok(());
-    }
+    // Check if item is suppressed.
+    let item = match mon_states::effective_item(&mut context.target_context()?) {
+        Some(item) => item,
+        None => return Ok(()),
+    };
 
-    core_battle_effects::run_mon_item_event_expecting_void(context, fxlang::BattleEvent::Start);
+    let target_handle = context.target_handle();
+    core_battle_effects_2::run_effect_event_with_options::<ApplyingEffectContext, _, ()>(
+        context,
+        fxlang::BattleEvent::Start,
+        (),
+        core_battle_effects_2::RunEffectEventOptions {
+            effect: Some(AppliedEffectHandle::new(
+                EffectHandle::Item(item),
+                AppliedEffectLocation::MonItem(target_handle),
+            )),
+        },
+    );
 
     Ok(())
 }
@@ -5304,12 +5547,7 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
         context,
         fxlang::BattleEvent::SetItem,
         item_handle.clone(),
-    ) || !core_battle_effects::run_mon_item_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::SetItem,
-    )
-    .unwrap_or(true)
-    {
+    ) {
         return Ok(false);
     }
 
@@ -5918,7 +6156,7 @@ fn check_critical_capture(context: &mut PlayerContext, catch_rate: u64) -> bool 
 
 /// Triggers effects when the battle has ended.
 pub fn end_battle(context: &mut Context) -> Result<()> {
-    core_battle_effects::run_event_for_each_active_mon(context, fxlang::BattleEvent::EndBattle)?;
+    core_battle_effects_2::run_event_for_each_active_mon(context, fxlang::BattleEvent::EndBattle)?;
 
     // Recalculate all base stats, in case EVs were updated.
     for mon in context
