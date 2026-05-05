@@ -910,7 +910,15 @@
         "power": 30
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_side_duration": [
+          "if [lightscreen, reflect, auroraveil] has $condition.id:",
+          ["return 8"]
+        ]
+      }
+    }
   },
   "lifeorb": {
     "name": "Life Orb",
@@ -1160,7 +1168,15 @@
         "power": 40
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_field_duration": [
+          "if $condition.id == hailweather or $condition.id == snowweather:",
+          ["return 8"]
+        ]
+      }
+    }
   },
   "smoothrock": {
     "name": "Smooth Rock",
@@ -1169,7 +1185,12 @@
         "power": 10
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_field_duration": ["if $condition.id == sandstormweather:", ["return 8"]]
+      }
+    }
   },
   "heatrock": {
     "name": "Heat Rock",
@@ -1178,7 +1199,12 @@
         "power": 60
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_field_duration": ["if $condition.id == harshsunlight:", ["return 8"]]
+      }
+    }
   },
   "damprock": {
     "name": "Damp Rock",
@@ -1187,7 +1213,12 @@
         "power": 60
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_field_duration": ["if $condition.id == rainweather:", ["return 8"]]
+      }
+    }
   },
   "gripclaw": {
     "name": "Grip Claw",
@@ -1196,7 +1227,13 @@
         "power": 90
       }
     },
-    "flags": []
+    "flags": [],
+
+    "effect": {
+      "callbacks": {
+        "on_source_modify_duration": ["if $condition.id == partiallytrapped:", ["return 8"]]
+      }
+    }
   },
   "choicescarf": {
     "name": "Choice Scarf",
@@ -2251,7 +2288,15 @@
         "power": 60
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_field_duration": [
+          "if [electricterrain, grassyterrain, mistyterrain, psychicterrain] has $condition.id:",
+          ["return 8"]
+        ]
+      }
+    }
   },
   "protectivepads": {
     "name": "Protective Pads",

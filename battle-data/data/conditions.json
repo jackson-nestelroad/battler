@@ -449,11 +449,7 @@
     "condition_type": "Volatile",
     "condition": {
       "callbacks": {
-        "on_duration": [
-          "if $source.is_defined and func_call(has_item: $source gripclaw):",
-          ["return 8"],
-          "return func_call(random: 5 7)"
-        ],
+        "on_duration": ["return func_call(random: 5 7)"],
         "on_start": [
           "log_activate: with_target with_source use_effect_state_source_effect",
           "$effect_state.divisor = 8",
@@ -595,15 +591,9 @@
     "name": "Rain",
     "condition_type": "Weather",
     "condition": {
+      "duration": 5,
       "callbacks": {
         "is_raining": ["return true"],
-        "on_duration": [
-          "if !$source:",
-          ["return"],
-          "if func_call(has_item: $source damprock):",
-          ["return 8"],
-          "return 5"
-        ],
         "on_source_weather_modify_damage": [
           "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
           "if $move.type == water:",
@@ -654,15 +644,9 @@
     "name": "Harsh Sunlight",
     "condition_type": "Weather",
     "condition": {
+      "duration": 5,
       "callbacks": {
         "is_sunny": ["return true"],
-        "on_duration": [
-          "if !$source:",
-          ["return"],
-          "if func_call(has_item: $source heatrock):",
-          ["return 8"],
-          "return 5"
-        ],
         "on_source_weather_modify_damage": [
           "if $move.id == hydrosteam:",
           ["return $damage * 3/2"],
@@ -716,14 +700,8 @@
     "name": "Sandstorm",
     "condition_type": "Weather",
     "condition": {
+      "duration": 5,
       "callbacks": {
-        "on_duration": [
-          "if !$source:",
-          ["return"],
-          "if func_call(has_item: $source smoothrock):",
-          ["return 8"],
-          "return 5"
-        ],
         "on_modify_spd": {
           "priority": 10,
           "program": ["if func_call(has_type: $target rock):", ["return $spd * 3/2"]]
@@ -747,15 +725,9 @@
     "name": "Hail",
     "condition_type": "Weather",
     "condition": {
+      "duration": 5,
       "callbacks": {
         "is_snowing": ["return true"],
-        "on_duration": [
-          "if !$source:",
-          ["return"],
-          "if func_call(has_item: $source icyrock):",
-          ["return 8"],
-          "return 5"
-        ],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": {
           "order": 1,
@@ -775,15 +747,9 @@
     "name": "Snow",
     "condition_type": "Weather",
     "condition": {
+      "duration": 5,
       "callbacks": {
         "is_snowing": ["return true"],
-        "on_duration": [
-          "if !$source:",
-          ["return"],
-          "if func_call(has_item: $source icyrock):",
-          ["return 8"],
-          "return 5"
-        ],
         "on_modify_def": {
           "priority": 10,
           "program": ["if func_call(has_type: $target ice):", ["return $def * 3/2"]]

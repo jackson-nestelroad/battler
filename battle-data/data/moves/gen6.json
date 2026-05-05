@@ -454,7 +454,6 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_duration": ["if func_call(has_item: $source terrainextender):", ["return 8"]],
         "on_field_start": [
           "if !$source:",
           ["return"],
@@ -494,7 +493,6 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_duration": ["if func_call(has_item: $source terrainextender):", ["return 8"]],
         "on_field_start": [
           "if !$source:",
           ["return"],
@@ -994,7 +992,6 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_duration": ["if func_call(has_item: $source terrainextender):", ["return 8"]],
         "on_field_start": [
           "if !$source:",
           ["return"],
