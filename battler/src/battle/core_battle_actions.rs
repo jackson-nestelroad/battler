@@ -3340,6 +3340,21 @@ pub fn try_set_status(
                 return Ok(false);
             }
 
+            Ok(true)
+        }
+
+        fn exists(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            // If Mon has a status, pre_start fails.
+            Ok(false)
+        }
+
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
             if check_immunity(
                 &mut context
                     .context
@@ -3352,11 +3367,7 @@ pub fn try_set_status(
                 return Ok(false);
             }
 
-            if !*core_battle_effects::run_event_with_input::<
-                ApplyingEffectContext,
-                _,
-                DefaultTrueBool,
-            >(
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
                 context.context,
                 fxlang::BattleEvent::SetStatus,
                 context.effect_handle.clone(),
@@ -3365,14 +3376,6 @@ pub fn try_set_status(
             }
 
             Ok(true)
-        }
-
-        fn exists(
-            &mut self,
-            _: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
-        ) -> Result<bool> {
-            // If Mon has a status, pre_start fails.
-            Ok(false)
         }
 
         fn apply(
@@ -3398,7 +3401,7 @@ pub fn try_set_status(
             &mut self,
             context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
         ) -> Result<()> {
-            core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
+            core_battle_effects::run_event_with_input::<_, _, ()>(
                 context.context,
                 fxlang::BattleEvent::AfterSetStatus,
                 context.effect_handle.clone(),
@@ -3577,183 +3580,136 @@ pub fn add_volatile(
     is_primary_move_effect: bool,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    if !context.target().active || context.target().hp == 0 {
-        return Ok(false);
+    struct Callbacks {
+        is_primary_move_effect: bool,
     }
 
-    let volatile_status_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(volatile)?
-        .clone();
-    let volatile = volatile_status_handle
-        .try_id()
-        .wrap_expectation("volatile must have an id")?
-        .clone();
-
-    let target_handle = context.target_handle();
-
-    if context
-        .target()
-        .volatile_state
-        .volatiles
-        .contains_key(&volatile)
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        if !core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, bool>(
-            context,
-            fxlang::BattleEvent::Restart,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    volatile_status_handle.clone(),
-                    AppliedEffectLocation::MonVolatile(target_handle),
-                )),
-            },
-        ) {
-            return Ok(false);
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if !context.context.target().active || context.context.target().hp == 0 {
+                return Ok(false);
+            }
+
+            Ok(true)
         }
 
-        if let Some(link_to) = link_to {
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    volatile_status_handle,
-                    AppliedEffectLocation::MonVolatile(target_handle),
-                ),
-            )?;
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .target()
+                .volatile_state
+                .volatiles
+                .contains_key(&context.effect_id))
         }
-        return Ok(true);
-    }
 
-    if check_immunity(
-        &mut context.forward_applying_effect_context(volatile_status_handle.clone())?,
-    )? {
-        if is_primary_move_effect {
-            core_battle_logs::immune(&mut context.target_context()?, None)?;
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if check_immunity(
+                &mut context
+                    .context
+                    .forward_applying_effect_context(context.effect_handle.clone())?,
+            )? {
+                if self.is_primary_move_effect {
+                    core_battle_logs::immune(&mut context.context.target_context()?, None)?;
+                }
+                return Ok(false);
+            }
+
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::AddVolatile,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
         }
-        return Ok(false);
-    }
-    if !*core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::AddVolatile,
-        volatile_status_handle.clone(),
-    ) {
-        return Ok(false);
-    }
 
-    let effect_handle = context.effect_handle().clone();
-    let target_handle = context.target_handle();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        Some(target_handle),
-        source_handle,
-    )?;
-    context
-        .target_mut()
-        .volatile_state
-        .volatiles
-        .insert(volatile.clone(), effect_state);
-
-    if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &volatile_status_handle,
-    )? {
-        if let Some(duration) = condition.condition().duration {
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .target_mut()
                 .volatile_state
                 .volatiles
-                .get_mut(&volatile)
-                .wrap_expectation("expected volatile state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .target_mut()
+                .volatile_state
+                .volatiles
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_volatile(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<_, _, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterAddVolatile,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            remove_volatile(context.context, &context.effect_id, false)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, Option<u8>>(
-            context,
-            fxlang::BattleEvent::Duration,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    volatile_status_handle.clone(),
-                    AppliedEffectLocation::MonVolatile(target_handle),
-                )),
-            },
-        )
-    {
-        context
-            .target_mut()
-            .volatile_state
-            .volatiles
-            .get_mut(&volatile)
-            .wrap_expectation("expected volatile state to exist")?
-            .set_duration(duration);
-    }
-
-    if !*core_battle_effects::run_effect_event_with_options::<
-        ApplyingEffectContext,
-        _,
-        DefaultTrueBool,
-    >(
+    let callbacks = Callbacks {
+        is_primary_move_effect,
+    };
+    let mon_handle = context.target_handle();
+    start_condition(
         context,
-        fxlang::BattleEvent::Start,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                volatile_status_handle.clone(),
-                AppliedEffectLocation::MonVolatile(target_handle),
-            )),
-        },
-    ) {
-        context
-            .target_mut()
-            .volatile_state
-            .volatiles
-            .remove(&volatile);
-        return Ok(false);
-    }
-
-    if let Some(link_to) = link_to {
-        let target_handle = context.target_handle();
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(
-                volatile_status_handle,
-                AppliedEffectLocation::MonVolatile(target_handle),
-            ),
-        )?;
-    }
-
-    core_battle_logs::add_volatile(context, &volatile)?;
-
-    core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
-        context,
-        fxlang::BattleEvent::AfterAddVolatile,
-        effect_handle,
-    );
-
-    // If the duration is EXPLICITLY zero, then we remove the volatile immediately.
-    if context
-        .target()
-        .volatile_state
-        .volatiles
-        .get(&volatile)
-        .wrap_expectation("expected volatile state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_volatile(context, &volatile, false)?;
-    }
-
-    Ok(true)
+        &volatile,
+        AppliedEffectLocation::MonVolatile(mon_handle),
+        link_to,
+        callbacks,
+    )
 }
 
 /// Removes a volatile effect from a Mon.
@@ -3762,71 +3718,65 @@ pub fn remove_volatile(
     volatile: &Id,
     no_events: bool,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    if !context.target().active || context.target().hp == 0 {
-        return Ok(false);
-    }
-
-    let volatile_status_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(volatile)?
-        .clone();
-    let volatile = volatile_status_handle
-        .try_id()
-        .wrap_expectation("volatile must have an id")?
-        .clone();
-
-    if context
-        .target()
-        .volatile_state
-        .volatiles
-        .get(&volatile)
-        .is_none_or(|effect_state| effect_state.ending())
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
     {
-        return Ok(false);
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if !context.context.target().active || context.context.target().hp == 0 {
+                return Ok(false);
+            }
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_volatile(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .target_mut()
+                .volatile_state
+                .volatiles
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
     }
 
-    if no_events {
-        context
-            .target_mut()
-            .volatile_state
-            .volatiles
-            .remove(&volatile);
-        return Ok(true);
-    }
+    let callbacks = Callbacks {};
 
-    let target_handle = context.target_handle();
-
-    core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, ()>(
+    let mon_handle = context.target_handle();
+    end_condition(
         context,
-        fxlang::BattleEvent::End,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                volatile_status_handle.clone(),
-                AppliedEffectLocation::MonVolatile(target_handle),
-            )),
-        },
-    );
-
-    LinkedEffectsManager::remove(
-        context.as_effect_context_mut(),
-        volatile_status_handle,
-        AppliedEffectLocation::MonVolatile(target_handle),
-    )?;
-
-    context
-        .target_mut()
-        .volatile_state
-        .volatiles
-        .remove(&volatile);
-
-    core_battle_logs::remove_volatile(context, &volatile)?;
-
-    Ok(true)
+        Some(volatile),
+        AppliedEffectLocation::MonVolatile(mon_handle),
+        no_events,
+        callbacks,
+    )
 }
 
 /// Tries to trap a Mon.
@@ -7156,6 +7106,11 @@ where
         context: &mut ConditionContext<'context, 'battle, 'data, Context>,
     ) -> Result<bool>;
 
+    fn pre_apply(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
     fn apply(
         &mut self,
         context: &mut ConditionContext<'context, 'battle, 'data, Context>,
@@ -7277,9 +7232,14 @@ where
     }
 
     if !restarted {
+        if !callbacks.pre_apply(&mut context)? {
+            return Ok(false);
+        }
+
+        let effect = context.context.effect();
         let mut effect_state = fxlang::EffectState::initial_effect_state(
             context.context.as_battle_context_mut(),
-            Some(&context.effect_handle),
+            effect.as_ref(),
             target_handle,
             source_handle,
         )?;
@@ -7292,12 +7252,23 @@ where
             effect_state.set_duration(duration);
         }
 
-        if let Some(duration) = core_battle_effects::run_effect_event::<_, Option<u8>>(
+        // Note that the condition is not yet applied, so Duration event callbacks do not get an
+        // EffectState.
+        if let Some(duration) = core_battle_effects::run_effect_event_with_options::<_, _, Option<u8>>(
             context.context,
             fxlang::BattleEvent::Duration,
+            (),
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    context.effect_handle.clone(),
+                    AppliedEffectLocation::None,
+                )),
+            },
         ) {
             effect_state.set_duration(duration);
         }
+
+        // TODO: ModifyDuration.
 
         callbacks.apply(&mut context, effect_state)?;
 
@@ -7476,6 +7447,8 @@ where
 
     callbacks.log(&mut context)?;
 
+    // We could try to get the internal EffectContext within the Context object, but this causes
+    // more lifetime headaches. Just recreate it if it exists.
     if let Some(effect) = context.context.effect() {
         let source_effect = context.context.source_effect();
         LinkedEffectsManager::remove(
@@ -7490,7 +7463,9 @@ where
 
     callbacks.remove(&mut context)?;
 
-    callbacks.post_end(&mut context)?;
+    if !no_events {
+        callbacks.post_end(&mut context)?;
+    }
 
     Ok(true)
 }
