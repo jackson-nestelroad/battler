@@ -933,6 +933,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a side.
     #[string = "ModifySideDuration"]
     ModifySideDuration,
+    /// Runs when calculating the duration of a condition applying to a slot.
+    ///
+    /// Runs in the context of an applying effect on a side.
+    #[string = "ModifySlotDuration"]
+    ModifySlotDuration,
     /// Runs when calculating a Mon's SpA stat.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1501,6 +1506,7 @@ impl BattleEvent {
             Self::ModifyPriority => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifySecondaryEffects => CommonCallbackType::MoveSecondaryEffectModifier as u32,
             Self::ModifySideDuration => CommonCallbackType::SideEffectModifier as u32,
+            Self::ModifySlotDuration => CommonCallbackType::SideEffectModifier as u32,
             Self::ModifySpA => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpD => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::ModifySpe => CommonCallbackType::MaybeApplyingEffectModifier as u32,
@@ -1673,15 +1679,21 @@ impl BattleEvent {
                 &[("damage", ValueType::UFraction, true)]
             }
             Self::ModifyDef => &[("def", ValueType::UFraction, true)],
-            Self::ModifyDuration | Self::ModifySideDuration | Self::ModifyFieldDuration => {
-                &[("duration", ValueType::UFraction, false)]
-            }
+            Self::ModifyDuration | Self::ModifySideDuration | Self::ModifyFieldDuration => &[
+                ("duration", ValueType::UFraction, true),
+                ("condition", ValueType::Effect, true),
+            ],
             Self::ModifyEvYield => &[("evs", ValueType::StatTable, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],
             Self::ModifyMoveType => &[("type", ValueType::Type, true)],
             Self::ModifyPriority => &[("priority", ValueType::Fraction, true)],
             Self::ModifySecondaryEffects => &[("secondary_effects", ValueType::List, true)],
+            Self::ModifySlotDuration => &[
+                ("duration", ValueType::UFraction, true),
+                ("slot", ValueType::UFraction, true),
+                ("condition", ValueType::Effect, true),
+            ],
             Self::ModifySpA => &[("spa", ValueType::UFraction, true)],
             Self::ModifySpD => &[("spd", ValueType::UFraction, true)],
             Self::ModifySpe => &[("spe", ValueType::UFraction, true)],

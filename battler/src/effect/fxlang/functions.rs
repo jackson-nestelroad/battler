@@ -2113,7 +2113,11 @@ fn run_event_on_move(mut context: FunctionContext) -> Result<Option<Value>> {
         (None, None) => core_battle_effects::MoveTargetForEvent::None,
     };
 
-    Ok(core_battle_effects::run_active_move_event::<Option<Value>>(&mut context, event, target))
+    Ok(core_battle_effects::run_active_move_event::<Option<Value>>(
+        &mut context,
+        event,
+        target,
+    ))
 }
 
 /// Prevents the last move from being animated.
@@ -2355,7 +2359,7 @@ fn set_status(mut context: FunctionContext) -> Result<Value> {
 
     core_battle_actions::try_set_status(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
-        status,
+        &status,
         primary_effect,
     )
     .map(|val| Value::Boolean(val.success()))

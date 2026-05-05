@@ -6942,6 +6942,32 @@
       },
       "allows_custom_input_vars": false
     },
+    "modify_duration": {
+      "description": "Runs when calculating the duration of a condition applying to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "modify_def": {
       "description": "Runs when calculating a Mon's Def stat.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
@@ -6987,6 +7013,28 @@
         },
         "exp": {
           "type": "UFraction",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "modify_field_duration": {
+      "description": "Runs when calculating the duration of a condition applying to the field.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
           "optional": false
         }
       },
@@ -7067,6 +7115,62 @@
         },
         "secondary_effects": {
           "type": "List",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "modify_side_duration": {
+      "description": "Runs when calculating the duration of a condition applying to a side.\n\nRuns in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "modify_slot_duration": {
+      "description": "Runs when calculating the duration of a condition applying to a slot.\n\nRuns in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "slot": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
           "optional": false
         }
       },

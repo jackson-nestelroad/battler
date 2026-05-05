@@ -2762,7 +2762,7 @@ fn apply_move_effects(
                 if let Some(status) = hit_effect.status {
                     let set_status = try_set_status(
                         &mut target_context.applying_effect_context()?,
-                        Id::from(status),
+                        &Id::from(status),
                         !is_secondary && !is_self,
                     )?;
                     match set_status {
@@ -3312,7 +3312,7 @@ impl ApplyMoveEffectResult {
 /// Tries to set the status of a Mon.
 pub fn try_set_status(
     context: &mut ApplyingEffectContext,
-    status: Id,
+    status: &Id,
     is_primary_move_effect: bool,
 ) -> Result<ApplyMoveEffectResult> {
     struct Callbacks<'a> {
@@ -3428,7 +3428,7 @@ pub fn try_set_status(
     let mon_handle = context.target_handle();
     let result = start_condition(
         context,
-        &status,
+        status,
         AppliedEffectLocation::MonStatus(mon_handle),
         None,
         callbacks,
@@ -3705,7 +3705,7 @@ pub fn add_volatile(
     let mon_handle = context.target_handle();
     start_condition(
         context,
-        &volatile,
+        volatile,
         AppliedEffectLocation::MonVolatile(mon_handle),
         link_to,
         callbacks,
@@ -3828,192 +3828,157 @@ pub fn add_side_condition(
     condition: &Id,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    let side_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = side_condition_handle
-        .try_id()
-        .wrap_expectation("side condition must have an id")?
-        .clone();
-
-    let side = context.side().index;
-
-    if context.side().conditions.contains_key(&condition) {
-        if !core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, bool>(
-            context,
-            fxlang::BattleEvent::SideRestart,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    side_condition_handle.clone(),
-                    AppliedEffectLocation::SideCondition(side),
-                )),
-            },
-        ) {
-            return Ok(false);
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    where
+        'data: 'battle,
+    {
+        fn pre_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
         }
 
-        if let Some(link_to) = link_to {
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    side_condition_handle,
-                    AppliedEffectLocation::SideCondition(side),
-                ),
-            )?;
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .side()
+                .conditions
+                .contains_key(&context.effect_id))
         }
-        return Ok(true);
-    }
 
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-    context
-        .side_mut()
-        .conditions
-        .insert(condition.clone(), effect_state);
+        fn pre_apply(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
 
-    if let Some(side_condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &side_condition_handle,
-    )? {
-        if let Some(duration) = side_condition.condition().duration {
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .side_mut()
                 .conditions
-                .get_mut(&condition)
-                .wrap_expectation("expected side condition state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .conditions
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_side_condition(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<_, _, ()>(
+                context.context,
+                fxlang::BattleEvent::SideConditionStart,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            remove_side_condition(context.context, &context.effect_id)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, Option<u8>>(
-            context,
-            fxlang::BattleEvent::Duration,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    side_condition_handle.clone(),
-                    AppliedEffectLocation::SideCondition(side),
-                )),
-            },
-        )
-    {
-        context
-            .side_mut()
-            .conditions
-            .get_mut(&condition)
-            .wrap_expectation("expected side condition state to exist")?
-            .set_duration(duration);
-    }
-
-    if !*core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, DefaultTrueBool>(
+    let callbacks = Callbacks {};
+    let side = context.side().index;
+    start_condition(
         context,
-        fxlang::BattleEvent::SideStart,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                side_condition_handle.clone(),
-                AppliedEffectLocation::SideCondition(side),
-            )),
-        },
-    ) {
-        context.side_mut().conditions.remove(&condition);
-        return Ok(false);
-    }
-
-    if let Some(link_to) = link_to {
-        let side = context.side().index;
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(
-                side_condition_handle.clone(),
-                AppliedEffectLocation::SideCondition(side),
-            ),
-        )?;
-    }
-
-    core_battle_logs::add_side_condition(context, &condition)?;
-
-    core_battle_effects::run_event_with_input::<SideEffectContext, _, ()>(
-        context,
-        fxlang::BattleEvent::SideConditionStart,
-        side_condition_handle.clone(),
-    );
-
-    // If the duration is EXPLICITLY zero, then we remove the side condition immediately.
-    if context
-        .side()
-        .conditions
-        .get(&condition)
-        .wrap_expectation("expected side condition state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_side_condition(context, &condition)?;
-    }
-
-    Ok(true)
+        condition,
+        AppliedEffectLocation::SideCondition(side),
+        link_to,
+        callbacks,
+    )
 }
 
 /// Removes a condition from a side.
 pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<bool> {
-    let side_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = side_condition_handle
-        .try_id()
-        .wrap_expectation("side condition must have an id")?
-        .clone();
+    struct Callbacks {}
 
-    if context
-        .side()
-        .conditions
-        .get(&condition)
-        .is_none_or(|effect_state| effect_state.ending())
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
     {
-        return Ok(false);
+        fn pre_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_side_condition(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .conditions
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
     }
 
+    let callbacks = Callbacks {};
+
     let side = context.side().index;
-
-    core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, ()>(
+    end_condition(
         context,
-        fxlang::BattleEvent::SideEnd,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                side_condition_handle.clone(),
-                AppliedEffectLocation::SideCondition(side),
-            )),
-        },
-    );
-
-    LinkedEffectsManager::remove(
-        context.as_effect_context_mut(),
-        side_condition_handle,
+        Some(condition),
         AppliedEffectLocation::SideCondition(side),
-    )?;
-
-    context.side_mut().conditions.remove(&condition);
-
-    core_battle_logs::remove_side_condition(context, &condition)?;
-
-    Ok(true)
+        false,
+        callbacks,
+    )
 }
 
 /// Sets the types of a Mon.
@@ -4398,162 +4363,185 @@ pub fn forfeit(context: &mut PlayerContext) -> Result<()> {
 
 /// Sets the weather on the field.
 pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let weather_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(weather)?
-        .clone();
-    let weather = weather_handle
-        .try_id()
-        .wrap_expectation("weather must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .weather
-        .as_ref()
-        .is_some_and(|existing| existing == &weather)
-    {
-        return Ok(false);
+    struct Callbacks {
+        previous_weather: Option<Id>,
+        previous_weather_state: EffectState,
     }
 
-    if !*core_battle_effects::run_event_with_input::<FieldEffectContext, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::SetWeather,
-        weather_handle.clone(),
-    ) {
-        return Ok(false);
-    }
-
-    let previous_weather = context.battle().field.weather.clone();
-    let previous_weather_state = context.battle().field.weather_state.clone();
-
-    context.battle_mut().field.weather = Some(weather.clone());
-
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    context.battle_mut().field.weather_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-
-    if let Some(weather_condition) =
-        CoreBattle::get_parsed_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            FieldEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        if let Some(duration) = weather_condition.condition().duration {
-            context
-                .battle_mut()
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if context
+                .context
+                .battle()
                 .field
-                .weather_state
-                .set_duration(duration);
+                .weather
+                .as_ref()
+                .is_some_and(|existing| existing == &context.effect_id)
+            {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn exists(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            // Weather is overwritten, never restarted.
+            Ok(false)
+        }
+
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::SetWeather,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
+            context.context.battle_mut().field.weather = Some(context.effect_id.clone());
+            context.context.battle_mut().field.weather_state = effect_state;
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.weather = self.previous_weather;
+            context.context.battle_mut().field.weather_state = self.previous_weather_state;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::WeatherChange,
+            )?;
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            clear_weather(context.context)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, Option<u8>>(
-            context,
-            fxlang::BattleEvent::Duration,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    weather_handle.clone(),
-                    AppliedEffectLocation::Weather,
-                )),
-            },
-        )
-    {
-        context
-            .battle_mut()
-            .field
-            .weather_state
-            .set_duration(duration);
-    }
-
-    if !*core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, DefaultTrueBool>(
+    let callbacks = Callbacks {
+        previous_weather: context.battle().field.weather.clone(),
+        previous_weather_state: context.battle().field.weather_state.clone(),
+    };
+    start_condition(
         context,
-        fxlang::BattleEvent::FieldStart,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                weather_handle.clone(),
-                AppliedEffectLocation::Weather,
-            )),
-        },
-    ) {
-        context.battle_mut().field.weather = previous_weather;
-        context.battle_mut().field.weather_state = previous_weather_state;
-        return Ok(false);
-    }
-
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
-        context.as_effect_context_mut(),
-        fxlang::BattleEvent::WeatherChange,
-    )?;
-
-    // If the duration is EXPLICITLY zero, then we remove the weather immediately.
-    if context
-        .battle()
-        .field
-        .weather_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        clear_weather(context)?;
-    }
-
-    Ok(true)
+        weather,
+        AppliedEffectLocation::Weather,
+        None,
+        callbacks,
+    )
 }
 
 /// Clears the weather on the field.
 pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    if let Some(weather) = context.battle().field.weather.clone() {
-        if !*core_battle_effects::run_event::<FieldEffectContext, DefaultTrueBool>(
-            context,
-            fxlang::BattleEvent::ClearWeather,
-        ) {
-            return Ok(false);
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, FieldEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    {
+        fn identify(&mut self, context: &mut &'context mut FieldEffectContext) -> Option<Id> {
+            context.battle().field.weather.clone()
         }
 
-        let weather_handle = context
-            .battle_mut()
-            .get_effect_handle_by_id(&weather)?
-            .clone();
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::ClearWeather,
+            ) {
+                return Ok(false);
+            }
+            Ok(true)
+        }
 
-        core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, ()>(
-            context,
-            fxlang::BattleEvent::FieldEnd,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    weather_handle.clone(),
-                    AppliedEffectLocation::Weather,
-                )),
-            },
-        );
+        fn reset(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            set_default_weather(context.context.as_battle_context_mut())?;
+            Ok(())
+        }
 
-        LinkedEffectsManager::remove_by_id(
-            context.as_effect_context_mut(),
-            &weather,
-            AppliedEffectLocation::Weather,
-        )?;
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.weather = None;
+            context.context.battle_mut().field.weather_state = fxlang::EffectState::default();
+            Ok(())
+        }
 
-        context.battle_mut().field.weather = None;
-        context.battle_mut().field.weather_state = fxlang::EffectState::default();
+        fn post_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::WeatherChange,
+            )?;
+
+            Ok(())
+        }
     }
 
+    let callbacks = Callbacks {};
+
+    end_condition(
+        context,
+        None,
+        AppliedEffectLocation::Weather,
+        false,
+        callbacks,
+    )
+}
+
+/// Sets the default weather on the field.
+pub fn set_default_weather(context: &mut Context) -> Result<()> {
     if let Some(default_weather) = context.battle().field.default_weather.clone() {
         set_weather(
-            &mut context.as_battle_context_mut().field_effect_context(
+            &mut context.field_effect_context(
                 EffectHandle::Condition(Id::from_known("start")),
                 None,
                 None,
@@ -4561,188 +4549,198 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
             &default_weather,
         )?;
     }
-
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
-        context.as_effect_context_mut(),
-        fxlang::BattleEvent::WeatherChange,
-    )?;
-
-    Ok(true)
+    Ok(())
 }
 
 /// Sets the terrain on the field.
 pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let terrain_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(terrain)?
-        .clone();
-    let terrain = terrain_handle
-        .try_id()
-        .wrap_expectation("terrain must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .terrain
-        .as_ref()
-        .is_some_and(|existing| existing == &terrain)
-    {
-        return Ok(false);
+    struct Callbacks {
+        previous_terrain: Option<Id>,
+        previous_terrain_state: EffectState,
     }
 
-    if !*core_battle_effects::run_event_with_input::<FieldEffectContext, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::SetTerrain,
-        terrain_handle.clone(),
-    ) {
-        return Ok(false);
-    }
-
-    let previous_terrain = context.battle().field.terrain.clone();
-    let previous_terrain_state = context.battle().field.terrain_state.clone();
-
-    context.battle_mut().field.terrain = Some(terrain.clone());
-
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    context.battle_mut().field.terrain_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-
-    if let Some(terrain_condition) =
-        CoreBattle::get_parsed_effect_by_handle(context.as_battle_context_mut(), &terrain_handle)?
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            FieldEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        if let Some(duration) = terrain_condition.condition().duration {
-            context
-                .battle_mut()
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if context
+                .context
+                .battle()
                 .field
-                .terrain_state
-                .set_duration(duration);
+                .terrain
+                .as_ref()
+                .is_some_and(|existing| existing == &context.effect_id)
+            {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn exists(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            // Terrain is overwritten, never restarted.
+            Ok(false)
+        }
+
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::SetTerrain,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
+            context.context.battle_mut().field.terrain = Some(context.effect_id.clone());
+            context.context.battle_mut().field.terrain_state = effect_state;
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.terrain = self.previous_terrain;
+            context.context.battle_mut().field.terrain_state = self.previous_terrain_state;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::TerrainChange,
+            )?;
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            clear_terrain(context.context)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, Option<u8>>(
-            context,
-            fxlang::BattleEvent::Duration,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    terrain_handle.clone(),
-                    AppliedEffectLocation::Terrain,
-                )),
-            },
-        )
-    {
-        context
-            .battle_mut()
-            .field
-            .terrain_state
-            .set_duration(duration);
-    }
-
-    if !*core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, DefaultTrueBool>(
+    let callbacks = Callbacks {
+        previous_terrain: context.battle().field.terrain.clone(),
+        previous_terrain_state: context.battle().field.terrain_state.clone(),
+    };
+    start_condition(
         context,
-        fxlang::BattleEvent::FieldStart,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                terrain_handle.clone(),
-                AppliedEffectLocation::Terrain,
-            )),
-        },
-    ) {
-        context.battle_mut().field.terrain = previous_terrain;
-        context.battle_mut().field.terrain_state = previous_terrain_state;
-        return Ok(false);
-    }
-
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
-        context.as_effect_context_mut(),
-        fxlang::BattleEvent::TerrainChange,
-    )?;
-
-    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
-    if context
-        .battle()
-        .field
-        .terrain_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        clear_terrain(context)?;
-    }
-
-    Ok(true)
+        terrain,
+        AppliedEffectLocation::Terrain,
+        None,
+        callbacks,
+    )
 }
 
 /// Clears the terrain on the field.
 pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    if let Some(terrain) = context.battle().field.terrain.clone() {
-        if !*core_battle_effects::run_event::<FieldEffectContext, DefaultTrueBool>(
-            context,
-            fxlang::BattleEvent::ClearTerrain,
-        ) {
-            return Ok(false);
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, FieldEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    {
+        fn identify(&mut self, context: &mut &'context mut FieldEffectContext) -> Option<Id> {
+            context.battle().field.terrain.clone()
         }
 
-        let terrain_handle = context
-            .battle_mut()
-            .get_effect_handle_by_id(&terrain)?
-            .clone();
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::ClearTerrain,
+            ) {
+                return Ok(false);
+            }
+            Ok(true)
+        }
 
-        core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, ()>(
-            context,
-            fxlang::BattleEvent::FieldEnd,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    terrain_handle.clone(),
-                    AppliedEffectLocation::Terrain,
-                )),
-            },
-        );
+        fn reset(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            set_default_terrain(context.context.as_battle_context_mut())?;
+            Ok(())
+        }
 
-        LinkedEffectsManager::remove_by_id(
-            context.as_effect_context_mut(),
-            &terrain,
-            AppliedEffectLocation::Terrain,
-        )?;
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.terrain = None;
+            context.context.battle_mut().field.terrain_state = fxlang::EffectState::default();
+            Ok(())
+        }
 
-        context.battle_mut().field.terrain = None;
-        context.battle_mut().field.terrain_state = fxlang::EffectState::default();
+        fn post_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::TerrainChange,
+            )?;
+
+            Ok(())
+        }
     }
 
+    let callbacks = Callbacks {};
+
+    end_condition(
+        context,
+        None,
+        AppliedEffectLocation::Terrain,
+        false,
+        callbacks,
+    )
+}
+
+/// Sets the default terrain on the field.
+pub fn set_default_terrain(context: &mut Context) -> Result<()> {
     if let Some(default_terrain) = context.battle().field.default_terrain.clone() {
-        set_terrain(context, &default_terrain)?;
+        set_terrain(
+            &mut context.field_effect_context(
+                EffectHandle::Condition(Id::from_known("start")),
+                None,
+                None,
+            )?,
+            &default_terrain,
+        )?;
     }
-
-    // TODO: TerrainChange event.
-
-    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
-    if context
-        .battle()
-        .field
-        .terrain_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        clear_terrain(context)?;
-    }
-
-    Ok(true)
+    Ok(())
 }
 
 /// Adds a pseudo-weather to the field.
@@ -4751,162 +4749,116 @@ pub fn add_pseudo_weather(
     pseudo_weather: &Id,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    let pseudo_weather_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(pseudo_weather)?
-        .clone();
-    let pseudo_weather = pseudo_weather_handle
-        .try_id()
-        .wrap_expectation("pseudo weather must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .pseudo_weathers
-        .contains_key(&pseudo_weather)
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            FieldEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        let restart =
-            core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, bool>(
-                context,
-                fxlang::BattleEvent::FieldRestart,
-                (),
-                core_battle_effects::RunEffectEventOptions {
-                    effect: Some(AppliedEffectHandle::new(
-                        pseudo_weather_handle.clone(),
-                        AppliedEffectLocation::PseudoWeather,
-                    )),
-                },
-            );
-        if !restart {
-            return Ok(false);
+        fn pre_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
         }
 
-        if let Some(link_to) = link_to {
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    pseudo_weather_handle,
-                    AppliedEffectLocation::PseudoWeather,
-                ),
-            )?;
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .battle()
+                .field
+                .pseudo_weathers
+                .contains_key(&context.effect_id))
         }
-        return Ok(true);
-    }
 
-    if !*core_battle_effects::run_event_with_input::<FieldEffectContext, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::AddPseudoWeather,
-        pseudo_weather_handle.clone(),
-    ) {
-        return Ok(false);
-    }
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::AddPseudoWeather,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
 
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-    context
-        .battle_mut()
-        .field
-        .pseudo_weathers
-        .insert(pseudo_weather.clone(), effect_state);
+            Ok(true)
+        }
 
-    if let Some(pseudo_weather_condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &pseudo_weather_handle,
-    )? {
-        if let Some(duration) = pseudo_weather_condition.condition().duration {
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .battle_mut()
                 .field
                 .pseudo_weathers
-                .get_mut(&pseudo_weather)
-                .wrap_expectation("expected pseudo weather state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .battle_mut()
+                .field
+                .pseudo_weathers
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_pseudo_weather(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<_, _, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterAddPseudoWeather,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            remove_pseudo_weather(context.context, &context.effect_id)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, Option<u8>>(
-            context,
-            fxlang::BattleEvent::Duration,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    pseudo_weather_handle.clone(),
-                    AppliedEffectLocation::PseudoWeather,
-                )),
-            },
-        )
-    {
-        context
-            .battle_mut()
-            .field
-            .pseudo_weathers
-            .get_mut(&pseudo_weather)
-            .wrap_expectation("expected pseudo weather state to exist")?
-            .set_duration(duration);
-    }
-
-    if !*core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, DefaultTrueBool>(
+    let callbacks = Callbacks {};
+    start_condition(
         context,
-        fxlang::BattleEvent::FieldStart,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                pseudo_weather_handle.clone(),
-                AppliedEffectLocation::PseudoWeather,
-            )),
-        },
-    ) {
-        context
-            .battle_mut()
-            .field
-            .pseudo_weathers
-            .remove(&pseudo_weather);
-        return Ok(false);
-    }
-
-    core_battle_effects::run_event_with_input::<FieldEffectContext, _, ()>(
-        context,
-        fxlang::BattleEvent::AfterAddPseudoWeather,
-        fxlang::Value::Effect(effect_handle),
-    );
-
-    if let Some(link_to) = link_to {
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(pseudo_weather_handle, AppliedEffectLocation::PseudoWeather),
-        )?;
-    }
-
-    core_battle_logs::add_pseudo_weather(context, &pseudo_weather)?;
-
-    // If the duration is EXPLICITLY zero, then we remove the pseudo-weather immediately.
-    if context
-        .battle()
-        .field
-        .pseudo_weathers
-        .get(&pseudo_weather)
-        .wrap_expectation("expected pseudo weather state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_pseudo_weather(context, &pseudo_weather)?;
-    }
-
-    Ok(true)
+        pseudo_weather,
+        AppliedEffectLocation::PseudoWeather,
+        link_to,
+        callbacks,
+    )
 }
 
 /// Removes a pseudo-weather from the field.
@@ -4914,56 +4866,57 @@ pub fn remove_pseudo_weather(
     context: &mut FieldEffectContext,
     pseudo_weather: &Id,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    let pseudo_weather_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(pseudo_weather)?
-        .clone();
-    let pseudo_weather = pseudo_weather_handle
-        .try_id()
-        .wrap_expectation("pseudo weather must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .pseudo_weathers
-        .get(&pseudo_weather)
-        .is_none_or(|effect_state| effect_state.ending())
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, FieldEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
     {
-        return Ok(false);
+        fn pre_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_pseudo_weather(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .battle_mut()
+                .field
+                .pseudo_weathers
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
     }
 
-    core_battle_effects::run_effect_event_with_options::<FieldEffectContext, _, ()>(
+    let callbacks = Callbacks {};
+
+    end_condition(
         context,
-        fxlang::BattleEvent::FieldEnd,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                pseudo_weather_handle.clone(),
-                AppliedEffectLocation::PseudoWeather,
-            )),
-        },
-    );
-
-    LinkedEffectsManager::remove_by_id(
-        context.as_effect_context_mut(),
-        &pseudo_weather,
+        Some(pseudo_weather),
         AppliedEffectLocation::PseudoWeather,
-    )?;
-
-    context
-        .battle_mut()
-        .field
-        .pseudo_weathers
-        .remove(&pseudo_weather);
-
-    core_battle_logs::remove_pseudo_weather(context, &pseudo_weather)?;
-
-    Ok(true)
+        false,
+        callbacks,
+    )
 }
 
 /// Ends the target Mon's ability, if it is not already ended.
@@ -5141,157 +5094,111 @@ pub fn add_slot_condition(
     condition: &Id,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let slot_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = slot_condition_handle
-        .try_id()
-        .wrap_expectation("slot condition must have an id")?
-        .clone();
-
-    let side = context.side().index;
-
-    if context
-        .side()
-        .slot_conditions
-        .get(&slot)
-        .is_some_and(|conditions| conditions.contains_key(&condition))
-    {
-        if !core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, bool>(
-            context,
-            fxlang::BattleEvent::SlotRestart,
-            slot as u64,
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    slot_condition_handle.clone(),
-                    AppliedEffectLocation::SlotCondition(side, slot),
-                )),
-            },
-        ) {
-            return Ok(false);
-        }
-
-        if let Some(link_to) = link_to {
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    slot_condition_handle,
-                    AppliedEffectLocation::SlotCondition(side, slot),
-                ),
-            )?;
-        }
-        return Ok(true);
+    struct Callbacks {
+        slot: usize,
     }
 
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-    context
-        .side_mut()
-        .slot_conditions
-        .entry(slot)
-        .or_default()
-        .insert(condition.clone(), effect_state);
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    where
+        'data: 'battle,
+    {
+        fn event_input(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> fxlang::VariableInput {
+            fxlang::VariableInput::from_iter([(self.slot as u64).into()])
+        }
 
-    if let Some(slot_condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &slot_condition_handle,
-    )? {
-        if let Some(duration) = slot_condition.condition().duration {
+        fn pre_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .side()
+                .slot_conditions
+                .get(&self.slot)
+                .is_some_and(|conditions| conditions.contains_key(&context.effect_id)))
+        }
+
+        fn pre_apply(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .side_mut()
                 .slot_conditions
-                .entry(slot)
+                .entry(self.slot)
                 .or_default()
-                .get_mut(&condition)
-                .wrap_expectation("expected slot condition state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .slot_conditions
+                .get_mut(&self.slot)
+                .wrap_expectation("expected side slot condition state to exist")?
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_slot_condition(context.context, self.slot, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            remove_slot_condition(context.context, self.slot, &context.effect_id)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, Option<u8>>(
-            context,
-            fxlang::BattleEvent::Duration,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    slot_condition_handle.clone(),
-                    AppliedEffectLocation::SlotCondition(side, slot),
-                )),
-            },
-        )
-    {
-        context
-            .side_mut()
-            .slot_conditions
-            .entry(slot)
-            .or_default()
-            .get_mut(&condition)
-            .wrap_expectation("expected side condition state to exist")?
-            .set_duration(duration);
-    }
-
-    if !*core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, DefaultTrueBool>(
+    let callbacks = Callbacks { slot };
+    let side = context.side().index;
+    start_condition(
         context,
-        fxlang::BattleEvent::SlotStart,
-        slot as u64,
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                slot_condition_handle.clone(),
-                AppliedEffectLocation::SlotCondition(side, slot),
-            )),
-        },
-    ) {
-        context
-            .side_mut()
-            .slot_conditions
-            .entry(slot)
-            .or_default()
-            .remove(&condition);
-        return Ok(false);
-    }
-
-    if let Some(link_to) = link_to {
-        let side = context.side().index;
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(
-                slot_condition_handle,
-                AppliedEffectLocation::SlotCondition(side, slot),
-            ),
-        )?;
-    }
-
-    core_battle_logs::add_slot_condition(context, slot, &condition)?;
-
-    // If the duration is EXPLICITLY zero, then we remove the slot condition immediately.
-    if context
-        .side_mut()
-        .slot_conditions
-        .entry(slot)
-        .or_default()
-        .get(&condition)
-        .wrap_expectation("expected slot condition state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_slot_condition(context, slot, &condition)?;
-    }
-
-    Ok(true)
+        condition,
+        AppliedEffectLocation::SlotCondition(side, slot),
+        link_to,
+        callbacks,
+    )
 }
 
 /// Removes a condition from the slot on the side.
@@ -5300,62 +5207,72 @@ pub fn remove_slot_condition(
     slot: usize,
     condition: &Id,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let slot_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = slot_condition_handle
-        .try_id()
-        .wrap_expectation("slot condition must have an id")?
-        .clone();
-
-    if context
-        .side()
-        .slot_conditions
-        .get(&slot)
-        .is_some_and(|conditions| {
-            conditions
-                .get(&condition)
-                .is_none_or(|effect_state| effect_state.ending())
-        })
-    {
-        return Ok(false);
+    struct Callbacks {
+        slot: usize,
     }
 
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    {
+        fn event_input(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> fxlang::VariableInput {
+            fxlang::VariableInput::from_iter([(self.slot as u64).into()])
+        }
+
+        fn pre_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_slot_condition(
+                context.context,
+                self.slot,
+                &context.effect_id,
+            )?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .slot_conditions
+                .entry(self.slot)
+                .or_default()
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    let callbacks = Callbacks { slot };
+
     let side = context.side().index;
-
-    core_battle_effects::run_effect_event_with_options::<SideEffectContext, _, ()>(
+    end_condition(
         context,
-        fxlang::BattleEvent::SlotEnd,
-        slot as u64,
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                slot_condition_handle.clone(),
-                AppliedEffectLocation::SlotCondition(side, slot),
-            )),
-        },
-    );
-
-    LinkedEffectsManager::remove(
-        context.as_effect_context_mut(),
-        slot_condition_handle,
+        Some(condition),
         AppliedEffectLocation::SlotCondition(side, slot),
-    )?;
-
-    context
-        .side_mut()
-        .slot_conditions
-        .entry(slot)
-        .or_default()
-        .remove(&condition);
-
-    core_battle_logs::remove_slot_condition(context, slot, &condition)?;
-
-    Ok(true)
+        false,
+        callbacks,
+    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -7168,22 +7085,29 @@ where
     let target_handle = context.target();
     let source_handle = context.source();
 
-    let (start_event, restart_event) = if location.mon_handle().is_some() {
-        (fxlang::BattleEvent::Start, fxlang::BattleEvent::Restart)
+    let (start_event, restart_event, modify_duration_event) = if location.mon_handle().is_some() {
+        (
+            fxlang::BattleEvent::Start,
+            fxlang::BattleEvent::Restart,
+            fxlang::BattleEvent::ModifyDuration,
+        )
     } else if location.side_index().is_some() {
         (
             fxlang::BattleEvent::SideStart,
             fxlang::BattleEvent::SideRestart,
+            fxlang::BattleEvent::ModifySideDuration,
         )
     } else if location.slot_index().is_some() {
         (
             fxlang::BattleEvent::SlotStart,
             fxlang::BattleEvent::SlotRestart,
+            fxlang::BattleEvent::ModifySlotDuration,
         )
     } else if location.field() {
         (
             fxlang::BattleEvent::FieldStart,
             fxlang::BattleEvent::FieldRestart,
+            fxlang::BattleEvent::ModifyFieldDuration,
         )
     } else {
         return Err(general_error("condition applied to an undefined location"));
@@ -7244,12 +7168,13 @@ where
             source_handle,
         )?;
 
+        let mut condition_duration = None;
         if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
             context.context.as_battle_context_mut(),
             &context.effect_handle,
         )? && let Some(duration) = condition.condition().duration
         {
-            effect_state.set_duration(duration);
+            condition_duration = Some(duration);
         }
 
         // Note that the condition is not yet applied, so Duration event callbacks do not get an
@@ -7265,10 +7190,23 @@ where
                 )),
             },
         ) {
-            effect_state.set_duration(duration);
+            condition_duration = Some(duration);
         }
 
-        // TODO: ModifyDuration.
+        if let Some(duration) = condition_duration {
+            let input = fxlang::VariableInput::from_iter(
+                core::iter::once(duration.into())
+                    .chain(event_input.clone().into_iter())
+                    .chain(core::iter::once(context.effect_handle.clone().into())),
+            );
+            let duration = core_battle_effects::run_event_with_input::<_, _, Option<u8>>(
+                context.context,
+                modify_duration_event,
+                input,
+            )
+            .unwrap_or(duration);
+            effect_state.set_duration(duration);
+        }
 
         callbacks.apply(&mut context, effect_state)?;
 
@@ -7334,6 +7272,14 @@ where
         &mut self,
         context: &mut ConditionContext<'context, 'battle, 'data, Context>,
     ) -> Result<bool>;
+
+    #[allow(unused_variables)]
+    fn reset(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()> {
+        Ok(())
+    }
 
     #[allow(unused_variables)]
     fn log(
@@ -7426,7 +7372,8 @@ where
     }
 
     if let Some(effect_state_connector) = applied_effect_handle.effect_state_connector()
-        && (!effect_state_connector.exists(context.context.as_battle_context_mut())?
+        && let exists = effect_state_connector.exists(context.context.as_battle_context_mut())?
+        && (!exists
             || effect_state_connector
                 .get_mut(context.context.as_battle_context_mut())?
                 .ending())
@@ -7462,6 +7409,8 @@ where
     }
 
     callbacks.remove(&mut context)?;
+
+    callbacks.reset(&mut context)?;
 
     if !no_events {
         callbacks.post_end(&mut context)?;

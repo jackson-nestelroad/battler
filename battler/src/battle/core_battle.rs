@@ -1326,19 +1326,8 @@ impl<'d> CoreBattle<'d> {
                     }
                 }
 
-                // Clears the weather, which then sets the default weather.
-                core_battle_actions::clear_weather(&mut context.field_effect_context(
-                    EffectHandle::Condition(Id::from_known("start")),
-                    None,
-                    None,
-                )?)?;
-
-                // Clears the terrain, which then sets the default terrain.
-                core_battle_actions::clear_terrain(&mut context.field_effect_context(
-                    EffectHandle::Condition(Id::from_known("start")),
-                    None,
-                    None,
-                )?)?;
+                core_battle_actions::set_default_weather(context)?;
+                core_battle_actions::set_default_terrain(context)?;
 
                 core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::StartBattle);
 
