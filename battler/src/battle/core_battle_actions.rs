@@ -8,6 +8,7 @@ use alloc::{
     },
     vec::Vec,
 };
+use core::marker::PhantomData;
 
 use anyhow::Result;
 use battler_data::{
@@ -79,13 +80,17 @@ use crate::{
         modify_32,
         mon_states,
     },
+    common::UnsafelyDetachBorrowMut,
     effect::{
         AppliedEffectHandle,
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
         NonExistentEffect,
-        fxlang,
+        fxlang::{
+            self,
+            EffectState,
+        },
     },
     error::{
         WrapOptionError,
@@ -3310,123 +3315,129 @@ pub fn try_set_status(
     status: Id,
     is_primary_move_effect: bool,
 ) -> Result<ApplyMoveEffectResult> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    if context.target().hp == 0 {
-        return Ok(ApplyMoveEffectResult::Failed);
+    struct Callbacks<'a> {
+        is_primary_move_effect: bool,
+        previous_status: Option<Id>,
+        previous_status_state: EffectState,
+        immune: &'a mut bool,
     }
 
-    // A Mon may only have one status set at a time.
-    if context.target().status.is_some() {
-        return Ok(ApplyMoveEffectResult::Failed);
-    }
-
-    let status_effect_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(&status)?
-        .clone();
-    let status = status_effect_handle
-        .try_id()
-        .wrap_expectation("status must have an id")?
-        .clone();
-
-    if check_immunity(&mut context.forward_applying_effect_context(status_effect_handle.clone())?)?
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks<'_>
+    where
+        'data: 'battle,
     {
-        if is_primary_move_effect {
-            core_battle_logs::immune(&mut context.target_context()?, None)?;
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if context.context.target().hp == 0 || context.context.target().status.is_some() {
+                return Ok(false);
+            }
+
+            if check_immunity(
+                &mut context
+                    .context
+                    .forward_applying_effect_context(context.effect_handle.clone())?,
+            )? {
+                *self.immune = true;
+                if self.is_primary_move_effect {
+                    core_battle_logs::immune(&mut context.context.target_context()?, None)?;
+                }
+                return Ok(false);
+            }
+
+            if !*core_battle_effects::run_event_with_input::<
+                ApplyingEffectContext,
+                _,
+                DefaultTrueBool,
+            >(
+                context.context,
+                fxlang::BattleEvent::SetStatus,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
         }
-        return Ok(ApplyMoveEffectResult::Immune);
+
+        fn exists(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            // If Mon has a status, pre_start fails.
+            Ok(false)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
+            context.context.target_mut().status = Some(context.effect_id.clone());
+            context.context.target_mut().status_state = effect_state;
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context.context.target_mut().status = self.previous_status;
+            context.context.target_mut().status_state = self.previous_status_state;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterSetStatus,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            cure_status(context.context, false, false)?;
+            Ok(())
+        }
     }
 
-    // Save the previous status in case an effect callback cancels the status.
-    let previous_status = context.target().status.clone();
-    let previous_status_state = context.target().status_state.clone();
-
-    if !*core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
+    let mut immune = false;
+    let callbacks = Callbacks {
+        is_primary_move_effect,
+        previous_status: context.target().status.clone(),
+        previous_status_state: context.target().status_state.clone(),
+        immune: &mut immune,
+    };
+    let mon_handle = context.target_handle();
+    let result = start_condition(
         context,
-        fxlang::BattleEvent::SetStatus,
-        status_effect_handle.clone(),
-    ) {
-        return Ok(ApplyMoveEffectResult::Failed);
-    }
-
-    // Set the status so that the following effects can use it.
-    context.target_mut().status = Some(status);
-
-    let effect_handle = context.effect_handle().clone();
-    let target_handle = context.target_handle();
-    let source_handle = context.source_handle();
-    context.target_mut().status_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        Some(target_handle),
-        source_handle,
+        &status,
+        AppliedEffectLocation::MonStatus(mon_handle),
+        None,
+        callbacks,
     )?;
 
-    if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &status_effect_handle,
-    )? {
-        if let Some(duration) = condition.condition().duration {
-            context.target_mut().status_state.set_duration(duration);
-        }
+    if immune {
+        Ok(ApplyMoveEffectResult::Immune)
+    } else if !result {
+        Ok(ApplyMoveEffectResult::Failed)
+    } else {
+        Ok(ApplyMoveEffectResult::Success)
     }
-
-    if let Some(duration) =
-        core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, Option<u8>>(
-            context,
-            fxlang::BattleEvent::Duration,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    status_effect_handle.clone(),
-                    AppliedEffectLocation::MonStatus(target_handle),
-                )),
-            },
-        )
-    {
-        context.target_mut().status_state.set_duration(duration);
-    }
-
-    if !*core_battle_effects::run_effect_event_with_options::<
-        ApplyingEffectContext,
-        _,
-        DefaultTrueBool,
-    >(
-        context,
-        fxlang::BattleEvent::Start,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                status_effect_handle.clone(),
-                AppliedEffectLocation::MonStatus(target_handle),
-            )),
-        },
-    ) {
-        context.target_mut().status = previous_status;
-        context.target_mut().status_state = previous_status_state;
-        return Ok(ApplyMoveEffectResult::Failed);
-    }
-
-    core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
-        context,
-        fxlang::BattleEvent::AfterSetStatus,
-        status_effect_handle,
-    );
-
-    // If the duration is EXPLICITLY zero, then we remove the status immediately.
-    if context
-        .target()
-        .status_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        cure_status(context, false, false)?;
-    }
-
-    Ok(ApplyMoveEffectResult::Success)
 }
 
 fn ignore_type_immunity(context: &mut ActiveTargetContext) -> Result<bool> {
@@ -3477,48 +3488,86 @@ pub fn cure_status(
     silent: bool,
     log_effect: bool,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    if context.target().hp == 0 {
-        return Ok(false);
+    struct Callbacks {
+        silent: bool,
+        log_effect: bool,
     }
 
-    let status = match context.target().status.clone() {
-        Some(status) => status,
-        None => return Ok(false),
-    };
-
-    if !force_healing_effect(context)
-        && !*core_battle_effects::run_event::<ApplyingEffectContext, DefaultTrueBool>(
-            context,
-            fxlang::BattleEvent::CureStatus,
-        )
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
     {
-        return Ok(false);
+        fn identify(&mut self, context: &mut &'context mut ApplyingEffectContext) -> Option<Id> {
+            context.target().status.clone()
+        }
+
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if context.context.target().hp == 0 {
+                return Ok(false);
+            }
+            if !force_healing_effect(context.context)
+                && !*core_battle_effects::run_event::<_, DefaultTrueBool>(
+                    context.context,
+                    fxlang::BattleEvent::CureStatus,
+                )
+            {
+                return Ok(false);
+            }
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            if !self.silent {
+                core_battle_logs::cure_status(
+                    context.context,
+                    &context.effect_id,
+                    self.log_effect,
+                )?;
+            }
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context.context.target_mut().status = None;
+            context.context.target_mut().status_state = fxlang::EffectState::default();
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event::<_, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterCureStatus,
+            );
+            Ok(())
+        }
     }
 
-    if !silent {
-        core_battle_logs::cure_status(context, &status, log_effect)?;
-    }
+    let callbacks = Callbacks { silent, log_effect };
 
-    let target_handle = context.target_handle();
-    LinkedEffectsManager::remove_by_id(
-        context.as_effect_context_mut(),
-        &status,
-        AppliedEffectLocation::MonStatus(target_handle),
-    )?;
-
-    context.target_mut().status = None;
-    context.target_mut().status_state = fxlang::EffectState::default();
-
-    core_battle_effects::run_event::<ApplyingEffectContext, ()>(
+    let mon_handle = context.target_handle();
+    end_condition(
         context,
-        fxlang::BattleEvent::AfterCureStatus,
-    );
-
-    return Ok(true);
+        None,
+        AppliedEffectLocation::MonStatus(mon_handle),
+        false,
+        callbacks,
+    )
 }
 
 /// Add the volatile status to a Mon.
@@ -7075,4 +7124,373 @@ fn usable_z_crystal(context: &mut MonContext) -> Result<Option<ZCrystalData>> {
         return Ok(None);
     }
     Ok(Some(z_crystal))
+}
+
+struct ConditionContext<'context, 'battle, 'data, Context> {
+    context: &'context mut Context,
+    effect_id: Id,
+    effect_handle: EffectHandle,
+    _phantom: (PhantomData<&'battle ()>, PhantomData<&'data ()>),
+}
+
+trait StartConditionCallbacks<'context, 'battle, 'data, Context>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+{
+    #[allow(unused_variables)]
+    fn event_input(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> fxlang::VariableInput {
+        fxlang::VariableInput::default()
+    }
+
+    fn pre_start(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
+    fn exists(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
+    fn apply(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+        effect_state: fxlang::EffectState,
+    ) -> Result<()>;
+
+    fn rollback(
+        self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+
+    #[allow(unused_variables)]
+    fn log(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    fn post_start(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+
+    fn end(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+}
+
+fn start_condition<'context, 'battle, 'data, Context, Callbacks>(
+    context: &'context mut Context,
+    id: &Id,
+    location: AppliedEffectLocation,
+    link_to: Option<&AppliedEffectHandle>,
+    mut callbacks: Callbacks,
+) -> Result<bool>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+    Callbacks: StartConditionCallbacks<'context, 'battle, 'data, Context>,
+{
+    let effect_handle = context
+        .as_battle_context_mut()
+        .battle_mut()
+        .get_effect_handle_by_id(id)?
+        .clone();
+    let effect_id = effect_handle
+        .try_id()
+        .wrap_expectation("condition must have an id")?
+        .clone();
+
+    let applied_effect_handle = AppliedEffectHandle::new(effect_handle.clone(), location);
+
+    let target_handle = context.target();
+    let source_handle = context.source();
+
+    let (start_event, restart_event) = if location.mon_handle().is_some() {
+        (fxlang::BattleEvent::Start, fxlang::BattleEvent::Restart)
+    } else if location.side_index().is_some() {
+        (
+            fxlang::BattleEvent::SideStart,
+            fxlang::BattleEvent::SideRestart,
+        )
+    } else if location.slot_index().is_some() {
+        (
+            fxlang::BattleEvent::SlotStart,
+            fxlang::BattleEvent::SlotRestart,
+        )
+    } else if location.field() {
+        (
+            fxlang::BattleEvent::FieldStart,
+            fxlang::BattleEvent::FieldRestart,
+        )
+    } else {
+        return Err(general_error("condition applied to an undefined location"));
+    };
+
+    let scoped_context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    let context: &mut Context = &mut *scoped_context;
+    // SAFETY: We know that the context was passed into this function with lifetime 'context. We
+    // give ownership to the scope guard to run deferred logic when we exit the function. However,
+    // we still want to use the context at its original lifetime (for the callbacks object).
+    //
+    // This is safe because we know context has lifetime 'context, and the scope guard only owns the
+    // mutable borrow itself (and won't do anything with it until the function ends).
+    let context: &'context mut Context = unsafe { context.unsafely_detach_borrow_mut() };
+
+    let mut context = ConditionContext {
+        context,
+        effect_id,
+        effect_handle,
+        _phantom: (PhantomData, PhantomData),
+    };
+
+    let event_input = callbacks.event_input(&mut context);
+
+    if !callbacks.pre_start(&mut context)? {
+        return Ok(false);
+    }
+
+    let mut restarted = false;
+
+    if callbacks.exists(&mut context)? {
+        if !core_battle_effects::run_effect_event_with_options::<_, _, bool>(
+            context.context,
+            restart_event,
+            event_input.clone(),
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(applied_effect_handle.clone()),
+            },
+        ) {
+            return Ok(false);
+        }
+        restarted = true;
+    }
+
+    if !restarted {
+        let mut effect_state = fxlang::EffectState::initial_effect_state(
+            context.context.as_battle_context_mut(),
+            Some(&context.effect_handle),
+            target_handle,
+            source_handle,
+        )?;
+
+        if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
+            context.context.as_battle_context_mut(),
+            &context.effect_handle,
+        )? && let Some(duration) = condition.condition().duration
+        {
+            effect_state.set_duration(duration);
+        }
+
+        if let Some(duration) = core_battle_effects::run_effect_event::<_, Option<u8>>(
+            context.context,
+            fxlang::BattleEvent::Duration,
+        ) {
+            effect_state.set_duration(duration);
+        }
+
+        callbacks.apply(&mut context, effect_state)?;
+
+        if !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
+            context.context,
+            start_event,
+            event_input.clone(),
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(applied_effect_handle.clone()),
+            },
+        ) {
+            callbacks.rollback(&mut context)?;
+            return Ok(false);
+        }
+    }
+
+    if let Some(link_to) = link_to {
+        LinkedEffectsManager::link(
+            context.context.as_battle_context_mut(),
+            link_to,
+            &applied_effect_handle,
+        )?;
+    }
+
+    if !restarted {
+        callbacks.log(&mut context)?;
+        callbacks.post_start(&mut context)?;
+    }
+
+    // If the duration is explicitly zero, we end the condition immediately.
+    if let Some(effect_state_connector) = applied_effect_handle.effect_state_connector()
+        && effect_state_connector.exists(context.context.as_battle_context_mut())?
+        && effect_state_connector
+            .get_mut(context.context.as_battle_context_mut())?
+            .duration()
+            .is_some_and(|duration| duration == 0)
+    {
+        callbacks.end(&mut context)?;
+    }
+
+    Ok(true)
+}
+
+trait EndConditionCallbacks<'context, 'battle, 'data, Context>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+{
+    #[allow(unused_variables)]
+    fn identify(&mut self, context: &mut &'context mut Context) -> Option<Id> {
+        None
+    }
+
+    #[allow(unused_variables)]
+    fn event_input(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> fxlang::VariableInput {
+        fxlang::VariableInput::default()
+    }
+
+    fn pre_end(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
+    #[allow(unused_variables)]
+    fn log(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    fn remove(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+
+    fn post_end(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+}
+
+fn end_condition<'context, 'battle, 'data, Context, Callbacks>(
+    mut context: &'context mut Context,
+    id: Option<&Id>,
+    location: AppliedEffectLocation,
+    no_events: bool,
+    mut callbacks: Callbacks,
+) -> Result<bool>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+    Callbacks: EndConditionCallbacks<'context, 'battle, 'data, Context>,
+{
+    let id = match id {
+        Some(id) => id.clone(),
+        None => match callbacks.identify(&mut context) {
+            Some(id) => id,
+            None => return Ok(false),
+        },
+    };
+    let effect_handle = context
+        .as_battle_context_mut()
+        .battle_mut()
+        .get_effect_handle_by_id(&id)?
+        .clone();
+    let effect_id = effect_handle
+        .try_id()
+        .wrap_expectation("condition must have an id")?
+        .clone();
+
+    let applied_effect_handle = AppliedEffectHandle::new(effect_handle.clone(), location);
+
+    let end_event = if location.mon_handle().is_some() {
+        fxlang::BattleEvent::End
+    } else if location.side_index().is_some() {
+        fxlang::BattleEvent::SideEnd
+    } else if location.slot_index().is_some() {
+        fxlang::BattleEvent::SlotEnd
+    } else if location.field() {
+        fxlang::BattleEvent::FieldEnd
+    } else {
+        return Err(general_error(
+            "condition is ending on an undefined location",
+        ));
+    };
+
+    let scoped_context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    let context: &mut Context = &mut *scoped_context;
+    // SAFETY: We know that the context was passed into this function with lifetime 'context. We
+    // give ownership to the scope guard to run deferred logic when we exit the function. However,
+    // we still want to use the context at its original lifetime (for the callbacks object).
+    //
+    // This is safe because we know context has lifetime 'context, and the scope guard only owns the
+    // mutable borrow itself (and won't do anything with it until the function ends).
+    let context: &'context mut Context = unsafe { context.unsafely_detach_borrow_mut() };
+
+    let mut context = ConditionContext {
+        context,
+        effect_id,
+        effect_handle,
+        _phantom: (PhantomData, PhantomData),
+    };
+
+    let event_input = callbacks.event_input(&mut context);
+
+    if !callbacks.pre_end(&mut context)? {
+        return Ok(false);
+    }
+
+    if let Some(effect_state_connector) = applied_effect_handle.effect_state_connector()
+        && (!effect_state_connector.exists(context.context.as_battle_context_mut())?
+            || effect_state_connector
+                .get_mut(context.context.as_battle_context_mut())?
+                .ending())
+    {
+        return Ok(false);
+    }
+
+    if !no_events {
+        core_battle_effects::run_effect_event_with_options::<_, _, ()>(
+            context.context,
+            end_event,
+            event_input,
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(applied_effect_handle.clone()),
+            },
+        );
+    }
+
+    callbacks.log(&mut context)?;
+
+    if let Some(effect) = context.context.effect() {
+        let source_effect = context.context.source_effect();
+        LinkedEffectsManager::remove(
+            &mut context
+                .context
+                .as_battle_context_mut()
+                .effect_context(effect, source_effect)?,
+            applied_effect_handle.effect_handle.clone(),
+            applied_effect_handle.location,
+        )?;
+    }
+
+    callbacks.remove(&mut context)?;
+
+    callbacks.post_end(&mut context)?;
+
+    Ok(true)
 }

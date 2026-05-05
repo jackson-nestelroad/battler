@@ -84,7 +84,7 @@ impl Default for RunEffectEventOptions {
 }
 
 #[derive(Clone, Copy)]
-enum AllEffectsTarget {
+pub(crate) enum AllEffectsTarget {
     Mon(MonHandle),
     Player(usize),
     Side(usize),
@@ -349,10 +349,12 @@ impl OptionalEventOutput for Type {
     }
 }
 
-trait EventContext<'battle, 'data> {
+#[warn(private_interfaces)]
+pub(crate) trait EventContext<'battle, 'data> {
     fn all_effects_target(&self) -> AllEffectsTarget;
     fn applied_effect_location(&self) -> AppliedEffectLocation;
     fn effect(&self) -> Option<EffectHandle>;
+    fn source_effect(&self) -> Option<EffectHandle>;
     fn source(&self) -> Option<MonHandle>;
     fn target(&self) -> Option<MonHandle>;
 
@@ -378,6 +380,10 @@ where
 
     fn effect(&self) -> Option<EffectHandle> {
         Some(self.effect_handle().clone())
+    }
+
+    fn source_effect(&self) -> Option<EffectHandle> {
+        self.source_effect_handle().cloned()
     }
 
     fn source(&self) -> Option<MonHandle> {
@@ -426,6 +432,10 @@ where
         Some(self.effect_handle().clone())
     }
 
+    fn source_effect(&self) -> Option<EffectHandle> {
+        self.source_effect_handle().cloned()
+    }
+
     fn source(&self) -> Option<MonHandle> {
         None
     }
@@ -467,6 +477,10 @@ where
     }
 
     fn effect(&self) -> Option<EffectHandle> {
+        None
+    }
+
+    fn source_effect(&self) -> Option<EffectHandle> {
         None
     }
 
@@ -512,6 +526,10 @@ where
 
     fn effect(&self) -> Option<EffectHandle> {
         Some(self.effect_handle().clone())
+    }
+
+    fn source_effect(&self) -> Option<EffectHandle> {
+        self.source_effect_handle().cloned()
     }
 
     fn source(&self) -> Option<MonHandle> {
@@ -560,6 +578,10 @@ where
         None
     }
 
+    fn source_effect(&self) -> Option<EffectHandle> {
+        None
+    }
+
     fn source(&self) -> Option<MonHandle> {
         None
     }
@@ -602,6 +624,10 @@ where
 
     fn effect(&self) -> Option<EffectHandle> {
         Some(self.effect_handle().clone())
+    }
+
+    fn source_effect(&self) -> Option<EffectHandle> {
+        self.source_effect_handle().cloned()
     }
 
     fn source(&self) -> Option<MonHandle> {
@@ -648,6 +674,10 @@ where
         Some(self.effect_handle().clone())
     }
 
+    fn source_effect(&self) -> Option<EffectHandle> {
+        self.source_effect_handle().cloned()
+    }
+
     fn source(&self) -> Option<MonHandle> {
         self.source_handle()
     }
@@ -691,6 +721,10 @@ where
         None
     }
 
+    fn source_effect(&self) -> Option<EffectHandle> {
+        None
+    }
+
     fn source(&self) -> Option<MonHandle> {
         None
     }
@@ -718,7 +752,7 @@ where
     }
 }
 
-enum UpcomingEvaluationContext<'context, 'battle, 'data>
+pub(crate) enum UpcomingEvaluationContext<'context, 'battle, 'data>
 where
     'data: 'battle,
     'battle: 'context,

@@ -87,6 +87,32 @@ impl AppliedEffectLocation {
             _ => None,
         }
     }
+
+    /// The associated side index.
+    pub fn side_index(&self) -> Option<usize> {
+        match self {
+            Self::Side(side) | Self::SideCondition(side) | Self::MonSideCondition(side, _) => {
+                Some(*side)
+            }
+            _ => None,
+        }
+    }
+
+    /// The associated slot index.
+    pub fn slot_index(&self) -> Option<usize> {
+        match self {
+            Self::SlotCondition(_, slot) | Self::MonSlotCondition(_, slot, _) => Some(*slot),
+            _ => None,
+        }
+    }
+
+    /// Does the effect apply to the field?
+    pub fn field(&self) -> bool {
+        match self {
+            Self::Field | Self::PseudoWeather | Self::Terrain | Self::Weather => true,
+            _ => false,
+        }
+    }
 }
 
 /// Handle to an applied effect, which is active in some part of a battle.
