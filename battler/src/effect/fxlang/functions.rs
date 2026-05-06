@@ -1980,26 +1980,7 @@ fn run_event_on_mon_ability(mut context: FunctionContext) -> Result<Option<Value
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
 
     let mut context = context.forward_to_applying_effect_context()?;
-    let target_handle = context.target_handle();
-    let ability = mon_states::effective_ability(&mut context.target_context()?);
-    match ability {
-        Some(ability) => Ok(core_battle_effects::run_effect_event_with_options::<
-            _,
-            _,
-            Option<Value>,
-        >(
-            &mut context,
-            event,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    EffectHandle::Ability(ability),
-                    AppliedEffectLocation::MonAbility(target_handle),
-                )),
-            },
-        )),
-        None => Ok(None),
-    }
+    Ok(core_battle_effects::run_ability_event::<_, _, Option<Value>>(&mut context, event, ()))
 }
 
 /// Runs an event on a Mon's item.
@@ -2015,26 +1996,11 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> 
     let event = BattleEvent::from_str(&event).map_err(general_error)?;
 
     let mut context = context.forward_to_applying_effect_context()?;
-    let target_handle = context.target_handle();
-    let item = mon_states::effective_item(&mut context.target_context()?);
-    match item {
-        Some(item) => Ok(core_battle_effects::run_effect_event_with_options::<
-            _,
-            _,
-            Option<Value>,
-        >(
-            &mut context,
-            event,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    EffectHandle::Item(item),
-                    AppliedEffectLocation::MonItem(target_handle),
-                )),
-            },
-        )),
-        None => Ok(None),
-    }
+    Ok(core_battle_effects::run_item_event::<_, _, Option<Value>>(
+        &mut context,
+        event,
+        (),
+    ))
 }
 
 /// Runs an event on a Mon's volatile effect.
@@ -5635,27 +5601,13 @@ fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
     let input = VariableInput::from_iter(context.rest_of_args());
 
     let mut context = context.forward_to_applying_effect_context_with_target(target_handle)?;
-    let target_handle = context.target_handle();
-
-    let ability = mon_states::effective_ability(&mut context.target_context()?);
-    match ability {
-        Some(ability) => Ok(core_battle_effects::run_effect_event_with_options::<
-            _,
-            _,
-            Option<Value>,
-        >(
+    Ok(
+        core_battle_effects::run_ability_event::<_, _, Option<Value>>(
             &mut context,
             BattleEvent::Activate,
             input,
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    EffectHandle::Ability(ability),
-                    AppliedEffectLocation::MonAbility(target_handle),
-                )),
-            },
-        )),
-        None => Ok(None),
-    }
+        ),
+    )
 }
 
 /// Activates an applying effect.

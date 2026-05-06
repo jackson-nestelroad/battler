@@ -35,6 +35,7 @@ use crate::{
         SideContext,
         SideEffectContext,
         core_battle_logs,
+        mon_states,
     },
     common::MaybeOwnedMut,
     effect::{
@@ -2297,6 +2298,88 @@ where
     Output: EventOutput,
 {
     run_effect_event_with_input(context, event, ())
+}
+
+/// Runs an event on a Mon's effective ability.
+#[allow(private_bounds)]
+pub fn run_ability_event<'battle, 'data, Context, Input, Output>(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+    input: Input,
+) -> Output
+where
+    'data: 'battle,
+    Context: EventContext<'battle, 'data>,
+    Input: EventInput,
+    Output: EventOutput,
+{
+    let ability = if let Some(target) = context.target() {
+        context
+            .as_battle_context_mut()
+            .mon_context(target)
+            .ok()
+            .and_then(|mut mon_context| mon_states::effective_ability(&mut mon_context))
+    } else {
+        None
+    };
+
+    if let Some(ability) = ability {
+        let target_handle = context.target().unwrap();
+        run_effect_event_with_options::<Context, Input, Output>(
+            context,
+            event,
+            input,
+            RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    EffectHandle::Ability(ability),
+                    AppliedEffectLocation::MonAbility(target_handle),
+                )),
+            },
+        )
+    } else {
+        Output::from_fxlang_value(None)
+    }
+}
+
+/// Runs an event on a Mon's effective item.
+#[allow(private_bounds)]
+pub fn run_item_event<'battle, 'data, Context, Input, Output>(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+    input: Input,
+) -> Output
+where
+    'data: 'battle,
+    Context: EventContext<'battle, 'data>,
+    Input: EventInput,
+    Output: EventOutput,
+{
+    let item = if let Some(target) = context.target() {
+        context
+            .as_battle_context_mut()
+            .mon_context(target)
+            .ok()
+            .and_then(|mut mon_context| mon_states::effective_item(&mut mon_context))
+    } else {
+        None
+    };
+
+    if let Some(item) = item {
+        let target_handle = context.target().unwrap();
+        run_effect_event_with_options::<Context, Input, Output>(
+            context,
+            event,
+            input,
+            RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    EffectHandle::Item(item),
+                    AppliedEffectLocation::MonItem(target_handle),
+                )),
+            },
+        )
+    } else {
+        Output::from_fxlang_value(None)
+    }
 }
 
 /// The target of a move for effect callbacks that run directly on an active move.

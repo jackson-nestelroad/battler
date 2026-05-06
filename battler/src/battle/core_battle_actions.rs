@@ -4954,20 +4954,7 @@ pub fn end_ability_even_if_exiting(
         core_battle_logs::ability_end(context)?;
     }
 
-    if let Some(ability) = mon_states::effective_ability(&mut context.target_context()?) {
-        let target_handle = context.target_handle();
-        core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, bool>(
-            context,
-            fxlang::BattleEvent::End,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    EffectHandle::Ability(ability),
-                    AppliedEffectLocation::MonAbility(target_handle),
-                )),
-            },
-        );
-    }
+    core_battle_effects::run_ability_event::<_, _, ()>(&mut ***context, fxlang::BattleEvent::End, ());
 
     Ok(())
 }
@@ -4990,27 +4977,10 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
         return Ok(());
     }
 
-    // Check if ability is suppressed.
-    let ability = match mon_states::effective_ability(&mut context.target_context()?) {
-        Some(ability) => ability,
-        None => return Ok(()),
-    };
-
     if !silent {
         core_battle_logs::ability(context)?;
     }
-    let target_handle = context.target_handle();
-    core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, bool>(
-        context,
-        fxlang::BattleEvent::Start,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                EffectHandle::Ability(ability),
-                AppliedEffectLocation::MonAbility(target_handle),
-            )),
-        },
-    );
+    core_battle_effects::run_ability_event::<_, _, ()>(&mut ***context, fxlang::BattleEvent::Start, ());
     Ok(())
 }
 
@@ -5337,21 +5307,8 @@ fn end_item_internal(
         EndItemType::Use => Some(fxlang::BattleEvent::Use),
         EndItemType::Eat => Some(fxlang::BattleEvent::Eat),
     };
-    if let Some(event) = event
-        && let Some(item) = mon_states::effective_item(&mut context.target_context()?)
-    {
-        let target_handle = context.target_handle();
-        core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, ()>(
-            context,
-            event,
-            (),
-            core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    EffectHandle::Item(item),
-                    AppliedEffectLocation::MonItem(target_handle),
-                )),
-            },
-        );
+    if let Some(event) = event {
+        core_battle_effects::run_item_event::<_, _, ()>(&mut ***context, event, ());
     }
 
     Ok(())
@@ -5395,24 +5352,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         core_battle_logs::item(context)?;
     }
 
-    // Check if item is suppressed.
-    let item = match mon_states::effective_item(&mut context.target_context()?) {
-        Some(item) => item,
-        None => return Ok(()),
-    };
-
-    let target_handle = context.target_handle();
-    core_battle_effects::run_effect_event_with_options::<ApplyingEffectContext, _, ()>(
-        context,
-        fxlang::BattleEvent::Start,
-        (),
-        core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
-                EffectHandle::Item(item),
-                AppliedEffectLocation::MonItem(target_handle),
-            )),
-        },
-    );
+    core_battle_effects::run_item_event::<_, _, ()>(&mut ***context, fxlang::BattleEvent::Start, ());
 
     Ok(())
 }
