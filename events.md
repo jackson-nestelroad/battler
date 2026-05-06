@@ -221,6 +221,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. Check immunity.
                         1. `SetStatus`.
                         1. Status `Duration`.
+                        1. `ModifyDuration`.
                         1. Status `Start`.
                         1. `AfterSetStatus`.
                      1. Add volatile:
@@ -228,34 +229,40 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. Check immunity.
                         1. `AddVolatile`.
                         1. Volatile `Duration`.
+                        1. `ModifyDuration`.
                         1. Volatile `Start`.
                         1. `AfterAddVolatile`.
                      1. Add side condition:
                         1. Condition `SideRestart`.
                         1. Condition `Duration`.
+                        1. `ModifySideDuration`.
                         1. Condition `SideStart`.
                         1. `SideConditionStart`.
                      1. Add slot condition:
                         1. Condition `SlotRestart`.
                         1. Condition `Duration`.
+                        1. `ModifySlotDuration`.
                         1. Condition `SlotStart`.
                         1. `SideConditionStart`.
                      1. Set weather:
                         1. `ClearWeather`.
                         1. `SetWeather`.
                         1. Weather `Duration`.
+                        1. `ModifyFieldDuration`.
                         1. Weather `FieldStart`.
                         1. `WeatherChange`.
                      1. Set terrain:
                         1. `ClearTerrain`.
                         1. `SetTerrain`.
                         1. Terrain `Duration`.
+                        1. `ModifyFieldDuration`.
                         1. Terrain `FieldStart`.
                         1. `TerrainChange`.
                      1. Add pseudo-weather:
                         1. Pseudo-weather `FieldRestart`.
                         1. `AddPseudoWeather`.
                         1. Terrain `Duration`.
+                        1. `ModifyFieldDuration`.
                         1. Terrain `FieldStart`.
                         1. `AfterAddPseudoWeather`.
                      1. Apply force switch if possible.
