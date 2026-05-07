@@ -185,3 +185,68 @@ fn outside_effect_targets_individual_mon() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn outside_conditions_can_be_applied_by_outside_effect() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.push_outside_condition(
+            serde_json::from_str(
+                r#"{
+                    "name": "Stat Shuffle",
+                    "condition_type": "Condition",
+                    "condition": {
+                        "callbacks": {
+                            "on_field_start": ["log_field_start"],
+                            "on_field_residual": {
+                                "priority": 1,
+                                "program": ["log_field_activate"]
+                            },
+                            "on_residual": [
+                                "boost: $target str('{}:{}', func_call(sample: func_call(boostable_stats)), func_call(sample: [-1, 1]))"
+                            ],
+                            "on_field_end": ["log_field_end"]
+                        }
+                    }
+                }"#,
+            )
+            .unwrap(),
+        ),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.push_outside_effect(
+            serde_json::from_str(
+                r#"{
+                    "name": "Stat Shuffle",
+                    "target": "field",
+                    "program": [
+                        "add_pseudo_weather: statshuffle"
+                    ]
+                }"#,
+            )
+            .unwrap(),
+        ),
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "fieldstart|condition:Stat Shuffle",
+            "fieldactivate|condition:Stat Shuffle",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1|from:condition:Stat Shuffle",
+            "unboost|mon:Pikachu,player-2,1|stat:spd|by:1|from:condition:Stat Shuffle",
+            "unboost|mon:Magikarp,player-1,2|stat:spa|by:1|from:condition:Stat Shuffle",
+            "boost|mon:Magikarp,player-2,2|stat:spa|by:1|from:condition:Stat Shuffle",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}

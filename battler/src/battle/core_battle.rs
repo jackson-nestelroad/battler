@@ -18,6 +18,7 @@ use core::{
 
 use anyhow::Result;
 use battler_data::{
+    ConditionData,
     DataStore,
     Id,
     Identifiable,
@@ -40,6 +41,7 @@ use itertools::Itertools;
 use zone_alloc::{
     ElementRef,
     ElementRefMut,
+    KeyedRegistry,
 };
 
 use crate::{
@@ -87,6 +89,7 @@ use crate::{
         Clock,
         UnsafelyDetachBorrowMut,
     },
+    conditions::Condition,
     config::Format,
     dex::Dex,
     effect::{
@@ -222,11 +225,18 @@ impl<'d> PublicCoreBattle<'d> {
     /// Pushes an outside effect to the battle, which will evaluate at the start of the next turn.
     ///
     /// This method is intended for one-off effects. Continual effects should be written as proper
-    /// conditions (e.g., weather, pseudo-weather, volatile status, etc.).
+    /// conditions (e.g., weather, pseudo-weather, volatile status, etc.) or outside conditions
+    /// ([`Self::push_outside_condition`]).
     ///
     /// Unlike regular effects, the given effect program is not cached and is re-parsed each time.
     pub fn push_outside_effect(&mut self, outside_effect: OutsideEffect) -> Result<()> {
         self.internal.push_outside_effect(outside_effect)
+    }
+
+    /// Pushes an outside condition to the battle, which can be referenced by outside effects for
+    /// applying continual effects on some part of the battle.
+    pub fn push_outside_condition(&mut self, outside_condition: ConditionData) -> Result<()> {
+        self.internal.push_outside_condition(outside_condition)
     }
 }
 
@@ -280,6 +290,8 @@ pub struct CoreBattle<'d> {
     registry: BattleRegistry,
     player_ids: HashMap<String, usize>,
     effect_handle_cache: HashMap<Id, EffectHandle>,
+
+    outside_conditions: KeyedRegistry<Id, Condition>,
 
     turn: u64,
     request: Option<RequestType>,
@@ -369,6 +381,7 @@ impl<'d> CoreBattle<'d> {
             registry,
             player_ids,
             effect_handle_cache: HashMap::default(),
+            outside_conditions: KeyedRegistry::default(),
             turn: 0,
             request: None,
             mid_turn: false,
@@ -662,6 +675,10 @@ impl<'d> CoreBattle<'d> {
 
     fn push_outside_effect(&mut self, outside_effect: OutsideEffect) -> Result<()> {
         Self::push_outside_effect_internal(&mut self.context(), outside_effect)
+    }
+
+    fn push_outside_condition(&mut self, outside_condition: ConditionData) -> Result<()> {
+        Self::push_outside_condition_internal(&mut self.context(), outside_condition)
     }
 }
 
@@ -2471,6 +2488,9 @@ impl<'d> CoreBattle<'d> {
         if self.dex.species.get_by_id(&id).is_ok() {
             return EffectHandle::Species(id);
         }
+        if self.outside_conditions.contains_key(&id) {
+            return EffectHandle::OutsideCondition(id);
+        }
         EffectHandle::NonExistent(NonExistentEffect::new(id))
     }
 
@@ -2519,6 +2539,13 @@ impl<'d> CoreBattle<'d> {
             )),
             EffectHandle::Species(id) => Ok(Effect::for_species(
                 context.battle().dex.species.get_by_id(id)?,
+            )),
+            EffectHandle::OutsideCondition(id) => Ok(Effect::for_condition(
+                context
+                    .battle()
+                    .outside_conditions
+                    .get(id)
+                    .wrap_error_with_format(format_args!("outside condition {id} not found"))?,
             )),
             EffectHandle::NonExistent(effect) => Ok(Effect::for_non_existent(effect.clone())),
         }
@@ -2593,6 +2620,24 @@ impl<'d> CoreBattle<'d> {
                 order,
             }),
         )?;
+        Ok(())
+    }
+
+    fn push_outside_condition_internal(
+        context: &mut Context,
+        outside_condition: ConditionData,
+    ) -> Result<()> {
+        let id = Id::from(outside_condition.name.as_str());
+        let condition = Condition::new(id.clone(), outside_condition);
+        if !context
+            .battle_mut()
+            .outside_conditions
+            .register(condition.id().clone(), condition)
+        {
+            return Err(general_error(format!(
+                "outside condition {id} already exists"
+            )));
+        }
         Ok(())
     }
 

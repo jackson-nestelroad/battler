@@ -149,6 +149,8 @@ pub enum EffectHandle {
     Clause(Id),
     /// A species.
     Species(Id),
+    /// An outside condition.
+    OutsideCondition(Id),
     /// Any effect that is applied to some part of the battle that does not really exist.
     NonExistent(NonExistentEffect),
 }
@@ -220,6 +222,7 @@ impl EffectHandle {
             Self::ItemCondition(id) => Some(&id),
             Self::Clause(id) => Some(&id),
             Self::Species(id) => Some(&id),
+            Self::OutsideCondition(id) => Some(&id),
             Self::NonExistent(effect) => Some(&effect.id),
         }
     }

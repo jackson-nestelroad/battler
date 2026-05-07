@@ -1,4 +1,9 @@
 {
+    "files.exclude": {
+        "**/node_modules": true,
+        "data-filler/sources/**": true,
+        "target/**": true,
+    },
     "workbench.editor.enablePreview": false,
     "git.openDiffOnClick": false,
     "editor.formatOnSave": true,
