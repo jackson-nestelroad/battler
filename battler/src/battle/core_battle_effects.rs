@@ -838,7 +838,8 @@ fn run_effect_event_with_errors(
 
     if !event.state_event() {
         let target = context.target_handle();
-        // Mon must on the field for the callback to run, unless we are targeting that Mon itself.
+        // Mon must be on the field for the callback to run, unless we are targeting that Mon
+        // itself.
         if let Some(effect_mon_handle) = &effect_mon_handle
             && target.is_none_or(|target| target != *effect_mon_handle)
         {
