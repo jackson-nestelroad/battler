@@ -1046,8 +1046,6 @@ fn run_callbacks_with_forwarding_input_with_errors(
                 .is_some_and(|input| input.1 != fxlang::ValueType::Boolean);
 
         // Pass the output to the next effect.
-        //
-        // Events that return a boolean likely do not want to do this.
         if !should_not_relay_output {
             if let Some(forward_input) = input.get_mut(0) {
                 *forward_input = value;
