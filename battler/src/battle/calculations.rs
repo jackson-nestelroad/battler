@@ -46,7 +46,7 @@ pub fn apply_nature_to_stats(mut stats: StatTable, nature: Nature) -> StatTable 
     stats.set(boosts, boosted_stat);
 
     let dropped_stat = stats.get(drops);
-    let dropped_stat = dropped_stat - num::Integer::div_ceil(&(dropped_stat * 10), &100);
+    let dropped_stat = dropped_stat - (dropped_stat * 10).div_ceil(100);
     stats.set(drops, dropped_stat);
 
     stats
