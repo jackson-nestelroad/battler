@@ -187,11 +187,19 @@
   },
   "stancechange": {
     "name": "Stance Change",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "if func_call(base_species: $user) != aegislash or $user.transformed:",
+          "if func_call(base_species: $user) != aegislash:",
           ["return"],
           "if $move.category == status and $move.id != kingsshield:",
           ["return"],

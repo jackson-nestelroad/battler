@@ -501,11 +501,19 @@
   },
   "zenmode": {
     "name": "Zen Mode",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_residual": [
-          "if func_call(base_species: $target) != darmanitan or $target.transformed:",
+          "if func_call(base_species: $target) != darmanitan:",
           ["return"],
           "if $target.hp <= $target.max_hp / 2:",
           ["add_volatile: $target $this.id"],

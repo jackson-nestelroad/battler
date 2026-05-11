@@ -77,13 +77,21 @@
   },
   "shieldsdown": {
     "name": "Shields Down",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: Residual"],
         "on_residual": [
           "$base_species = func_call(base_species: $target)",
-          "if $base_species != minior or $target.transformed or $target.hp == 0:",
+          "if $base_species != minior or $target.hp == 0:",
           ["return"],
           "if $target.hp > $target.max_hp / 2:",
           ["forme_change: $target miniormeteor"],
@@ -94,14 +102,14 @@
           ]
         ],
         "on_set_status": [
-          "if $target.species != miniormeteor or $target.transformed:",
+          "if $target.species != miniormeteor:",
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: from_effect"],
           "return false"
         ],
         "on_add_volatile": [
-          "if $target.species != miniormeteor or $target.transformed:",
+          "if $target.species != miniormeteor:",
           ["return"],
           "if $volatile.id == yawn:",
           [
@@ -262,13 +270,21 @@
   },
   "schooling": {
     "name": "Schooling",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: Residual"],
         "on_residual": [
           "$base_species = func_call(base_species: $target)",
-          "if $base_species != wishiwashi or $target.transformed or $target.hp == 0:",
+          "if $base_species != wishiwashi or $target.hp == 0:",
           ["return"],
           "if $target.hp > $target.max_hp / 4:",
           ["forme_change: $target wishiwashischool"],
@@ -295,7 +311,7 @@
         "on_damage": {
           "priority": 1,
           "program": [
-            "if !$effect.is_move or !([mimikyu, mimikyutotemdisguised] has $target.species) or $target.transformed:",
+            "if !$effect.is_move or !([mimikyu, mimikyutotemdisguised] has $target.species):",
             ["return"],
             "activate_ability",
             "return 0"
@@ -309,7 +325,7 @@
           "damage: $target expr($target.base_max_hp / 8)"
         ],
         "on_critical_hit": [
-          "if !([mimikyu, mimikyutotemdisguised] has $target.species) or $target.transformed:",
+          "if !([mimikyu, mimikyutotemdisguised] has $target.species):",
           ["return"],
           "if func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
           ["return"],
@@ -328,13 +344,21 @@
   },
   "battlebond": {
     "name": "Battle Bond",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_after_fainted": [
           "if !$effect or !$effect.is_move:",
           ["return"],
-          "if $mon.species != greninjabattlebond or $mon.hp == 0 or $mon.transformed or $mon.foe_side.mons_left == 0:",
+          "if $mon.species != greninjabattlebond or $mon.hp == 0 or $mon.foe_side.mons_left == 0:",
           ["return"],
           "if $mon.effect_state.battle_bond_triggered:",
           ["return"],
@@ -346,7 +370,7 @@
           "forme_change: greninjabattlebond greninjaash permanent"
         ],
         "on_use_move": [
-          "if $move.id == watershuriken and $source.species == greninjaash and !$source.transformed:",
+          "if $move.id == watershuriken and $source.species == greninjaash:",
           ["$move.base_power = $move.base_power + 5", "$move.multihit = 3"]
         ]
       }
@@ -354,12 +378,20 @@
   },
   "powerconstruct": {
     "name": "Power Construct",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_residual": [
           "$base_species = func_call(base_species: $target)",
-          "if $base_species != zygarde or $target.transformed or $target.hp == 0:",
+          "if $base_species != zygarde or $target.hp == 0:",
           ["return"],
           "if $target.species == zygardecomplete or $target.hp > $target.max_hp / 2:",
           ["return"],
@@ -569,7 +601,15 @@
   },
   "rkssystem": {
     "name": "RKS System",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_types": {
@@ -577,7 +617,7 @@
           "program": [
             "# Each Silvally forme has its own species data, so the type of each forme is actually set directly by the forme.",
             "# RKS System technically alters the Mon's type directly, so we implement dynamic type changing logic here as well.",
-            "if $mon.transformed or !$mon.item:",
+            "if !$mon.item:",
             ["return $types"],
             "$type = normal",
             "$data = func_call(special_item_data: $mon.item)",
@@ -589,7 +629,7 @@
         "on_update": [
           "# Ensure Silvally is the correct forme.",
           "# Note that when team validation is used, Silvally is forced into the correct forme.",
-          "if func_call(base_species: $mon) != silvally or $mon.transformed or !$mon.item:",
+          "if func_call(base_species: $mon) != silvally or !$mon.item:",
           ["return"],
           "$type = normal",
           "$data = func_call(special_item_data: $mon.item)",
@@ -603,15 +643,11 @@
         ],
         "on_take_item": [
           "# Item cannot be taken if RKS System is using it.",
-          "if $target.transformed:",
-          ["return"],
           "$data = func_call(special_item_data: $item.id)",
           "return !$data or !$data.multi_attack"
         ],
         "on_set_item": [
           "# Item cannot be given if RKS System would use it.",
-          "if $target.transformed:",
-          ["return"],
           "$data = func_call(special_item_data: $item.id)",
           "return !$data or !$data.multi_attack"
         ],
