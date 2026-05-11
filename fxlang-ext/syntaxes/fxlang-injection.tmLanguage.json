@@ -189,7 +189,7 @@
           "name": "comment.line.number-sign"
         }
       },
-      "end": "(?=\"\\s*[,\\]]?\\s*$)",
+      "end": "(?=\"\\s*(?:,|\\],?)?\\s*$)",
       "name": "comment.line.number-sign",
       "patterns": [
         {
