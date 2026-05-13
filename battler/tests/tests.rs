@@ -141,6 +141,10 @@ mod abilities {
     mod gen7 {
         mod dancer_test;
         mod emergency_exit_test;
+        mod merciless_test;
+        mod shields_down_test;
+        mod stakeout_test;
+        mod water_bubble_test;
     }
 
     mod gen8 {
