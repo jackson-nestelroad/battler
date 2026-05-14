@@ -36,8 +36,9 @@ export class FxLangParser {
         
         let insideFxLangArray = false;
         let fxLangBracketDepth = 0;
-        let currentLineIndex = 1;
+        let currentEventName: string | undefined = undefined;
         let currentBlockStart = -1;
+        let currentLineIndex = 1;
 
         for (let i = 0; i < document.lineCount; i++) {
             const line = document.lineAt(i).text;
@@ -55,16 +56,16 @@ export class FxLangParser {
                         fxLangBracketDepth = 1;
                         currentLineIndex = 1;
                         currentBlockStart = i;
-                        let eventName = resolved;
+                        currentEventName = resolved;
 
                         if (rawName === 'program') {
-                            eventName = this.findInheritedEvent(document, i);
-                            if (eventName) {
+                            currentEventName = this.findInheritedEvent(document, i);
+                            if (currentEventName) {
                                 // Find where the event block actually starts
                                 for (let j = i - 1; j >= 0; j--) {
                                     const prevLine = document.lineAt(j).text.trim();
                                     const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[\{]/);
-                                    if (prevMatch && this.resolveEventName(prevMatch[1]) === eventName) {
+                                    if (prevMatch && this.resolveEventName(prevMatch[1]) === currentEventName) {
                                         currentBlockStart = j;
                                         break;
                                     }
@@ -74,7 +75,7 @@ export class FxLangParser {
 
                         if (trimmed.endsWith(']') || trimmed.endsWith('],')) {
                             this.processInlineMappings(line, i, mappings);
-                            blocks.push({ startLine: currentBlockStart, endLine: i, eventName });
+                            blocks.push({ startLine: currentBlockStart, endLine: i, eventName: currentEventName });
                             insideFxLangArray = false;
                         }
                     }
@@ -85,8 +86,7 @@ export class FxLangParser {
                 fxLangBracketDepth += open - close;
 
                 if (fxLangBracketDepth <= 0) {
-                    const block = blocks[blocks.length - 1];
-                    blocks.push({ startLine: currentBlockStart, endLine: i, eventName: block?.eventName });
+                    blocks.push({ startLine: currentBlockStart, endLine: i, eventName: currentEventName });
                     insideFxLangArray = false;
                     continue;
                 }
