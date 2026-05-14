@@ -293,7 +293,7 @@
           "$base_species = func_call(base_species: $target)",
           "if $base_species != wishiwashi or $target.hp == 0:",
           ["return"],
-          "if $target.hp > $target.max_hp / 4:",
+          "if $target.level >= 20 and $target.hp > $target.max_hp / 4:",
           ["forme_change: $target wishiwashischool"],
           "else:",
           ["forme_change: $target wishiwashi"]
