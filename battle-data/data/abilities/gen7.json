@@ -336,14 +336,14 @@
           ["return"],
           "if func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
           ["return"],
-          "if !func_call(check_move_immunity: $target $move):",
+          "if func_call(check_move_immunity: $target $move):",
           ["return"],
           "return false"
         ],
         "on_effectiveness": [
           "if $effect.category == status:",
           ["return"],
-          "if !func_call(run_event_on_mon_ability: CriticalHit):",
+          "if !func_call(run_event_on_mon_ability: CriticalHit use_source_effect no_forward):",
           ["return 0"]
         ]
       }
