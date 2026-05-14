@@ -139,6 +139,7 @@ mod abilities {
     }
 
     mod gen7 {
+        mod berserk_test;
         mod dancer_test;
         mod emergency_exit_test;
         mod merciless_test;
