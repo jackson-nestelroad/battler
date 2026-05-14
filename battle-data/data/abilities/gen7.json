@@ -221,7 +221,7 @@
       "callbacks": {
         "on_modify_spe": [
           "$weather = func_call(effective_weather: $target)",
-          "if $weather.is_snowing:",
+          "if $weather.is_defined and $weather.is_snowing:",
           ["return $spe * 2"]
         ]
       }

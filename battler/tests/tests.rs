@@ -144,6 +144,7 @@ mod abilities {
         mod emergency_exit_test;
         mod merciless_test;
         mod shields_down_test;
+        mod slush_rush_test;
         mod stakeout_test;
         mod water_bubble_test;
     }
