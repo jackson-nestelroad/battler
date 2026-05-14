@@ -63,6 +63,28 @@ export class DocumentContextManager {
         return relevant;
     }
 
+    public isFxLangContext(document: vscode.TextDocument, position: vscode.Position): boolean {
+        if (document.languageId === 'fxlang') return true;
+        if (!this.isRelevant(document)) return false;
+        const { blocks } = this.getContext(document);
+        return blocks.some(b => position.line >= b.startLine && position.line <= b.endLine);
+    }
+
+    public isInFxLangProgram(document: vscode.TextDocument, position: vscode.Position): boolean {
+        if (!this.isFxLangContext(document, position)) return false;
+        
+        const line = document.lineAt(position.line).text;
+        const match = line.match(/^(\s*"[a-zA-Z0-9_]+"\s*):/);
+        if (match) {
+            const keyEndPos = match[1].length;
+            if (position.character <= keyEndPos) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     public getEnclosingBlockType(document: vscode.TextDocument, position: vscode.Position): 'array' | 'object' | 'none' {
         const uri = document.uri.toString();
         const context = this.cache.get(uri);
@@ -77,7 +99,7 @@ export class DocumentContextManager {
         const parseResult = this.getContext(document);
         
         // Fast path
-        if (parseResult.blocks.some(b => position.line >= b.startLine && position.line <= b.endLine)) {
+        if (this.isInFxLangProgram(document, position)) {
             this.cache.get(uri)?.blockTypeCache.set(key, 'array');
             return 'array';
         }

@@ -34,6 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
             metadata = JSON.parse(Buffer.from(data).toString('utf8'));
             
             // Update all engines
+            parser.updateMetadata(metadata);
             FxLangParser.clearResolutionCache();
             typeEngine.updateMetadata(metadata);
             docContext.updateMetadata(metadata);
@@ -57,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.languages.registerCompletionItemProvider(languages, new FxCompletionItemProvider(typeEngine, docContext, symbolEngine), '.', '$', '"', '('),
         vscode.languages.registerHoverProvider(languages, new FxHoverProvider(typeEngine, docContext, symbolEngine, parser)),
-        vscode.languages.registerCompletionItemProvider(languages, new FxEventCompletionItemProvider(metadata, docContext, parser), '"'),
+        vscode.languages.registerCompletionItemProvider(languages, new FxEventCompletionItemProvider(typeEngine, docContext, parser), '"'),
         vscode.languages.registerCodeLensProvider(languages, new FxCodeLensProvider(docContext)),
         vscode.languages.registerDocumentSymbolProvider(languages, new FxDocumentSymbolProvider(docContext, parser))
     );
@@ -399,14 +400,15 @@ class FxHoverProvider implements vscode.HoverProvider {
         if (!wordRange) return null;
 
         const word = document.getText(wordRange);
-        const parseResult = this.docContext.getContext(document);
-        const block = parseResult.blocks.find(b => position.line >= b.startLine && position.line <= b.endLine);
-
-        if (block) {
+        
+        if (this.docContext.isInFxLangProgram(document, position)) {
+            const parseResult = this.docContext.getContext(document);
+            const block = parseResult.blocks.find(b => position.line >= b.startLine && position.line <= b.endLine);
             const symbols = this.symbolEngine.parseContext(document, position);
+            
             if (word.startsWith('$')) {
                 const varName = word.substring(1);
-                const varData = this.typeEngine.getVariableData(varName, block.eventName);
+                const varData = this.typeEngine.getVariableData(varName, block?.eventName);
                 const type = symbols[varName] || (varData ? this.typeEngine.getDisplayType(varData.type, varData.item_type) : undefined);
                 if (type) {
                     return new vscode.Hover(new vscode.MarkdownString(`**Variable \`${word}\`**\n\nType: \`${type}\``));
@@ -417,7 +419,7 @@ class FxHoverProvider implements vscode.HoverProvider {
                     const chain = document.getText(fullRange).split('.');
                     const wordIndex = chain.indexOf(word);
                     if (wordIndex > 0) {
-                        const parentType = this.typeEngine.resolveChainType(chain.slice(0, wordIndex), symbols, block.eventName);
+                        const parentType = this.typeEngine.resolveChainType(chain.slice(0, wordIndex), symbols, block?.eventName);
                         if (parentType) {
                             const member = this.typeEngine.getTypeMembers(parentType)[word];
                             if (member) {
@@ -442,26 +444,52 @@ class FxHoverProvider implements vscode.HoverProvider {
 }
 
 class FxEventCompletionItemProvider implements vscode.CompletionItemProvider {
-    constructor(private metadata: Metadata, private docContext: DocumentContextManager, private parser: FxLangParser) {}
+    constructor(private typeEngine: TypeEngine, private docContext: DocumentContextManager, private parser: FxLangParser) {}
 
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.CompletionItem[]> {
         if (this.docContext.getEnclosingBlockType(document, position) !== 'object') return undefined;
 
-        // Simple check to see if we are likely inside "callbacks"
+        const line = document.lineAt(position.line).text;
         let insideCallbacks = false;
+        let insideEvent = false;
+        let braceDepth = 0;
+        
         for (let i = position.line; i >= 0; i--) {
-            if (document.lineAt(i).text.includes('"callbacks"')) { insideCallbacks = true; break; }
+            const l = document.lineAt(i).text.trim();
+            if (l.includes('}')) braceDepth++;
+            if (l.includes(']')) braceDepth++;
+            if (l.includes('{')) braceDepth--;
+            if (l.includes('[')) braceDepth--;
+            
+            if (l.match(/^"callbacks"\s*:\s*\{/)) {
+                insideCallbacks = true;
+                break;
+            }
+            
+            if (braceDepth < 0) {
+                const keyMatch = l.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\{\[]/);
+                if (keyMatch && keyMatch[1] !== 'callbacks') {
+                    insideEvent = true;
+                    break;
+                }
+                braceDepth = 0;
+            }
         }
-        if (!insideCallbacks) return undefined;
+        
+        if (!insideCallbacks || insideEvent) return undefined;
 
+        const textBeforeCursor = line.substring(0, position.character);
         const quoteRange = document.getWordRangeAtPosition(position, /"[a-zA-Z0-9_]*"?/) || new vscode.Range(position, position);
         const items: vscode.CompletionItem[] = [];
+        const metadata = this.typeEngine.metadata;
         
-        for (const [baseName, data] of Object.entries(this.metadata.events || {})) {
+        for (const [baseName, data] of Object.entries(metadata.events || {})) {
             const primaryName = (baseName.startsWith('is_') || baseName.startsWith('suppress_')) ? baseName : 'on_' + baseName;
             const item = new vscode.CompletionItem(primaryName, vscode.CompletionItemKind.Event);
             item.range = quoteRange;
+            item.filterText = `"${primaryName}`;
             item.insertText = new vscode.SnippetString(`"${primaryName}": [\n\t$0\n],`);
+            item.documentation = new vscode.MarkdownString(data.description);
             items.push(item);
             
             if (primaryName.startsWith('on_')) {
@@ -469,7 +497,9 @@ class FxEventCompletionItemProvider implements vscode.CompletionItemProvider {
                     const modName = `on_${mod}_${baseName}`;
                     const modItem = new vscode.CompletionItem(modName, vscode.CompletionItemKind.Event);
                     modItem.range = quoteRange;
+                    modItem.filterText = `"${modName}`;
                     modItem.insertText = new vscode.SnippetString(`"${modName}": [\n\t$0\n],`);
+                    modItem.documentation = new vscode.MarkdownString(`*(Modifier: ${mod})*\n\n` + data.description);
                     items.push(modItem);
                 });
             }

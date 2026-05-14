@@ -12,6 +12,11 @@ export class FxLangParser {
         }
     }
 
+    public updateMetadata(metadata: Metadata) {
+        this.metadata = metadata;
+        this.updateEventNamesSet();
+    }
+
     public static clearResolutionCache() {
         this.resolveCache.clear();
         this.eventNamesSet.clear();
