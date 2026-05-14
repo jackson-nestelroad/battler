@@ -17,7 +17,9 @@ import {
     areTypesCompatible,
     EVENT_MODIFIERS,
     getVariableData,
-    getCustomVariables
+    getCustomVariables,
+    isRelevantDocument,
+    preprocessMetadata
 } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -35,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (fs.existsSync(metadataPath)) {
             try {
                 metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+                preprocessMetadata(metadata);
                 updateDecorations();
             } catch (e) {
                 console.error('Failed to load fxlang metadata', e);
@@ -105,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     function updateDecorations() {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) return;
+        if (!editor || !isRelevantDocument(editor.document)) return;
 
         const gutterRanges: vscode.Range[] = [];
         const marginDecorations: vscode.DecorationOptions[] = [];
@@ -152,7 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     function updateStatusBar() {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || !isRelevantDocument(editor.document)) {
             statusBarItem.hide();
             return;
         }
@@ -188,6 +191,24 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`fxlang line numbers: ${sessionShowLineNumbers ? 'on' : 'off'}`);
     });
 
+    let decorationTimeout: NodeJS.Timeout | undefined;
+    function debouncedUpdateDecorations() {
+        if (decorationTimeout) clearTimeout(decorationTimeout);
+        decorationTimeout = setTimeout(() => {
+            updateDecorations();
+            decorationTimeout = undefined;
+        }, 100);
+    }
+
+    let statusTimeout: NodeJS.Timeout | undefined;
+    function debouncedUpdateStatusBar() {
+        if (statusTimeout) clearTimeout(statusTimeout);
+        statusTimeout = setTimeout(() => {
+            updateStatusBar();
+            statusTimeout = undefined;
+        }, 50);
+    }
+
     vscode.window.onDidChangeActiveTextEditor(editor => {
         if (editor) {
             updateDecorations();
@@ -203,15 +224,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.window.onDidChangeTextEditorSelection(event => {
         if (event.textEditor === vscode.window.activeTextEditor) {
-            updateStatusBar();
+            debouncedUpdateStatusBar();
         }
     }, null, context.subscriptions);
 
     vscode.workspace.onDidChangeTextDocument(event => {
         const editor = vscode.window.activeTextEditor;
         if (editor && event.document === editor.document) {
-            updateDecorations();
-            updateStatusBar();
+            debouncedUpdateDecorations();
+            debouncedUpdateStatusBar();
         }
     }, null, context.subscriptions);
 
@@ -222,17 +243,18 @@ export function activate(context: vscode.ExtensionContext) {
         languages,
         {
             provideCodeLenses(document: vscode.TextDocument) {
+                if (!isRelevantDocument(document)) return [];
                 const lenses: vscode.CodeLens[] = [];
-                for (let i = 0; i < document.lineCount; i++) {
-                    const line = document.lineAt(i);
-                    if (line.text.includes('"callbacks"')) {
-                        const position = new vscode.Position(i, line.text.indexOf('"callbacks"'));
-                        const range = new vscode.Range(position, position);
-                        lenses.push(new vscode.CodeLens(range, {
-                            title: "⚡ fxlang active",
-                            command: ""
-                        }));
-                    }
+                const text = document.getText();
+                let index = text.indexOf('"callbacks"');
+                while (index !== -1) {
+                    const position = document.positionAt(index);
+                    const range = new vscode.Range(position, position);
+                    lenses.push(new vscode.CodeLens(range, {
+                        title: "⚡ fxlang active",
+                        command: ""
+                    }));
+                    index = text.indexOf('"callbacks"', index + 1);
                 }
                 return lenses;
             }

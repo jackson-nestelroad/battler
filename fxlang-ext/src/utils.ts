@@ -1,6 +1,51 @@
 import * as vscode from 'vscode';
 import { Metadata, SymbolTable, MemberData } from './types';
 
+const relevanceCache = new Map<string, { version: number, relevant: boolean }>();
+let eventNamesSet = new Set<string>();
+let typeMembersCache: Record<string, Record<string, MemberData>> = {};
+let commonFlagsSet = new Set<string>();
+const typeSplitCache = new Map<string, Set<string>>();
+
+function getSplitTypes(typeStr: string): Set<string> {
+    let cached = typeSplitCache.get(typeStr);
+    if (cached) return cached;
+    const split = new Set(typeStr.split(' | '));
+    typeSplitCache.set(typeStr, split);
+    return split;
+}
+
+export function preprocessMetadata(metadata: Metadata) {
+    updateEventNamesSet(metadata);
+    commonFlagsSet = new Set(metadata.common_flags || []);
+    
+    // Pre-merge type members
+    typeMembersCache = {};
+    for (const type of Object.keys(metadata.type_members)) {
+        typeMembersCache[type] = internalGetTypeMembers(type, metadata);
+    }
+    // Special case for ActiveMove inheritance
+    typeMembersCache['ActiveMove'] = internalGetTypeMembers('ActiveMove', metadata);
+}
+
+export function updateEventNamesSet(metadata: Metadata) {
+    eventNamesSet = new Set(Object.keys(metadata.events || {}));
+}
+
+export function isRelevantDocument(document: vscode.TextDocument): boolean {
+    if (document.languageId === 'fxlang') return true;
+    if (document.languageId !== 'json' && document.languageId !== 'jsonc') return false;
+    
+    const uri = document.uri.toString();
+    const cached = relevanceCache.get(uri);
+    if (cached && cached.version === document.version) return cached.relevant;
+    
+    const text = document.getText();
+    const relevant = text.includes('"callbacks"') || text.includes('"program"');
+    relevanceCache.set(uri, { version: document.version, relevant });
+    return relevant;
+}
+
 export interface FxLangBlock {
     startLine: number;
     endLine: number;
@@ -18,7 +63,22 @@ export interface FxLangParseResult {
     mappings: FxLangLineMapping[];
 }
 
+let parseCache: { [uri: string]: { version: number, result: FxLangParseResult } } = {};
+
 export function parseFxLangDocument(document: vscode.TextDocument, metadata: Metadata): FxLangParseResult {
+    const uri = document.uri.toString();
+    const version = document.version;
+    
+    if (parseCache[uri] && parseCache[uri].version === version) {
+        return parseCache[uri].result;
+    }
+
+    if (!isRelevantDocument(document)) {
+        const result = { blocks: [], mappings: [] };
+        parseCache[uri] = { version, result };
+        return result;
+    }
+
     const blocks: FxLangBlock[] = [];
     const mappings: FxLangLineMapping[] = [];
     
@@ -32,10 +92,14 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
         const trimmed = line.trim();
 
         if (!insideFxLangArray) {
+            // Fast path for non-array-start lines
+            if (!trimmed.startsWith('"') || !trimmed.includes('[')) continue;
+
             const match = trimmed.match(/^"([a-zA-Z0-9_]+)"\s*:\s*\[/);
             if (match) {
                 const rawName = match[1];
-                if (resolveEventName(rawName, metadata) || rawName === 'program') {
+                const resolved = resolveEventName(rawName, metadata);
+                if (resolved || rawName === 'program') {
                     insideFxLangArray = true;
                     fxLangBracketDepth = 1;
                     currentLineIndex = 1;
@@ -110,7 +174,9 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
             }
         }
     }
-    return { blocks, mappings };
+    const result = { blocks, mappings };
+    parseCache[uri] = { version, result };
+    return result;
 }
 
 /**
@@ -118,6 +184,7 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
  */
 export function isFxLangContext(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata): boolean {
     if (document.languageId === 'fxlang') return true;
+    if (!isRelevantDocument(document)) return false;
     const { blocks } = parseFxLangDocument(document, metadata);
     return blocks.some(b => position.line >= b.startLine && position.line <= b.endLine);
 }
@@ -144,15 +211,22 @@ export function isInFxLangProgram(document: vscode.TextDocument, position: vscod
  * Finds the longest base event name that is a suffix of the raw JSON key.
  */
 export function resolveEventName(rawName: string, metadata: Metadata): string | undefined {
-    let bestMatch: string | undefined = undefined;
-    for (const baseName of Object.keys(metadata.events || {})) {
-        if (rawName === baseName || rawName.endsWith('_' + baseName)) {
-            if (!bestMatch || baseName.length > bestMatch.length) {
-                bestMatch = baseName;
+    if (eventNamesSet.size === 0) updateEventNamesSet(metadata);
+    if (eventNamesSet.has(rawName)) return rawName;
+    
+    if (rawName.startsWith('on_')) {
+        let base = rawName.substring(3);
+        if (eventNamesSet.has(base)) return base;
+        
+        for (const mod of EVENT_MODIFIERS) {
+            if (base.startsWith(mod + '_')) {
+                let deeperBase = base.substring(mod.length + 1);
+                if (eventNamesSet.has(deeperBase)) return deeperBase;
             }
         }
     }
-    return bestMatch;
+    
+    return undefined;
 }
 export function getCustomVariables(document: vscode.TextDocument, position: vscode.Position): string[] {
     const params: string[] = [];
@@ -205,8 +279,11 @@ export function getCustomVariables(document: vscode.TextDocument, position: vsco
  * Extracts the base event name ignoring prefixes like `on_` and modifiers like `ally_`.
  */
 export function getEnclosingEvent(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata): string | undefined {
-    for (let i = position.line; i >= 0; i--) {
+    // Limit scan to 500 lines for performance
+    const startLine = Math.max(0, position.line - 500);
+    for (let i = position.line; i >= startLine; i--) {
         const line = document.lineAt(i).text.trim();
+        if (!line.startsWith('"')) continue;
         const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
         if (match) {
             const rawName = match[1];
@@ -244,8 +321,10 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
         let commonType: string | undefined = undefined;
         let uniform = true;
         
-        for (const element of elements) {
-            const elType = inferType(element, symbols, metadata, eventName);
+        // Only check first 5 elements for performance
+        const checkLimit = Math.min(elements.length, 5);
+        for (let i = 0; i < checkLimit; i++) {
+            const elType = inferType(elements[i], symbols, metadata, eventName);
             if (!elType || elType === 'unknown') {
                 uniform = false;
                 break;
@@ -304,12 +383,25 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
     return undefined;
 }
 
+let blockTypeCache: { [uri: string]: { version: number, line: number, character: number, result: 'array' | 'object' | 'none' } } = {};
+
 /**
  * Parses the JSON structure up to the cursor to determine if the immediate enclosing block is an array or object.
  * This is used to completely disjoint FxLang program suggestions (which only occur in arrays) 
  * from event callback key suggestions (which only occur in objects).
  */
 export function getEnclosingBlockType(document: vscode.TextDocument, position: vscode.Position): 'array' | 'object' | 'none' {
+    const uri = document.uri.toString();
+    const version = document.version;
+    const { line, character } = position;
+    
+    if (blockTypeCache[uri] && 
+        blockTypeCache[uri].version === version && 
+        blockTypeCache[uri].line === line && 
+        blockTypeCache[uri].character === character) {
+        return blockTypeCache[uri].result;
+    }
+
     const text = document.getText(new vscode.Range(new vscode.Position(0, 0), position));
     const stack: ('array' | 'object')[] = [];
     let inString = false;
@@ -336,18 +428,23 @@ export function getEnclosingBlockType(document: vscode.TextDocument, position: v
             else if (char === '}') stack.pop();
         }
     }
-    return stack.length > 0 ? stack[stack.length - 1] : 'none';
+    const result = stack.length > 0 ? stack[stack.length - 1] : 'none';
+    blockTypeCache[uri] = { version, line, character, result };
+    return result;
 }
+
+let symbolTableCache: { [uri: string]: { version: number, blockStartLine: number, symbols: SymbolTable } } = {};
 
 /**
  * Parses the current code block to build a local symbol table (variable type tracking).
  */
 export function parseContext(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata, parseUpToCursor = false): SymbolTable {
-    const symbols: SymbolTable = {};
-    
+    const uri = document.uri.toString();
+    const version = document.version;
+
     // Find the start of the current program/callback block
     let blockStartLine = -1;
-    for (let i = position.line; i >= 0; i--) {
+    for (let i = position.line; i >= Math.max(0, position.line - 500); i--) {
         const line = document.lineAt(i).text;
         if (line.match(/"[a-z0-9_]+"\s*:\s*\[/i)) {
             blockStartLine = i;
@@ -355,23 +452,29 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
         }
     }
     
-    if (blockStartLine === -1) return symbols;
+    if (blockStartLine === -1) return {};
+
+    // Check cache (only if not parsing up to cursor, which is position-specific)
+    if (!parseUpToCursor && symbolTableCache[uri] && symbolTableCache[uri].version === version && symbolTableCache[uri].blockStartLine === blockStartLine) {
+        return symbolTableCache[uri].symbols;
+    }
+
+    const symbols: SymbolTable = {};
 
     // Extract lines from blockStart to current position
     for (let i = blockStartLine; i <= position.line; i++) {
         let line = document.lineAt(i).text.trim();
-        
+        if (!line.includes('$') && !line.includes('foreach')) continue;
+
         // Clean up JSON noise (leading quotes, trailing commas/quotes)
         line = line.replace(/^"/, '').replace(/",?$/, '');
         
         // Look for assignments: $var = expression
-        // Supporting both "$var = ..." and "set $var = ..."
         const assignMatch = line.match(/(?:set\s+)?(\$[a-zA-Z0-9_]+)\s*=\s*(.*)/);
         if (assignMatch) {
             const varName = assignMatch[1].substring(1);
             let expression = assignMatch[2].trim();
             
-            // If we are on the current line and completing, only parse up to the cursor
             if (parseUpToCursor && i === position.line) {
                 const cursorInLine = position.character - (document.lineAt(i).text.length - line.length);
                 expression = expression.substring(0, cursorInLine).trim();
@@ -391,7 +494,6 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
 
             const eventName = getEnclosingEvent(document, position, metadata);
             const listType = inferType(expression, symbols, metadata, eventName);
-            
             const innerType = unwrapListType(listType);
             
             if (!getVariableData(varName, metadata, eventName) && !symbols[varName]) {
@@ -400,13 +502,17 @@ export function parseContext(document: vscode.TextDocument, position: vscode.Pos
         }
     }
     
+    if (!parseUpToCursor) {
+        symbolTableCache[uri] = { version, blockStartLine, symbols };
+    }
+    
     return symbols;
 }
 
 /**
  * Retrieves all members for a type, taking inheritance into account.
  */
-export function getTypeMembers(type: string, metadata: Metadata): Record<string, MemberData> {
+function internalGetTypeMembers(type: string, metadata: Metadata): Record<string, MemberData> {
     const members: Record<string, MemberData> = {};
     if (type.includes(' | ')) {
         type = type.split(' | ')[0];
@@ -422,6 +528,13 @@ export function getTypeMembers(type: string, metadata: Metadata): Record<string,
         Object.assign(members, specificMembers);
     }
     return members;
+}
+
+export function getTypeMembers(type: string, metadata: Metadata): Record<string, MemberData> {
+    if (type.includes(' | ')) {
+        type = type.split(' | ')[0];
+    }
+    return typeMembersCache[type] || metadata.type_members[type] || {};
 }
 
 /**
@@ -550,19 +663,19 @@ export function getDisplayType(typeStr: string, itemType?: string): string {
 
 export function areTypesCompatible(parentType: string, paramType: string): boolean {
     if (paramType === 'Any') return true;
-    const parentTypes = parentType.split(' | ');
-    const paramTypes = paramType.split(' | ');
+    const parentTypes = getSplitTypes(parentType);
+    const paramTypes = getSplitTypes(paramType);
     
     for (const pt of parentTypes) {
-        if (paramTypes.includes(pt)) return true;
+        if (paramTypes.has(pt)) return true;
     }
     
     // Check specific relaxed rules
     for (const pt of parentTypes) {
-        if (paramTypes.includes('Effect') && pt === 'ActiveMove') return true;
-        if (paramTypes.includes('Object') && (pt === 'BoostTable' || pt === 'StatTable' || pt === 'EffectState')) return true;
-        if (paramTypes.includes('Fraction') && pt === 'UFraction') return true;
-        if (paramTypes.includes('UFraction') && pt === 'Fraction') return true;
+        if (paramTypes.has('Effect') && pt === 'ActiveMove') return true;
+        if (paramTypes.has('Object') && (pt === 'BoostTable' || pt === 'StatTable' || pt === 'EffectState')) return true;
+        if (paramTypes.has('Fraction') && pt === 'UFraction') return true;
+        if (paramTypes.has('UFraction') && pt === 'Fraction') return true;
     }
     
     return false;
