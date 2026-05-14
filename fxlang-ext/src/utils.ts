@@ -6,6 +6,7 @@ let eventNamesSet = new Set<string>();
 let typeMembersCache: Record<string, Record<string, MemberData>> = {};
 let commonFlagsSet = new Set<string>();
 const typeSplitCache = new Map<string, Set<string>>();
+const resolveCache = new Map<string, string | undefined>();
 
 function getSplitTypes(typeStr: string): Set<string> {
     let cached = typeSplitCache.get(typeStr);
@@ -26,10 +27,24 @@ export function preprocessMetadata(metadata: Metadata) {
     }
     // Special case for ActiveMove inheritance
     typeMembersCache['ActiveMove'] = internalGetTypeMembers('ActiveMove', metadata);
+
+    // Clear caches that depend on metadata
+    parseCache = {};
+    blockTypeCache = {};
+    symbolTableCache = {};
+    typeSplitCache.clear();
+    resolveCache.clear();
 }
 
 export function updateEventNamesSet(metadata: Metadata) {
     eventNamesSet = new Set(Object.keys(metadata.events || {}));
+}
+
+export function clearDocumentCache(uri: string) {
+    delete parseCache[uri];
+    delete blockTypeCache[uri];
+    relevanceCache.delete(uri);
+    delete symbolTableCache[uri];
 }
 
 export function isRelevantDocument(document: vscode.TextDocument): boolean {
@@ -40,8 +55,16 @@ export function isRelevantDocument(document: vscode.TextDocument): boolean {
     const cached = relevanceCache.get(uri);
     if (cached && cached.version === document.version) return cached.relevant;
     
-    const text = document.getText();
-    const relevant = text.includes('"callbacks"') || text.includes('"program"');
+    let relevant = false;
+    // Scan line by line to avoid massive getText() allocation
+    for (let i = 0; i < document.lineCount; i++) {
+        const line = document.lineAt(i).text;
+        if (line.includes('"callbacks"') || line.includes('"program"')) {
+            relevant = true;
+            break;
+        }
+    }
+
     relevanceCache.set(uri, { version: document.version, relevant });
     return relevant;
 }
@@ -49,6 +72,7 @@ export function isRelevantDocument(document: vscode.TextDocument): boolean {
 export interface FxLangBlock {
     startLine: number;
     endLine: number;
+    eventName?: string;
 }
 
 export interface FxLangLineMapping {
@@ -104,6 +128,7 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
                     fxLangBracketDepth = 1;
                     currentLineIndex = 1;
                     currentBlockStart = i;
+                    let eventName = resolved;
 
                     if (rawName === 'program') {
                         for (let j = i - 1; j >= 0; j--) {
@@ -111,7 +136,9 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
                             const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[\{]/);
                             if (prevMatch) {
                                 const prevRaw = prevMatch[1];
-                                if (resolveEventName(prevRaw, metadata) && prevRaw !== 'program' && prevRaw !== 'metadata') {
+                                const prevResolved = resolveEventName(prevRaw, metadata);
+                                if (prevResolved && prevRaw !== 'program' && prevRaw !== 'metadata') {
+                                    eventName = prevResolved;
                                     currentBlockStart = j;
                                     break;
                                 }
@@ -124,7 +151,8 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
                         if (stringMatches && stringMatches.length > 1) {
                             let lastIdx = 0;
                             for (let s = 1; s < stringMatches.length; s++) {
-                                const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
+                                const matchedStr = stringMatches[s];
+                                const str = matchedStr.substring(1, matchedStr.length - 1);
                                 const strIdx = line.indexOf('"' + str + '"', lastIdx);
                                 if (strIdx !== -1) {
                                     lastIdx = strIdx + str.length + 2;
@@ -137,19 +165,19 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
                                 }
                             }
                         }
-                        blocks.push({ startLine: currentBlockStart, endLine: i });
+                        blocks.push({ startLine: currentBlockStart, endLine: i, eventName });
                         insideFxLangArray = false;
                     }
                 }
             }
         } else {
-            for (const char of trimmed) {
-                if (char === '[') fxLangBracketDepth++;
-                if (char === ']') fxLangBracketDepth--;
-            }
+            const open = trimmed.split('[').length - 1;
+            const close = trimmed.split(']').length - 1;
+            fxLangBracketDepth += open - close;
 
             if (fxLangBracketDepth <= 0) {
-                blocks.push({ startLine: currentBlockStart, endLine: i });
+                const block = blocks[blocks.length - 1]; // Find the eventName from the current session
+                blocks.push({ startLine: currentBlockStart, endLine: i, eventName: block?.eventName });
                 insideFxLangArray = false;
                 continue;
             }
@@ -158,7 +186,8 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
             if (stringMatches) {
                 let lastIdx = 0;
                 for (let s = 0; s < stringMatches.length; s++) {
-                    const str = stringMatches[s].replace(/^"/, '').replace(/"$/, '');
+                    const matchedStr = stringMatches[s];
+                    const str = matchedStr.substring(1, matchedStr.length - 1);
                     const strIdx = line.indexOf('"' + str + '"', lastIdx);
                     if (strIdx !== -1) {
                         lastIdx = strIdx + str.length + 2;
@@ -211,22 +240,32 @@ export function isInFxLangProgram(document: vscode.TextDocument, position: vscod
  * Finds the longest base event name that is a suffix of the raw JSON key.
  */
 export function resolveEventName(rawName: string, metadata: Metadata): string | undefined {
+    if (resolveCache.has(rawName)) return resolveCache.get(rawName);
+
     if (eventNamesSet.size === 0) updateEventNamesSet(metadata);
-    if (eventNamesSet.has(rawName)) return rawName;
     
-    if (rawName.startsWith('on_')) {
+    let result: string | undefined = undefined;
+    if (eventNamesSet.has(rawName)) {
+        result = rawName;
+    } else if (rawName.startsWith('on_')) {
         let base = rawName.substring(3);
-        if (eventNamesSet.has(base)) return base;
-        
-        for (const mod of EVENT_MODIFIERS) {
-            if (base.startsWith(mod + '_')) {
-                let deeperBase = base.substring(mod.length + 1);
-                if (eventNamesSet.has(deeperBase)) return deeperBase;
+        if (eventNamesSet.has(base)) {
+            result = base;
+        } else {
+            for (const mod of EVENT_MODIFIERS) {
+                if (base.startsWith(mod + '_')) {
+                    let deeperBase = base.substring(mod.length + 1);
+                    if (eventNamesSet.has(deeperBase)) {
+                        result = deeperBase;
+                        break;
+                    }
+                }
             }
         }
     }
     
-    return undefined;
+    resolveCache.set(rawName, result);
+    return result;
 }
 export function getCustomVariables(document: vscode.TextDocument, position: vscode.Position): string[] {
     const params: string[] = [];
@@ -275,28 +314,12 @@ export function getCustomVariables(document: vscode.TextDocument, position: vsco
 
 
 /**
- * Walks backwards from the current position to find the enclosing event key inside a callbacks block.
- * Extracts the base event name ignoring prefixes like `on_` and modifiers like `ally_`.
+ * Gets the resolved event name for the block enclosing the given position.
  */
 export function getEnclosingEvent(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata): string | undefined {
-    // Limit scan to 500 lines for performance
-    const startLine = Math.max(0, position.line - 500);
-    for (let i = position.line; i >= startLine; i--) {
-        const line = document.lineAt(i).text.trim();
-        if (!line.startsWith('"')) continue;
-        const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
-        if (match) {
-            const rawName = match[1];
-            if (rawName !== 'program' && rawName !== 'metadata') {
-                const resolved = resolveEventName(rawName, metadata);
-                if (resolved) return resolved;
-            }
-        }
-        if (line.match(/^"callbacks"\s*:\s*\{/)) {
-            break;
-        }
-    }
-    return undefined;
+    const { blocks } = parseFxLangDocument(document, metadata);
+    const block = blocks.find(b => position.line >= b.startLine && position.line <= b.endLine);
+    return block?.eventName;
 }
 
 /**
@@ -390,7 +413,7 @@ let blockTypeCache: { [uri: string]: { version: number, line: number, character:
  * This is used to completely disjoint FxLang program suggestions (which only occur in arrays) 
  * from event callback key suggestions (which only occur in objects).
  */
-export function getEnclosingBlockType(document: vscode.TextDocument, position: vscode.Position): 'array' | 'object' | 'none' {
+export function getEnclosingBlockType(document: vscode.TextDocument, position: vscode.Position, metadata: Metadata): 'array' | 'object' | 'none' {
     const uri = document.uri.toString();
     const version = document.version;
     const { line, character } = position;
@@ -402,6 +425,17 @@ export function getEnclosingBlockType(document: vscode.TextDocument, position: v
         return blockTypeCache[uri].result;
     }
 
+    // Fast path: if inside a known fxlang block, it's an array
+    const { blocks } = parseFxLangDocument(document, metadata);
+    if (blocks.some(b => position.line >= b.startLine && position.line <= b.endLine)) {
+        const result = 'array';
+        blockTypeCache[uri] = { version, line, character, result };
+        return result;
+    }
+
+    // Standard path: scan from the beginning of the file to the cursor
+    // This is still needed for the 'object' case (event callback keys)
+    // We only reach this if we are not in an fxlang block.
     const text = document.getText(new vscode.Range(new vscode.Position(0, 0), position));
     const stack: ('array' | 'object')[] = [];
     let inString = false;

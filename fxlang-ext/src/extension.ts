@@ -19,10 +19,15 @@ import {
     getVariableData,
     getCustomVariables,
     isRelevantDocument,
-    preprocessMetadata
+    preprocessMetadata,
+    clearDocumentCache
 } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
+    const outputChannel = vscode.window.createOutputChannel("FxLang");
+    context.subscriptions.push(outputChannel);
+    outputChannel.appendLine("FxLang extension activated");
+
     const metadataPath = path.join(context.extensionPath, 'metadata.json');
     let metadata: Metadata = {
         variables: {},
@@ -33,15 +38,14 @@ export function activate(context: vscode.ExtensionContext) {
         common_flags: []
     };
 
-    function loadMetadata() {
-        if (fs.existsSync(metadataPath)) {
-            try {
-                metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-                preprocessMetadata(metadata);
-                updateDecorations();
-            } catch (e) {
-                console.error('Failed to load fxlang metadata', e);
-            }
+    async function loadMetadata() {
+        try {
+            const data = await vscode.workspace.fs.readFile(vscode.Uri.file(metadataPath));
+            metadata = JSON.parse(Buffer.from(data).toString('utf8'));
+            preprocessMetadata(metadata);
+            updateDecorations();
+        } catch (e) {
+            console.error('Failed to load fxlang metadata', e);
         }
     }
 
@@ -56,20 +60,20 @@ export function activate(context: vscode.ExtensionContext) {
     // Completion Provider
     const completionProvider = vscode.languages.registerCompletionItemProvider(
         languages,
-        new FxCompletionItemProvider(() => metadata),
+        new FxCompletionItemProvider(() => metadata, outputChannel),
         '.', '$', '"', '('
     );
 
     // Hover Provider
     const hoverProvider = vscode.languages.registerHoverProvider(
         languages,
-        new FxHoverProvider(() => metadata)
+        new FxHoverProvider(() => metadata, outputChannel)
     );
 
     // Event Callback Autocomplete
     const eventProvider = vscode.languages.registerCompletionItemProvider(
         languages,
-        new FxEventCompletionItemProvider(() => metadata),
+        new FxEventCompletionItemProvider(() => metadata, outputChannel),
         '"'
     );
 
@@ -102,34 +106,42 @@ export function activate(context: vscode.ExtensionContext) {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     context.subscriptions.push(statusBarItem);
 
-
-
     let sessionShowLineNumbers: boolean | undefined = undefined;
 
     function updateDecorations() {
         const editor = vscode.window.activeTextEditor;
         if (!editor || !isRelevantDocument(editor.document)) return;
 
+        const visibleRanges = editor.visibleRanges;
         const gutterRanges: vscode.Range[] = [];
-        const marginDecorations: vscode.DecorationOptions[] = [];
         const inlineDecorations: vscode.DecorationOptions[] = [];
 
         const { blocks, mappings } = parseFxLangDocument(editor.document, metadata);
 
         for (const block of blocks) {
-            gutterRanges.push(new vscode.Range(block.startLine, 0, block.startLine, 0));
+            const isVisible = visibleRanges.some(vr => 
+                block.startLine >= vr.start.line - 10 && block.startLine <= vr.end.line + 10
+            );
+            if (isVisible) {
+                gutterRanges.push(new vscode.Range(block.startLine, 0, block.startLine, 0));
+            }
         }
 
         for (const m of mappings) {
-            const startPos = new vscode.Position(m.documentLine, m.charStart + 1);
-            inlineDecorations.push({
-                range: new vscode.Range(startPos, startPos),
-                renderOptions: {
-                    before: {
-                        contentText: `L${m.lineIndex}`,
+            const isVisible = visibleRanges.some(vr => 
+                m.documentLine >= vr.start.line - 10 && m.documentLine <= vr.end.line + 10
+            );
+            if (isVisible) {
+                const startPos = new vscode.Position(m.documentLine, m.charStart + 1);
+                inlineDecorations.push({
+                    range: new vscode.Range(startPos, startPos),
+                    renderOptions: {
+                        before: {
+                            contentText: `L${m.lineIndex}`,
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         const showOverviewRuler = vscode.workspace.getConfiguration('fxlang').get<boolean>('showOverviewRuler', false);
@@ -140,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
             editor.setDecorations(decorationType, []);
             editor.setDecorations(decorationTypeWithoutRuler, gutterRanges);
         }
-        editor.setDecorations(marginDecorationType, marginDecorations);
+        editor.setDecorations(marginDecorationType, []);
 
         let showLineNumbers = sessionShowLineNumbers;
         if (showLineNumbers === undefined) {
@@ -153,10 +165,14 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    let statusBarVisible = false;
     function updateStatusBar() {
         const editor = vscode.window.activeTextEditor;
         if (!editor || !isRelevantDocument(editor.document)) {
-            statusBarItem.hide();
+            if (statusBarVisible) {
+                statusBarItem.hide();
+                statusBarVisible = false;
+            }
             return;
         }
 
@@ -174,10 +190,19 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (activeLineIndex !== -1) {
-            statusBarItem.text = `$(list-numbered) fxlang line: ${activeLineIndex}`;
-            statusBarItem.show();
+            const text = `$(list-numbered) fxlang line: ${activeLineIndex}`;
+            if (statusBarItem.text !== text) {
+                statusBarItem.text = text;
+            }
+            if (!statusBarVisible) {
+                statusBarItem.show();
+                statusBarVisible = true;
+            }
         } else {
-            statusBarItem.hide();
+            if (statusBarVisible) {
+                statusBarItem.hide();
+                statusBarVisible = false;
+            }
         }
     }
 
@@ -216,6 +241,12 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }, null, context.subscriptions);
 
+    vscode.window.onDidChangeTextEditorVisibleRanges(e => {
+        if (e.textEditor === vscode.window.activeTextEditor) {
+            debouncedUpdateDecorations();
+        }
+    }, null, context.subscriptions);
+
     vscode.workspace.onDidChangeConfiguration(e => {
         if (e.affectsConfiguration('fxlang.showOverviewRuler') || e.affectsConfiguration('fxlang.showLineNumbers')) {
             updateDecorations();
@@ -226,6 +257,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (event.textEditor === vscode.window.activeTextEditor) {
             debouncedUpdateStatusBar();
         }
+    }, null, context.subscriptions);
+
+    vscode.workspace.onDidCloseTextDocument(doc => {
+        clearDocumentCache(doc.uri.toString());
     }, null, context.subscriptions);
 
     vscode.workspace.onDidChangeTextDocument(event => {
@@ -261,18 +296,40 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    context.subscriptions.push(completionProvider, hoverProvider, eventProvider, codeLensProvider);
+    const symbolProvider = vscode.languages.registerDocumentSymbolProvider(
+        languages,
+        {
+            provideDocumentSymbols(document: vscode.TextDocument) {
+                if (!isRelevantDocument(document)) return [];
+                const { blocks } = parseFxLangDocument(document, metadata);
+                return blocks.map(block => {
+                    const eventName = getEnclosingEvent(document, new vscode.Position(block.startLine, 0), metadata);
+                    const name = eventName ? `on_${eventName}` : "fxlang program";
+                    const range = new vscode.Range(block.startLine, 0, block.endLine, 0);
+                    return new vscode.DocumentSymbol(
+                        name,
+                        "fxlang script",
+                        vscode.SymbolKind.Function,
+                        range,
+                        range
+                    );
+                });
+            }
+        }
+    );
+
+    context.subscriptions.push(completionProvider, hoverProvider, eventProvider, codeLensProvider, symbolProvider);
 }
 
 export function deactivate() {}
 
 class FxCompletionItemProvider implements vscode.CompletionItemProvider {
-    constructor(private getMetadata: () => Metadata) {}
+    constructor(private getMetadata: () => Metadata, private outputChannel: vscode.OutputChannel) {}
 
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.CompletionItem[]> {
         const metadata = this.getMetadata();
         if (!isFxLangContext(document, position, metadata)) return undefined;
-        if (getEnclosingBlockType(document, position) !== 'array') return undefined;
+        if (getEnclosingBlockType(document, position, metadata) !== 'array') return undefined;
 
         const symbols = parseContext(document, position, metadata, true);
         const linePrefix = document.lineAt(position).text.substring(0, position.character);
@@ -449,7 +506,7 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
 }
 
 class FxHoverProvider implements vscode.HoverProvider {
-    constructor(private getMetadata: () => Metadata) {}
+    constructor(private getMetadata: () => Metadata, private outputChannel: vscode.OutputChannel) {}
 
     public provideHover(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.Hover> {
         const metadata = this.getMetadata();
@@ -608,12 +665,7 @@ class FxHoverProvider implements vscode.HoverProvider {
                 }
             }
         } catch (err) {
-            try {
-                const logPath = path.join(__dirname, '..', 'error_log.txt');
-                fs.appendFileSync(logPath, `${new Date().toISOString()} - ${err instanceof Error ? err.stack : String(err)}\n`);
-            } catch (e) {
-                // Suppress
-            }
+            this.outputChannel.appendLine(`Hover Error: ${err instanceof Error ? err.stack : String(err)}`);
             return undefined;
         }
         return null;
@@ -621,7 +673,7 @@ class FxHoverProvider implements vscode.HoverProvider {
 }
 
 class FxEventCompletionItemProvider implements vscode.CompletionItemProvider {
-    constructor(private getMetadata: () => Metadata) {}
+    constructor(private getMetadata: () => Metadata, private outputChannel: vscode.OutputChannel) {}
 
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.CompletionItem[]> {
         const metadata = this.getMetadata();
@@ -663,7 +715,7 @@ class FxEventCompletionItemProvider implements vscode.CompletionItemProvider {
         }
         
         if (!insideCallbacks || insideEvent) return undefined;
-        if (getEnclosingBlockType(document, position) !== 'object') return undefined;
+        if (getEnclosingBlockType(document, position, metadata) !== 'object') return undefined;
         
         const textBeforeCursor = line.substring(0, position.character);
         if (textBeforeCursor.match(/^\s*"/)) {
