@@ -41,3 +41,21 @@ export interface Metadata {
 }
 
 export type SymbolTable = Record<string, string>;
+
+export interface FxLangBlock {
+    startLine: number;
+    endLine: number;
+    eventName?: string;
+}
+
+export interface FxLangLineMapping {
+    documentLine: number;
+    charStart: number;
+    charEnd: number;
+    lineIndex: number;
+}
+
+export interface FxLangParseResult {
+    blocks: FxLangBlock[];
+    mappings: FxLangLineMapping[];
+}
