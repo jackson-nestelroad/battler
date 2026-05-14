@@ -36,6 +36,20 @@ export class TypeEngine {
         
         const specificMembers = this.metadata.type_members[baseType];
         if (specificMembers) Object.assign(members, specificMembers);
+
+        if (baseType === 'Effect') {
+            const moveMembers = this.metadata.type_members['ActiveMove'];
+            if (moveMembers) {
+                for (const [name, data] of Object.entries(moveMembers)) {
+                    if (!members[name]) {
+                        members[name] = {
+                            ...data,
+                            only_applicable_to_active_move: true
+                        };
+                    }
+                }
+            }
+        }
         
         return members;
     }

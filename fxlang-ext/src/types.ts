@@ -1,7 +1,11 @@
+import * as vscode from 'vscode';
+
 export interface MemberData {
     description: string;
     type: string;
     item_type?: string;
+    only_applicable_to_move?: boolean;
+    only_applicable_to_active_move?: boolean;
 }
 
 export interface ParameterData {
