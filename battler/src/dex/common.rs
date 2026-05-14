@@ -19,6 +19,14 @@ use crate::error::{
 
 type DataTable<T> = KeyedRegistry<Id, T>;
 
+/// The result of a [`ResourceLookup::lookup_alias`] call.
+pub struct LookupAliasOutput<T> {
+    /// The ID used for the data.
+    pub id: Id,
+    /// Data.
+    pub data: T,
+}
+
 /// Trait for implementing custom logic for looking up and creating a resource instance by ID.
 ///
 /// Lookup methods are only called once for a given input ID. Afterwards, the created resource
@@ -38,8 +46,11 @@ pub trait ResourceLookup<'d, T> {
     ///
     /// `alias` is the original input. `real_id` is the end of the alias chain, as defined in
     /// [`DataStore`].
-    fn lookup_alias(&self, _alias: &Id, real_id: &Id) -> Result<T> {
-        self.lookup(real_id)
+    fn lookup_alias(&self, _alias: &Id, real_id: &Id) -> Result<LookupAliasOutput<T>> {
+        Ok(LookupAliasOutput {
+            id: real_id.clone(),
+            data: self.lookup(real_id)?,
+        })
     }
 }
 
@@ -106,8 +117,8 @@ where
     }
 
     fn cache_data(&self, id: &Id, real_id: &Id) -> Result<()> {
-        let data = self.lookup_data_by_id(id, real_id)?;
-        let resource = W::wrap(id.clone(), data);
+        let output = self.lookup_data_by_id(id, real_id)?;
+        let resource = W::wrap(output.id, output.data);
         if !self.cache.save(id, resource) {
             Err(general_error(format!(
                 "failed to save data for {id} in cache"
@@ -152,7 +163,7 @@ where
     }
 
     /// Looks up a resource by ID using the internal [`ResourceLookup`] implementation.
-    fn lookup_data_by_id(&self, id: &Id, real_id: &Id) -> Result<D> {
+    fn lookup_data_by_id(&self, id: &Id, real_id: &Id) -> Result<LookupAliasOutput<D>> {
         self.lookup.lookup_alias(&id, real_id)
     }
 }

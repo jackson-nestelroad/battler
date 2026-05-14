@@ -693,9 +693,28 @@ pub struct Mon {
 impl Mon {
     /// Creates a new Mon.
     pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self> {
-        let species = Id::from(data.species);
-        let item = data.item.map(|item| Id::from(item));
-        let ability = Id::from(data.ability);
+        // Resolve IDs so we do not store aliases.
+        let species = dex
+            .species
+            .get(&data.species)
+            .wrap_error_with_message("species not found")?
+            .id()
+            .clone();
+        let item = data
+            .item
+            .map(|item| {
+                dex.items
+                    .get(&item)
+                    .wrap_error_with_message("item not found")
+                    .map(|item| item.id().clone())
+            })
+            .transpose()?;
+        let ability = dex
+            .abilities
+            .get(&data.ability)
+            .wrap_error_with_message("ability not found")?
+            .id()
+            .clone();
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
         for (i, move_name) in data.moves.iter().enumerate() {

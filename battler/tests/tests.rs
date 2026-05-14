@@ -141,6 +141,7 @@ mod abilities {
     mod gen7 {
         mod berserk_test;
         mod dancer_test;
+        mod disguise_test;
         mod emergency_exit_test;
         mod liquid_voice_test;
         mod long_reach_test;

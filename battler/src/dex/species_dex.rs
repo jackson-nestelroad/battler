@@ -8,6 +8,7 @@ use battler_data::{
 use crate::{
     WrapOptionError,
     dex::{
+        LookupAliasOutput,
         ResourceDex,
         ResourceLookup,
         ResourceWrapper,
@@ -32,7 +33,7 @@ impl<'d> ResourceLookup<'d, SpeciesData> for SpeciesLookup<'d> {
             .wrap_not_found_error_with_format(format_args!("species {id}"))
     }
 
-    fn lookup_alias(&self, alias: &Id, real_id: &Id) -> Result<SpeciesData> {
+    fn lookup_alias(&self, alias: &Id, real_id: &Id) -> Result<LookupAliasOutput<SpeciesData>> {
         let data = self
             .data
             .get_species(real_id)?
@@ -46,9 +47,16 @@ impl<'d> ResourceLookup<'d, SpeciesData> for SpeciesLookup<'d> {
             .cloned()
         {
             let cosmetic_forme_data = data.create_cosmetic_forme_data(cosmetic_forme);
-            return Ok(cosmetic_forme_data);
+            return Ok(LookupAliasOutput {
+                id: alias.clone(),
+                data: cosmetic_forme_data,
+            });
         }
-        Ok(data)
+
+        Ok(LookupAliasOutput {
+            id: real_id.clone(),
+            data,
+        })
     }
 }
 

@@ -70,8 +70,8 @@ fn stakeout_doubles_attack_against_newly_switched_targets() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "split|side:1",
-            "switch|player:player-2|position:1|name:Gumshoos|health:286/286|species:Gumshoos|level:100|gender:U",
-            "switch|player:player-2|position:1|name:Gumshoos|health:100/100|species:Gumshoos|level:100|gender:U",
+            ["switch", "player-2", "Gumshoos"],
+            ["switch", "player-2", "Gumshoos"],
             "move|mon:Gumshoos,player-1,1|name:Tackle|target:Gumshoos,player-2,1",
             "split|side:1",
             "damage|mon:Gumshoos,player-2,1|health:109/286",

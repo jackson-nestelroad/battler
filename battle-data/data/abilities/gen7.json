@@ -372,6 +372,7 @@
           "activate_ability"
         ],
         "on_activate": [
+          "$mon.effect_state.battle_bond_triggered = true",
           "log_activate: with_target",
           "boost: $target 'atk:1' 'spa:1' 'spe:1'",
           "forme_change: greninjabattlebond greninjaash permanent"
