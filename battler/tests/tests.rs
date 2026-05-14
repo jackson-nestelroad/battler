@@ -142,7 +142,10 @@ mod abilities {
         mod berserk_test;
         mod dancer_test;
         mod emergency_exit_test;
+        mod liquid_voice_test;
+        mod long_reach_test;
         mod merciless_test;
+        mod schooling_test;
         mod shields_down_test;
         mod slush_rush_test;
         mod stakeout_test;

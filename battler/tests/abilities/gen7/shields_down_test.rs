@@ -66,11 +66,11 @@ fn shields_down_transforms_minior_based_on_hp() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "split|side:0",
-            "switch|player:player-1|position:1|name:Minior|health:50/230|species:Minior-Green|level:100|gender:U",
-            "switch|player:player-1|position:1|name:Minior|health:22/100|species:Minior-Green|level:100|gender:U",
+            ["switch", "player-1", "Minior"],
+            ["switch", "player-1", "Minior"],
             "split|side:1",
-            "switch|player:player-2|position:1|name:Minior|health:230/230|species:Minior-Green|level:100|gender:U",
-            "switch|player:player-2|position:1|name:Minior|health:100/100|species:Minior-Green|level:100|gender:U",
+            ["switch", "player-2", "Minior"],
+            ["switch", "player-2", "Minior"],
             "formechange|mon:Minior,player-2,1|species:Minior-Meteor|from:ability:Shields Down",
             "turn|turn:1",
             "continue",
