@@ -106,7 +106,7 @@ pub use mon::{
     MoveSlotEffectCache,
     PhysicalMonDetails,
     PublicMonDetails,
-    RecalculateBaseStatsHpPolicy,
+    RecalculateStatsHpPolicy,
     ReceivedAttackEntry,
 };
 pub use move_outcome::{

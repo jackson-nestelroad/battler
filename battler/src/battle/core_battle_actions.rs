@@ -70,7 +70,7 @@ use crate::{
         MoveOutcomeOnTarget,
         Player,
         PlayerContext,
-        RecalculateBaseStatsHpPolicy,
+        RecalculateStatsHpPolicy,
         ReceivedAttackEntry,
         Side,
         SideEffectContext,
@@ -4100,8 +4100,11 @@ pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<()> {
     let old_level = context.mon().level;
     context.mon_mut().level = target_level;
 
-    Mon::recalculate_stats(context)?;
-    Mon::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::KeepHealthRatio)?;
+    Mon::recalculate_stats(context, RecalculateStatsHpPolicy::DoNotUpdate)?;
+    Mon::recalculate_base_stats(
+        context,
+        RecalculateStatsHpPolicy::KeepHealthRatio { silent: false },
+    )?;
     core_battle_logs::level_up(context)?;
 
     for level in old_level..target_level {
@@ -4252,7 +4255,7 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
                     .unwrap_or(0);
             context.mon_mut().evs.set(stat, new_ev_value);
         }
-        Mon::recalculate_stats(&mut context)?;
+        Mon::recalculate_stats(&mut context, RecalculateStatsHpPolicy::DoNotUpdate)?;
         // NOTE: We do not recalculate base stats here, or else the Mon's HP can update
         // unexpectedly.
 
@@ -4954,7 +4957,11 @@ pub fn end_ability_even_if_exiting(
         core_battle_logs::ability_end(context)?;
     }
 
-    core_battle_effects::run_ability_event::<_, _, ()>(&mut ***context, fxlang::BattleEvent::End, ());
+    core_battle_effects::run_ability_event::<_, _, ()>(
+        &mut ***context,
+        fxlang::BattleEvent::End,
+        (),
+    );
 
     Ok(())
 }
@@ -4980,7 +4987,11 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
     if !silent {
         core_battle_logs::ability(context)?;
     }
-    core_battle_effects::run_ability_event::<_, _, ()>(&mut ***context, fxlang::BattleEvent::Start, ());
+    core_battle_effects::run_ability_event::<_, _, ()>(
+        &mut ***context,
+        fxlang::BattleEvent::Start,
+        (),
+    );
     Ok(())
 }
 
@@ -5352,7 +5363,11 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         core_battle_logs::item(context)?;
     }
 
-    core_battle_effects::run_item_event::<_, _, ()>(&mut ***context, fxlang::BattleEvent::Start, ());
+    core_battle_effects::run_item_event::<_, _, ()>(
+        &mut ***context,
+        fxlang::BattleEvent::Start,
+        (),
+    );
 
     Ok(())
 }
@@ -6006,7 +6021,7 @@ pub fn end_battle(context: &mut Context) -> Result<()> {
     {
         Mon::recalculate_base_stats(
             &mut context.mon_context(mon)?,
-            RecalculateBaseStatsHpPolicy::KeepHealthRatioSilently,
+            RecalculateStatsHpPolicy::KeepHealthRatio { silent: true },
         )?;
     }
 
@@ -6177,12 +6192,21 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     // Set the species first, for the baseline transformation.
     let species = target_context.mon().volatile_state.species.clone();
     context.target_mut().volatile_state.transformed = true;
-    Mon::set_species(&mut context.target_context()?, &Id::from(species))?;
+    Mon::set_species(
+        &mut context.target_context()?,
+        &Id::from(species),
+        RecalculateStatsHpPolicy::DoNotUpdate,
+    )?;
 
     // Then, manually set everything else.
     context.target_mut().volatile_state.weight = weight;
     context.target_mut().volatile_state.types = types;
-    Mon::set_stats(&mut context.target_context()?, stats, false)?;
+    Mon::set_stats(
+        &mut context.target_context()?,
+        stats,
+        false,
+        RecalculateStatsHpPolicy::DoNotUpdate,
+    )?;
     context.target_mut().volatile_state.boosts = boosts;
     set_ability(context, &ability_id, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;
@@ -6251,7 +6275,13 @@ pub fn forme_change(
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
 
-    if !Mon::set_species(&mut context.target_context()?, species)? {
+    if !Mon::set_species(
+        &mut context.target_context()?,
+        species,
+        RecalculateStatsHpPolicy::KeepDamageTaken {
+            silent: forme_change_type.permanent(),
+        },
+    )? {
         return Ok(false);
     }
 
@@ -6324,10 +6354,13 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
         return Ok(());
     }
 
-    revert(context)
+    revert(
+        context,
+        RecalculateStatsHpPolicy::KeepDamageTaken { silent: false },
+    )
 }
 
-fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
+fn revert(context: &mut ApplyingEffectContext, hp_policy: RecalculateStatsHpPolicy) -> Result<()> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
@@ -6350,7 +6383,7 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
 
         {
             let mut context = context.target_context()?;
-            Mon::set_species(&mut context, &species)?;
+            Mon::set_species(&mut context, &species, hp_policy)?;
             if base_species_update {
                 core_battle_logs::species_change(&mut context)?;
                 Mon::set_base_species(&mut context, &species, &ability)?;
@@ -6370,7 +6403,9 @@ fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
             Some(MonSpecialFormeChangeType::Gigantamax) => {
                 core_battle_logs::revert_gigantamax(context)?;
             }
-            None => (),
+            None => {
+                core_battle_logs::forme_change(context)?;
+            }
         }
 
         context.target_mut().special_forme_change_type = None;
@@ -6534,7 +6569,7 @@ pub fn dynamax(context: &mut MonContext) -> Result<bool> {
     context.target_mut().dynamaxed = true;
     Mon::update_max_hp(
         &mut context.target_context()?,
-        RecalculateBaseStatsHpPolicy::KeepHealthRatio,
+        RecalculateStatsHpPolicy::KeepHealthRatio { silent: false },
     )?;
 
     context.target_context()?.player_mut().can_dynamax = false;
@@ -6550,13 +6585,13 @@ pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
     context.target_mut().dynamaxed = false;
 
     if context.target().special_forme_change_type == Some(MonSpecialFormeChangeType::Gigantamax) {
-        revert(context)?;
+        revert(context, RecalculateStatsHpPolicy::DoNotUpdate)?;
     }
     core_battle_logs::revert_dynamax(context)?;
     remove_volatile(context, &Id::from_known("dynamax"), false)?;
     Mon::update_max_hp(
         &mut context.target_context()?,
-        RecalculateBaseStatsHpPolicy::KeepHealthRatioCeiling,
+        RecalculateStatsHpPolicy::KeepHealthRatioCeiling,
     )?;
     Ok(())
 }

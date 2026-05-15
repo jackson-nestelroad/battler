@@ -139,6 +139,7 @@ mod abilities {
     }
 
     mod gen7 {
+        mod battle_bond_test;
         mod berserk_test;
         mod dancer_test;
         mod disguise_test;
@@ -146,6 +147,7 @@ mod abilities {
         mod liquid_voice_test;
         mod long_reach_test;
         mod merciless_test;
+        mod power_construct_test;
         mod schooling_test;
         mod shields_down_test;
         mod slush_rush_test;

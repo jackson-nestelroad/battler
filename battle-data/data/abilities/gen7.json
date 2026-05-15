@@ -378,7 +378,7 @@
           "forme_change: $target greninjaash permanent revertible"
         ],
         "on_use_move": [
-          "if $move.id == watershuriken and $source.species == greninjaash:",
+          "if $move.id == watershuriken and $user.species == greninjaash:",
           ["$move.base_power = $move.base_power + 5", "$move.multihit = 3"]
         ]
       }

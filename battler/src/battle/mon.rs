@@ -422,23 +422,19 @@ pub enum MonExitType {
     Caught,
 }
 
-/// Policy for a Mon's HP should be updated when recalculating base stats.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub enum RecalculateBaseStatsHpPolicy {
-    #[default]
+/// Policy for a Mon's HP should be updated when recalculating stats.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RecalculateStatsHpPolicy {
     DoNotUpdate,
-    KeepHealthRatio,
+    KeepHealthRatio { silent: bool },
     KeepHealthRatioCeiling,
-    KeepHealthRatioSilently,
-    KeepDamageTaken,
+    KeepDamageTaken { silent: bool },
 }
 
-impl RecalculateBaseStatsHpPolicy {
+impl RecalculateStatsHpPolicy {
     fn keep_health_ratio(&self) -> bool {
         match self {
-            Self::KeepHealthRatio
-            | Self::KeepHealthRatioCeiling
-            | Self::KeepHealthRatioSilently => true,
+            Self::KeepHealthRatio { .. } | Self::KeepHealthRatioCeiling => true,
             _ => false,
         }
     }
@@ -452,7 +448,7 @@ impl RecalculateBaseStatsHpPolicy {
 
     fn silent(&self) -> bool {
         match self {
-            Self::KeepHealthRatioSilently => true,
+            Self::KeepHealthRatio { silent } | Self::KeepDamageTaken { silent } => *silent,
             _ => false,
         }
     }
@@ -827,7 +823,10 @@ impl Mon {
         Self::set_base_species(context, &base_species, &base_ability)?;
 
         Self::clear_volatile(context, true)?;
-        Self::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::DoNotUpdate)?;
+        Self::recalculate_base_stats(
+            context,
+            RecalculateStatsHpPolicy::KeepDamageTaken { silent: true },
+        )?;
 
         // Generate level from experience points if needed.
         if context.mon().level == 0 {
@@ -1905,7 +1904,7 @@ impl Mon {
         context.mon_mut().volatile_state = Self::new_volatile_state(context)?;
 
         let species = context.mon().base_species.clone();
-        Self::set_species(context, &species)?;
+        Self::set_species(context, &species, RecalculateStatsHpPolicy::DoNotUpdate)?;
         Ok(())
     }
 
@@ -1914,7 +1913,7 @@ impl Mon {
     /// Should only be used when a Mon levels up.
     pub fn recalculate_base_stats(
         context: &mut MonContext,
-        hp_policy: RecalculateBaseStatsHpPolicy,
+        hp_policy: RecalculateStatsHpPolicy,
     ) -> Result<()> {
         let species = context
             .battle()
@@ -1947,9 +1946,23 @@ impl Mon {
     /// Updates the Mon's maximum HP.
     pub fn update_max_hp(
         context: &mut MonContext,
-        hp_policy: RecalculateBaseStatsHpPolicy,
+        hp_policy: RecalculateStatsHpPolicy,
     ) -> Result<()> {
-        let new_max_hp = if context.mon().dynamaxed {
+        if hp_policy == RecalculateStatsHpPolicy::DoNotUpdate {
+            return Ok(());
+        }
+
+        // Stats must have already been recalculated.
+        let new_base_max_hp = context.mon().volatile_state.stats.hp;
+        context.mon_mut().base_max_hp = new_base_max_hp;
+
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&context.mon().volatile_state.species)?;
+
+        let new_max_hp = if species.data.max_hp.is_none() && context.mon().dynamaxed {
             let ratio =
                 Fraction::new(3, 2) + Fraction::new(1, 20) * context.mon().dynamax_level as u16;
             (ratio * context.mon().base_max_hp).floor()
@@ -1958,7 +1971,7 @@ impl Mon {
         };
 
         // Mon is being initialized.
-        if context.mon().max_hp == 0 || hp_policy == RecalculateBaseStatsHpPolicy::DoNotUpdate {
+        if context.mon().max_hp == 0 || hp_policy == RecalculateStatsHpPolicy::DoNotUpdate {
             context.mon_mut().max_hp = new_max_hp;
             context.mon_mut().hp = context.mon().hp.min(context.mon().max_hp);
             return Ok(());
@@ -1994,13 +2007,16 @@ impl Mon {
             }
         };
 
+        let previous_max_hp = context.mon().max_hp;
         context.mon_mut().max_hp = new_max_hp;
 
         let previous_hp = context.mon().hp;
         context.mon_mut().hp = new_hp;
 
         // Battle log must reflect new HP.
-        if previous_hp != context.mon().hp && !hp_policy.silent() {
+        let log_new_hp = context.mon().hp > 0
+            && (previous_hp != context.mon().hp || previous_max_hp != context.mon().max_hp);
+        if log_new_hp && !hp_policy.silent() {
             core_battle_logs::set_hp(context, None, None)?;
         }
 
@@ -2022,7 +2038,10 @@ impl Mon {
     }
 
     /// Recalculates a Mon's stats.
-    pub fn recalculate_stats(context: &mut MonContext) -> Result<()> {
+    pub fn recalculate_stats(
+        context: &mut MonContext,
+        hp_policy: RecalculateStatsHpPolicy,
+    ) -> Result<()> {
         let species = context
             .battle()
             .dex
@@ -2041,7 +2060,7 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        Mon::set_stats(context, stats, true)?;
+        Mon::set_stats(context, stats, true, hp_policy)?;
 
         Ok(())
     }
@@ -2063,7 +2082,11 @@ impl Mon {
     }
 
     /// Sets the species of the Mon.
-    pub fn set_species(context: &mut MonContext, species: &Id) -> Result<bool> {
+    pub fn set_species(
+        context: &mut MonContext,
+        species: &Id,
+        hp_policy: RecalculateStatsHpPolicy,
+    ) -> Result<bool> {
         let species = context.battle().dex.species.get_by_id(species)?;
 
         // SAFETY: Nothing we do below will invalidate any data.
@@ -2084,7 +2107,7 @@ impl Mon {
             context.mon_mut().volatile_state.types.push(secondary_type);
         }
 
-        Self::recalculate_stats(context)?;
+        Self::recalculate_stats(context, hp_policy)?;
         context.mon_mut().volatile_state.weight = species.data.weight;
 
         Ok(context.mon().volatile_state.species != previous_species)
@@ -2895,6 +2918,7 @@ impl Mon {
         context: &mut MonContext,
         stats: StatTable,
         preserve_overrides: bool,
+        hp_policy: RecalculateStatsHpPolicy,
     ) -> Result<()> {
         if !preserve_overrides {
             context.mon_mut().volatile_state.base_stored_stats = stats.clone();
@@ -2911,6 +2935,7 @@ impl Mon {
         }
 
         Self::update_speed(context)?;
+        Self::update_max_hp(context, hp_policy)?;
 
         Ok(())
     }

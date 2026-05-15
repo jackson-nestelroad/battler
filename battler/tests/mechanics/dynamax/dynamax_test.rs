@@ -81,6 +81,16 @@ fn team() -> Result<TeamData> {
                     ],
                     "nature": "Hardy",
                     "level": 50
+                },
+                {
+                    "name": "Shedinja",
+                    "species": "Shedinja",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Tackle"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
                 }
             ]
         }"#,
@@ -787,6 +797,38 @@ fn dynamax_immune_to_skill_swap() {
             "continue",
             "move|mon:Chansey,player-2,1|name:Skill Swap|noanim",
             "fail|mon:Chansey,player-2,1",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn dynamax_does_not_increase_shedinja_hp() {
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 5"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["switch", "player-1", "Shedinja"],
+            ["switch", "player-1", "Shedinja"],
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "dynamax|mon:Shedinja,player-1,1",
+            "move|mon:Shedinja,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:96/140",
+            "damage|mon:Venusaur,player-2,1|health:69/100",
+            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
             "residual",
             "turn|turn:3"
         ]"#,
