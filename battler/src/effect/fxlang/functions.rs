@@ -5593,7 +5593,8 @@ fn force_switch(mut context: FunctionContext) -> Result<Value> {
 /// Activates a Mon's ability.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose ability to activate. Defaults to the current
-/// source. @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
+/// source.
+/// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
 fn activate_ability(mut context: FunctionContext) -> Result<Option<Value>> {
     let target_handle = context.target_handle_positional()?;
     // Parse out any flags early.

@@ -1109,7 +1109,7 @@
         {
           "name": "mon",
           "type": "Mon",
-          "description": "The Mon whose ability to activate. Defaults to the current",
+          "description": "The Mon whose ability to activate. Defaults to the current source.",
           "optional": true
         }
       ],
@@ -1939,7 +1939,7 @@
       "returns_item_from_list": false
     },
     "damage": {
-      "description": "Deals damage to a Mon.  number.",
+      "description": "Deals damage to a Mon.",
       "parameters": [
         {
           "name": "mon",
@@ -3991,7 +3991,7 @@
       "returns_item_from_list": false
     },
     "pseudo_weather_effect_state": {
-      "description": "Gets the effect state for a pseudo-weather condition.  state.",
+      "description": "Gets the effect state for a pseudo-weather condition.",
       "parameters": [
         {
           "name": "pseudo_weather_id",
@@ -4714,7 +4714,7 @@
       "returns_item_from_list": false
     },
     "side_condition_effect_state": {
-      "description": "Gets the effect state for a side condition.  state.",
+      "description": "Gets the effect state for a side condition.",
       "parameters": [
         {
           "name": "side",
@@ -6879,17 +6879,17 @@
     "modify_crit_chance": {
       "description": "Runs when calculating a move's critical hit chance.\n\nRuns in the context of a move user.",
       "variables": {
-        "target": {
-          "type": "Mon",
-          "optional": true
-        },
-        "source": {
-          "type": "Mon",
-          "optional": true
-        },
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         },
         "chance": {
           "type": "UFraction",
@@ -6901,17 +6901,17 @@
     "modify_crit_ratio": {
       "description": "Runs when calculating a move's critical hit ratio.\n\nRuns in the context of a move user.",
       "variables": {
-        "target": {
-          "type": "Mon",
-          "optional": true
-        },
-        "source": {
-          "type": "Mon",
-          "optional": true
-        },
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         },
         "crit_ratio": {
           "type": "UFraction",

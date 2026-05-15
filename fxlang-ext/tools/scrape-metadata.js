@@ -559,50 +559,12 @@ function scrapeFunctions(filePath) {
       let returnsItemFromList = false;
       let parameters = [];
       let flags = [];
+      let blockLines = [];
+
       for (let i = defLine - 1; i >= 0; i--) {
         const line = fnContents[i].trim();
         if (line.startsWith("///")) {
-          const docLine = line.replace("///", "").trim();
-
-          const itemTypeMatch = docLine.match(/@returnsitem\s*\{(.*)\}/);
-          const retMatch = docLine.match(/@returns\s*\{(.*)\}/);
-          const paramMatch = docLine.match(
-            /@param\s*\{(.*)\}\s*(?:\[([\w\.]+)\]|([\w\.]+))\s*(.*)/,
-          );
-          const flagMatch = docLine.match(/@flag\s*(\w+)\s*(.*)/);
-
-          if (docLine.includes("@returns_item_from_list")) {
-            returnsItemFromList = true;
-            returnType = "unknown";
-          } else if (itemTypeMatch) {
-            const rawItemType = itemTypeMatch[1];
-            itemType = rawItemType.replace(/\[`ValueType::(\w+)`\]/g, "$1");
-          } else if (retMatch) {
-            const rawType = retMatch[1];
-            returnType = rawType.replace(/\[`ValueType::(\w+)`\]/g, "$1");
-          } else if (paramMatch) {
-            const rawType = paramMatch[1];
-            const optional = !!paramMatch[2];
-            const name = paramMatch[2] || paramMatch[3];
-            const description = paramMatch[4];
-            const type = rawType.replace(/\[`ValueType::(\w+)`\]/g, "$1");
-
-            parameters.unshift({
-              name,
-              type,
-              description,
-              optional,
-            });
-          } else if (flagMatch) {
-            const name = flagMatch[1];
-            const description = flagMatch[2];
-            flags.unshift({
-              name,
-              description,
-            });
-          } else {
-            docBuffer.unshift(docLine);
-          }
+          blockLines.unshift(line.replace("///", "").trim());
         } else if (
           line === "" ||
           line.startsWith("#[") ||
@@ -611,6 +573,67 @@ function scrapeFunctions(filePath) {
           continue;
         } else {
           break;
+        }
+      }
+
+      let currentSection = "doc"; // doc, param, flag, etc.
+      let currentObj = null;
+
+      for (const docLine of blockLines) {
+        const itemTypeMatch = docLine.match(/@returnsitem\s*\{(.*)\}/);
+        const retMatch = docLine.match(/@returns\s*\{(.*)\}/);
+        const paramMatch = docLine.match(
+          /@param\s*\{(.*)\}\s*(?:\[([\w\.]+)\]|([\w\.]+))\s*(.*)/,
+        );
+        const flagMatch = docLine.match(/@flag\s*(\w+)\s*(.*)/);
+
+        if (docLine.includes("@returns_item_from_list")) {
+          returnsItemFromList = true;
+          returnType = "unknown";
+          currentSection = "other";
+        } else if (itemTypeMatch) {
+          const rawItemType = itemTypeMatch[1];
+          itemType = rawItemType.replace(/\[`ValueType::(\w+)`\]/g, "$1");
+          currentSection = "other";
+        } else if (retMatch) {
+          const rawType = retMatch[1];
+          returnType = rawType.replace(/\[`ValueType::(\w+)`\]/g, "$1");
+          currentSection = "other";
+        } else if (paramMatch) {
+          const rawType = paramMatch[1];
+          const optional = !!paramMatch[2];
+          const name = paramMatch[2] || paramMatch[3];
+          const description = paramMatch[4];
+          const type = rawType.replace(/\[`ValueType::(\w+)`\]/g, "$1");
+
+          currentObj = {
+            name,
+            type,
+            description: description ? description.trim() : "",
+            optional,
+          };
+          parameters.push(currentObj);
+          currentSection = "param";
+        } else if (flagMatch) {
+          const name = flagMatch[1];
+          const description = flagMatch[2];
+          currentObj = {
+            name,
+            description: description ? description.trim() : "",
+          };
+          flags.push(currentObj);
+          currentSection = "flag";
+        } else {
+          if (currentSection === "doc") {
+            docBuffer.push(docLine);
+          } else if (currentSection === "param" || currentSection === "flag") {
+            if (docLine !== "") {
+              if (currentObj.description !== "") {
+                currentObj.description += " ";
+              }
+              currentObj.description += docLine;
+            }
+          }
         }
       }
       functions[extName] = {
