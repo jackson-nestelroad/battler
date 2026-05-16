@@ -175,9 +175,6 @@ pub struct MoveData {
     pub recoil: Option<RecoilData>,
     /// The percentage of the target's HP to drain.
     pub drain_percent: Option<Fraction<u16>>,
-    /// Typeless?
-    #[serde(default)]
-    pub typeless: bool,
     /// Force STAB?
     #[serde(default)]
     pub force_stab: bool,

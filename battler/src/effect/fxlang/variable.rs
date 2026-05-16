@@ -32,6 +32,7 @@ use crate::{
         Mon,
         MonExitType,
         Player,
+        Side,
         mon_states,
         weather_states,
     },
@@ -55,6 +56,7 @@ use crate::{
     },
     general_error,
     integer_overflow_error,
+    moves::UpgradedMoveSource,
 };
 
 /// A registry of variables for an fxlang program evaluation.
@@ -336,7 +338,7 @@ where
                                 &effect_handle,
                             )?
                             .move_effect()
-                            .map(|mov| ValueRef::Fraction(mov.data.priority.into()))
+                            .map(|mov| ValueRef::Fraction(mov.priority.into()))
                             .unwrap_or(ValueRef::Undefined),
                             "recoil_percent" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -367,13 +369,6 @@ where
                             )?
                             .move_effect()
                             .map(|mov| ValueRef::Type(mov.data.primary_type))
-                            .unwrap_or(ValueRef::Undefined),
-                            "typeless" => CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
-                            .move_effect()
-                            .map(|mov| ValueRef::Boolean(mov.data.typeless))
                             .unwrap_or(ValueRef::Undefined),
                             "z_move_base_power" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -527,6 +522,12 @@ where
                                 .flatten()
                                 .map(|val| ValueRef::TempString(val.to_string()))
                                 .unwrap_or(ValueRef::Undefined),
+                            "upgraded_z_move" => ValueRef::Boolean(
+                                match context.active_move(active_move_handle)?.upgraded {
+                                    Some(UpgradedMoveSource::ZMove { .. }) => true,
+                                    _ => false,
+                                },
+                            ),
                             "user_effect" => context
                                 .active_move(active_move_handle)?
                                 .data
@@ -779,6 +780,14 @@ where
                             }
                             "level" => ValueRef::UFraction(context.mon(mon_handle)?.level.into()),
                             "max_hp" => ValueRef::UFraction(context.mon(mon_handle)?.max_hp.into()),
+                            "move_last_turn_failed" => ValueRef::Boolean(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .move_last_turn_outcome
+                                    .map(|outcome| outcome.failed())
+                                    .unwrap_or(false),
+                            ),
                             "move_last_turn_succeeded" => ValueRef::Boolean(
                                 context
                                     .mon(mon_handle)?
@@ -836,6 +845,9 @@ where
                             ),
                             "original_base_ability" => ValueRef::TempString(
                                 context.mon(mon_handle)?.original_base_ability.to_string(),
+                            ),
+                            "original_base_species" => ValueRef::TempString(
+                                context.mon(mon_handle)?.original_base_species.to_string(),
                             ),
                             "original_item" => context
                                 .mon(mon_handle)?
@@ -1077,6 +1089,13 @@ where
                                     .map_err(integer_overflow_error)?
                                     .into(),
                             ),
+                            "mons_left" => ValueRef::UFraction(
+                                TryInto::<u64>::try_into(Side::mons_left(
+                                    &mut context.battle_context_mut().side_context(side)?,
+                                )?)
+                                .map_err(integer_overflow_error)?
+                                .into(),
+                            ),
                             "players" => ValueRef::TempList(
                                 context
                                     .battle_context()
@@ -1165,6 +1184,11 @@ where
                                 .as_ref()
                                 .map(ValueRef::JudgmentData)
                                 .unwrap_or(ValueRef::Undefined),
+                            "multi_attack" => special_item_data
+                                .multi_attack
+                                .as_ref()
+                                .map(ValueRef::MultiAttackData)
+                                .unwrap_or(ValueRef::Undefined),
                             "natural_gift" => special_item_data
                                 .natural_gift
                                 .as_ref()
@@ -1203,6 +1227,11 @@ where
                     } else if let ValueRef::JudgmentData(judgment_data) = value {
                         value = match *member {
                             "type" => ValueRef::Type(judgment_data.typ),
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::MultiAttackData(multi_attack_data) = value {
+                        value = match *member {
+                            "type" => ValueRef::Type(multi_attack_data.typ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::TechnoBlastData(techno_blast_data) = value {
@@ -1375,7 +1404,7 @@ where
                             &mut context.active_move_mut(*active_move_handle)?.data.multihit,
                         ),
                         "priority" => ValueRefMut::I8(
-                            &mut context.active_move_mut(*active_move_handle)?.data.priority,
+                            &mut context.active_move_mut(*active_move_handle)?.priority,
                         ),
                         "secondary_effects" => ValueRefMut::SecondaryHitEffectList(
                             &mut context

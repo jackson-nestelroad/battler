@@ -58,7 +58,7 @@ fn ion_deluge_converts_normal_moves_to_electric() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Samurott,player-1,1|name:Ion Deluge|spread:Samurott,player-1,1",
+            "move|mon:Samurott,player-1,1|name:Ion Deluge",
             "fieldstart|move:Ion Deluge",
             "move|mon:Samurott,player-2,1|name:Tackle|target:Samurott,player-1,1",
             "supereffective|mon:Samurott,player-1,1",

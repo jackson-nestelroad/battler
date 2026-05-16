@@ -6,11 +6,7 @@
       "callbacks": {
         "on_try_boost": [
           "if $effect.id == intimidate and $boosts.atk != 0:",
-          [
-            "$boosts.atk = 0",
-            "log_fail_unboost: from_effect atk",
-            "return $boosts"
-          ]
+          ["$boosts.atk = 0", "log_fail_unboost: from_effect atk", "return $boosts"]
         ]
       }
     }
@@ -43,7 +39,7 @@
         "on_modify_move_type": {
           "priority": -1,
           "program": [
-            "if $effect.typeless or $type != normal or $type != $effect.type:",
+            "if $effect.type == none or $type != normal or $type != $effect.type:",
             ["return"],
             "if $effect.is_move:",
             ["$effect.effect_state.type_change_boosted = true"],

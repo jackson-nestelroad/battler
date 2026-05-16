@@ -9,7 +9,7 @@
   },
   "thermalexchange": {
     "name": "Thermal Exchange",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "angershell": {
     "name": "Anger Shell",
@@ -17,19 +17,19 @@
   },
   "purifyingsalt": {
     "name": "Purifying Salt",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "wellbakedbody": {
     "name": "Well-Baked Body",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "windrider": {
     "name": "Wind Rider",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "guarddog": {
     "name": "Guard Dog",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "rockypayload": {
     "name": "Rocky Payload",
@@ -41,11 +41,19 @@
   },
   "zerotohero": {
     "name": "Zero to Hero",
-    "flags": ["Permanent"]
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ]
   },
   "commander": {
     "name": "Commander",
-    "flags": ["NoEntrainment", "NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_any_switch_in": ["activate_ability: $effect_state.target"],
@@ -82,15 +90,15 @@
   },
   "protosynthesis": {
     "name": "Protosynthesis",
-    "flags": []
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"]
   },
   "quarkdrive": {
     "name": "Quark Drive",
-    "flags": []
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"]
   },
   "goodasgold": {
     "name": "Good as Gold",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "vesselofruin": {
     "name": "Vessel of Ruin",
@@ -142,11 +150,11 @@
   },
   "armortail": {
     "name": "Armor Tail",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "eartheater": {
     "name": "Earth Eater",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "myceliummight": {
     "name": "Mycelium Might",
@@ -154,7 +162,7 @@
   },
   "mindseye": {
     "name": "Mind's Eye",
-    "flags": []
+    "flags": ["Breakable"]
   },
   "supersweetsyrup": {
     "name": "Supersweet Syrup",
@@ -174,19 +182,27 @@
   },
   "terashift": {
     "name": "Tera Shift",
-    "flags": []
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ]
   },
   "terashell": {
     "name": "Tera Shell",
-    "flags": []
+    "flags": ["Breakable", "NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"]
   },
   "teraformzero": {
     "name": "Teraform Zero",
-    "flags": []
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"]
   },
   "poisonpuppeteer": {
     "name": "Poison Puppeteer",
-    "flags": []
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"]
   },
   "piercingdrill": {
     "name": "Piercing Drill",

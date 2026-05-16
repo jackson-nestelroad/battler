@@ -27,7 +27,10 @@
       "duration": 1,
       "delegates": ["condition:weakenthroughprotectionmovebase"],
       "callbacks": {
-        "on_start": ["log_single_turn: with_target"],
+        "on_start": [
+          "log_single_turn: with_target",
+          "add_volatile: $target $source_effect.id link"
+        ],
         "on_try_hit": {
           "priority": 3,
           "program": [
@@ -36,9 +39,7 @@
             "log_activate: with_target",
             "activate_applying_effect: $this no_forward",
             "if $effect_state.source_effect.is_defined:",
-            [
-              "activate_applying_effect: $effect_state.source_effect no_forward"
-            ],
+            ["activate_applying_effect: $effect_state.source_effect no_forward"],
             "return stop"
           ]
         },
@@ -65,17 +66,9 @@
           "run_event: BeforeChargeMove",
           "$charge_move = func_call(run_event_on_move: ChargeMove)",
           "if $charge_move.is_defined and !$charge_move:",
-          [
-            "do_not_animate_last_move",
-            "log_animate_move: $move $target",
-            "return"
-          ],
+          ["do_not_animate_last_move", "log_animate_move: $move $target", "return"],
           "if !func_call(run_event: ChargeMove):",
-          [
-            "do_not_animate_last_move",
-            "log_animate_move: $move $target",
-            "return"
-          ],
+          ["do_not_animate_last_move", "log_animate_move: $move $target", "return"],
           "add_volatile: $user twoturnmove link",
           "return stop"
         ]
@@ -114,17 +107,11 @@
           "if func_call(value_from_local_data: use_source_foe_side) == 'true':",
           ["$target_side = $source.foe_side"],
           "foreach $condition in $remove_from_target_side:",
-          [
-            "if func_call(remove_side_condition: $target_side $condition):",
-            ["$success = true"]
-          ],
+          ["if func_call(remove_side_condition: $target_side $condition):", ["$success = true"]],
           "foreach $condition in $remove_from_both_sides:",
           [
             "foreach $side in $field.sides:",
-            [
-              "if func_call(remove_side_condition: $side $condition):",
-              ["$success = true"]
-            ]
+            ["if func_call(remove_side_condition: $side $condition):", ["$success = true"]]
           ],
           "clear_terrain",
           "return $success"
@@ -146,11 +133,7 @@
             ["continue"],
             "$other_move_id = $action.effective_id",
             "if func_call(is_ally: $user $action.mon) and $other_move_id != $this.id and func_call(move_has_flag: $other_move_id pledgecombo):",
-            [
-              "prioritize_move: $action.mon $this",
-              "log_waiting: $user $action.mon",
-              "return stop"
-            ]
+            ["prioritize_move: $action.mon $this", "log_waiting: $user $action.mon", "return stop"]
           ]
         ],
         "on_move_base_power": [
@@ -169,6 +152,40 @@
         "on_before_move": ["add_pseudo_weather: moldbreaker"],
         "on_move_aborted": ["run_event_on_move: AfterMove"],
         "on_after_move": ["remove_pseudo_weather: moldbreaker"]
+      }
+    }
+  },
+  "windingupmovebase": {
+    "name": "Winding Up Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 1,
+      "callbacks": {
+        "on_priority_charge_move": ["add_volatile: $mon windingup"]
+      }
+    }
+  },
+  "sidescreenmovebase": {
+    "name": "Side Screen Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 5,
+      "callbacks": {
+        "on_source_modify_damage": [
+          "$category = func_call(value_from_local_data: category)",
+          "if $target == $user or ($category.is_defined and $move.category != $category):",
+          ["return"],
+          "if $move.effect_state.screen_weaken:",
+          ["return"],
+          "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
+          ["return"],
+          "$move.effect_state.screen_weaken = true",
+          "if $format.mons_per_side > 1:",
+          ["return $damage * 2 / 3"],
+          "return $damage / 2"
+        ],
+        "on_side_start": ["log_side_start"],
+        "on_side_end": ["log_side_end"]
       }
     }
   }

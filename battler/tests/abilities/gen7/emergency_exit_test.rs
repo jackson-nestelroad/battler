@@ -1145,6 +1145,9 @@ fn emergency_exit_activates_after_eject_button() {
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
 
+// Note: Shell Bell should activate before Emergency Exit activates (but the switch out still
+// occurs, even if HP rises above 50%). Our implementation does not do this: Shell Bell does not
+// activate at all.
 #[test]
 fn emergency_exit_activates_before_shell_bell() {
     let mut golisopod_team = golisopod_team().unwrap();

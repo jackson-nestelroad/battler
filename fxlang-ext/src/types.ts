@@ -1,7 +1,11 @@
+import * as vscode from 'vscode';
+
 export interface MemberData {
     description: string;
     type: string;
     item_type?: string;
+    only_applicable_to_move?: boolean;
+    only_applicable_to_active_move?: boolean;
 }
 
 export interface ParameterData {
@@ -41,3 +45,21 @@ export interface Metadata {
 }
 
 export type SymbolTable = Record<string, string>;
+
+export interface FxLangBlock {
+    startLine: number;
+    endLine: number;
+    eventName?: string;
+}
+
+export interface FxLangLineMapping {
+    documentLine: number;
+    charStart: number;
+    charEnd: number;
+    lineIndex: number;
+}
+
+export interface FxLangParseResult {
+    blocks: FxLangBlock[];
+    mappings: FxLangLineMapping[];
+}

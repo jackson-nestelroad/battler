@@ -41,7 +41,9 @@ fn pikachu() -> Result<TeamData> {
                         "Hypnosis",
                         "Rain Dance",
                         "Weather Ball",
-                        "Curse"
+                        "Curse",
+                        "Metronome",
+                        "Encore"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -531,7 +533,7 @@ fn z_power_applies_even_if_move_fails() {
             "continue",
             "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
             "move|mon:Pikachu,player-1,1|name:Hypnosis|zpower|noanim",
-            "boost|mon:Eevee,player-2,1|stat:spe|by:1|from:Z-Power|of:Pikachu,player-1,1",
+            "boost|mon:Pikachu,player-1,1|stat:spe|by:1|from:Z-Power",
             "fail|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:3"
@@ -555,7 +557,7 @@ fn z_power_applies_even_if_move_fails_due_to_immunity() {
         r#"[
             "singleturn|mon:Eevee,player-2,1|condition:Z-Power",
             "move|mon:Eevee,player-2,1|name:Thunder Wave|zpower|noanim",
-            "boost|mon:Pikachu,player-1,1|stat:spd|by:1|from:Z-Power|of:Eevee,player-2,1",
+            "boost|mon:Eevee,player-2,1|stat:spd|by:1|from:Z-Power",
             "immune|mon:Pikachu,player-1,1",
             "residual",
             "turn|turn:2"
@@ -859,6 +861,98 @@ fn cannot_take_z_crystal() {
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:21/95",
             "damage|mon:Pikachu,player-1,1|health:23/100",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn metronome_upgrades_used_move_to_z_move() {
+    let mut pikachu = pikachu().unwrap();
+    pikachu.members[0].item = Some("Normalium Z".to_owned());
+    let mut battle = make_battle(0, BattleType::Singles, pikachu, eevee().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 13,zmove"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "move|mon:Pikachu,player-1,1|name:Metronome|target:Pikachu,player-1,1|zpower",
+            "move|mon:Pikachu,player-1,1|name:Bloom Doom|target:Eevee,player-2,1|from:move:Metronome",
+            "split|side:1",
+            "damage|mon:Eevee,player-2,1|health:79/115",
+            "damage|mon:Eevee,player-2,1|health:69/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn metronome_upgrades_used_move_to_z_status_move() {
+    let mut pikachu = pikachu().unwrap();
+    pikachu.members[0].item = Some("Normalium Z".to_owned());
+    let mut battle = make_battle(4, BattleType::Singles, pikachu, eevee().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 13,zmove"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "move|mon:Pikachu,player-1,1|name:Metronome|target:Pikachu,player-1,1|zpower",
+            "move|mon:Pikachu,player-1,1|name:Mist|from:move:Metronome|zpower",
+            "sidestart|side:0|move:Mist",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn encore_does_not_override_z_move() {
+    let mut eevee = eevee().unwrap();
+    eevee.members[0].item = Some("Darkinium Z".to_owned());
+    let mut battle = make_battle(0, BattleType::Singles, pikachu().unwrap(), eevee).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 14"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 9,zmove"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Eevee,player-2,1|name:Water Gun|target:Pikachu,player-1,1",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,1|health:77/95",
+            "damage|mon:Pikachu,player-1,1|health:82/100",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Pikachu,player-1,1|name:Encore|target:Eevee,player-2,1",
+            "start|mon:Eevee,player-2,1|move:Encore",
+            "singleturn|mon:Eevee,player-2,1|condition:Z-Power",
+            "move|mon:Eevee,player-2,1|name:Black Hole Eclipse|target:Pikachu,player-1,1",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,1|health:5/95",
+            "damage|mon:Pikachu,player-1,1|health:6/100",
             "residual",
             "turn|turn:3"
         ]"#,

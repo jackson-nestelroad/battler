@@ -1078,7 +1078,7 @@ fn apply_damage_modifiers(
         "randomize",
     );
 
-    if !context.move_data.typeless
+    if context.move_data.primary_type != Type::None
         && context
             .mon(MonType::Attacker)
             .has_type([context.move_data.primary_type])
@@ -1606,10 +1606,10 @@ fn apply_fixed_damage(context: &MoveContext) -> Option<Range<u64>> {
 fn move_ignores_immunity(context: &MoveContext) -> bool {
     let effects = all_effects(context, None);
     let hooks = get_ordered_hooks_by_effects(&effects, &hooks::MOVE_IGNORES_IMMUNITY);
-    hooks
-        .first()
-        .map(|(_, hook)| hook(context))
-        .unwrap_or(context.move_data.category == MoveCategory::Status || context.move_data.typeless)
+    hooks.first().map(|(_, hook)| hook(context)).unwrap_or(
+        context.move_data.category == MoveCategory::Status
+            || context.move_data.primary_type == Type::None,
+    )
 }
 
 fn modify_move_data(context: &mut MoveContext) {

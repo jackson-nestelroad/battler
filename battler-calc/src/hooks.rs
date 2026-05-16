@@ -286,7 +286,7 @@ pub(crate) static FAIL_MOVE_BEFORE_HIT_HOOKS: LazyLock<IndexMap<&str, FailMoveBe
             (
                 "ability:Wonder Guard:defender",
                 (|context: &mut MoveContext, _: &mut Hit| {
-                    if context.move_data.typeless {
+                    if context.move_data.primary_type == Type::None {
                         return false;
                     }
                     !context.defender.types.iter().any(|typ| {

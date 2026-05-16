@@ -187,11 +187,6 @@
         "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
-      "typeless": {
-        "description": "",
-        "type": "Boolean | Undefined",
-        "only_applicable_to_move": true
-      },
       "z_move_base_power": {
         "description": "",
         "type": "UFraction | Undefined",
@@ -273,6 +268,11 @@
         "type": "String | Undefined",
         "only_applicable_to_active_move": true
       },
+      "upgraded_z_move": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
       "user_effect": {
         "description": "",
         "type": "HitEffect | Undefined",
@@ -342,6 +342,10 @@
       "upgraded_base_move": {
         "description": "",
         "type": "String | Undefined"
+      },
+      "upgraded_z_move": {
+        "description": "",
+        "type": "Boolean"
       },
       "user_effect": {
         "description": "",
@@ -600,6 +604,10 @@
         "description": "",
         "type": "UFraction"
       },
+      "move_last_turn_failed": {
+        "description": "",
+        "type": "Boolean"
+      },
       "move_last_turn_succeeded": {
         "description": "",
         "type": "Boolean"
@@ -638,6 +646,10 @@
         "type": "Boolean"
       },
       "original_base_ability": {
+        "description": "",
+        "type": "String"
+      },
+      "original_base_species": {
         "description": "",
         "type": "String"
       },
@@ -833,6 +845,10 @@
         "description": "",
         "type": "UFraction"
       },
+      "mons_left": {
+        "description": "",
+        "type": "UFraction"
+      },
       "players": {
         "description": "",
         "type": "List",
@@ -950,6 +966,10 @@
         "description": "",
         "type": "JudgmentData | Undefined"
       },
+      "multi_attack": {
+        "description": "",
+        "type": "MultiAttackData | Undefined"
+      },
       "natural_gift": {
         "description": "",
         "type": "NaturalGiftData | Undefined"
@@ -994,6 +1014,12 @@
       }
     },
     "JudgmentData": {
+      "type": {
+        "description": "",
+        "type": "Type"
+      }
+    },
+    "MultiAttackData": {
       "type": {
         "description": "",
         "type": "Type"
@@ -1083,7 +1109,7 @@
         {
           "name": "mon",
           "type": "Mon",
-          "description": "The Mon whose ability to activate. Defaults to the current",
+          "description": "The Mon whose ability to activate. Defaults to the current source.",
           "optional": true
         }
       ],
@@ -1528,6 +1554,29 @@
       "type": "String",
       "returns_item_from_list": false
     },
+    "best_stat": {
+      "description": "Gets a Mon's best stat.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to query.",
+          "optional": true
+        }
+      ],
+      "flags": [
+        {
+          "name": "unboosted",
+          "description": "Ignore boosts."
+        },
+        {
+          "name": "unmodified",
+          "description": "Ignore effect modifiers."
+        }
+      ],
+      "type": "Stat",
+      "returns_item_from_list": false
+    },
     "boost": {
       "description": "Boosts or unboosts a Mon's stats.",
       "parameters": [
@@ -1720,6 +1769,26 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
+    "check_move_immunity": {
+      "description": "Checks if a Mon is immune to a move.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to check.",
+          "optional": true
+        },
+        {
+          "name": "move",
+          "type": "ActiveMove",
+          "description": "The move to check.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
+      "returns_item_from_list": false
+    },
     "clamp_number": {
       "description": "Clamps a number between a minimum and maximum value.",
       "parameters": [
@@ -1807,6 +1876,20 @@
       "type": "Undefined",
       "returns_item_from_list": false
     },
+    "clear_positive_boosts": {
+      "description": "Clears positive boosts from a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to clear.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
+    },
     "clear_terrain": {
       "description": "Clears the field terrain.",
       "parameters": [],
@@ -1856,7 +1939,7 @@
       "returns_item_from_list": false
     },
     "damage": {
-      "description": "Deals damage to a Mon.  number.",
+      "description": "Deals damage to a Mon.",
       "parameters": [
         {
           "name": "mon",
@@ -2340,6 +2423,10 @@
         {
           "name": "permanent",
           "description": "If set, the forme change is permanent."
+        },
+        {
+          "name": "revertible",
+          "description": "If set with the `permanent` flag, the forme change will revert on exit."
         }
       ],
       "type": "Boolean",
@@ -2472,7 +2559,16 @@
           "optional": false
         }
       ],
-      "flags": [],
+      "flags": [
+        {
+          "name": "unboosted",
+          "description": "Ignore boosts."
+        },
+        {
+          "name": "unmodified",
+          "description": "Ignore effect modifiers."
+        }
+      ],
       "type": "UFraction",
       "returns_item_from_list": false
     },
@@ -3586,6 +3682,26 @@
       "type": "UFraction | Undefined",
       "returns_item_from_list": false
     },
+    "move_target_original_hp": {
+      "description": "Reads the target's original HP before the move applied any hits.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": false
+        },
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "UFraction | Undefined",
+      "returns_item_from_list": false
+    },
     "new_active_move": {
       "description": "Creates a new active move.",
       "parameters": [
@@ -3875,7 +3991,7 @@
       "returns_item_from_list": false
     },
     "pseudo_weather_effect_state": {
-      "description": "Gets the effect state for a pseudo-weather condition.  state.",
+      "description": "Gets the effect state for a pseudo-weather condition.",
       "parameters": [
         {
           "name": "pseudo_weather_id",
@@ -4598,7 +4714,7 @@
       "returns_item_from_list": false
     },
     "side_condition_effect_state": {
-      "description": "Gets the effect state for a side condition.  state.",
+      "description": "Gets the effect state for a side condition.",
       "parameters": [
         {
           "name": "side",
@@ -4642,7 +4758,7 @@
         }
       ],
       "flags": [],
-      "type": "Object",
+      "type": "SpecialItemData",
       "returns_item_from_list": false
     },
     "species_has_flag": {
@@ -4972,6 +5088,26 @@
       "type": "Fraction | Undefined",
       "returns_item_from_list": false
     },
+    "undynamaxed_hp_calculation": {
+      "description": "Calculates the un-Dynamaxed HP for a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The target Mon.",
+          "optional": true
+        },
+        {
+          "name": "hp",
+          "type": "UFraction",
+          "description": "HP value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction",
+      "returns_item_from_list": false
+    },
     "use_active_move": {
       "description": "Uses an active move.",
       "parameters": [
@@ -5100,7 +5236,7 @@
           "name": "effect",
           "type": "Effect",
           "description": "The effect handle.",
-          "optional": false
+          "optional": true
         },
         {
           "name": "key",
@@ -5176,7 +5312,7 @@
     "no_forward",
     "no_source",
     "no_source_effect",
-    "residual",
+    "primary_effect",
     "silent",
     "use_effect_as_source_effect",
     "use_effect_state_source",
@@ -6743,17 +6879,17 @@
     "modify_crit_chance": {
       "description": "Runs when calculating a move's critical hit chance.\n\nRuns in the context of a move user.",
       "variables": {
-        "target": {
-          "type": "Mon",
-          "optional": true
-        },
-        "source": {
-          "type": "Mon",
-          "optional": true
-        },
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         },
         "chance": {
           "type": "UFraction",
@@ -6765,17 +6901,17 @@
     "modify_crit_ratio": {
       "description": "Runs when calculating a move's critical hit ratio.\n\nRuns in the context of a move user.",
       "variables": {
-        "target": {
-          "type": "Mon",
-          "optional": true
-        },
-        "source": {
-          "type": "Mon",
-          "optional": true
-        },
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "user": {
+          "type": "Mon",
+          "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         },
         "crit_ratio": {
           "type": "UFraction",
@@ -6801,6 +6937,32 @@
         },
         "damage": {
           "type": "UFraction",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "modify_duration": {
+      "description": "Runs when calculating the duration of a condition applying to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
           "optional": false
         }
       },
@@ -6851,6 +7013,28 @@
         },
         "exp": {
           "type": "UFraction",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "modify_field_duration": {
+      "description": "Runs when calculating the duration of a condition applying to the field.\n\nRuns in the context of an applying effect on the field.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
           "optional": false
         }
       },
@@ -6936,7 +7120,63 @@
       },
       "allows_custom_input_vars": false
     },
-    "modify_sp_a": {
+    "modify_side_duration": {
+      "description": "Runs when calculating the duration of a condition applying to a side.\n\nRuns in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "modify_slot_duration": {
+      "description": "Runs when calculating the duration of a condition applying to a slot.\n\nRuns in the context of an applying effect on a side.",
+      "variables": {
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": false
+        },
+        "side": {
+          "type": "Side",
+          "optional": false
+        },
+        "duration": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "slot": {
+          "type": "UFraction",
+          "optional": false
+        },
+        "condition": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "modify_spa": {
       "description": "Runs when calculating a Mon's SpA stat.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
         "target": {
@@ -6958,7 +7198,7 @@
       },
       "allows_custom_input_vars": false
     },
-    "modify_sp_d": {
+    "modify_spd": {
       "description": "Runs when calculating a Mon's SpD stat.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
         "target": {
@@ -7831,6 +8071,24 @@
           "optional": false
         },
         "item": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "terrain_change": {
+      "description": "Runs when the terrain over a Mon changes.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
           "type": "Effect",
           "optional": false
         }

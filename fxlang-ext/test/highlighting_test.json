@@ -1,0 +1,162 @@
+// SYNTAX TEST "fxlang.injection"
+
+{
+  "highlightingsample": {
+  //^^^^^^^^^^^^^^^^^^ support.type.property-name.json
+    "name": "Highlighting Sample",
+    //^^^^ support.type.property-name.json
+    //      ^^^^^^^^^^^^^^^^^^^^^ string.quoted.double.json
+    "condition_type": "Built-in",
+    //^^^^^^^^^^^^^^ support.type.property-name.json
+    //                ^^^^^^^^^^ string.quoted.double.json
+    "condition": {
+    //^^^^^^^^^ support.type.property-name.json
+      "duration": 3,
+      //^^^^^^^^ support.type.property-name.json
+      //          ^ constant.numeric.json
+      "callbacks": {
+      //^^^^^^^^^ support.type.property-name.json
+        "on_start": [
+        //^^^^^^^^ support.type.property-name.json
+          "log_start",
+          //^^^^^^^^^ entity.name.function
+          "$effect_state.boost = 0"
+          //^^^^^^^^^^^^ entity.name.type
+          //            ^^^^^^ variable.other.constant
+          //                     ^ constant.numeric
+        ],
+        "on_hit": [
+        //^^^^^^ support.type.property-name.json
+          "$increment = 1",
+          //^^^^^^^^^ variable.other
+          //            ^ constant.numeric
+          "if func_call(get_stat: $source atk unmodified) > func_call(get_stat: $target atk unmodified):",
+          //^^ keyword.control
+          //   ^^^^^^^^^ keyword.control
+          //            ^^^^^^^^^ entity.name.function
+          //                      ^^^^^^^ variable.other
+          //                              ^^^ constant.character.escape
+          //                                  ^^^^^^^^^^ string.unquoted
+          //                                                ^^^^^^^^^ keyword.control
+          //                                                         ^^^^^^^^^ entity.name.function
+          //                                                                   ^^^^^^^ variable.other
+          //                                                                           ^^^ constant.character.escape
+          //                                                                               ^^^^^^^^^^ string.unquoted
+          //                                                                                           ^ keyword.control
+          [
+            "$increment = $increment + 1"
+            //^^^^^^^^^ variable.other
+            //            ^^^^^^^^^ variable.other
+            //                         ^ constant.numeric
+          ],
+          "if func_call(has_type: $target fire):",
+          //^^ keyword.control
+          //   ^^^^^^^^^ keyword.control
+          //            ^^^^^^^^^ entity.name.function
+          //                      ^^^^^^^ variable.other
+          //                              ^^^^ constant.character.escape
+          //                                   ^ keyword.control
+          [
+            "$increment = $increment + 1"
+            //^^^^^^^^^ variable.other
+            //            ^^^^^^^^^ variable.other
+            //                         ^ constant.numeric
+          ],
+          "log_activate: with_target str('by:{}', $increment)",
+          //^^^^^^^^^^^^ entity.name.function
+          //             ^^^^^^^^^^^ string.regexp
+          //                         ^^^ keyword.control
+          //                             ^^^^^^^ string.quoted.single
+          //                                      ^^^^^^^^^^ variable.other
+          "$effect_state.boost = $effect_state.boost + $increment"
+          //^^^^^^^^^^^^ entity.name.type
+          //            ^^^^^^ variable.other.constant
+          //                     ^^^^^^^^^^^^ entity.name.type
+          //                                   ^^^^^^ variable.other.constant
+          //                                           ^^^^^^^^^^ variable.other
+        ],
+        "on_modify_damage": [
+        //^^^^^^^^^^^^^^^^ support.type.property-name.json
+          "# Boost damage by 10% (5% outside of Singles) for each boost, incremented when hit, and reset.",
+          //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.number-sign
+          "$boost = $effect_state.boost",
+          //^^^^^ variable.other
+          //        ^^^^^^^^^^^^ entity.name.type
+          //                     ^^^^^^ variable.other.constant
+          "$effect_state.boost = 0",
+          //^^^^^^^^^^^^ entity.name.type
+          //            ^^^^^^ variable.other.constant
+          //                     ^ constant.numeric
+          "$divisor = 10",
+          //^^^^^^^ variable.other
+          //          ^^ constant.numeric
+          "if $format.mons_per_side > 1:",
+          //^^ keyword.control
+          //   ^^^^^^^ entity.name.type
+          //          ^^^^^^^^^^^^^ variable.other.constant
+          //                          ^ constant.numeric
+          //                           ^ keyword.control
+          [
+            "$divisor = 20"
+            //^^^^^^^ variable.other
+            //          ^^ constant.numeric
+          ],
+          "return $damage * ($divisor + $boost) / $divisor"
+          //^^^^^^ keyword.control
+          //      ^^^^^^^ variable.other
+          //                 ^^^^^^^^ variable.other
+          //                            ^^^^^^ variable.other
+          //                                      ^^^^^^^^ variable.other
+        ],
+        "on_disable_move": [
+        //^^^^^^^^^^^^^^^ support.type.property-name.json
+          "foreach $move_slot in $mon.move_slots:",
+          //^^^^^^^ keyword.control
+          //        ^^^^^^^^^ variable.other
+          //                  ^^ keyword.control
+          //                     ^^^^ entity.name.type
+          //                          ^^^^^^^^^^ variable.other.constant
+          //                                    ^ keyword.control
+          [
+            "$move = func_call(get_move: $move_slot.id)",
+            //^^^^ variable.other
+            //       ^^^^^^^^^ keyword.control
+            //                 ^^^^^^^^^ entity.name.function
+            //                           ^^^^^^^^^^ variable.other
+            //                                      ^^ variable.other.constant
+            "if !$move:",
+            //^^ keyword.control
+            //    ^^^^ variable.other
+            //        ^ keyword.control
+            [
+              "return"
+              //^^^^^^ keyword.control
+            ],
+            "# TODO: Disable type-changing moves, like Weather Ball in Harsh Sunlight.",
+            //^ comment.line.number-sign
+            //  ^^^^ markup.bold.todo
+            //      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ comment.line.number-sign
+            "if $move.type == fire:",
+            //^^ keyword.control
+            //   ^^^^^ variable.other
+            //        ^^^^ variable.other.constant
+            //                ^^^^ constant.character.escape
+            //                     ^ keyword.control
+            [
+              "disable_move: $mon $move_slot.id"
+              //^^^^^^^^^^^^ entity.name.function
+              //             ^^^^ variable.other
+              //                  ^^^^^^^^^^ variable.other
+              //                             ^^ variable.other.constant
+            ]
+          ]
+        ],
+        "on_end": [
+        //^^^^^^ support.type.property-name.json
+          "log_end"
+          //^^^^^^^ entity.name.function
+        ]
+      }
+    }
+  }
+}

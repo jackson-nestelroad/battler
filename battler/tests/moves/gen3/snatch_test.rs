@@ -72,7 +72,7 @@ fn snatch_steals_beneficial_status_move() {
             "continue",
             "move|mon:Shuppet,player-1,1|name:Snatch|target:Shuppet,player-1,1",
             "singleturn|mon:Shuppet,player-1,1|move:Snatch",
-            "move|mon:Shuppet,player-2,1|name:Amnesia|target:Shuppet,player-2,1",
+            "move|mon:Shuppet,player-2,1|name:Amnesia|noanim",
             "activate|mon:Shuppet,player-1,1|move:Snatch",
             "move|mon:Shuppet,player-1,1|name:Amnesia|target:Shuppet,player-1,1|from:move:Snatch",
             "boost|mon:Shuppet,player-1,1|stat:spd|by:2",

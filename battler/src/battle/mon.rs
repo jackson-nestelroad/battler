@@ -21,6 +21,7 @@ use anyhow::Result;
 use battler_data::{
     Boost,
     BoostTable,
+    DefaultTrueBool,
     Fraction,
     Gender,
     Id,
@@ -29,6 +30,7 @@ use battler_data::{
     Nature,
     PartialStatTable,
     Stat,
+    StatOrderIterator,
     StatTable,
     SwitchType,
     Type,
@@ -67,6 +69,7 @@ use crate::{
     battle_log_entry,
     dex::Dex,
     effect::{
+        AppliedEffectHandle,
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
@@ -241,17 +244,25 @@ pub struct MonMoveSlotData {
 
 impl MonMoveSlotData {
     pub fn from(context: &mut MonContext, move_slot: &MoveSlot) -> Result<Self> {
+        let mon_handle = context.mon_handle();
         let mov = context.battle().dex.moves.get_by_id(&move_slot.id)?;
         let name = mov.data.name.clone();
         let id = mov.id().clone();
         // Some moves may have a special target, depending on the user's type (e.g., Curse).
         let (target, typ) = core_battle_actions::run_in_using_move_state(context, |context| {
-            let target = core_battle_effects::run_mon_effect_event_expecting_move_target(
-                context,
-                fxlang::BattleEvent::MoveTargetOverride,
-                &EffectHandle::InactiveMove(move_slot.id.clone()),
-            )
-            .unwrap_or(move_slot.target);
+            let target =
+                core_battle_effects::run_effect_event_with_options::<_, _, Option<MoveTarget>>(
+                    context,
+                    fxlang::BattleEvent::MoveTargetOverride,
+                    (),
+                    core_battle_effects::RunEffectEventOptions {
+                        effect: Some(AppliedEffectHandle::new(
+                            EffectHandle::InactiveMove(move_slot.id.clone()),
+                            AppliedEffectLocation::MonInactiveMove(mon_handle),
+                        )),
+                    },
+                )
+                .unwrap_or(move_slot.target);
             let typ =
                 core_battle_actions::move_type_for_display(context, &id).unwrap_or(move_slot.typ);
             (target, typ)
@@ -411,23 +422,19 @@ pub enum MonExitType {
     Caught,
 }
 
-/// Policy for a Mon's HP should be updated when recalculating base stats.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub enum RecalculateBaseStatsHpPolicy {
-    #[default]
+/// Policy for a Mon's HP should be updated when recalculating stats.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RecalculateStatsHpPolicy {
     DoNotUpdate,
-    KeepHealthRatio,
+    KeepHealthRatio { silent: bool },
     KeepHealthRatioCeiling,
-    KeepHealthRatioSilently,
-    KeepDamageTaken,
+    KeepDamageTaken { silent: bool },
 }
 
-impl RecalculateBaseStatsHpPolicy {
+impl RecalculateStatsHpPolicy {
     fn keep_health_ratio(&self) -> bool {
         match self {
-            Self::KeepHealthRatio
-            | Self::KeepHealthRatioCeiling
-            | Self::KeepHealthRatioSilently => true,
+            Self::KeepHealthRatio { .. } | Self::KeepHealthRatioCeiling => true,
             _ => false,
         }
     }
@@ -441,7 +448,7 @@ impl RecalculateBaseStatsHpPolicy {
 
     fn silent(&self) -> bool {
         match self {
-            Self::KeepHealthRatioSilently => true,
+            Self::KeepHealthRatio { silent } | Self::KeepDamageTaken { silent } => *silent,
             _ => false,
         }
     }
@@ -671,6 +678,7 @@ pub struct Mon {
 
     pub learnable_moves: Vec<Id>,
 
+    pub revert_forme_change_on_exit: bool,
     pub special_forme_change_type: Option<MonSpecialFormeChangeType>,
     pub dynamaxed: bool,
     pub terastallized: Option<Type>,
@@ -681,9 +689,28 @@ pub struct Mon {
 impl Mon {
     /// Creates a new Mon.
     pub fn new(data: MonData, team_position: usize, dex: &Dex) -> Result<Self> {
-        let species = Id::from(data.species);
-        let item = data.item.map(|item| Id::from(item));
-        let ability = Id::from(data.ability);
+        // Resolve IDs so we do not store aliases.
+        let species = dex
+            .species
+            .get(&data.species)
+            .wrap_error_with_message("species not found")?
+            .id()
+            .clone();
+        let item = data
+            .item
+            .map(|item| {
+                dex.items
+                    .get(&item)
+                    .wrap_error_with_message("item not found")
+                    .map(|item| item.id().clone())
+            })
+            .transpose()?;
+        let ability = dex
+            .abilities
+            .get(&data.ability)
+            .wrap_error_with_message("ability not found")?
+            .id()
+            .clone();
 
         let mut base_move_slots = Vec::with_capacity(data.moves.len());
         for (i, move_name) in data.moves.iter().enumerate() {
@@ -778,6 +805,7 @@ impl Mon {
             volatile_state: MonVolatileState::default(),
             active_move: None,
             learnable_moves: Vec::default(),
+            revert_forme_change_on_exit: false,
             special_forme_change_type: None,
             dynamaxed: false,
             terastallized: None,
@@ -795,7 +823,10 @@ impl Mon {
         Self::set_base_species(context, &base_species, &base_ability)?;
 
         Self::clear_volatile(context, true)?;
-        Self::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::DoNotUpdate)?;
+        Self::recalculate_base_stats(
+            context,
+            RecalculateStatsHpPolicy::KeepDamageTaken { silent: true },
+        )?;
 
         // Generate level from experience points if needed.
         if context.mon().level == 0 {
@@ -1299,12 +1330,12 @@ impl Mon {
         let mut value = context.mon().volatile_state.stats.get(stat);
 
         if !unmodified {
-            value = core_battle_effects::run_event_for_mon_expecting_u16(
+            value = core_battle_effects::run_event_with_input::<_, _, Option<u16>>(
                 context,
                 fxlang::BattleEvent::CalculateStat,
-                value,
-                fxlang::VariableInput::from_iter([fxlang::Value::Stat(stat)]),
-            );
+                [value.into(), stat.into()],
+            )
+            .unwrap_or(value);
         }
 
         if !unboosted {
@@ -1316,7 +1347,7 @@ impl Mon {
 
             let boosts = match &calculate_stat_context {
                 Some(calculate_stat_context) => {
-                    core_battle_effects::run_event_for_applying_effect_expecting_boost_table(
+                    core_battle_effects::run_event_with_relay::<_, BoostTable>(
                         &mut context.as_battle_context_mut().applying_effect_context(
                             calculate_stat_context.effect.clone(),
                             Some(calculate_stat_context.source),
@@ -1327,7 +1358,7 @@ impl Mon {
                         boosts,
                     )
                 }
-                None => core_battle_effects::run_event_for_mon_expecting_boost_table(
+                None => core_battle_effects::run_event_with_relay::<_, BoostTable>(
                     &mut context.as_battle_context_mut().mon_context(stat_user)?,
                     fxlang::BattleEvent::ModifyBoosts,
                     boosts,
@@ -1359,7 +1390,7 @@ impl Mon {
                 value = match calculate_stat_context {
                     Some(calculate_stat_context) => {
                         let mon_handle = context.mon_handle();
-                        core_battle_effects::run_event_for_applying_effect_expecting_u16(
+                        core_battle_effects::run_event_with_relay::<_, u16>(
                             &mut context.as_battle_context_mut().applying_effect_context(
                                 calculate_stat_context.effect,
                                 Some(calculate_stat_context.source),
@@ -1370,11 +1401,10 @@ impl Mon {
                             value,
                         )
                     }
-                    None => core_battle_effects::run_event_for_mon_expecting_u16(
+                    None => core_battle_effects::run_event_with_relay::<_, u16>(
                         context,
                         modify_event,
                         value,
-                        fxlang::VariableInput::default(),
                     ),
                 }
             }
@@ -1415,14 +1445,26 @@ impl Mon {
         Self::calculate_stat_internal(context, stat, unboosted, None, unmodified, None, None)
     }
 
+    /// Gets the Mon's best stat based on its current stat values.
+    pub fn best_stat(context: &mut MonContext, unboosted: bool, unmodified: bool) -> Result<Stat> {
+        Ok(StatOrderIterator::new()
+            .filter(|stat| *stat != Stat::HP)
+            .map(|stat| Mon::get_stat(context, stat, unboosted, unmodified).map(|val| (stat, val)))
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .rev()
+            .max_by_key(|(_, val)| *val)
+            .wrap_expectation("best stat yielded no stats")?
+            .0)
+    }
+
     /// Calculates the speed value to use for battle action ordering.
     pub fn action_speed(context: &mut MonContext) -> Result<u16> {
         let speed = Self::get_stat(context, Stat::Spe, false, false)?;
-        let speed = core_battle_effects::run_event_for_mon_expecting_u16(
+        let speed = core_battle_effects::run_event_with_relay::<_, u16>(
             context,
             fxlang::BattleEvent::ModifyActionSpeed,
             speed,
-            fxlang::VariableInput::default(),
         );
         Ok(speed)
     }
@@ -1478,7 +1520,7 @@ impl Mon {
 
     /// Calculates the Mon's weight.
     pub fn get_weight(context: &mut MonContext) -> u32 {
-        core_battle_effects::run_event_for_mon_expecting_u32(
+        core_battle_effects::run_event_with_relay::<_, u32>(
             context,
             fxlang::BattleEvent::ModifyWeight,
             context.mon().volatile_state.weight,
@@ -1863,7 +1905,7 @@ impl Mon {
         context.mon_mut().volatile_state = Self::new_volatile_state(context)?;
 
         let species = context.mon().base_species.clone();
-        Self::set_species(context, &species)?;
+        Self::set_species(context, &species, RecalculateStatsHpPolicy::DoNotUpdate)?;
         Ok(())
     }
 
@@ -1872,7 +1914,7 @@ impl Mon {
     /// Should only be used when a Mon levels up.
     pub fn recalculate_base_stats(
         context: &mut MonContext,
-        hp_policy: RecalculateBaseStatsHpPolicy,
+        hp_policy: RecalculateStatsHpPolicy,
     ) -> Result<()> {
         let species = context
             .battle()
@@ -1905,9 +1947,23 @@ impl Mon {
     /// Updates the Mon's maximum HP.
     pub fn update_max_hp(
         context: &mut MonContext,
-        hp_policy: RecalculateBaseStatsHpPolicy,
+        hp_policy: RecalculateStatsHpPolicy,
     ) -> Result<()> {
-        let new_max_hp = if context.mon().dynamaxed {
+        if hp_policy == RecalculateStatsHpPolicy::DoNotUpdate {
+            return Ok(());
+        }
+
+        // Stats must have already been recalculated.
+        let new_base_max_hp = context.mon().volatile_state.stats.hp;
+        context.mon_mut().base_max_hp = new_base_max_hp;
+
+        let species = context
+            .battle()
+            .dex
+            .species
+            .get_by_id(&context.mon().volatile_state.species)?;
+
+        let new_max_hp = if species.data.max_hp.is_none() && context.mon().dynamaxed {
             let ratio =
                 Fraction::new(3, 2) + Fraction::new(1, 20) * context.mon().dynamax_level as u16;
             (ratio * context.mon().base_max_hp).floor()
@@ -1916,7 +1972,7 @@ impl Mon {
         };
 
         // Mon is being initialized.
-        if context.mon().max_hp == 0 || hp_policy == RecalculateBaseStatsHpPolicy::DoNotUpdate {
+        if context.mon().max_hp == 0 || hp_policy == RecalculateStatsHpPolicy::DoNotUpdate {
             context.mon_mut().max_hp = new_max_hp;
             context.mon_mut().hp = context.mon().hp.min(context.mon().max_hp);
             return Ok(());
@@ -1952,13 +2008,16 @@ impl Mon {
             }
         };
 
+        let previous_max_hp = context.mon().max_hp;
         context.mon_mut().max_hp = new_max_hp;
 
         let previous_hp = context.mon().hp;
         context.mon_mut().hp = new_hp;
 
         // Battle log must reflect new HP.
-        if previous_hp != context.mon().hp && !hp_policy.silent() {
+        let log_new_hp = context.mon().hp > 0
+            && (previous_hp != context.mon().hp || previous_max_hp != context.mon().max_hp);
+        if log_new_hp && !hp_policy.silent() {
             core_battle_logs::set_hp(context, None, None)?;
         }
 
@@ -1967,15 +2026,23 @@ impl Mon {
 
     /// The current un-Dynamaxed HP of the Mon.
     pub fn undynamaxed_hp(&self) -> u16 {
+        self.undynamaxed_hp_calculation(self.hp)
+    }
+
+    /// Calculates the un-Dynamaxed HP for a given value.
+    pub fn undynamaxed_hp_calculation(&self, hp: u16) -> u16 {
         if self.dynamaxed {
-            (Fraction::new(self.base_max_hp, self.max_hp) * self.hp).ceil()
+            (Fraction::new(self.base_max_hp, self.max_hp) * hp).ceil()
         } else {
-            self.hp
+            hp
         }
     }
 
     /// Recalculates a Mon's stats.
-    pub fn recalculate_stats(context: &mut MonContext) -> Result<()> {
+    pub fn recalculate_stats(
+        context: &mut MonContext,
+        hp_policy: RecalculateStatsHpPolicy,
+    ) -> Result<()> {
         let species = context
             .battle()
             .dex
@@ -1994,7 +2061,7 @@ impl Mon {
             stats.hp = max_hp;
         }
 
-        Mon::set_stats(context, stats, false)?;
+        Mon::set_stats(context, stats, true, hp_policy)?;
 
         Ok(())
     }
@@ -2016,7 +2083,11 @@ impl Mon {
     }
 
     /// Sets the species of the Mon.
-    pub fn set_species(context: &mut MonContext, species: &Id) -> Result<bool> {
+    pub fn set_species(
+        context: &mut MonContext,
+        species: &Id,
+        hp_policy: RecalculateStatsHpPolicy,
+    ) -> Result<bool> {
         let species = context.battle().dex.species.get_by_id(species)?;
 
         // SAFETY: Nothing we do below will invalidate any data.
@@ -2037,7 +2108,7 @@ impl Mon {
             context.mon_mut().volatile_state.types.push(secondary_type);
         }
 
-        Self::recalculate_stats(context)?;
+        Self::recalculate_stats(context, hp_policy)?;
         context.mon_mut().volatile_state.weight = species.data.weight;
 
         Ok(context.mon().volatile_state.species != previous_species)
@@ -2311,7 +2382,7 @@ impl Mon {
     /// Increases friendship based on the current friendship level.
     pub fn increase_friendship(context: &mut MonContext, delta: [u8; 3]) {
         let delta = delta[(context.mon().friendship / 100) as usize];
-        let delta = core_battle_effects::run_event_for_mon_expecting_u8(
+        let delta = core_battle_effects::run_event_with_relay::<_, u8>(
             context,
             fxlang::BattleEvent::ModifyFriendshipIncrease,
             delta,
@@ -2338,18 +2409,18 @@ impl Mon {
             return Ok(false);
         }
 
-        if !core_battle_effects::run_event_for_mon(
+        if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::NegateImmunity,
-            fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+            typ,
         ) {
             return Ok(false);
         }
 
-        if !core_battle_effects::run_event_for_mon(
+        if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::TypeImmunity,
-            fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+            typ,
         ) {
             return Ok(true);
         }
@@ -2563,21 +2634,16 @@ impl Mon {
             move_slot.disabled = false;
         }
 
-        core_battle_effects::run_event_for_mon(
-            context,
-            fxlang::BattleEvent::DisableMove,
-            fxlang::VariableInput::default(),
-        );
+        core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::DisableMove);
 
         for move_slot in context.mon_mut().volatile_state.move_slots.clone() {
-            core_battle_effects::run_applying_effect_event_expecting_void(
+            core_battle_effects::run_effect_event::<_, ()>(
                 &mut context.applying_effect_context(
                     EffectHandle::InactiveMove(move_slot.id.clone()),
                     None,
                     None,
                 )?,
                 fxlang::BattleEvent::DisableMove,
-                fxlang::VariableInput::default(),
             );
         }
 
@@ -2587,10 +2653,14 @@ impl Mon {
             core_battle_actions::trap_mon(context)?;
         }
 
-        if core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        if core_battle_effects::run_event_with_options::<_, _, bool>(
             context,
             fxlang::BattleEvent::PreventUsedItems,
-            false,
+            (),
+            core_battle_effects::RunEventOptions {
+                return_first_value: true,
+                ..Default::default()
+            },
         ) {
             context.mon_mut().next_turn_state.cannot_receive_items = true;
         }
@@ -2616,10 +2686,9 @@ impl Mon {
             context.mon_mut().next_turn_state.can_terastallize = true;
         }
 
-        if let Some(locked_move) = core_battle_effects::run_event_for_mon_expecting_string(
+        if let Some(locked_move) = core_battle_effects::run_event::<_, Option<String>>(
             context,
             fxlang::BattleEvent::LockMove,
-            fxlang::VariableInput::default(),
         ) {
             context.mon_mut().next_turn_state.locked_move = Some(locked_move);
 
@@ -2758,10 +2827,14 @@ impl Mon {
 
     /// Checks if the Mon is trapped.
     pub fn trapped(context: &mut MonContext) -> Result<bool> {
-        let trapped = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        let trapped = core_battle_effects::run_event_with_options::<_, _, bool>(
             context,
             fxlang::BattleEvent::TrapMon,
-            false,
+            (),
+            core_battle_effects::RunEventOptions {
+                return_first_value: true,
+                ..Default::default()
+            },
         );
         Ok(trapped)
     }
@@ -2769,22 +2842,32 @@ impl Mon {
     /// Checks if the Mon can escape from battle.
     pub fn can_escape(context: &mut MonContext) -> Result<bool> {
         let can_escape = !Self::trapped(context)?;
-        let can_escape = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        let can_escape = core_battle_effects::run_event_with_options::<_, _, Option<bool>>(
             context,
             fxlang::BattleEvent::CanEscape,
-            can_escape,
-        );
+            (),
+            core_battle_effects::RunEventOptions {
+                return_first_value: true,
+                ..Default::default()
+            },
+        )
+        .unwrap_or(can_escape);
         Ok(can_escape)
     }
 
     /// Checks if the Mon can Dynamax, based on its own effects.
     pub fn can_dynamax(context: &mut MonContext) -> Result<bool> {
         let can_dynamax = true;
-        let can_dynamax = core_battle_effects::run_event_for_mon_expecting_bool_quick_return(
+        let can_dynamax = core_battle_effects::run_event_with_options::<_, _, Option<bool>>(
             context,
             fxlang::BattleEvent::CanDynamax,
-            can_dynamax,
-        );
+            (),
+            core_battle_effects::RunEventOptions {
+                return_first_value: true,
+                ..Default::default()
+            },
+        )
+        .unwrap_or(can_dynamax);
         Ok(can_dynamax)
     }
 
@@ -2836,6 +2919,7 @@ impl Mon {
         context: &mut MonContext,
         stats: StatTable,
         preserve_overrides: bool,
+        hp_policy: RecalculateStatsHpPolicy,
     ) -> Result<()> {
         if !preserve_overrides {
             context.mon_mut().volatile_state.base_stored_stats = stats.clone();
@@ -2852,6 +2936,7 @@ impl Mon {
         }
 
         Self::update_speed(context)?;
+        Self::update_max_hp(context, hp_policy)?;
 
         Ok(())
     }

@@ -9708,13 +9708,7 @@
       "spd": 77,
       "spe": 91
     },
-    "formes": [
-      "Rotom-Heat",
-      "Rotom-Wash",
-      "Rotom-Frost",
-      "Rotom-Fan",
-      "Rotom-Mow"
-    ],
+    "formes": ["Rotom-Heat", "Rotom-Wash", "Rotom-Frost", "Rotom-Fan", "Rotom-Mow"],
     "flags": [],
     "learnset": {
       "allyswitch": ["T"],

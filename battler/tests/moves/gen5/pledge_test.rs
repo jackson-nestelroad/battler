@@ -116,7 +116,7 @@ fn fire_grass_combo_doubles() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Serperior,player-1,2|name:Grass Pledge|target:Emboar,player-2,1",
+            "move|mon:Serperior,player-1,2|name:Grass Pledge|noanim",
             "waiting|mon:Serperior,player-1,2|on:Emboar,player-1,1",
             "move|mon:Emboar,player-1,1|name:Fire Pledge|target:Samurott,player-2,2|from:move:Grass Pledge",
             "combine",
@@ -163,7 +163,7 @@ fn grass_water_combo_doubles() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Serperior,player-1,1|name:Grass Pledge|target:Samurott,player-2,2",
+            "move|mon:Serperior,player-1,1|name:Grass Pledge|noanim",
             "waiting|mon:Serperior,player-1,1|on:Samurott,player-1,2",
             "move|mon:Samurott,player-1,2|name:Water Pledge|target:Serperior,player-2,1|from:move:Grass Pledge",
             "combine",
@@ -218,7 +218,7 @@ fn water_fire_combo_doubles() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Samurott,player-1,1|name:Water Pledge|target:Emboar,player-2,2",
+            "move|mon:Samurott,player-1,1|name:Water Pledge|noanim",
             "waiting|mon:Samurott,player-1,1|on:Emboar,player-1,2",
             "move|mon:Emboar,player-1,2|name:Fire Pledge|target:Samurott,player-2,1|from:move:Water Pledge",
             "combine",
@@ -260,7 +260,7 @@ fn triples_combo_interaction() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Serperior,player-1,2|name:Grass Pledge|target:Serperior,player-2,2",
+            "move|mon:Serperior,player-1,2|name:Grass Pledge|noanim",
             "waiting|mon:Serperior,player-1,2|on:Samurott,player-1,3",
             "move|mon:Samurott,player-1,3|name:Water Pledge|target:Serperior,player-2,2|from:move:Grass Pledge",
             "combine",

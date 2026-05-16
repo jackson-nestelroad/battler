@@ -1,4 +1,9 @@
 {
+    "C_Cpp.files.exclude": {
+        "**/node_modules": true,
+        "data-filler/sources/**": true,
+        "target/**": true,
+    },
     "workbench.editor.enablePreview": false,
     "git.openDiffOnClick": false,
     "editor.formatOnSave": true,
@@ -20,6 +25,7 @@
             "source.organizeImports": "explicit"
         }
     },
+    "rust-analyzer.cargo.targetDir": true,
     "rust-analyzer.linkedProjects": [
         "${workspaceFolder}/Cargo.toml",
     ],

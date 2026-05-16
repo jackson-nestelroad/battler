@@ -180,7 +180,7 @@
     "primary_type": "Normal",
     "accuracy": 100,
     "pp": 10,
-    "target": "All",
+    "target": "Field",
     "flags": ["Mirror"]
   },
   "maxflare": {
@@ -205,11 +205,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_weather: harshsunlight"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_weather: harshsunlight"]
       }
     }
   },
@@ -264,11 +260,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_terrain: electricterrain"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_terrain: electricterrain"]
       }
     }
   },
@@ -383,11 +375,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_weather: hailweather"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_weather: hailweather"]
       }
     }
   },
@@ -442,11 +430,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_weather: rainweather"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_weather: rainweather"]
       }
     }
   },
@@ -501,11 +485,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_terrain: mistyterrain"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_terrain: mistyterrain"]
       }
     }
   },
@@ -560,11 +540,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_terrain: psychicterrain"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_terrain: psychicterrain"]
       }
     }
   },
@@ -589,11 +565,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_weather: sandstorm"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_weather: sandstorm"]
       }
     }
   },
@@ -678,11 +650,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "set_terrain: grassyterrain"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "set_terrain: grassyterrain"]
       }
     }
   },
@@ -783,15 +751,7 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": [
-      "Contact",
-      "FailCopycat",
-      "FailMimic",
-      "Mirror",
-      "NoMetronome",
-      "Protect",
-      "Slicing"
-    ]
+    "flags": ["Contact", "FailCopycat", "FailMimic", "Mirror", "NoMetronome", "Protect", "Slicing"]
   },
   "behemothbash": {
     "name": "Behemoth Bash",
@@ -801,14 +761,7 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": [
-      "Contact",
-      "FailCopycat",
-      "FailMimic",
-      "Mirror",
-      "NoMetronome",
-      "Protect"
-    ]
+    "flags": ["Contact", "FailCopycat", "FailMimic", "Mirror", "NoMetronome", "Protect"]
   },
   "aurawheel": {
     "name": "Aura Wheel",
@@ -897,13 +850,7 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "Allies",
-    "flags": [
-      "BypassMaxGuard",
-      "BypassSubstitute",
-      "Heal",
-      "NoMetronome",
-      "Snatch"
-    ],
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Heal", "NoMetronome", "Snatch"],
     "hit_effect": {
       "heal_percent": "25%"
     }
@@ -1913,11 +1860,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_hit_user": [
-          "if !$source.dynamaxed:",
-          ["return"],
-          "add_pseudo_weather: gravity"
-        ]
+        "on_hit_user": ["if !$source.dynamaxed:", ["return"], "add_pseudo_weather: gravity"]
       }
     }
   },
@@ -2076,11 +2019,7 @@
           "foreach $mon in func_call(allies_and_self: $source):",
           [
             "if $mon.last_item.is_defined and func_call(item_has_flag: $mon.last_item berry):",
-            [
-              "$item = $mon.last_item",
-              "$mon.last_item = undefined",
-              "set_item: $mon $item"
-            ]
+            ["$item = $mon.last_item", "$mon.last_item = undefined", "set_item: $mon $item"]
           ]
         ]
       }

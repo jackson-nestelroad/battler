@@ -2,9 +2,13 @@ use alloc::{
     borrow::ToOwned,
     boxed::Box,
     format,
-    string::ToString,
+    string::{
+        String,
+        ToString,
+    },
     vec::Vec,
 };
+use core::marker::PhantomData;
 
 use anyhow::Result;
 use battler_data::{
@@ -12,7 +16,7 @@ use battler_data::{
     BoostOrderIterator,
     BoostTable,
     BoostTableEntries,
-    ConditionType,
+    DefaultTrueBool,
     Fraction,
     Id,
     Identifiable,
@@ -24,8 +28,10 @@ use battler_data::{
     MoveTarget,
     MultihitType,
     RecoilBase,
+    SecondaryEffectData,
     SelfDestructType,
     Stat,
+    StatTable,
     SwitchType,
     Type,
     ZCrystalData,
@@ -64,7 +70,7 @@ use crate::{
         MoveOutcomeOnTarget,
         Player,
         PlayerContext,
-        RecalculateBaseStatsHpPolicy,
+        RecalculateStatsHpPolicy,
         ReceivedAttackEntry,
         Side,
         SideEffectContext,
@@ -74,13 +80,17 @@ use crate::{
         modify_32,
         mon_states,
     },
+    common::UnsafelyDetachBorrowMut,
     effect::{
         AppliedEffectHandle,
         AppliedEffectLocation,
         EffectHandle,
         LinkedEffectsManager,
         NonExistentEffect,
-        fxlang,
+        fxlang::{
+            self,
+            EffectState,
+        },
     },
     error::{
         WrapOptionError,
@@ -91,7 +101,7 @@ use crate::{
 };
 
 /// The state of a move hit against a target.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct HitTargetState {
     handle: MonHandle,
     outcome: MoveOutcomeOnTarget,
@@ -129,10 +139,9 @@ fn switch_out_internal(
 
             if run_switch_out_events {
                 if !context.mon().switch_state.skip_before_switch_out {
-                    core_battle_effects::run_event_for_mon(
+                    core_battle_effects::run_event::<MonContext, ()>(
                         context,
                         fxlang::BattleEvent::BeforeSwitchOut,
-                        fxlang::VariableInput::default(),
                     );
                 }
                 context.mon_mut().switch_state.skip_before_switch_out = true;
@@ -142,10 +151,9 @@ fn switch_out_internal(
                     return Ok(false);
                 }
 
-                core_battle_effects::run_event_for_mon(
+                core_battle_effects::run_event::<MonContext, ()>(
                     context,
                     fxlang::BattleEvent::SwitchOut,
-                    fxlang::VariableInput::default(),
                 );
             }
 
@@ -162,11 +170,7 @@ fn switch_out_internal(
                 true,
             )?;
 
-            core_battle_effects::run_event_for_mon(
-                context,
-                fxlang::BattleEvent::Exit,
-                fxlang::VariableInput::default(),
-            );
+            core_battle_effects::run_event::<MonContext, ()>(context, fxlang::BattleEvent::Exit);
         }
 
         Mon::switch_out(context)?;
@@ -253,11 +257,7 @@ pub fn switch_in(
 
     context.mon_mut().switch_state.switching_in = true;
 
-    core_battle_effects::run_event_for_mon(
-        context,
-        fxlang::BattleEvent::SwitchingIn,
-        fxlang::VariableInput::default(),
-    );
+    core_battle_effects::run_event::<MonContext, ()>(context, fxlang::BattleEvent::SwitchingIn);
 
     Mon::switch_in(context, position)?;
 
@@ -281,21 +281,13 @@ pub fn switch_in(
 
 /// Runs events that trigger the Mon's switch-in events.
 pub fn run_before_switch_in_events(context: &mut MonContext) -> Result<()> {
-    core_battle_effects::run_event_for_mon(
-        context,
-        fxlang::BattleEvent::BeforeSwitchIn,
-        fxlang::VariableInput::default(),
-    );
+    core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::BeforeSwitchIn);
     Ok(())
 }
 
 /// Runs events corresponding to a Mon switching into battle.
 pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
-    core_battle_effects::run_event_for_mon(
-        context,
-        fxlang::BattleEvent::SwitchIn,
-        fxlang::VariableInput::default(),
-    );
+    core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::SwitchIn);
 
     if !context.mon().active || context.mon().hp == 0 {
         return Ok(());
@@ -348,13 +340,21 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
         .cloned()
         .collect::<Vec<_>>();
     for volatile in copied {
-        if !core_battle_effects::run_mon_volatile_event_expecting_bool(
+        let effect_handle = context
+            .battle_mut()
+            .get_effect_handle_by_id(&volatile)?
+            .clone();
+        if !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::CopyVolatile,
-            &volatile,
-        )
-        .unwrap_or(true)
-        {
+            (),
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    effect_handle,
+                    AppliedEffectLocation::MonVolatile(context.target_handle()),
+                )),
+            },
+        ) {
             context
                 .target_mut()
                 .volatile_state
@@ -440,9 +440,27 @@ fn do_move(
     Ok(())
 }
 
+fn upgrade_move(context: &mut ActiveMoveContext) -> Result<MoveHandle> {
+    // Upgrade the move if applicable (e.g., Z-Moves, Max Moves).
+    if let Some(upgraded_move_handle) =
+        core_battle_effects::run_event_with_options::<_, _, Option<MoveHandle>>(
+            &mut context.user_applying_effect_context(None)?,
+            fxlang::BattleEvent::UpgradeMove,
+            (),
+            core_battle_effects::RunEventOptions {
+                return_first_value: true,
+                ..Default::default()
+            },
+        )
+    {
+        return Ok(upgraded_move_handle);
+    }
+    Ok(context.active_move_handle())
+}
+
 fn do_move_internal(
     context: &mut MonContext,
-    mut active_move_handle: MoveHandle,
+    active_move_handle: MoveHandle,
     target_location: Option<isize>,
     original_target: Option<MonHandle>,
 ) -> Result<()> {
@@ -458,17 +476,8 @@ fn do_move_internal(
         .id()
         .clone();
 
-    // Upgrade the move if applicable (e.g., Z-Moves, Max Moves).
-    if let Some(upgraded_move_handle) =
-        core_battle_effects::run_event_for_applying_effect_expecting_move_quick_return(
-            &mut context
-                .active_move_context(active_move_handle)?
-                .user_applying_effect_context(None)?,
-            fxlang::BattleEvent::UpgradeMove,
-        )
-    {
-        active_move_handle = upgraded_move_handle;
-    }
+    let mut active_move_handle =
+        upgrade_move(&mut context.active_move_context(active_move_handle)?)?;
 
     let move_id = context
         .as_battle_context()
@@ -484,25 +493,36 @@ fn do_move_internal(
         original_target,
     )?;
 
-    if let Some(change_move) = core_battle_effects::run_event_for_mon_expecting_string(
-        context,
-        fxlang::BattleEvent::OverrideMove,
-        fxlang::VariableInput::from_iter([fxlang::Value::String(move_id.to_string())]),
-    ) && &change_move != move_id.as_ref()
+    // Upgraded moves cannot be overridden.
+    if context
+        .as_battle_context()
+        .active_move(active_move_handle)?
+        .upgraded
+        .is_none()
     {
-        active_move_handle = CoreBattle::register_active_move_by_id(
-            context.as_battle_context_mut(),
-            &Id::from(change_move),
-            mon_handle,
-        )?;
-        let mon_handle = context.mon_handle();
-        let move_target = context
-            .as_battle_context()
-            .active_move(active_move_handle)?
-            .data
-            .target;
-        target =
-            CoreBattle::random_target(context.as_battle_context_mut(), mon_handle, move_target)?;
+        if let Some(change_move) = core_battle_effects::run_event_with_input::<_, _, Option<String>>(
+            context,
+            fxlang::BattleEvent::OverrideMove,
+            move_id.to_string(),
+        ) && &change_move != move_id.as_ref()
+        {
+            active_move_handle = CoreBattle::register_active_move_by_id(
+                context.as_battle_context_mut(),
+                &Id::from(change_move),
+                mon_handle,
+            )?;
+            let mon_handle = context.mon_handle();
+            let move_target = context
+                .as_battle_context()
+                .active_move(active_move_handle)?
+                .data
+                .target;
+            target = CoreBattle::random_target(
+                context.as_battle_context_mut(),
+                mon_handle,
+                move_target,
+            )?;
+        }
     }
 
     context.mon_mut().set_active_move(active_move_handle);
@@ -534,13 +554,24 @@ fn do_move_internal(
     let context = context.as_mon_context_mut();
 
     // Use the move.
-    use_active_move(
+    let result = use_active_move(
         context,
         active_move_handle,
         target,
         None,
         UseActiveMoveOptions::default(),
     )?;
+
+    context.mon_mut().volatile_state.move_this_turn_outcome = match (
+        context.mon_mut().volatile_state.move_this_turn_outcome,
+        result.outcome(),
+    ) {
+        (
+            left @ Some(MoveOutcome::Success | MoveOutcome::Skipped),
+            MoveOutcome::Skipped | MoveOutcome::Failed,
+        ) => left,
+        _ => Some(result.outcome()),
+    };
 
     let this_move_is_the_last_selected = context
         .mon()
@@ -560,14 +591,13 @@ fn do_move_internal(
     //
     // If you really want the last move used regardless of selection, you should use
     // `last_move_used`, which is set for all external moves on any turn with no preconditions.
-    if this_move_is_the_last_selected {
+    if result.used() && this_move_is_the_last_selected {
         // Some moves, like charging moves, do not count as the last move until the last turn.
-        let set_last_move = core_battle_effects::run_event_for_mon(
+        let set_last_move = core_battle_effects::run_event::<_, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::SetLastMove,
-            fxlang::VariableInput::default(),
         );
-        if set_last_move {
+        if *set_last_move {
             context.mon_mut().volatile_state.last_move = Some(active_move_handle);
         }
     }
@@ -578,7 +608,7 @@ fn do_move_internal(
     // Note that charging moves have their PP deducted on the last turn of use, as opposed to the
     // first (default). The effect of such a move should hook into this event to ensure PP is not
     // continually deducted every turn.
-    if this_move_is_the_last_selected && locked_move_before.is_none()
+    if result.used() && this_move_is_the_last_selected && locked_move_before.is_none()
         || context
             .as_battle_context()
             .active_move(active_move_handle)?
@@ -586,7 +616,7 @@ fn do_move_internal(
             .flags
             .contains(&MoveFlag::Charge)
     {
-        let deduction = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+        let deduction = core_battle_effects::run_event_with_relay::<_, u8>(
             &mut context
                 .active_move_context(active_move_handle)?
                 .user_applying_effect_context(target)?,
@@ -615,6 +645,24 @@ pub fn use_move(
         move_id,
         mon_handle,
     )?;
+
+    // Upgrade the move if the source move upgraded.
+    let active_move_handle = match source_effect {
+        Some(EffectHandle::ActiveMove(source_move_handle, _)) => {
+            if context
+                .as_battle_context()
+                .active_move(*source_move_handle)?
+                .upgraded
+                .is_some()
+            {
+                upgrade_move(&mut context.active_move_context(active_move_handle)?)?
+            } else {
+                active_move_handle
+            }
+        }
+        _ => active_move_handle,
+    };
+
     use_active_move(
         context,
         active_move_handle,
@@ -626,6 +674,7 @@ pub fn use_move(
             ..Default::default()
         },
     )
+    .map(|result| result.outcome().success())
 }
 
 /// Options for [`use_active_move`].
@@ -658,6 +707,41 @@ impl Default for UseActiveMoveOptions {
     }
 }
 
+/// Result for [`use_active_move`].
+#[derive(Debug, Clone)]
+pub struct UseActiveMoveResult {
+    used: bool,
+    outcome: MoveOutcome,
+}
+
+impl UseActiveMoveResult {
+    /// Constructs a [`UseActiveMoveResult`] for a used move.
+    pub fn new_used(outcome: MoveOutcome) -> Self {
+        Self {
+            used: true,
+            outcome,
+        }
+    }
+
+    /// Constructs a [`UseActiveMoveResult`] for an unused move.
+    pub fn new_unused(outcome: MoveOutcome) -> Self {
+        Self {
+            used: false,
+            outcome,
+        }
+    }
+
+    /// Was the move used?
+    pub fn used(&self) -> bool {
+        self.used
+    }
+
+    /// The outcome of the move.
+    pub fn outcome(&self) -> MoveOutcome {
+        self.outcome
+    }
+}
+
 /// Runs the given function, wrapped in the events that correspond go the Mon being in the "using
 /// move" state.
 pub fn run_in_using_move_state<F, T>(context: &mut MonContext, f: F) -> T
@@ -667,21 +751,13 @@ where
     let not_using_move_at_start = !context.mon().volatile_state.using_move;
     if not_using_move_at_start {
         context.mon_mut().volatile_state.using_move = true;
-        core_battle_effects::run_event_for_mon(
-            context,
-            fxlang::BattleEvent::StartUsingMove,
-            fxlang::VariableInput::default(),
-        );
+        core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::StartUsingMove);
     }
 
     let result = f(context);
 
     if not_using_move_at_start {
-        core_battle_effects::run_event_for_mon(
-            context,
-            fxlang::BattleEvent::StopUsingMove,
-            fxlang::VariableInput::default(),
-        );
+        core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::StopUsingMove);
         context.mon_mut().volatile_state.using_move = false;
     }
 
@@ -697,7 +773,7 @@ pub fn use_active_move(
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     options: UseActiveMoveOptions,
-) -> Result<bool> {
+) -> Result<UseActiveMoveResult> {
     run_in_using_move_state(context, |context| {
         use_active_move_with_using_move_state(
             context,
@@ -715,9 +791,9 @@ fn use_active_move_with_using_move_state(
     target: Option<MonHandle>,
     source_effect: Option<&EffectHandle>,
     options: UseActiveMoveOptions,
-) -> Result<bool> {
+) -> Result<UseActiveMoveResult> {
     if options.directly_used && (!context.mon().active || context.mon().hp == 0) {
-        return Ok(false);
+        return Ok(UseActiveMoveResult::new_unused(MoveOutcome::Failed));
     }
 
     if options.directly_used {
@@ -744,62 +820,52 @@ fn use_active_move_with_using_move_state(
                 .get_effect_handle_by_id(&Id::from(locked_move.as_str()))?
                 .clone();
             core_battle_logs::cant(context.as_mon_context_mut(), effect, None)?;
-            return Ok(false);
+            return Ok(UseActiveMoveResult::new_unused(MoveOutcome::Skipped));
         }
 
-        if !core_battle_effects::run_event_for_applying_effect(
+        let before_move_result = core_battle_effects::run_event::<_, MoveEventResult>(
             &mut context.user_applying_effect_context(None)?,
             fxlang::BattleEvent::BeforeMove,
-            fxlang::VariableInput::default(),
-        ) || !core_battle_effects::run_active_move_event_expecting_bool(
-            &mut context,
-            fxlang::BattleEvent::BeforeMove,
-            core_battle_effects::MoveTargetForEvent::User,
-        )
-        .unwrap_or(true)
-        {
-            core_battle_effects::run_active_move_event_expecting_void(
+        );
+        let before_move_result = if before_move_result.advance() {
+            core_battle_effects::run_active_move_event::<MoveEventResult>(
+                &mut context,
+                fxlang::BattleEvent::BeforeMove,
+                core_battle_effects::MoveTargetForEvent::User,
+            )
+        } else {
+            before_move_result
+        };
+        if !before_move_result.advance() {
+            core_battle_effects::run_active_move_event::<()>(
                 &mut context,
                 fxlang::BattleEvent::MoveAborted,
                 core_battle_effects::MoveTargetForEvent::None,
-                fxlang::VariableInput::default(),
             );
-            core_battle_effects::run_event_for_applying_effect(
+            core_battle_effects::run_event::<_, ()>(
                 &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::MoveAborted,
-                fxlang::VariableInput::default(),
             );
-            context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
-            return Ok(false);
+            return Ok(UseActiveMoveResult::new_unused(before_move_result.into()));
         }
     }
 
+    // The move has officially been used.
     if options.directly_used {
         context.mon_mut().volatile_state.last_move_used = Some(context.active_move_handle());
     }
 
-    let target = core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
+    let target = core_battle_effects::run_event_with_options::<_, _, Option<MonHandle>>(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::ModifyTarget,
-        target
-            .map(|target| fxlang::VariableInput::from_iter([fxlang::Value::Mon(target)]))
-            .unwrap_or_default(),
+        target,
+        core_battle_effects::RunEventOptions {
+            return_first_value: true,
+            ..Default::default()
+        },
     );
 
     let outcome = use_active_move_internal(&mut context, target, options.directly_used)?;
-
-    if options.directly_used {
-        context.mon_mut().volatile_state.move_this_turn_outcome = match (
-            context.mon_mut().volatile_state.move_this_turn_outcome,
-            outcome,
-        ) {
-            (
-                left @ Some(MoveOutcome::Success | MoveOutcome::Skipped),
-                MoveOutcome::Skipped | MoveOutcome::Failed,
-            ) => left,
-            _ => Some(outcome),
-        };
-    }
 
     if outcome.success() {
         context
@@ -807,21 +873,21 @@ fn use_active_move_with_using_move_state(
             .set_last_successful_move(Some(active_move_handle));
     }
 
-    core_battle_effects::run_active_move_event_expecting_void(
+    core_battle_effects::run_active_move_event_with_input::<_, ()>(
         &mut context,
         fxlang::BattleEvent::AfterMove,
         core_battle_effects::MoveTargetForEvent::User,
-        fxlang::VariableInput::from_iter([fxlang::Value::Boolean(outcome.success())]),
+        outcome.success(),
     );
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<_, _, ()>(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::AfterMove,
-        fxlang::VariableInput::from_iter([fxlang::Value::Boolean(outcome.success())]),
+        outcome.success(),
     );
 
     context.battle_mut().set_last_move(Some(active_move_handle));
 
-    Ok(outcome.success())
+    Ok(UseActiveMoveResult::new_used(outcome))
 }
 
 fn effective_move_type(
@@ -847,7 +913,7 @@ fn effective_move_type(
             return Ok(typ);
         }
         let typ = mov.data.primary_type;
-        if mov.data.typeless {
+        if typ == Type::None {
             return Ok(typ);
         }
         typ
@@ -862,13 +928,13 @@ fn effective_move_type(
     };
     let mut context =
         context.applying_effect_context(stable_effect, target, source_effect.cloned())?;
-    let typ = core_battle_effects::run_applying_effect_event_expecting_type(
+    let typ = core_battle_effects::run_effect_event_with_input::<_, _, Option<Type>>(
         &mut context,
         fxlang::BattleEvent::ModifyMoveType,
-        fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+        typ,
     )
     .unwrap_or(typ);
-    let typ = core_battle_effects::run_event_for_applying_effect_expecting_type(
+    let typ = core_battle_effects::run_event_with_relay::<_, Type>(
         &mut context,
         fxlang::BattleEvent::ModifyMoveType,
         typ,
@@ -927,17 +993,17 @@ fn use_active_move_internal(
         .map(fxlang::Value::Mon)
         .unwrap_or(fxlang::Value::Undefined)]);
 
-    core_battle_effects::run_active_move_event_expecting_void(
+    core_battle_effects::run_active_move_event_with_input::<_, ()>(
         context,
         fxlang::BattleEvent::UseMove,
         core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
         use_move_input.clone(),
     );
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<_, _, ()>(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::UseMove,
-        use_move_input,
+        target,
     );
 
     let targets = get_move_targets(context, target)?;
@@ -952,10 +1018,9 @@ fn use_active_move_internal(
     // Log that the move is being used.
     core_battle_logs::use_move(context, target, !directly_used)?;
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event::<_, ()>(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::PreMoveEffect,
-        fxlang::VariableInput::default(),
     );
 
     if context.active_move().data.target.requires_target() && target.is_none() {
@@ -966,13 +1031,13 @@ fn use_active_move_internal(
 
     // TODO: Targeted event.
 
-    let try_move_result = core_battle_effects::run_active_move_event_expecting_move_event_result(
+    let try_move_result = core_battle_effects::run_active_move_event::<MoveEventResult>(
         context,
         fxlang::BattleEvent::TryMove,
         core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
     );
     let try_move_result = if try_move_result.advance() {
-        core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
+        core_battle_effects::run_event::<_, MoveEventResult>(
             &mut context.user_applying_effect_context(target)?,
             fxlang::BattleEvent::TryMove,
         )
@@ -987,11 +1052,10 @@ fn use_active_move_internal(
         return Ok(MoveOutcome::from(try_move_result));
     }
 
-    core_battle_effects::run_active_move_event_expecting_void(
+    core_battle_effects::run_active_move_event::<()>(
         context,
         fxlang::BattleEvent::UseMoveMessage,
         core_battle_effects::MoveTargetForEvent::User,
-        fxlang::VariableInput::default(),
     );
 
     if context.active_move().data.self_destruct == Some(SelfDestructType::Always) {
@@ -1025,34 +1089,27 @@ fn use_active_move_internal(
         )?;
     }
 
-    if outcome.failed() {
+    if !outcome.success() {
         core_battle_logs::do_not_animate_last_move(context);
 
-        core_battle_effects::run_active_move_event_expecting_void(
+        core_battle_effects::run_active_move_event::<()>(
             context,
             fxlang::BattleEvent::MoveFailed,
             core_battle_effects::MoveTargetForEvent::User,
-            fxlang::VariableInput::default(),
         );
     }
 
     if !context.active_move().ignore_all_secondary_effects && context.mon().active {
-        let input = fxlang::VariableInput::from_iter([fxlang::Value::List(
-            targets
-                .into_iter()
-                .map(|target| fxlang::Value::Mon(target))
-                .collect(),
-        )]);
-        core_battle_effects::run_active_move_event_expecting_void(
+        core_battle_effects::run_active_move_event_with_input::<_, ()>(
             context,
             fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
             core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
-            input.clone(),
+            targets.clone(),
         );
-        core_battle_effects::run_event_for_applying_effect(
+        core_battle_effects::run_event_with_input::<_, _, ()>(
             &mut context.user_applying_effect_context(target)?,
             fxlang::BattleEvent::AfterMoveSecondaryEffectsUser,
-            input,
+            targets,
         );
     }
 
@@ -1150,13 +1207,16 @@ pub fn get_move_targets(
             };
 
             if context.battle().max_side_length() > 1 && !context.active_move().data.tracks_target {
-                target =
-                    core_battle_effects::run_event_for_applying_effect_expecting_mon_quick_return(
-                        &mut context.user_applying_effect_context(Some(target))?,
-                        fxlang::BattleEvent::RedirectTarget,
-                        fxlang::VariableInput::from_iter([fxlang::Value::Mon(target)]),
-                    )
-                    .unwrap_or(target);
+                target = core_battle_effects::run_event_with_options::<_, _, Option<MonHandle>>(
+                    &mut context.user_applying_effect_context(Some(target))?,
+                    fxlang::BattleEvent::RedirectTarget,
+                    target,
+                    core_battle_effects::RunEventOptions {
+                        return_first_value: true,
+                        ..Default::default()
+                    },
+                )
+                .unwrap_or(target);
             }
 
             targets.push(target);
@@ -1175,15 +1235,15 @@ pub fn get_move_targets(
 }
 
 /// Runs all events prior to a move hitting any targets.
-fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveOutcome> {
-    let result = core_battle_effects::run_active_move_event_expecting_move_event_result(
+fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveEventResult> {
+    let result = core_battle_effects::run_active_move_event::<MoveEventResult>(
         context,
         fxlang::BattleEvent::TryUseMove,
         core_battle_effects::MoveTargetForEvent::User,
     );
 
     let result = if result.advance() {
-        core_battle_effects::run_active_move_event_expecting_move_event_result(
+        core_battle_effects::run_active_move_event::<MoveEventResult>(
             context,
             fxlang::BattleEvent::PrepareHit,
             core_battle_effects::MoveTargetForEvent::User,
@@ -1193,23 +1253,19 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveOutcom
     };
 
     let result = if result.advance() {
-        MoveEventResult::from(
-            core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
-                &mut context.user_applying_effect_context(None)?,
-                fxlang::BattleEvent::PrepareHit,
-            ),
-        )
+        MoveEventResult::from(core_battle_effects::run_event::<_, MoveEventResult>(
+            &mut context.user_applying_effect_context(None)?,
+            fxlang::BattleEvent::PrepareHit,
+        ))
     } else {
         result
     };
 
-    let outcome = MoveOutcome::from(result);
-
-    if outcome.failed() {
+    if result.failed() {
         core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
     }
 
-    Ok(outcome)
+    Ok(result)
 }
 
 /// Tries to use an indirect move against some aspect of the battle field, such as a side or the
@@ -1218,34 +1274,27 @@ fn try_indirect_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
 ) -> Result<MoveOutcome> {
-    let try_use_move_outcome = run_try_use_move_events(context)?;
-    if !try_use_move_outcome.success() {
-        return Ok(try_use_move_outcome);
+    let try_use_move_result = run_try_use_move_events(context)?;
+    if !try_use_move_result.advance() {
+        return Ok(try_use_move_result.into());
     }
 
     let move_target = context.active_move().data.target;
     let try_move_result = match move_target {
-        MoveTarget::Field => {
-            core_battle_effects::run_event_for_field_effect_expecting_move_event_result(
-                &mut context.field_effect_context()?,
-                fxlang::BattleEvent::TryHitField,
-                fxlang::VariableInput::default(),
-            )
-        }
+        MoveTarget::Field => core_battle_effects::run_event::<_, MoveEventResult>(
+            &mut context.field_effect_context()?,
+            fxlang::BattleEvent::TryHitField,
+        ),
         MoveTarget::AllySide | MoveTarget::AllyTeam => {
-            core_battle_effects::run_event_for_side_effect_expecting_move_event_result(
+            core_battle_effects::run_event::<_, MoveEventResult>(
                 &mut context.side_effect_context(context.side().index)?,
                 fxlang::BattleEvent::TryHitSide,
-                fxlang::VariableInput::default(),
             )
         }
-        MoveTarget::FoeSide => {
-            core_battle_effects::run_event_for_side_effect_expecting_move_event_result(
-                &mut context.side_effect_context(context.foe_side().index)?,
-                fxlang::BattleEvent::TryHitSide,
-                fxlang::VariableInput::default(),
-            )
-        }
+        MoveTarget::FoeSide => core_battle_effects::run_event::<_, MoveEventResult>(
+            &mut context.side_effect_context(context.foe_side().index)?,
+            fxlang::BattleEvent::TryHitSide,
+        ),
         _ => {
             return Err(general_error(format!(
                 "move against target {move_target} applied indirectly, but it should directly hit target mons"
@@ -1267,6 +1316,7 @@ fn try_indirect_move(
 }
 
 /// The outcome of a move step against a target.
+#[derive(Clone, Debug)]
 struct MoveStepOutcomeOnTarget {
     pub handle: MonHandle,
     pub outcome: MoveOutcome,
@@ -1330,22 +1380,21 @@ fn try_direct_move(context: &mut ActiveMoveContext, targets: &[MonHandle]) -> Re
         context.active_move_mut().spread_hit = true;
     }
 
-    let try_use_move_outcome = run_try_use_move_events(context)?;
-    if !try_use_move_outcome.success() {
-        return Ok(try_use_move_outcome);
+    let try_use_move_result = run_try_use_move_events(context)?;
+    if !try_use_move_result.advance() {
+        return Ok(try_use_move_result.into());
     }
 
     let targets = move_hit_loop(context, targets)?;
 
-    let success = targets.iter().all(|target| target.outcome.success());
     let at_least_one_success = targets.iter().any(|target| target.outcome.success());
     let at_least_one_failure = targets.iter().any(|target| target.outcome.failed());
-    let outcome = if success {
+    let outcome = if at_least_one_success {
         MoveOutcome::Success
-    } else if !at_least_one_success && at_least_one_failure {
-        MoveOutcome::Failed
-    } else {
+    } else if !at_least_one_failure {
         MoveOutcome::Skipped
+    } else {
+        MoveOutcome::Failed
     };
 
     Ok(outcome)
@@ -1506,7 +1555,7 @@ fn move_hit_loop(
         }
     };
 
-    let original_hps = targets
+    context.active_move_mut().target_original_hps = targets
         .iter()
         .map(|target| {
             Ok((
@@ -1576,40 +1625,34 @@ fn move_hit_loop(
 
     if !context.active_move().ignore_all_secondary_effects {
         for target in targets.iter().filter(|target| target.outcome.success()) {
-            core_battle_effects::run_active_move_event_expecting_void(
+            core_battle_effects::run_active_move_event::<()>(
                 context,
                 fxlang::BattleEvent::AfterMoveSecondaryEffects,
                 core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                fxlang::VariableInput::default(),
             );
-            core_battle_effects::run_event_for_applying_effect(
+            core_battle_effects::run_event::<_, ()>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::AfterMoveSecondaryEffects,
-                fxlang::VariableInput::default(),
             );
         }
 
         for target in &targets {
             let total_damage = context.active_move().total_damage(target.handle);
-            let original_hp = *original_hps
+            let original_hp = *context
+                .active_move()
+                .target_original_hps
                 .get(&target.handle)
                 .wrap_expectation("expected target original hp")?;
-            core_battle_effects::run_active_move_event_expecting_void(
+            core_battle_effects::run_active_move_event_with_input::<_, ()>(
                 context,
                 fxlang::BattleEvent::AfterMoveSecondaryEffectsDamage,
                 core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                fxlang::VariableInput::from_iter([
-                    fxlang::Value::UFraction(total_damage.into()),
-                    fxlang::Value::UFraction(original_hp.into()),
-                ]),
+                [total_damage.into(), original_hp.into()],
             );
-            core_battle_effects::run_event_for_applying_effect(
+            core_battle_effects::run_event_with_input::<_, _, ()>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::AfterMoveSecondaryEffectsDamage,
-                fxlang::VariableInput::from_iter([
-                    fxlang::Value::UFraction(total_damage.into()),
-                    fxlang::Value::UFraction(original_hp.into()),
-                ]),
+                [total_damage.into(), original_hp.into()],
             );
         }
     }
@@ -1646,45 +1689,36 @@ fn move_hit(
 fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) -> Result<()> {
     let move_target = context.active_move().data.target.clone();
     let try_move_result = match move_target {
-        MoveTarget::Field => {
-            core_battle_effects::run_active_move_event_expecting_move_event_result(
-                context,
-                fxlang::BattleEvent::TryHitField,
-                core_battle_effects::MoveTargetForEvent::None,
-            )
-        }
+        MoveTarget::Field => core_battle_effects::run_active_move_event::<MoveEventResult>(
+            context,
+            fxlang::BattleEvent::TryHitField,
+            core_battle_effects::MoveTargetForEvent::None,
+        ),
         MoveTarget::AllySide | MoveTarget::AllyTeam => {
-            core_battle_effects::run_active_move_event_expecting_move_event_result(
+            core_battle_effects::run_active_move_event::<MoveEventResult>(
                 context,
                 fxlang::BattleEvent::TryHitSide,
                 core_battle_effects::MoveTargetForEvent::Side(context.side().index),
             )
         }
-        MoveTarget::FoeSide => {
-            core_battle_effects::run_active_move_event_expecting_move_event_result(
-                context,
-                fxlang::BattleEvent::TryHitSide,
-                core_battle_effects::MoveTargetForEvent::Side(context.foe_side().index),
-            )
-        }
+        MoveTarget::FoeSide => core_battle_effects::run_active_move_event::<MoveEventResult>(
+            context,
+            fxlang::BattleEvent::TryHitSide,
+            core_battle_effects::MoveTargetForEvent::Side(context.foe_side().index),
+        ),
         _ => {
             let mut result: Option<MoveEventResult> = None;
             for target in targets.iter_mut() {
                 if !target.outcome.hit() {
                     continue;
                 }
-                let target_result =
-                    core_battle_effects::run_active_move_event_expecting_move_event_result(
-                        context,
-                        fxlang::BattleEvent::TryHit,
-                        core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-                    );
+                let target_result = core_battle_effects::run_active_move_event::<MoveEventResult>(
+                    context,
+                    fxlang::BattleEvent::TryHit,
+                    core_battle_effects::MoveTargetForEvent::Mon(target.handle),
+                );
                 if !target_result.advance() {
-                    target.outcome = if target_result.failed() {
-                        MoveOutcomeOnTarget::Failure
-                    } else {
-                        MoveOutcomeOnTarget::Unknown
-                    };
+                    target.outcome = target_result.into();
                 }
 
                 // First result sets the default. Afterwards, combine the result for multitarget
@@ -1703,28 +1737,8 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
 
     if !try_move_result.advance() {
         if try_move_result.failed() {
-            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
-        }
-
-        // At this point, we should not animate the move because we did not hit any targets.
-        //
-        // If the move did not explicitly fail but calls another move, it should still be animated.
-        if try_move_result.failed()
-            || !context
-                .active_move()
-                .data
-                .flags
-                .contains(&MoveFlag::CallsMove)
-        {
             core_battle_logs::do_not_animate_last_move(context);
-        }
-
-        for target in targets {
-            target.outcome = if try_move_result.failed() {
-                MoveOutcomeOnTarget::Failure
-            } else {
-                MoveOutcomeOnTarget::Unknown
-            };
+            core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         }
         return Ok(());
     }
@@ -1765,18 +1779,15 @@ fn hit_targets(context: &mut ActiveMoveContext, targets: &mut [HitTargetState]) 
     force_switch_from_move(context, targets)?;
 
     for target in targets.iter().filter(|target| target.outcome.damage() > 0) {
-        core_battle_effects::run_event_for_applying_effect(
+        core_battle_effects::run_event_with_input::<_, _, ()>(
             &mut context.applying_effect_context_for_target(target.handle)?,
             fxlang::BattleEvent::DamagingHit,
-            fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
-                target.outcome.damage().into(),
-            )]),
+            target.outcome.damage(),
         );
-        core_battle_effects::run_active_move_event_expecting_void(
+        core_battle_effects::run_active_move_event::<()>(
             context,
             fxlang::BattleEvent::AfterHit,
             core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-            fxlang::VariableInput::default(),
         );
     }
 
@@ -1794,12 +1805,10 @@ fn try_primary_hit(context: &mut ActiveMoveContext, targets: &mut [HitTargetStat
         if target.outcome.failed() {
             continue;
         }
-        target.outcome =
-            core_battle_effects::run_event_for_applying_effect_expecting_move_outcome_on_target(
-                &mut context.applying_effect_context_for_target(target.handle)?,
-                fxlang::BattleEvent::TryPrimaryHit,
-            )
-            .unwrap_or(MoveOutcomeOnTarget::Success);
+        target.outcome = core_battle_effects::run_event::<_, MoveOutcomeOnTarget>(
+            &mut context.applying_effect_context_for_target(target.handle)?,
+            fxlang::BattleEvent::TryPrimaryHit,
+        );
     }
     Ok(())
 }
@@ -1832,7 +1841,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     // Type immunity.
     let move_type = context.active_move().data.primary_type;
     let ignore_immunity = ignore_type_immunity(context)?;
-    if !ignore_immunity && Mon::is_immune(&mut context.target_mon_context()?, move_type)? {
+    if !ignore_immunity && check_type_immunity(&mut context.target_mon_context()?, move_type)? {
         return Ok(MoveOutcomeOnTarget::Failure);
     }
 
@@ -1842,7 +1851,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     }
 
     let target_handle = context.target_mon_handle();
-    if let Some(damage) = core_battle_effects::run_active_move_event_expecting_u16(
+    if let Some(damage) = core_battle_effects::run_active_move_event::<Option<u16>>(
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::MoveDamage,
         core_battle_effects::MoveTargetForEvent::Mon(target_handle),
@@ -1856,7 +1865,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
     }
 
     let mut base_power = context.active_move().data.base_power;
-    if let Some(dynamic_base_power) = core_battle_effects::run_active_move_event_expecting_u32(
+    if let Some(dynamic_base_power) = core_battle_effects::run_active_move_event::<Option<u32>>(
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::MoveBasePower,
         core_battle_effects::MoveTargetForEvent::Mon(target_handle),
@@ -1864,7 +1873,7 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         base_power = dynamic_base_power;
     }
 
-    let base_power = core_battle_effects::run_event_for_applying_effect_expecting_u32(
+    let base_power = core_battle_effects::run_event_with_relay::<_, u32>(
         &mut context.applying_effect_context()?,
         fxlang::BattleEvent::BasePower,
         base_power,
@@ -1879,19 +1888,29 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
 
     // Critical hit.
     let crit_ratio = context.active_move().data.crit_ratio.unwrap_or(0);
-    let crit_ratio = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+    let crit_ratio = core_battle_effects::run_event_with_relay::<_, u8>(
         &mut context.user_applying_effect_context()?,
         fxlang::BattleEvent::ModifyCritRatio,
         crit_ratio,
     );
     let crit_ratio = crit_ratio.max(0).min(4);
     let crit_chance = if crit_ratio > 0 {
-        let crit_chance = [0u32, 24, 8, 2, 1][crit_ratio as usize];
-        core_battle_effects::run_event_for_applying_effect_expecting_u32(
-            &mut context.applying_effect_context()?,
+        let crit_chance = [24, 8, 2, 1][(crit_ratio - 1) as usize];
+
+        // Modify chance directly based on fraction, which is easier to reason about.
+        let crit_chance = Fraction::new(1, crit_chance);
+        let crit_chance = core_battle_effects::run_event_with_relay::<_, Fraction<u32>>(
+            &mut context.user_applying_effect_context()?,
             fxlang::BattleEvent::ModifyCritChance,
             crit_chance,
-        )
+        );
+
+        // Convert back to integer.
+        if crit_chance < 0 {
+            0
+        } else {
+            crit_chance.min(1u32.into()).inverse().floor()
+        }
     } else {
         0
     };
@@ -1908,10 +1927,9 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         .hit_data_mut(target_mon_handle)
         .crit
     {
-        if !core_battle_effects::run_event_for_applying_effect(
+        if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
             &mut context.applying_effect_context()?,
             fxlang::BattleEvent::CriticalHit,
-            fxlang::VariableInput::default(),
         ) {
             context
                 .active_move_mut()
@@ -2005,7 +2023,7 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
     if context
         .effect()
         .move_effect()
-        .map(|mov| mov.data.typeless)
+        .map(|mov| mov.data.primary_type == Type::None)
         .unwrap_or(false)
     {
         return Ok(0);
@@ -2016,11 +2034,10 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         None => return Ok(0),
     };
 
-    let modifier = core_battle_effects::run_event_for_applying_effect_expecting_i8(
+    let modifier = core_battle_effects::run_event_with_relay::<_, i8>(
         context,
         fxlang::BattleEvent::ForceEffectiveness,
         0,
-        fxlang::VariableInput::default(),
     );
     if modifier != 0 {
         return Ok(modifier);
@@ -2032,24 +2049,22 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         let modifier = context.battle().check_type_effectiveness(offense, defense);
 
         let modifier = match context.active_move_context()? {
-            Some(mut context) => core_battle_effects::run_active_move_event_expecting_i8(
-                &mut context,
-                fxlang::BattleEvent::Effectiveness,
-                core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-                fxlang::VariableInput::from_iter([
-                    fxlang::Value::Fraction(modifier.into()),
-                    fxlang::Value::Type(defense),
-                ]),
-            )
-            .unwrap_or(modifier),
+            Some(mut context) => {
+                core_battle_effects::run_active_move_event_with_input::<_, Option<i8>>(
+                    &mut context,
+                    fxlang::BattleEvent::Effectiveness,
+                    core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+                    [modifier.into(), defense.into()],
+                )
+                .unwrap_or(modifier)
+            }
             None => modifier,
         };
 
-        let modifier = core_battle_effects::run_event_for_applying_effect_expecting_i8(
+        let modifier = core_battle_effects::run_event_with_input::<_, _, i8>(
             context,
             fxlang::BattleEvent::Effectiveness,
-            modifier,
-            fxlang::VariableInput::from_iter([fxlang::Value::Type(defense)]),
+            [modifier.into(), defense.into()],
         );
         total += modifier;
     }
@@ -2074,7 +2089,7 @@ fn modify_damage(
     }
 
     // Weather modifiers.
-    base_damage = core_battle_effects::run_event_for_applying_effect_expecting_u32(
+    base_damage = core_battle_effects::run_event_with_relay::<_, u32>(
         &mut context.user_applying_effect_context()?,
         fxlang::BattleEvent::WeatherModifyDamage,
         base_damage,
@@ -2097,7 +2112,7 @@ fn modify_damage(
     // STAB.
     let move_type = context.active_move().data.primary_type;
     let stab = context.active_move().data.force_stab
-        || (!context.active_move().data.typeless
+        || (context.active_move().data.primary_type != Type::None
             && (mon_states::has_type(context.as_mon_context_mut(), move_type)
                 || mon_states::has_type_before_forced_types(
                     context.as_mon_context_mut(),
@@ -2105,12 +2120,11 @@ fn modify_damage(
                 )));
     if stab {
         let stab_modifier = Fraction::new(3, 2);
-        let stab_modifier =
-            core_battle_effects::run_event_for_applying_effect_expecting_fraction_u32(
-                &mut context.user_applying_effect_context()?,
-                fxlang::BattleEvent::ModifyStab,
-                stab_modifier,
-            );
+        let stab_modifier = core_battle_effects::run_event_with_relay::<_, Fraction<u32>>(
+            &mut context.user_applying_effect_context()?,
+            fxlang::BattleEvent::ModifyStab,
+            stab_modifier,
+        );
         base_damage = modify_32(base_damage, stab_modifier);
     }
 
@@ -2136,7 +2150,7 @@ fn modify_damage(
         core_battle_logs::critical_hit(&mut context.target_mon_context()?)?;
     }
 
-    base_damage = core_battle_effects::run_event_for_applying_effect_expecting_u32(
+    base_damage = core_battle_effects::run_event_with_relay::<_, u32>(
         &mut context.user_applying_effect_context()?,
         fxlang::BattleEvent::ModifyDamage,
         base_damage,
@@ -2199,12 +2213,27 @@ pub fn apply_recoil_damage(context: &mut ActiveMoveContext, damage_dealt: u64) -
     Ok(())
 }
 
+/// Checks if the target is immune to the type.
+pub fn check_type_immunity(context: &mut MonContext, typ: Type) -> Result<bool> {
+    Mon::is_immune(context, typ)
+}
+
+/// Checks if the target is immune to the move.
+pub fn check_move_immunity(context: &mut ActiveMoveContext, target: MonHandle) -> Result<bool> {
+    let move_type = context.active_move().data.primary_type;
+    let ignore_immunity = ignore_type_immunity(&mut context.target_context(target)?)?;
+    let mut target_context = context.target_mon_context(target)?;
+    let immune = !ignore_immunity && check_type_immunity(&mut target_context, move_type)?;
+    Ok(immune)
+}
 mod direct_move_step {
     use core::ops::Mul;
 
     use anyhow::Result;
     use battler_data::{
         Accuracy,
+        BoostTable,
+        DefaultTrueBool,
         Fraction,
         MoveCategory,
         MoveTarget,
@@ -2217,7 +2246,7 @@ mod direct_move_step {
         battle::{
             ActiveMoveContext,
             ActiveTargetContext,
-            Mon,
+            MoveEventResult,
             MoveOutcome,
             core_battle_actions,
             core_battle_effects,
@@ -2238,10 +2267,14 @@ mod direct_move_step {
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            if !core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
+            if !*core_battle_effects::run_event_with_options::<_, _, DefaultTrueBool>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::Invulnerability,
-                true,
+                (),
+                core_battle_effects::RunEventOptions {
+                    return_first_value: true,
+                    ..Default::default()
+                },
             ) {
                 target.outcome = MoveOutcome::Failed;
                 core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
@@ -2256,17 +2289,12 @@ mod direct_move_step {
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            let result =
-                core_battle_effects::run_event_for_applying_effect_expecting_move_event_result(
-                    &mut context.applying_effect_context_for_target(target.handle)?,
-                    fxlang::BattleEvent::TryHit,
-                );
+            let result = core_battle_effects::run_event::<_, MoveEventResult>(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+                fxlang::BattleEvent::TryHit,
+            );
             if !result.advance() {
-                target.outcome = if result.failed() {
-                    MoveOutcome::Failed
-                } else {
-                    MoveOutcome::Skipped
-                }
+                target.outcome = result.into();
             }
         }
         Ok(())
@@ -2277,15 +2305,9 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        let move_type = context.active_move().data.primary_type;
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            let ignore_immunity = core_battle_actions::ignore_type_immunity(
-                &mut context.target_context(target.handle)?,
-            )?;
-            let mut target_context = context.target_mon_context(target.handle)?;
-            let immune = !ignore_immunity && Mon::is_immune(&mut target_context, move_type)?;
-            if immune {
-                core_battle_logs::immune(&mut target_context, None)?;
+            if core_battle_actions::check_move_immunity(context, target.handle)? {
+                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -2301,15 +2323,13 @@ mod direct_move_step {
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
         for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            let immune = !core_battle_effects::run_active_move_event_expecting_bool(
+            let immune = !*core_battle_effects::run_active_move_event::<DefaultTrueBool>(
                 context,
                 fxlang::BattleEvent::TryImmunity,
                 core_battle_effects::MoveTargetForEvent::Mon(target.handle),
-            )
-            .unwrap_or(true)
-                || core_battle_actions::check_immunity(
-                    &mut context.applying_effect_context_for_target(target.handle)?,
-                )?;
+            ) || core_battle_actions::check_immunity(
+                &mut context.applying_effect_context_for_target(target.handle)?,
+            )?;
 
             if immune {
                 core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
@@ -2371,7 +2391,7 @@ mod direct_move_step {
             }
         } else {
             if let Accuracy::Chance(accuracy) = &mut accuracy {
-                *accuracy = core_battle_effects::run_event_for_applying_effect_expecting_u8(
+                *accuracy = core_battle_effects::run_event_with_relay::<_, u8>(
                     &mut context.applying_effect_context()?,
                     fxlang::BattleEvent::ModifyAccuracy,
                     *accuracy,
@@ -2379,7 +2399,7 @@ mod direct_move_step {
                 let mut boost = 0;
                 if !context.active_move().data.ignore_accuracy {
                     let boosts = context.mon().volatile_state.boosts.clone();
-                    let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+                    let boosts = core_battle_effects::run_event_with_relay::<_, BoostTable>(
                         context.as_mon_context_mut(),
                         fxlang::BattleEvent::ModifyBoosts,
                         boosts,
@@ -2388,7 +2408,7 @@ mod direct_move_step {
                 }
                 if !context.active_move().data.ignore_evasion {
                     let boosts = context.target_mon().volatile_state.boosts.clone();
-                    let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+                    let boosts = core_battle_effects::run_event_with_relay::<_, BoostTable>(
                         &mut context.target_mon_context()?,
                         fxlang::BattleEvent::ModifyBoosts,
                         boosts,
@@ -2409,10 +2429,14 @@ mod direct_move_step {
             && !mon_states::is_semi_invulnerable(&mut context.target_mon_context()?)
         {
             accuracy = Accuracy::Exempt;
-        } else if !core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
+        } else if !*core_battle_effects::run_event_with_options::<_, _, DefaultTrueBool>(
             &mut context.applying_effect_context()?,
             fxlang::BattleEvent::AccuracyExempt,
-            true,
+            (),
+            core_battle_effects::RunEventOptions {
+                return_first_value: true,
+                ..Default::default()
+            },
         ) {
             accuracy = Accuracy::Exempt;
         }
@@ -2454,10 +2478,10 @@ pub fn direct_damage(
     core_battle_logs::damage(&mut context.target_context()?, Some(effect), source)?;
 
     if run_after_damage {
-        core_battle_effects::run_event_for_applying_effect(
+        core_battle_effects::run_event_with_input::<_, _, ()>(
             context,
             fxlang::BattleEvent::AfterDamage,
-            fxlang::VariableInput::from_iter([fxlang::Value::UFraction(damage.into())]),
+            damage,
         );
     }
 
@@ -2508,15 +2532,11 @@ fn apply_spread_damage(
         }
 
         if context.effect().id() != &Id::from("strugglerecoil") {
-            if let Some(condition) = context.effect().condition() {
-                if condition.data.condition_type == ConditionType::Weather {
-                    if check_immunity(&mut context)? {
-                        *damage = 0;
-                        continue;
-                    }
-                }
+            if check_immunity(&mut context)? {
+                *damage = 0;
+                continue;
             }
-            *damage = core_battle_effects::run_event_for_applying_effect_expecting_u16(
+            *damage = core_battle_effects::run_event_with_relay::<_, u16>(
                 &mut context,
                 fxlang::BattleEvent::Damage,
                 *damage,
@@ -2544,10 +2564,10 @@ fn apply_spread_damage(
 
         apply_drain(&mut context, *damage)?;
 
-        core_battle_effects::run_event_for_applying_effect(
+        core_battle_effects::run_event_with_input::<_, _, ()>(
             &mut context,
             fxlang::BattleEvent::AfterDamage,
-            fxlang::VariableInput::from_iter([fxlang::Value::UFraction((*damage).into())]),
+            *damage,
         );
     }
     Ok(())
@@ -2571,6 +2591,7 @@ pub fn apply_drain(context: &mut ApplyingEffectContext, damage: u16) -> Result<(
                     None,
                 )?,
                 amount,
+                false,
             )?;
         }
     }
@@ -2587,10 +2608,10 @@ fn apply_heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     if healed > 0 {
         core_battle_logs::heal(context)?;
 
-        core_battle_effects::run_event_for_applying_effect(
+        core_battle_effects::run_event_with_input::<_, _, ()>(
             context,
             fxlang::BattleEvent::AfterHeal,
-            fxlang::VariableInput::from_iter([fxlang::Value::UFraction(damage.into())]),
+            damage,
         );
     }
     Ok(healed)
@@ -2604,7 +2625,19 @@ fn force_healing_effect(context: &ApplyingEffectContext) -> bool {
 }
 
 /// Heals a Mon.
-pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
+pub fn heal(
+    context: &mut ApplyingEffectContext,
+    damage: u16,
+    is_primary_move_effect: bool,
+) -> Result<u16> {
+    let healed = heal_internal(context, damage)?;
+    if healed == 0 && is_primary_move_effect {
+        core_battle_logs::fail_heal(&mut context.target_context()?)?;
+    }
+    Ok(healed)
+}
+
+fn heal_internal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
     if damage == 0 || context.target().hp == 0 || context.target().hp > context.target().max_hp {
         return Ok(0);
     }
@@ -2615,7 +2648,7 @@ pub fn heal(context: &mut ApplyingEffectContext, damage: u16) -> Result<u16> {
         if !mon_states::can_heal(&mut context.target_context()?) {
             return Ok(0);
         }
-        core_battle_effects::run_event_for_applying_effect_expecting_u16(
+        core_battle_effects::run_event_with_relay::<_, u16>(
             context,
             fxlang::BattleEvent::TryHeal,
             damage,
@@ -2637,10 +2670,9 @@ pub fn drag_in(context: &mut PlayerContext, position: usize) -> Result<bool> {
         return Ok(false);
     }
 
-    if !core_battle_effects::run_event_for_mon(
+    if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
         &mut old_context,
         fxlang::BattleEvent::DragOut,
-        fxlang::VariableInput::default(),
     ) {
         return Ok(false);
     }
@@ -2710,24 +2742,27 @@ fn apply_move_effects(
                     }
 
                     if let Some(heal_percent) = hit_effect.heal_percent {
-                        if target_context.target_mon().hp >= target_context.target_mon().max_hp {
-                            core_battle_logs::fail_heal(&mut target_context.target_mon_context()?)?;
-                            core_battle_logs::do_not_animate_last_move(
-                                target_context.as_active_move_context_mut(),
-                            );
+                        let damage = heal_percent * target_context.mon().base_max_hp;
+                        let damage = damage.round();
+                        let healed = heal(
+                            &mut target_context.applying_effect_context()?,
+                            damage,
+                            !is_secondary && !is_self,
+                        )? > 0;
+                        // Failing to heal does not count as a move failure.
+                        let outcome = if healed {
+                            MoveOutcomeOnTarget::Success
                         } else {
-                            let damage = heal_percent * target_context.mon().max_hp;
-                            let damage = damage.round();
-                            heal(&mut target_context.applying_effect_context()?, damage)?;
-                            hit_effect_outcome = MoveOutcomeOnTarget::Success;
-                        }
+                            MoveOutcomeOnTarget::Stopped
+                        };
+                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
                     }
                 }
 
                 if let Some(status) = hit_effect.status {
                     let set_status = try_set_status(
                         &mut target_context.applying_effect_context()?,
-                        Id::from(status),
+                        &Id::from(status),
                         !is_secondary && !is_self,
                     )?;
                     match set_status {
@@ -2827,74 +2862,74 @@ fn apply_move_effects(
         let target_handle = target_context.target_mon_handle();
 
         if target_context.is_self() {
-            if let Some(hit_result) = core_battle_effects::run_active_move_event_expecting_bool(
-                target_context.as_active_move_context_mut(),
-                fxlang::BattleEvent::HitUser,
-                core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-            ) {
-                let outcome = MoveOutcomeOnTarget::from(hit_result);
-                hit_effect_outcome = hit_effect_outcome.combine(outcome);
+            if let Some(hit_result) =
+                core_battle_effects::run_active_move_event::<Option<MoveEventResult>>(
+                    target_context.as_active_move_context_mut(),
+                    fxlang::BattleEvent::HitUser,
+                    core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+                )
+            {
+                hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
             }
         } else {
             // These event callbacks run regardless of if there is a hit effect defined.
             match move_target {
                 MoveTarget::Field => {
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_bool(
+                        core_battle_effects::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::HitField,
                             core_battle_effects::MoveTargetForEvent::Field,
                         )
                     {
-                        let outcome = MoveOutcomeOnTarget::from(hit_result);
-                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                        hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
                     }
                 }
                 MoveTarget::AllySide | MoveTarget::AllyTeam => {
                     let side = target_context.side().index;
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_bool(
+                        core_battle_effects::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::HitSide,
                             core_battle_effects::MoveTargetForEvent::Side(side),
                         )
                     {
-                        let outcome = MoveOutcomeOnTarget::from(hit_result);
-                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                        hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
                     }
                 }
                 MoveTarget::FoeSide => {
                     let side = target_context.foe_side().index;
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_bool(
+                        core_battle_effects::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::HitSide,
                             core_battle_effects::MoveTargetForEvent::Side(side),
                         )
                     {
-                        let outcome = MoveOutcomeOnTarget::from(hit_result);
-                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                        hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
                     }
                 }
                 _ => {
                     if let Some(hit_result) =
-                        core_battle_effects::run_active_move_event_expecting_bool(
+                        core_battle_effects::run_active_move_event::<Option<MoveEventResult>>(
                             target_context.as_active_move_context_mut(),
                             fxlang::BattleEvent::Hit,
                             core_battle_effects::MoveTargetForEvent::Mon(target_handle),
                         )
                     {
-                        let outcome = MoveOutcomeOnTarget::from(hit_result);
-                        hit_effect_outcome = hit_effect_outcome.combine(outcome);
+                        hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
                     }
 
                     // Run the event for other effects only once.
                     if !target_context.is_secondary() {
-                        core_battle_effects::run_event_for_applying_effect(
-                            &mut target_context.applying_effect_context()?,
-                            fxlang::BattleEvent::Hit,
-                            fxlang::VariableInput::default(),
-                        );
+                        if let Some(hit_result) =
+                            core_battle_effects::run_event::<_, Option<MoveEventResult>>(
+                                &mut target_context.applying_effect_context()?,
+                                fxlang::BattleEvent::Hit,
+                            )
+                        {
+                            hit_effect_outcome = hit_effect_outcome.combine(hit_result.into());
+                        }
                     }
                 }
             }
@@ -2934,12 +2969,12 @@ fn apply_move_effects(
         did_anything = did_anything.combine(hit_effect_outcome);
     }
 
-    if did_anything.failed() {
+    if !did_anything.success() {
         if !is_self && !is_secondary {
             // This is the primary hit of the move, and it failed to do anything, so the move failed
             // as a whole.
             core_battle_logs::do_not_animate_last_move(context);
-            if log_failure {
+            if log_failure && did_anything.failed() {
                 core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             }
         }
@@ -2959,7 +2994,7 @@ pub fn can_boost(context: &mut MonContext, boosts: BoostTable) -> Result<bool> {
         return Ok(false);
     }
 
-    let boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+    let boosts = core_battle_effects::run_event_with_relay::<_, BoostTable>(
         context,
         fxlang::BattleEvent::ChangeBoosts,
         boosts,
@@ -2982,14 +3017,14 @@ pub fn boost(
         return Ok(false);
     }
 
-    let original_boosts = core_battle_effects::run_event_for_mon_expecting_boost_table(
+    let original_boosts = core_battle_effects::run_event_with_relay::<_, BoostTable>(
         &mut context.target_context()?,
         fxlang::BattleEvent::ChangeBoosts,
         original_boosts.clone(),
     );
 
     let capped_boosts = Mon::cap_boosts(&mut context.target_context()?, original_boosts.clone());
-    let boosts = core_battle_effects::run_event_for_applying_effect_expecting_boost_table(
+    let boosts = core_battle_effects::run_event_with_relay::<_, BoostTable>(
         context,
         fxlang::BattleEvent::TryBoost,
         capped_boosts.clone(),
@@ -3010,20 +3045,17 @@ pub fn boost(
             core_battle_logs::boost(context, boost, delta, original_delta)?;
         }
 
-        core_battle_effects::run_event_for_applying_effect(
+        core_battle_effects::run_event_with_input::<_, _, ()>(
             context,
             fxlang::BattleEvent::AfterEachBoost,
-            fxlang::VariableInput::from_iter([
-                fxlang::Value::Boost(boost),
-                fxlang::Value::Fraction(original_delta.into()),
-            ]),
+            [boost.into(), original_delta.into()],
         );
     }
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<_, _, ()>(
         context,
         fxlang::BattleEvent::AfterBoost,
-        fxlang::VariableInput::from_iter([fxlang::Value::BoostTable(boosts.clone())]),
+        boosts.clone(),
     );
 
     if success {
@@ -3114,7 +3146,7 @@ fn apply_user_effect(
     }
 
     for target in targets {
-        if target.outcome.failed() {
+        if !target.outcome.hit() {
             continue;
         }
 
@@ -3175,7 +3207,7 @@ fn apply_secondary_effects(
 
         let secondary_effects = context.active_move().data.secondary_effects.clone();
         let secondary_effects =
-            core_battle_effects::run_event_for_applying_effect_expecting_secondary_effects(
+            core_battle_effects::run_event_with_relay::<_, Vec<SecondaryEffectData>>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::ModifySecondaryEffects,
                 secondary_effects,
@@ -3223,10 +3255,9 @@ pub fn force_switch(context: &mut ApplyingEffectContext) -> Result<bool> {
         return Ok(false);
     }
 
-    if !core_battle_effects::run_event_for_mon(
+    if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
         &mut context,
         fxlang::BattleEvent::DragOut,
-        fxlang::VariableInput::default(),
     ) {
         return Ok(false);
     }
@@ -3281,126 +3312,157 @@ impl ApplyMoveEffectResult {
 /// Tries to set the status of a Mon.
 pub fn try_set_status(
     context: &mut ApplyingEffectContext,
-    status: Id,
+    status: &Id,
     is_primary_move_effect: bool,
 ) -> Result<ApplyMoveEffectResult> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    if context.target().hp == 0 {
-        return Ok(ApplyMoveEffectResult::Failed);
+    struct Callbacks<'a> {
+        is_primary_move_effect: bool,
+        previous_status: Option<Id>,
+        previous_status_state: EffectState,
+        immune: &'a mut bool,
     }
 
-    // A Mon may only have one status set at a time.
-    if context.target().status.is_some() {
-        return Ok(ApplyMoveEffectResult::Failed);
-    }
-
-    let status_effect_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(&status)?
-        .clone();
-    let status = status_effect_handle
-        .try_id()
-        .wrap_expectation("status must have an id")?
-        .clone();
-
-    if check_immunity(&mut context.forward_applying_effect_context(status_effect_handle.clone())?)?
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks<'_>
+    where
+        'data: 'battle,
     {
-        if is_primary_move_effect {
-            core_battle_logs::immune(&mut context.target_context()?, None)?;
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if context.context.target().hp == 0 || context.context.target().status.is_some() {
+                return Ok(false);
+            }
+
+            Ok(true)
         }
-        return Ok(ApplyMoveEffectResult::Immune);
+
+        fn exists(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            // If Mon has a status, pre_start fails.
+            Ok(false)
+        }
+
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if check_immunity(
+                &mut context
+                    .context
+                    .forward_applying_effect_context(context.effect_handle.clone())?,
+            )? {
+                *self.immune = true;
+                if self.is_primary_move_effect {
+                    core_battle_logs::immune(&mut context.context.target_context()?, None)?;
+                }
+                return Ok(false);
+            }
+
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::SetStatus,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
+            context.context.target_mut().status = Some(context.effect_id.clone());
+            context.context.target_mut().status_state = effect_state;
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context.context.target_mut().status = self.previous_status;
+            context.context.target_mut().status_state = self.previous_status_state;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<_, _, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterSetStatus,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            cure_status(context.context, false, false)?;
+            Ok(())
+        }
     }
 
-    // Save the previous status in case an effect callback cancels the status.
-    let previous_status = context.target().status.clone();
-    let previous_status_state = context.target().status_state.clone();
-
-    if !core_battle_effects::run_event_for_applying_effect(
+    let mut immune = false;
+    let callbacks = Callbacks {
+        is_primary_move_effect,
+        previous_status: context.target().status.clone(),
+        previous_status_state: context.target().status_state.clone(),
+        immune: &mut immune,
+    };
+    let mon_handle = context.target_handle();
+    let result = start_condition(
         context,
-        fxlang::BattleEvent::SetStatus,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle.clone())]),
-    ) {
-        return Ok(ApplyMoveEffectResult::Failed);
-    }
-
-    // Set the status so that the following effects can use it.
-    context.target_mut().status = Some(status);
-
-    let effect_handle = context.effect_handle().clone();
-    let target_handle = context.target_handle();
-    let source_handle = context.source_handle();
-    context.target_mut().status_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        Some(target_handle),
-        source_handle,
+        status,
+        AppliedEffectLocation::MonStatus(mon_handle),
+        None,
+        callbacks,
     )?;
 
-    if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &status_effect_handle,
-    )? {
-        if let Some(duration) = condition.condition().duration {
-            context.target_mut().status_state.set_duration(duration);
-        }
+    if immune {
+        Ok(ApplyMoveEffectResult::Immune)
+    } else if !result {
+        Ok(ApplyMoveEffectResult::Failed)
+    } else {
+        Ok(ApplyMoveEffectResult::Success)
     }
-
-    if let Some(duration) = core_battle_effects::run_mon_status_event_expecting_u8(
-        context,
-        fxlang::BattleEvent::Duration,
-    ) {
-        context.target_mut().status_state.set_duration(duration);
-    }
-
-    if !core_battle_effects::run_mon_status_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::Start,
-    )
-    .unwrap_or(true)
-    {
-        context.target_mut().status = previous_status;
-        context.target_mut().status_state = previous_status_state;
-        return Ok(ApplyMoveEffectResult::Failed);
-    }
-
-    core_battle_effects::run_event_for_applying_effect(
-        context,
-        fxlang::BattleEvent::AfterSetStatus,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(status_effect_handle)]),
-    );
-
-    // If the duration is EXPLICITLY zero, then we remove the status immediately.
-    if context
-        .target()
-        .status_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        cure_status(context, false, false)?;
-    }
-
-    Ok(ApplyMoveEffectResult::Success)
 }
 
 fn ignore_type_immunity(context: &mut ActiveTargetContext) -> Result<bool> {
-    let ignore_immunity = context.active_move().data.typeless
+    let ignore_immunity = context.active_move().data.primary_type == Type::None
         || context.active_move().data.category == MoveCategory::Status;
     let target = context.target_mon_handle();
-    let ignore_immunity = core_battle_effects::run_active_move_event_expecting_bool(
+    let ignore_immunity = core_battle_effects::run_active_move_event::<Option<bool>>(
         context.as_active_move_context_mut(),
         fxlang::BattleEvent::IgnoreImmunity,
         core_battle_effects::MoveTargetForEvent::Mon(target),
     )
     .unwrap_or(ignore_immunity);
-    let ignore_immunity =
-        core_battle_effects::run_event_for_applying_effect_expecting_bool_quick_return(
-            &mut context.applying_effect_context()?,
-            fxlang::BattleEvent::IgnoreImmunity,
-            ignore_immunity,
-        );
+    let ignore_immunity = core_battle_effects::run_event_with_options::<_, _, Option<bool>>(
+        &mut context.applying_effect_context()?,
+        fxlang::BattleEvent::IgnoreImmunity,
+        (),
+        core_battle_effects::RunEventOptions {
+            return_first_value: true,
+            ..Default::default()
+        },
+    )
+    .unwrap_or(ignore_immunity);
     Ok(ignore_immunity)
 }
 
@@ -3410,10 +3472,9 @@ pub fn check_immunity(context: &mut ApplyingEffectContext) -> Result<bool> {
         return Ok(true);
     }
 
-    Ok(!core_battle_effects::run_event_for_applying_effect(
+    Ok(!*core_battle_effects::run_event::<_, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::Immunity,
-        fxlang::VariableInput::default(),
     ))
 }
 
@@ -3430,50 +3491,86 @@ pub fn cure_status(
     silent: bool,
     log_effect: bool,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    if context.target().hp == 0 {
-        return Ok(false);
+    struct Callbacks {
+        silent: bool,
+        log_effect: bool,
     }
 
-    let status = match context.target().status.clone() {
-        Some(status) => status,
-        None => return Ok(false),
-    };
-
-    if !force_healing_effect(context)
-        && !core_battle_effects::run_event_for_applying_effect(
-            context,
-            fxlang::BattleEvent::CureStatus,
-            fxlang::VariableInput::default(),
-        )
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
     {
-        return Ok(false);
+        fn identify(&mut self, context: &mut &'context mut ApplyingEffectContext) -> Option<Id> {
+            context.target().status.clone()
+        }
+
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if context.context.target().hp == 0 {
+                return Ok(false);
+            }
+            if !force_healing_effect(context.context)
+                && !*core_battle_effects::run_event::<_, DefaultTrueBool>(
+                    context.context,
+                    fxlang::BattleEvent::CureStatus,
+                )
+            {
+                return Ok(false);
+            }
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            if !self.silent {
+                core_battle_logs::cure_status(
+                    context.context,
+                    &context.effect_id,
+                    self.log_effect,
+                )?;
+            }
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context.context.target_mut().status = None;
+            context.context.target_mut().status_state = fxlang::EffectState::default();
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event::<_, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterCureStatus,
+            );
+            Ok(())
+        }
     }
 
-    if !silent {
-        core_battle_logs::cure_status(context, &status, log_effect)?;
-    }
+    let callbacks = Callbacks { silent, log_effect };
 
-    let target_handle = context.target_handle();
-    LinkedEffectsManager::remove_by_id(
-        context.as_effect_context_mut(),
-        &status,
-        AppliedEffectLocation::MonStatus(target_handle),
-    )?;
-
-    context.target_mut().status = None;
-    context.target_mut().status_state = fxlang::EffectState::default();
-
-    core_battle_effects::run_event_for_applying_effect(
+    let mon_handle = context.target_handle();
+    end_condition(
         context,
-        fxlang::BattleEvent::AfterCureStatus,
-        fxlang::VariableInput::default(),
-    );
-
-    return Ok(true);
+        None,
+        AppliedEffectLocation::MonStatus(mon_handle),
+        false,
+        callbacks,
+    )
 }
 
 /// Add the volatile status to a Mon.
@@ -3483,162 +3580,136 @@ pub fn add_volatile(
     is_primary_move_effect: bool,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    if !context.target().active || context.target().hp == 0 {
-        return Ok(false);
+    struct Callbacks {
+        is_primary_move_effect: bool,
     }
 
-    let volatile_status_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(volatile)?
-        .clone();
-    let volatile = volatile_status_handle
-        .try_id()
-        .wrap_expectation("volatile must have an id")?
-        .clone();
-
-    if context
-        .target()
-        .volatile_state
-        .volatiles
-        .contains_key(&volatile)
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        if !core_battle_effects::run_mon_volatile_event_expecting_bool(
-            context,
-            fxlang::BattleEvent::Restart,
-            &volatile,
-        )
-        .unwrap_or(false)
-        {
-            return Ok(false);
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if !context.context.target().active || context.context.target().hp == 0 {
+                return Ok(false);
+            }
+
+            Ok(true)
         }
 
-        if let Some(link_to) = link_to {
-            let target_handle = context.target_handle();
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    volatile_status_handle,
-                    AppliedEffectLocation::MonVolatile(target_handle),
-                ),
-            )?;
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .target()
+                .volatile_state
+                .volatiles
+                .contains_key(&context.effect_id))
         }
-        return Ok(true);
-    }
 
-    if check_immunity(
-        &mut context.forward_applying_effect_context(volatile_status_handle.clone())?,
-    )? {
-        if is_primary_move_effect {
-            core_battle_logs::immune(&mut context.target_context()?, None)?;
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if check_immunity(
+                &mut context
+                    .context
+                    .forward_applying_effect_context(context.effect_handle.clone())?,
+            )? {
+                if self.is_primary_move_effect {
+                    core_battle_logs::immune(&mut context.context.target_context()?, None)?;
+                }
+                return Ok(false);
+            }
+
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::AddVolatile,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
         }
-        return Ok(false);
-    }
-    if !core_battle_effects::run_event_for_applying_effect(
-        context,
-        fxlang::BattleEvent::AddVolatile,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(volatile_status_handle.clone())]),
-    ) {
-        return Ok(false);
-    }
 
-    let effect_handle = context.effect_handle().clone();
-    let target_handle = context.target_handle();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        Some(target_handle),
-        source_handle,
-    )?;
-    context
-        .target_mut()
-        .volatile_state
-        .volatiles
-        .insert(volatile.clone(), effect_state);
-
-    if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &volatile_status_handle,
-    )? {
-        if let Some(duration) = condition.condition().duration {
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .target_mut()
                 .volatile_state
                 .volatiles
-                .get_mut(&volatile)
-                .wrap_expectation("expected volatile state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .target_mut()
+                .volatile_state
+                .volatiles
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_volatile(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<_, _, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterAddVolatile,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            remove_volatile(context.context, &context.effect_id, false)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_mon_volatile_event_expecting_u8(
+    let callbacks = Callbacks {
+        is_primary_move_effect,
+    };
+    let mon_handle = context.target_handle();
+    start_condition(
         context,
-        fxlang::BattleEvent::Duration,
-        &volatile,
-    ) {
-        context
-            .target_mut()
-            .volatile_state
-            .volatiles
-            .get_mut(&volatile)
-            .wrap_expectation("expected volatile state to exist")?
-            .set_duration(duration);
-    }
-
-    if !core_battle_effects::run_mon_volatile_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::Start,
-        &volatile,
+        volatile,
+        AppliedEffectLocation::MonVolatile(mon_handle),
+        link_to,
+        callbacks,
     )
-    .unwrap_or(true)
-    {
-        context
-            .target_mut()
-            .volatile_state
-            .volatiles
-            .remove(&volatile);
-        return Ok(false);
-    }
-
-    if let Some(link_to) = link_to {
-        let target_handle = context.target_handle();
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(
-                volatile_status_handle,
-                AppliedEffectLocation::MonVolatile(target_handle),
-            ),
-        )?;
-    }
-
-    core_battle_logs::add_volatile(context, &volatile)?;
-
-    core_battle_effects::run_event_for_applying_effect(
-        context,
-        fxlang::BattleEvent::AfterAddVolatile,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
-    );
-
-    // If the duration is EXPLICITLY zero, then we remove the volatile immediately.
-    if context
-        .target()
-        .volatile_state
-        .volatiles
-        .get(&volatile)
-        .wrap_expectation("expected volatile state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_volatile(context, &volatile, false)?;
-    }
-
-    Ok(true)
 }
 
 /// Removes a volatile effect from a Mon.
@@ -3647,64 +3718,65 @@ pub fn remove_volatile(
     volatile: &Id,
     no_events: bool,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    if !context.target().active || context.target().hp == 0 {
-        return Ok(false);
-    }
-
-    let volatile_status_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(volatile)?
-        .clone();
-    let volatile = volatile_status_handle
-        .try_id()
-        .wrap_expectation("volatile must have an id")?
-        .clone();
-
-    if context
-        .target()
-        .volatile_state
-        .volatiles
-        .get(&volatile)
-        .is_none_or(|effect_state| effect_state.ending())
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            ApplyingEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
     {
-        return Ok(false);
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<bool> {
+            if !context.context.target().active || context.context.target().hp == 0 {
+                return Ok(false);
+            }
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_volatile(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .target_mut()
+                .volatile_state
+                .volatiles
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, ApplyingEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
     }
 
-    if no_events {
-        context
-            .target_mut()
-            .volatile_state
-            .volatiles
-            .remove(&volatile);
-        return Ok(true);
-    }
-
-    core_battle_effects::run_mon_volatile_event_expecting_void(
-        context,
-        fxlang::BattleEvent::End,
-        &volatile,
-    );
+    let callbacks = Callbacks {};
 
     let mon_handle = context.target_handle();
-    LinkedEffectsManager::remove(
-        context.as_effect_context_mut(),
-        volatile_status_handle,
+    end_condition(
+        context,
+        Some(volatile),
         AppliedEffectLocation::MonVolatile(mon_handle),
-    )?;
-
-    context
-        .target_mut()
-        .volatile_state
-        .volatiles
-        .remove(&volatile);
-
-    core_battle_logs::remove_volatile(context, &volatile)?;
-
-    Ok(true)
+        no_events,
+        callbacks,
+    )
 }
 
 /// Tries to trap a Mon.
@@ -3756,168 +3828,157 @@ pub fn add_side_condition(
     condition: &Id,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    let side_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = side_condition_handle
-        .try_id()
-        .wrap_expectation("side condition must have an id")?
-        .clone();
-
-    if context.side().conditions.contains_key(&condition) {
-        if !core_battle_effects::run_side_condition_event_expecting_bool(
-            context,
-            fxlang::BattleEvent::SideRestart,
-            &condition,
-        )
-        .unwrap_or(false)
-        {
-            return Ok(false);
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    where
+        'data: 'battle,
+    {
+        fn pre_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
         }
 
-        if let Some(link_to) = link_to {
-            let side = context.side().index;
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    side_condition_handle,
-                    AppliedEffectLocation::SideCondition(side),
-                ),
-            )?;
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .side()
+                .conditions
+                .contains_key(&context.effect_id))
         }
-        return Ok(true);
-    }
 
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-    context
-        .side_mut()
-        .conditions
-        .insert(condition.clone(), effect_state);
+        fn pre_apply(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
 
-    if let Some(side_condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &side_condition_handle,
-    )? {
-        if let Some(duration) = side_condition.condition().duration {
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .side_mut()
                 .conditions
-                .get_mut(&condition)
-                .wrap_expectation("expected side condition state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .conditions
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_side_condition(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<_, _, ()>(
+                context.context,
+                fxlang::BattleEvent::SideConditionStart,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            remove_side_condition(context.context, &context.effect_id)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_side_condition_event_expecting_u8(
+    let callbacks = Callbacks {};
+    let side = context.side().index;
+    start_condition(
         context,
-        fxlang::BattleEvent::Duration,
-        &condition,
-    ) {
-        context
-            .side_mut()
-            .conditions
-            .get_mut(&condition)
-            .wrap_expectation("expected side condition state to exist")?
-            .set_duration(duration);
-    }
-
-    if !core_battle_effects::run_side_condition_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::SideStart,
-        &condition,
+        condition,
+        AppliedEffectLocation::SideCondition(side),
+        link_to,
+        callbacks,
     )
-    .unwrap_or(true)
-    {
-        context.side_mut().conditions.remove(&condition);
-        return Ok(false);
-    }
-
-    if let Some(link_to) = link_to {
-        let side = context.side().index;
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(
-                side_condition_handle.clone(),
-                AppliedEffectLocation::SideCondition(side),
-            ),
-        )?;
-    }
-
-    core_battle_logs::add_side_condition(context, &condition)?;
-
-    core_battle_effects::run_event_for_side_effect(
-        context,
-        fxlang::BattleEvent::SideConditionStart,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(side_condition_handle.clone())]),
-    );
-
-    // If the duration is EXPLICITLY zero, then we remove the side condition immediately.
-    if context
-        .side()
-        .conditions
-        .get(&condition)
-        .wrap_expectation("expected side condition state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_side_condition(context, &condition)?;
-    }
-
-    Ok(true)
 }
 
 /// Removes a condition from a side.
 pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) -> Result<bool> {
-    let side_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = side_condition_handle
-        .try_id()
-        .wrap_expectation("side condition must have an id")?
-        .clone();
+    struct Callbacks {}
 
-    if context
-        .side()
-        .conditions
-        .get(&condition)
-        .is_none_or(|effect_state| effect_state.ending())
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
     {
-        return Ok(false);
+        fn pre_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_side_condition(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .conditions
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
     }
 
-    core_battle_effects::run_side_condition_event_expecting_void(
-        context,
-        fxlang::BattleEvent::SideEnd,
-        &condition,
-    );
+    let callbacks = Callbacks {};
 
     let side = context.side().index;
-    LinkedEffectsManager::remove(
-        context.as_effect_context_mut(),
-        side_condition_handle,
+    end_condition(
+        context,
+        Some(condition),
         AppliedEffectLocation::SideCondition(side),
-    )?;
-
-    context.side_mut().conditions.remove(&condition);
-
-    core_battle_logs::remove_side_condition(context, &condition)?;
-
-    Ok(true)
+        false,
+        callbacks,
+    )
 }
 
 /// Sets the types of a Mon.
@@ -3937,12 +3998,10 @@ pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> R
         return Ok(false);
     }
 
-    if !core_battle_effects::run_event_for_applying_effect(
+    if !*core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::SetTypes,
-        fxlang::VariableInput::from_iter([fxlang::Value::List(
-            types.iter().map(|typ| fxlang::Value::Type(*typ)).collect(),
-        )]),
+        fxlang::Value::List(types.iter().map(|typ| fxlang::Value::Type(*typ)).collect()),
     ) {
         return Ok(false);
     }
@@ -3970,10 +4029,10 @@ pub fn add_type(context: &mut ApplyingEffectContext, typ: Type) -> Result<bool> 
         return Ok(false);
     }
 
-    if !core_battle_effects::run_event_for_applying_effect(
+    if !*core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::AddType,
-        fxlang::VariableInput::from_iter([fxlang::Value::Type(typ)]),
+        typ,
     ) {
         return Ok(false);
     }
@@ -4024,7 +4083,7 @@ fn calculate_exp_gain(context: &mut MonContext, fainted_mon_handle: MonHandle) -
         exp
     };
 
-    let exp = core_battle_effects::run_event_for_mon_expecting_u32(
+    let exp = core_battle_effects::run_event_with_relay::<_, u32>(
         context,
         fxlang::BattleEvent::ModifyExperience,
         exp,
@@ -4041,8 +4100,11 @@ pub fn level_up(context: &mut MonContext, target_level: u8) -> Result<()> {
     let old_level = context.mon().level;
     context.mon_mut().level = target_level;
 
-    Mon::recalculate_stats(context)?;
-    Mon::recalculate_base_stats(context, RecalculateBaseStatsHpPolicy::KeepHealthRatio)?;
+    Mon::recalculate_stats(context, RecalculateStatsHpPolicy::DoNotUpdate)?;
+    Mon::recalculate_base_stats(
+        context,
+        RecalculateStatsHpPolicy::KeepHealthRatio { silent: false },
+    )?;
     core_battle_logs::level_up(context)?;
 
     for level in old_level..target_level {
@@ -4178,7 +4240,7 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
             .data
             .ev_yield
             .clone();
-        let ev_yield = core_battle_effects::run_event_for_mon_expecting_stat_table(
+        let ev_yield = core_battle_effects::run_event_with_relay::<_, StatTable>(
             &mut context,
             fxlang::BattleEvent::ModifyEvYield,
             ev_yield,
@@ -4193,7 +4255,7 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
                     .unwrap_or(0);
             context.mon_mut().evs.set(stat, new_ev_value);
         }
-        Mon::recalculate_stats(&mut context)?;
+        Mon::recalculate_stats(&mut context, RecalculateStatsHpPolicy::DoNotUpdate)?;
         // NOTE: We do not recalculate base stats here, or else the Mon's HP can update
         // unexpectedly.
 
@@ -4259,10 +4321,9 @@ pub fn try_escape(context: &mut MonContext, force: bool) -> Result<bool> {
     let escaped = Player::can_escape(context.as_player_context());
     let mut escaped = escaped && force || Mon::can_escape(context)?;
     let force = force
-        || !core_battle_effects::run_event_for_mon(
+        || !*core_battle_effects::run_event::<_, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::ForceEscape,
-            fxlang::VariableInput::default(),
         );
     if escaped && !context.player().player_type.wild() && !force {
         let speed = context.mon().volatile_state.speed;
@@ -4305,135 +4366,185 @@ pub fn forfeit(context: &mut PlayerContext) -> Result<()> {
 
 /// Sets the weather on the field.
 pub fn set_weather(context: &mut FieldEffectContext, weather: &Id) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let weather_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(weather)?
-        .clone();
-    let weather = weather_handle
-        .try_id()
-        .wrap_expectation("weather must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .weather
-        .as_ref()
-        .is_some_and(|existing| existing == &weather)
-    {
-        return Ok(false);
+    struct Callbacks {
+        previous_weather: Option<Id>,
+        previous_weather_state: EffectState,
     }
 
-    if !core_battle_effects::run_event_for_field_effect(
-        context,
-        fxlang::BattleEvent::SetWeather,
-        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(weather_handle.clone()))]),
-    ) {
-        return Ok(false);
-    }
-
-    let previous_weather = context.battle().field.weather.clone();
-    let previous_weather_state = context.battle().field.weather_state.clone();
-
-    context.battle_mut().field.weather = Some(weather.clone());
-
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    context.battle_mut().field.weather_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-
-    if let Some(weather_condition) =
-        CoreBattle::get_parsed_effect_by_handle(context.as_battle_context_mut(), &weather_handle)?
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            FieldEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        if let Some(duration) = weather_condition.condition().duration {
-            context
-                .battle_mut()
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if context
+                .context
+                .battle()
                 .field
-                .weather_state
-                .set_duration(duration);
+                .weather
+                .as_ref()
+                .is_some_and(|existing| existing == &context.effect_id)
+            {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn exists(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            // Weather is overwritten, never restarted.
+            Ok(false)
+        }
+
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::SetWeather,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
+            context.context.battle_mut().field.weather = Some(context.effect_id.clone());
+            context.context.battle_mut().field.weather_state = effect_state;
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.weather = self.previous_weather;
+            context.context.battle_mut().field.weather_state = self.previous_weather_state;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::WeatherChange,
+            )?;
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            clear_weather(context.context)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_weather_event_expecting_u8(context, fxlang::BattleEvent::Duration)
-    {
-        context
-            .battle_mut()
-            .field
-            .weather_state
-            .set_duration(duration);
-    }
-
-    if !core_battle_effects::run_weather_event_expecting_bool(
+    let callbacks = Callbacks {
+        previous_weather: context.battle().field.weather.clone(),
+        previous_weather_state: context.battle().field.weather_state.clone(),
+    };
+    start_condition(
         context,
-        fxlang::BattleEvent::FieldStart,
+        weather,
+        AppliedEffectLocation::Weather,
+        None,
+        callbacks,
     )
-    .unwrap_or(true)
-    {
-        context.battle_mut().field.weather = previous_weather;
-        context.battle_mut().field.weather_state = previous_weather_state;
-        return Ok(false);
-    }
-
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
-        context.as_effect_context_mut(),
-        fxlang::BattleEvent::WeatherChange,
-    )?;
-
-    // If the duration is EXPLICITLY zero, then we remove the weather immediately.
-    if context
-        .battle()
-        .field
-        .weather_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        clear_weather(context)?;
-    }
-
-    Ok(true)
 }
 
 /// Clears the weather on the field.
 pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    if let Some(weather) = context.battle().field.weather.clone() {
-        if !core_battle_effects::run_event_for_field_effect(
-            context,
-            fxlang::BattleEvent::ClearWeather,
-            fxlang::VariableInput::default(),
-        ) {
-            return Ok(false);
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, FieldEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    {
+        fn identify(&mut self, context: &mut &'context mut FieldEffectContext) -> Option<Id> {
+            context.battle().field.weather.clone()
         }
-        core_battle_effects::run_weather_event_expecting_void(
-            context,
-            fxlang::BattleEvent::FieldEnd,
-        );
 
-        LinkedEffectsManager::remove_by_id(
-            context.as_effect_context_mut(),
-            &weather,
-            AppliedEffectLocation::Weather,
-        )?;
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::ClearWeather,
+            ) {
+                return Ok(false);
+            }
+            Ok(true)
+        }
 
-        context.battle_mut().field.weather = None;
-        context.battle_mut().field.weather_state = fxlang::EffectState::default();
+        fn reset(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            set_default_weather(context.context.as_battle_context_mut())?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.weather = None;
+            context.context.battle_mut().field.weather_state = fxlang::EffectState::default();
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::WeatherChange,
+            )?;
+
+            Ok(())
+        }
     }
 
+    let callbacks = Callbacks {};
+
+    end_condition(
+        context,
+        None,
+        AppliedEffectLocation::Weather,
+        false,
+        callbacks,
+    )
+}
+
+/// Sets the default weather on the field.
+pub fn set_default_weather(context: &mut Context) -> Result<()> {
     if let Some(default_weather) = context.battle().field.default_weather.clone() {
         set_weather(
-            &mut context.as_battle_context_mut().field_effect_context(
+            &mut context.field_effect_context(
                 EffectHandle::Condition(Id::from_known("start")),
                 None,
                 None,
@@ -4441,158 +4552,198 @@ pub fn clear_weather(context: &mut FieldEffectContext) -> Result<bool> {
             &default_weather,
         )?;
     }
-
-    core_battle_effects::run_event_for_each_active_mon_with_effect(
-        context.as_effect_context_mut(),
-        fxlang::BattleEvent::WeatherChange,
-    )?;
-
-    Ok(true)
+    Ok(())
 }
 
 /// Sets the terrain on the field.
 pub fn set_terrain(context: &mut FieldEffectContext, terrain: &Id) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let terrain_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(terrain)?
-        .clone();
-    let terrain = terrain_handle
-        .try_id()
-        .wrap_expectation("terrain must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .terrain
-        .as_ref()
-        .is_some_and(|existing| existing == &terrain)
-    {
-        return Ok(false);
+    struct Callbacks {
+        previous_terrain: Option<Id>,
+        previous_terrain_state: EffectState,
     }
 
-    if !core_battle_effects::run_event_for_field_effect(
-        context,
-        fxlang::BattleEvent::SetTerrain,
-        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(terrain_handle.clone()))]),
-    ) {
-        return Ok(false);
-    }
-
-    let previous_terrain = context.battle().field.terrain.clone();
-    let previous_terrain_state = context.battle().field.terrain_state.clone();
-
-    context.battle_mut().field.terrain = Some(terrain.clone());
-
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    context.battle_mut().field.terrain_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-
-    if let Some(terrain_condition) =
-        CoreBattle::get_parsed_effect_by_handle(context.as_battle_context_mut(), &terrain_handle)?
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            FieldEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        if let Some(duration) = terrain_condition.condition().duration {
-            context
-                .battle_mut()
+        fn pre_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if context
+                .context
+                .battle()
                 .field
-                .terrain_state
-                .set_duration(duration);
+                .terrain
+                .as_ref()
+                .is_some_and(|existing| existing == &context.effect_id)
+            {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn exists(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            // Terrain is overwritten, never restarted.
+            Ok(false)
+        }
+
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::SetTerrain,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
+
+            Ok(true)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
+            context.context.battle_mut().field.terrain = Some(context.effect_id.clone());
+            context.context.battle_mut().field.terrain_state = effect_state;
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.terrain = self.previous_terrain;
+            context.context.battle_mut().field.terrain_state = self.previous_terrain_state;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::TerrainChange,
+            )?;
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            clear_terrain(context.context)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) =
-        core_battle_effects::run_terrain_event_expecting_u8(context, fxlang::BattleEvent::Duration)
-    {
-        context
-            .battle_mut()
-            .field
-            .terrain_state
-            .set_duration(duration);
-    }
-
-    if !core_battle_effects::run_terrain_event_expecting_bool(
+    let callbacks = Callbacks {
+        previous_terrain: context.battle().field.terrain.clone(),
+        previous_terrain_state: context.battle().field.terrain_state.clone(),
+    };
+    start_condition(
         context,
-        fxlang::BattleEvent::FieldStart,
+        terrain,
+        AppliedEffectLocation::Terrain,
+        None,
+        callbacks,
     )
-    .unwrap_or(true)
-    {
-        context.battle_mut().field.terrain = previous_terrain;
-        context.battle_mut().field.terrain_state = previous_terrain_state;
-        return Ok(false);
-    }
-
-    // TODO: TerrainChange event.
-
-    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
-    if context
-        .battle()
-        .field
-        .terrain_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        clear_terrain(context)?;
-    }
-
-    Ok(true)
 }
 
 /// Clears the terrain on the field.
 pub fn clear_terrain(context: &mut FieldEffectContext) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    if let Some(terrain) = context.battle().field.terrain.clone() {
-        if !core_battle_effects::run_event_for_field_effect(
-            context,
-            fxlang::BattleEvent::ClearTerrain,
-            fxlang::VariableInput::default(),
-        ) {
-            return Ok(false);
-        }
-        core_battle_effects::run_terrain_event_expecting_void(
-            context,
-            fxlang::BattleEvent::FieldEnd,
-        );
-
-        LinkedEffectsManager::remove_by_id(
-            context.as_effect_context_mut(),
-            &terrain,
-            AppliedEffectLocation::Terrain,
-        )?;
-
-        context.battle_mut().field.terrain = None;
-        context.battle_mut().field.terrain_state = fxlang::EffectState::default();
-    }
-
-    if let Some(default_terrain) = context.battle().field.default_terrain.clone() {
-        set_terrain(context, &default_terrain)?;
-    }
-
-    // TODO: TerrainChange event.
-
-    // If the duration is EXPLICITLY zero, then we remove the terrain immediately.
-    if context
-        .battle()
-        .field
-        .terrain_state
-        .duration()
-        .is_some_and(|duration| duration == 0)
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, FieldEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
     {
-        clear_terrain(context)?;
+        fn identify(&mut self, context: &mut &'context mut FieldEffectContext) -> Option<Id> {
+            context.battle().field.terrain.clone()
+        }
+
+        fn pre_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::ClearTerrain,
+            ) {
+                return Ok(false);
+            }
+            Ok(true)
+        }
+
+        fn reset(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            set_default_terrain(context.context.as_battle_context_mut())?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context.context.battle_mut().field.terrain = None;
+            context.context.battle_mut().field.terrain_state = fxlang::EffectState::default();
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                context.context.as_effect_context_mut(),
+                fxlang::BattleEvent::TerrainChange,
+            )?;
+
+            Ok(())
+        }
     }
 
-    Ok(true)
+    let callbacks = Callbacks {};
+
+    end_condition(
+        context,
+        None,
+        AppliedEffectLocation::Terrain,
+        false,
+        callbacks,
+    )
+}
+
+/// Sets the default terrain on the field.
+pub fn set_default_terrain(context: &mut Context) -> Result<()> {
+    if let Some(default_terrain) = context.battle().field.default_terrain.clone() {
+        set_terrain(
+            &mut context.field_effect_context(
+                EffectHandle::Condition(Id::from_known("start")),
+                None,
+                None,
+            )?,
+            &default_terrain,
+        )?;
+    }
+    Ok(())
 }
 
 /// Adds a pseudo-weather to the field.
@@ -4601,144 +4752,116 @@ pub fn add_pseudo_weather(
     pseudo_weather: &Id,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    let pseudo_weather_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(pseudo_weather)?
-        .clone();
-    let pseudo_weather = pseudo_weather_handle
-        .try_id()
-        .wrap_expectation("pseudo weather must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .pseudo_weathers
-        .contains_key(&pseudo_weather)
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<
+            'context,
+            'battle,
+            'data,
+            FieldEffectContext<'_, '_, 'battle, 'data>,
+        > for Callbacks
+    where
+        'data: 'battle,
     {
-        let restart = core_battle_effects::run_pseudo_weather_event_expecting_bool(
-            context,
-            fxlang::BattleEvent::FieldRestart,
-            &pseudo_weather,
-        )
-        .unwrap_or(false);
-        if !restart {
-            return Ok(false);
+        fn pre_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
         }
 
-        if let Some(link_to) = link_to {
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    pseudo_weather_handle,
-                    AppliedEffectLocation::PseudoWeather,
-                ),
-            )?;
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .battle()
+                .field
+                .pseudo_weathers
+                .contains_key(&context.effect_id))
         }
-        return Ok(true);
-    }
 
-    if !core_battle_effects::run_event_for_field_effect(
-        context,
-        fxlang::BattleEvent::AddPseudoWeather,
-        fxlang::VariableInput::from_iter([(fxlang::Value::Effect(pseudo_weather_handle.clone()))]),
-    ) {
-        return Ok(false);
-    }
+        fn pre_apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+                context.context,
+                fxlang::BattleEvent::AddPseudoWeather,
+                context.effect_handle.clone(),
+            ) {
+                return Ok(false);
+            }
 
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-    context
-        .battle_mut()
-        .field
-        .pseudo_weathers
-        .insert(pseudo_weather.clone(), effect_state);
+            Ok(true)
+        }
 
-    if let Some(pseudo_weather_condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &pseudo_weather_handle,
-    )? {
-        if let Some(duration) = pseudo_weather_condition.condition().duration {
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .battle_mut()
                 .field
                 .pseudo_weathers
-                .get_mut(&pseudo_weather)
-                .wrap_expectation("expected pseudo weather state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .battle_mut()
+                .field
+                .pseudo_weathers
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_pseudo_weather(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_effects::run_event_with_input::<_, _, ()>(
+                context.context,
+                fxlang::BattleEvent::AfterAddPseudoWeather,
+                context.effect_handle.clone(),
+            );
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            remove_pseudo_weather(context.context, &context.effect_id)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_pseudo_weather_event_expecting_u8(
+    let callbacks = Callbacks {};
+    start_condition(
         context,
-        fxlang::BattleEvent::Duration,
-        &pseudo_weather,
-    ) {
-        context
-            .battle_mut()
-            .field
-            .pseudo_weathers
-            .get_mut(&pseudo_weather)
-            .wrap_expectation("expected pseudo weather state to exist")?
-            .set_duration(duration);
-    }
-
-    if !core_battle_effects::run_pseudo_weather_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::FieldStart,
-        &pseudo_weather,
+        pseudo_weather,
+        AppliedEffectLocation::PseudoWeather,
+        link_to,
+        callbacks,
     )
-    .unwrap_or(true)
-    {
-        context
-            .battle_mut()
-            .field
-            .pseudo_weathers
-            .remove(&pseudo_weather);
-        return Ok(false);
-    }
-
-    core_battle_effects::run_event_for_field_effect(
-        context,
-        fxlang::BattleEvent::AfterAddPseudoWeather,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(effect_handle)]),
-    );
-
-    if let Some(link_to) = link_to {
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(pseudo_weather_handle, AppliedEffectLocation::PseudoWeather),
-        )?;
-    }
-
-    core_battle_logs::add_pseudo_weather(context, &pseudo_weather)?;
-
-    // If the duration is EXPLICITLY zero, then we remove the pseudo-weather immediately.
-    if context
-        .battle()
-        .field
-        .pseudo_weathers
-        .get(&pseudo_weather)
-        .wrap_expectation("expected pseudo weather state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_pseudo_weather(context, &pseudo_weather)?;
-    }
-
-    Ok(true)
 }
 
 /// Removes a pseudo-weather from the field.
@@ -4746,50 +4869,57 @@ pub fn remove_pseudo_weather(
     context: &mut FieldEffectContext,
     pseudo_weather: &Id,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
+    struct Callbacks {}
 
-    let pseudo_weather_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(pseudo_weather)?
-        .clone();
-    let pseudo_weather = pseudo_weather_handle
-        .try_id()
-        .wrap_expectation("pseudo weather must have an id")?
-        .clone();
-
-    if context
-        .battle()
-        .field
-        .pseudo_weathers
-        .get(&pseudo_weather)
-        .is_none_or(|effect_state| effect_state.ending())
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, FieldEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
     {
-        return Ok(false);
+        fn pre_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_pseudo_weather(context.context, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .battle_mut()
+                .field
+                .pseudo_weathers
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, FieldEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
     }
 
-    core_battle_effects::run_pseudo_weather_event_expecting_void(
+    let callbacks = Callbacks {};
+
+    end_condition(
         context,
-        fxlang::BattleEvent::FieldEnd,
-        &pseudo_weather,
-    );
-
-    LinkedEffectsManager::remove_by_id(
-        context.as_effect_context_mut(),
-        &pseudo_weather,
+        Some(pseudo_weather),
         AppliedEffectLocation::PseudoWeather,
-    )?;
-
-    context
-        .battle_mut()
-        .field
-        .pseudo_weathers
-        .remove(&pseudo_weather);
-
-    core_battle_logs::remove_pseudo_weather(context, &pseudo_weather)?;
-
-    Ok(true)
+        false,
+        callbacks,
+    )
 }
 
 /// Ends the target Mon's ability, if it is not already ended.
@@ -4827,7 +4957,11 @@ pub fn end_ability_even_if_exiting(
         core_battle_logs::ability_end(context)?;
     }
 
-    core_battle_effects::run_mon_ability_event_expecting_void(context, fxlang::BattleEvent::End);
+    core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
+        context,
+        fxlang::BattleEvent::End,
+        (),
+    );
 
     Ok(())
 }
@@ -4850,15 +4984,14 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
         return Ok(());
     }
 
-    // Ability is suppressed.
-    if mon_states::effective_ability(&mut context.target_context()?).is_none() {
-        return Ok(());
-    }
-
     if !silent {
         core_battle_logs::ability(context)?;
     }
-    core_battle_effects::run_mon_ability_event_expecting_void(context, fxlang::BattleEvent::Start);
+    core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
+        context,
+        fxlang::BattleEvent::Start,
+        (),
+    );
     Ok(())
 }
 
@@ -4894,10 +5027,10 @@ pub fn set_ability(
         .wrap_expectation("expected ability to have non-condition handle")?;
 
     if !force
-        && !core_battle_effects::run_event_for_applying_effect(
+        && !*core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
             context,
             fxlang::BattleEvent::SetAbility,
-            fxlang::VariableInput::from_iter([fxlang::Value::Effect(ability_handle.clone())]),
+            ability_handle.clone(),
         )
     {
         return Ok(false);
@@ -4926,10 +5059,10 @@ pub fn set_ability(
 
     start_ability(context, silent)?;
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::AfterSetAbility,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(ability_handle)]),
+        ability_handle,
     );
 
     Ok(true)
@@ -4942,143 +5075,111 @@ pub fn add_slot_condition(
     condition: &Id,
     link_to: Option<&AppliedEffectHandle>,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let slot_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = slot_condition_handle
-        .try_id()
-        .wrap_expectation("slot condition must have an id")?
-        .clone();
-
-    if context
-        .side()
-        .slot_conditions
-        .get(&slot)
-        .is_some_and(|conditions| conditions.contains_key(&condition))
-    {
-        if !core_battle_effects::run_slot_condition_event_expecting_bool(
-            context,
-            fxlang::BattleEvent::SlotRestart,
-            slot,
-            &condition,
-        )
-        .unwrap_or(false)
-        {
-            return Ok(false);
-        }
-
-        if let Some(link_to) = link_to {
-            let side = context.side().index;
-            LinkedEffectsManager::link(
-                context.as_battle_context_mut(),
-                link_to,
-                &AppliedEffectHandle::new(
-                    slot_condition_handle,
-                    AppliedEffectLocation::SlotCondition(side, slot),
-                ),
-            )?;
-        }
-        return Ok(true);
+    struct Callbacks {
+        slot: usize,
     }
 
-    let effect_handle = context.effect_handle().clone();
-    let source_handle = context.source_handle();
-    let effect_state = fxlang::EffectState::initial_effect_state(
-        context.as_battle_context_mut(),
-        Some(&effect_handle),
-        None,
-        source_handle,
-    )?;
-    context
-        .side_mut()
-        .slot_conditions
-        .entry(slot)
-        .or_default()
-        .insert(condition.clone(), effect_state);
+    impl<'context, 'battle, 'data>
+        StartConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    where
+        'data: 'battle,
+    {
+        fn event_input(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> fxlang::VariableInput {
+            fxlang::VariableInput::from_iter([(self.slot as u64).into()])
+        }
 
-    if let Some(slot_condition) = CoreBattle::get_parsed_effect_by_handle(
-        context.as_battle_context_mut(),
-        &slot_condition_handle,
-    )? {
-        if let Some(duration) = slot_condition.condition().duration {
+        fn pre_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn exists(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(context
+                .context
+                .side()
+                .slot_conditions
+                .get(&self.slot)
+                .is_some_and(|conditions| conditions.contains_key(&context.effect_id)))
+        }
+
+        fn pre_apply(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn apply(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+            effect_state: fxlang::EffectState,
+        ) -> Result<()> {
             context
+                .context
                 .side_mut()
                 .slot_conditions
-                .entry(slot)
+                .entry(self.slot)
                 .or_default()
-                .get_mut(&condition)
-                .wrap_expectation("expected slot condition state to exist")?
-                .set_duration(duration);
+                .insert(context.effect_id.clone(), effect_state);
+            Ok(())
+        }
+
+        fn rollback(
+            self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .slot_conditions
+                .get_mut(&self.slot)
+                .wrap_expectation("expected side slot condition state to exist")?
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::add_slot_condition(context.context, self.slot, &context.effect_id)?;
+            Ok(())
+        }
+
+        fn post_start(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        fn end(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            remove_slot_condition(context.context, self.slot, &context.effect_id)?;
+            Ok(())
         }
     }
 
-    if let Some(duration) = core_battle_effects::run_slot_condition_event_expecting_u8(
+    let callbacks = Callbacks { slot };
+    let side = context.side().index;
+    start_condition(
         context,
-        fxlang::BattleEvent::Duration,
-        slot,
-        &condition,
-    ) {
-        context
-            .side_mut()
-            .slot_conditions
-            .entry(slot)
-            .or_default()
-            .get_mut(&condition)
-            .wrap_expectation("expected side condition state to exist")?
-            .set_duration(duration);
-    }
-
-    if !core_battle_effects::run_slot_condition_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::SlotStart,
-        slot,
-        &condition,
+        condition,
+        AppliedEffectLocation::SlotCondition(side, slot),
+        link_to,
+        callbacks,
     )
-    .unwrap_or(true)
-    {
-        context
-            .side_mut()
-            .slot_conditions
-            .entry(slot)
-            .or_default()
-            .remove(&condition);
-        return Ok(false);
-    }
-
-    if let Some(link_to) = link_to {
-        let side = context.side().index;
-        LinkedEffectsManager::link(
-            context.as_battle_context_mut(),
-            link_to,
-            &AppliedEffectHandle::new(
-                slot_condition_handle,
-                AppliedEffectLocation::SlotCondition(side, slot),
-            ),
-        )?;
-    }
-
-    core_battle_logs::add_slot_condition(context, slot, &condition)?;
-
-    // If the duration is EXPLICITLY zero, then we remove the slot condition immediately.
-    if context
-        .side_mut()
-        .slot_conditions
-        .entry(slot)
-        .or_default()
-        .get(&condition)
-        .wrap_expectation("expected slot condition state to exist")?
-        .duration()
-        .is_some_and(|duration| duration == 0)
-    {
-        remove_slot_condition(context, slot, &condition)?;
-    }
-
-    Ok(true)
 }
 
 /// Removes a condition from the slot on the side.
@@ -5087,56 +5188,72 @@ pub fn remove_slot_condition(
     slot: usize,
     condition: &Id,
 ) -> Result<bool> {
-    let context = &mut scopeguard::guard(context, |context| {
-        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
-    });
-
-    let slot_condition_handle = context
-        .battle_mut()
-        .get_effect_handle_by_id(condition)?
-        .clone();
-    let condition = slot_condition_handle
-        .try_id()
-        .wrap_expectation("slot condition must have an id")?
-        .clone();
-
-    if context
-        .side()
-        .slot_conditions
-        .get(&slot)
-        .is_some_and(|conditions| {
-            conditions
-                .get(&condition)
-                .is_none_or(|effect_state| effect_state.ending())
-        })
-    {
-        return Ok(false);
+    struct Callbacks {
+        slot: usize,
     }
 
-    core_battle_effects::run_slot_condition_event_expecting_void(
-        context,
-        fxlang::BattleEvent::SlotEnd,
-        slot,
-        &condition,
-    );
+    impl<'context, 'battle, 'data>
+        EndConditionCallbacks<'context, 'battle, 'data, SideEffectContext<'_, '_, 'battle, 'data>>
+        for Callbacks
+    {
+        fn event_input(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> fxlang::VariableInput {
+            fxlang::VariableInput::from_iter([(self.slot as u64).into()])
+        }
+
+        fn pre_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<bool> {
+            Ok(true)
+        }
+
+        fn log(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            core_battle_logs::remove_slot_condition(
+                context.context,
+                self.slot,
+                &context.effect_id,
+            )?;
+            Ok(())
+        }
+
+        fn remove(
+            &mut self,
+            context: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            context
+                .context
+                .side_mut()
+                .slot_conditions
+                .entry(self.slot)
+                .or_default()
+                .remove(&context.effect_id);
+            Ok(())
+        }
+
+        fn post_end(
+            &mut self,
+            _: &mut ConditionContext<'context, 'battle, 'data, SideEffectContext>,
+        ) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    let callbacks = Callbacks { slot };
 
     let side = context.side().index;
-    LinkedEffectsManager::remove(
-        context.as_effect_context_mut(),
-        slot_condition_handle,
+    end_condition(
+        context,
+        Some(condition),
         AppliedEffectLocation::SlotCondition(side, slot),
-    )?;
-
-    context
-        .side_mut()
-        .slot_conditions
-        .entry(slot)
-        .or_default()
-        .remove(&condition);
-
-    core_battle_logs::remove_slot_condition(context, slot, &condition)?;
-
-    Ok(true)
+        false,
+        callbacks,
+    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -5202,7 +5319,7 @@ fn end_item_internal(
         EndItemType::Eat => Some(fxlang::BattleEvent::Eat),
     };
     if let Some(event) = event {
-        core_battle_effects::run_mon_item_event_expecting_void(context, event);
+        core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(context, event, ());
     }
 
     Ok(())
@@ -5246,12 +5363,11 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         core_battle_logs::item(context)?;
     }
 
-    // Item is suppressed.
-    if mon_states::effective_item(&mut context.target_context()?).is_none() {
-        return Ok(());
-    }
-
-    core_battle_effects::run_mon_item_event_expecting_void(context, fxlang::BattleEvent::Start);
+    core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(
+        context,
+        fxlang::BattleEvent::Start,
+        (),
+    );
 
     Ok(())
 }
@@ -5282,16 +5398,11 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
         .clone()
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
-    if !core_battle_effects::run_event_for_applying_effect(
+    if !*core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::SetItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
-    ) || !core_battle_effects::run_mon_item_event_expecting_bool(
-        context,
-        fxlang::BattleEvent::SetItem,
-    )
-    .unwrap_or(true)
-    {
+        item_handle.clone(),
+    ) {
         return Ok(false);
     }
 
@@ -5312,10 +5423,10 @@ pub fn set_item(context: &mut ApplyingEffectContext, item: &Id, dry_run: bool) -
 
     start_item(context, false)?;
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::AfterSetItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        item_handle,
     );
 
     Ok(true)
@@ -5340,18 +5451,15 @@ pub fn take_item(
         .clone()
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
-    if !core_battle_effects::run_applying_effect_event_expecting_bool(
+    if !*core_battle_effects::run_effect_event_with_input::<_, _, DefaultTrueBool>(
         &mut context.forward_applying_effect_context(item_handle.clone())?,
         fxlang::BattleEvent::TakeItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
-    )
-    .unwrap_or(true)
-        || !core_battle_effects::run_event_for_applying_effect(
-            context,
-            fxlang::BattleEvent::TakeItem,
-            fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
-        )
-    {
+        item_handle.clone(),
+    ) || !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+        context,
+        fxlang::BattleEvent::TakeItem,
+        item_handle.clone(),
+    ) {
         return Ok(None);
     }
 
@@ -5372,10 +5480,10 @@ pub fn take_item(
     context.target_mut().item = None;
     context.target_mut().volatile_state.item_state = fxlang::EffectState::default();
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<_, _, ()>(
         context,
         fxlang::BattleEvent::AfterTakeItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        item_handle,
     );
 
     Ok(Some(item_id))
@@ -5398,10 +5506,10 @@ fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool>
     context.target_mut().item = None;
     context.target_mut().volatile_state.item_state = fxlang::EffectState::default();
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::AfterUseItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        item_handle,
     );
 
     Ok(true)
@@ -5425,28 +5533,28 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
 
-    if !core_battle_effects::run_event_for_applying_effect(
+    if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::TryEatItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
+        item_handle.clone(),
     ) {
         return Ok(false);
     }
 
-    if !core_battle_effects::run_event_for_applying_effect(
+    if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::TryUseItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle.clone())]),
+        item_handle.clone(),
     ) {
         return Ok(false);
     }
 
     end_item_internal(context, EndItemType::Eat, EndItemLog::Log)?;
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<_, _, ()>(
         context,
         fxlang::BattleEvent::EatItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        item_handle,
     );
 
     context.target_mut().ate_item = true;
@@ -5460,10 +5568,9 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
         return Ok(false);
     }
 
-    core_battle_effects::run_applying_effect_event(
+    core_battle_effects::run_effect_event::<_, ()>(
         &mut context.forward_applying_effect_context(EffectHandle::Item(item.clone()))?,
         fxlang::BattleEvent::Eat,
-        fxlang::VariableInput::default(),
     );
 
     let item_handle = context
@@ -5473,10 +5580,10 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
 
-    core_battle_effects::run_event_for_applying_effect(
+    core_battle_effects::run_event_with_input::<_, _, ()>(
         context,
         fxlang::BattleEvent::EatItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        item_handle,
     );
 
     Ok(true)
@@ -5500,10 +5607,10 @@ pub fn use_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
 
-    if !core_battle_effects::run_event_for_applying_effect(
+    if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
         context,
         fxlang::BattleEvent::TryUseItem,
-        fxlang::VariableInput::from_iter([fxlang::Value::Effect(item_handle)]),
+        item_handle,
     ) {
         return Ok(false);
     }
@@ -5519,10 +5626,9 @@ pub fn use_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
         return Ok(false);
     }
 
-    core_battle_effects::run_applying_effect_event(
+    core_battle_effects::run_effect_event::<_, ()>(
         &mut context.forward_applying_effect_context(EffectHandle::Item(item.clone()))?,
         fxlang::BattleEvent::Use,
-        fxlang::VariableInput::default(),
     );
 
     Ok(true)
@@ -5637,7 +5743,7 @@ pub fn player_use_item_internal(
     }
 
     match target {
-        Some(target) => core_battle_effects::run_applying_effect_event_expecting_void(
+        Some(target) => core_battle_effects::run_effect_event_with_input::<_, _, ()>(
             &mut context.as_battle_context_mut().applying_effect_context(
                 EffectHandle::Item(item_id.clone()),
                 None,
@@ -5645,7 +5751,7 @@ pub fn player_use_item_internal(
                 Some(EffectHandle::Condition(Id::from_known("playeruseditem"))),
             )?,
             fxlang::BattleEvent::PlayerUse,
-            fxlang::VariableInput::from_iter([input.input_for_fxlang_callback()]),
+            input.input_for_fxlang_callback(),
         ),
         None => (),
     }
@@ -5692,7 +5798,7 @@ pub fn restore_pp(
     let amount = if force_healing_effect(context) {
         amount
     } else {
-        core_battle_effects::run_event_for_applying_effect_expecting_u8(
+        core_battle_effects::run_event_with_relay::<_, u8>(
             context,
             fxlang::BattleEvent::RestorePp,
             amount,
@@ -5737,6 +5843,22 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> 
         .filter(|(_, val)| *val > 0)
         .collect();
     core_battle_logs::clear_negative_boosts(context)?;
+    Ok(())
+}
+
+/// Clears all positive boosts on the target Mon.
+pub fn clear_positive_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
+    if !context.target().active {
+        return Ok(());
+    }
+    context.target_mut().volatile_state.boosts = context
+        .target()
+        .volatile_state
+        .boosts
+        .non_zero_iter()
+        .filter(|(_, val)| *val < 0)
+        .collect();
+    core_battle_logs::clear_positive_boosts(context)?;
     Ok(())
 }
 
@@ -5829,7 +5951,7 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
         .data
         .catch_rate;
 
-    let catch_rate = core_battle_effects::run_event_for_applying_effect_expecting_u64(
+    let catch_rate = core_battle_effects::run_event_with_relay::<_, u64>(
         context,
         fxlang::BattleEvent::ModifySpeciesCatchRate,
         catch_rate as u64,
@@ -5838,7 +5960,7 @@ fn calculate_modified_catch_rate(context: &mut ApplyingEffectContext) -> Result<
     let catch_rate = catch_rate.min(255);
     let a = a * catch_rate;
 
-    let a = core_battle_effects::run_event_for_applying_effect_expecting_u64(
+    let a = core_battle_effects::run_event_with_relay::<_, u64>(
         context,
         fxlang::BattleEvent::ModifyCatchRate,
         a.floor(),
@@ -5899,7 +6021,7 @@ pub fn end_battle(context: &mut Context) -> Result<()> {
     {
         Mon::recalculate_base_stats(
             &mut context.mon_context(mon)?,
-            RecalculateBaseStatsHpPolicy::KeepHealthRatioSilently,
+            RecalculateStatsHpPolicy::KeepHealthRatio { silent: true },
         )?;
     }
 
@@ -6070,12 +6192,21 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     // Set the species first, for the baseline transformation.
     let species = target_context.mon().volatile_state.species.clone();
     context.target_mut().volatile_state.transformed = true;
-    Mon::set_species(&mut context.target_context()?, &Id::from(species))?;
+    Mon::set_species(
+        &mut context.target_context()?,
+        &Id::from(species),
+        RecalculateStatsHpPolicy::DoNotUpdate,
+    )?;
 
     // Then, manually set everything else.
     context.target_mut().volatile_state.weight = weight;
     context.target_mut().volatile_state.types = types;
-    Mon::set_stats(&mut context.target_context()?, stats, false)?;
+    Mon::set_stats(
+        &mut context.target_context()?,
+        stats,
+        false,
+        RecalculateStatsHpPolicy::DoNotUpdate,
+    )?;
     context.target_mut().volatile_state.boosts = boosts;
     set_ability(context, &ability_id, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;
@@ -6110,10 +6241,11 @@ pub fn end_illusion(context: &mut ApplyingEffectContext) -> Result<bool> {
 }
 
 /// The type of forme change being applied to a Mon in [`forme_change`].
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FormeChangeType {
     Temporary,
     Permanent,
+    PermanentRevertOnExit,
     MegaEvolution,
     PrimalReversion,
     UltraBurst,
@@ -6124,9 +6256,11 @@ impl FormeChangeType {
     pub fn permanent(&self) -> bool {
         match self {
             Self::Temporary | Self::Gigantamax => false,
-            Self::Permanent | Self::MegaEvolution | Self::PrimalReversion | Self::UltraBurst => {
-                true
-            }
+            Self::Permanent
+            | Self::PermanentRevertOnExit
+            | Self::MegaEvolution
+            | Self::PrimalReversion
+            | Self::UltraBurst => true,
         }
     }
 }
@@ -6141,7 +6275,13 @@ pub fn forme_change(
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
 
-    if !Mon::set_species(&mut context.target_context()?, species)? {
+    if !Mon::set_species(
+        &mut context.target_context()?,
+        species,
+        RecalculateStatsHpPolicy::KeepDamageTaken {
+            silent: forme_change_type.permanent(),
+        },
+    )? {
         return Ok(false);
     }
 
@@ -6164,7 +6304,9 @@ pub fn forme_change(
     }
 
     match forme_change_type {
-        FormeChangeType::Temporary | FormeChangeType::Permanent => {
+        FormeChangeType::Temporary
+        | FormeChangeType::Permanent
+        | FormeChangeType::PermanentRevertOnExit => {
             core_battle_logs::forme_change(context)?;
         }
         FormeChangeType::MegaEvolution => {
@@ -6187,6 +6329,10 @@ pub fn forme_change(
         set_ability(context, &new_ability, false, true, true)?;
     }
 
+    if forme_change_type == FormeChangeType::PermanentRevertOnExit {
+        context.target_mut().revert_forme_change_on_exit = true;
+    }
+
     Ok(true)
 }
 
@@ -6201,57 +6347,69 @@ pub fn revert_on_exit(context: &mut ApplyingEffectContext) -> Result<()> {
             | MonSpecialFormeChangeType::UltraBurst
             | MonSpecialFormeChangeType::Gigantamax,
         ) => true,
-        None => false,
+        None => context.target().revert_forme_change_on_exit,
     };
     let needs_revert = needs_mechanic_revert || needs_forme_change_revert;
     if !needs_revert {
         return Ok(());
     }
 
-    revert(context)
+    revert(
+        context,
+        RecalculateStatsHpPolicy::KeepDamageTaken { silent: false },
+    )
 }
 
-fn revert(context: &mut ApplyingEffectContext) -> Result<()> {
+fn revert(context: &mut ApplyingEffectContext, hp_policy: RecalculateStatsHpPolicy) -> Result<()> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
 
-    if let Some(special_forme_change_type) = context.target().special_forme_change_type {
-        let base_species_update = match special_forme_change_type {
+    let revert_forme = context.target().special_forme_change_type.is_some()
+        || context.target().revert_forme_change_on_exit;
+    let base_species_update = match context.target().special_forme_change_type {
+        Some(special_forme_change_type) => match special_forme_change_type {
             MonSpecialFormeChangeType::MegaEvolution
             | MonSpecialFormeChangeType::PrimalReversion
             | MonSpecialFormeChangeType::UltraBurst => true,
             MonSpecialFormeChangeType::Gigantamax => false,
-        };
+        },
+        None => context.target().revert_forme_change_on_exit,
+    };
 
+    if revert_forme {
         let species = context.target().original_base_species.clone();
         let ability = context.target().original_base_ability.clone();
 
         {
             let mut context = context.target_context()?;
-            Mon::set_species(&mut context, &species)?;
+            Mon::set_species(&mut context, &species, hp_policy)?;
             if base_species_update {
                 core_battle_logs::species_change(&mut context)?;
                 Mon::set_base_species(&mut context, &species, &ability)?;
             }
         }
 
-        match special_forme_change_type {
-            MonSpecialFormeChangeType::MegaEvolution => {
+        match context.target().special_forme_change_type {
+            Some(MonSpecialFormeChangeType::MegaEvolution) => {
                 core_battle_logs::revert_mega_evolution(context)?;
             }
-            MonSpecialFormeChangeType::PrimalReversion => {
+            Some(MonSpecialFormeChangeType::PrimalReversion) => {
                 core_battle_logs::revert_primal_reversion(context)?;
             }
-            MonSpecialFormeChangeType::UltraBurst => {
+            Some(MonSpecialFormeChangeType::UltraBurst) => {
                 core_battle_logs::revert_ultra_burst(context)?;
             }
-            MonSpecialFormeChangeType::Gigantamax => {
+            Some(MonSpecialFormeChangeType::Gigantamax) => {
                 core_battle_logs::revert_gigantamax(context)?;
+            }
+            None => {
+                core_battle_logs::forme_change(context)?;
             }
         }
 
         context.target_mut().special_forme_change_type = None;
+        context.target_mut().revert_forme_change_on_exit = false;
     }
 
     if context.target().dynamaxed {
@@ -6283,18 +6441,12 @@ pub fn mega_evolve(context: &mut MonContext) -> Result<bool> {
         &mega_evolution.species,
         FormeChangeType::MegaEvolution,
     )? {
-        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(false);
     }
 
     context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::MegaEvolution);
-    context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Success);
 
-    core_battle_effects::run_event_for_mon(
-        context,
-        fxlang::BattleEvent::AfterMegaEvolution,
-        fxlang::VariableInput::default(),
-    );
+    core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::AfterMegaEvolution);
 
     context.player_mut().can_mega_evolve = false;
     Ok(true)
@@ -6337,12 +6489,10 @@ pub fn ultra_burst(context: &mut MonContext) -> Result<bool> {
         &ultra_burst.species,
         FormeChangeType::UltraBurst,
     )? {
-        context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Failed);
         return Ok(false);
     }
 
     context.mon_mut().special_forme_change_type = Some(MonSpecialFormeChangeType::UltraBurst);
-    context.mon_mut().volatile_state.move_this_turn_outcome = Some(MoveOutcome::Success);
     context.player_mut().can_ultra_burst = false;
     Ok(true)
 }
@@ -6396,10 +6546,9 @@ pub fn dynamax(context: &mut MonContext) -> Result<bool> {
         None,
     )?;
 
-    if !core_battle_effects::run_event_for_mon(
+    if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
         &mut context.target_context()?,
         fxlang::BattleEvent::BeforeDynamax,
-        fxlang::VariableInput::default(),
     ) {
         return Ok(false);
     }
@@ -6420,7 +6569,7 @@ pub fn dynamax(context: &mut MonContext) -> Result<bool> {
     context.target_mut().dynamaxed = true;
     Mon::update_max_hp(
         &mut context.target_context()?,
-        RecalculateBaseStatsHpPolicy::KeepHealthRatio,
+        RecalculateStatsHpPolicy::KeepHealthRatio { silent: false },
     )?;
 
     context.target_context()?.player_mut().can_dynamax = false;
@@ -6436,13 +6585,13 @@ pub fn end_dynamax(context: &mut ApplyingEffectContext) -> Result<()> {
     context.target_mut().dynamaxed = false;
 
     if context.target().special_forme_change_type == Some(MonSpecialFormeChangeType::Gigantamax) {
-        revert(context)?;
+        revert(context, RecalculateStatsHpPolicy::DoNotUpdate)?;
     }
     core_battle_logs::revert_dynamax(context)?;
     remove_volatile(context, &Id::from_known("dynamax"), false)?;
     Mon::update_max_hp(
         &mut context.target_context()?,
-        RecalculateBaseStatsHpPolicy::KeepHealthRatioCeiling,
+        RecalculateStatsHpPolicy::KeepHealthRatioCeiling,
     )?;
     Ok(())
 }
@@ -6542,10 +6691,9 @@ pub fn terastallize(context: &mut MonContext) -> Result<bool> {
         None,
     )?;
 
-    if !core_battle_effects::run_event_for_mon(
+    if !*core_battle_effects::run_event::<_, DefaultTrueBool>(
         &mut context.target_context()?,
         fxlang::BattleEvent::BeforeTerastallization,
-        fxlang::VariableInput::default(),
     ) {
         return Ok(false);
     }
@@ -6560,10 +6708,9 @@ pub fn terastallize(context: &mut MonContext) -> Result<bool> {
         None,
     )?;
 
-    core_battle_effects::run_event_for_mon(
+    core_battle_effects::run_event::<_, ()>(
         &mut context.target_context()?,
         fxlang::BattleEvent::AfterTerastallization,
-        fxlang::VariableInput::default(),
     );
 
     context.target_context()?.player_mut().can_terastallize = false;
@@ -6713,13 +6860,13 @@ pub fn z_move_by_move_data(
     context: &mut MonContext,
     move_id: &Id,
     move_data: &MoveData,
-    allow_type_change: bool,
+    external: bool,
 ) -> Result<Option<Id>> {
     let z_crystal = match usable_z_crystal(context)? {
         Some(z_crystal) => z_crystal,
         None => return Ok(None),
     };
-    z_move(context, move_id, move_data, &z_crystal, allow_type_change)
+    z_move(context, move_id, move_data, &z_crystal, external)
 }
 
 /// Looks up the Z-Move for the given move data and Z-Crystal.
@@ -6728,20 +6875,22 @@ fn z_move(
     move_id: &Id,
     move_data: &MoveData,
     z_crystal: &ZCrystalData,
-    allow_type_change: bool,
+    external: bool,
 ) -> Result<Option<Id>> {
-    let index = match context.mon().move_slot_index(move_id) {
-        Some(index) => index,
-        None => return Ok(None),
-    };
-    let move_slot = context
-        .mon()
-        .volatile_state
-        .move_slots
-        .get(index)
-        .wrap_expectation_with_format(format_args!("expected move slot at index {index}"))?;
-    if move_slot.pp == 0 {
-        return Ok(None);
+    if !external {
+        let index = match context.mon().move_slot_index(move_id) {
+            Some(index) => index,
+            None => return Ok(None),
+        };
+        let move_slot = context
+            .mon()
+            .volatile_state
+            .move_slots
+            .get(index)
+            .wrap_expectation_with_format(format_args!("expected move slot at index {index}"))?;
+        if move_slot.pp == 0 {
+            return Ok(None);
+        }
     }
 
     let z_move = match &z_crystal.source {
@@ -6755,28 +6904,32 @@ fn z_move(
                 Some(Id::from(z_crystal.into.as_str()))
             }
         }
-        Some(ZCrystalSource::Type(move_type)) if allow_type_change => {
-            let id = match move_data.primary_type {
-                Type::Flying => "supersonicskystrike",
-                Type::Dark => "blackholeeclipse",
-                Type::Fire => "infernooverdrive",
-                Type::Bug => "savagespinout",
-                Type::Water => "hydrovortex",
-                Type::Ice => "subzeroslammer",
-                Type::Fighting => "alloutpummeling",
-                Type::Electric => "gigavolthavoc",
-                Type::Psychic => "shatteredpsyche",
-                Type::Poison => "aciddownpour",
-                Type::Grass => "bloomdoom",
-                Type::Ghost => "neverendingnightmare",
-                Type::Ground => "tectonicrage",
-                Type::Rock => "continentalcrush",
-                Type::Fairy => "twinkletackle",
-                Type::Steel => "corkscrewcrash",
-                Type::Normal | Type::None | Type::Stellar => "breakneckblitz",
-                Type::Dragon => "devastatingdrake",
-            };
-            Some(Id::from(id))
+        Some(ZCrystalSource::Type(move_type)) if external => {
+            if move_data.category == MoveCategory::Status {
+                Some(move_id.clone())
+            } else {
+                let id = match move_data.primary_type {
+                    Type::Flying => "supersonicskystrike",
+                    Type::Dark => "blackholeeclipse",
+                    Type::Fire => "infernooverdrive",
+                    Type::Bug => "savagespinout",
+                    Type::Water => "hydrovortex",
+                    Type::Ice => "subzeroslammer",
+                    Type::Fighting => "alloutpummeling",
+                    Type::Electric => "gigavolthavoc",
+                    Type::Psychic => "shatteredpsyche",
+                    Type::Poison => "aciddownpour",
+                    Type::Grass => "bloomdoom",
+                    Type::Ghost => "neverendingnightmare",
+                    Type::Ground => "tectonicrage",
+                    Type::Rock => "continentalcrush",
+                    Type::Fairy => "twinkletackle",
+                    Type::Steel => "corkscrewcrash",
+                    Type::Normal | Type::None | Type::Stellar => "breakneckblitz",
+                    Type::Dragon => "devastatingdrake",
+                };
+                Some(Id::from(id))
+            }
         }
         _ => None,
     };
@@ -6813,4 +6966,430 @@ fn usable_z_crystal(context: &mut MonContext) -> Result<Option<ZCrystalData>> {
         return Ok(None);
     }
     Ok(Some(z_crystal))
+}
+
+struct ConditionContext<'context, 'battle, 'data, Context> {
+    context: &'context mut Context,
+    effect_id: Id,
+    effect_handle: EffectHandle,
+    _phantom: (PhantomData<&'battle ()>, PhantomData<&'data ()>),
+}
+
+trait StartConditionCallbacks<'context, 'battle, 'data, Context>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+{
+    #[allow(unused_variables)]
+    fn event_input(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> fxlang::VariableInput {
+        fxlang::VariableInput::default()
+    }
+
+    fn pre_start(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
+    fn exists(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
+    fn pre_apply(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
+    fn apply(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+        effect_state: fxlang::EffectState,
+    ) -> Result<()>;
+
+    fn rollback(
+        self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+
+    #[allow(unused_variables)]
+    fn log(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    fn post_start(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+
+    fn end(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+}
+
+fn start_condition<'context, 'battle, 'data, Context, Callbacks>(
+    context: &'context mut Context,
+    id: &Id,
+    location: AppliedEffectLocation,
+    link_to: Option<&AppliedEffectHandle>,
+    mut callbacks: Callbacks,
+) -> Result<bool>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+    Callbacks: StartConditionCallbacks<'context, 'battle, 'data, Context>,
+{
+    let effect_handle = context
+        .as_battle_context_mut()
+        .battle_mut()
+        .get_effect_handle_by_id(id)?
+        .clone();
+    let effect_id = effect_handle
+        .try_id()
+        .wrap_expectation("condition must have an id")?
+        .clone();
+
+    let applied_effect_handle = AppliedEffectHandle::new(effect_handle.clone(), location);
+
+    let target_handle = context.target();
+    let source_handle = context.source();
+
+    let (start_event, restart_event, modify_duration_event) = if location.mon_handle().is_some() {
+        (
+            fxlang::BattleEvent::Start,
+            fxlang::BattleEvent::Restart,
+            fxlang::BattleEvent::ModifyDuration,
+        )
+    } else if location.side_index().is_some() {
+        (
+            fxlang::BattleEvent::SideStart,
+            fxlang::BattleEvent::SideRestart,
+            fxlang::BattleEvent::ModifySideDuration,
+        )
+    } else if location.slot_index().is_some() {
+        (
+            fxlang::BattleEvent::SlotStart,
+            fxlang::BattleEvent::SlotRestart,
+            fxlang::BattleEvent::ModifySlotDuration,
+        )
+    } else if location.field() {
+        (
+            fxlang::BattleEvent::FieldStart,
+            fxlang::BattleEvent::FieldRestart,
+            fxlang::BattleEvent::ModifyFieldDuration,
+        )
+    } else {
+        return Err(general_error("condition applied to an undefined location"));
+    };
+
+    let scoped_context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    let context: &mut Context = &mut *scoped_context;
+    // SAFETY: We know that the context was passed into this function with lifetime 'context. We
+    // give ownership to the scope guard to run deferred logic when we exit the function. However,
+    // we still want to use the context at its original lifetime (for the callbacks object).
+    //
+    // This is safe because we know context has lifetime 'context, and the scope guard only owns the
+    // mutable borrow itself (and won't do anything with it until the function ends).
+    let context: &'context mut Context = unsafe { context.unsafely_detach_borrow_mut() };
+
+    let mut context = ConditionContext {
+        context,
+        effect_id,
+        effect_handle,
+        _phantom: (PhantomData, PhantomData),
+    };
+
+    let event_input = callbacks.event_input(&mut context);
+
+    if !callbacks.pre_start(&mut context)? {
+        return Ok(false);
+    }
+
+    let mut restarted = false;
+
+    if callbacks.exists(&mut context)? {
+        if !core_battle_effects::run_effect_event_with_options::<_, _, bool>(
+            context.context,
+            restart_event,
+            event_input.clone(),
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(applied_effect_handle.clone()),
+            },
+        ) {
+            return Ok(false);
+        }
+        restarted = true;
+    }
+
+    if !restarted {
+        if !callbacks.pre_apply(&mut context)? {
+            return Ok(false);
+        }
+
+        let effect = context.context.effect();
+        let mut effect_state = fxlang::EffectState::initial_effect_state(
+            context.context.as_battle_context_mut(),
+            effect.as_ref(),
+            target_handle,
+            source_handle,
+        )?;
+
+        let mut condition_duration = None;
+        if let Some(condition) = CoreBattle::get_parsed_effect_by_handle(
+            context.context.as_battle_context_mut(),
+            &context.effect_handle,
+        )? && let Some(duration) = condition.condition().duration
+        {
+            condition_duration = Some(duration);
+        }
+
+        // Note that the condition is not yet applied, so Duration event callbacks do not get an
+        // EffectState.
+        if let Some(duration) = core_battle_effects::run_effect_event_with_options::<_, _, Option<u8>>(
+            context.context,
+            fxlang::BattleEvent::Duration,
+            (),
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(AppliedEffectHandle::new(
+                    context.effect_handle.clone(),
+                    AppliedEffectLocation::None,
+                )),
+            },
+        ) {
+            condition_duration = Some(duration);
+        }
+
+        if let Some(duration) = condition_duration {
+            let input = fxlang::VariableInput::from_iter(
+                core::iter::once(duration.into())
+                    .chain(event_input.clone().into_iter())
+                    .chain(core::iter::once(context.effect_handle.clone().into())),
+            );
+            let duration = core_battle_effects::run_event_with_input::<_, _, Option<u8>>(
+                context.context,
+                modify_duration_event,
+                input,
+            )
+            .unwrap_or(duration);
+            effect_state.set_duration(duration);
+        }
+
+        callbacks.apply(&mut context, effect_state)?;
+
+        if !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
+            context.context,
+            start_event,
+            event_input.clone(),
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(applied_effect_handle.clone()),
+            },
+        ) {
+            callbacks.rollback(&mut context)?;
+            return Ok(false);
+        }
+    }
+
+    if let Some(link_to) = link_to {
+        LinkedEffectsManager::link(
+            context.context.as_battle_context_mut(),
+            link_to,
+            &applied_effect_handle,
+        )?;
+    }
+
+    if !restarted {
+        callbacks.log(&mut context)?;
+        callbacks.post_start(&mut context)?;
+    }
+
+    // If the duration is explicitly zero, we end the condition immediately.
+    if let Some(effect_state_connector) = applied_effect_handle.effect_state_connector()
+        && effect_state_connector.exists(context.context.as_battle_context_mut())?
+        && effect_state_connector
+            .get_mut(context.context.as_battle_context_mut())?
+            .duration()
+            .is_some_and(|duration| duration == 0)
+    {
+        callbacks.end(&mut context)?;
+    }
+
+    Ok(true)
+}
+
+trait EndConditionCallbacks<'context, 'battle, 'data, Context>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+{
+    #[allow(unused_variables)]
+    fn identify(&mut self, context: &mut &'context mut Context) -> Option<Id> {
+        None
+    }
+
+    #[allow(unused_variables)]
+    fn event_input(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> fxlang::VariableInput {
+        fxlang::VariableInput::default()
+    }
+
+    fn pre_end(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<bool>;
+
+    #[allow(unused_variables)]
+    fn reset(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    #[allow(unused_variables)]
+    fn log(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    fn remove(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+
+    fn post_end(
+        &mut self,
+        context: &mut ConditionContext<'context, 'battle, 'data, Context>,
+    ) -> Result<()>;
+}
+
+fn end_condition<'context, 'battle, 'data, Context, Callbacks>(
+    mut context: &'context mut Context,
+    id: Option<&Id>,
+    location: AppliedEffectLocation,
+    no_events: bool,
+    mut callbacks: Callbacks,
+) -> Result<bool>
+where
+    'data: 'battle,
+    Context: core_battle_effects::EventContext<'battle, 'data>,
+    Callbacks: EndConditionCallbacks<'context, 'battle, 'data, Context>,
+{
+    let id = match id {
+        Some(id) => id.clone(),
+        None => match callbacks.identify(&mut context) {
+            Some(id) => id,
+            None => return Ok(false),
+        },
+    };
+    let effect_handle = context
+        .as_battle_context_mut()
+        .battle_mut()
+        .get_effect_handle_by_id(&id)?
+        .clone();
+    let effect_id = effect_handle
+        .try_id()
+        .wrap_expectation("condition must have an id")?
+        .clone();
+
+    let applied_effect_handle = AppliedEffectHandle::new(effect_handle.clone(), location);
+
+    let end_event = if location.mon_handle().is_some() {
+        fxlang::BattleEvent::End
+    } else if location.side_index().is_some() {
+        fxlang::BattleEvent::SideEnd
+    } else if location.slot_index().is_some() {
+        fxlang::BattleEvent::SlotEnd
+    } else if location.field() {
+        fxlang::BattleEvent::FieldEnd
+    } else {
+        return Err(general_error(
+            "condition is ending on an undefined location",
+        ));
+    };
+
+    let scoped_context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    let context: &mut Context = &mut *scoped_context;
+    // SAFETY: We know that the context was passed into this function with lifetime 'context. We
+    // give ownership to the scope guard to run deferred logic when we exit the function. However,
+    // we still want to use the context at its original lifetime (for the callbacks object).
+    //
+    // This is safe because we know context has lifetime 'context, and the scope guard only owns the
+    // mutable borrow itself (and won't do anything with it until the function ends).
+    let context: &'context mut Context = unsafe { context.unsafely_detach_borrow_mut() };
+
+    let mut context = ConditionContext {
+        context,
+        effect_id,
+        effect_handle,
+        _phantom: (PhantomData, PhantomData),
+    };
+
+    let event_input = callbacks.event_input(&mut context);
+
+    if !callbacks.pre_end(&mut context)? {
+        return Ok(false);
+    }
+
+    if let Some(effect_state_connector) = applied_effect_handle.effect_state_connector()
+        && let exists = effect_state_connector.exists(context.context.as_battle_context_mut())?
+        && (!exists
+            || effect_state_connector
+                .get_mut(context.context.as_battle_context_mut())?
+                .ending())
+    {
+        return Ok(false);
+    }
+
+    if !no_events {
+        core_battle_effects::run_effect_event_with_options::<_, _, ()>(
+            context.context,
+            end_event,
+            event_input,
+            core_battle_effects::RunEffectEventOptions {
+                effect: Some(applied_effect_handle.clone()),
+            },
+        );
+    }
+
+    callbacks.log(&mut context)?;
+
+    // We could try to get the internal EffectContext within the Context object, but this causes
+    // more lifetime headaches. Just recreate it if it exists.
+    if let Some(effect) = context.context.effect() {
+        let source_effect = context.context.source_effect();
+        LinkedEffectsManager::remove(
+            &mut context
+                .context
+                .as_battle_context_mut()
+                .effect_context(effect, source_effect)?,
+            applied_effect_handle.effect_handle.clone(),
+            applied_effect_handle.location,
+        )?;
+    }
+
+    callbacks.remove(&mut context)?;
+
+    callbacks.reset(&mut context)?;
+
+    if !no_events {
+        callbacks.post_end(&mut context)?;
+    }
+
+    Ok(true)
 }

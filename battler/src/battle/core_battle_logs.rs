@@ -1305,6 +1305,21 @@ pub fn clear_negative_boosts(context: &mut ApplyingEffectContext) -> Result<()> 
     )
 }
 
+pub fn clear_positive_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "clearpositiveboosts".to_owned(),
+        activation,
+    )
+}
+
 pub fn uncatchable(context: &mut PlayerContext, target: MonHandle, wild: bool) -> Result<()> {
     let mut additional = Vec::new();
     if !wild {

@@ -1910,12 +1910,7 @@
     },
     "evos": ["Floette"],
     "base_forme": "Red",
-    "cosmetic_formes": [
-      "Flabébé-Yellow",
-      "Flabébé-Orange",
-      "Flabébé-Blue",
-      "Flabébé-White"
-    ],
+    "cosmetic_formes": ["Flabébé-Yellow", "Flabébé-Orange", "Flabébé-Blue", "Flabébé-White"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -2013,12 +2008,7 @@
     },
     "base_forme": "Red",
     "formes": ["Floette-Eternal"],
-    "cosmetic_formes": [
-      "Floette-Yellow",
-      "Floette-Orange",
-      "Floette-Blue",
-      "Floette-White"
-    ],
+    "cosmetic_formes": ["Floette-Yellow", "Floette-Orange", "Floette-Blue", "Floette-White"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],
@@ -2110,12 +2100,7 @@
       "use_item": "Shiny Stone"
     },
     "base_forme": "Red",
-    "cosmetic_formes": [
-      "Florges-Yellow",
-      "Florges-Orange",
-      "Florges-Blue",
-      "Florges-White"
-    ],
+    "cosmetic_formes": ["Florges-Yellow", "Florges-Orange", "Florges-Blue", "Florges-White"],
     "flags": [],
     "learnset": {
       "afteryou": ["T"],

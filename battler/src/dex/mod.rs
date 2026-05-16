@@ -10,6 +10,7 @@ mod species_dex;
 pub use ability_dex::AbilityDex;
 pub use clause_dex::ClauseDex;
 pub use common::{
+    LookupAliasOutput,
     ResourceCache,
     ResourceDex,
     ResourceLookup,

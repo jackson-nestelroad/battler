@@ -17,7 +17,9 @@ import {
     areTypesCompatible,
     EVENT_MODIFIERS,
     getVariableData,
-    getCustomVariables
+    getCustomVariables,
+    isRelevantDocument,
+    preprocessMetadata
 } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -35,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (fs.existsSync(metadataPath)) {
             try {
                 metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+                preprocessMetadata(metadata);
                 updateDecorations();
             } catch (e) {
                 console.error('Failed to load fxlang metadata', e);
@@ -105,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     function updateDecorations() {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) return;
+        if (!editor || !isRelevantDocument(editor.document)) return;
 
         const gutterRanges: vscode.Range[] = [];
         const marginDecorations: vscode.DecorationOptions[] = [];
@@ -152,7 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     function updateStatusBar() {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || !isRelevantDocument(editor.document)) {
             statusBarItem.hide();
             return;
         }
@@ -188,6 +191,24 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`fxlang line numbers: ${sessionShowLineNumbers ? 'on' : 'off'}`);
     });
 
+    let decorationTimeout: NodeJS.Timeout | undefined;
+    function debouncedUpdateDecorations() {
+        if (decorationTimeout) clearTimeout(decorationTimeout);
+        decorationTimeout = setTimeout(() => {
+            updateDecorations();
+            decorationTimeout = undefined;
+        }, 100);
+    }
+
+    let statusTimeout: NodeJS.Timeout | undefined;
+    function debouncedUpdateStatusBar() {
+        if (statusTimeout) clearTimeout(statusTimeout);
+        statusTimeout = setTimeout(() => {
+            updateStatusBar();
+            statusTimeout = undefined;
+        }, 50);
+    }
+
     vscode.window.onDidChangeActiveTextEditor(editor => {
         if (editor) {
             updateDecorations();
@@ -203,15 +224,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.window.onDidChangeTextEditorSelection(event => {
         if (event.textEditor === vscode.window.activeTextEditor) {
-            updateStatusBar();
+            debouncedUpdateStatusBar();
         }
     }, null, context.subscriptions);
 
     vscode.workspace.onDidChangeTextDocument(event => {
         const editor = vscode.window.activeTextEditor;
         if (editor && event.document === editor.document) {
-            updateDecorations();
-            updateStatusBar();
+            debouncedUpdateDecorations();
+            debouncedUpdateStatusBar();
         }
     }, null, context.subscriptions);
 
@@ -222,17 +243,18 @@ export function activate(context: vscode.ExtensionContext) {
         languages,
         {
             provideCodeLenses(document: vscode.TextDocument) {
+                if (!isRelevantDocument(document)) return [];
                 const lenses: vscode.CodeLens[] = [];
-                for (let i = 0; i < document.lineCount; i++) {
-                    const line = document.lineAt(i);
-                    if (line.text.includes('"callbacks"')) {
-                        const position = new vscode.Position(i, line.text.indexOf('"callbacks"'));
-                        const range = new vscode.Range(position, position);
-                        lenses.push(new vscode.CodeLens(range, {
-                            title: "⚡ fxlang active",
-                            command: ""
-                        }));
-                    }
+                const text = document.getText();
+                let index = text.indexOf('"callbacks"');
+                while (index !== -1) {
+                    const position = document.positionAt(index);
+                    const range = new vscode.Range(position, position);
+                    lenses.push(new vscode.CodeLens(range, {
+                        title: "⚡ fxlang active",
+                        command: ""
+                    }));
+                    index = text.indexOf('"callbacks"', index + 1);
                 }
                 return lenses;
             }
@@ -272,13 +294,21 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
                     const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Field);
                     item.documentation = new vscode.MarkdownString(data.description);
                     
-                    const isMoveOnly = (data as any).only_applicable_to_move;
-                    const memberTypeStr = getDisplayType(data.type, (data as any).item_type);
-                    item.detail = isMoveOnly 
-                        ? `(Move Member of ${type} -> ${memberTypeStr})` 
-                        : `(Member of ${type} -> ${memberTypeStr})`;
+                    const isMoveOnly = data.only_applicable_to_move;
+                    const isActiveMoveOnly = data.only_applicable_to_active_move;
+                    const memberTypeStr = getDisplayType(data.type, data.item_type);
+
+                    if (isActiveMoveOnly && type !== 'ActiveMove') {
+                        item.detail = `(Active Move Member of ${type} -> ${memberTypeStr})`;
+                        item.sortText = '1_' + name;
+                    } else if (isMoveOnly && type !== 'Move') {
+                        item.detail = `(Move Member of ${type} -> ${memberTypeStr})`;
+                        item.sortText = '1_' + name;
+                    } else {
+                        item.detail = `(Member of ${type} -> ${memberTypeStr})`;
+                        item.sortText = '0_' + name;
+                    }
                         
-                    item.sortText = '0_' + name;
                     item.filterText = `${varName}.${name}`;
                     if (wordRange) item.range = wordRange;
                     item.insertText = `${varName}.${name}`;
@@ -488,15 +518,15 @@ class FxHoverProvider implements vscode.HoverProvider {
                                 let memberData = typeMembers[lastMember];
                                 
                                 if (memberData) {
-                                    const isMoveOnly = (memberData as any).only_applicable_to_move;
-                                    const isActiveMoveOnly = (memberData as any).only_applicable_to_active_move;
+                                    const isMoveOnly = memberData.only_applicable_to_move;
+                                    const isActiveMoveOnly = memberData.only_applicable_to_active_move;
                                     let markdownText = `**Member \`${lastMember}\`** of \`${parentType}\`\n\n`;
                                     if (isActiveMoveOnly && parentType !== 'ActiveMove') {
                                         markdownText = `**Active Move Member \`${lastMember}\`** of \`${parentType}\` *(only applicable if \`ActiveMove\`)*\n\n`;
                                     } else if (isMoveOnly && parentType !== 'Move') {
                                         markdownText = `**Move Member \`${lastMember}\`** of \`${parentType}\` *(only applicable if \`Move\`)*\n\n`;
                                     }
-                                    const memberTypeStr = getDisplayType(memberData.type, (memberData as any).item_type);
+                                    const memberTypeStr = getDisplayType(memberData.type, memberData.item_type);
                                     markdownText += `Type: \`${memberTypeStr}\`\n\n${memberData.description}`;
                                     
                                     return new vscode.Hover(new vscode.MarkdownString(markdownText));

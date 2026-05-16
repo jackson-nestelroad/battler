@@ -24,7 +24,7 @@ fn rampardos() -> Result<TeamData> {
                     "ability": "Mold Breaker",
                     "moves": [
                         "Earthquake",
-                        "Hyper Voice"
+                        "Yawn"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -60,7 +60,7 @@ fn bastiodon() -> Result<TeamData> {
                 {
                     "name": "Bastiodon",
                     "species": "Bastiodon",
-                    "ability": "Soundproof",
+                    "ability": "Comatose",
                     "moves": [],
                     "nature": "Hardy",
                     "level": 50
@@ -147,8 +147,8 @@ fn mold_breaker_does_not_suppress_non_breakable_ability() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Rampardos,player-1,1|name:Hyper Voice|noanim",
-            "immune|mon:Bastiodon,player-2,1|from:ability:Soundproof",
+            "move|mon:Rampardos,player-1,1|name:Yawn|noanim",
+            "fail|mon:Rampardos,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

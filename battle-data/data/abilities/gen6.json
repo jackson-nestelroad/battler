@@ -74,7 +74,7 @@
           ["return"],
           "if $move.effect_state.reflected or func_call(move_has_flag: $move future) or func_call(move_has_flag: $move callsmove):",
           ["return"],
-          "if $move.typeless:",
+          "if $move.type == none:",
           ["return"],
           "if !func_call(set_types: $user [$move.type]):",
           ["return"],
@@ -173,10 +173,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_ally_set_status": [
-          "if $status.id == slp:",
-          ["log_block: with_target", "return false"]
-        ],
+        "on_ally_set_status": ["if $status.id == slp:", ["log_block: with_target", "return false"]],
         "on_ally_add_volatile": [
           "if $volatile.id == yawn:",
           [
@@ -192,15 +189,17 @@
     "name": "Stance Change",
     "flags": [
       "NoEntrainment",
+      "NoReceiver",
       "NoRolePlay",
-      "NoTrace",
       "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
       "Permanent"
     ],
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "if func_call(base_species: $user) != aegislash or $user.transformed:",
+          "if func_call(base_species: $user) != aegislash:",
           ["return"],
           "if $move.category == status and $move.id != kingsshield:",
           ["return"],
@@ -234,10 +233,7 @@
           "if func_call(move_has_flag: $move pulse):",
           ["return $base_power * 3/2"]
         ],
-        "on_prepare_hit": [
-          "if $move.id == healpulse:",
-          ["$move.effect_state.multiplier = 3/4"]
-        ]
+        "on_prepare_hit": ["if $move.id == healpulse:", ["$move.effect_state.multiplier = 3/4"]]
       }
     }
   },
@@ -246,10 +242,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_modify_def": [
-          "if $target.effective_terrain == grassyterrain:",
-          ["return $def * 3/2"]
-        ]
+        "on_modify_def": ["if $target.effective_terrain == grassyterrain:", ["return $def * 3/2"]]
       }
     }
   },
@@ -378,10 +371,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "$effect_state.active = true",
-          "set_weather: heavyrainweather"
-        ],
+        "on_start": ["$effect_state.active = true", "set_weather: heavyrainweather"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
           "if $field.weather == heavyrainweather and !($strong_weathers has $weather):",
@@ -402,10 +392,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_start": [
-          "$effect_state.active = true",
-          "set_weather: extremelyharshsunlight"
-        ],
+        "on_start": ["$effect_state.active = true", "set_weather: extremelyharshsunlight"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
           "if $field.weather == extremelyharshsunlight and !($strong_weathers has $weather):",

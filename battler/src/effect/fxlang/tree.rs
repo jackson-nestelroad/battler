@@ -238,8 +238,9 @@ pub struct BreakStatement;
 
 /// Statement -> Empty | FunctionCall | Assignment | IfStatement | ElseIfStatement |
 /// ForEachStatement | ReturnStatement | ContinueStatement | BreakStatement
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub enum Statement {
+    #[default]
     Empty,
     FunctionCall(FunctionCall),
     Assignment(Assignment),

@@ -90,7 +90,7 @@ fn rest_heals_and_causes_sleep_for_three_turns() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Charizard,player-1,1|name:Rest|target:Charizard,player-1,1",
+            "move|mon:Charizard,player-1,1|name:Rest|noanim",
             "fail|mon:Charizard,player-1,1|what:heal",
             "residual",
             "turn|turn:2",

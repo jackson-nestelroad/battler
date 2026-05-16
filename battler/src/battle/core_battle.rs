@@ -18,6 +18,7 @@ use core::{
 
 use anyhow::Result;
 use battler_data::{
+    ConditionData,
     DataStore,
     Id,
     Identifiable,
@@ -40,6 +41,7 @@ use itertools::Itertools;
 use zone_alloc::{
     ElementRef,
     ElementRefMut,
+    KeyedRegistry,
 };
 
 use crate::{
@@ -87,6 +89,7 @@ use crate::{
         Clock,
         UnsafelyDetachBorrowMut,
     },
+    conditions::Condition,
     config::Format,
     dex::Dex,
     effect::{
@@ -222,11 +225,18 @@ impl<'d> PublicCoreBattle<'d> {
     /// Pushes an outside effect to the battle, which will evaluate at the start of the next turn.
     ///
     /// This method is intended for one-off effects. Continual effects should be written as proper
-    /// conditions (e.g., weather, pseudo-weather, volatile status, etc.).
+    /// conditions (e.g., weather, pseudo-weather, volatile status, etc.) or outside conditions
+    /// ([`Self::push_outside_condition`]).
     ///
     /// Unlike regular effects, the given effect program is not cached and is re-parsed each time.
     pub fn push_outside_effect(&mut self, outside_effect: OutsideEffect) -> Result<()> {
         self.internal.push_outside_effect(outside_effect)
+    }
+
+    /// Pushes an outside condition to the battle, which can be referenced by outside effects for
+    /// applying continual effects on some part of the battle.
+    pub fn push_outside_condition(&mut self, outside_condition: ConditionData) -> Result<()> {
+        self.internal.push_outside_condition(outside_condition)
     }
 }
 
@@ -280,6 +290,8 @@ pub struct CoreBattle<'d> {
     registry: BattleRegistry,
     player_ids: HashMap<String, usize>,
     effect_handle_cache: HashMap<Id, EffectHandle>,
+
+    outside_conditions: KeyedRegistry<Id, Condition>,
 
     turn: u64,
     request: Option<RequestType>,
@@ -369,6 +381,7 @@ impl<'d> CoreBattle<'d> {
             registry,
             player_ids,
             effect_handle_cache: HashMap::default(),
+            outside_conditions: KeyedRegistry::default(),
             turn: 0,
             request: None,
             mid_turn: false,
@@ -663,6 +676,10 @@ impl<'d> CoreBattle<'d> {
     fn push_outside_effect(&mut self, outside_effect: OutsideEffect) -> Result<()> {
         Self::push_outside_effect_internal(&mut self.context(), outside_effect)
     }
+
+    fn push_outside_condition(&mut self, outside_condition: ConditionData) -> Result<()> {
+        Self::push_outside_condition_internal(&mut self.context(), outside_condition)
+    }
 }
 
 impl<'d> CoreBattle<'d> {
@@ -819,9 +836,10 @@ impl<'d> CoreBattle<'d> {
         // REQUIRED to use update_team. Then, validation can occur in the core battle engine, and
         // the interface into the battle engine can do additional validation (i.e., the player is
         // not using Mons it does not truly own).
-        let mut problems = core_battle_effects::run_event_for_player_expecting_string_list(
+        let mut problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
             context,
             fxlang::BattleEvent::ValidateTeam,
+            Vec::default(),
         );
         if context.player().team_size() == 0 {
             problems.push("Empty team is not allowed.".to_owned());
@@ -829,9 +847,10 @@ impl<'d> CoreBattle<'d> {
         for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
             let mut context = context.mon_context(mon)?;
 
-            let mut mon_problems = core_battle_effects::run_event_for_mon_expecting_string_list(
+            let mut mon_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
                 &mut context,
                 fxlang::BattleEvent::ValidateMon,
+                Vec::default(),
             );
             problems.append(&mut mon_problems);
         }
@@ -1324,24 +1343,10 @@ impl<'d> CoreBattle<'d> {
                     }
                 }
 
-                // Clears the weather, which then sets the default weather.
-                core_battle_actions::clear_weather(&mut context.field_effect_context(
-                    EffectHandle::Condition(Id::from_known("start")),
-                    None,
-                    None,
-                )?)?;
+                core_battle_actions::set_default_weather(context)?;
+                core_battle_actions::set_default_terrain(context)?;
 
-                // Clears the terrain, which then sets the default terrain.
-                core_battle_actions::clear_terrain(&mut context.field_effect_context(
-                    EffectHandle::Condition(Id::from_known("start")),
-                    None,
-                    None,
-                )?)?;
-
-                core_battle_effects::run_event_for_battle(
-                    context,
-                    fxlang::BattleEvent::StartBattle,
-                );
+                core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::StartBattle);
 
                 context.battle_mut().mid_turn = true;
             }
@@ -1393,15 +1398,13 @@ impl<'d> CoreBattle<'d> {
                     None,
                     None,
                 )?;
-                core_battle_effects::run_applying_effect_event(
+                core_battle_effects::run_effect_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
-                    fxlang::VariableInput::default(),
                 );
-                core_battle_effects::run_event_for_applying_effect(
+                core_battle_effects::run_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
-                    fxlang::VariableInput::default(),
                 );
             }
             Action::PriorityChargeMove(action) => {
@@ -1409,14 +1412,13 @@ impl<'d> CoreBattle<'d> {
                 if !context.mon().active || !context.mon().active {
                     return Ok(());
                 }
-                core_battle_effects::run_applying_effect_event(
+                core_battle_effects::run_effect_event::<_, ()>(
                     &mut context.applying_effect_context(
                         EffectHandle::InactiveMove(action.id.clone()),
                         None,
                         None,
                     )?,
                     fxlang::BattleEvent::PriorityChargeMove,
-                    fxlang::VariableInput::default(),
                 );
             }
             Action::MegaEvo(action) => {
@@ -1459,7 +1461,15 @@ impl<'d> CoreBattle<'d> {
             Action::Residual => {
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
-                core_battle_effects::run_event_for_residual(context, fxlang::BattleEvent::Residual);
+                core_battle_effects::run_event_with_options::<_, _, ()>(
+                    context,
+                    fxlang::BattleEvent::Residual,
+                    (),
+                    core_battle_effects::RunEventOptions {
+                        residual: true,
+                        ..Default::default()
+                    },
+                );
                 context.battle_mut().log(battle_log_entry!("residual"));
             }
             Action::Experience(action) => {
@@ -1773,7 +1783,7 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().registry.next_turn()?;
 
         core_battle_effects::run_event_for_each_active_mon(context, fxlang::BattleEvent::EndTurn)?;
-        core_battle_effects::run_event_for_battle(context, fxlang::BattleEvent::BattleEndTurn);
+        core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::BattleEndTurn);
 
         // Some clauses may forcefully end the battle at the end of a turn.
         if context.battle().ended {
@@ -1915,19 +1925,19 @@ impl<'d> CoreBattle<'d> {
             }
 
             let mut context = context.active_move_context(active_move_handle)?;
-            let priority = context.active_move().data.priority as i32;
-            let mut context = context.user_applying_effect_context(None)?;
+            let priority = context.active_move().data.priority;
 
-            let priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
-                &mut context,
+            let priority = core_battle_effects::run_event_with_relay::<_, i8>(
+                &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::ModifyPriority,
                 priority,
             );
 
-            action.priority = priority;
+            context.active_move_mut().priority = priority;
+            action.priority = priority as i32;
 
-            action.sub_priority = core_battle_effects::run_event_for_applying_effect_expecting_i32(
-                &mut context,
+            action.sub_priority = core_battle_effects::run_event_with_relay::<_, i32>(
+                &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::SubPriority,
                 0,
             );
@@ -2319,23 +2329,17 @@ impl<'d> CoreBattle<'d> {
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
             match entry.effect.clone() {
-                Some(effect) => core_battle_effects::run_event_for_applying_effect(
+                Some(effect) => core_battle_effects::run_event::<_, ()>(
                     &mut context.applying_effect_context(effect, entry.source, None)?,
                     fxlang::BattleEvent::Faint,
-                    fxlang::VariableInput::default(),
                 ),
-                None => core_battle_effects::run_event_for_mon(
+                None => core_battle_effects::run_event::<_, ()>(
                     &mut context,
                     fxlang::BattleEvent::Faint,
-                    fxlang::VariableInput::default(),
                 ),
             };
 
-            core_battle_effects::run_event_for_mon(
-                &mut context,
-                fxlang::BattleEvent::Exit,
-                fxlang::VariableInput::default(),
-            );
+            core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
@@ -2347,18 +2351,13 @@ impl<'d> CoreBattle<'d> {
 
         if !context.battle().ending {
             for ((mon_handle, effect), count) in fainted_count_by_source {
-                core_battle_effects::run_event_for_mon(
+                core_battle_effects::run_event_with_input::<_, _, ()>(
                     &mut context.mon_context(mon_handle)?,
                     fxlang::BattleEvent::AfterFainted,
-                    match effect {
-                        Some(effect) => fxlang::VariableInput::from_iter([
-                            fxlang::Value::UFraction(count.into()),
-                            fxlang::Value::Effect(effect),
-                        ]),
-                        None => fxlang::VariableInput::from_iter([fxlang::Value::UFraction(
-                            count.into(),
-                        )]),
-                    },
+                    [
+                        count.into(),
+                        effect.map(|val| val.into()).unwrap_or_default(),
+                    ],
                 );
             }
         }
@@ -2386,26 +2385,17 @@ impl<'d> CoreBattle<'d> {
             let mon_handle = context.mon_handle();
             core_battle_actions::give_out_experience(context.as_battle_context_mut(), mon_handle)?;
 
-            core_battle_effects::run_applying_effect_event_expecting_void(
+            core_battle_effects::run_effect_event::<_, ()>(
                 &mut context.applying_effect_context(
                     EffectHandle::Item(entry.item.clone()),
                     None,
                     None,
                 )?,
                 fxlang::BattleEvent::Catch,
-                fxlang::VariableInput::default(),
             );
-            core_battle_effects::run_event_for_mon(
-                &mut context,
-                fxlang::BattleEvent::Catch,
-                fxlang::VariableInput::default(),
-            );
+            core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Catch);
 
-            core_battle_effects::run_event_for_mon(
-                &mut context,
-                fxlang::BattleEvent::Exit,
-                fxlang::VariableInput::default(),
-            );
+            core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Caught)?;
             context.battle_mut().last_exited = Some(context.mon_handle());
@@ -2498,6 +2488,9 @@ impl<'d> CoreBattle<'d> {
         if self.dex.species.get_by_id(&id).is_ok() {
             return EffectHandle::Species(id);
         }
+        if self.outside_conditions.contains_key(&id) {
+            return EffectHandle::OutsideCondition(id);
+        }
         EffectHandle::NonExistent(NonExistentEffect::new(id))
     }
 
@@ -2546,6 +2539,13 @@ impl<'d> CoreBattle<'d> {
             )),
             EffectHandle::Species(id) => Ok(Effect::for_species(
                 context.battle().dex.species.get_by_id(id)?,
+            )),
+            EffectHandle::OutsideCondition(id) => Ok(Effect::for_condition(
+                context
+                    .battle()
+                    .outside_conditions
+                    .get(id)
+                    .wrap_error_with_format(format_args!("outside condition {id} not found"))?,
             )),
             EffectHandle::NonExistent(effect) => Ok(Effect::for_non_existent(effect.clone())),
         }
@@ -2620,6 +2620,24 @@ impl<'d> CoreBattle<'d> {
                 order,
             }),
         )?;
+        Ok(())
+    }
+
+    fn push_outside_condition_internal(
+        context: &mut Context,
+        outside_condition: ConditionData,
+    ) -> Result<()> {
+        let id = Id::from(outside_condition.name.as_str());
+        let condition = Condition::new(id.clone(), outside_condition);
+        if !context
+            .battle_mut()
+            .outside_conditions
+            .register(condition.id().clone(), condition)
+        {
+            return Err(general_error(format!(
+                "outside condition {id} already exists"
+            )));
+        }
         Ok(())
     }
 

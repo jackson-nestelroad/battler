@@ -133,11 +133,35 @@
   "$this",
 // ^^^^^ constant.language
 
-  "$x = silent"
+  "$x = silent",
 // ^^ variable.other
-//      ^^^^^^ constant.language
+//      ^^^^^^ string.regexp
+
+  "atk",
+// ^^^ constant.character.escape
+
+  "spatk",
+// ^^^^^ constant.character.escape
+
+  "fire",
+// ^^^^ constant.character.escape
+
+  "'water'",
+// ^ string.quoted.single
+//  ^^^^^ constant.character.escape
+//       ^ string.quoted.single
+
+  "atk:1",
+// ^^^ constant.character.escape
+//     ^ constant.numeric
+
+  "atk:-2",
+// ^^^ constant.character.escape
+//     ^^ constant.numeric
+
+  "'atk:1'"
+// ^ string.quoted.single
+//  ^^^ constant.character.escape
+//      ^ constant.numeric
+//       ^ string.quoted.single
 ]
-
-
-
-

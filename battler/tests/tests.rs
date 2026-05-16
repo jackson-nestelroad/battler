@@ -139,8 +139,30 @@ mod abilities {
     }
 
     mod gen7 {
+        mod battery_test;
+        mod battle_bond_test;
+        mod beast_boost_test;
+        mod berserk_test;
+        mod corrosion_test;
         mod dancer_test;
+        mod dazzling_test;
+        mod disguise_test;
+        mod electric_surge_test;
         mod emergency_exit_test;
+        mod fluffy_test;
+        mod innards_out_test;
+        mod liquid_voice_test;
+        mod long_reach_test;
+        mod merciless_test;
+        mod power_construct_test;
+        mod receiver_test;
+        mod rks_system_test;
+        mod schooling_test;
+        mod shields_down_test;
+        mod slush_rush_test;
+        mod soul_heart_test;
+        mod stakeout_test;
+        mod water_bubble_test;
     }
 
     mod gen8 {
@@ -245,6 +267,7 @@ mod items {
 
     mod gen7 {
         mod beast_ball_test;
+        mod electric_seed_test;
     }
 
     mod gen9 {
@@ -523,8 +546,32 @@ mod moves {
     }
 
     mod gen7 {
+        mod aurora_veil_test;
+        mod baneful_bunker_test;
+        mod beak_blast_test;
         mod burn_up_test;
+        mod core_enforcer_test;
+        mod floral_healing_test;
+        mod freezy_frost_test;
         mod instruct_test;
+        mod laser_focus_test;
+        mod mind_blown_test;
+        mod multi_attack_test;
+        mod pollen_puff_test;
+        mod purify_test;
+        mod revelation_dance_test;
+        mod sappy_seed_test;
+        mod shell_trap_test;
+        mod shore_up_test;
+        mod sparkling_aria_test;
+        mod sparkly_swirl_test;
+        mod spectral_thief_test;
+        mod speed_swap_test;
+        mod spotlight_test;
+        mod stomping_tantrum_test;
+        mod strength_sap_test;
+        mod throat_chop_test;
+        mod toxic_thread_test;
     }
 }
 

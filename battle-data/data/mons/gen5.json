@@ -8916,11 +8916,7 @@
     },
     "evos": ["Sawsbuck"],
     "base_forme": "Spring",
-    "cosmetic_formes": [
-      "Deerling-Summer",
-      "Deerling-Autumn",
-      "Deerling-Winter"
-    ],
+    "cosmetic_formes": ["Deerling-Summer", "Deerling-Autumn", "Deerling-Winter"],
     "flags": [],
     "learnset": {
       "agility": ["E"],
@@ -9017,11 +9013,7 @@
       "level": 34
     },
     "base_forme": "Spring",
-    "cosmetic_formes": [
-      "Sawsbuck-Summer",
-      "Sawsbuck-Autumn",
-      "Sawsbuck-Winter"
-    ],
+    "cosmetic_formes": ["Sawsbuck-Summer", "Sawsbuck-Autumn", "Sawsbuck-Winter"],
     "flags": [],
     "learnset": {
       "aromatherapy": ["L28"],
@@ -15082,12 +15074,7 @@
       "spd": 95,
       "spe": 99
     },
-    "cosmetic_formes": [
-      "Genesect-Douse",
-      "Genesect-Shock",
-      "Genesect-Burn",
-      "Genesect-Chill"
-    ],
+    "cosmetic_formes": ["Genesect-Douse", "Genesect-Shock", "Genesect-Burn", "Genesect-Chill"],
     "flags": ["Mythical"],
     "learnset": {
       "aerialace": ["M"],

@@ -370,6 +370,11 @@ impl<'event_state> Evaluator<'event_state> {
                 }
             }
         }
+        let value = match value {
+            Some(Value::Undefined) => None,
+            Some(value) => Some(value),
+            None => None,
+        };
         Ok(ProgramEvalResult::new(value))
     }
 

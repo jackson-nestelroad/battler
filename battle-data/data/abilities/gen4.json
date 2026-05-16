@@ -21,7 +21,7 @@
           [
             "if !func_call(boost: $target 'spe:1'):",
             ["log_immune: $target from_effect"],
-            "return stop"
+            "return stopfail"
           ]
         ]
       }
@@ -57,10 +57,7 @@
     "effect": {
       "callbacks": {
         "on_immunity": ["if $effect.id == hailweather:", ["return false"]],
-        "on_modify_accuracy": [
-          "if $field.weather == hailweather:",
-          ["return $acc * 4/5"]
-        ]
+        "on_modify_accuracy": ["if $field.weather == hailweather:", ["return $acc * 4/5"]]
       }
     }
   },
@@ -96,14 +93,8 @@
           "if !$target.item and $effect_state.activated:",
           ["add_volatile: $target $this.id"]
         ],
-        "on_after_use_item": [
-          "add_volatile: $target $this.id",
-          "$effect_state.activated = true"
-        ],
-        "on_after_take_item": [
-          "add_volatile: $target $this.id",
-          "$effect_state.activated = true"
-        ],
+        "on_after_use_item": ["add_volatile: $target $this.id", "$effect_state.activated = true"],
+        "on_after_take_item": ["add_volatile: $target $this.id", "$effect_state.activated = true"],
         "on_after_set_item": [
           "remove_volatile: $target $this.id",
           "$effect_state.activated = false"
@@ -156,10 +147,7 @@
     "effect": {
       "delegates": ["ability:waterabsorb"],
       "callbacks": {
-        "on_base_power": [
-          "if $move.type == fire:",
-          ["return $base_power * 5/4"]
-        ],
+        "on_base_power": ["if $move.type == fire:", ["return $base_power * 5/4"]],
         "on_weather": [
           "if $effect.is_raining:",
           ["heal: $target expr($target.base_max_hp / 8)"],
@@ -258,10 +246,7 @@
           "if $weather.is_defined and $weather.is_sunny:",
           ["return $spa * 3/2"]
         ],
-        "on_weather": [
-          "if $effect.is_sunny:",
-          ["damage: $target expr($target.base_max_hp / 8)"]
-        ]
+        "on_weather": ["if $effect.is_sunny:", ["damage: $target expr($target.base_max_hp / 8)"]]
       }
     }
   },
@@ -286,17 +271,14 @@
         "on_modify_move_type": {
           "priority": 1,
           "program": [
-            "if $effect.typeless or func_call(effect_has_event_callback: $effect ModifyMoveType):",
+            "if $effect.type == none or func_call(effect_has_event_callback: $effect ModifyMoveType):",
             ["return"],
             "if $effect_state.is_defined:",
             ["$effect_state.normalized = true"],
             "return normal"
           ]
         },
-        "on_source_base_power": [
-          "if $effect_state.normalized:",
-          ["return $base_power * 6/5"]
-        ]
+        "on_source_base_power": ["if $effect_state.normalized:", ["return $base_power * 6/5"]]
       }
     }
   },
@@ -317,10 +299,7 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_damage": [
-          "if !$effect.is_move and $effect.id != confusion:",
-          ["return 0"]
-        ]
+        "on_damage": ["if !$effect.is_move and $effect.id != confusion:", ["return 0"]]
       }
     }
   },
@@ -501,16 +480,9 @@
               "if $base_power == 0 and $move.category != status:",
               ["$base_power = 80"],
               "if $base_power > $max_base_power:",
-              [
-                "$foes = [$foe]",
-                "$moves = [$move]",
-                "$max_base_power = $base_power"
-              ],
+              ["$foes = [$foe]", "$moves = [$move]", "$max_base_power = $base_power"],
               "else if $base_power == $max_base_power:",
-              [
-                "$foes = func_call(append: $foes $foe)",
-                "$moves = func_call(append: $moves $move)"
-              ]
+              ["$foes = func_call(append: $foes $foe)", "$moves = func_call(append: $moves $move)"]
             ]
           ],
           "if $moves.is_empty:",
@@ -540,12 +512,7 @@
           ["$boosts.def = 0", "$boosts.spd = 0", "$boosts.eva = 0"],
           "# Mon is using a move against us.",
           "else if $effect.source == $target and func_call(move_hit_target: $effect $effect_state.target):",
-          [
-            "$boosts.atk = 0",
-            "$boosts.def = 0",
-            "$boosts.spa = 0",
-            "$boosts.acc = 0"
-          ],
+          ["$boosts.atk = 0", "$boosts.def = 0", "$boosts.spa = 0", "$boosts.acc = 0"],
           "return $boosts"
         ]
       }
@@ -565,7 +532,7 @@
   },
   "filter": {
     "name": "Filter",
-    "flags": [],
+    "flags": ["Breakable"],
     "effect": {
       "callbacks": {
         "on_source_modify_damage": [
@@ -581,10 +548,7 @@
     "effect": {
       "callbacks": {
         "on_start": ["add_volatile: $target $this.id"],
-        "on_end": [
-          "$effect_state.force_ended = true",
-          "remove_volatile: $target $this.id"
-        ]
+        "on_end": ["$effect_state.force_ended = true", "remove_volatile: $target $this.id"]
       }
     },
     "condition": {
@@ -612,10 +576,7 @@
     "effect": {
       "delegates": ["condition:resistintimidateabilitybase"],
       "callbacks": {
-        "on_source_ignore_immunity": [
-          "if func_call(has_type: $target ghost):",
-          ["return true"]
-        ]
+        "on_source_ignore_immunity": ["if func_call(has_type: $target ghost):", ["return true"]]
       }
     }
   },
@@ -629,7 +590,7 @@
           ["return"],
           "if !func_call(boost: $target 'spa:1'):",
           ["log_immune: $target from_effect"],
-          "return stop"
+          "return stopfail"
         ],
         "on_any_redirect_target": [
           "if $move.type != water or func_call(move_has_flag: $move pledgecombo):",
@@ -650,17 +611,14 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_weather": [
-          "if $effect.is_snowing:",
-          ["heal: $target expr($target.base_max_hp / 16)"]
-        ],
+        "on_weather": ["if $effect.is_snowing:", ["heal: $target expr($target.base_max_hp / 16)"]],
         "on_immunity": ["if $effect.id == hailweather:", ["return false"]]
       }
     }
   },
   "solidrock": {
     "name": "Solid Rock",
-    "flags": [],
+    "flags": ["Breakable"],
     "effect": {
       "delegates": ["ability:filter"]
     }
@@ -713,7 +671,15 @@
   },
   "multitype": {
     "name": "Multitype",
-    "flags": ["Permanent"],
+    "flags": [
+      "NoEntrainment",
+      "NoReceiver",
+      "NoRolePlay",
+      "NoSkillSwap",
+      "NoTrace",
+      "NoTransform",
+      "Permanent"
+    ],
     "effect": {
       "callbacks": {
         "on_types": {
@@ -721,7 +687,7 @@
           "program": [
             "# Each Arceus forme has its own species data, so the type of each forme is actually set directly by the forme.",
             "# Multitype technically alters the Mon's type directly, so we implement dynamic type changing logic here as well.",
-            "if $mon.transformed or !$mon.item:",
+            "if !$mon.item:",
             ["return $types"],
             "$type = normal",
             "$data = func_call(special_item_data: $mon.item)",
@@ -733,7 +699,7 @@
         "on_update": [
           "# Ensure Arceus is the correct forme.",
           "# Note that when team validation is used, Arceus is forced into the correct forme.",
-          "if func_call(base_species: $mon) != arceus or $mon.transformed or !$mon.item:",
+          "if func_call(base_species: $mon) != arceus or !$mon.item:",
           ["return"],
           "$type = normal",
           "$data = func_call(special_item_data: $mon.item)",
@@ -747,15 +713,11 @@
         ],
         "on_take_item": [
           "# Item cannot be taken if Multitype is using it.",
-          "if $target.transformed:",
-          ["return"],
           "$data = func_call(special_item_data: $item.id)",
           "return !$data or !$data.judgment"
         ],
         "on_set_item": [
           "# Item cannot be given if Multitype would use it.",
-          "if $target.transformed:",
-          ["return"],
           "$data = func_call(special_item_data: $item.id)",
           "return !$data or !$data.judgment"
         ],
@@ -765,7 +727,7 @@
   },
   "flowergift": {
     "name": "Flower Gift",
-    "flags": ["NoEntrainment", "NoRolePlay", "NoTrace"],
+    "flags": ["Breakable", "NoEntrainment", "NoReceiver", "NoRolePlay", "NoTrace"],
     "effect": {
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: WeatherChange"],
