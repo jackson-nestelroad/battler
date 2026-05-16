@@ -71,7 +71,7 @@ fn fairy_lock_traps_all_mons() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Sylveon,player-1,1|name:Fairy Lock|spread:Sylveon,player-1,1",
+            "move|mon:Sylveon,player-1,1|name:Fairy Lock",
             "fieldactivate|move:Fairy Lock",
             "residual",
             "turn|turn:2"
@@ -96,7 +96,7 @@ fn ghost_types_resist_fairy_lock() {
             "split|side:1",
             ["switch", "player-2", "Trevenant"],
             ["switch", "player-2", "Trevenant"],
-            "move|mon:Sylveon,player-1,1|name:Fairy Lock|spread:Sylveon,player-1,1",
+            "move|mon:Sylveon,player-1,1|name:Fairy Lock",
             "fieldactivate|move:Fairy Lock",
             "residual",
             "turn|turn:2",

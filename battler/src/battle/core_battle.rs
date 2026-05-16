@@ -1925,19 +1925,19 @@ impl<'d> CoreBattle<'d> {
             }
 
             let mut context = context.active_move_context(active_move_handle)?;
-            let priority = context.active_move().data.priority as i32;
-            let mut context = context.user_applying_effect_context(None)?;
+            let priority = context.active_move().data.priority;
 
-            let priority = core_battle_effects::run_event_with_relay::<_, i32>(
-                &mut context,
+            let priority = core_battle_effects::run_event_with_relay::<_, i8>(
+                &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::ModifyPriority,
                 priority,
             );
 
-            action.priority = priority;
+            context.active_move_mut().priority = priority;
+            action.priority = priority as i32;
 
             action.sub_priority = core_battle_effects::run_event_with_relay::<_, i32>(
-                &mut context,
+                &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::SubPriority,
                 0,
             );

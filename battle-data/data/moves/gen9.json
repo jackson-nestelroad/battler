@@ -338,7 +338,7 @@
     "base_power": 0,
     "accuracy": "exempt",
     "pp": 10,
-    "target": "All",
+    "target": "Field",
     "flags": ["NoMetronome"],
     "user_switch": true
   },

@@ -230,7 +230,7 @@
     "accuracy": "exempt",
     "pp": 25,
     "priority": 1,
-    "target": "All",
+    "target": "Field",
     "flags": [],
     "hit_effect": {
       "pseudo_weather": "iondeluge"
@@ -614,7 +614,7 @@
     "primary_type": "Fairy",
     "accuracy": "exempt",
     "pp": 10,
-    "target": "All",
+    "target": "Field",
     "flags": ["BypassSubstitute", "Mirror"],
     "hit_effect": {
       "pseudo_weather": "fairylock"

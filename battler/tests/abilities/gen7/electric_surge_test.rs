@@ -9,7 +9,7 @@ use battler::{
 use battler_test_utils::{
     LogMatch,
     TestBattleBuilder,
-    assert_logs_since_turn_eq,
+    assert_logs_since_start_eq,
     static_local_data_store,
 };
 
@@ -18,13 +18,10 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Samurott",
-                    "species": "Samurott",
-                    "ability": "No Ability",
-                    "moves": [
-                        "Ion Deluge",
-                        "Tackle"
-                    ],
+                    "name": "Tapu Koko",
+                    "species": "Tapu Koko",
+                    "ability": "Electric Surge",
+                    "moves": [],
                     "nature": "Hardy",
                     "level": 100
                 }
@@ -49,26 +46,22 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn ion_deluge_converts_normal_moves_to_electric() {
+fn electric_surge_starts_electric_terrain_on_switch_in() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
-
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Samurott,player-1,1|name:Ion Deluge",
-            "fieldstart|move:Ion Deluge",
-            "move|mon:Samurott,player-2,1|name:Tackle|target:Samurott,player-1,1",
-            "supereffective|mon:Samurott,player-1,1",
             "split|side:0",
-            "damage|mon:Samurott,player-1,1|health:222/300",
-            "damage|mon:Samurott,player-1,1|health:74/100",
-            "residual",
-            "turn|turn:2"
+            ["switch"],
+            ["switch"],
+            "split|side:1",
+            ["switch"],
+            ["switch"],
+            "fieldstart|move:Electric Terrain|from:ability:Electric Surge|of:Tapu Koko,player-2,1",
+            "turn|turn:1"
         ]"#,
     )
     .unwrap();
-    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+    assert_logs_since_start_eq(&battle, &expected_logs);
 }

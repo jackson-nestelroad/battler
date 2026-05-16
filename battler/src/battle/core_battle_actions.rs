@@ -4957,8 +4957,8 @@ pub fn end_ability_even_if_exiting(
         core_battle_logs::ability_end(context)?;
     }
 
-    core_battle_effects::run_ability_event::<_, _, ()>(
-        &mut ***context,
+    core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
+        context,
         fxlang::BattleEvent::End,
         (),
     );
@@ -4987,8 +4987,8 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
     if !silent {
         core_battle_logs::ability(context)?;
     }
-    core_battle_effects::run_ability_event::<_, _, ()>(
-        &mut ***context,
+    core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
+        context,
         fxlang::BattleEvent::Start,
         (),
     );
@@ -5319,7 +5319,7 @@ fn end_item_internal(
         EndItemType::Eat => Some(fxlang::BattleEvent::Eat),
     };
     if let Some(event) = event {
-        core_battle_effects::run_item_event::<_, _, ()>(&mut ***context, event, ());
+        core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(context, event, ());
     }
 
     Ok(())
@@ -5363,8 +5363,8 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         core_battle_logs::item(context)?;
     }
 
-    core_battle_effects::run_item_event::<_, _, ()>(
-        &mut ***context,
+    core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(
+        context,
         fxlang::BattleEvent::Start,
         (),
     );

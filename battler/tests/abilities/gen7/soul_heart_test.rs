@@ -18,12 +18,21 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Samurott",
-                    "species": "Samurott",
-                    "ability": "No Ability",
+                    "name": "Magearna",
+                    "species": "Magearna",
+                    "ability": "Soul-Heart",
                     "moves": [
-                        "Ion Deluge",
-                        "Tackle"
+                        "Memento"
+                    ],
+                    "nature": "Hardy",
+                    "level": 100
+                },
+                {
+                    "name": "Magearna",
+                    "species": "Magearna-Original",
+                    "ability": "Soul-Heart",
+                    "moves": [
+                        "Memento"
                     ],
                     "nature": "Hardy",
                     "level": 100
@@ -49,24 +58,21 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn ion_deluge_converts_normal_moves_to_electric() {
+fn soul_heart_boosts_special_attack_on_faint() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Samurott,player-1,1|name:Ion Deluge",
-            "fieldstart|move:Ion Deluge",
-            "move|mon:Samurott,player-2,1|name:Tackle|target:Samurott,player-1,1",
-            "supereffective|mon:Samurott,player-1,1",
-            "split|side:0",
-            "damage|mon:Samurott,player-1,1|health:222/300",
-            "damage|mon:Samurott,player-1,1|health:74/100",
-            "residual",
-            "turn|turn:2"
+            "move|mon:Magearna,player-2,1|name:Memento|target:Magearna,player-1,1",
+            "unboost|mon:Magearna,player-1,1|stat:atk|by:2",
+            "unboost|mon:Magearna,player-1,1|stat:spa|by:2",
+            "faint|mon:Magearna,player-2,1",
+            "boost|mon:Magearna,player-1,1|stat:spa|by:1|from:ability:Soul-Heart",
+            "residual"
         ]"#,
     )
     .unwrap();

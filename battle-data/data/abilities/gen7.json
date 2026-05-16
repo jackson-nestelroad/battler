@@ -449,7 +449,7 @@
           "program": [
             "if $target.hp > 0:",
             ["return"],
-            "$original_hp = func_call(move_target_original_hp: $move $target",
+            "$original_hp = func_call(move_target_original_hp: $move $target)",
             "if !$original_hp:",
             ["return"],
             "damage: $source func_call(undynamaxed_hp_calculation: $target $original_hp)"
@@ -539,11 +539,12 @@
       "callbacks": {
         "on_foe_try_move": [
           "$target_all_exceptions = [perishsong, flowershield, rototiller]",
-          "if $move.target == foeside or ($move.target == all and !($target_all_exceptions has $move.id)):",
+          "$target_field_exceptions = [haze]",
+          "if $move.target == foeside or ($move.target == all and !($target_all_exceptions has $move.id)) or ($move.target == field and $target_field_exceptions has $move.id):",
           ["return"],
           "if $move.priority == 0:",
           ["return"],
-          "if !$target.is_defined or !func_call(is_ally: $target $effect_state.target):",
+          "if func_call(is_ally: $user $effect_state.target):",
           ["return"],
           "log_cant: with_source use_effect_state_target_as_source",
           "return false"
@@ -629,7 +630,7 @@
             ["return $types"],
             "$type = normal",
             "$data = func_call(special_item_data: $mon.item)",
-            "if $data.is_defined and $data.multi_attack:",
+            "if $data.is_defined and $data.multi_attack.is_defined:",
             ["$type = $data.multi_attack.type.to_string"],
             "return [$type]"
           ]

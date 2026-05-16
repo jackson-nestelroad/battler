@@ -338,7 +338,7 @@ where
                                 &effect_handle,
                             )?
                             .move_effect()
-                            .map(|mov| ValueRef::Fraction(mov.data.priority.into()))
+                            .map(|mov| ValueRef::Fraction(mov.priority.into()))
                             .unwrap_or(ValueRef::Undefined),
                             "recoil_percent" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -1404,7 +1404,7 @@ where
                             &mut context.active_move_mut(*active_move_handle)?.data.multihit,
                         ),
                         "priority" => ValueRefMut::I8(
-                            &mut context.active_move_mut(*active_move_handle)?.data.priority,
+                            &mut context.active_move_mut(*active_move_handle)?.priority,
                         ),
                         "secondary_effects" => ValueRefMut::SecondaryHitEffectList(
                             &mut context

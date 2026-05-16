@@ -18,15 +18,15 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Samurott",
-                    "species": "Samurott",
+                    "name": "Tapu Koko",
+                    "species": "Tapu Koko",
                     "ability": "No Ability",
+                    "item": "Electric Seed",
                     "moves": [
-                        "Ion Deluge",
-                        "Tackle"
+                        "Electric Terrain"
                     ],
                     "nature": "Hardy",
-                    "level": 100
+                    "level": 50
                 }
             ]
         }"#,
@@ -49,22 +49,21 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn ion_deluge_converts_normal_moves_to_electric() {
+fn electric_seed_boosts_defense_in_electric_terrain() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Samurott,player-1,1|name:Ion Deluge",
-            "fieldstart|move:Ion Deluge",
-            "move|mon:Samurott,player-2,1|name:Tackle|target:Samurott,player-1,1",
-            "supereffective|mon:Samurott,player-1,1",
-            "split|side:0",
-            "damage|mon:Samurott,player-1,1|health:222/300",
-            "damage|mon:Samurott,player-1,1|health:74/100",
+            "move|mon:Tapu Koko,player-1,1|name:Electric Terrain",
+            "fieldstart|move:Electric Terrain",
+            "itemend|mon:Tapu Koko,player-1,1|item:Electric Seed",
+            "boost|mon:Tapu Koko,player-1,1|stat:def|by:1|from:item:Electric Seed",
+            "itemend|mon:Tapu Koko,player-2,1|item:Electric Seed",
+            "boost|mon:Tapu Koko,player-2,1|stat:def|by:1|from:item:Electric Seed",
             "residual",
             "turn|turn:2"
         ]"#,

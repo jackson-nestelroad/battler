@@ -180,7 +180,7 @@
     "primary_type": "Normal",
     "accuracy": 100,
     "pp": 10,
-    "target": "All",
+    "target": "Field",
     "flags": ["Mirror"]
   },
   "maxflare": {

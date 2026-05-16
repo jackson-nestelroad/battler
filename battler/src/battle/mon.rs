@@ -1452,6 +1452,7 @@ impl Mon {
             .map(|stat| Mon::get_stat(context, stat, unboosted, unmodified).map(|val| (stat, val)))
             .collect::<Result<Vec<_>>>()?
             .into_iter()
+            .rev()
             .max_by_key(|(_, val)| *val)
             .wrap_expectation("best stat yielded no stats")?
             .0)

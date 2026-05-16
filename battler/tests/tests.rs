@@ -139,18 +139,28 @@ mod abilities {
     }
 
     mod gen7 {
+        mod battery_test;
         mod battle_bond_test;
+        mod beast_boost_test;
         mod berserk_test;
+        mod corrosion_test;
         mod dancer_test;
+        mod dazzling_test;
         mod disguise_test;
+        mod electric_surge_test;
         mod emergency_exit_test;
+        mod fluffy_test;
+        mod innards_out_test;
         mod liquid_voice_test;
         mod long_reach_test;
         mod merciless_test;
         mod power_construct_test;
+        mod receiver_test;
+        mod rks_system_test;
         mod schooling_test;
         mod shields_down_test;
         mod slush_rush_test;
+        mod soul_heart_test;
         mod stakeout_test;
         mod water_bubble_test;
     }
@@ -257,6 +267,7 @@ mod items {
 
     mod gen7 {
         mod beast_ball_test;
+        mod electric_seed_test;
     }
 
     mod gen9 {
