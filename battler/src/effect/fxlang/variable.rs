@@ -550,6 +550,7 @@ where
                                 context
                                     .mon(mon_handle)?
                                     .volatile_state
+                                    .ability_slot
                                     .ability
                                     .id
                                     .to_string(),
@@ -643,7 +644,7 @@ where
                                     &mut context.mon_context(mon_handle)?,
                                 ) {
                                     Some(ability) => {
-                                        ValueRef::TempEffect(EffectHandle::Ability(ability))
+                                        ValueRef::TempEffect(EffectHandle::Ability(ability.id))
                                     }
                                     None => ValueRef::Undefined,
                                 }

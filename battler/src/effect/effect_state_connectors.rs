@@ -135,7 +135,7 @@ impl fxlang::EffectStateConnector for MonAbilityEffectStateConnector {
             &mut context
                 .mon_mut(self.mon)?
                 .volatile_state
-                .ability
+                .ability_slot
                 .effect_state,
         ))
     }

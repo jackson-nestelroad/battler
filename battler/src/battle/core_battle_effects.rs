@@ -74,13 +74,15 @@ impl Default for RunEventOptions {
 
 /// Options for running a single event callback on an effect.
 pub struct RunEffectEventOptions {
-    /// Overrides the effect that the event callback is triggered on.
-    pub effect: Option<AppliedEffectHandle>,
+    /// Overrides the effects that the event callback are triggered on.
+    pub effects: Vec<AppliedEffectHandle>,
 }
 
 impl Default for RunEffectEventOptions {
     fn default() -> Self {
-        Self { effect: None }
+        Self {
+            effects: Vec::default(),
+        }
     }
 }
 
@@ -960,7 +962,7 @@ fn run_effect_event_by_handle(
                 context.battle_context_mut(),
                 event,
                 &effect_name,
-                &&format!("{error:#}"),
+                &format!("{error:#}"),
             );
             fxlang::ProgramEvalResult::default()
         }
@@ -1016,23 +1018,46 @@ fn run_callback(
                 context.battle_context_mut(),
                 event,
                 &effect_name,
-                &&format!("{error:#}"),
+                &format!("{error:#}"),
             );
             None
         }
     }
 }
 
-fn run_callbacks_with_forwarding_input_with_errors(
-    mut context: UpcomingEvaluationContext,
+fn run_callbacks<'battle, 'data, Context>(
+    context: &mut Context,
+    event: fxlang::BattleEvent,
+    input: fxlang::VariableInput,
+    options: &RunEventOptions,
+    callbacks: Vec<CallbackHandle>,
+) -> Option<fxlang::Value>
+where
+    'data: 'battle,
+    Context: EventContext<'battle, 'data>,
+{
+    match run_callbacks_with_errors(context, input, options, callbacks) {
+        Ok(value) => value,
+        Err(error) => {
+            core_battle_logs::debug_full_event_failure(
+                context.as_battle_context_mut(),
+                event,
+                &format!("{error:#}"),
+            );
+            None
+        }
+    }
+}
+
+fn run_callback_with_forwarding_input_with_errors(
+    context: &mut UpcomingEvaluationContext,
     input: &mut fxlang::VariableInput,
     event_state: &fxlang::EventState,
     callback_handle: CallbackHandle,
     options: &RunEventOptions,
 ) -> Result<Option<fxlang::Value>> {
     let event = callback_handle.event;
-    let value =
-        run_callback_with_errors(&mut context, input.clone(), event_state, callback_handle)?;
+    let value = run_callback_with_errors(context, input.clone(), event_state, callback_handle)?;
     // Support for early exit.
     if let Some(value) = value {
         if value.signals_early_exit() || options.return_first_value {
@@ -1081,8 +1106,8 @@ where
             }
         }
 
-        let result = run_callbacks_with_forwarding_input_with_errors(
-            context.into_upcoming_evaluation_context(),
+        let result = run_callback_with_forwarding_input_with_errors(
+            &mut context.into_upcoming_evaluation_context(),
             &mut input,
             &event_state,
             callback_handle,
@@ -1181,6 +1206,7 @@ where
             | AppliedEffectLocation::MonSideCondition(_, mon)
             | AppliedEffectLocation::MonSlotCondition(_, _, mon)
             | AppliedEffectLocation::MonStatus(mon)
+            | AppliedEffectLocation::MonSubAbility(mon)
             | AppliedEffectLocation::MonTerastallization(mon)
             | AppliedEffectLocation::MonTerrain(mon)
             | AppliedEffectLocation::MonType(mon)
@@ -1301,13 +1327,13 @@ mod callbacks {
         if event.callback_lookup_layer()
             > fxlang::BattleEvent::SuppressMonAbility.callback_lookup_layer()
         {
-            let ability = context.mon().volatile_state.ability.id.clone();
+            let ability = context.mon().volatile_state.ability_slot.ability.clone();
             let effective_ability = mon_states::effective_ability(&mut context);
             let suppressed = effective_ability.is_none();
             if event.force_default_callback() || !suppressed {
                 let ability = effective_ability.unwrap_or(ability);
                 let mut callback_handle = CallbackHandle::new(
-                    EffectHandle::Ability(ability),
+                    EffectHandle::Ability(ability.id),
                     event,
                     modifier,
                     origin,
@@ -1315,6 +1341,18 @@ mod callbacks {
                 );
                 callback_handle.suppressed = suppressed;
                 callbacks.push(callback_handle);
+
+                for sub_ability in ability.sub_abilities {
+                    let mut callback_handle = CallbackHandle::new(
+                        EffectHandle::Ability(sub_ability),
+                        event,
+                        modifier,
+                        origin,
+                        AppliedEffectLocation::MonSubAbility(mon),
+                    );
+                    callback_handle.suppressed = suppressed;
+                    callbacks.push(callback_handle);
+                }
             }
         }
 
@@ -2141,7 +2179,7 @@ where
             core_battle_logs::debug_full_event_failure(
                 context.as_battle_context_mut(),
                 event,
-                &&format!("{error:#}"),
+                &format!("{error:#}"),
             );
             None
         }
@@ -2219,27 +2257,43 @@ where
     Input: EventInput,
     Output: EventOutput,
 {
-    let effect_override = options.effect.is_some();
-    let (effect, location) = match options.effect {
-        Some(effect) => (Some(effect.effect_handle), effect.location),
-        None => (context.effect(), context.applied_effect_location()),
-    };
-
-    // If the effect simply does not exist, we do not have any callback to run.
-    let effect = match effect {
-        Some(effect) => effect,
-        None => return EventOutput::from_fxlang_value(None),
+    let (effects, effect_override) = if !options.effects.is_empty() {
+        (
+            options
+                .effects
+                .into_iter()
+                .map(|effect| (Some(effect.effect_handle), effect.location))
+                .collect(),
+            true,
+        )
+    } else {
+        (
+            Vec::from_iter([(context.effect(), context.applied_effect_location())]),
+            false,
+        )
     };
 
     let origin = event_origin_mon_handle(event, context.target(), context.source());
 
-    let callback = CallbackHandle::new(
-        effect,
-        event,
-        fxlang::BattleEventModifier::default(),
-        origin,
-        location,
-    );
+    let callbacks = effects
+        .into_iter()
+        .filter_map(|(effect, location)| {
+            effect.map(|effect| {
+                CallbackHandle::new(
+                    effect,
+                    event,
+                    fxlang::BattleEventModifier::default(),
+                    origin,
+                    location,
+                )
+            })
+        })
+        .collect::<Vec<_>>();
+
+    // No callbacks to run.
+    if callbacks.is_empty() {
+        return EventOutput::from_fxlang_value(None);
+    }
 
     // If running against a specific effect, do not use the source context.
     let source_context = if effect_override {
@@ -2248,20 +2302,26 @@ where
         context.source_event_context()
     };
 
+    let options = RunEventOptions::default();
+
     let output = match source_context {
-        Ok(Some(mut context)) => run_callback(
-            context.into_upcoming_evaluation_context(),
+        Ok(Some(mut context)) => run_callbacks(
+            &mut context,
+            event,
             input.into_fxlang_input(),
-            callback,
+            &options,
+            callbacks,
         ),
         _ => {
             // The borrow checker does not allow context to be used while source_context exists, so
             // drop it early.
             drop(source_context);
-            run_callback(
-                context.into_upcoming_evaluation_context(),
+            run_callbacks(
+                context,
+                event,
                 input.into_fxlang_input(),
-                callback,
+                &options,
+                callbacks,
             )
         }
     };
@@ -2329,9 +2389,17 @@ where
             event,
             input,
             RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
-                    EffectHandle::Ability(ability),
-                    AppliedEffectLocation::MonAbility(target_handle),
+                effects: Vec::from_iter(core::iter::chain(
+                    core::iter::once(AppliedEffectHandle::new(
+                        EffectHandle::Ability(ability.id),
+                        AppliedEffectLocation::MonAbility(target_handle),
+                    )),
+                    ability.sub_abilities.into_iter().map(|sub_ability| {
+                        AppliedEffectHandle::new(
+                            EffectHandle::Ability(sub_ability),
+                            AppliedEffectLocation::MonSubAbility(target_handle),
+                        )
+                    }),
                 )),
             },
         )
@@ -2370,10 +2438,10 @@ where
             event,
             input,
             RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
+                effects: Vec::from_iter([AppliedEffectHandle::new(
                     EffectHandle::Item(item),
                     AppliedEffectLocation::MonItem(target_handle),
-                )),
+                )]),
             },
         )
     } else {
@@ -2445,7 +2513,7 @@ fn run_callback_against_active_move(
                 context.as_battle_context_mut(),
                 event,
                 &move_name,
-                &&format!("{error:#}"),
+                &format!("{error:#}"),
             );
             None
         }

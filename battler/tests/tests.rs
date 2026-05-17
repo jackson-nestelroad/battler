@@ -166,6 +166,7 @@ mod abilities {
     }
 
     mod gen8 {
+        mod as_one_test;
         mod neutralizing_gas_test;
         mod ripen_test;
     }

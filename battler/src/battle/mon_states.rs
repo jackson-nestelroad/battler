@@ -14,6 +14,7 @@ use battler_data::{
 use crate::{
     battle::{
         ActiveMoveContext,
+        EffectiveAbility,
         Field,
         MonContext,
         MonHandle,
@@ -480,7 +481,7 @@ pub fn effective_terrain(context: &mut MonContext) -> Option<Id> {
     effective_terrain
 }
 
-fn check_ability_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
+fn check_ability_suppression(context: &mut MonContext) -> (Option<EffectiveAbility>, bool) {
     if let Some(effective_ability) = context
         .mon()
         .volatile_state
@@ -495,7 +496,7 @@ fn check_ability_suppression(context: &mut MonContext) -> (Option<Id>, bool) {
     {
         return (effective_ability, can_suppress_ability);
     }
-    let ability = context.mon().volatile_state.ability.id.clone();
+    let ability = context.mon().volatile_state.ability_slot.ability.clone();
     let (effective_ability, can_suppress_ability) = {
         let suppress_ability = core_battle_effects::run_event_with_options::<_, _, Option<bool>>(
             context,
@@ -533,7 +534,7 @@ pub fn can_suppress_ability(context: &mut MonContext) -> bool {
 /// The effective ability of the [`Mon`][`crate::battle::Mon`].
 ///
 /// Abilities can be suppressed by other effects and abilities.
-pub fn effective_ability(context: &mut MonContext) -> Option<Id> {
+pub fn effective_ability(context: &mut MonContext) -> Option<EffectiveAbility> {
     check_ability_suppression(context).0
 }
 

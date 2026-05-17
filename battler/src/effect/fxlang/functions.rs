@@ -135,6 +135,7 @@ pub fn run_function(
         "add_secondary_effect_to_move" => add_secondary_effect_to_move(context).map(|()| None),
         "add_side_condition" => add_side_condition(context).map(|val| Some(val)),
         "add_slot_condition" => add_slot_condition(context).map(|val| Some(val)),
+        "add_sub_ability" => add_sub_ability(context).map(|val| Some(val)),
         "add_type" => add_type(context).map(|val| Some(val)),
         "add_volatile" => add_volatile(context).map(|val| Some(val)),
         "adjacent_allies" => adjacent_allies(context).map(|val| Some(val)),
@@ -178,6 +179,7 @@ pub fn run_function(
         "clear_boosts" => clear_boosts(context).map(|()| None),
         "clear_negative_boosts" => clear_negative_boosts(context).map(|()| None),
         "clear_positive_boosts" => clear_positive_boosts(context).map(|()| None),
+        "clear_sub_abilities" => clear_sub_abilities(context).map(|val| Some(val)),
         "clear_terrain" => clear_terrain(context).map(|val| Some(val)),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
         "clone_active_move" => clone_active_move(context).map(|val| Some(val)),
@@ -2037,10 +2039,10 @@ fn run_event_on_mon_volatile(mut context: FunctionContext) -> Result<Option<Valu
         event,
         (),
         core_battle_effects::RunEffectEventOptions {
-            effect: Some(AppliedEffectHandle::new(
+            effects: Vec::from_iter([AppliedEffectHandle::new(
                 effect_handle,
                 AppliedEffectLocation::MonVolatile(target_handle),
-            )),
+            )]),
         },
     ))
 }
@@ -5777,4 +5779,35 @@ fn undynamaxed_hp_calculation(mut context: FunctionContext) -> Result<Value> {
             .undynamaxed_hp_calculation(hp)
             .into(),
     ))
+}
+
+/// Adds a sub-ability to a Mon's ability.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
+/// @param {[`ValueType::String`] | [`ValueType::Effect`]} ability The sub-ability ID.
+/// @returns {[`ValueType::Boolean`]} Whether the sub-ability was successfully added.
+fn add_sub_ability(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let ability_id = context
+        .pop_front()
+        .wrap_expectation("missing ability")?
+        .ability_id()
+        .wrap_error_with_message("invalid ability")?;
+    core_battle_actions::add_sub_ability(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        &ability_id,
+    )
+    .map(|val| Value::Boolean(val))
+}
+
+/// Clears all sub-abilities from a Mon's ability.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
+/// @returns {[`ValueType::Boolean`]} Whether the sub-ability was successfully added.
+fn clear_sub_abilities(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    core_battle_actions::clear_sub_abilities(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+    )
+    .map(|val| Value::Boolean(val))
 }

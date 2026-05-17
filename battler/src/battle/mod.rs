@@ -88,6 +88,7 @@ pub use mon::{
     AbilitySlot,
     ActiveMonDetails,
     CalculateStatContext,
+    EffectiveAbility,
     Mon,
     MonBattleData,
     MonEffectCache,

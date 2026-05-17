@@ -526,6 +526,13 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move user.
     #[string = "BeforeMove"]
     BeforeMove,
+    /// Runs before an effect starts.
+    ///
+    /// Used to set up state prior to the Start event.
+    ///
+    /// Runs on the effect.
+    #[string = "BeforeStart"]
+    BeforeStart,
     /// Runs when a Mon switches in, prior to `SwitchIn`.
     ///
     /// Not really prior to switching in.
@@ -1430,6 +1437,7 @@ impl BattleEvent {
             Self::BeforeChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
             Self::BeforeMove => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::BeforeStart => CommonCallbackType::EffectResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTerastallization => CommonCallbackType::MonResult as u32,
@@ -2059,6 +2067,7 @@ pub struct Effect {
     #[serde(default)]
     pub local_data: LocalData,
 
+    /// Effect attributes.
     #[serde(flatten)]
     pub attributes: EffectAttributes,
 }

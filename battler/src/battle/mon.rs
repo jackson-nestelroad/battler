@@ -220,10 +220,19 @@ impl MoveSlot {
     }
 }
 
+/// The effective ability of a [`Mon`][`crate::battle::Mon`].
+#[derive(Debug, Default, Clone)]
+pub struct EffectiveAbility {
+    /// Ability ID.
+    pub id: Id,
+    /// Any sub-abilities.
+    pub sub_abilities: Vec<Id>,
+}
+
 /// A single ability slot for a Mon.
 #[derive(Debug, Default, Clone)]
 pub struct AbilitySlot {
-    pub id: Id,
+    pub ability: EffectiveAbility,
     pub effect_state: fxlang::EffectState,
 }
 
@@ -256,10 +265,10 @@ impl MonMoveSlotData {
                     fxlang::BattleEvent::MoveTargetOverride,
                     (),
                     core_battle_effects::RunEffectEventOptions {
-                        effect: Some(AppliedEffectHandle::new(
+                        effects: Vec::from_iter([AppliedEffectHandle::new(
                             EffectHandle::InactiveMove(move_slot.id.clone()),
                             AppliedEffectLocation::MonInactiveMove(mon_handle),
-                        )),
+                        )]),
                     },
                 )
                 .unwrap_or(move_slot.target);
@@ -504,7 +513,7 @@ pub struct MonEffectCache {
     pub effective_types_no_added_type: Option<Vec<Type>>,
     pub effective_types_before_forced_types: Option<Vec<Type>>,
 
-    pub effective_ability: Option<Option<Id>>,
+    pub effective_ability: Option<Option<EffectiveAbility>>,
     pub effective_item: Option<Option<Id>>,
 
     pub effective_weather: Option<Option<Id>>,
@@ -554,7 +563,7 @@ pub struct MonVolatileState {
     /// Added type.
     pub added_type: Option<Type>,
     /// The current ability.
-    pub ability: AbilitySlot,
+    pub ability_slot: AbilitySlot,
     /// Effect state for the item.
     pub item_state: fxlang::EffectState,
     /// The last item used.
@@ -1544,7 +1553,7 @@ impl Mon {
             ability_effect_order: context
                 .mon()
                 .volatile_state
-                .ability
+                .ability_slot
                 .effect_state
                 .effect_order(),
         }
@@ -1568,7 +1577,7 @@ impl Mon {
             .battle()
             .dex
             .abilities
-            .get_by_id(&context.mon().volatile_state.ability.id)?
+            .get_by_id(&context.mon().volatile_state.ability_slot.ability.id)?
             .data
             .name
             .clone();
@@ -1831,8 +1840,11 @@ impl Mon {
             move_slots: context.mon().base_move_slots.clone(),
             types: Vec::default(), // Updated by set_species.
             added_type: None,
-            ability: AbilitySlot {
-                id: context.mon().base_ability.clone(),
+            ability_slot: AbilitySlot {
+                ability: EffectiveAbility {
+                    id: context.mon().base_ability.clone(),
+                    sub_abilities: Vec::default(),
+                },
                 effect_state: fxlang::EffectState::initial_effect_state(
                     context.as_battle_context_mut(),
                     None,
@@ -2236,7 +2248,7 @@ impl Mon {
         context
             .mon_mut()
             .volatile_state
-            .ability
+            .ability_slot
             .effect_state
             .set_effect_order(ability_order);
 
@@ -2591,7 +2603,7 @@ impl Mon {
 
     /// Checks if the Mon has an ability.
     pub fn has_ability(context: &mut MonContext, id: &Id) -> bool {
-        mon_states::effective_ability(context).is_some_and(|ability| ability == *id)
+        mon_states::effective_ability(context).is_some_and(|ability| ability.id == *id)
     }
 
     /// Checks if the Mon has an item.

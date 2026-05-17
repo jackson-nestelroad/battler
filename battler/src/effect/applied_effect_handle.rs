@@ -40,6 +40,7 @@ pub enum AppliedEffectLocation {
     MonSideCondition(usize, MonHandle),
     MonSlotCondition(usize, usize, MonHandle),
     MonStatus(MonHandle),
+    MonSubAbility(MonHandle),
     MonTerastallization(MonHandle),
     MonTerrain(MonHandle),
     MonType(MonHandle),
@@ -79,6 +80,7 @@ impl AppliedEffectLocation {
             | Self::MonSideCondition(_, mon)
             | Self::MonSlotCondition(_, _, mon)
             | Self::MonStatus(mon)
+            | Self::MonSubAbility(mon)
             | Self::MonTerastallization(mon)
             | Self::MonTerrain(mon)
             | Self::MonType(mon)
@@ -145,7 +147,7 @@ impl AppliedEffectHandle {
             }
             // Note that Mons have an effect state, though we don't attach it to event callbacks.
             AppliedEffectLocation::Mon(_) => None,
-            AppliedEffectLocation::MonAbility(mon) => {
+            AppliedEffectLocation::MonAbility(mon) | AppliedEffectLocation::MonSubAbility(mon) => {
                 Some(MonAbilityEffectStateConnector::new(mon).make_dynamic())
             }
             AppliedEffectLocation::MonInactiveMove(_) => None,
@@ -199,6 +201,7 @@ impl AppliedEffectHandle {
             | AppliedEffectLocation::MonAbility(_)
             | AppliedEffectLocation::MonInactiveMove(_)
             | AppliedEffectLocation::MonItem(_)
+            | AppliedEffectLocation::MonSubAbility(_)
             | AppliedEffectLocation::MonType(_)
             | AppliedEffectLocation::Side(_)
             | AppliedEffectLocation::Field

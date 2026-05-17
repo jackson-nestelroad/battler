@@ -603,7 +603,7 @@
         "on_after_fainted": [
           "if !$effect or !$effect.is_move:",
           ["return"],
-          "boost: $mon str('{}:{}', func_call(best_stat: $mon unboosted unmodified) $count)"
+          "boost: $mon str('{}:{}', func_call(best_stat: $mon unboosted unmodified), $count)"
         ]
       }
     }

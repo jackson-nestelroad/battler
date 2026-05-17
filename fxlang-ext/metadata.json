@@ -1283,6 +1283,26 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
+    "add_sub_ability": {
+      "description": "Adds a sub-ability to a Mon's ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        },
+        {
+          "name": "ability",
+          "type": "String | Effect",
+          "description": "The sub-ability ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
+      "returns_item_from_list": false
+    },
     "add_type": {
       "description": "Adds a type to a Mon.",
       "parameters": [
@@ -1888,6 +1908,20 @@
       ],
       "flags": [],
       "type": "Undefined",
+      "returns_item_from_list": false
+    },
+    "clear_sub_abilities": {
+      "description": "Clears all sub-abilities from a Mon's ability.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
       "returns_item_from_list": false
     },
     "clear_terrain": {
@@ -5969,6 +6003,24 @@
         "target": {
           "type": "Mon",
           "optional": true
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "before_start": {
+      "description": "Runs before an effect starts.\n\nUsed to set up state prior to the Start event.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
         }
       },
       "allows_custom_input_vars": false

@@ -210,18 +210,54 @@
   },
   "chillingneigh": {
     "name": "Chilling Neigh",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_fainted": [
+          "if !$effect or !$effect.is_move:",
+          ["return"],
+          "boost: $mon str('atk:{}', $count)"
+        ]
+      }
+    }
   },
   "grimneigh": {
     "name": "Grim Neigh",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_fainted": [
+          "if !$effect or !$effect.is_move:",
+          ["return"],
+          "boost: $mon str('spa:{}', $count)"
+        ]
+      }
+    }
   },
-  "asoneglastrier": {
+  "asone": {
     "name": "As One",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"]
-  },
-  "asonespectrier": {
-    "name": "As One",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"]
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_before_start": [
+          "$effect_state.activated = false",
+          "clear_sub_abilities: $target",
+          "if $target.species == calyrexice:",
+          ["add_sub_ability: $target unnerve", "add_sub_ability: $target chillingneigh"],
+          "else if $target.species == calyrexshadow:",
+          ["add_sub_ability: $target unnerve", "add_sub_ability: $target grimneigh"],
+          "else:",
+          ["return"],
+          "$effect_state.activated = true"
+        ],
+        "on_start": [
+          "if $effect_state.announced:",
+          ["return"],
+          "if $effect_state.activated:",
+          ["log_ability"],
+          "$effect_state.announced = true"
+        ]
+      }
+    }
   }
 }

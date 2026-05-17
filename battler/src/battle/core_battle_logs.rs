@@ -848,7 +848,7 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
         .battle()
         .dex
         .abilities
-        .get_by_id(&context.target().volatile_state.ability.id)?
+        .get_by_id(&context.target().volatile_state.ability_slot.ability.id)?
         .data
         .name
         .clone();
@@ -871,7 +871,7 @@ pub fn ability_end(context: &mut ApplyingEffectContext) -> Result<()> {
         .battle()
         .dex
         .abilities
-        .get_by_id(&context.target().volatile_state.ability.id)?
+        .get_by_id(&context.target().volatile_state.ability_slot.ability.id)?
         .data
         .name
         .clone();

@@ -56,6 +56,7 @@ use crate::{
         Context,
         CoreBattle,
         EffectContext,
+        EffectiveAbility,
         ExperienceAction,
         FieldEffectContext,
         LevelUpAction,
@@ -349,10 +350,10 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
             fxlang::BattleEvent::CopyVolatile,
             (),
             core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
+                effects: Vec::from_iter([AppliedEffectHandle::new(
                     effect_handle,
                     AppliedEffectLocation::MonVolatile(context.target_handle()),
-                )),
+                )]),
             },
         ) {
             context
@@ -4946,7 +4947,7 @@ pub fn end_ability_even_if_exiting(
     if !context
         .target()
         .volatile_state
-        .ability
+        .ability_slot
         .effect_state
         .started()
     {
@@ -4977,7 +4978,7 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
         || context
             .target()
             .volatile_state
-            .ability
+            .ability_slot
             .effect_state
             .started()
     {
@@ -4987,11 +4988,18 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
     if !silent {
         core_battle_logs::ability(context)?;
     }
+
+    core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
+        context,
+        fxlang::BattleEvent::BeforeStart,
+        (),
+    );
     core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::Start,
         (),
     );
+
     Ok(())
 }
 
@@ -5011,7 +5019,7 @@ pub fn set_ability(
         return Ok(false);
     }
 
-    if &context.target().volatile_state.ability.id == ability {
+    if &context.target().volatile_state.ability_slot.ability.id == ability {
         return Ok(false);
     }
 
@@ -5047,8 +5055,11 @@ pub fn set_ability(
     let effect_handle = context.effect_handle().clone();
     let target_handle = context.target_handle();
     let source_handle = context.source_handle();
-    context.target_mut().volatile_state.ability = AbilitySlot {
-        id: ability.id().clone(),
+    context.target_mut().volatile_state.ability_slot = AbilitySlot {
+        ability: EffectiveAbility {
+            id: ability.id().clone(),
+            sub_abilities: Vec::default(),
+        },
         effect_state: fxlang::EffectState::initial_effect_state(
             context.as_battle_context_mut(),
             Some(&effect_handle),
@@ -5064,6 +5075,52 @@ pub fn set_ability(
         fxlang::BattleEvent::AfterSetAbility,
         ability_handle,
     );
+
+    Ok(true)
+}
+
+/// Adds a sub-ability to the target's ability.
+pub fn add_sub_ability(context: &mut ApplyingEffectContext, ability: &Id) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    if !context.target().active || context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    if context.battle().dex.abilities.get_by_id(ability).is_err() {
+        return Ok(false);
+    }
+
+    context
+        .target_mut()
+        .volatile_state
+        .ability_slot
+        .ability
+        .sub_abilities
+        .push(ability.clone());
+
+    Ok(true)
+}
+
+/// Clears all sub-ability from the target's ability.
+pub fn clear_sub_abilities(context: &mut ApplyingEffectContext) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    if !context.target().active || context.target().hp == 0 {
+        return Ok(false);
+    }
+
+    context
+        .target_mut()
+        .volatile_state
+        .ability_slot
+        .ability
+        .sub_abilities
+        .clear();
 
     Ok(true)
 }
@@ -5285,6 +5342,15 @@ fn end_item_internal(
         return Ok(());
     }
 
+    if context
+        .target()
+        .item
+        .as_ref()
+        .is_none_or(|_| !context.target().volatile_state.item_state.started())
+    {
+        return Ok(());
+    }
+
     if end_item_log != EndItemLog::TrueSilent {
         let no_source = match end_item_type {
             EndItemType::Eat | EndItemType::Use => true,
@@ -5300,15 +5366,6 @@ fn end_item_internal(
             end_item_log == EndItemLog::LogSilent,
             eat,
         )?;
-    }
-
-    if context
-        .target()
-        .item
-        .as_ref()
-        .is_none_or(|_| !context.target().volatile_state.item_state.started())
-    {
-        return Ok(());
     }
 
     let event = match end_item_type {
@@ -5363,6 +5420,11 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
         core_battle_logs::item(context)?;
     }
 
+    core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(
+        context,
+        fxlang::BattleEvent::BeforeStart,
+        (),
+    );
     core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(
         context,
         fxlang::BattleEvent::Start,
@@ -6179,7 +6241,13 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
         .base_stored_stats
         .clone();
     let boosts = target_context.mon().volatile_state.boosts.clone();
-    let ability_id = target_context.mon().volatile_state.ability.id.clone();
+    let ability_id = target_context
+        .mon()
+        .volatile_state
+        .ability_slot
+        .ability
+        .id
+        .clone();
     let mut move_slots = target_context.mon().volatile_state.move_slots.clone();
     for move_slot in &mut move_slots {
         move_slot.pp = move_slot.max_pp.min(5);
@@ -7060,33 +7128,38 @@ where
     let target_handle = context.target();
     let source_handle = context.source();
 
-    let (start_event, restart_event, modify_duration_event) = if location.mon_handle().is_some() {
-        (
-            fxlang::BattleEvent::Start,
-            fxlang::BattleEvent::Restart,
-            fxlang::BattleEvent::ModifyDuration,
-        )
-    } else if location.side_index().is_some() {
-        (
-            fxlang::BattleEvent::SideStart,
-            fxlang::BattleEvent::SideRestart,
-            fxlang::BattleEvent::ModifySideDuration,
-        )
-    } else if location.slot_index().is_some() {
-        (
-            fxlang::BattleEvent::SlotStart,
-            fxlang::BattleEvent::SlotRestart,
-            fxlang::BattleEvent::ModifySlotDuration,
-        )
-    } else if location.field() {
-        (
-            fxlang::BattleEvent::FieldStart,
-            fxlang::BattleEvent::FieldRestart,
-            fxlang::BattleEvent::ModifyFieldDuration,
-        )
-    } else {
-        return Err(general_error("condition applied to an undefined location"));
-    };
+    let (before_start_event, start_event, restart_event, modify_duration_event) =
+        if location.mon_handle().is_some() {
+            (
+                Some(fxlang::BattleEvent::BeforeStart),
+                fxlang::BattleEvent::Start,
+                fxlang::BattleEvent::Restart,
+                fxlang::BattleEvent::ModifyDuration,
+            )
+        } else if location.side_index().is_some() {
+            (
+                None,
+                fxlang::BattleEvent::SideStart,
+                fxlang::BattleEvent::SideRestart,
+                fxlang::BattleEvent::ModifySideDuration,
+            )
+        } else if location.slot_index().is_some() {
+            (
+                None,
+                fxlang::BattleEvent::SlotStart,
+                fxlang::BattleEvent::SlotRestart,
+                fxlang::BattleEvent::ModifySlotDuration,
+            )
+        } else if location.field() {
+            (
+                None,
+                fxlang::BattleEvent::FieldStart,
+                fxlang::BattleEvent::FieldRestart,
+                fxlang::BattleEvent::ModifyFieldDuration,
+            )
+        } else {
+            return Err(general_error("condition applied to an undefined location"));
+        };
 
     let scoped_context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
@@ -7122,7 +7195,7 @@ where
             restart_event,
             event_input.clone(),
             core_battle_effects::RunEffectEventOptions {
-                effect: Some(applied_effect_handle.clone()),
+                effects: Vec::from_iter([applied_effect_handle.clone()]),
             },
         ) {
             return Ok(false);
@@ -7159,10 +7232,10 @@ where
             fxlang::BattleEvent::Duration,
             (),
             core_battle_effects::RunEffectEventOptions {
-                effect: Some(AppliedEffectHandle::new(
+                effects: Vec::from_iter([AppliedEffectHandle::new(
                     context.effect_handle.clone(),
                     AppliedEffectLocation::None,
-                )),
+                )]),
             },
         ) {
             condition_duration = Some(duration);
@@ -7185,12 +7258,21 @@ where
 
         callbacks.apply(&mut context, effect_state)?;
 
-        if !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
+        if before_start_event.is_some_and(|before_start_event| {
+            !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
+                context.context,
+                before_start_event,
+                event_input.clone(),
+                core_battle_effects::RunEffectEventOptions {
+                    effects: Vec::from_iter([applied_effect_handle.clone()]),
+                },
+            )
+        }) || !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
             context.context,
             start_event,
             event_input.clone(),
             core_battle_effects::RunEffectEventOptions {
-                effect: Some(applied_effect_handle.clone()),
+                effects: Vec::from_iter([applied_effect_handle.clone()]),
             },
         ) {
             callbacks.rollback(&mut context)?;
@@ -7362,7 +7444,7 @@ where
             end_event,
             event_input,
             core_battle_effects::RunEffectEventOptions {
-                effect: Some(applied_effect_handle.clone()),
+                effects: Vec::from_iter([applied_effect_handle.clone()]),
             },
         );
     }

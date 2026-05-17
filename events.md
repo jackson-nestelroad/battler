@@ -33,7 +33,9 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. For each Mon in speed order:
       1. `SwitchingIn`.
       1. `SwitchIn`.
+      1. Ability `BeforeStart`.
       1. Ability `Start`.
+      1. Item `BeforeStart`.
       1. Item `Start`.
 
 ## Before Turn Start
@@ -222,6 +224,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. `SetStatus`.
                         1. Status `Duration`.
                         1. `ModifyDuration`.
+                        1. Status `BeforeStart`.
                         1. Status `Start`.
                         1. `AfterSetStatus`.
                      1. Add volatile:
@@ -230,6 +233,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. `AddVolatile`.
                         1. Volatile `Duration`.
                         1. `ModifyDuration`.
+                        1. Volatile `BeforeStart`.
                         1. Volatile `Start`.
                         1. `AfterAddVolatile`.
                      1. Add side condition:
@@ -322,6 +326,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. `SetAbility`.
 1. Ability `End`.
+1. Ability `BeforeStart`.
 1. Ability `Start`.
 1. `AfterSetAbility`.
 
@@ -329,6 +334,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. Item `End`.
 1. `SetItem`.
+1. Item `BeforeStart`.
 1. Item `Start`.
 1. `AfterSetItem`.
 
