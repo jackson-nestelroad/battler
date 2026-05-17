@@ -671,8 +671,7 @@
       "callbacks": {
         "on_start": ["log_ability"],
         "on_foe_deduct_pp": [
-          "$targets = func_call(get_move_targets: $move $user $target)",
-          "if $targets hasany [$effect_state.target, $user]:",
+          "if func_call(move_has_flag: $move mustpressure) or ($move.target.affects_mons_directly and $move.original_targets hasany [$effect_state.target, $user]):",
           ["return $pp + 1"]
         ]
       }

@@ -333,6 +333,22 @@ where
                             .move_effect()
                             .map(|mov| ValueRef::Boolean(mov.data.ohko_type.is_some()))
                             .unwrap_or(ValueRef::Undefined),
+                            "original_targets" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                ValueRef::TempList(
+                                    mov.original_targets
+                                        .iter()
+                                        .map(|mon| {
+                                            ValueRefToStoredValue::new(None, ValueRef::Mon(*mon))
+                                        })
+                                        .collect(),
+                                )
+                            })
+                            .unwrap_or(ValueRef::Undefined),
                             "priority" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -1170,6 +1186,13 @@ where
                             }
                             "drops" => {
                                 ValueRef::Boost(nature.drops().try_into().map_err(general_error)?)
+                            }
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::MoveTarget(target) = value {
+                        value = match *member {
+                            "affects_mons_directly" => {
+                                ValueRef::Boolean(target.affects_mons_directly())
                             }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }

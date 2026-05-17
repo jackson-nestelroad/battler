@@ -1008,6 +1008,8 @@ fn use_active_move_internal(
     );
 
     let targets = get_move_targets(context, target)?;
+    context.active_move_mut().original_targets = targets.clone();
+
     let target = if context.active_move().data.target.has_single_target() {
         targets.first().cloned()
     } else if !context.active_move().data.target.affects_mons_directly() {
@@ -1435,6 +1437,8 @@ fn move_hit_loop_internal(
         //
         // We do this now so that damage and base power callbacks can use this value.
         context.active_move_mut().hit = hit + 1;
+
+        // TODO: Select target for smart targeting.
 
         // Additional hits trigger a new move animation.
         if context.active_move().hit > 1 {

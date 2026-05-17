@@ -164,6 +164,12 @@
         "type": "Boolean | Undefined",
         "only_applicable_to_move": true
       },
+      "original_targets": {
+        "description": "",
+        "type": "List | Undefined",
+        "item_type": "Mon",
+        "only_applicable_to_move": true
+      },
       "priority": {
         "description": "",
         "type": "Fraction | Undefined",
@@ -955,6 +961,12 @@
       "drops": {
         "description": "",
         "type": "Boost"
+      }
+    },
+    "MoveTarget": {
+      "affects_mons_directly": {
+        "description": "",
+        "type": "Boolean"
       }
     },
     "SpecialItemData": {

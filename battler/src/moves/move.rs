@@ -214,6 +214,8 @@ pub struct Move {
     pub hit: u8,
     /// Total damage dealt by the move.
     pub total_damage: u64,
+    /// The original targets the move was determined to affect.
+    pub original_targets: Vec<MonHandle>,
     /// All targets with non-zero damage applied.
     pub damaged_targets: Vec<MonHandle>,
     /// Have the primary user effect been applied?
@@ -273,6 +275,7 @@ impl Move {
             spread_hit: false,
             hit: 0,
             total_damage: 0,
+            original_targets: Vec::default(),
             damaged_targets: Vec::default(),
             primary_user_effect_applied: false,
             upgraded: None,
