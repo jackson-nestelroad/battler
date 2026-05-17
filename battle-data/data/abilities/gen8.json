@@ -245,10 +245,9 @@
           "$effect_state.activated = true"
         ],
         "on_start": [
-          "if $effect_state.announced:",
+          "if $effect_state.announced or !$effect_state.activated:",
           ["return"],
-          "if $effect_state.activated:",
-          ["log_ability"],
+          "log_ability",
           "$effect_state.announced = true"
         ]
       }
