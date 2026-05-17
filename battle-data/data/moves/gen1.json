@@ -2990,7 +2990,7 @@
   "struggle": {
     "name": "Struggle",
     "category": "Physical",
-    "primary_type": "Normal",
+    "primary_type": "None",
     "base_power": 50,
     "accuracy": "exempt",
     "pp": 1,
