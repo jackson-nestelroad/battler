@@ -215,7 +215,7 @@ impl EffectState {
     /// Whether or not the effect is started.
     ///
     /// An effect is started if any corresponding "Start" event has run. Unlike [`Self::ending`],
-    /// this is purely used for tracking that event has been started and does not need to be
+    /// this is purely used for tracking that an effect has been started and does not need to be
     /// "restarted," in the case of suppression effects.
     ///
     /// In other words, un-started effects will still apply their event callbacks if they exist on

@@ -1855,6 +1855,29 @@ impl BattleEvent {
         }
     }
 
+    /// Whether or not to exclude effects that are not started.
+    ///
+    /// See [`EffectState::started`][`crate::effect::fxlang::EffectState::started`]. Ordinarily,
+    /// event callbacks are still run against un-started effects. However, this may be undesirable
+    /// for specific events that run very frequently. This option may be used for overriding this
+    /// behavior.
+    ///
+    /// For example, the [`Update`][`Self::Update`] event runs after every action. However,
+    /// switch-ins and switch-in events are split across two separate actions. The `Update`
+    /// event after the switch-in may trigger a Mon to use its held item (e.g., eat a berry when
+    /// it switches in at low HP) immediately.
+    ///
+    /// However, the item should only be consumed once it "starts" as part of the switch-in events
+    /// action. This option forces the `Update` event callback to wait until the item is officially
+    /// started, which satisfies our ordering requirements. Events such as entry hazards occur
+    /// *before* the item starts and is consumed on the subsequent `Update` event.
+    pub fn exclude_unstarted_effects(&self) -> bool {
+        match self {
+            Self::Update => true,
+            _ => false,
+        }
+    }
+
     /// Whether or not to use the effect's order (on its
     /// [`EffectState`][`crate::effect::fxlang::EffectState`]) when ordering callbacks.
     pub fn order_using_effect_order(&self) -> bool {

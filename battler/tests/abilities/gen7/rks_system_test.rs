@@ -105,14 +105,14 @@ fn rks_system_changes_silvally_forme_dynamically_if_incorrect() {
             "split|side:1",
             ["switch", "player-2", "Silvally"],
             ["switch", "player-2", "Silvally"],
-            "split|side:0",
-            ["specieschange", "player-1", "species:Silvally-Fire"],
-            ["specieschange", "player-1", "species:Silvally-Fire"],
-            "formechange|mon:Silvally,player-1,1|species:Silvally-Fire|from:ability:RKS System",
             "split|side:1",
             ["specieschange", "player-2", "species:Silvally-Water"],
             ["specieschange", "player-2", "species:Silvally-Water"],
             "formechange|mon:Silvally,player-2,1|species:Silvally-Water|from:ability:RKS System",
+            "split|side:0",
+            ["specieschange", "player-1", "species:Silvally-Fire"],
+            ["specieschange", "player-1", "species:Silvally-Fire"],
+            "formechange|mon:Silvally,player-1,1|species:Silvally-Fire|from:ability:RKS System",
             "turn|turn:1"
         ]"#,
     )

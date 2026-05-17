@@ -43,6 +43,7 @@ fn team() -> Result<TeamData> {
                     "name": "Rillaboom",
                     "species": "Rillaboom",
                     "ability": "No Ability",
+                    "item": "Sitrus Berry",
                     "moves": [],
                     "nature": "Hardy",
                     "level": 100

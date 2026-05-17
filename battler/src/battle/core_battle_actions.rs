@@ -5342,15 +5342,6 @@ fn end_item_internal(
         return Ok(());
     }
 
-    if context
-        .target()
-        .item
-        .as_ref()
-        .is_none_or(|_| !context.target().volatile_state.item_state.started())
-    {
-        return Ok(());
-    }
-
     if end_item_log != EndItemLog::TrueSilent {
         let no_source = match end_item_type {
             EndItemType::Eat | EndItemType::Use => true,
@@ -5366,6 +5357,15 @@ fn end_item_internal(
             end_item_log == EndItemLog::LogSilent,
             eat,
         )?;
+    }
+
+    if context
+        .target()
+        .item
+        .as_ref()
+        .is_none_or(|_| !context.target().volatile_state.item_state.started())
+    {
+        return Ok(());
     }
 
     let event = match end_item_type {

@@ -105,14 +105,14 @@ fn multitype_changes_arceus_forme_dynamically_if_incorrect() {
             "split|side:1",
             ["switch", "player-2", "Arceus"],
             ["switch", "player-2", "Arceus"],
-            "split|side:0",
-            ["specieschange", "player-1", "species:Arceus-Fire"],
-            ["specieschange", "player-1", "species:Arceus-Fire"],
-            "formechange|mon:Arceus,player-1,1|species:Arceus-Fire|from:ability:Multitype",
             "split|side:1",
             ["specieschange", "player-2", "species:Arceus-Water"],
             ["specieschange", "player-2", "species:Arceus-Water"],
             "formechange|mon:Arceus,player-2,1|species:Arceus-Water|from:ability:Multitype",
+            "split|side:0",
+            ["specieschange", "player-1", "species:Arceus-Fire"],
+            ["specieschange", "player-1", "species:Arceus-Fire"],
+            "formechange|mon:Arceus,player-1,1|species:Arceus-Fire|from:ability:Multitype",
             "turn|turn:1"
         ]"#,
     )

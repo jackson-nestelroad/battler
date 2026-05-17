@@ -212,13 +212,7 @@
     "name": "Chilling Neigh",
     "flags": [],
     "effect": {
-      "callbacks": {
-        "on_after_fainted": [
-          "if !$effect or !$effect.is_move:",
-          ["return"],
-          "boost: $mon str('atk:{}', $count)"
-        ]
-      }
+      "delegates": ["ability:moxie"]
     }
   },
   "grimneigh": {

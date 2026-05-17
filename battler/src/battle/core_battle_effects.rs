@@ -2017,7 +2017,9 @@ mod callbacks {
             && effect_state.exists(context)?
         {
             let effect_state = effect_state.get_mut(context)?;
-            if effect_state.ending() {
+            if effect_state.ending()
+                || (event.exclude_unstarted_effects() && !effect_state.started())
+            {
                 return Ok(None);
             }
 

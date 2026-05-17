@@ -404,7 +404,11 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_after_fainted": ["if $effect.is_move:", ["boost: $mon str('atk:{}',   $count)"]]
+        "on_after_fainted": [
+          "if !$effect or !$effect.is_move:",
+          ["return"],
+          "boost: $mon str('atk:{}', $count)"
+        ]
       }
     }
   },
