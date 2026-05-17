@@ -131,13 +131,16 @@ fn default_crit_ratio() -> Option<u8> {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct AdvancedTargeting {
     /// Does the move avoid random targets?
+    #[serde(default)]
     pub no_random_target: bool,
 
     /// Does the move track the target, even if they have moved?
+    #[serde(default)]
     pub tracks_target: bool,
 
     /// Does the move intelligently target different Mons based on immunities, protection,
     /// accuracy, etc.?
+    #[serde(default)]
     pub smart_target: bool,
 }
 

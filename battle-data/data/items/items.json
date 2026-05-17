@@ -1228,7 +1228,6 @@
       }
     },
     "flags": [],
-
     "effect": {
       "callbacks": {
         "on_source_modify_duration": ["if $condition.id == partiallytrapped:", ["return 8"]]

@@ -6,6 +6,7 @@
     "accuracy": "exempt",
     "pp": 1,
     "target": "Normal",
+    "no_pp_boosts": true,
     "flags": [
       "BypassSubstitute",
       "FailCopycat",
@@ -17,7 +18,6 @@
       "NoSketch",
       "NoSleepTalk"
     ],
-    "no_pp_boosts": true,
     "z_move": {
       "boosts": {
         "atk": 1,
@@ -50,9 +50,9 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multiaccuracy": true,
     "multihit": 3,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 80
     },
@@ -316,8 +316,8 @@
     "accuracy": 95,
     "pp": 5,
     "target": "Any",
-    "flags": ["Distance", "Mirror", "Protect", "Wind"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Distance", "Mirror", "Protect", "Wind"]
   },
   "cottonspore": {
     "name": "Cotton Spore",
@@ -719,7 +719,7 @@
     "condition": {
       "duration": 4,
       "callbacks": {
-        "on_residual": ["log_start: str('perish:{}',   $effect_state.duration)"],
+        "on_residual": ["log_start: str('perish:{}',    $effect_state.duration)"],
         "on_end": ["log_start: 'perish:0'", "faint: $target"]
       }
     }
@@ -772,8 +772,8 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -850,8 +850,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Heal", "Mirror", "Protect"]
   },
   "endure": {
     "name": "Endure",
@@ -1377,7 +1377,7 @@
           "else:",
           ["$effect_state.magnitude = 10", "$move.base_power = 150"]
         ],
-        "on_use_move_message": ["log_activate: str('magnitude:{}',   $effect_state.magnitude)"]
+        "on_use_move_message": ["log_activate: str('magnitude:{}', $effect_state.magnitude)"]
       }
     }
   },
@@ -1433,8 +1433,8 @@
     "accuracy": "exempt",
     "pp": 40,
     "target": "User",
-    "flags": [],
     "user_switch": "copyvolatile",
+    "flags": [],
     "z_move": {
       "effect": "zpowerclearnegativeboosts"
     },
@@ -1735,8 +1735,8 @@
     "accuracy": 80,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "twister": {
     "name": "Twister",

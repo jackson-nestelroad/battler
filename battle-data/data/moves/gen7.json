@@ -471,9 +471,9 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "ignore_defensive": true,
-    "ignore_evasion": true
+    "ignore_evasion": true,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "sparklingaria": {
     "name": "Sparkling Aria",
@@ -1640,6 +1640,7 @@
     "accuracy": "exempt",
     "pp": 1,
     "target": "Normal",
+    "crit_ratio": 3,
     "flags": [
       "FailCopycat",
       "FailEncore",
@@ -1651,8 +1652,7 @@
       "NoSleepTalk",
       "WeakenThroughProtection",
       "Z"
-    ],
-    "crit_ratio": 3
+    ]
   },
   "mindblown": {
     "name": "Mind Blown",
@@ -1662,11 +1662,11 @@
     "accuracy": 100,
     "pp": 5,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "NoMetronome", "Protect"],
     "recoil": {
       "percent": "1/2",
       "base": "usermaxhp"
-    }
+    },
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "plasmafists": {
     "name": "Plasma Fists",
@@ -1934,8 +1934,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Heal", "Mirror", "NoMetronome", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Heal", "Mirror", "NoMetronome", "Protect"]
   },
   "buzzybuzz": {
     "name": "Buzzy Buzz",
@@ -2056,6 +2056,7 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
+    "multihit": 2,
     "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "secondary_effects": [
       {
@@ -2065,7 +2066,6 @@
         }
       }
     ],
-    "multihit": 2,
     "max_move": {
       "base_power": 140
     }

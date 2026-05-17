@@ -159,8 +159,8 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["Heal", "Snatch"],
     "self_destruct": "ifhit",
+    "flags": ["Heal", "Snatch"],
     "hit_effect": {
       "slot_condition": "healingwish"
     },
@@ -361,8 +361,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "user_switch": true
+    "user_switch": true,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "closecombat": {
     "name": "Close Combat",
@@ -523,8 +523,8 @@
     "accuracy": "exempt",
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "no_pp_boosts": true,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     },
@@ -1053,10 +1053,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Thawing"],
     "recoil": {
       "percent": "1/3"
     },
+    "flags": ["Contact", "Mirror", "Protect", "Thawing"],
     "secondary_effects": [
       {
         "chance": "10%",
@@ -1155,8 +1155,8 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
   "aquatail": {
     "name": "Aqua Tail",
@@ -1272,8 +1272,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Heal", "Mirror", "Protect", "Punch"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Contact", "Heal", "Mirror", "Protect", "Punch"]
   },
   "vacuumwave": {
     "name": "Vacuum Wave",
@@ -1334,10 +1334,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Any",
-    "flags": ["Contact", "Distance", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/3"
-    }
+    },
+    "flags": ["Contact", "Distance", "Mirror", "Protect"]
   },
   "earthpower": {
     "name": "Earth Power",
@@ -1570,8 +1570,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect", "Slicing"]
   },
   "zenheadbutt": {
     "name": "Zen Headbutt",
@@ -1800,6 +1800,7 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
+    "crit_ratio": 2,
     "flags": ["Contact", "Mirror", "Protect", "Slicing"],
     "secondary_effects": [
       {
@@ -1808,8 +1809,7 @@
           "status": "psn"
         }
       }
-    ],
-    "crit_ratio": 2
+    ]
   },
   "gunkshot": {
     "name": "Gunk Shot",
@@ -1865,8 +1865,8 @@
     "accuracy": 80,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect"]
   },
   "captivate": {
     "name": "Captivate",
@@ -2032,10 +2032,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/3"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "aquajet": {
     "name": "Aqua Jet",
@@ -2056,8 +2056,8 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect"]
   },
   "defendorder": {
     "name": "Defend Order",
@@ -2102,10 +2102,10 @@
     "accuracy": 80,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/2"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "doublehit": {
     "name": "Double Hit",
@@ -2115,8 +2115,8 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 120
     }
@@ -2142,8 +2142,8 @@
     "accuracy": 95,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect"]
   },
   "lunardance": {
     "name": "Lunar Dance",
@@ -2152,8 +2152,8 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["Dance", "Heal", "Snatch"],
     "self_destruct": "ifhit",
+    "flags": ["Dance", "Heal", "Snatch"],
     "hit_effect": {
       "slot_condition": "lunardance"
     },

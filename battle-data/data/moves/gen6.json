@@ -256,8 +256,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "AllAdjacent",
-    "flags": ["Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Heal", "Mirror", "Protect"]
   },
   "forestscurse": {
     "name": "Forest's Curse",
@@ -332,8 +332,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"],
     "user_switch": "ifhit",
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Reflectable", "Sound"],
     "hit_effect": {
       "boosts": {
         "atk": -1,
@@ -371,8 +371,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Heal", "Mirror", "Protect"],
-    "drain_percent": "3/4"
+    "drain_percent": "3/4",
+    "flags": ["Contact", "Heal", "Mirror", "Protect"]
   },
   "craftyshield": {
     "name": "Crafty Shield",
@@ -754,8 +754,8 @@
     "pp": 20,
     "priority": 1,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "flags": ["Mirror", "Protect"]
   },
   "mysticalfire": {
     "name": "Mystical Fire",
@@ -865,7 +865,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return [psn,   tox] has $target.status"]
+        "on_try_hit": ["return [psn,    tox] has $target.status"]
       }
     }
   },
@@ -946,7 +946,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return func_call(has_ability: $target [plus,   minus])"]
+        "on_try_hit": ["return func_call(has_ability: $target [plus,    minus])"]
       }
     }
   },
@@ -1167,8 +1167,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Any",
-    "flags": ["Distance", "Heal", "Mirror", "Protect"],
-    "drain_percent": "3/4"
+    "drain_percent": "3/4",
+    "flags": ["Distance", "Heal", "Mirror", "Protect"]
   },
   "thousandarrows": {
     "name": "Thousand Arrows",
@@ -1219,10 +1219,10 @@
     "accuracy": 90,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"],
     "recoil": {
       "percent": "1/2"
-    }
+    },
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "originpulse": {
     "name": "Origin Pulse",
