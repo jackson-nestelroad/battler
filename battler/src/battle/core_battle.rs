@@ -2075,7 +2075,7 @@ impl<'d> CoreBattle<'d> {
         original_target: Option<MonHandle>,
     ) -> Result<Option<MonHandle>> {
         let mov = context.battle().dex.moves.get_by_id(move_id)?;
-        let tracks_target = mov.data.tracks_target;
+        let tracks_target = mov.data.advanced_targeting.tracks_target;
         let move_target = mov.data.target.clone();
 
         if tracks_target {

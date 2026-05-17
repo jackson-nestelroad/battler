@@ -1195,7 +1195,13 @@ pub fn get_move_targets(
                 None => None,
             };
 
-            if target.is_none() && !context.active_move().data.no_random_target {
+            if target.is_none()
+                && !context
+                    .active_move()
+                    .data
+                    .advanced_targeting
+                    .no_random_target
+            {
                 let mon = context.mon_handle();
                 let move_target = context.active_move().data.target;
                 target =
@@ -1207,7 +1213,9 @@ pub fn get_move_targets(
                 None => return Ok(Vec::new()),
             };
 
-            if context.battle().max_side_length() > 1 && !context.active_move().data.tracks_target {
+            if context.battle().max_side_length() > 1
+                && !context.active_move().data.advanced_targeting.tracks_target
+            {
                 target = core_battle_effects::run_event_with_options::<_, _, Option<MonHandle>>(
                     &mut context.user_applying_effect_context(Some(target))?,
                     fxlang::BattleEvent::RedirectTarget,
@@ -2046,7 +2054,10 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
 
     let target_handle = context.target_handle();
     let mut total = 0;
-    for defense in mon_states::effective_types(&mut context.target_context()?) {
+    for (i, defense) in mon_states::effective_types(&mut context.target_context()?)
+        .into_iter()
+        .enumerate()
+    {
         let modifier = context.battle().check_type_effectiveness(offense, defense);
 
         let modifier = match context.active_move_context()? {
@@ -2055,7 +2066,7 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
                     &mut context,
                     fxlang::BattleEvent::Effectiveness,
                     core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-                    [modifier.into(), defense.into()],
+                    [modifier.into(), defense.into(), (i as u64).into()],
                 )
                 .unwrap_or(modifier)
             }
@@ -2065,7 +2076,7 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         let modifier = core_battle_effects::run_event_with_input::<_, _, i8>(
             context,
             fxlang::BattleEvent::Effectiveness,
-            [modifier.into(), defense.into()],
+            [modifier.into(), defense.into(), (i as u64).into()],
         );
         total += modifier;
     }
@@ -5578,7 +5589,7 @@ fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool>
 }
 
 /// Makes the target Mon eat its held item (berries).
-pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
+pub fn eat_item(context: &mut ApplyingEffectContext, force: bool) -> Result<bool> {
     if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
@@ -5595,19 +5606,13 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
 
-    if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::TryEatItem,
-        item_handle.clone(),
-    ) {
-        return Ok(false);
-    }
-
-    if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::TryUseItem,
-        item_handle.clone(),
-    ) {
+    if !force
+        && !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+            context,
+            fxlang::BattleEvent::TryEatItem,
+            item_handle.clone(),
+        )
+    {
         return Ok(false);
     }
 

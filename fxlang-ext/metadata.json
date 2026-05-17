@@ -2226,7 +2226,12 @@
           "optional": true
         }
       ],
-      "flags": [],
+      "flags": [
+        {
+          "name": "force",
+          "description": "If set, the consumption cannot be stopped."
+        }
+      ],
       "type": "Boolean",
       "returns_item_from_list": false
     },
@@ -6384,6 +6389,10 @@
         },
         "type": {
           "type": "Type",
+          "optional": false
+        },
+        "index": {
+          "type": "UFraction",
           "optional": false
         }
       },

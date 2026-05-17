@@ -74,7 +74,9 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect"],
     "crit_ratio": 2,
-    "tracks_target": true
+    "advanced_targeting": {
+      "tracks_target": true
+    }
   },
   "jawlock": {
     "name": "Jaw Lock",
@@ -84,7 +86,13 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "trapped"
+    },
+    "user_effect": {
+      "volatile_status": "trapped"
+    }
   },
   "stuffcheeks": {
     "name": "Stuff Cheeks",
@@ -93,7 +101,24 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_disable_move": [
+          "if !$mon.item or !func_call(item_has_flag: $mon.item berry):",
+          ["disable_move: $mon $this.id"]
+        ],
+        "on_try_use_move": [
+          "if !$mon.item or !func_call(item_has_flag: $mon.item berry):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "if !func_call(boost: $target 'def:2'):",
+          ["return stopfail"],
+          "eat_item: $target force"
+        ]
+      }
+    }
   },
   "noretreat": {
     "name": "No Retreat",
@@ -102,7 +127,17 @@
     "accuracy": "exempt",
     "pp": 5,
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "def": 1,
+        "spa": 1,
+        "spd": 1,
+        "spe": 1
+      },
+      "volatile_status": "trapped"
+    }
   },
   "tarshot": {
     "name": "Tar Shot",
@@ -111,7 +146,19 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "spe": 1
+      },
+      "volatile_status": "tarshot"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["if $target.terastallized:", ["return false"], "log_start: with_target"],
+        "on_effectiveness": ["if $index == 0 and $effect.type == fire:", ["return $modifier + 1"]]
+      }
+    }
   },
   "magicpowder": {
     "name": "Magic Powder",
@@ -120,7 +167,12 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Powder", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Powder", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_hit": ["return func_call(set_types: $target [psychic])"]
+      }
+    }
   },
   "dragondarts": {
     "name": "Dragon Darts",
@@ -132,6 +184,9 @@
     "target": "Normal",
     "flags": ["Mirror", "NoParentalBond", "Protect"],
     "multihit": 2,
+    "advanced_targeting": {
+      "smart_target": true
+    },
     "max_move": {
       "base_power": 130
     }

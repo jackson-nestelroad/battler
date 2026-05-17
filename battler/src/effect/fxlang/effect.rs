@@ -1672,6 +1672,7 @@ impl BattleEvent {
             Self::Effectiveness => &[
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
+                ("index", ValueType::UFraction, true),
             ],
             Self::ForceEffectiveness => &[("modifier", ValueType::Fraction, true)],
             Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],

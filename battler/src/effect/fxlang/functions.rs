@@ -4506,11 +4506,16 @@ fn decrease_weight(mut context: FunctionContext) -> Result<()> {
 /// Makes a Mon eat its held item.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to eat.
+/// @flag force If set, the consumption cannot be stopped.
 /// @returns {[`ValueType::Boolean`]} Whether the item was eaten.
 fn eat_item(mut context: FunctionContext) -> Result<Value> {
+    let force = context.has_flag("force");
     let mon = context.target_handle_positional()?;
-    core_battle_actions::eat_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
-        .map(|val| Value::Boolean(val))
+    core_battle_actions::eat_item(
+        &mut context.forward_to_applying_effect_context_with_target(mon)?,
+        force,
+    )
+    .map(|val| Value::Boolean(val))
 }
 
 /// Makes a Mon eat a specific item.

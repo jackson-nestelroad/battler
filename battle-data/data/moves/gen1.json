@@ -2101,7 +2101,9 @@
             "priority": 1,
             "target": "Scripted",
             "flags": ["Contact", "Protect"],
-            "no_random_target": true,
+            "advanced_targeting": {
+              "no_random_target": true
+            },
             "effect": {
               "callbacks": {
                 "on_ignore_immunity": ["return true"],

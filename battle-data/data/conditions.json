@@ -986,6 +986,10 @@
           "$max_move.priority = $move.priority",
           "return $max_move"
         ],
+        "on_source_modify_damage": [
+          "if [behemothbash, behemothblade, dynamaxcannon] has $move.id:",
+          ["return $damage * 2"]
+        ],
         "on_add_volatile": ["if [encore, flinch, torment] has $volatile.id:", ["return false"]],
         "on_before_switch_out": ["remove_volatile: $mon $this.id"],
         "on_drag_out": ["log_block: with_target", "return false"],
