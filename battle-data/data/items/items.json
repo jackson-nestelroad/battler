@@ -2728,7 +2728,10 @@
           ["log_block: with_target", "$effect_state.logged_for_trace = true"],
           "return false"
         ],
-        "on_try_hit": ["if $move.id == gastroacid:", ["log_block: with_target", "return false"]]
+        "on_try_hit": [
+          "if $move.id == gastroacid:",
+          ["if $report:", ["log_block: with_target"], "return false"]
+        ]
       }
     },
     "condition": {

@@ -76,10 +76,7 @@
     "advanced_targeting": {
       "tracks_target": true
     },
-    "flags": ["Mirror", "Protect"],
-    "advancedTargeting": {
-      "tracks_target": true
-    }
+    "flags": ["Mirror", "Protect"]
   },
   "jawlock": {
     "name": "Jaw Lock",
@@ -192,9 +189,6 @@
     "flags": ["Mirror", "NoParentalBond", "Protect"],
     "max_move": {
       "base_power": 130
-    },
-    "advancedTargeting": {
-      "smart_target": true
     }
   },
   "teatime": {

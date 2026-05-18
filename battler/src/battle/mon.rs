@@ -682,6 +682,8 @@ pub struct Mon {
     pub switch_state: MonSwitchState,
     pub volatile_state: MonVolatileState,
 
+    /// The move the Mon is actively performing, excluding any externally-called move.
+    pub non_external_active_move: Option<MoveHandle>,
     /// The move the Mon is actively performing.
     pub active_move: Option<MoveHandle>,
 
@@ -812,6 +814,7 @@ impl Mon {
             next_turn_state: MonNextTurnState::default(),
             switch_state: MonSwitchState::default(),
             volatile_state: MonVolatileState::default(),
+            non_external_active_move: None,
             active_move: None,
             learnable_moves: Vec::default(),
             revert_forme_change_on_exit: false,
@@ -2277,8 +2280,11 @@ impl Mon {
     }
 
     /// Sets the active move.
-    pub fn set_active_move(&mut self, active_move: MoveHandle) {
+    pub fn set_active_move(&mut self, active_move: MoveHandle, external: bool) {
         self.active_move = Some(active_move);
+        if !external {
+            self.non_external_active_move = Some(active_move);
+        }
     }
 
     /// Clears the active move.

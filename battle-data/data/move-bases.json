@@ -36,7 +36,8 @@
           "program": [
             "if !func_call(move_has_flag: $move protect):",
             ["return"],
-            "log_activate: with_target",
+            "if $report:",
+            ["log_activate: with_target"],
             "activate_applying_effect: $this no_forward",
             "if $effect_state.source_effect.is_defined:",
             ["activate_applying_effect: $effect_state.source_effect no_forward"],

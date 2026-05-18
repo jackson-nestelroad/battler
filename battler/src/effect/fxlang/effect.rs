@@ -1729,6 +1729,7 @@ impl BattleEvent {
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::TryEatItem => &[("item", ValueType::Effect, true)],
+            Self::TryHit => &[("report", ValueType::Boolean, false)],
             Self::TryUseItem => &[("item", ValueType::Effect, true)],
             Self::TryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],

@@ -1051,6 +1051,12 @@ where
     Ok(())
 }
 
+pub fn last_move_target(context: &mut ActiveMoveContext, target: MonHandle) -> Result<()> {
+    let details = Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?;
+    add_attribute_value_to_last_move(context, "target", details.to_string());
+    Ok(())
+}
+
 pub fn hit_count(context: &mut Context, hits: u8) -> Result<()> {
     let event = battle_log_entry!("hitcount", ("hits", hits));
     context.battle_mut().log(event);

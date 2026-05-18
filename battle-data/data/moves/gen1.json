@@ -2100,10 +2100,10 @@
             "accuracy": "exempt",
             "priority": 1,
             "target": "Scripted",
-            "flags": ["Contact", "Protect"],
             "advanced_targeting": {
               "no_random_target": true
             },
+            "flags": ["Contact", "Protect"],
             "effect": {
               "callbacks": {
                 "on_ignore_immunity": ["return true"],

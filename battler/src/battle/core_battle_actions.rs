@@ -526,7 +526,7 @@ fn do_move_internal(
         }
     }
 
-    context.mon_mut().set_active_move(active_move_handle);
+    context.mon_mut().set_active_move(active_move_handle, false);
     let mut context = context.active_move_context(active_move_handle)?;
 
     let locked_move_before = context.mon().next_turn_state.locked_move.clone();
@@ -799,7 +799,9 @@ fn use_active_move_with_using_move_state(
 
     if options.directly_used {
         context.mon_mut().volatile_state.move_this_turn_outcome = None;
-        context.mon_mut().set_active_move(active_move_handle);
+        context
+            .mon_mut()
+            .set_active_move(active_move_handle, options.external);
     }
 
     let mut context = context.active_move_context(active_move_handle)?;
@@ -810,6 +812,18 @@ fn use_active_move_with_using_move_state(
     context.active_move_mut().effect_state = effect_state;
 
     context.active_move_mut().external = options.external;
+
+    // Copy over some information from the caller move, if applicable.
+    match source_effect {
+        Some(EffectHandle::ActiveMove(source_move_handle, _)) => {
+            let priority = context
+                .as_battle_context()
+                .active_move(*source_move_handle)?
+                .priority;
+            context.active_move_mut().priority = priority;
+        }
+        _ => (),
+    }
 
     // BeforeMove event handlers can prevent the move from being used.
     if options.preventable() {
@@ -864,7 +878,8 @@ fn use_active_move_with_using_move_state(
             return_first_value: true,
             ..Default::default()
         },
-    );
+    )
+    .or(target);
 
     let outcome = use_active_move_internal(&mut context, target, options.directly_used)?;
 
@@ -1169,11 +1184,11 @@ pub fn get_move_targets(
             );
         }
         MoveTarget::AllAdjacent => {
-            targets.extend(Mon::adjacent_allies(&mut context.as_mon_context_mut())?);
-            targets.extend(Mon::adjacent_foes(&mut context.as_mon_context_mut())?);
+            targets.extend(Mon::adjacent_allies(context.as_mon_context_mut())?);
+            targets.extend(Mon::adjacent_foes(context.as_mon_context_mut())?);
         }
         MoveTarget::AllAdjacentFoes => {
-            targets.extend(Mon::adjacent_foes(&mut context.as_mon_context_mut())?);
+            targets.extend(Mon::adjacent_foes(context.as_mon_context_mut())?);
         }
         MoveTarget::User => {
             targets.push(context.mon_handle());
@@ -1215,22 +1230,46 @@ pub fn get_move_targets(
                 None => return Ok(Vec::new()),
             };
 
+            let mut redirected = false;
             if context.battle().max_side_length() > 1
                 && !context.active_move().data.advanced_targeting.tracks_target
             {
-                target = core_battle_effects::run_event_with_options::<_, _, Option<MonHandle>>(
-                    &mut context.user_applying_effect_context(Some(target))?,
-                    fxlang::BattleEvent::RedirectTarget,
-                    target,
-                    core_battle_effects::RunEventOptions {
-                        return_first_value: true,
-                        ..Default::default()
-                    },
-                )
-                .unwrap_or(target);
+                if let Some(redirected_target) =
+                    core_battle_effects::run_event_with_options::<_, _, Option<MonHandle>>(
+                        &mut context.user_applying_effect_context(Some(target))?,
+                        fxlang::BattleEvent::RedirectTarget,
+                        target,
+                        core_battle_effects::RunEventOptions {
+                            return_first_value: true,
+                            ..Default::default()
+                        },
+                    )
+                {
+                    target = redirected_target;
+                    redirected = true;
+                }
             }
 
-            targets.push(target);
+            if !redirected && context.active_move().data.advanced_targeting.smart_target {
+                let mut allies = Vec::default();
+                for ally in Mon::adjacent_allies(&mut context.target_mon_context(target)?)?
+                    .collect::<Vec<_>>()
+                {
+                    if ally == context.mon_handle()
+                        || !Mon::is_adjacent(context.as_mon_context_mut(), ally)?
+                        || context.target_mon_context(ally)?.mon().hp == 0
+                    {
+                        continue;
+                    }
+                    allies.push(ally);
+                }
+                if allies.is_empty() || context.target_mon_context(target)?.mon().hp > 0 {
+                    targets.push(target);
+                }
+                targets.extend(allies);
+            } else {
+                targets.push(target);
+            }
         }
     }
     let targets = targets
@@ -1242,6 +1281,7 @@ pub fn get_move_targets(
                 .is_ok_and(|target| target.hp > 0)
         })
         .collect();
+
     Ok(targets)
 }
 
@@ -1387,7 +1427,7 @@ pub fn prepare_direct_move(
 
 /// Tries to use a move directly against several target Mons.
 fn try_direct_move(context: &mut ActiveMoveContext, targets: &[MonHandle]) -> Result<MoveOutcome> {
-    if targets.len() > 1 {
+    if targets.len() > 1 && !context.active_move().data.advanced_targeting.smart_target {
         context.active_move_mut().spread_hit = true;
     }
 
@@ -1420,7 +1460,7 @@ fn move_hit_loop_internal(
 
     for hit in 0..hits {
         // No more targets.
-        if targets.iter().all(|target| !target.outcome.success()) {
+        if targets.is_empty() || targets.iter().all(|target| !target.outcome.success()) {
             break;
         }
         if targets.iter().all(|target| {
@@ -1437,8 +1477,6 @@ fn move_hit_loop_internal(
         //
         // We do this now so that damage and base power callbacks can use this value.
         context.active_move_mut().hit = hit + 1;
-
-        // TODO: Select target for smart targeting.
 
         // Additional hits trigger a new move animation.
         if context.active_move().hit > 1 {
@@ -1460,6 +1498,23 @@ fn move_hit_loop_internal(
             .iter()
             .filter_map(|target| target.outcome.success().then_some(target.handle))
             .collect::<Vec<_>>();
+
+        // No targets to hit.
+        if hit_targets.is_empty() {
+            context.active_move_mut().hit -= 1;
+            break;
+        }
+
+        // If using smart targeting, only hit one target at a time.
+        let hit_targets = if context.active_move().data.advanced_targeting.smart_target {
+            // SAFETY: Index uses modulo with `hit_targets` length, so it is always in range.
+            let target = *hit_targets.get(hit as usize % hit_targets.len()).unwrap();
+            core_battle_logs::last_move_target(context, target)?;
+            Vec::from_iter([target])
+        } else {
+            hit_targets
+        };
+
         let mut hit_targets_state =
             hit_targets_state_from_targets(hit_targets.iter().map(|target_handle| *target_handle));
 
@@ -1509,11 +1564,6 @@ fn move_hit_loop_internal(
             )?;
         }
 
-        context.active_move_mut().damaged_targets = hit_targets_state
-            .iter()
-            .filter_map(|target| (target.outcome.damage() > 0).then(|| target.handle))
-            .collect();
-
         context.active_move_mut().total_damage += hit_targets_state
             .iter()
             .map(|target| target.outcome.damage() as u64)
@@ -1522,6 +1572,15 @@ fn move_hit_loop_internal(
         for state in hit_targets_state.iter() {
             context.active_move_mut().hit_data_mut(state.handle).damage =
                 state.outcome.damage() as u64;
+
+            if state.outcome.damage() > 0
+                && !context
+                    .active_move()
+                    .damaged_targets
+                    .contains(&state.handle)
+            {
+                context.active_move_mut().damaged_targets.push(state.handle);
+            }
 
             match target_hit_results.entry(state.handle) {
                 Entry::Vacant(entry) => {
@@ -2277,12 +2336,38 @@ mod direct_move_step {
     pub type DirectMoveStep =
         fn(&mut ActiveMoveContext, &mut [MoveStepOutcomeOnTarget]) -> Result<()>;
 
+    fn should_report_failure(
+        context: &mut ActiveMoveContext,
+        targets: &[MoveStepOutcomeOnTarget],
+        index: usize,
+    ) -> bool {
+        if !context.active_move().data.advanced_targeting.smart_target {
+            return true;
+        }
+
+        if targets
+            .iter()
+            .enumerate()
+            .any(|(i, target)| i != index && !target.outcome.failed())
+        {
+            return false;
+        }
+
+        true
+    }
+
     /// Checks if targets are invulnerable.
     pub fn check_targets_invulnerability(
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             if !*core_battle_effects::run_event_with_options::<_, _, DefaultTrueBool>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::Invulnerability,
@@ -2293,7 +2378,9 @@ mod direct_move_step {
                 },
             ) {
                 target.outcome = MoveOutcome::Failed;
-                core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
+                if report_failure {
+                    core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
+                }
             }
         }
         Ok(())
@@ -2304,10 +2391,17 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            let result = core_battle_effects::run_event::<_, MoveEventResult>(
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
+            let result = core_battle_effects::run_event_with_input::<_, _, MoveEventResult>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::TryHit,
+                report_failure,
             );
             if !result.advance() {
                 target.outcome = result.into();
@@ -2321,10 +2415,21 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             if core_battle_actions::check_move_immunity(context, target.handle)? {
-                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
                 target.outcome = MoveOutcome::Failed;
+                if report_failure {
+                    core_battle_logs::immune(
+                        &mut context.target_mon_context(target.handle)?,
+                        None,
+                    )?;
+                }
             }
         }
         Ok(())
@@ -2338,7 +2443,13 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             let immune = !*core_battle_effects::run_active_move_event::<DefaultTrueBool>(
                 context,
                 fxlang::BattleEvent::TryImmunity,
@@ -2348,8 +2459,13 @@ mod direct_move_step {
             )?;
 
             if immune {
-                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
                 target.outcome = MoveOutcome::Failed;
+                if report_failure {
+                    core_battle_logs::immune(
+                        &mut context.target_mon_context(target.handle)?,
+                        None,
+                    )?;
+                }
             }
         }
         Ok(())
@@ -2364,9 +2480,15 @@ mod direct_move_step {
             return Ok(());
         }
 
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             let mut context = context.target_context(target.handle)?;
-            if !accuracy_check(&mut context)? {
+            if !accuracy_check(&mut context, !report_failure)? {
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -2374,7 +2496,7 @@ mod direct_move_step {
     }
 
     /// Runs a single accuracy check of a move against a target.
-    fn accuracy_check(context: &mut ActiveTargetContext) -> Result<bool> {
+    fn accuracy_check(context: &mut ActiveTargetContext, silent: bool) -> Result<bool> {
         let mut accuracy = context.active_move().data.accuracy;
         // OHKO moves bypass accuracy modifiers.
         if let Some(ohko) = context.active_move().data.ohko_type.clone() {
@@ -2387,7 +2509,9 @@ mod direct_move_step {
                 }
 
                 if immune {
-                    core_battle_logs::immune(&mut context.target_mon_context()?, None)?;
+                    if !silent {
+                        core_battle_logs::immune(&mut context.target_mon_context()?, None)?;
+                    }
                     return Ok(false);
                 }
 
@@ -2463,7 +2587,7 @@ mod direct_move_step {
             }
             _ => true,
         };
-        if !hit {
+        if !hit && !silent {
             core_battle_logs::miss(&mut context.target_mon_context()?)?;
         }
         Ok(hit)

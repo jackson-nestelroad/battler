@@ -19,7 +19,7 @@
         "on_try_hit": [
           "if $target != $source and $move.type == electric:",
           [
-            "if !func_call(boost: $target 'spe:1'):",
+            "if !func_call(boost: $target 'spe:1') and $report:",
             ["log_immune: $target from_effect"],
             "return stopfail"
           ]
@@ -588,7 +588,7 @@
         "on_try_hit": [
           "if $target == $source or $move.type != water:",
           ["return"],
-          "if !func_call(boost: $target 'spa:1'):",
+          "if !func_call(boost: $target 'spa:1') and $report:",
           ["log_immune: $target from_effect"],
           "return stopfail"
         ],

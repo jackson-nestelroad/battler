@@ -574,6 +574,10 @@ mod moves {
         mod throat_chop_test;
         mod toxic_thread_test;
     }
+
+    mod gen8 {
+        mod dragon_darts_test;
+    }
 }
 
 mod singleplayer {

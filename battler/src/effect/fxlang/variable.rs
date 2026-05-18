@@ -850,6 +850,11 @@ where
                             "newly_switched" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.newly_switched)
                             }
+                            "non_external_active_move" => context
+                                .mon(mon_handle)?
+                                .non_external_active_move
+                                .map(|active_move| ValueRef::TempEffect(active_move.into()))
+                                .unwrap_or(ValueRef::Undefined),
                             "not_fully_evolved" => ValueRef::Boolean(
                                 context
                                     .battle_context()

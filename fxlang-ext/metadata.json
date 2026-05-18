@@ -647,6 +647,10 @@
         "description": "",
         "type": "Boolean"
       },
+      "non_external_active_move": {
+        "description": "",
+        "type": "Effect | Undefined"
+      },
       "not_fully_evolved": {
         "description": "",
         "type": "Boolean"
@@ -8258,6 +8262,10 @@
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "report": {
+          "type": "Boolean",
+          "optional": true
         }
       },
       "allows_custom_input_vars": false

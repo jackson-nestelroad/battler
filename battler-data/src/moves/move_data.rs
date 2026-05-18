@@ -140,6 +140,9 @@ pub struct AdvancedTargeting {
 
     /// Does the move intelligently target different Mons based on immunities, protection,
     /// accuracy, etc.?
+    ///
+    /// Only works for single-target moves. Adjacent Mons on the same side will be hit if possible
+    /// for each hit of a multihit move.
     #[serde(default)]
     pub smart_target: bool,
 }
