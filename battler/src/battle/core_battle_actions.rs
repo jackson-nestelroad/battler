@@ -2345,6 +2345,7 @@ mod direct_move_step {
             return true;
         }
 
+        // With smart targeting, only report failures for the last target that fails.
         if targets
             .iter()
             .enumerate()
