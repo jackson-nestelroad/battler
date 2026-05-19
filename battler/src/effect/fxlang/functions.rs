@@ -129,6 +129,9 @@ pub fn run_function(
         "activate_ability" => activate_ability(context),
         "activate_applying_effect" => activate_applying_effect(context),
         "add_attribute_to_last_move" => add_attribute_to_last_move(context).map(|()| None),
+        "add_attribute_value_to_last_move" => {
+            add_attribute_value_to_last_move(context).map(|()| None)
+        }
         "add_move_action" => add_move_action(context).map(|val| Some(val)),
         "add_move_flag" => add_move_flag(context).map(|()| None),
         "add_pseudo_weather" => add_pseudo_weather(context).map(|val| Some(val)),
@@ -163,8 +166,9 @@ pub fn run_function(
         "boost" => boost(context).map(|val| Some(val)),
         "boost_table" => boost_table(context).map(|val| Some(val)),
         "boostable_stats" => Ok(Some(boostable_stats())),
-        "calculate_damage" => calculate_damage(context).map(|val| Some(val)),
+        "calculate_base_damage" => calculate_base_damage(context).map(|val| Some(val)),
         "calculate_confusion_damage" => calculate_confusion_damage(context).map(|val| Some(val)),
+        "calculate_damage" => calculate_damage(context).map(|val| Some(val)),
         "can_boost" => can_boost(context).map(|val| Some(val)),
         "can_escape" => can_escape(context).map(|val| Some(val)),
         "can_switch" => can_switch(context).map(|val| Some(val)),
@@ -355,6 +359,7 @@ pub fn run_function(
         "status_effect_state" => status_effect_state(context),
         "swap_boosts" => swap_boosts(context).map(|()| None),
         "swap_position" => swap_position(context).map(|val| Some(val)),
+        "swap_side_conditions" => swap_side_conditions(context).map(|val| Some(val)),
         "switch_out" => switch_out(context).map(|val| Some(val)),
         "take_item" => take_item(context),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
@@ -750,6 +755,29 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         }
     }
 
+    fn source_side_index_positional(&mut self) -> Result<usize> {
+        match self.front().map(|val| val.value_type()) {
+            Some(ValueType::Side) => self
+                .pop_front()
+                .wrap_expectation("missing target side")?
+                .side_index()
+                .wrap_error_with_message("invalid target side"),
+            _ => self
+                .source_side_index()
+                .wrap_expectation("effect has no source side"),
+        }
+    }
+
+    fn source_side_index(&mut self) -> Option<usize> {
+        if let Some(source) = self.source_handle() {
+            Some(self.evaluation_context().mon(source).ok()?.side)
+        } else if let Some(source) = self.evaluation_context().source_handle() {
+            Some(self.evaluation_context().mon(source).ok()?.side)
+        } else {
+            None
+        }
+    }
+
     fn target_side_index(&mut self) -> Option<usize> {
         if let Some(target) = self.target_handle() {
             Some(self.evaluation_context().mon(target).ok()?.side)
@@ -767,7 +795,7 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
                 .wrap_error_with_message("invalid target side"),
             _ => self
                 .target_side_index()
-                .wrap_expectation("effect has no target mon"),
+                .wrap_expectation("effect has no target side"),
         }
     }
 
@@ -5422,7 +5450,7 @@ fn value_from_local_data(mut context: FunctionContext) -> Result<Option<Value>> 
     .local_data
     .values
     .get(&key)
-    .map(|val| Value::String(val.clone())))
+    .map(|val| val.clone().into()))
 }
 
 /// Checks if a Mon has a specific species registered.
@@ -5668,6 +5696,34 @@ fn add_attribute_to_last_move(mut context: FunctionContext) -> Result<()> {
     Ok(())
 }
 
+/// Adds an attribute and value to the last move used.
+///
+/// @param {[`ValueType::Effect`]} [active_move] The active move.
+/// @param {[`ValueType::String`]} attribute The attribute key to add.
+/// @param {[`ValueType::String`]} value The value to add.
+fn add_attribute_value_to_last_move(mut context: FunctionContext) -> Result<()> {
+    let attribute = context
+        .pop_front()
+        .wrap_expectation("missing attribute")?
+        .string()
+        .wrap_error_with_message("invalid attribute")?;
+    let value = context
+        .pop_front()
+        .wrap_expectation("missing value")?
+        .string()
+        .wrap_error_with_message("invalid value")?;
+    core_battle_logs::add_attribute_value_to_last_move(
+        &mut context
+            .source_active_move_context_positional()?
+            .wrap_expectation(
+                "source effect is not an active move or active move is not provided",
+            )?,
+        &attribute,
+        value,
+    );
+    Ok(())
+}
+
 /// Sets Z-Power boosts for a move.
 ///
 /// @param {[`ValueType::Effect`]} active_move The active move.
@@ -5815,4 +5871,63 @@ fn clear_sub_abilities(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
     )
     .map(|val| Value::Boolean(val))
+}
+
+/// Swaps all eligible side conditions between two sides.
+///
+/// @param {[`ValueType::Side`]} [target_side] The target side.
+/// @param {[`ValueType::Side`]} [source_side] The source side to swap with.
+/// @param {[`ValueType::List`]} conditions Eligible conditions to swap.
+/// @returns {[`ValueType::Boolean`]} Whether at least one swap occurred.
+fn swap_side_conditions(mut context: FunctionContext) -> Result<Value> {
+    let target_side = context.target_side_index_positional()?;
+    let source_side = context.source_side_index_positional()?;
+    let conditions = context
+        .pop_front()
+        .wrap_expectation("missing conditions")?
+        .strings_list()
+        .wrap_error_with_message("invalid conditions")?;
+    let conditions = conditions
+        .into_iter()
+        .map(|condition| Id::from(condition))
+        .collect::<HashSet<_>>();
+    core_battle_actions::swap_side_conditions(
+        &mut context.forward_to_side_effect(target_side)?,
+        source_side,
+        conditions,
+    )
+    .map(Value::Boolean)
+}
+
+/// Calculates the base damage of a move.
+///
+/// @param {[`ValueType::UFraction`]} level The user level.
+/// @param {[`ValueType::UFraction`]} base_power The move base_power.
+/// @param {[`ValueType::UFraction`]} attack The user attack stat.
+/// @param {[`ValueType::UFraction`]} defense The target defense stat.
+/// @returns {[`ValueType::UFraction`]} Base damage.
+fn calculate_base_damage(mut context: FunctionContext) -> Result<Value> {
+    let level = context
+        .pop_front()
+        .wrap_expectation("missing level")?
+        .integer_u32()
+        .wrap_error_with_message("invalid level")?;
+    let base_power = context
+        .pop_front()
+        .wrap_expectation("missing base power")?
+        .integer_u32()
+        .wrap_error_with_message("invalid base power")?;
+    let attack = context
+        .pop_front()
+        .wrap_expectation("missing attack")?
+        .integer_u32()
+        .wrap_error_with_message("invalid attack")?;
+    let defense = context
+        .pop_front()
+        .wrap_expectation("missing defense")?
+        .integer_u32()
+        .wrap_error_with_message("invalid defense")?;
+    Ok(Value::UFraction(
+        core_battle_actions::calculate_base_damage(level, base_power, attack, defense).into(),
+    ))
 }

@@ -1,6 +1,7 @@
 use alloc::string::String;
 
 use battler_data::{
+    Fraction,
     Id,
     MoveData,
 };
@@ -9,6 +10,25 @@ use serde::{
     Deserialize,
     Serialize,
 };
+
+use crate::effect::fxlang::Value;
+
+/// A custom value in [`LocalData`].
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum LocalDataValue {
+    String(String),
+    Number(Fraction<i64>),
+}
+
+impl Into<Value> for LocalDataValue {
+    fn into(self) -> Value {
+        match self {
+            Self::String(val) => Value::String(val),
+            Self::Number(val) => Value::Fraction(val),
+        }
+    }
+}
 
 /// Local data to an fxlang effect or condition.
 ///
@@ -21,5 +41,5 @@ pub struct LocalData {
 
     /// Values that can be referenced by effect callbacks.
     #[serde(default)]
-    pub values: HashMap<String, String>,
+    pub values: HashMap<String, LocalDataValue>,
 }

@@ -902,6 +902,18 @@ where
                             "stats" => {
                                 ValueRef::StatTable(&context.mon(mon_handle)?.volatile_state.stats)
                             }
+                            "stats_lowered_this_turn" => ValueRef::Boolean(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .stats_lowered_this_turn,
+                            ),
+                            "stats_raised_this_turn" => ValueRef::Boolean(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .stats_raised_this_turn,
+                            ),
                             "status" => match context.mon(mon_handle)?.status.as_ref() {
                                 Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
                                 None => ValueRef::Undefined,
@@ -1059,6 +1071,17 @@ where
                                     })
                                     .collect(),
                             ),
+                            "terrain" => {
+                                match context.battle_context().battle().field.terrain.clone() {
+                                    Some(terrain) => ValueRef::Effect(
+                                        context
+                                            .battle_context_mut()
+                                            .battle_mut()
+                                            .get_effect_handle_by_id(&terrain)?,
+                                    ),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "time" => {
                                 ValueRef::TimeOfDay(context.battle_context().battle().field.time)
                             }

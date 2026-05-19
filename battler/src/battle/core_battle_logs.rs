@@ -1003,7 +1003,7 @@ pub fn add_attribute_to_last_move(context: &mut ActiveMoveContext, attribute: &s
     }
 }
 
-fn add_attribute_value_to_last_move(
+pub fn add_attribute_value_to_last_move(
     context: &mut ActiveMoveContext,
     attribute: &str,
     value: String,

@@ -317,15 +317,17 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
 fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Result<()> {
     Mon::clear_volatile(&mut context.target_context()?, true)?;
 
+    let target = context.target_handle();
     let mut source_context = context.as_battle_context_mut().mon_context(source)?;
     let boosts = source_context.mon().volatile_state.boosts.clone();
     let mut volatiles = HashMap::default();
-    for (volatile, state) in source_context.mon().volatile_state.volatiles.clone() {
+    for (volatile, mut state) in source_context.mon().volatile_state.volatiles.clone() {
         if CoreBattle::get_parsed_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
             .is_some_and(|condition| condition.condition().no_copy)
         {
             continue;
         }
+        state.set_target(target);
         volatiles.insert(volatile, state);
     }
     Mon::clear_volatile(&mut source_context, true)?;
@@ -1005,21 +1007,15 @@ fn use_active_move_internal(
 ) -> Result<MoveOutcome> {
     modify_move_type(context, target)?;
 
-    let use_move_input = fxlang::VariableInput::from_iter([target
-        .map(fxlang::Value::Mon)
-        .unwrap_or(fxlang::Value::Undefined)]);
-
-    core_battle_effects::run_active_move_event_with_input::<_, ()>(
+    core_battle_effects::run_active_move_event::<()>(
         context,
         fxlang::BattleEvent::UseMove,
         core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
-        use_move_input.clone(),
     );
 
-    core_battle_effects::run_event_with_input::<_, _, ()>(
+    core_battle_effects::run_event::<_, ()>(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::UseMove,
-        target,
     );
 
     let targets = get_move_targets(context, target)?;
@@ -1186,6 +1182,9 @@ pub fn get_move_targets(
         MoveTarget::AllAdjacent => {
             targets.extend(Mon::adjacent_allies(context.as_mon_context_mut())?);
             targets.extend(Mon::adjacent_foes(context.as_mon_context_mut())?);
+        }
+        MoveTarget::AllAdjacentAllies => {
+            targets.extend(Mon::adjacent_allies(context.as_mon_context_mut())?);
         }
         MoveTarget::AllAdjacentFoes => {
             targets.extend(Mon::adjacent_foes(context.as_mon_context_mut())?);
@@ -1907,6 +1906,15 @@ fn calculate_spread_damage(
     Ok(())
 }
 
+/// Calculates the base damage of a move.
+pub fn calculate_base_damage(level: u32, base_power: u32, attack: u32, defense: u32) -> u32 {
+    let base_damage = 2 * level / 5 + 2;
+    let base_damage = base_damage * base_power * attack;
+    let base_damage = base_damage / defense;
+    let base_damage = base_damage / 50;
+    base_damage
+}
+
 /// Calculates damage for an active move on a target.
 pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTarget> {
     let target_mon_handle = context.target_mon_handle();
@@ -2081,10 +2089,8 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         }),
     )?;
 
-    let base_damage = 2 * (level as u32) / 5 + 2;
-    let base_damage = base_damage * base_power * (attack as u32);
-    let base_damage = base_damage / (defense as u32);
-    let base_damage = base_damage / 50;
+    let base_damage =
+        calculate_base_damage(level as u32, base_power, attack as u32, defense as u32);
 
     // Damage modifiers.
     modify_damage(context, base_damage)
@@ -7608,4 +7614,40 @@ where
     }
 
     Ok(true)
+}
+
+/// Swaps all eligible side conditions between two sides.
+pub fn swap_side_conditions(
+    context: &mut SideEffectContext,
+    source_side: usize,
+    conditions: HashSet<Id>,
+) -> Result<bool> {
+    let success;
+    let mut target_side_conditions: HashMap<Id, EffectState> = HashMap::default();
+    let mut source_side_conditions: HashMap<Id, EffectState> = HashMap::default();
+    for condition in &conditions {
+        if let Some(state) = context.side_mut().conditions.remove(condition) {
+            target_side_conditions.insert(condition.clone(), state);
+        }
+    }
+    {
+        let mut context = context.as_battle_context_mut().side_context(source_side)?;
+        for condition in &conditions {
+            if let Some(state) = context.side_mut().conditions.remove(condition) {
+                source_side_conditions.insert(condition.clone(), state);
+            }
+        }
+
+        success = !target_side_conditions.is_empty() || !source_side_conditions.is_empty();
+
+        for (condition, state) in target_side_conditions {
+            context.side_mut().conditions.insert(condition, state);
+        }
+    }
+
+    for (condition, state) in source_side_conditions {
+        context.side_mut().conditions.insert(condition, state);
+    }
+
+    Ok(success)
 }

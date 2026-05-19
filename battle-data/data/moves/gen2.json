@@ -218,7 +218,7 @@
         "on_use_move": [
           "if !func_call(has_type: $user ghost):",
           ["$move.target = user", "set_z_power_boosts: $move func_call(boost_table: 'atk:1')"],
-          "else if func_call(is_ally: $user $selected_target):",
+          "else if func_call(is_ally: $user $target):",
           ["$move.target = randomnormal"]
         ],
         "on_try_hit": [
@@ -375,18 +375,14 @@
     "z_move": {
       "effect": "zpowerheal"
     },
+    "hit_effect": {
+      "volatile_status": "deductpp"
+    },
     "effect": {
-      "callbacks": {
-        "on_hit": [
-          "if !$target.last_move:",
-          ["return false"],
-          "$last_move_id = $target.last_move.id",
-          "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
-          ["$last_move_id = $target.last_move.upgraded_base_move"],
-          "$pp = func_call(deduct_pp: $target $last_move_id 4)",
-          "if $pp == 0:",
-          ["return false"]
-        ]
+      "local_data": {
+        "values": {
+          "amount": 4
+        }
       }
     }
   },

@@ -1734,7 +1734,6 @@ impl BattleEvent {
             Self::TryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types | Self::ForceTypes => &[("types", ValueType::List, true)],
-            Self::UseMove => &[("selected_target", ValueType::Mon, false)],
             Self::ValidateMon | Self::ValidateTeam => &[("problems", ValueType::List, true)],
             _ => &[],
         }

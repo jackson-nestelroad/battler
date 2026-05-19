@@ -695,6 +695,14 @@
         "description": "",
         "type": "StatTable"
       },
+      "stats_lowered_this_turn": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "stats_raised_this_turn": {
+        "description": "",
+        "type": "Boolean"
+      },
       "status": {
         "description": "",
         "type": "String | Undefined"
@@ -826,6 +834,10 @@
         "description": "",
         "type": "List",
         "item_type": "Side"
+      },
+      "terrain": {
+        "description": "",
+        "type": "Effect | Undefined"
       },
       "time": {
         "description": "",
@@ -1166,6 +1178,32 @@
           "name": "attribute",
           "type": "String",
           "description": "The attribute to add.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
+    },
+    "add_attribute_value_to_last_move": {
+      "description": "Adds an attribute and value to the last move used.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": true
+        },
+        {
+          "name": "attribute",
+          "type": "String",
+          "description": "The attribute key to add.",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "String",
+          "description": "The value to add.",
           "optional": false
         }
       ],
@@ -1655,14 +1693,32 @@
       "item_type": "Boost",
       "returns_item_from_list": false
     },
-    "calculate_damage": {
-      "description": "Calculates damage for a move.",
+    "calculate_base_damage": {
+      "description": "Calculates the base damage of a move.",
       "parameters": [
         {
-          "name": "target",
-          "type": "Mon",
-          "description": "The move target.",
-          "optional": true
+          "name": "level",
+          "type": "UFraction",
+          "description": "The user level.",
+          "optional": false
+        },
+        {
+          "name": "base_power",
+          "type": "UFraction",
+          "description": "The move base_power.",
+          "optional": false
+        },
+        {
+          "name": "attack",
+          "type": "UFraction",
+          "description": "The user attack stat.",
+          "optional": false
+        },
+        {
+          "name": "defense",
+          "type": "UFraction",
+          "description": "The target defense stat.",
+          "optional": false
         }
       ],
       "flags": [],
@@ -1683,6 +1739,20 @@
           "type": "UFraction",
           "description": "The base power of the confusion attack.",
           "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction",
+      "returns_item_from_list": false
+    },
+    "calculate_damage": {
+      "description": "Calculates damage for a move.",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The move target.",
+          "optional": true
         }
       ],
       "flags": [],
@@ -4931,6 +5001,32 @@
           "name": "position",
           "type": "UFraction",
           "description": "The target position index.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
+      "returns_item_from_list": false
+    },
+    "swap_side_conditions": {
+      "description": "Swaps all eligible side conditions between two sides.",
+      "parameters": [
+        {
+          "name": "target_side",
+          "type": "Side",
+          "description": "The target side.",
+          "optional": true
+        },
+        {
+          "name": "source_side",
+          "type": "Side",
+          "description": "The source side to swap with.",
+          "optional": true
+        },
+        {
+          "name": "conditions",
+          "type": "List",
+          "description": "Eligible conditions to swap.",
           "optional": false
         }
       ],
@@ -8474,10 +8570,6 @@
           "optional": false
         },
         "target": {
-          "type": "Mon",
-          "optional": true
-        },
-        "selected_target": {
           "type": "Mon",
           "optional": true
         }

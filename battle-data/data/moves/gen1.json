@@ -1464,7 +1464,7 @@
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "$weather = func_call(effective_weather: $selected_target)",
+          "$weather = func_call(effective_weather: $target)",
           "if !$weather:",
           ["return"],
           "if $weather.is_raining:",

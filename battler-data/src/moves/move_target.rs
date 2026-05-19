@@ -39,6 +39,9 @@ pub enum MoveTarget {
     /// All adjacent mons (including allies).
     #[string = "AllAdjacent"]
     AllAdjacent,
+    /// All adjacent allies.
+    #[string = "AllAdjacentAllies"]
+    AllAdjacentAllies,
     /// All adjacent foes.
     ///
     /// Also known as a spread move.
@@ -206,7 +209,7 @@ impl MoveTarget {
         };
 
         match self {
-            Self::AdjacentAlly => is_adjacent && !is_foe,
+            Self::AdjacentAlly | Self::AllAdjacentAllies => is_adjacent && !is_foe,
             Self::AdjacentAllyOrUser => (is_adjacent && !is_foe) || is_self,
             Self::AdjacentFoe | Self::AllAdjacentFoes => is_adjacent && is_foe,
             Self::All => true,

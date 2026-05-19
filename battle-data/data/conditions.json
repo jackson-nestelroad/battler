@@ -1230,6 +1230,26 @@
       }
     }
   },
+  "deductpp": {
+    "name": "Deduct PP",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 0,
+      "callbacks": {
+        "on_start": [
+          "if !$target.last_move:",
+          ["return false"],
+          "$last_move_id = $target.last_move.id",
+          "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $target.last_move.upgraded_base_move"],
+          "$amount = func_call(value_from_local_data: $source_effect amount)",
+          "$pp = func_call(deduct_pp: $target $last_move_id $amount use_source_effect)",
+          "if $pp == 0:",
+          ["return false"]
+        ]
+      }
+    }
+  },
   "highlightingsample": {
     "name": "Highlighting Sample",
     "condition_type": "Built-in",
