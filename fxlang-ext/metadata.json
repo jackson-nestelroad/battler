@@ -7559,10 +7559,6 @@
         "target": {
           "type": "Mon",
           "optional": true
-        },
-        "failed": {
-          "type": "Boolean",
-          "optional": false
         }
       },
       "allows_custom_input_vars": false
