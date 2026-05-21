@@ -30,7 +30,8 @@ fn team() -> Result<TeamData> {
                     "ability": "Chlorophyll",
                     "moves": [
                         "Tackle",
-                        "Toxic"
+                        "Toxic",
+                        "Dynamax Cannon"
                     ],
                     "nature": "Hardy",
                     "level": 50
@@ -143,6 +144,15 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 typ: Type::Poison,
                 disabled: false,
             },
+            MonMoveSlotData {
+                id: Id::from("dynamaxcannon"),
+                name: "Dynamax Cannon".to_owned(),
+                pp: 5,
+                max_pp: 5,
+                target: MoveTarget::Normal,
+                typ: Type::Dragon,
+                disabled: false,
+            },
         ]));
         pretty_assertions::assert_eq!(request.active[0].max_moves, Vec::from_iter([
             MonMoveSlotData {
@@ -161,6 +171,15 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 max_pp: 10,
                 target: MoveTarget::User,
                 typ: Type::Normal,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("maxwyrmwind"),
+                name: "Max Wyrmwind".to_owned(),
+                pp: 5,
+                max_pp: 5,
+                target: MoveTarget::AdjacentFoe,
+                typ: Type::Dragon,
                 disabled: false,
             },
         ]));
@@ -230,6 +249,15 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 typ: Type::Poison,
                 disabled: false,
             },
+            MonMoveSlotData {
+                id: Id::from("dynamaxcannon"),
+                name: "Dynamax Cannon".to_owned(),
+                pp: 5,
+                max_pp: 5,
+                target: MoveTarget::Normal,
+                typ: Type::Dragon,
+                disabled: false,
+            },
         ]));
         pretty_assertions::assert_eq!(request.active[0].max_moves, Vec::from_iter([
             MonMoveSlotData {
@@ -248,6 +276,15 @@ fn one_mon_can_dynamax_and_use_max_moves() {
                 max_pp: 10,
                 target: MoveTarget::User,
                 typ: Type::Normal,
+                disabled: false,
+            },
+            MonMoveSlotData {
+                id: Id::from("maxwyrmwind"),
+                name: "Max Wyrmwind".to_owned(),
+                pp: 5,
+                max_pp: 5,
+                target: MoveTarget::AdjacentFoe,
+                typ: Type::Dragon,
                 disabled: false,
             },
         ]));
@@ -829,6 +866,46 @@ fn dynamax_does_not_increase_shedinja_hp() {
             "damage|mon:Venusaur,player-2,1|health:96/140",
             "damage|mon:Venusaur,player-2,1|health:69/100",
             "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn dynamax_cannon_deals_double_damage_to_dynamax() {
+    let mut battle = make_battle(100, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Venusaur,player-2,1|name:Dynamax Cannon|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:94/140",
+            "damage|mon:Venusaur,player-1,1|health:68/100",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "dynamax|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "sethp|mon:Venusaur,player-1,1|health:141/210",
+            "sethp|mon:Venusaur,player-1,1|health:68/100",
+            "move|mon:Venusaur,player-1,1|name:Max Wyrmwind|target:Venusaur,player-2,1",
+            "split|side:1",
+            "damage|mon:Venusaur,player-2,1|health:81/140",
+            "damage|mon:Venusaur,player-2,1|health:58/100",
+            "unboost|mon:Venusaur,player-2,1|stat:atk|by:1",
+            "move|mon:Venusaur,player-2,1|name:Dynamax Cannon|target:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:49/210",
+            "damage|mon:Venusaur,player-1,1|health:24/100",
             "residual",
             "turn|turn:3"
         ]"#,

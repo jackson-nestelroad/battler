@@ -577,6 +577,12 @@ mod moves {
 
     mod gen8 {
         mod dragon_darts_test;
+        mod jaw_lock_test;
+        mod no_retreat_test;
+        mod snipe_shot_test;
+        mod stuff_cheeks_test;
+        mod tar_shot_test;
+        mod teatime_test;
     }
 }
 

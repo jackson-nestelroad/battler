@@ -90,8 +90,10 @@
     "hit_effect": {
       "volatile_status": "trapped"
     },
-    "user_effect": {
-      "volatile_status": "trapped"
+    "effect": {
+      "callbacks": {
+        "on_hit": ["add_volatile: $source trapped use_target_as_source"]
+      }
     }
   },
   "stuffcheeks": {
@@ -109,7 +111,7 @@
           ["disable_move: $mon $this.id"]
         ],
         "on_try_use_move": [
-          "if !$mon.item or !func_call(item_has_flag: $mon.item berry):",
+          "if !$user.item or !func_call(item_has_flag: $user.item berry):",
           ["return false"]
         ],
         "on_hit": [
@@ -136,7 +138,24 @@
         "spd": 1,
         "spe": 1
       },
-      "volatile_status": "trapped"
+      "volatile_status": "noretreat"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "# Use a separate volatile so that the move can only be used once, even if the Mon is immune to trapping.",
+          "if func_call(has_volatile: $user $this.id):",
+          ["return false"],
+          "if func_call(has_volatile: $user trapped):",
+          ["$move.hit_effect.volatile_status = undefined"]
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_start: with_target"],
+        "on_trap_mon": ["return true"]
+      }
     }
   },
   "tarshot": {
@@ -202,14 +221,15 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if !$mon.item or !func_call(item_has_flag: $mon.item berry):",
+          "if !$target.item or !func_call(item_has_flag: $target.item berry):",
           ["return stop"]
         ],
         "on_hit": [
           "if !$effect_state.activate:",
           ["$effect_state.activate = true", "log_field_activate"],
           "eat_item: $target force"
-        ]
+        ],
+        "on_after_move": ["if !$effect_state.activate:", ["log_fail: $user"]]
       }
     }
   },
