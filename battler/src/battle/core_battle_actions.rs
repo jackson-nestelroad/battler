@@ -1091,7 +1091,7 @@ fn use_active_move_internal(
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             return Ok(MoveOutcome::Failed);
         }
-        try_direct_move(context, &targets)?
+        try_direct_move(context, &targets, target)?
     };
 
     if context.mon().hp == 0 {
@@ -1286,18 +1286,21 @@ pub fn get_move_targets(
 }
 
 /// Runs all events prior to a move hitting any targets.
-fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveEventResult> {
+fn run_try_use_move_events(
+    context: &mut ActiveMoveContext,
+    selected_target: Option<MonHandle>,
+) -> Result<MoveEventResult> {
     let result = core_battle_effects::run_active_move_event::<MoveEventResult>(
         context,
         fxlang::BattleEvent::TryUseMove,
-        core_battle_effects::MoveTargetForEvent::User,
+        core_battle_effects::MoveTargetForEvent::UserWithTarget(selected_target),
     );
 
     let result = if result.advance() {
         core_battle_effects::run_active_move_event::<MoveEventResult>(
             context,
             fxlang::BattleEvent::PrepareHit,
-            core_battle_effects::MoveTargetForEvent::User,
+            core_battle_effects::MoveTargetForEvent::UserWithTarget(selected_target),
         )
     } else {
         result
@@ -1305,7 +1308,7 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveEventR
 
     let result = if result.advance() {
         MoveEventResult::from(core_battle_effects::run_event::<_, MoveEventResult>(
-            &mut context.user_applying_effect_context(None)?,
+            &mut context.user_applying_effect_context(selected_target)?,
             fxlang::BattleEvent::PrepareHit,
         ))
     } else {
@@ -1328,7 +1331,7 @@ fn try_indirect_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
 ) -> Result<MoveOutcome> {
-    let try_use_move_result = run_try_use_move_events(context)?;
+    let try_use_move_result = run_try_use_move_events(context, None)?;
     if !try_use_move_result.advance() {
         return Ok(try_use_move_result.into());
     }
@@ -1429,12 +1432,16 @@ pub fn prepare_direct_move(
 }
 
 /// Tries to use a move directly against several target Mons.
-fn try_direct_move(context: &mut ActiveMoveContext, targets: &[MonHandle]) -> Result<MoveOutcome> {
+fn try_direct_move(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+    selected_target: Option<MonHandle>,
+) -> Result<MoveOutcome> {
     if targets.len() > 1 && !context.active_move().data.advanced_targeting.smart_target {
         context.active_move_mut().spread_hit = true;
     }
 
-    let try_use_move_result = run_try_use_move_events(context)?;
+    let try_use_move_result = run_try_use_move_events(context, selected_target)?;
     if !try_use_move_result.advance() {
         return Ok(try_use_move_result.into());
     }

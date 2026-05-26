@@ -827,7 +827,7 @@
     "effect": {
       "callbacks": {
         "on_try_use_move": [
-          "if $user.hp <= $user.max_hp * 1/3 or $user.max_hp == 1:",
+          "if $target.hp <= $target.max_hp * 1/3 or $target.max_hp == 1:",
           ["return false"]
         ],
         "on_try_hit": [
@@ -1201,7 +1201,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_use_move": ["if !$field.terrain:", ["return"]],
+        "on_try_use_move": ["if !$field.terrain:", ["return false"]],
         "on_hit": ["clear_terrain"],
         "on_after_substitute_damage": ["clear_terrain"]
       }
@@ -1271,12 +1271,12 @@
           "$spd = func_call(get_stat: $target spd unmodified)",
           "$physical = func_call(calculate_base_damage: $user.level $move.base_power $atk $def)",
           "$special = func_call(calculate_base_damage: $user.level $move.base_power $spa $spd)",
-          "if $physical > $special or ($physical == $special and func_call(chance: 1 2):",
+          "if $physical > $special or ($physical == $special and func_call(chance: 1 2)):",
           ["$move.category = physical", "add_move_flag: $move contact"]
         ],
         "on_prepare_hit": [
-          "if !func_call(is_ally: $source $target):",
-          ["add_attribute_value_to_last_move: $move anim $move.category.to_string"]
+          "if !func_call(is_ally: $user $target):",
+          ["add_attribute_value_to_last_move: anim $move.category.to_string"]
         ]
       }
     }
@@ -1419,7 +1419,7 @@
     "effect": {
       "callbacks": {
         "on_move_base_power": [
-          "if $target.stats_lowered_this_turn:",
+          "if $source.stats_lowered_this_turn:",
           ["return $move.base_power * 2"]
         ]
       }
@@ -1458,7 +1458,7 @@
     "flags": ["Mirror", "Protect", "Reflectable"],
     "effect": {
       "callbacks": {
-        "on_hit": ["if !func_call(take_item: $target):", ["log_fail: $target $this.conditions"]]
+        "on_hit": ["if !func_call(take_item: $target):", ["log_fail: $target $this.condition"]]
       }
     }
   },
