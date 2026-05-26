@@ -18,19 +18,19 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Inteleon",
-                    "species": "Inteleon",
+                    "name": "Uxie",
+                    "species": "Uxie",
                     "ability": "No Ability",
                     "moves": [
-                        "Snipe Shot",
-                        "Ally Switch"
+                        "Expanding Force",
+                        "Psychic Terrain"
                     ],
                     "nature": "Hardy",
                     "level": 100
                 },
                 {
-                    "name": "Cinderace",
-                    "species": "Cinderace",
+                    "name": "Mesprit",
+                    "species": "Mesprit",
                     "ability": "No Ability",
                     "moves": [],
                     "nature": "Hardy",
@@ -57,28 +57,49 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn snipe_shot_tracks_target() {
+fn expanding_force_hits_all_foes_in_psychic_terrain() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1;pass"), Ok(()));
     assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "move 0,2;pass"),
+        battle.set_player_choice("player-1", "move 0,1;pass"),
         Ok(())
     );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Inteleon,player-1,1|name:Ally Switch|target:Inteleon,player-1,1",
-            "swap|mon:Inteleon,player-1,1|position:2|from:move:Ally Switch",
-            "move|mon:Inteleon,player-2,1|name:Snipe Shot|target:Cinderace,player-1,1",
-            "supereffective|mon:Cinderace,player-1,1",
-            "split|side:0",
-            "damage|mon:Cinderace,player-1,1|health:0",
-            "damage|mon:Cinderace,player-1,1|health:0",
-            "faint|mon:Cinderace,player-1,1",
+            "move|mon:Uxie,player-1,1|name:Expanding Force|target:Uxie,player-2,1",
+            "resisted|mon:Uxie,player-2,1",
+            "split|side:1",
+            "damage|mon:Uxie,player-2,1|health:231/260",
+            "damage|mon:Uxie,player-2,1|health:89/100",
             "residual",
-            "turn|turn:2"
+            "turn|turn:2",
+            "continue",
+            "move|mon:Uxie,player-1,1|name:Psychic Terrain",
+            "fieldstart|move:Psychic Terrain",
+            "residual",
+            "turn|turn:3",
+            "continue",
+            "move|mon:Uxie,player-1,1|name:Expanding Force|spread:Uxie,player-2,1;Mesprit,player-2,2",
+            "resisted|mon:Uxie,player-2,1",
+            "resisted|mon:Mesprit,player-2,2",
+            "split|side:1",
+            "damage|mon:Uxie,player-2,1|health:192/260",
+            "damage|mon:Uxie,player-2,1|health:74/100",
+            "split|side:1",
+            "damage|mon:Mesprit,player-2,2|health:225/270",
+            "damage|mon:Mesprit,player-2,2|health:84/100",
+            "residual",
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();

@@ -1,7 +1,6 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     PublicCoreBattle,
     TeamData,
@@ -19,12 +18,13 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Coalossal",
-                    "species": "Coalossal",
+                    "name": "Dubwool",
+                    "species": "Dubwool",
                     "ability": "No Ability",
                     "moves": [
-                        "Tar Shot",
-                        "Flamethrower"
+                        "Body Press",
+                        "Iron Defense",
+                        "Recover"
                     ],
                     "nature": "Hardy",
                     "level": 100
@@ -41,7 +41,6 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
-        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -51,35 +50,43 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn tar_shot_doubles_effectiveness_of_fire_type_moves() {
+fn body_press_uses_defense_as_attack_stat() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Coalossal,player-1,1|name:Tar Shot|target:Coalossal,player-2,1",
-            "boost|mon:Coalossal,player-2,1|stat:spe|by:1",
-            "start|mon:Coalossal,player-2,1|move:Tar Shot",
+            "move|mon:Dubwool,player-1,1|name:Body Press|target:Dubwool,player-2,1",
+            "supereffective|mon:Dubwool,player-2,1",
+            "split|side:1",
+            "damage|mon:Dubwool,player-2,1|health:122/254",
+            "damage|mon:Dubwool,player-2,1|health:49/100",
             "residual",
             "turn|turn:2",
             "continue",
-            "move|mon:Coalossal,player-2,1|name:Flamethrower|target:Coalossal,player-1,1",
-            "resisted|mon:Coalossal,player-1,1",
-            "split|side:0",
-            "damage|mon:Coalossal,player-1,1|health:305/330",
-            "damage|mon:Coalossal,player-1,1|health:93/100",
-            "move|mon:Coalossal,player-1,1|name:Flamethrower|target:Coalossal,player-2,1",
-            "resisted|mon:Coalossal,player-2,1",
+            "move|mon:Dubwool,player-1,1|name:Iron Defense|target:Dubwool,player-1,1",
+            "boost|mon:Dubwool,player-1,1|stat:def|by:2",
+            "move|mon:Dubwool,player-2,1|name:Recover|target:Dubwool,player-2,1",
             "split|side:1",
-            "damage|mon:Coalossal,player-2,1|health:279/330",
-            "damage|mon:Coalossal,player-2,1|health:85/100",
+            "heal|mon:Dubwool,player-2,1|health:249/254",
+            "heal|mon:Dubwool,player-2,1|health:99/100",
             "residual",
-            "turn|turn:3"
+            "turn|turn:3",
+            "continue",
+            "move|mon:Dubwool,player-1,1|name:Body Press|target:Dubwool,player-2,1",
+            "supereffective|mon:Dubwool,player-2,1",
+            "split|side:1",
+            "damage|mon:Dubwool,player-2,1|health:5/254",
+            "damage|mon:Dubwool,player-2,1|health:2/100",
+            "residual",
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();

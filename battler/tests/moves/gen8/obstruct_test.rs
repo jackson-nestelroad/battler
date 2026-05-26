@@ -18,12 +18,11 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Greedent",
-                    "species": "Greedent",
+                    "name": "Obstagoon",
+                    "species": "Obstagoon",
                     "ability": "No Ability",
-                    "item": "Sitrus Berry",
                     "moves": [
-                        "Stuff Cheeks",
+                        "Obstruct",
                         "Tackle"
                     ],
                     "nature": "Hardy",
@@ -50,30 +49,20 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn stuff_cheeks_eats_berry_and_boosts_defense() {
+fn obstruct_lowers_defense_on_contact() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
-
-    assert_matches::assert_matches!(
-        battle.set_player_choice("player-2", "move 0"),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Greedent's Stuff Cheeks is disabled", "{err:?}")
-    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Greedent,player-1,1|name:Tackle|target:Greedent,player-2,1",
-            "split|side:1",
-            "damage|mon:Greedent,player-2,1|health:301/350",
-            "damage|mon:Greedent,player-2,1|health:86/100",
-            "move|mon:Greedent,player-2,1|name:Stuff Cheeks|target:Greedent,player-2,1",
-            "boost|mon:Greedent,player-2,1|stat:def|by:2",
-            "itemend|mon:Greedent,player-2,1|item:Sitrus Berry|eat",
-            "split|side:1",
-            "heal|mon:Greedent,player-2,1|from:item:Sitrus Berry|health:350/350",
-            "heal|mon:Greedent,player-2,1|from:item:Sitrus Berry|health:100/100",
+            "move|mon:Obstagoon,player-1,1|name:Obstruct|target:Obstagoon,player-1,1",
+            "singleturn|mon:Obstagoon,player-1,1|move:Protect",
+            "move|mon:Obstagoon,player-2,1|name:Tackle|noanim",
+            "activate|mon:Obstagoon,player-1,1|move:Protect",
+            "unboost|mon:Obstagoon,player-2,1|stat:def|by:2|from:move:Obstruct|of:Obstagoon,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

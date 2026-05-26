@@ -1,7 +1,6 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     PublicCoreBattle,
     TeamData,
@@ -19,12 +18,11 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Coalossal",
-                    "species": "Coalossal",
+                    "name": "Kommo-o",
+                    "species": "Kommo-o",
                     "ability": "No Ability",
                     "moves": [
-                        "Tar Shot",
-                        "Flamethrower"
+                        "Clangorous Soul"
                     ],
                     "nature": "Hardy",
                     "level": 100
@@ -41,7 +39,6 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
-        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -51,35 +48,48 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn tar_shot_doubles_effectiveness_of_fire_type_moves() {
+fn clangorous_soul_raises_stats_and_loses_one_third_hp() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Coalossal,player-1,1|name:Tar Shot|target:Coalossal,player-2,1",
-            "boost|mon:Coalossal,player-2,1|stat:spe|by:1",
-            "start|mon:Coalossal,player-2,1|move:Tar Shot",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Coalossal,player-2,1|name:Flamethrower|target:Coalossal,player-1,1",
-            "resisted|mon:Coalossal,player-1,1",
+            "move|mon:Kommo-o,player-1,1|name:Clangorous Soul|target:Kommo-o,player-1,1",
+            "boost|mon:Kommo-o,player-1,1|stat:atk|by:1",
+            "boost|mon:Kommo-o,player-1,1|stat:def|by:1",
+            "boost|mon:Kommo-o,player-1,1|stat:spa|by:1",
+            "boost|mon:Kommo-o,player-1,1|stat:spd|by:1",
+            "boost|mon:Kommo-o,player-1,1|stat:spe|by:1",
             "split|side:0",
-            "damage|mon:Coalossal,player-1,1|health:305/330",
-            "damage|mon:Coalossal,player-1,1|health:93/100",
-            "move|mon:Coalossal,player-1,1|name:Flamethrower|target:Coalossal,player-2,1",
-            "resisted|mon:Coalossal,player-2,1",
-            "split|side:1",
-            "damage|mon:Coalossal,player-2,1|health:279/330",
-            "damage|mon:Coalossal,player-2,1|health:85/100",
+            "damage|mon:Kommo-o,player-1,1|health:174/260",
+            "damage|mon:Kommo-o,player-1,1|health:67/100",
             "residual",
-            "turn|turn:3"
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn clangorous_soul_fails_if_user_hp_is_too_low() {
+    let mut team_1 = team().unwrap();
+    team_1.members[0].persistent_battle_data.hp = Some(1);
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Kommo-o,player-1,1|name:Clangorous Soul|noanim",
+            "fail|mon:Kommo-o,player-1,1",
+            "residual",
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

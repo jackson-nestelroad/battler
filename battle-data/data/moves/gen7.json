@@ -869,7 +869,6 @@
           "if func_call(has_type: $user fire):",
           ["return"],
           "log_fail: $user",
-          "do_not_animate_last_move",
           "return stopfail"
         ],
         "on_hit_user": [

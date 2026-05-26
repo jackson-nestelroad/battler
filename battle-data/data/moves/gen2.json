@@ -1952,7 +1952,6 @@
         "on_try_move": [
           "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
           ["return false"],
-          "do_not_animate_last_move",
           "return stop"
         ]
       },

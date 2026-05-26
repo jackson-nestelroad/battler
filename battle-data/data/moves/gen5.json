@@ -240,7 +240,7 @@
       "callbacks": {
         "on_try_use_move": [
           "if func_call(has_pseudo_weather: gravity):",
-          ["do_not_animate_last_move", "log_cant", "return stopfail"]
+          ["log_cant", "return stopfail"]
         ]
       }
     },

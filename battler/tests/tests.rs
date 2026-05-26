@@ -576,9 +576,17 @@ mod moves {
     }
 
     mod gen8 {
+        mod aura_wheel_test;
+        mod body_press_test;
+        mod clangorous_soul_test;
+        mod court_change_test;
         mod dragon_darts_test;
+        mod eternabeam_test;
+        mod expanding_force_test;
         mod jaw_lock_test;
         mod no_retreat_test;
+        mod obstruct_test;
+        mod octolock_test;
         mod snipe_shot_test;
         mod stuff_cheeks_test;
         mod tar_shot_test;

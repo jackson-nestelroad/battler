@@ -1,6 +1,7 @@
 use alloc::{
     borrow::ToOwned,
     boxed::Box,
+    collections::BTreeMap,
     format,
     string::{
         String,
@@ -1059,8 +1060,8 @@ fn use_active_move_internal(
         try_move_result
     };
     if !try_move_result.advance() {
+        core_battle_logs::do_not_animate_last_move(context);
         if try_move_result.failed() {
-            core_battle_logs::do_not_animate_last_move(context);
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         }
         return Ok(MoveOutcome::from(try_move_result));
@@ -1311,6 +1312,9 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveEventR
         result
     };
 
+    if !result.advance() {
+        core_battle_logs::do_not_animate_last_move(context);
+    }
     if result.failed() {
         core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
     }
@@ -7623,15 +7627,15 @@ pub fn swap_side_conditions(
     conditions: HashSet<Id>,
 ) -> Result<bool> {
     let success;
-    let mut target_side_conditions: HashMap<Id, EffectState> = HashMap::default();
-    let mut source_side_conditions: HashMap<Id, EffectState> = HashMap::default();
+    let mut target_side_conditions: BTreeMap<Id, EffectState> = BTreeMap::default();
+    let mut source_side_conditions: BTreeMap<Id, EffectState> = BTreeMap::default();
     for condition in &conditions {
         if let Some(state) = context.side_mut().conditions.remove(condition) {
             target_side_conditions.insert(condition.clone(), state);
         }
     }
     {
-        let mut context = context.as_battle_context_mut().side_context(source_side)?;
+        let mut context = context.change_target_context(source_side)?;
         for condition in &conditions {
             if let Some(state) = context.side_mut().conditions.remove(condition) {
                 source_side_conditions.insert(condition.clone(), state);
@@ -7639,13 +7643,24 @@ pub fn swap_side_conditions(
         }
 
         success = !target_side_conditions.is_empty() || !source_side_conditions.is_empty();
+    }
+
+    if success {
+        core_battle_logs::swap_side_conditions(context, source_side)?;
+    }
+
+    {
+        let target_side = context.side().index;
+        let mut context = context.change_target_context(source_side)?;
 
         for (condition, state) in target_side_conditions {
+            core_battle_logs::swap_side_condition(&mut context, &condition, target_side)?;
             context.side_mut().conditions.insert(condition, state);
         }
     }
 
     for (condition, state) in source_side_conditions {
+        core_battle_logs::swap_side_condition(context, &condition, source_side)?;
         context.side_mut().conditions.insert(condition, state);
     }
 

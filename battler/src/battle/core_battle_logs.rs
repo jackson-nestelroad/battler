@@ -683,6 +683,45 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
     )
 }
 
+pub fn swap_side_conditions(context: &mut SideEffectContext, source_side: usize) -> Result<()> {
+    let activation = EffectActivationContext {
+        side: Some(context.side().index),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("with:{source_side}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swapsideconditions".to_owned(),
+        activation,
+    )
+}
+
+pub fn swap_side_condition(
+    context: &mut SideEffectContext,
+    condition: &Id,
+    source_side: usize,
+) -> Result<()> {
+    let condition = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
+        .name()
+        .to_owned();
+    let activation = EffectActivationContext {
+        side: Some(context.side().index),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([
+            format!("condition:{condition}"),
+            format!("source:{source_side}"),
+        ]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swapsidecondition".to_owned(),
+        activation,
+    )
+}
 pub fn add_slot_condition(
     context: &mut SideEffectContext,
     slot: usize,
@@ -1117,6 +1156,7 @@ pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Res
         activation,
     )
 }
+
 pub fn invert_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),

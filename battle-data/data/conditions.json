@@ -623,7 +623,7 @@
         "is_raining": ["return true"],
         "on_try_move": [
           "if $move.type == fire and $move.category != status:",
-          ["log_fail: $user from_effect", "do_not_animate_last_move", "return stopfail"]
+          ["log_fail: $user from_effect", "return stopfail"]
         ],
         "on_source_weather_modify_damage": ["if $move.type == water:", ["return $damage * 3/2"]],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
@@ -678,7 +678,7 @@
         "is_sunny": ["return true"],
         "on_try_move": [
           "if $move.type == water and $move.category != status:",
-          ["log_fail: $user from_effect", "do_not_animate_last_move", "return stopfail"]
+          ["log_fail: $user from_effect", "return stopfail"]
         ],
         "on_source_weather_modify_damage": ["if $move.type == fire:", ["return $damage * 3/2"]],
         "on_immunity": ["if $effect.id == frz:", ["return false"]],

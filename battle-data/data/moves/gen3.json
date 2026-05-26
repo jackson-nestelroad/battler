@@ -779,7 +779,6 @@
           "if $target == $source or $move.effect_state.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
           "log_activate: with_target",
-          "do_not_animate_last_move",
           "$reflected_move = func_call(clone_active_move: $move $target)",
           "$reflected_move.effect_state.reflected = true",
           "use_active_move: $target $reflected_move $source use_effect_as_source_effect",
@@ -789,7 +788,6 @@
           "if $source.side == $side or $move.effect_state.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
           "log_activate: with_target use_effect_state_target",
-          "do_not_animate_last_move",
           "$reflected_move = func_call(clone_active_move: $move $effect_state.target)",
           "$reflected_move.effect_state.reflected = true",
           "use_active_move: $effect_state.target $reflected_move $source use_effect_as_source_effect",
@@ -2286,7 +2284,6 @@
         "on_try_move": [
           "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
           ["return false"],
-          "do_not_animate_last_move",
           "return stop"
         ]
       },

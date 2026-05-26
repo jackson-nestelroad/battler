@@ -186,7 +186,19 @@
   },
   "hungerswitch": {
     "name": "Hunger Switch",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"]
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"],
+    "effect": {
+      "callbacks": {
+        "on_residual": [
+          "if $target.terastallized:",
+          ["return"],
+          "if $target.species == morpeko:",
+          ["forme_change: $target morpekohangry"],
+          "else:",
+          ["forme_change: $target morpeko"]
+        ]
+      }
+    }
   },
   "quickdraw": {
     "name": "Quick Draw",

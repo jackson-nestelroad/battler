@@ -18,21 +18,22 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Drednaw",
-                    "species": "Drednaw",
-                    "ability": "Emergency Exit",
+                    "name": "Grapploct",
+                    "species": "Grapploct",
+                    "ability": "No Ability",
                     "moves": [
-                        "Jaw Lock",
-                        "Thunderbolt"
+                        "Octolock"
                     ],
                     "nature": "Hardy",
                     "level": 100
                 },
                 {
-                    "name": "Drednaw",
-                    "species": "Drednaw",
+                    "name": "Grapploct",
+                    "species": "Grapploct",
                     "ability": "No Ability",
-                    "moves": [],
+                    "moves": [
+                        "Octolock"
+                    ],
                     "nature": "Hardy",
                     "level": 100
                 }
@@ -57,52 +58,45 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn jaw_lock_traps_user_and_target() {
+fn octolock_traps_tsarget_and_lowers_defenses_each_turn() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     assert_matches::assert_matches!(
-        battle.set_player_choice("player-1", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Drednaw is trapped")
-    );
-    assert_matches::assert_matches!(
         battle.set_player_choice("player-2", "switch 1"),
-        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Drednaw is trapped", "{err:?}")
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: Grapploct is trapped", "{err:?}")
     );
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
-
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Drednaw,player-1,1|name:Jaw Lock|target:Drednaw,player-2,1",
-            "split|side:1",
-            "damage|mon:Drednaw,player-2,1|health:206/290",
-            "damage|mon:Drednaw,player-2,1|health:72/100",
-            "activate|mon:Drednaw,player-2,1|condition:Trapped",
-            "activate|mon:Drednaw,player-1,1|condition:Trapped",
+            "move|mon:Grapploct,player-1,1|name:Octolock|target:Grapploct,player-2,1",
+            "activate|mon:Grapploct,player-2,1|condition:Trapped",
+            "start|mon:Grapploct,player-2,1|move:Octolock",
+            "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
+            "unboost|mon:Grapploct,player-2,1|stat:spd|by:1|from:move:Octolock",
             "residual",
             "turn|turn:2",
             "continue",
-            "move|mon:Drednaw,player-1,1|name:Thunderbolt|target:Drednaw,player-2,1",
-            "supereffective|mon:Drednaw,player-2,1",
-            "split|side:1",
-            "damage|mon:Drednaw,player-2,1|health:106/290",
-            "damage|mon:Drednaw,player-2,1|health:37/100",
-            "activate|mon:Drednaw,player-2,1|ability:Emergency Exit",
-            "switchout|mon:Drednaw,player-2,1",
-            "continue",
-            "split|side:1",
-            ["switch", "player-2", "Drednaw"],
-            ["switch", "player-2", "Drednaw"],
+            "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
+            "unboost|mon:Grapploct,player-2,1|stat:spd|by:1|from:move:Octolock",
             "residual",
-            "turn|turn:3"
+            "turn|turn:3",
+            "continue",
+            "end|mon:Grapploct,player-2,1|move:Octolock|silent",
+            "split|side:0",
+            "switch|player:player-1|position:1|name:Grapploct|health:270/270|species:Grapploct|level:100|gender:U",
+            "switch|player:player-1|position:1|name:Grapploct|health:100/100|species:Grapploct|level:100|gender:U",
+            "residual",
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();

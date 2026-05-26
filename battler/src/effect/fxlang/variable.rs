@@ -1446,6 +1446,9 @@ where
                                 .active_move_mut(*active_move_handle)?
                                 .ignore_all_secondary_effects,
                         ),
+                        "move_target" => ValueRefMut::MoveTarget(
+                            &mut context.active_move_mut(*active_move_handle)?.data.target,
+                        ),
                         "multiaccuracy" => ValueRefMut::Boolean(
                             &mut context
                                 .active_move_mut(*active_move_handle)?
