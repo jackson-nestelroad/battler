@@ -359,7 +359,7 @@ fn harsh_sunlight_removes_charge_turn_from_solar_beam() {
             "continue",
             "move|mon:Charizard,player-1,1|name:Solar Beam|noanim",
             "prepare|mon:Charizard,player-1,1|move:Solar Beam",
-            "animatemove|mon:Charizard,player-1,1|name:Solar Beam",
+            "animatemove|mon:Charizard,player-1,1|name:Solar Beam|target:Blastoise,player-2,1",
             "supereffective|mon:Blastoise,player-2,1",
             "split|side:1",
             "damage|mon:Blastoise,player-2,1|health:31/139",

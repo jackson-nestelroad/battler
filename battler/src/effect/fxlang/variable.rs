@@ -292,13 +292,6 @@ where
                                     .unwrap_or(ValueRef::Undefined)
                             })
                             .unwrap_or(ValueRef::Undefined),
-                            "move_target" => CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
-                            .move_effect()
-                            .map(|mov| ValueRef::MoveTarget(mov.data.target))
-                            .unwrap_or(ValueRef::Undefined),
                             "multiaccuracy" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -1445,9 +1438,6 @@ where
                             &mut context
                                 .active_move_mut(*active_move_handle)?
                                 .ignore_all_secondary_effects,
-                        ),
-                        "move_target" => ValueRefMut::MoveTarget(
-                            &mut context.active_move_mut(*active_move_handle)?.data.target,
                         ),
                         "multiaccuracy" => ValueRefMut::Boolean(
                             &mut context

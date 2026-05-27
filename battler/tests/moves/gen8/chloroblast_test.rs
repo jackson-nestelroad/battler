@@ -1,7 +1,6 @@
 use anyhow::Result;
 use battler::{
     BattleType,
-    CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     PublicCoreBattle,
     TeamData,
@@ -14,20 +13,19 @@ use battler_test_utils::{
     static_local_data_store,
 };
 
-fn staraptor() -> Result<TeamData> {
+fn team() -> Result<TeamData> {
     serde_json::from_str(
         r#"{
             "members": [
                 {
-                    "name": "Staraptor",
-                    "species": "Staraptor",
+                    "name": "Electrode",
+                    "species": "Electrode-Hisui",
                     "ability": "No Ability",
-                    "item": "Power Herb",
                     "moves": [
-                        "Fly"
+                        "Chloroblast"
                     ],
                     "nature": "Hardy",
-                    "level": 50
+                    "level": 100
                 }
             ]
         }"#,
@@ -42,7 +40,6 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
         .with_team_validation(false)
         .with_pass_allowed(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
-        .with_base_damage_randomization(CoreBattleEngineRandomizeBaseDamage::Max)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
         .with_team("player-1", team_1)
@@ -51,31 +48,24 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn power_herb_removes_charge_turn() {
-    let mut battle = make_battle(0, staraptor().unwrap(), staraptor().unwrap()).unwrap();
+fn chloroblast_recoil_is_not_negated_by_sap_sipper() {
+    let mut team_2 = team().unwrap();
+    team_2.members[0].ability = "Sap Sipper".to_owned();
+    let mut battle = make_battle(0, team().unwrap(), team_2).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Staraptor,player-1,1|name:Fly|noanim",
-            "prepare|mon:Staraptor,player-1,1|move:Fly",
-            "itemend|mon:Staraptor,player-1,1|item:Power Herb",
-            "animatemove|mon:Staraptor,player-1,1|name:Fly|target:Staraptor,player-2,1",
-            "split|side:1",
-            "damage|mon:Staraptor,player-2,1|health:43/145",
-            "damage|mon:Staraptor,player-2,1|health:30/100",
+            "move|mon:Electrode,player-1,1|name:Chloroblast|noanim",
+            "boost|mon:Electrode,player-2,1|stat:atk|by:1|from:ability:Sap Sipper",
+            "split|side:0",
+            "damage|mon:Electrode,player-1,1|from:Recoil|health:115/230",
+            "damage|mon:Electrode,player-1,1|from:Recoil|health:50/100",
             "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Staraptor,player-1,1|name:Fly|noanim",
-            "prepare|mon:Staraptor,player-1,1|move:Fly",
-            "residual",
-            "turn|turn:3"
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

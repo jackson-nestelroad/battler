@@ -2880,16 +2880,7 @@
         "chance": "20%",
         "effect": {
           "callbacks": {
-            "on_hit": [
-              "$rand = func_call(random: 3)",
-              "if $rand == 0:",
-              ["$status = par"],
-              "else if $rand == 1:",
-              ["$status = frz"],
-              "else:",
-              ["$status = brn"],
-              "set_status: $target $status"
-            ]
+            "on_hit": ["set_status: $target func_call(sample: [par, frz, brn])"]
           }
         }
       }

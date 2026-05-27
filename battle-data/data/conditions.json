@@ -408,7 +408,7 @@
           "add_volatile: $target $effect_state.move link",
           "# If this move is called by another move, we may need to modify the target that the user will be locked into.",
           "# For example, Metronome targets the user, but Razor Wind targets adjacent foes.",
-          "if $source_effect.is_move and $source_effect.effect_state.source_effect.is_defined and $source_effect.move_target != user:",
+          "if $source_effect.is_move and $source_effect.effect_state.source_effect.is_defined and $source_effect.target != user:",
           [
             "$need_new_target = false",
             "if !$target.last_target_location:",
@@ -423,7 +423,7 @@
             [
               "# Choose a random target for the move being used.",
               "$move_data = func_call(get_move: $effect_state.move)",
-              "$target.last_target_location = func_call(target_location_of_mon: $target func_call(random_target: $target $move_data.move_target))"
+              "$target.last_target_location = func_call(target_location_of_mon: $target func_call(random_target: $target $move_data.target))"
             ]
           ],
           "do_not_animate_last_move",
@@ -893,7 +893,7 @@
         "on_start": [
           "$activate = false",
           "$target_volatiles = [protect]",
-          "$side_conditions = [quickguard, wideguard]",
+          "$side_conditions = [quickguard, wideguard, matblock, craftyshield]",
           "foreach $volatile in $target_volatiles:",
           ["if func_call(remove_volatile: $target $volatile):", ["$activate = true"]],
           "if !func_call(is_ally: $target $source):",

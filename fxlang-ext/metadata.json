@@ -138,11 +138,6 @@
         "type": "UFraction | Undefined",
         "only_applicable_to_move": true
       },
-      "move_target": {
-        "description": "",
-        "type": "MoveTarget | Undefined",
-        "only_applicable_to_move": true
-      },
       "multiaccuracy": {
         "description": "",
         "type": "Boolean | Undefined",

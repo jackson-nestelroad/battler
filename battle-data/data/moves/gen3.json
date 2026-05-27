@@ -1783,9 +1783,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect"],
     "effect": {
-      "callbacks": {
-        "on_move_base_power": ["return $move.base_power * $source.hp / $source.max_hp"]
-      }
+      "delegates": ["move:eruption"]
     }
   },
   "signalbeam": {

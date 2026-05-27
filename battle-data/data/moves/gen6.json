@@ -402,7 +402,7 @@
       "callbacks": {
         "on_side_start": ["log_single_turn: use_source with_target"],
         "on_try_hit": [
-          "if [user, all] has $move.target or $move.category != status:",
+          "if [all, alladjacentallies, allies, user] has $move.target or $move.category != status:",
           ["return"],
           "log_activate: with_target",
           "return stop"
