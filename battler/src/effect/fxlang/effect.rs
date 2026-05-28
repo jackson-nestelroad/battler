@@ -580,6 +580,11 @@ pub enum BattleEvent {
     /// Runs on the item (used to catch the Mon) and in the context of a Mon.
     #[string = "Catch"]
     Catch,
+    /// Runs when a Mon fails to be caught.
+    ///
+    /// Runs on the item (used to catch the Mon) and in the context of a Mon.
+    #[string = "CatchFailed"]
+    CatchFailed,
     /// Runs when a group of stat boosts is being applied to a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -1272,6 +1277,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "TryEatItem"]
     TryEatItem,
+    /// Runs when trying to end an effect.
+    ///
+    /// Can prevent the effect from ending.
+    ///
+    /// Runs on the effect.
+    #[string = "TryEnd"]
+    TryEnd,
     /// Runs before a Mon is healed for some amount of damage.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1448,6 +1460,7 @@ impl BattleEvent {
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
             Self::Catch => CommonCallbackType::MonVoid as u32,
+            Self::CatchFailed => CommonCallbackType::MonVoid as u32,
             Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
@@ -1575,6 +1588,7 @@ impl BattleEvent {
             Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
             Self::TryEatItem => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::TryEnd => CommonCallbackType::EffectResult as u32,
             Self::TryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
             Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
@@ -1664,6 +1678,7 @@ impl BattleEvent {
                 ("stat", ValueType::UFraction, true),
                 ("name", ValueType::Stat, true),
             ],
+            Self::CatchFailed => &[("item", ValueType::Effect, true)],
             Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::Damage => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],

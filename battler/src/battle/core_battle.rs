@@ -1936,10 +1936,14 @@ impl<'d> CoreBattle<'d> {
             context.active_move_mut().priority = priority;
             action.priority = priority as i32;
 
-            action.sub_priority = core_battle_effects::run_event_with_relay::<_, i32>(
+            action.sub_priority = core_battle_effects::run_event_with_options::<_, _, i32>(
                 &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::SubPriority,
                 0,
+                core_battle_effects::RunEventOptions {
+                    return_first_value: true,
+                    ..Default::default()
+                },
             );
         }
         if let Action::Switch(action) = action {

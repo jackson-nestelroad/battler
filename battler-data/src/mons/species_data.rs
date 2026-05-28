@@ -4,6 +4,7 @@ use alloc::{
     string::String,
     vec::Vec,
 };
+use core::iter;
 
 use hashbrown::{
     HashMap,
@@ -168,6 +169,11 @@ impl SpeciesData {
     /// Utility method for returning the species' two types.
     pub fn types(&self) -> (Type, Option<Type>) {
         (self.primary_type, self.secondary_type)
+    }
+
+    /// Utility method for returning the species' types as an iterator.
+    pub fn types_iter(&self) -> impl Iterator<Item = Type> {
+        iter::once(self.primary_type).chain(iter::once(self.secondary_type).flatten())
     }
 
     /// The base state total (BST) of the species.

@@ -859,6 +859,16 @@
           ["return false"],
           "$effect_state.move = $target.active_move.id"
         ],
+        "on_restart": [
+          "if !$effect_state.reference_count:",
+          ["$effect_state.reference_count = 0"],
+          "$effect_state.reference_count = $effect_state.reference_count + 1"
+        ],
+        "on_try_end": [
+          "# Ensure additional choice lock reasons are also removed.",
+          "if !!$effect_state.reference_count:",
+          ["$effect_state.reference_count = $effect_state.reference_count - 1", "return false"]
+        ],
         "on_before_move": [
           "if !$user.effective_item and $move.id != $effect_state.move and $move.id != struggle:",
           ["log_fail: $user from_effect", "return false"]
@@ -1246,6 +1256,39 @@
           "$pp = func_call(deduct_pp: $target $last_move_id $amount use_source_effect)",
           "if $pp == 0:",
           ["return false"]
+        ]
+      }
+    }
+  },
+  "swapabilities": {
+    "name": "Swap Abilities",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 0,
+      "callbacks": {
+        "on_start": [
+          "$target_ability = $target.ability",
+          "$source_ability = $source.ability",
+          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap) or $target.dynamaxed:",
+          ["return false"],
+          "if !func_call(set_ability: $source $target_ability use_source_effect no_forward dry_run):",
+          ["return false"],
+          "if !func_call(set_ability: $target $source_ability use_source_effect no_forward dry_run):",
+          ["return false"],
+          "$target_ability = $target.ability",
+          "$source_ability = $source.ability",
+          "log_activate: with_target with_source use_source_effect",
+          "$allies = func_call(is_ally: $target $source)",
+          "if $allies:",
+          [
+            "set_ability: $source $target_ability use_source_effect no_forward silent",
+            "set_ability: $target $source_ability use_source_effect no_forward silent"
+          ],
+          "else:",
+          [
+            "set_ability: $source $target_ability use_source_effect no_forward",
+            "set_ability: $target $source_ability use_source_effect no_forward"
+          ]
         ]
       }
     }

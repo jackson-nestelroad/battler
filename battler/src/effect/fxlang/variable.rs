@@ -39,6 +39,7 @@ use crate::{
     common::UnsafelyDetachBorrowMut,
     effect::{
         ActiveMoveEffectStateConnector,
+        Effect,
         EffectHandle,
         MonEffectStateConnector,
         MonStatusEffectStateConnector,
@@ -379,6 +380,24 @@ where
                             .move_effect()
                             .map(|mov| ValueRef::Type(mov.data.primary_type))
                             .unwrap_or(ValueRef::Undefined),
+                            "types" => match CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )? {
+                                Effect::Species(species) => ValueRef::TempList(
+                                    species
+                                        .data
+                                        .types_iter()
+                                        .map(|val| {
+                                            ValueRefToStoredValue::new(
+                                                self.stored.clone(),
+                                                ValueRef::Type(val),
+                                            )
+                                        })
+                                        .collect(),
+                                ),
+                                _ => todo!(),
+                            },
                             "z_move_base_power" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -1462,6 +1481,13 @@ where
                         ),
                         "total_damage" => ValueRefMut::U64(
                             &mut context.active_move_mut(*active_move_handle)?.total_damage,
+                        ),
+                        "tracks_target" => ValueRefMut::Boolean(
+                            &mut context
+                                .active_move_mut(*active_move_handle)?
+                                .data
+                                .advanced_targeting
+                                .tracks_target,
                         ),
                         "type" => ValueRefMut::Type(
                             &mut context

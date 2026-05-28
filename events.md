@@ -92,6 +92,7 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. Calculate modified catch rate.
       1. `ModifySpeciesCatchRate`.
       1. `ModifyCatchRate`.
+      1. If catch fails, `CatchFailed`.
       1. If caught, the catch will be processed later.
 
 ## Mon Caught
@@ -396,6 +397,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. `Residual` event (or `FieldResidual`, `SideResidual`, `SlotResidual`, according to the location of the effect) for each active effect on the field, in speed order.
    1. _(extension)_ `Weather`.
 1. Before running the `Residual` event, the duration of the effect is subtracted by one. If duration reaches 0, the `End` event (or `FieldEnd`, `SideEnd`, `SlotEnd`, according to the location of the effect) is run instead, and the effect is removed.
+   1. Before ending an effect: `TryEnd`.
 
 ## End
 

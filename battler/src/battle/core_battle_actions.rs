@@ -6135,6 +6135,17 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
             shakes,
             critical,
         )?;
+        let item = EffectHandle::Item(item_id.clone());
+        core_battle_effects::run_effect_event::<_, ()>(
+            &mut context.applying_effect_context(item.clone(), None, None)?,
+            fxlang::BattleEvent::Catch,
+        );
+        core_battle_effects::run_event_with_input::<_, _, ()>(
+            context,
+            fxlang::BattleEvent::CatchFailed,
+            item,
+        );
+
         return Ok(false);
     }
 
@@ -7539,14 +7550,14 @@ where
 
     let applied_effect_handle = AppliedEffectHandle::new(effect_handle.clone(), location);
 
-    let end_event = if location.mon_handle().is_some() {
-        fxlang::BattleEvent::End
+    let (try_end_event, end_event) = if location.mon_handle().is_some() {
+        (Some(fxlang::BattleEvent::TryEnd), fxlang::BattleEvent::End)
     } else if location.side_index().is_some() {
-        fxlang::BattleEvent::SideEnd
+        (None, fxlang::BattleEvent::SideEnd)
     } else if location.slot_index().is_some() {
-        fxlang::BattleEvent::SlotEnd
+        (None, fxlang::BattleEvent::SlotEnd)
     } else if location.field() {
-        fxlang::BattleEvent::FieldEnd
+        (None, fxlang::BattleEvent::FieldEnd)
     } else {
         return Err(general_error(
             "condition is ending on an undefined location",
@@ -7574,6 +7585,21 @@ where
     };
 
     let event_input = callbacks.event_input(&mut context);
+
+    if let Some(try_end_event) = try_end_event
+        && !no_events
+    {
+        if !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
+            context.context,
+            try_end_event,
+            event_input.clone(),
+            core_battle_effects::RunEffectEventOptions {
+                effects: Vec::from_iter([applied_effect_handle.clone()]),
+            },
+        ) {
+            return Ok(false);
+        }
+    }
 
     if !callbacks.pre_end(&mut context)? {
         return Ok(false);

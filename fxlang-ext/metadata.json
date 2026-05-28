@@ -188,6 +188,11 @@
         "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
+      "types": {
+        "description": "",
+        "type": "List",
+        "item_type": "Type"
+      },
       "z_move_base_power": {
         "description": "",
         "type": "UFraction | Undefined",
@@ -285,6 +290,11 @@
         "only_applicable_to_active_move": true
       },
       "force_stab": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "tracks_target": {
         "description": "",
         "type": "Boolean | Undefined",
         "only_applicable_to_active_move": true
@@ -391,6 +401,10 @@
       "target": {
         "description": "",
         "type": "MoveTarget"
+      },
+      "tracks_target": {
+        "description": "",
+        "type": "Boolean"
       },
       "type": {
         "description": "",
@@ -6257,6 +6271,20 @@
       },
       "allows_custom_input_vars": false
     },
+    "catch_failed": {
+      "description": "Runs when a Mon fails to be caught.\n\nRuns on the item (used to catch the Mon) and in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        },
+        "item": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "change_boosts": {
       "description": "Runs when a group of stat boosts is being applied to a Mon.\n\nRuns in the context of a Mon.",
       "variables": {
@@ -8311,6 +8339,24 @@
           "optional": false
         },
         "item": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "try_end": {
+      "description": "Runs when trying to end an effect.\n\nCan prevent the effect from ending.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
           "type": "Effect",
           "optional": false
         }

@@ -1,55 +1,196 @@
 {
   "intrepidsword": {
     "name": "Intrepid Sword",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "if $effect_state.boosted:",
+          ["return"],
+          "$effect_state.boosted = true",
+          "boost: $target 'atk:1'"
+        ]
+      }
+    }
   },
   "dauntlessshield": {
     "name": "Dauntless Shield",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "if $effect_state.boosted:",
+          ["return"],
+          "$effect_state.boosted = true",
+          "boost: $target 'def:1'"
+        ]
+      }
+    }
   },
   "libero": {
     "name": "Libero",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:protean"]
+    }
   },
   "ballfetch": {
     "name": "Ball Fetch",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_catch_failed": [
+          "if $effect_state.first_ball.is_defined:",
+          ["return"],
+          "$effect_state.first_ball = $item"
+        ],
+        "on_residual": [
+          "if $effect_state.activated or !$effect_state.first_ball or $target.item.is_defined:",
+          ["return"],
+          "$effect_state.activated = true",
+          "set_item: $target $effect_state.first_ball"
+        ]
+      }
+    }
   },
   "cottondown": {
     "name": "Cotton Down",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "$activated = false",
+          "foreach $mon in func_call(all_active_mons):",
+          [
+            "if $mon == $target:",
+            ["continue"],
+            "if !$activated:",
+            ["$activated = true", "log_activate: with_target"],
+            "boost: $mon 'spe:-1'"
+          ]
+        ]
+      }
+    }
   },
   "propellertail": {
     "name": "Propeller Tail",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:stalwart"]
+    }
   },
   "mirrorarmor": {
     "name": "Mirror Armor",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_boost": [
+          "if !$source or $target == $source or $effect == $this.id:",
+          ["return"],
+          "$cleared = []",
+          "foreach $boost in func_call(boostable_stats):",
+          [
+            "if func_call(get_boost: $boosts $boost) < 0:",
+            [
+              "$boosts = func_call(set_boost: $boosts $boost 0)",
+              "$cleared = func_call(append: $cleared $boost)"
+            ]
+          ],
+          "if !$cleared.is_empty and $source.hp > 0:",
+          ["log_ability", "boost: $source $cleared"],
+          "return $boosts"
+        ]
+      }
+    }
   },
   "gulpmissile": {
     "name": "Gulp Missile",
-    "flags": ["NoTransform", "Permanent"]
+    "flags": ["NoTransform", "Permanent"],
+    "effect": {
+      "callbacks": {
+        "on_before_charge_move": ["if $move.id != dive:", ["return"], "activate_ability"],
+        "on_source_try_primary_hit": [
+          "if $move.id != surf:",
+          ["return"],
+          "activate_ability: $source"
+        ],
+        "on_activate": [
+          "if $target.species != cramorant:",
+          ["return"],
+          "$forme = cramorantgulping",
+          "if $target.hp <= $target.max_hp / 2:",
+          ["$forme = cramorantgorging"],
+          "forme_change: $target $forme"
+        ],
+        "on_damaging_hit": [
+          "if $source.hp == 0 or !$source.active or $source.is_semi_invulnerable:",
+          ["return"],
+          "if $source.species == cramorant:",
+          ["return"],
+          "$base_species = func_call(base_species: $source)",
+          "if $base_species != cramorant:",
+          ["return"],
+          "damage: $source expr($source.base_max_hp / 4)",
+          "if $source.species == cramorantgulping:",
+          ["boost: $source 'def:-1'"],
+          "else if $source.species == cramorantgorging:",
+          ["set_status: $source par"],
+          "forme_change: $target cramorant"
+        ]
+      }
+    }
   },
   "stalwart": {
     "name": "Stalwart",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_use_move": ["if $move.target != scripted:", ["$move.tracks_target = true"]]
+      }
+    }
   },
   "steamengine": {
     "name": "Steam Engine",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": ["if [fire, water] has $move.type:", ["boost: $target 'spe:6'"]]
+      }
+    }
   },
   "punkrock": {
     "name": "Punk Rock",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if func_call(move_has_flag: $move sound):",
+          ["return $base_power * 13/10"]
+        ],
+        "on_source_modify_damage": [
+          "if func_call(move_has_flag: $move sound):",
+          ["return $damage / 2"]
+        ]
+      }
+    }
   },
   "sandspit": {
     "name": "Sand Spit",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": ["set_weather: sandstormweather"]
+      }
+    }
   },
   "icescales": {
     "name": "Ice Scales",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_source_modify_damage": ["if $move.category == special:", ["return $damage / 2"]]
+      }
+    }
   },
   "ripen": {
     "name": "Ripen",
@@ -107,35 +248,148 @@
       "NoTrace",
       "NoTransform",
       "Permanent"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_damage": {
+          "priority": 1,
+          "program": [
+            "if !$effect.is_move or $effect.category != physical or $target.species != eiscue:",
+            ["return"],
+            "forme_change: $target eiscuenoice permanent",
+            "return 0"
+          ]
+        },
+        "on_critical_hit": [
+          "if $target.species != eiscue:",
+          ["return"],
+          "if $move.category != physical:",
+          ["return"],
+          "if func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
+          ["return"],
+          "if func_call(check_move_immunity: $target $move):",
+          ["return"],
+          "return false"
+        ],
+        "on_effectiveness": [
+          "if !func_call(run_event_on_mon_ability: CriticalHit use_source_effect no_forward):",
+          ["return 0"]
+        ],
+        "on_weather_change": [
+          "if $target.species != eiscuenoice:",
+          ["return"],
+          "$weather = func_call(effective_weather: $target use_target_as_origin)",
+          "if [hailweather, snowweather] has $weather:",
+          ["forme_change: $target eiscue permanent"]
+        ],
+        "on_start": ["run_event_on_mon_ability: WeatherChange"]
+      }
+    }
   },
   "powerspot": {
     "name": "Power Spot",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_any_base_power": [
+          "if $source == $effect_state.target or !func_call(is_ally: $source $effect_state.target):",
+          ["return"],
+          "return $base_power * 13/10"
+        ]
+      }
+    }
   },
   "mimicry": {
     "name": "Mimicry",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_ability: TerrainChange"],
+        "on_terrain_change": [
+          "$terrain = $field.terrain",
+          "$types = []",
+          "if $terrain == electricterrain:",
+          ["$types = [electric]"],
+          "else if $terrain == grassyterrain:",
+          ["$types = [grass]"],
+          "else if $terrain == mistyterrain:",
+          ["$types = [fairy]"],
+          "else if $terrain == psychicterrain:",
+          ["$types = [psychic]"],
+          "else:",
+          [
+            "$species = func_call(get_species: $target.base_species)",
+            "if !$species:",
+            ["return"],
+            "$types = $species.types"
+          ],
+          "set_types: $target $types"
+        ]
+      }
+    }
   },
   "screencleaner": {
     "name": "Screen Cleaner",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "$side_conditions = [lightscreen, reflect, auroraveil]",
+          "$activated = false",
+          "foreach $side in $field.sides:",
+          [
+            "foreach $condition in $side_conditions:",
+            [
+              "if !func_call(has_side_condition: $side $condition):",
+              ["continue"],
+              "if !$activated:",
+              ["$activated = true", "log_activate: with_target"],
+              "remove_side_condition: $side $condition"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "steelyspirit": {
     "name": "Steely Spirit",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_ally_base_power": ["if $move.type == steel:", ["return $base_power * 3/2"]]
+      }
+    }
   },
   "perishbody": {
     "name": "Perish Body",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move):",
+          ["log_ability", "add_volatile: $source perishsong", "add_volatile: $target perishsong"]
+        ]
+      }
+    }
   },
   "wanderingspirit": {
     "name": "Wandering Spirit",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if func_call(move_makes_contact: $move):",
+          ["add_volatile: $source swapabilities"]
+        ]
+      }
+    }
   },
   "gorillatactics": {
     "name": "Gorilla Tactics",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["item:choiceband"]
+    }
   },
   "neutralizinggas": {
     "name": "Neutralizing Gas",
@@ -182,7 +436,28 @@
   },
   "pastelveil": {
     "name": "Pastel Veil",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_ability: Update"],
+        "on_update": [
+          "foreach $ally in func_call(allies_and_self: $mon):",
+          ["log_activate: with_target", "cure_status: $ally"]
+        ],
+        "on_ally_switch_in": [
+          "if [psn, tox] has $mon.status:",
+          ["log_activate: with_target use_effect_state_source_as_source", "cure_status: $mon"]
+        ],
+        "on_ally_set_status": [
+          "if [psn, tox] has $status:",
+          [
+            "if $effect.is_move and !$effect.is_move_secondary:",
+            ["log_block: with_target use_effect_state_source_as_source"],
+            "return false"
+          ]
+        ]
+      }
+    }
   },
   "hungerswitch": {
     "name": "Hunger Switch",
@@ -202,23 +477,83 @@
   },
   "quickdraw": {
     "name": "Quick Draw",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_sub_priority": {
+          "order": 1,
+          "priority": -1,
+          "program": [
+            "if $move.category != status and func_call(chance: 3, 10):",
+            ["log_activate: with_target", "return 1"]
+          ]
+        }
+      }
+    }
   },
   "unseenfist": {
     "name": "Unseen Fist",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_try_hit": {
+          "priority": 4,
+          "program": [
+            "if func_call(move_makes_contact: $move):",
+            [
+              "$move.effect_state.weaken_through_protection_effect = $this",
+              "$move.effect_state.weaken_through_protection_source = $effect_state.target",
+              "remove_move_flag: $move protect",
+              "add_move_flag: $move weakenthroughprotection"
+            ]
+          ]
+        }
+      }
+    }
   },
   "curiousmedicine": {
     "name": "Curious Medicine",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "foreach $ally in func_call(adjacent_allies: $target):",
+          ["clear_boosts: $ally"]
+        ]
+      }
+    }
   },
   "transistor": {
     "name": "Transistor",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $effect.is_defined and $effect.type == electric:",
+          ["return $atk * 13/10"]
+        ],
+        "on_modify_spa": [
+          "if $effect.is_defined and $effect.type == electric:",
+          ["return $spa * 13/10"]
+        ]
+      }
+    }
   },
   "dragonsmaw": {
     "name": "Dragon's Maw",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": [
+          "if $effect.is_defined and $effect.type == dragon:",
+          ["return $atk * 13/10"]
+        ],
+        "on_modify_spa": [
+          "if $effect.is_defined and $effect.type == dragon:",
+          ["return $spa * 13/10"]
+        ]
+      }
+    }
   },
   "chillingneigh": {
     "name": "Chilling Neigh",
