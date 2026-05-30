@@ -814,24 +814,34 @@ pub fn remove_pseudo_weather(context: &mut FieldEffectContext, condition: &Id) -
     )
 }
 
-pub fn type_change(
-    context: &mut MonContext,
-    types: &[Type],
-    effect: Option<EffectHandle>,
-    source: Option<MonHandle>,
-) -> Result<()> {
+pub fn type_change(context: &mut ApplyingEffectContext, types: &[Type]) -> Result<()> {
     let types = types.iter().map(|typ| typ.to_string()).join("/");
     let activation = EffectActivationContext {
-        target: Some(context.mon_handle()),
+        target: Some(context.target_handle()),
         ignore_active_move_source_effect: true,
-        source_effect: effect,
-        source,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
         additional: Vec::from_iter([format!("types:{types}")]),
         ..Default::default()
     };
     effect_activation(
         context.as_battle_context_mut(),
         "typechange".to_owned(),
+        activation,
+    )
+}
+
+pub fn reset_type_change(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "resettypechange".to_owned(),
         activation,
     )
 }

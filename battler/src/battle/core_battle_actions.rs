@@ -4168,12 +4168,39 @@ pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> R
         types = Vec::from_iter([Type::None]);
     }
 
-    context.target_mut().volatile_state.types = types;
-    let source = context.source_handle();
-    let source_effect = context.source_effect_handle().cloned();
-    let mut context = context.target_context()?;
-    let types = context.mon().volatile_state.types.clone();
-    core_battle_logs::type_change(&mut context, &types, source_effect, source)?;
+    Mon::set_types(&mut context.target_context()?, types)?;
+
+    let types = context.target().volatile_state.types.clone();
+    core_battle_logs::type_change(context, &types)?;
+    Ok(true)
+}
+
+/// Resets the types of a Mon.
+pub fn reset_types(context: &mut ApplyingEffectContext) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    if !context.target().active {
+        return Ok(false);
+    }
+
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.target().base_species)?;
+
+    let base_types = species.data.types_iter().collect::<Vec<_>>();
+    let current_types = mon_states::effective_types_no_added_type(&mut context.target_context()?);
+
+    if base_types == current_types {
+        return Ok(false);
+    }
+
+    Mon::set_types(&mut context.target_context()?, base_types)?;
+
+    core_battle_logs::reset_type_change(context)?;
     Ok(true)
 }
 
@@ -6430,7 +6457,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
 
     // Then, manually set everything else.
     context.target_mut().volatile_state.weight = weight;
-    context.target_mut().volatile_state.types = types;
+    Mon::set_types(&mut context.target_context()?, types)?;
     Mon::set_stats(
         &mut context.target_context()?,
         stats,

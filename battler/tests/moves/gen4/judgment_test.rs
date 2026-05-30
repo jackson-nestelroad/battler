@@ -103,7 +103,7 @@ fn judgment_changes_type_from_plate() {
             "split|side:1",
             "damage|mon:Kecleon,player-2,1|health:68/120",
             "damage|mon:Kecleon,player-2,1|health:57/100",
-            "typechange|mon:Kecleon,player-2,1|types:Fire",
+            "typechange|mon:Kecleon,player-2,1|types:Fire|from:ability:Color Change",
             "residual",
             "turn|turn:2"
         ]"#,

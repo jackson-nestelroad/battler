@@ -84,7 +84,7 @@ fn aura_wheel_changes_type_based_on_morpeko_forme() {
             "damage|mon:Kecleon,player-2,1|health:181/230",
             "damage|mon:Kecleon,player-2,1|health:79/100",
             "boost|mon:Kecleon,player-2,1|stat:spe|by:1",
-            "typechange|mon:Kecleon,player-2,1|types:Electric",
+            "typechange|mon:Kecleon,player-2,1|types:Electric|from:ability:Color Change",
             "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
             "residual",
             "turn|turn:2",
@@ -94,7 +94,7 @@ fn aura_wheel_changes_type_based_on_morpeko_forme() {
             "damage|mon:Kecleon,player-2,1|health:135/230",
             "damage|mon:Kecleon,player-2,1|health:59/100",
             "boost|mon:Kecleon,player-2,1|stat:spe|by:1",
-            "typechange|mon:Kecleon,player-2,1|types:Dark",
+            "typechange|mon:Kecleon,player-2,1|types:Dark|from:ability:Color Change",
             "formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch",
             "residual",
             "turn|turn:3"

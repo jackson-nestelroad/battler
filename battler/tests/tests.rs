@@ -167,8 +167,22 @@ mod abilities {
 
     mod gen8 {
         mod as_one_test;
+        mod ball_fetch_test;
+        mod cotton_down_test;
+        mod curious_medicine_test;
+        mod gorilla_tactics_test;
+        mod gulp_missile_test;
+        mod ice_face_test;
+        mod mimicry_test;
+        mod mirror_armor_test;
         mod neutralizing_gas_test;
+        mod pastel_veil_test;
+        mod perish_body_test;
+        mod power_spot_test;
         mod ripen_test;
+        mod screen_cleaner_test;
+        mod stalwart_test;
+        mod wandering_spirit_test;
     }
 
     mod gen9 {

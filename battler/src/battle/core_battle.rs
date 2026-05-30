@@ -1582,7 +1582,15 @@ impl<'d> CoreBattle<'d> {
             }
         }
 
-        Self::update(context)?;
+        // Run update events between independent actions.
+        if context
+            .battle()
+            .queue
+            .peek()
+            .is_none_or(|action| action.independent())
+        {
+            Self::update(context)?;
+        }
 
         let mut some_switch_needed = false;
         for player in context.battle().player_indices() {
@@ -1636,16 +1644,9 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
-        // Update speed dynamically between some primary actions.
+        // Update speed dynamically between independent actions.
         match context.battle().queue.peek() {
-            Some(
-                Action::Move(_)
-                | Action::Item(_)
-                | Action::MegaEvo(_)
-                | Action::UltraBurst(_)
-                | Action::Dynamax(_)
-                | Action::Terastallize(_),
-            ) => {
+            Some(action) if action.independent() => {
                 Self::update_speed(context)?;
                 BattleQueue::update_mon_speeds(context)?;
                 BattleQueue::sort(context);

@@ -39,7 +39,6 @@ use crate::{
     common::UnsafelyDetachBorrowMut,
     effect::{
         ActiveMoveEffectStateConnector,
-        Effect,
         EffectHandle,
         MonEffectStateConnector,
         MonStatusEffectStateConnector,
@@ -380,24 +379,6 @@ where
                             .move_effect()
                             .map(|mov| ValueRef::Type(mov.data.primary_type))
                             .unwrap_or(ValueRef::Undefined),
-                            "types" => match CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )? {
-                                Effect::Species(species) => ValueRef::TempList(
-                                    species
-                                        .data
-                                        .types_iter()
-                                        .map(|val| {
-                                            ValueRefToStoredValue::new(
-                                                self.stored.clone(),
-                                                ValueRef::Type(val),
-                                            )
-                                        })
-                                        .collect(),
-                                ),
-                                _ => todo!(),
-                            },
                             "z_move_base_power" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -750,6 +731,9 @@ where
                                     &mut context.mon_context(mon_handle)?,
                                 ))
                             }
+                            "is_choice_locked" => ValueRef::Boolean(mon_states::is_choice_locked(
+                                &mut context.mon_context(mon_handle)?,
+                            )),
                             "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
                                 &mut context.mon_context(mon_handle)?,
                             )),

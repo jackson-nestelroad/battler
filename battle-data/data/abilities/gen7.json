@@ -343,7 +343,7 @@
         "on_effectiveness": [
           "if $effect.category == status:",
           ["return"],
-          "if !func_call(run_event_on_mon_ability: CriticalHit use_source_effect no_forward):",
+          "if func_call(run_event_on_mon_ability: CriticalHit use_source_effect no_forward) == false:",
           ["return 0"]
         ]
       }

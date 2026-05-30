@@ -528,6 +528,7 @@ pub struct MonEffectCache {
     pub is_asleep: Option<bool>,
     pub is_away_from_field: Option<bool>,
     pub is_behind_substitute: Option<bool>,
+    pub is_choice_locked: Option<bool>,
     pub is_contact_proof: Option<bool>,
     pub is_grounded: Option<bool>,
     pub is_immune_to_entry_hazards: Option<bool>,
@@ -2955,6 +2956,19 @@ impl Mon {
 
         Self::update_speed(context)?;
         Self::update_max_hp(context, hp_policy)?;
+
+        Ok(())
+    }
+
+    /// Sets the Mon's types directly.
+    pub fn set_types(context: &mut MonContext, types: Vec<Type>) -> Result<()> {
+        context.mon_mut().volatile_state.types = types;
+
+        if let Some(added_type) = context.mon().volatile_state.added_type
+            && context.mon().volatile_state.types.contains(&added_type)
+        {
+            context.mon_mut().volatile_state.added_type = None;
+        }
 
         Ok(())
     }

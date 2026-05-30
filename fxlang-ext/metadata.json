@@ -188,11 +188,6 @@
         "only_applicable_to_active_move": true,
         "only_applicable_to_move": true
       },
-      "types": {
-        "description": "",
-        "type": "List",
-        "item_type": "Type"
-      },
       "z_move_base_power": {
         "description": "",
         "type": "UFraction | Undefined",
@@ -568,6 +563,10 @@
         "type": "Boolean"
       },
       "is_behind_substitute": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "is_choice_locked": {
         "description": "",
         "type": "Boolean"
       },
@@ -4327,6 +4326,20 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
+    "reset_types": {
+      "description": "Resets a Mon's types.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
+      "returns_item_from_list": false
+    },
     "restore_pp": {
       "description": "Restores PP to a Mon's move.",
       "parameters": [
@@ -6887,6 +6900,16 @@
     },
     "is_behind_substitute": {
       "description": "Runs when determining if a Mon is behind a substitute.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "is_choice_locked": {
+      "description": "Runs when determining if a Mon is locked into its previous choice.\n\nRuns in the context of a Mon.",
       "variables": {
         "mon": {
           "type": "Mon",

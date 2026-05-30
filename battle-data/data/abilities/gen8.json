@@ -87,13 +87,14 @@
         "on_try_boost": [
           "if !$source or $target == $source or $effect == $this.id:",
           ["return"],
-          "$cleared = []",
+          "$cleared = func_call(boost_table)",
           "foreach $boost in func_call(boostable_stats):",
           [
-            "if func_call(get_boost: $boosts $boost) < 0:",
+            "$val = func_call(get_boost: $boosts $boost)",
+            "if $val < 0:",
             [
               "$boosts = func_call(set_boost: $boosts $boost 0)",
-              "$cleared = func_call(append: $cleared $boost)"
+              "$cleared = func_call(set_boost: $cleared $boost $val)"
             ]
           ],
           "if !$cleared.is_empty and $source.hp > 0:",
@@ -123,17 +124,17 @@
           "forme_change: $target $forme"
         ],
         "on_damaging_hit": [
-          "if $source.hp == 0 or !$source.active or $source.is_semi_invulnerable:",
+          "if $source.hp == 0 or !$source.active or $target.is_semi_invulnerable:",
           ["return"],
-          "if $source.species == cramorant:",
+          "if $target.species == cramorant:",
           ["return"],
-          "$base_species = func_call(base_species: $source)",
+          "$base_species = func_call(base_species: $target)",
           "if $base_species != cramorant:",
           ["return"],
           "damage: $source expr($source.base_max_hp / 4)",
-          "if $source.species == cramorantgulping:",
+          "if $target.species == cramorantgulping:",
           ["boost: $source 'def:-1'"],
-          "else if $source.species == cramorantgorging:",
+          "else if $target.species == cramorantgorging:",
           ["set_status: $source par"],
           "forme_change: $target cramorant"
         ]
@@ -272,14 +273,14 @@
           "return false"
         ],
         "on_effectiveness": [
-          "if !func_call(run_event_on_mon_ability: CriticalHit use_source_effect no_forward):",
+          "if func_call(run_event_on_mon_ability: CriticalHit use_source_effect no_forward) == false:",
           ["return 0"]
         ],
         "on_weather_change": [
           "if $target.species != eiscuenoice:",
           ["return"],
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
-          "if [hailweather, snowweather] has $weather:",
+          "if $weather.is_snowing:",
           ["forme_change: $target eiscue permanent"]
         ],
         "on_start": ["run_event_on_mon_ability: WeatherChange"]
@@ -316,14 +317,10 @@
           ["$types = [fairy]"],
           "else if $terrain == psychicterrain:",
           ["$types = [psychic]"],
+          "if $types.is_empty:",
+          ["reset_types: $target"],
           "else:",
-          [
-            "$species = func_call(get_species: $target.base_species)",
-            "if !$species:",
-            ["return"],
-            "$types = $species.types"
-          ],
-          "set_types: $target $types"
+          ["set_types: $target $types"]
         ]
       }
     }
@@ -441,18 +438,34 @@
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: Update"],
         "on_update": [
+          "$activated = false",
           "foreach $ally in func_call(allies_and_self: $mon):",
-          ["log_activate: with_target", "cure_status: $ally"]
+          [
+            "if [psn, tox] has $ally.status:",
+            [
+              "if !$activated:",
+              ["$activated = true", "log_activate: with_target"],
+              "cure_status: $ally"
+            ]
+          ]
         ],
         "on_ally_switch_in": [
           "if [psn, tox] has $mon.status:",
-          ["log_activate: with_target use_effect_state_source_as_source", "cure_status: $mon"]
+          [
+            "log_activate: with_target with_source use_effect_state_target_as_source",
+            "cure_status: $mon"
+          ]
         ],
         "on_ally_set_status": [
           "if [psn, tox] has $status:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
-            ["log_block: with_target use_effect_state_source_as_source"],
+            [
+              "if $target == $effect_state.target:",
+              ["log_immune: $target from_effect"],
+              "else:",
+              ["log_block: with_target with_source use_effect_state_target_as_source"]
+            ],
             "return false"
           ]
         ]
@@ -484,7 +497,7 @@
           "order": 1,
           "priority": -1,
           "program": [
-            "if $move.category != status and func_call(chance: 3, 10):",
+            "if $move.category != status and func_call(chance: 3 10):",
             ["log_activate: with_target", "return 1"]
           ]
         }

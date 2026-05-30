@@ -73,13 +73,14 @@ impl IntoIterator for VariableInput {
 ///
 /// The list itself must be evaluated once at the beginning of the loop.
 struct ExecuteProgramBlockOverListContext<'program> {
+    index: usize,
     item: &'program str,
     list: &'program tree::Value,
 }
 
 impl<'eval, 'program> ExecuteProgramBlockOverListContext<'program> {
-    fn new(item: &'program str, list: &'program tree::Value) -> Self {
-        Self { item, list }
+    fn new(index: usize, item: &'program str, list: &'program tree::Value) -> Self {
+        Self { index, item, list }
     }
 }
 
@@ -389,6 +390,15 @@ impl<'event_state> Evaluator<'event_state> {
     {
         match block {
             ParsedProgramBlock::Leaf(statement) => {
+                // TODO: Parent state is not propagated through running foreach blocks, so this
+                // doesn't work and statements are counted multiple times for each iteration.
+                if parent_state
+                    .for_each_context
+                    .as_ref()
+                    .is_none_or(|for_each_context| for_each_context.index == 0)
+                {
+                    self.statement += 1;
+                }
                 self.evaluate_statement(context, statement, parent_state)
             }
             ParsedProgramBlock::Branch(blocks) => {
@@ -499,7 +509,7 @@ impl<'event_state> Evaluator<'event_state> {
                     state.for_each_context = None;
                     // Prepare the context for the next block.
                     state.for_each_context =
-                        Some(ExecuteProgramBlockOverListContext::new(item, list))
+                        Some(ExecuteProgramBlockOverListContext::new(0, item, list))
                 }
             }
         }
@@ -515,7 +525,6 @@ impl<'event_state> Evaluator<'event_state> {
     where
         'program: 'eval,
     {
-        self.statement += 1;
         match statement {
             tree::Statement::Empty => Ok(ProgramStatementEvalResult::None),
             tree::Statement::Assignment(assignment) => {

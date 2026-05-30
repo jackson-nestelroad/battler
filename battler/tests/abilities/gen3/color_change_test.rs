@@ -66,7 +66,7 @@ fn color_change_changes_type_from_last_hit() {
             "split|side:1",
             "damage|mon:Kecleon,player-2,1|health:110/120",
             "damage|mon:Kecleon,player-2,1|health:92/100",
-            "typechange|mon:Kecleon,player-2,1|types:Fire",
+            "typechange|mon:Kecleon,player-2,1|types:Fire|from:ability:Color Change",
             "residual",
             "turn|turn:2",
             "continue",
@@ -83,7 +83,7 @@ fn color_change_changes_type_from_last_hit() {
             "split|side:1",
             "damage|mon:Kecleon,player-2,1|health:65/120",
             "damage|mon:Kecleon,player-2,1|health:55/100",
-            "typechange|mon:Kecleon,player-2,1|types:Water",
+            "typechange|mon:Kecleon,player-2,1|types:Water|from:ability:Color Change",
             "residual",
             "turn|turn:4"
         ]"#,

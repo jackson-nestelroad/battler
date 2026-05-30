@@ -808,6 +808,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "IsBehindSubstitute"]
     IsBehindSubstitute,
+    /// Runs when determining if a Mon is locked into its previous choice.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "IsChoiceLocked"]
+    IsChoiceLocked,
     /// Runs when determining if a Mon is protected from making contact with other Mons.
     ///
     /// Runs in the context of a Mon.
@@ -1500,6 +1505,7 @@ impl BattleEvent {
             Self::IsAsleep => CommonCallbackType::MonResult as u32,
             Self::IsAwayFromField => CommonCallbackType::MonResult as u32,
             Self::IsBehindSubstitute => CommonCallbackType::MonResult as u32,
+            Self::IsChoiceLocked => CommonCallbackType::MonResult as u32,
             Self::IsContactProof => CommonCallbackType::MonResult as u32,
             Self::IsGrounded => CommonCallbackType::MonResult as u32,
             Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,

@@ -318,7 +318,7 @@ fn terastallization_prevents_setting_types() {
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:58/95",
             "damage|mon:Pikachu,player-1,1|health:62/100",
-            "typechange|mon:Pikachu,player-1,1|types:Normal",
+            "typechange|mon:Pikachu,player-1,1|types:Normal|from:ability:Color Change",
             "residual",
             "turn|turn:2",
             "continue",

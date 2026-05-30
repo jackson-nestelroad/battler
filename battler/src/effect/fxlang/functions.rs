@@ -319,6 +319,7 @@ pub fn run_function(
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
         "remove_slot_condition" => remove_slot_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
+        "reset_types" => reset_types(context).map(|val| Some(val)),
         "restore_pp" => restore_pp(context).map(|val| Some(val)),
         "reverse" => reverse(context).map(|val| Some(val)),
         "revive" => revive(context).map(|val| Some(val)),
@@ -3595,6 +3596,16 @@ fn set_types(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::set_types(&mut context, types).map(|val| Value::Boolean(val))
 }
 
+/// Resets a Mon's types.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
+/// @returns {[`ValueType::Boolean`]} Whether the types were successfully reset.
+fn reset_types(mut context: FunctionContext) -> Result<Value> {
+    let mon_handle = context.target_handle_positional()?;
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
+    core_battle_actions::reset_types(&mut context).map(|val| Value::Boolean(val))
+}
+
 /// Adds a type to a Mon.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
@@ -4501,9 +4512,8 @@ fn set_item(mut context: FunctionContext) -> Result<Value> {
     let item = context
         .pop_front()
         .wrap_expectation("missing item")?
-        .string()
+        .item_id()
         .wrap_error_with_message("invalid item")?;
-    let item = Id::from(item);
     let dry_run = context.has_flag("dry_run");
 
     Ok(Value::Boolean(core_battle_actions::set_item(
