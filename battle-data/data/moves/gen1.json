@@ -2958,7 +2958,7 @@
           "$move.total_damage = $move.total_damage + $damage",
           "# Break the substitute when HP falls to 0.",
           "if $effect_state.hp == 0:",
-          ["if $move.ohko:", ["log_ohko: $target"], "remove_volatile: $target substitute"],
+          ["if $move.ohko:", ["log_ohko: $target"], "remove_volatile: $target $this.id"],
           "else:",
           ["log_activate: with_target damage"],
           "# Some move effects still apply.",

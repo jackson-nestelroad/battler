@@ -42,9 +42,9 @@
     "condition": {
       "callbacks": {
         "on_eat": [
-          "heal: $mon expr($mon.base_max_hp / 3) no_forward",
+          "heal: $mon expr($mon.base_max_hp / 3)",
           "if $mon.true_nature.drops == func_call(value_from_local_data: stat):",
-          ["add_volatile: $mon confusion no_forward"]
+          ["add_volatile: $mon confusion"]
         ]
       }
     }
@@ -63,7 +63,7 @@
             ["use_item: $source"]
           ]
         },
-        "on_use": ["add_volatile: $mon gem no_forward"]
+        "on_use": ["add_volatile: $mon gem"]
       }
     }
   },

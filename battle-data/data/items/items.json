@@ -86,7 +86,7 @@
           "if $activate:",
           ["use_item: $mon"]
         ],
-        "on_use": ["clear_negative_boosts: $mon no_forward"]
+        "on_use": ["clear_negative_boosts: $mon"]
       }
     }
   },
@@ -157,7 +157,7 @@
         "on_use": [
           "$conditions = [attract, taunt, encore, torment, disable, healblock]",
           "foreach $condition in $conditions:",
-          ["remove_volatile: $mon $condition no_forward"]
+          ["remove_volatile: $mon $condition"]
         ]
       }
     }
@@ -379,7 +379,7 @@
         "on_player_use": ["use_given_item: $mon $this.id"],
         "on_update": ["if $mon.hp <= $mon.max_hp / 2:", ["use_item: $mon"]],
         "on_try_use_item": ["if !$target.can_heal:", ["return false"]],
-        "on_use": ["heal: $mon 20 no_forward"]
+        "on_use": ["heal: $mon 20"]
       }
     }
   },
@@ -2097,7 +2097,7 @@
           "if $move.type == water and func_call(can_boost: $target 'spa:1'):",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'spa:1' no_forward"]
+        "on_use": ["boost: $mon 'spa:1'"]
       }
     }
   },
@@ -2115,7 +2115,7 @@
           "if $move.type == electric and func_call(can_boost: $target 'atk:1'):",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'atk:1' no_forward"]
+        "on_use": ["boost: $mon 'atk:1'"]
       }
     }
   },
@@ -2172,7 +2172,7 @@
           "if func_call(type_modifier_against_target: $move $target) > 0 and func_call(can_boost: $target 'atk:2' 'spa:2'):",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'atk:2' 'spa:2' no_forward"]
+        "on_use": ["boost: $mon 'atk:2' 'spa:2'"]
       }
     }
   },
@@ -2233,7 +2233,7 @@
           "if $move.type == water and func_call(can_boost: $target 'spd:1'):",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'spd:1' no_forward"]
+        "on_use": ["boost: $mon 'spd:1'"]
       }
     }
   },
@@ -2249,7 +2249,7 @@
             "if $move.type == ice and func_call(can_boost: $target 'atk:1'):",
             ["use_item: $target"]
           ],
-          "on_use": ["boost: $mon 'atk:1' no_forward"]
+          "on_use": ["boost: $mon 'atk:1'"]
         }
       }
     },
@@ -2329,7 +2329,7 @@
           "if $target.effective_terrain == electricterrain:",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'def:1' no_forward"]
+        "on_use": ["boost: $mon 'def:1'"]
       }
     }
   },
@@ -2348,7 +2348,7 @@
           "if $target.effective_terrain == psychicterrain:",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'spd:1' no_forward"]
+        "on_use": ["boost: $mon 'spd:1'"]
       }
     }
   },
@@ -2367,7 +2367,7 @@
           "if $target.effective_terrain == mistyterrain:",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'spd:1' no_forward"]
+        "on_use": ["boost: $mon 'spd:1'"]
       }
     }
   },
@@ -2386,7 +2386,7 @@
           "if $target.effective_terrain == grassyterrain:",
           ["use_item: $target"]
         ],
-        "on_use": ["boost: $mon 'def:1' no_forward"]
+        "on_use": ["boost: $mon 'def:1'"]
       }
     }
   },
@@ -2625,7 +2625,7 @@
           "if func_call(move_has_flag: $move sound):",
           ["use_item: $user"]
         ],
-        "on_use": ["boost: $mon 'spa:1' no_forward"]
+        "on_use": ["boost: $mon 'spa:1'"]
       }
     }
   },
@@ -2686,7 +2686,7 @@
     "effect": {
       "callbacks": {
         "on_source_accuracy_check_failed": ["use_item: $source"],
-        "on_use": ["boost: $mon 'spe:2' no_forward"]
+        "on_use": ["boost: $mon 'spe:2'"]
       }
     }
   },
@@ -2705,7 +2705,7 @@
           "if $pseudo_weather.id == trickroom:",
           ["use_item: $effect_state.target"]
         ],
-        "on_use": ["boost: $mon 'spe:-1' no_forward"]
+        "on_use": ["boost: $mon 'spe:-1'"]
       }
     }
   },

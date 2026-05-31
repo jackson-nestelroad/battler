@@ -75,10 +75,10 @@ fn teatime_forces_all_mons_to_eat_berry() {
             "fieldactivate|move:Teatime",
             "itemend|mon:Polteageist,player-1,1|item:Sitrus Berry|eat",
             "itemend|mon:Polteageist,player-1,2|item:Liechi Berry|eat",
-            "boost|mon:Polteageist,player-1,2|stat:atk|by:1|from:item:Liechi Berry|of:Polteageist,player-1,1",
+            "boost|mon:Polteageist,player-1,2|stat:atk|by:1|from:item:Liechi Berry",
             "itemend|mon:Polteageist,player-2,1|item:Sitrus Berry|eat",
             "itemend|mon:Polteageist,player-2,2|item:Liechi Berry|eat",
-            "boost|mon:Polteageist,player-2,2|stat:atk|by:1|from:item:Liechi Berry|of:Polteageist,player-1,1",
+            "boost|mon:Polteageist,player-2,2|stat:atk|by:1|from:item:Liechi Berry",
             "residual",
             "turn|turn:2"
         ]"#,

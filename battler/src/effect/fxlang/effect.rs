@@ -1632,7 +1632,7 @@ impl BattleEvent {
 
     /// The target of the event callback is the "origin" of the event.
     ///
-    /// Most events target a Mon. Some event callbacks receive a Mon as the "source' of the effect.
+    /// Most events target a Mon. Some event callbacks receive a Mon as the "source" of the effect.
     /// However, some events trigger against against the source Mon. This is most common for move
     /// events that run "in the context of a move user." In this sense, the target of the event
     /// callback is actually the source.
