@@ -272,6 +272,32 @@ impl FromStr for LearnMoveChoice {
     }
 }
 
+/// A choice to select a Mon.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct SelectChoice {
+    /// The Mon to switch in.
+    ///
+    /// If not specified, a random Mon will be selected.
+    pub mon: Option<usize>,
+}
+
+impl Display for SelectChoice {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        if let Some(mon) = self.mon {
+            write!(f, "{}", mon)?;
+        }
+        Ok(())
+    }
+}
+
+impl FromStr for SelectChoice {
+    type Err = <usize as FromStr>::Err;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mon = (!s.is_empty()).then(|| s.parse()).transpose()?;
+        Ok(Self { mon })
+    }
+}
+
 /// A choice, which controls how a player responds to a request in a battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub enum Choice {
@@ -298,6 +324,8 @@ pub enum Choice {
     Item(ItemChoice),
     /// Learn a move.
     LearnMove(LearnMoveChoice),
+    /// Select a Mon.
+    Select(SelectChoice),
 }
 
 impl Display for Choice {
@@ -320,6 +348,7 @@ impl Display for Choice {
                 write!(f, "item {choice}")
             }
             Self::LearnMove(choice) => write!(f, "learnmove {choice}"),
+            Self::Select(choice) => write!(f, "select {choice}"),
         }
     }
 }
@@ -351,6 +380,7 @@ impl FromStr for Choice {
             "move" => Ok(Self::Move(MoveChoice::from_str(data)?)),
             "item" => Ok(Self::Item(ItemChoice::from_str(data)?)),
             "learnmove" => Ok(Self::LearnMove(LearnMoveChoice::from_str(data)?)),
+            "select" => Ok(Self::Select(SelectChoice::from_str(data)?)),
             _ => Err(Error::new(InvalidChoiceError(choice.to_string()))),
         }
     }

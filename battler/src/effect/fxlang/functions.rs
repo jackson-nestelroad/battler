@@ -29,6 +29,7 @@ use battler_data::{
     SecondaryEffectData,
     SpeciesFlag,
     SwitchType,
+    Type,
     TypeEffectiveness,
     ZMoveData,
     ZPower,
@@ -40,7 +41,6 @@ use hashbrown::{
 };
 
 use crate::{
-    Type,
     battle::{
         Action,
         ActiveMoveContext,
@@ -59,6 +59,7 @@ use crate::{
         MoveOutcomeOnTarget,
         MoveSlot,
         Player,
+        SelectReason,
         Side,
         SideEffectContext,
         core_battle_actions,
@@ -319,6 +320,7 @@ pub fn run_function(
         "remove_side_condition" => remove_side_condition(context).map(|val| Some(val)),
         "remove_slot_condition" => remove_slot_condition(context).map(|val| Some(val)),
         "remove_volatile" => remove_volatile(context).map(|val| Some(val)),
+        "request_mon_selection" => request_mon_selection(context).map(|()| None),
         "reset_types" => reset_types(context).map(|val| Some(val)),
         "restore_pp" => restore_pp(context).map(|val| Some(val)),
         "reverse" => reverse(context).map(|val| Some(val)),
@@ -5940,4 +5942,21 @@ fn calculate_base_damage(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::UFraction(
         core_battle_actions::calculate_base_damage(level, base_power, attack, defense).into(),
     ))
+}
+
+/// Requests the Mon's player to a select a Mon.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to select for.
+/// @param {[`ValueType::String`]} reason The selection reason.
+fn request_mon_selection(mut context: FunctionContext) -> Result<()> {
+    let mon_handle = context.target_handle_positional()?;
+    let reason = context
+        .pop_front()
+        .wrap_expectation("missing reason")?
+        .string()
+        .wrap_error_with_message("invalid reason")?;
+    let reason = SelectReason::from_str(&reason).map_err(|err| general_error(err))?;
+    let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
+    context.target_mut().volatile_state.select = Some(reason);
+    Ok(())
 }

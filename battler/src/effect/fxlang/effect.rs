@@ -1094,6 +1094,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "RestorePp"]
     RestorePp,
+    /// Runs when a Mon is selected for a Mon's active position.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "Select"]
+    Select,
     /// Runs when a Mon's ability is being set.
     ///
     /// Runs before the ability is changed. Can be used to fail the ability change.
@@ -1565,6 +1570,7 @@ impl BattleEvent {
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
             Self::RestorePp => CommonCallbackType::ApplyingEffectModifier as u32,
+            Self::Select => CommonCallbackType::MonVoid as u32,
             Self::SetAbility => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetLastMove => CommonCallbackType::MonResult as u32,
@@ -1742,6 +1748,7 @@ impl BattleEvent {
             Self::PlayerUse => &[("input", ValueType::Object, true)],
             Self::RedirectTarget => &[("target", ValueType::Mon, true)],
             Self::RestorePp => &[("pp", ValueType::UFraction, true)],
+            Self::Select => &[("selected", ValueType::Mon, true)],
             Self::SetAbility | Self::AfterSetAbility => &[("ability", ValueType::Effect, true)],
             Self::SetItem => &[("item", ValueType::Effect, true)],
             Self::SetStatus | Self::AfterSetStatus => &[("status", ValueType::Effect, true)],

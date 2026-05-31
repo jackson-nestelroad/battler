@@ -15,6 +15,7 @@ use battler::{
     MonMoveRequest,
     PlayerBattleData,
     Request,
+    SelectRequest,
     SwitchRequest,
     TeamPreviewRequest,
     TurnRequest,
@@ -114,6 +115,7 @@ impl BattlerAiStructured for Trainer {
             Request::Turn(request) => self.turn(context, request).await,
             Request::Switch(request) => self.switch(context, request).await,
             Request::LearnMove(request) => self.learn_move(context, request),
+            Request::Select(request) => self.select(context, request),
         }
     }
 }
@@ -186,6 +188,10 @@ impl Trainer {
         request: &LearnMoveRequest,
     ) -> Result<Vec<Choice>> {
         return Err(Error::msg("learn move is not implemented"));
+    }
+
+    fn select(&mut self, context: &AiContext, request: &SelectRequest) -> Result<Vec<Choice>> {
+        return Err(Error::msg("select is not implemented"));
     }
 
     async fn select_mon_to_switch_in(

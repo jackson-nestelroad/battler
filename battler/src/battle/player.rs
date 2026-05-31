@@ -19,6 +19,7 @@ use battler_choice::{
     ItemChoice,
     LearnMoveChoice,
     MoveChoice,
+    SelectChoice,
     SwitchChoice,
     TeamSelectionChoice,
     choice_results_from_string,
@@ -71,6 +72,9 @@ use crate::{
         PlayerContext,
         Request,
         RequestType,
+        SelectAction,
+        SelectActionInput,
+        SelectReason,
         ShiftAction,
         Side,
         SwitchAction,
@@ -303,6 +307,8 @@ pub struct ChoiceState {
     pub actions: Vec<Action>,
     /// Number of switch actions that must be made.
     pub forced_switches_left: usize,
+    /// Number of select actions that must be made.
+    pub forced_selections_left: usize,
     /// Number of pass actions that must be made.
     ///
     /// Passes are forced when the player does not have enough active Mons to replace all Mons that
@@ -333,6 +339,7 @@ impl ChoiceState {
             fulfilled: false,
             actions: Vec::new(),
             forced_switches_left: 0,
+            forced_selections_left: 0,
             forced_passes_left: 0,
             switch_ins: HashSet::default(),
             mega: false,
@@ -732,6 +739,9 @@ impl Player {
                 if context.player().choice.forced_switches_left > 0 {
                     return Ok(false);
                 }
+                if context.player().choice.forced_selections_left > 0 {
+                    return Ok(false);
+                }
                 // Choose passes for as many Mons as we can.
                 Self::get_position_for_next_choice(context, false)?;
                 Ok(context.player().choice.actions.len() >= context.player().active.len())
@@ -788,16 +798,36 @@ impl Player {
             .count()
     }
 
+    /// Counts the number of Mons that must be selected.
+    pub fn count_must_select(context: &mut PlayerContext) -> usize {
+        context
+            .player()
+            .active_or_exited_mon_handles()
+            .filter(|mon_handle| {
+                context
+                    .mon(**mon_handle)
+                    .is_ok_and(|mon| mon.volatile_state.select.is_some())
+            })
+            .count()
+    }
+
     /// Clears any active choice.
     pub fn clear_choice(context: &mut PlayerContext) {
         let mut choice = ChoiceState::new();
-        if let Some(RequestType::Switch) = context.player().request_type() {
-            let must_switch_out = Self::count_must_switch_out(context);
-            let can_switch_in = Self::count_can_switch_in(context);
-            let switches = must_switch_out.min(can_switch_in);
-            let passes = must_switch_out - switches;
-            choice.forced_switches_left = switches;
-            choice.forced_passes_left = passes;
+        match context.player().request_type() {
+            Some(RequestType::Switch) => {
+                let must_switch_out = Self::count_must_switch_out(context);
+                let can_switch_in = Self::count_can_switch_in(context);
+                let switches = must_switch_out.min(can_switch_in);
+                let passes = must_switch_out - switches;
+                choice.forced_switches_left = switches;
+                choice.forced_passes_left = passes;
+            }
+            Some(RequestType::Select) => {
+                let must_select = Self::count_must_select(context);
+                choice.forced_selections_left = must_select;
+            }
+            _ => (),
         }
         context.player_mut().choice = choice;
     }
@@ -931,6 +961,8 @@ impl Player {
                     Ok(Choice::Shift) => {
                         Self::choose_shift(context).wrap_error_with_message("cannot shift")
                     }
+                    Ok(Choice::Select(choice)) => Self::choose_select(context, choice)
+                        .wrap_error_with_message("cannot select"),
                     Ok(Choice::Random) => {
                         Self::choose_random(context).wrap_error_with_message("random choice failed")
                     }
@@ -1121,6 +1153,24 @@ impl Player {
                         next_mon += 1;
                     }
                 }
+                Some(RequestType::Select) => {
+                    while context
+                        .player()
+                        .active_or_exited
+                        .get(next_mon)
+                        .is_some_and(|mon| {
+                            mon.is_none()
+                                || mon.is_some_and(|mon| {
+                                    context
+                                        .mon(mon)
+                                        .is_ok_and(|mon| !mon.volatile_state.select.is_some())
+                                })
+                        })
+                    {
+                        Self::choose_pass(context, false)?;
+                        next_mon += 1;
+                    }
+                }
                 _ => (),
             }
         }
@@ -1158,6 +1208,7 @@ impl Player {
                 }
             }
             Some(RequestType::LearnMove) => (),
+            Some(RequestType::Select) => (),
             _ => {
                 return Err(general_error("only a move or switch can be passed"));
             }
@@ -1671,6 +1722,96 @@ impl Player {
         Ok(())
     }
 
+    fn choose_select(context: &mut PlayerContext, choice: SelectChoice) -> Result<()> {
+        match context.player().request_type() {
+            Some(RequestType::Select) => (),
+            _ => return Err(general_error("you cannot select out of turn")),
+        };
+        let active_position = Self::get_position_for_next_choice(context, false)?;
+        if active_position >= context.player().active.len() {
+            return match context.player().request_type() {
+                Some(RequestType::Select) => Err(general_error(
+                    "you sent more selections than mons that need a selection",
+                )),
+                _ => Err(general_error("you sent more choices than active mons")),
+            };
+        }
+        let active_mon_handle = context
+            .player()
+            .active_or_exited
+            .get(active_position)
+            .cloned()
+            .flatten()
+            .wrap_expectation_with_format(format_args!(
+                "expected player to have active mon in position {active_position}"
+            ))?;
+        let active_mon = context.mon(active_mon_handle)?;
+        let active_mon_position = active_mon
+            .active_position
+            .or(active_mon.old_active_position)
+            .wrap_expectation("mon to make a selection for is not in an active position")?;
+        let reason = active_mon
+            .volatile_state
+            .select
+            .clone()
+            .wrap_expectation("expected mon to have selection reason")?;
+
+        let slot = match choice.mon {
+            Some(mon) => mon,
+            None => {
+                // Choose a random Mon.
+                let player = context.player().index;
+                let switch_to = CoreBattle::random_mon(context.as_battle_context_mut(), player)?
+                    .wrap_expectation("no mons can be switched in at random")?;
+                context.mon(switch_to)?.team_position
+            }
+        };
+        let target_mon_handle = context
+            .player()
+            .mons
+            .get(slot)
+            .cloned()
+            .wrap_expectation_with_format(format_args!(
+                "you do not have a mon in slot {slot} to select"
+            ))?;
+
+        let target_context = context
+            .as_battle_context_mut()
+            .mon_context(target_mon_handle)?;
+
+        match reason {
+            SelectReason::Revive => {
+                if target_context.mon().exited != Some(MonExitType::Fainted) {
+                    return Err(general_error(format!(
+                        "{} is not fainted",
+                        target_context.mon().name,
+                    )));
+                }
+            }
+        }
+
+        match context.player().request_type() {
+            Some(RequestType::Select) => {
+                let player = context.player_mut();
+                if player.choice.forced_selections_left == 0 {
+                    return Err(general_error("player selected too many mons"));
+                }
+                player.choice.forced_selections_left -= 1;
+            }
+            _ => (),
+        }
+
+        context
+            .player_mut()
+            .choice
+            .actions
+            .push(Action::Select(SelectAction::new(SelectActionInput {
+                mon: target_mon_handle,
+                position: active_mon_position,
+            })));
+        Ok(())
+    }
+
     fn choose_random(context: &mut PlayerContext) -> Result<()> {
         match context.player().request_type() {
             // Do not learn the move.
@@ -1682,6 +1823,8 @@ impl Player {
             ),
             // Randomly switch in a Mon.
             Some(RequestType::Switch) => Self::choose_switch(context, SwitchChoice::default()),
+            // Randomly select in a Mon.
+            Some(RequestType::Select) => Self::choose_select(context, SelectChoice::default()),
             // Auto-select first Mons.
             Some(RequestType::TeamPreview) => {
                 Self::choose_team(context, TeamSelectionChoice::default())
@@ -1755,6 +1898,16 @@ impl Player {
     pub fn needs_switch(context: &PlayerContext) -> Result<bool> {
         for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.switch_state.needs_switch.is_some() {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// Checks if the player needs to select a Mon.
+    pub fn needs_select(context: &PlayerContext) -> Result<bool> {
+        for mon in context.player().active_or_exited_mon_handles() {
+            if context.mon(*mon)?.volatile_state.select.is_some() {
                 return Ok(true);
             }
         }

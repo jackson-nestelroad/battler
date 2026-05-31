@@ -7736,3 +7736,24 @@ pub fn swap_side_conditions(
 
     Ok(success)
 }
+
+/// Selects the Mon into the given position.
+///
+/// Conceptually similar to [`switch_in`], except the Mon is not switched in. Instead, some other
+/// effect occurs (based on a slot condition on the position).
+pub fn select_into_position(context: &mut ApplyingEffectContext, position: usize) -> Result<()> {
+    let selected = context.target_handle();
+    let active_mon = context
+        .target_context()?
+        .player()
+        .active_or_exited_mon_handle(position)
+        .wrap_expectation("expected selected mon to correspond to an active mon")?;
+    let mut context = context.as_battle_context_mut().mon_context(active_mon)?;
+    core_battle_effects::run_event_with_input::<_, _, ()>(
+        &mut context,
+        fxlang::BattleEvent::Select,
+        selected,
+    );
+    context.mon_mut().volatile_state.select = None;
+    Ok(())
+}

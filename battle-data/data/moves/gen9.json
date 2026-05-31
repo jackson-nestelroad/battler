@@ -34,7 +34,6 @@
     "name": "Silk Trap",
     "category": "Status",
     "primary_type": "Bug",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 10,
     "priority": 4,
@@ -96,7 +95,6 @@
     "name": "Spicy Extract",
     "category": "Status",
     "primary_type": "Grass",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 15,
     "target": "Normal",
@@ -148,13 +146,32 @@
     "name": "Revival Blessing",
     "category": "Status",
     "primary_type": "Normal",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 1,
     "target": "User",
     "no_pp_boosts": true,
-    "user_switch": true,
-    "flags": ["Heal", "NoMetronome", "NoSketch"]
+    "flags": ["Heal", "NoMetronome", "NoSketch"],
+    "hit_effect": {
+      "slot_condition": "revivalblessing"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "foreach $mon in func_call(all_mons_in_party: $target.player):",
+          ["if $mon.fainted:", ["return"]],
+          "return false"
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_slot_start": ["request_mon_selection: $source revive"],
+        "on_select": [
+          "revive: $selected expr($selected.max_hp / 2)",
+          "remove_slot_condition: $mon.side $mon.position $this.id"
+        ]
+      }
+    }
   },
   "saltcure": {
     "name": "Salt Cure",
@@ -191,7 +208,6 @@
     "name": "Doodle",
     "category": "Status",
     "primary_type": "Normal",
-    "base_power": 0,
     "accuracy": 100,
     "pp": 10,
     "target": "AdjacentFoe",
@@ -201,7 +217,6 @@
     "name": "Fillet Away",
     "category": "Status",
     "primary_type": "Normal",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
@@ -322,7 +337,6 @@
     "name": "Shed Tail",
     "category": "Status",
     "primary_type": "Normal",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
@@ -335,7 +349,6 @@
     "name": "Chilly Reception",
     "category": "Status",
     "primary_type": "Ice",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 10,
     "target": "Field",
@@ -346,7 +359,6 @@
     "name": "Tidy Up",
     "category": "Status",
     "primary_type": "Normal",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
@@ -356,7 +368,6 @@
     "name": "Snowscape",
     "category": "Status",
     "primary_type": "Ice",
-    "base_power": 0,
     "accuracy": "exempt",
     "pp": 10,
     "target": "Field",
@@ -678,7 +689,6 @@
     "name": "Burning Bulwark",
     "category": "Status",
     "primary_type": "Fire",
-    "base_power": 0,
     "accuracy": 0,
     "pp": 10,
     "priority": 4,
@@ -724,7 +734,6 @@
     "name": "Hard Press",
     "category": "Physical",
     "primary_type": "Steel",
-    "base_power": 0,
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
@@ -734,7 +743,6 @@
     "name": "Dragon Cheer",
     "category": "Status",
     "primary_type": "Dragon",
-    "base_power": 0,
     "accuracy": 0,
     "pp": 15,
     "target": "AdjacentAlly",

@@ -53,6 +53,7 @@ use crate::{
         MoveHandle,
         MoveOutcome,
         Player,
+        SelectReason,
         Side,
         SpeedOrderable,
         calculate_hidden_power_type,
@@ -609,6 +610,9 @@ pub struct MonVolatileState {
     pub foes_fought_while_active: HashSet<MonHandle>,
     /// Attacks received by the Mon.
     pub received_attacks: Vec<ReceivedAttackEntry>,
+
+    /// A Mon needs to be selected by the player.
+    pub select: Option<SelectReason>,
 
     /// Cache for Mon effects.
     pub effect_cache: MonEffectCache,
@@ -1888,6 +1892,7 @@ impl Mon {
             switched_out_this_turn: false,
             foes_fought_while_active: HashSet::default(),
             received_attacks: Vec::default(),
+            select: None,
             effect_cache: MonEffectCache::default(),
         })
     }

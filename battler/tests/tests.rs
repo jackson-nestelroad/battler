@@ -626,6 +626,10 @@ mod moves {
         mod terrain_pulse_test;
         mod triple_arrows_test;
     }
+
+    mod gen9 {
+        mod revival_blessing_test;
+    }
 }
 
 mod singleplayer {

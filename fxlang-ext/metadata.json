@@ -3313,8 +3313,8 @@
       "type": "Undefined",
       "returns_item_from_list": false
     },
-    "log_field_start": {
-      "description": "Logs the start of a field effect to the battle log.",
+    "log_field_end": {
+      "description": "Logs the end of a field effect to the battle log.",
       "parameters": [
         {
           "name": "...",
@@ -3327,8 +3327,8 @@
       "type": "Undefined",
       "returns_item_from_list": false
     },
-    "log_field_end": {
-      "description": "Logs the end of a field effect to the battle log.",
+    "log_field_start": {
+      "description": "Logs the start of a field effect to the battle log.",
       "parameters": [
         {
           "name": "...",
@@ -4324,6 +4324,26 @@
       ],
       "flags": [],
       "type": "Boolean",
+      "returns_item_from_list": false
+    },
+    "request_mon_selection": {
+      "description": "Requests the Mon's player to a select a Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to select for.",
+          "optional": true
+        },
+        {
+          "name": "reason",
+          "type": "String",
+          "description": "The selection reason.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
       "returns_item_from_list": false
     },
     "reset_types": {
@@ -7838,6 +7858,20 @@
         },
         "pp": {
           "type": "UFraction",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "select": {
+      "description": "Runs when a Mon is selected for a Mon's active position.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        },
+        "selected": {
+          "type": "Mon",
           "optional": false
         }
       },

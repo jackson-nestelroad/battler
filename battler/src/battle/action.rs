@@ -293,6 +293,31 @@ impl ShiftAction {
     }
 }
 
+/// A select action input.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SelectActionInput {
+    pub mon: MonHandle,
+    pub position: usize,
+}
+
+/// A select action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SelectAction {
+    pub mon_action: MonAction,
+    pub position: usize,
+}
+
+impl SelectAction {
+    /// Creates a new [`SelectAction`] from [`SelectActionInput`].
+    pub fn new(input: SelectActionInput) -> Self {
+        Self {
+            mon_action: MonAction::new(input.mon),
+            position: input.position,
+        }
+    }
+}
+
+/// An outside effect action.
 #[derive(Debug, Clone)]
 pub struct OutsideEffectAction {
     pub outside_effect: OutsideEffect,
@@ -337,6 +362,7 @@ pub enum Action {
     Forfeit(ForfeitAction),
     Item(ItemAction),
     Shift(ShiftAction),
+    Select(SelectAction),
     OutsideEffect(OutsideEffectAction),
 }
 
@@ -389,20 +415,21 @@ impl SpeedOrderable for Action {
             Self::Start => 2,
             Self::LearnMove(_) => 3,
             Self::LevelUp(_) => 4,
-            Self::Experience(_) => 5,
-            Self::OutsideEffect(_) => 6,
+            Self::Select(_) => 5,
+            Self::Experience(_) => 6,
+            Self::OutsideEffect(_) => 7,
             Self::Switch(action) => {
                 if action.instant {
-                    7
+                    8
                 } else {
                     100
                 }
             }
-            Self::End(_) => 8,
-            Self::Forfeit(_) => 9,
-            Self::BeforeTurn => 10,
-            Self::Item(_) => 11,
-            Self::BeforeTurnMove(_) => 12,
+            Self::End(_) => 9,
+            Self::Forfeit(_) => 10,
+            Self::BeforeTurn => 11,
+            Self::Item(_) => 12,
+            Self::BeforeTurnMove(_) => 13,
             Self::BeforeSwitchEvents(_) => 99,
             Self::Escape(_) => 101,
             Self::SwitchEvents(_) => 103,

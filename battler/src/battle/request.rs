@@ -4,6 +4,10 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use serde_string_enum::{
+    DeserializeLabeledStringEnum,
+    SerializeLabeledStringEnum,
+};
 
 use crate::battle::{
     MonLearnMoveRequest,
@@ -24,6 +28,8 @@ pub enum RequestType {
     ///
     /// Only applicable for single player simulations.
     LearnMove,
+    /// A request for one or more Mons to be selected.
+    Select,
 }
 
 /// A request for a team to be chosen in Team Preview.
@@ -44,7 +50,7 @@ pub struct TurnRequest {
 /// A request for a Mon to be switched in.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SwitchRequest {
-    /// Team slots that need to be switched out.
+    /// Active positions that need to be switched out.
     pub needs_switch: Vec<usize>,
 }
 
@@ -52,6 +58,30 @@ pub struct SwitchRequest {
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LearnMoveRequest {
     pub can_learn_move: MonLearnMoveRequest,
+}
+
+/// The reason a Mon must be selected.
+#[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+pub enum SelectReason {
+    #[string = "Revive"]
+    Revive,
+}
+
+/// A position that triggered a Mon to be selected.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SelectPosition {
+    pub position: usize,
+    pub reason: SelectReason,
+}
+
+/// A request for one or more Mons to be selected.
+///
+/// Conceptually similar to a [`SwitchRequest`], except something else happens with the selected
+/// Mons (indicated by [`SelectReason`]).
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SelectRequest {
+    /// Active positions that you must select a Mon for.
+    pub positions: Vec<SelectPosition>,
 }
 
 /// A request for an action that a [`Player`][`crate::battle::Player`] must make before the battle
@@ -71,6 +101,9 @@ pub enum Request {
     /// A request for a single Mon to learn a move.
     #[serde(rename = "learnmove")]
     LearnMove(LearnMoveRequest),
+    /// A request to select one or more Mons.
+    #[serde(rename = "select")]
+    Select(SelectRequest),
 }
 
 impl Request {
@@ -81,6 +114,7 @@ impl Request {
             Self::Turn(_) => RequestType::Turn,
             Self::Switch(_) => RequestType::Switch,
             Self::LearnMove(_) => RequestType::LearnMove,
+            Self::Select(_) => RequestType::Select,
         }
     }
 }

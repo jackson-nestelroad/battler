@@ -45,8 +45,6 @@ use zone_alloc::{
 };
 
 use crate::{
-    TeamData,
-    WrapError,
     battle::{
         Action,
         BattleQueue,
@@ -72,6 +70,8 @@ use crate::{
         PlayerContext,
         Request,
         RequestType,
+        SelectPosition,
+        SelectRequest,
         Side,
         SpeedOrderable,
         SwitchRequest,
@@ -102,6 +102,7 @@ use crate::{
     },
     error::{
         ValidationError,
+        WrapError,
         WrapOptionError,
         WrapResultError,
         general_error,
@@ -112,7 +113,10 @@ use crate::{
         UncommittedBattleLogEntry,
     },
     moves::Move,
-    teams::TeamValidator,
+    teams::{
+        TeamData,
+        TeamValidator,
+    },
 };
 
 /// The public interface for a [`CoreBattle`].
@@ -1150,6 +1154,23 @@ impl<'d> CoreBattle<'d> {
                     None => Ok(None),
                 }
             }
+            RequestType::Select => {
+                let context = context.player_context(player)?;
+                let mut positions = Vec::new();
+                for (slot, mon) in context.player().field_positions_with_active_or_exited_mon() {
+                    if let Some(reason) = context.mon(*mon)?.volatile_state.select.clone() {
+                        positions.push(SelectPosition {
+                            position: slot,
+                            reason,
+                        });
+                    }
+                }
+                if !positions.is_empty() {
+                    Ok(Some(Request::Select(SelectRequest { positions })))
+                } else {
+                    Ok(None)
+                }
+            }
         }
     }
 
@@ -1519,6 +1540,17 @@ impl<'d> CoreBattle<'d> {
                     true,
                 )?;
             }
+            Action::Select(action) => {
+                core_battle_actions::select_into_position(
+                    &mut context.applying_effect_context(
+                        EffectHandle::Condition(Id::from_known("playerchoice")),
+                        None,
+                        action.mon_action.mon,
+                        None,
+                    )?,
+                    action.position,
+                )?;
+            }
             Action::OutsideEffect(action) => {
                 // NOTE: The battle owner can pass in an outside effect with an invalid target
                 // (e.g., player or Mon does not exist). This will error out the battle, as we don't
@@ -1593,8 +1625,12 @@ impl<'d> CoreBattle<'d> {
         }
 
         let mut some_switch_needed = false;
+        let mut some_select_needed = false;
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
+
+            some_select_needed = some_select_needed || Player::needs_select(&context)?;
+
             let needs_switch = Player::needs_switch(&context)?;
             let can_switch = Player::can_switch(&context);
             if needs_switch {
@@ -1637,6 +1673,11 @@ impl<'d> CoreBattle<'d> {
                     some_switch_needed = some_switch_needed || Player::needs_switch(&context)?;
                 }
             }
+        }
+
+        if some_select_needed {
+            Self::make_request(context, RequestType::Select)?;
+            return Ok(());
         }
 
         if some_switch_needed {
@@ -1993,6 +2034,17 @@ impl<'d> CoreBattle<'d> {
         }
         Self::calculate_action_priority(context, action)?;
         Ok(())
+    }
+
+    /// Selects a random Mon from the player.
+    pub fn random_mon(context: &mut Context, player: usize) -> Result<Option<MonHandle>> {
+        let prng = context.battle_mut().prng.as_mut();
+        // SAFETY: PRNG is completely disjoint from the iterator created below.
+        let prng = unsafe { mem::transmute(prng) };
+        Ok(
+            rand_util::sample_iter(prng, context.player_context(player)?.player().mon_handles())
+                .cloned(),
+        )
     }
 
     /// Selects a random switchable Mon from the player.
