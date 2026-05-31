@@ -612,15 +612,12 @@ impl<'event_state> Evaluator<'event_state> {
         statement: &'program tree::IfStatement,
     ) -> Result<bool> {
         let condition = self.evaluate_expr(context, &statement.0)?;
-        let condition = match condition.boolean() {
-            Some(value) => value,
-            _ => {
-                return Err(general_error(format!(
-                    "if statement condition must return a boolean, got {}",
-                    condition.value_type(),
-                )));
-            }
-        };
+        let condition = condition.boolean().ok_or_else(|| {
+            general_error(format!(
+                "if statement condition must return a boolean, got {}",
+                condition.value_type(),
+            ))
+        })?;
         Ok(condition)
     }
 
@@ -647,18 +644,15 @@ impl<'event_state> Evaluator<'event_state> {
         let effect_state = self
             .vars
             .get("effect_state")?
-            .map(|val| (*val).clone().effect_state().ok())
-            .flatten();
+            .and_then(|val| (*val).clone().effect_state().ok());
         let effect_mon_handle = self
             .vars
             .get("effect_target")?
-            .map(|val| (*val).clone().mon_handle().ok())
-            .flatten();
+            .and_then(|val| (*val).clone().mon_handle().ok());
         let event_origin_mon_handle = self
             .vars
             .get("event_origin")?
-            .map(|val| (*val).clone().mon_handle().ok())
-            .flatten();
+            .and_then(|val| (*val).clone().mon_handle().ok());
         run_function(
             context,
             function_name,
