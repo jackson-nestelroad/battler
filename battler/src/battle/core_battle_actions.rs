@@ -2605,8 +2605,14 @@ mod direct_move_step {
             }
             _ => true,
         };
-        if !hit && !silent {
-            core_battle_logs::miss(&mut context.target_mon_context()?)?;
+        if !hit {
+            if !silent {
+                core_battle_logs::miss(&mut context.target_mon_context()?)?;
+            }
+            core_battle_effects::run_event::<_, ()>(
+                &mut context.applying_effect_context()?,
+                fxlang::BattleEvent::AccuracyCheckFailed,
+            );
         }
         Ok(hit)
     }
@@ -5134,6 +5140,12 @@ pub fn end_ability_even_if_exiting(
         .ability_slot
         .effect_state
         .started()
+        && !context
+            .target()
+            .volatile_state
+            .ability_slot
+            .effect_state
+            .starting()
     {
         return Ok(());
     }
@@ -5543,12 +5555,10 @@ fn end_item_internal(
         )?;
     }
 
-    if context
-        .target()
-        .item
-        .as_ref()
-        .is_none_or(|_| !context.target().volatile_state.item_state.started())
-    {
+    if context.target().item.as_ref().is_none_or(|_| {
+        !context.target().volatile_state.item_state.started()
+            && !context.target().volatile_state.item_state.starting()
+    }) {
         return Ok(());
     }
 

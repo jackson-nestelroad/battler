@@ -5503,6 +5503,24 @@
     "with_target"
   ],
   "events": {
+    "accuracy_check_failed": {
+      "description": "Runs when the accuracy check of a move against a target fails.\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "accuracy_exempt": {
       "description": "Runs when the accuracy of a move against a target is being determined.\n\nRuns in the context of a move target.",
       "variables": {

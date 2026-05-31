@@ -914,7 +914,9 @@ fn run_effect_event_with_errors(
         event_origin_mon_handle,
     );
 
-    if let Some(effect_state_connector) = &effect_state_connector {
+    if let Some(effect_state_connector) = &effect_state_connector
+        && effect_state_connector.exists(context.battle_context_mut())?
+    {
         if event.starts_effect() {
             effect_state_connector.set_started(context.battle_context_mut())?;
         }

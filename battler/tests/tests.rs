@@ -285,6 +285,13 @@ mod items {
         mod electric_seed_test;
     }
 
+    mod gen8 {
+        mod blunder_policy_test;
+        mod eject_pack_test;
+        mod room_service_test;
+        mod throat_spray_test;
+    }
+
     mod gen9 {
         mod loaded_dice_test;
     }

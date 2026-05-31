@@ -16,10 +16,7 @@
     "condition_type": "Built-in",
     "condition": {
       "callbacks": {
-        "on_update": [
-          "if $mon.hp <= $mon.berry_eating_health:",
-          ["eat_item: $mon"]
-        ]
+        "on_update": ["if $mon.hp <= $mon.berry_eating_health:", ["eat_item: $mon"]]
       }
     }
   },
@@ -33,10 +30,7 @@
           "if (!$type or $move.type == $type) and ($move.type == normal or func_call(type_modifier_against_target: $move $target) > 0) and !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
           [
             "if func_call(eat_item: $target):",
-            [
-              "log_activate: with_target use_source weaken",
-              "return $damage / 2"
-            ]
+            ["log_activate: with_target use_source weaken", "return $damage / 2"]
           ]
         ]
       }
@@ -108,6 +102,17 @@
             "primal_reversion: $mon func_call(value_from_local_data: primalforme)"
           ]
         ]
+      }
+    }
+  },
+  "choicelockingitembase": {
+    "name": "Choice Locking Item Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_start": ["remove_volatile: $target choicelock"],
+        "is_choice_locked": ["return true"],
+        "on_use_move": ["add_volatile: $user choicelock"]
       }
     }
   }

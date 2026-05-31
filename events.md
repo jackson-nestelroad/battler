@@ -412,6 +412,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 - `IsAsleep`.
 - `IsAwayFromField`.
 - `IsBehindSubstitute`.
+- `IsChoiceLocked`.
 - `IsContactProof`.
 - `IsGrounded`.
 - `IsImmuneToEntryHazards`.

@@ -315,6 +315,11 @@ pub enum BattleEventModifier {
     DeserializeLabeledStringEnum,
 )]
 pub enum BattleEvent {
+    /// Runs when the accuracy check of a move against a target fails.
+    ///
+    /// Runs in the context of a move target.
+    #[string = "AccuracyCheckFailed"]
+    AccuracyCheckFailed,
     /// Runs when the accuracy of a move against a target is being determined.
     ///
     /// Runs in the context of a move target.
@@ -1420,6 +1425,7 @@ impl BattleEvent {
     pub fn callback_type_flags(&self) -> u32 {
         // Maintain alphabetical order.
         match self {
+            Self::AccuracyCheckFailed => CommonCallbackType::MoveVoid as u32,
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::Activate => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ActivateField => CommonCallbackType::FieldEffectVoid as u32,

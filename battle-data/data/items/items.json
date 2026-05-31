@@ -171,10 +171,8 @@
     },
     "flags": ["ChoiceLocking"],
     "effect": {
+      "delegates": ["condition:choicelockingitembase"],
       "callbacks": {
-        "on_start": ["remove_volatile: $target choicelock"],
-        "is_choice_locked": ["return true"],
-        "on_use_move": ["add_volatile: $user choicelock"],
         "on_modify_atk": ["if $target.dynamaxed:", ["return"], "return $atk * 3/2"]
       }
     }
@@ -1244,10 +1242,8 @@
     },
     "flags": ["ChoiceLocking"],
     "effect": {
+      "delegates": ["condition:choicelockingitembase"],
       "callbacks": {
-        "on_start": ["remove_volatile: $target choicelock"],
-        "is_choice_locked": ["return true"],
-        "on_use_move": ["add_volatile: $user choicelock"],
         "on_modify_spe": ["if $target.dynamaxed:", ["return"], "return $spe * 3/2"]
       }
     }
@@ -1411,10 +1407,8 @@
     },
     "flags": ["ChoiceLocking"],
     "effect": {
+      "delegates": ["condition:choicelockingitembase"],
       "callbacks": {
-        "on_start": ["remove_volatile: $target choicelock"],
-        "is_choice_locked": ["return true"],
-        "on_use_move": ["add_volatile: $user choicelock"],
         "on_modify_spa": ["if $target.dynamaxed:", ["return"], "return $spa * 3/2"]
       }
     }
@@ -2142,8 +2136,14 @@
           ["return"],
           "foreach $mon in func_call(all_active_or_exited_mons):",
           ["if $mon.being_called_back:", ["return"]],
-          "if func_call(use_item: $target):",
-          ["switch_out: $target", "set_needs_switch: $source false"]
+          "$effect_state.activator = $source",
+          "use_item: $target"
+        ],
+        "on_use": [
+          "$activator = $effect_state.activator",
+          "switch_out: $mon",
+          "if $activator.is_defined:",
+          ["set_needs_switch: $activator false"]
         ]
       }
     }
@@ -2618,7 +2618,16 @@
         "power": 30
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_move_secondary_effects_user": [
+          "if func_call(move_has_flag: $move sound):",
+          ["use_item: $user"]
+        ],
+        "on_use": ["boost: $mon 'spa:1' no_forward"]
+      }
+    }
   },
   "ejectpack": {
     "name": "Eject Pack",
@@ -2627,7 +2636,30 @@
         "power": 50
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_after_boost": [
+          "$activate = false",
+          "foreach $boost in func_call(boostable_stats):",
+          ["if func_call(get_boost: $boosts $boost) < 0:", ["$activate = true", "break"]],
+          "if !$activate:",
+          ["return"],
+          "if !func_call(can_switch: $target.player) or $target.force_switch or $target.being_called_back or $target.is_away_from_field:",
+          ["return"],
+          "foreach $mon in func_call(all_active_or_exited_mons):",
+          ["if $mon.being_called_back:", ["return"]],
+          "$effect_state.activator = $source",
+          "use_item: $target"
+        ],
+        "on_use": [
+          "$activator = $effect_state.activator",
+          "switch_out: $mon",
+          "if $activator.is_defined:",
+          ["set_needs_switch: $activator false"]
+        ]
+      }
+    }
   },
   "heavydutyboots": {
     "name": "Heavy-Duty Boots",
@@ -2650,7 +2682,13 @@
         "power": 80
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_accuracy_check_failed": ["use_item: $source"],
+        "on_use": ["boost: $mon 'spe:2' no_forward"]
+      }
+    }
   },
   "roomservice": {
     "name": "Room Service",
@@ -2659,7 +2697,17 @@
         "power": 100
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["if func_call(has_pseudo_weather: trickroom):", ["use_item: $target"]],
+        "on_after_add_pseudo_weather": [
+          "if $pseudo_weather.id == trickroom:",
+          ["use_item: $effect_state.target"]
+        ],
+        "on_use": ["boost: $mon 'spe:-1' no_forward"]
+      }
+    }
   },
   "utilityumbrella": {
     "name": "Utility Umbrella",
