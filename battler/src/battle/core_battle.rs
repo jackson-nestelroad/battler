@@ -2243,7 +2243,7 @@ impl<'d> CoreBattle<'d> {
         Ok(true)
     }
 
-    /// Checks if the selected target position is valid for the move.
+    /// Checks if the selected target position is valid for the item.
     pub fn valid_item_target(
         context: &mut PlayerContext,
         item_target: ItemTarget,
