@@ -1036,12 +1036,13 @@
             [
               "if !$effect_state.boosted_types:",
               ["$effect_state.boosted_types = func_call(new_object)"],
-              "if !func_call(object_get: $effect_state.boosted_types $move.type.to_string):",
+              "if $move.effect_state.stellar_boosted or !func_call(object_get: $effect_state.boosted_types $move.type.to_string):",
               [
                 "if func_call(has_type_before_forced_types: $user $move.type):",
                 ["$stab = 2"],
                 "else:",
                 ["$stab = 6/5"],
+                "$move.effect_state.stellar_boosted = true",
                 "$effect_state.boosted_types = func_call(object_set: $effect_state.boosted_types $move.type.to_string true)",
                 "return $stab"
               ],
