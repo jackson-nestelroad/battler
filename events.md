@@ -184,6 +184,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. OHKO moves: `IsSemiInvulnerable`, level check, accuracy check.
                         1. Else: `ModifyAccuracy`, `ModifyBoosts` (for accuracy and evasion).
                      1. `AccuracyExempt`.
+                     1. `AccuracyCheckFailed`.
                1. Move hit against all targets:
                   1. `TryHitField`, `TryHitSide`, or `TryHit` for each target Mon.
                   1. `TryPrimaryHit`.
