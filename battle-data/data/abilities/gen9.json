@@ -208,20 +208,7 @@
     "name": "Piercing Drill",
     "flags": [],
     "effect": {
-      "callbacks": {
-        "on_source_try_hit": {
-          "priority": 4,
-          "program": [
-            "if func_call(move_makes_contact: $move):",
-            [
-              "$move.effect_state.weaken_through_protection_effect = $this",
-              "$move.effect_state.weaken_through_protection_source = $effect_state.target",
-              "remove_move_flag: $move protect",
-              "add_move_flag: $move weakenthroughprotection"
-            ]
-          ]
-        }
-      }
+      "delegates": ["ability:unseenfist"]
     }
   },
   "dragonize": {

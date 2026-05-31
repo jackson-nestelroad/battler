@@ -1582,7 +1582,15 @@ impl<'d> CoreBattle<'d> {
             }
         }
 
-        Self::update(context)?;
+        // Run update events between independent actions.
+        if context
+            .battle()
+            .queue
+            .peek()
+            .is_none_or(|action| action.independent())
+        {
+            Self::update(context)?;
+        }
 
         let mut some_switch_needed = false;
         for player in context.battle().player_indices() {
@@ -1636,16 +1644,9 @@ impl<'d> CoreBattle<'d> {
             return Ok(());
         }
 
-        // Update speed dynamically between some primary actions.
+        // Update speed dynamically between independent actions.
         match context.battle().queue.peek() {
-            Some(
-                Action::Move(_)
-                | Action::Item(_)
-                | Action::MegaEvo(_)
-                | Action::UltraBurst(_)
-                | Action::Dynamax(_)
-                | Action::Terastallize(_),
-            ) => {
+            Some(action) if action.independent() => {
                 Self::update_speed(context)?;
                 BattleQueue::update_mon_speeds(context)?;
                 BattleQueue::sort(context);
@@ -1936,10 +1937,14 @@ impl<'d> CoreBattle<'d> {
             context.active_move_mut().priority = priority;
             action.priority = priority as i32;
 
-            action.sub_priority = core_battle_effects::run_event_with_relay::<_, i32>(
+            action.sub_priority = core_battle_effects::run_event_with_options::<_, _, i32>(
                 &mut context.user_applying_effect_context(None)?,
                 fxlang::BattleEvent::SubPriority,
                 0,
+                core_battle_effects::RunEventOptions {
+                    return_first_value: true,
+                    ..Default::default()
+                },
             );
         }
         if let Action::Switch(action) = action {
@@ -2075,7 +2080,7 @@ impl<'d> CoreBattle<'d> {
         original_target: Option<MonHandle>,
     ) -> Result<Option<MonHandle>> {
         let mov = context.battle().dex.moves.get_by_id(move_id)?;
-        let tracks_target = mov.data.tracks_target;
+        let tracks_target = mov.data.advanced_targeting.tracks_target;
         let move_target = mov.data.target.clone();
 
         if tracks_target {

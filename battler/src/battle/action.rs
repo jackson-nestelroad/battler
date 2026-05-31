@@ -366,6 +366,20 @@ impl Action {
             _ => None,
         }
     }
+
+    /// Is the action independent?
+    pub fn independent(&self) -> bool {
+        match self {
+            Self::Move(_)
+            | Self::Item(_)
+            | Self::MegaEvo(_)
+            | Self::UltraBurst(_)
+            | Self::Dynamax(_)
+            | Self::Terastallize(_)
+            | Self::Residual => true,
+            _ => false,
+        }
+    }
 }
 
 impl SpeedOrderable for Action {

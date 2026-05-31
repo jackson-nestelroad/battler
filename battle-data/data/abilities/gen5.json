@@ -226,7 +226,7 @@
       "callbacks": {
         "on_try_hit": [
           "if $target != $source and func_call(is_ally: $target $source):",
-          ["log_activate: with_target", "return stopfail"]
+          ["if $report:", ["log_activate: with_target"], "return stopfail"]
         ]
       }
     }
@@ -273,7 +273,7 @@
       "callbacks": {
         "on_try_hit": [
           "if func_call(move_has_flag: $move powder) and $target != $source and func_call(check_immunity: $target powderdust):",
-          ["log_immune: $target from_effect", "return stopfail"]
+          ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]
         ]
       }
     }
@@ -454,7 +454,7 @@
           "program": [
             "if $target == $source or $move.type != grass:",
             ["return"],
-            "if !func_call(boost: $target 'atk:1'):",
+            "if !func_call(boost: $target 'atk:1') and $report:",
             ["log_immune: $target from_effect"],
             "return stopfail"
           ]
@@ -475,6 +475,10 @@
         "on_modify_priority": [
           "if $move.category == status:",
           ["$move.effect_state.prankster = true", "return $priority + 1"]
+        ],
+        "on_use_move": [
+          "if $user.non_external_active_move.is_defined and $user.non_external_active_move.effect_state.prankster:",
+          ["$move.effect_state.prankster = true"]
         ]
       }
     }

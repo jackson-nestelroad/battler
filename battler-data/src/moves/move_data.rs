@@ -127,6 +127,26 @@ fn default_crit_ratio() -> Option<u8> {
     Some(1)
 }
 
+/// Data for advanced move targeting.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct AdvancedTargeting {
+    /// Does the move avoid random targets?
+    #[serde(default)]
+    pub no_random_target: bool,
+
+    /// Does the move track the target, even if they have moved?
+    #[serde(default)]
+    pub tracks_target: bool,
+
+    /// Does the move intelligently target different Mons based on immunities, protection,
+    /// accuracy, etc.?
+    ///
+    /// Only works for single-target moves. Adjacent Mons on the same side will be hit if possible
+    /// for each hit of a multihit move.
+    #[serde(default)]
+    pub smart_target: bool,
+}
+
 /// Data about a particular move.
 ///
 /// Moves are the primary effect that drive battle forward. Every Mon enters a battle with their
@@ -230,15 +250,13 @@ pub struct MoveData {
     pub multiaccuracy: bool,
     /// The move hits multiple times.
     pub multihit: Option<MultihitType>,
-    /// Does the move track the target, even if they have moved?
-    #[serde(default)]
-    pub tracks_target: bool,
     /// The move will always critical hit.
     #[serde(default)]
     pub will_crit: bool,
-    /// Does the move avoid random targets?
+
+    /// Advanced targeting.
     #[serde(default)]
-    pub no_random_target: bool,
+    pub advanced_targeting: AdvancedTargeting,
 
     /// Data about how the move affects Z-Moves.
     pub z_move: Option<ZMoveData>,

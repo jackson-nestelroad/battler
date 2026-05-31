@@ -408,7 +408,7 @@
           "add_volatile: $target $effect_state.move link",
           "# If this move is called by another move, we may need to modify the target that the user will be locked into.",
           "# For example, Metronome targets the user, but Razor Wind targets adjacent foes.",
-          "if $source_effect.is_move and $source_effect.effect_state.source_effect.is_defined and $source_effect.move_target != user:",
+          "if $source_effect.is_move and $source_effect.effect_state.source_effect.is_defined and $source_effect.target != user:",
           [
             "$need_new_target = false",
             "if !$target.last_target_location:",
@@ -423,7 +423,7 @@
             [
               "# Choose a random target for the move being used.",
               "$move_data = func_call(get_move: $effect_state.move)",
-              "$target.last_target_location = func_call(target_location_of_mon: $target func_call(random_target: $target $move_data.move_target))"
+              "$target.last_target_location = func_call(target_location_of_mon: $target func_call(random_target: $target $move_data.target))"
             ]
           ],
           "do_not_animate_last_move",
@@ -623,7 +623,7 @@
         "is_raining": ["return true"],
         "on_try_move": [
           "if $move.type == fire and $move.category != status:",
-          ["log_fail: $user from_effect", "do_not_animate_last_move", "return stopfail"]
+          ["log_fail: $user from_effect", "return stopfail"]
         ],
         "on_source_weather_modify_damage": ["if $move.type == water:", ["return $damage * 3/2"]],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
@@ -678,7 +678,7 @@
         "is_sunny": ["return true"],
         "on_try_move": [
           "if $move.type == water and $move.category != status:",
-          ["log_fail: $user from_effect", "do_not_animate_last_move", "return stopfail"]
+          ["log_fail: $user from_effect", "return stopfail"]
         ],
         "on_source_weather_modify_damage": ["if $move.type == fire:", ["return $damage * 3/2"]],
         "on_immunity": ["if $effect.id == frz:", ["return false"]],
@@ -859,15 +859,18 @@
           ["return false"],
           "$effect_state.move = $target.active_move.id"
         ],
+        "on_try_end": [
+          "# Ensure additional choice lock reasons are also removed.",
+          "if $target.is_choice_locked:",
+          ["return false"]
+        ],
         "on_before_move": [
           "if !$user.effective_item and $move.id != $effect_state.move and $move.id != struggle:",
           ["log_fail: $user from_effect", "return false"]
         ],
         "on_disable_move": [
-          "if !$mon.item or !func_call(item_has_flag: $mon.item choicelocking) or !func_call(has_move: $mon $effect_state.move):",
+          "if !$mon.is_choice_locked or !func_call(has_move: $mon $effect_state.move):",
           ["remove_volatile: $mon $this.id", "return"],
-          "if !$mon.effective_item:",
-          ["return"],
           "foreach $move_slot in $mon.move_slots:",
           ["if $move_slot.id != $effect_state.move:", ["disable_move: $mon $move_slot.id"]]
         ]
@@ -893,7 +896,7 @@
         "on_start": [
           "$activate = false",
           "$target_volatiles = [protect]",
-          "$side_conditions = [quickguard, wideguard]",
+          "$side_conditions = [quickguard, wideguard, matblock, craftyshield]",
           "foreach $volatile in $target_volatiles:",
           ["if func_call(remove_volatile: $target $volatile):", ["$activate = true"]],
           "if !func_call(is_ally: $target $source):",
@@ -985,6 +988,10 @@
           "# Move is already being used, but priority can affect other things as the move runs.",
           "$max_move.priority = $move.priority",
           "return $max_move"
+        ],
+        "on_source_modify_damage": [
+          "if [behemothbash, behemothblade, dynamaxcannon] has $move.id:",
+          ["return $damage * 2"]
         ],
         "on_add_volatile": ["if [encore, flinch, torment] has $volatile.id:", ["return false"]],
         "on_before_switch_out": ["remove_volatile: $mon $this.id"],
@@ -1223,6 +1230,59 @@
     "condition": {
       "callbacks": {
         "on_start": ["add_volatile: $target $source_effect link"]
+      }
+    }
+  },
+  "deductpp": {
+    "name": "Deduct PP",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 0,
+      "callbacks": {
+        "on_start": [
+          "if !$target.last_move:",
+          ["return false"],
+          "$last_move_id = $target.last_move.id",
+          "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
+          ["$last_move_id = $target.last_move.upgraded_base_move"],
+          "$amount = func_call(value_from_local_data: $source_effect amount)",
+          "$pp = func_call(deduct_pp: $target $last_move_id $amount use_source_effect)",
+          "if $pp == 0:",
+          ["return false"]
+        ]
+      }
+    }
+  },
+  "swapabilities": {
+    "name": "Swap Abilities",
+    "condition_type": "Built-in",
+    "condition": {
+      "duration": 0,
+      "callbacks": {
+        "on_start": [
+          "$target_ability = $target.ability",
+          "$source_ability = $source.ability",
+          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap) or $target.dynamaxed:",
+          ["return false"],
+          "if !func_call(set_ability: $source $target_ability use_source_effect no_forward dry_run):",
+          ["return false"],
+          "if !func_call(set_ability: $target $source_ability use_source_effect no_forward dry_run):",
+          ["return false"],
+          "$target_ability = $target.ability",
+          "$source_ability = $source.ability",
+          "log_activate: with_target with_source use_source_effect",
+          "$allies = func_call(is_ally: $target $source)",
+          "if $allies:",
+          [
+            "set_ability: $source $target_ability use_source_effect no_forward silent",
+            "set_ability: $target $source_ability use_source_effect no_forward silent"
+          ],
+          "else:",
+          [
+            "set_ability: $source $target_ability use_source_effect no_forward",
+            "set_ability: $target $source_ability use_source_effect no_forward"
+          ]
+        ]
       }
     }
   },

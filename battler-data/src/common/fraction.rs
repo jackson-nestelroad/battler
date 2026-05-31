@@ -491,14 +491,14 @@ where
 
 impl<I> Serialize for Fraction<I>
 where
-    I: FractionInteger + Into<u64> + Display,
+    I: FractionInteger + Into<i64> + Display,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         if self.is_whole() {
-            serializer.serialize_u64(self.floor().into())
+            serializer.serialize_i64(self.floor().into())
         } else {
             serializer.serialize_str(&format!("{self}"))
         }
@@ -520,8 +520,21 @@ where
     }
 }
 
-impl<'de> Visitor<'de> for FractionVisitor<u16> {
-    type Value = Fraction<u16>;
+impl<'de, I> Visitor<'de> for FractionVisitor<I>
+where
+    I: FractionInteger
+        + TryFrom<u8>
+        + TryFrom<u16>
+        + TryFrom<u32>
+        + TryFrom<u64>
+        + Deserialize<'de>,
+    <I as TryFrom<u8>>::Error: alloc::fmt::Display,
+    <I as TryFrom<u16>>::Error: alloc::fmt::Display,
+    <I as TryFrom<u32>>::Error: alloc::fmt::Display,
+    <I as TryFrom<u64>>::Error: alloc::fmt::Display,
+    Fraction<I>: FromStr,
+{
+    type Value = Fraction<I>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -534,28 +547,36 @@ impl<'de> Visitor<'de> for FractionVisitor<u16> {
     where
         E: serde::de::Error,
     {
-        Ok(Self::Value::from(v as u16))
+        Ok(Self::Value::from(
+            TryInto::<I>::try_into(v).map_err(serde::de::Error::custom)?,
+        ))
     }
 
     fn visit_u16<E>(self, v: u16) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Self::Value::from(v))
+        Ok(Self::Value::from(
+            TryInto::<I>::try_into(v).map_err(serde::de::Error::custom)?,
+        ))
     }
 
     fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Self::Value::from(v as u16))
+        Ok(Self::Value::from(
+            TryInto::<I>::try_into(v).map_err(serde::de::Error::custom)?,
+        ))
     }
 
     fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Self::Value::from(v as u16))
+        Ok(Self::Value::from(
+            TryInto::<I>::try_into(v).map_err(serde::de::Error::custom)?,
+        ))
     }
 
     fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
@@ -591,12 +612,25 @@ impl<'de> Visitor<'de> for FractionVisitor<u16> {
     }
 }
 
-impl<'de> Deserialize<'de> for Fraction<u16> {
+impl<'de, I> Deserialize<'de> for Fraction<I>
+where
+    I: FractionInteger
+        + TryFrom<u8>
+        + TryFrom<u16>
+        + TryFrom<u32>
+        + TryFrom<u64>
+        + Deserialize<'de>,
+    <I as TryFrom<u8>>::Error: alloc::fmt::Display,
+    <I as TryFrom<u16>>::Error: alloc::fmt::Display,
+    <I as TryFrom<u32>>::Error: alloc::fmt::Display,
+    <I as TryFrom<u64>>::Error: alloc::fmt::Display,
+    Fraction<I>: FromStr,
+{
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_any(FractionVisitor::<u16>::new())
+        deserializer.deserialize_any(FractionVisitor::<I>::new())
     }
 }
 
@@ -614,11 +648,11 @@ mod fraction_test {
 
     #[test]
     fn serializes_to_string() {
-        test_serialization(Fraction::percentage(25), "\"1/4\"");
-        test_serialization(Fraction::percentage(100), "1");
-        test_serialization(Fraction::new(1, 2), "\"1/2\"");
-        test_serialization(Fraction::new(1, 3), "\"1/3\"");
-        test_serialization(Fraction::new(20, 147), "\"20/147\"");
+        test_serialization(Fraction::percentage(25u32), "\"1/4\"");
+        test_serialization(Fraction::percentage(100u32), "1");
+        test_serialization(Fraction::new(1u32, 2), "\"1/2\"");
+        test_serialization(Fraction::new(1u32, 3), "\"1/3\"");
+        test_serialization(Fraction::new(20u32, 147), "\"20/147\"");
     }
 
     #[test]

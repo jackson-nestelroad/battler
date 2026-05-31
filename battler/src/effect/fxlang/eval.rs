@@ -72,41 +72,34 @@ impl IntoIterator for VariableInput {
 /// Context for executing a [`ParsedProgramBlock`] over a list.
 ///
 /// The list itself must be evaluated once at the beginning of the loop.
-struct ExecuteProgramBlockOverListContext<'program> {
-    item: &'program str,
-    list: &'program tree::Value,
+#[derive(Clone)]
+struct ExecuteProgramBlockOverListContext {
+    index: usize,
 }
 
-impl<'eval, 'program> ExecuteProgramBlockOverListContext<'program> {
-    fn new(item: &'program str, list: &'program tree::Value) -> Self {
-        Self { item, list }
+impl ExecuteProgramBlockOverListContext {
+    fn new(index: usize) -> Self {
+        Self { index }
     }
 }
 
-/// The evaluation state of a [`ParsedProgramBlock`].
-struct ProgramBlockEvalState<'program> {
-    skip_next_block: bool,
-    last_if_statement_result: Option<bool>,
-    for_each_context: Option<ExecuteProgramBlockOverListContext<'program>>,
+/// The inherited evaluation state from parent blocks.
+#[derive(Clone, Default)]
+struct ParentEvalState {
+    for_each_context: Option<ExecuteProgramBlockOverListContext>,
+    is_subsequent_iteration: bool,
 }
 
-impl ProgramBlockEvalState<'_> {
-    fn new() -> Self {
-        Self {
-            skip_next_block: false,
-            last_if_statement_result: None,
-            for_each_context: None,
-        }
+impl ParentEvalState {
+    fn is_subsequent(&self) -> bool {
+        self.for_each_context
+            .as_ref()
+            .is_some_and(|ctx| ctx.index > 0)
+            || self.is_subsequent_iteration
     }
 }
 
-/// The result of evaluating a [`ParsedProgramBlock`].
-enum ProgramStatementEvalResult<'program> {
-    None,
-    Skipped,
-    IfStatement(bool),
-    ElseIfStatement(bool),
-    ForEachStatement(&'program str, &'program tree::Value),
+enum ProgramStatementEvalResult {
     ReturnStatement(Option<Value>),
     ContinueStatement,
     BreakStatement,
@@ -136,7 +129,6 @@ pub struct Evaluator<'event_state> {
 }
 
 impl<'event_state> Evaluator<'event_state> {
-    /// Creates a new evaluator.
     pub fn new(event: BattleEvent, event_state: &'event_state EventState) -> Self {
         Self {
             statement: 0,
@@ -144,6 +136,44 @@ impl<'event_state> Evaluator<'event_state> {
             event,
             event_state,
         }
+    }
+
+    fn increment_statement(&mut self, parent_eval_state: &ParentEvalState, amount: usize) {
+        if !parent_eval_state.is_subsequent() {
+            self.statement += amount;
+        }
+    }
+
+    fn evaluate_conditional_branch<'eval, 'program>(
+        &'eval mut self,
+        context: &mut EvaluationContext,
+        iter: &mut core::iter::Peekable<core::slice::Iter<'program, ParsedProgramBlock>>,
+        parent_eval_state: &ParentEvalState,
+        statement: Option<&'program tree::IfStatement>,
+    ) -> Result<(bool, Option<ProgramStatementEvalResult>)>
+    where
+        'program: 'eval,
+    {
+        self.increment_statement(parent_eval_state, 1);
+        let condition_met = match statement {
+            Some(statement) => self.evaluate_if_statement(context, statement)?,
+            None => true,
+        };
+
+        let mut eval_result = None;
+        if let Some(ParsedProgramBlock::Branch(body)) = iter.peek() {
+            iter.next();
+            if condition_met {
+                eval_result = self.evaluate_program_blocks_once(
+                    context,
+                    body.as_slice(),
+                    parent_eval_state.clone(),
+                )?;
+            } else {
+                self.increment_statement(parent_eval_state, body.len());
+            }
+        }
+        Ok((condition_met, eval_result))
     }
 
     fn initialize_vars(
@@ -342,12 +372,16 @@ impl<'event_state> Evaluator<'event_state> {
             effect_mon_handle,
             event_origin_mon_handle,
         )?;
-        let root_state = ProgramBlockEvalState::new();
+        let parent_eval_state = ParentEvalState::default();
         let value = match self
-            .evaluate_program_block(context, &callback.program.block, &root_state)
+            .evaluate_program_blocks_once(
+                context,
+                core::slice::from_ref(&callback.program.block),
+                parent_eval_state,
+            )
             .wrap_error_with_format(format_args!("error on statement {}", self.statement))?
         {
-            ProgramStatementEvalResult::ReturnStatement(value) => value,
+            Some(ProgramStatementEvalResult::ReturnStatement(value)) => value,
             _ => None,
         };
         if !self
@@ -378,146 +412,165 @@ impl<'event_state> Evaluator<'event_state> {
         Ok(ProgramEvalResult::new(value))
     }
 
-    fn evaluate_program_block<'eval, 'program>(
-        &'eval mut self,
-        context: &mut EvaluationContext,
-        block: &'program ParsedProgramBlock,
-        parent_state: &'eval ProgramBlockEvalState,
-    ) -> Result<ProgramStatementEvalResult<'program>>
-    where
-        'program: 'eval,
-    {
-        match block {
-            ParsedProgramBlock::Leaf(statement) => {
-                self.evaluate_statement(context, statement, parent_state)
-            }
-            ParsedProgramBlock::Branch(blocks) => {
-                if parent_state.skip_next_block {
-                    self.statement += block.len() as usize;
-                    return Ok(ProgramStatementEvalResult::Skipped);
-                }
-
-                if let Some(for_each_context) = &parent_state.for_each_context {
-                    let list = self.resolve_value(context, for_each_context.list)?;
-                    if !list.supports_list_iteration() {
-                        return Err(general_error(format!(
-                            "cannot iterate over a {}",
-                            list.value_type()
-                        )));
-                    }
-                    let len = list
-                        .len()
-                        .wrap_expectation("value supports iteration but is missing a length")?;
-                    // SAFETY: We only use this immutable borrow at the beginning of each loop, at
-                    // the start of each execution.
-                    //
-                    // This list value can only potentially contain a reference to a stored
-                    // variable. If so, we are also storing the object that does runtime borrow
-                    // checking, so borrow errors will trigger during evaluation.
-                    let list = unsafe {
-                        core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'_>>(
-                            list,
-                        )
-                    };
-                    for i in 0..len {
-                        let current_item = list.list_index(i).wrap_expectation_with_format(format_args!(
-                            "list has no element at index {i}, but length at beginning of foreach loop was {len}"
-                        ))?.to_owned();
-                        self.vars.set(for_each_context.item, current_item)?;
-                        match self.evaluate_program_blocks_once(context, blocks.as_slice())? {
-                            result @ ProgramStatementEvalResult::ReturnStatement(_) => {
-                                // Early return.
-                                return Ok(result);
-                            }
-                            ProgramStatementEvalResult::ContinueStatement => {
-                                continue;
-                            }
-                            ProgramStatementEvalResult::BreakStatement => {
-                                break;
-                            }
-                            _ => (),
-                        }
-                    }
-
-                    return Ok(ProgramStatementEvalResult::None);
-                }
-
-                self.evaluate_program_blocks_once(context, blocks.as_slice())
-            }
-        }
-    }
-
     fn evaluate_program_blocks_once<'eval, 'program>(
         &'eval mut self,
         context: &mut EvaluationContext,
         blocks: &'program [ParsedProgramBlock],
-    ) -> Result<ProgramStatementEvalResult<'program>>
+        parent_eval_state: ParentEvalState,
+    ) -> Result<Option<ProgramStatementEvalResult>>
     where
         'program: 'eval,
     {
-        let mut state = ProgramBlockEvalState::new();
-        for block in blocks {
-            match self.evaluate_program_block(context, block, &state)? {
-                result @ ProgramStatementEvalResult::ReturnStatement(_)
-                | result @ ProgramStatementEvalResult::ContinueStatement
-                | result @ ProgramStatementEvalResult::BreakStatement => {
-                    // Early return.
-                    return Ok(result);
-                }
-                ProgramStatementEvalResult::None => {
-                    // Reset the state.
-                    state.last_if_statement_result = None;
-                    state.skip_next_block = false;
-                    state.for_each_context = None;
-                }
-                ProgramStatementEvalResult::Skipped => (),
-                ProgramStatementEvalResult::IfStatement(condition_met) => {
-                    state.for_each_context = None;
-                    // Remember this result in case we find an associated else statement.
-                    state.last_if_statement_result = Some(condition_met);
-                    // Skip the next block if the condition was not met.
-                    state.skip_next_block = !condition_met;
-                }
-                ProgramStatementEvalResult::ElseIfStatement(condition_met) => {
-                    state.for_each_context = None;
-                    // Only remember this result if we have evaluated an if statement before.
-                    //
-                    // This prevents else blocks from being run on their own, without a leading if
-                    // statement.
-                    if state.last_if_statement_result.is_some() {
-                        state.last_if_statement_result = Some(condition_met);
+        let mut iter = blocks.iter().peekable();
+        let mut last_if_statement_result: Option<bool> = None;
+
+        while let Some(block) = iter.next() {
+            match block {
+                ParsedProgramBlock::Leaf(statement) => {
+                    match statement {
+                        tree::Statement::IfStatement(statement) => {
+                            let (condition_met, result) = self.evaluate_conditional_branch(
+                                context,
+                                &mut iter,
+                                &parent_eval_state,
+                                Some(statement),
+                            )?;
+                            last_if_statement_result = Some(condition_met);
+                            if let Some(result) = result {
+                                return Ok(Some(result));
+                            }
+                        }
+                        tree::Statement::ElseIfStatement(statement) => {
+                            if last_if_statement_result.is_none_or(|result| result) {
+                                // Skip the condition.
+                                self.increment_statement(&parent_eval_state, 1);
+                                if let Some(ParsedProgramBlock::Branch(body)) = iter.peek() {
+                                    // Skip the body.
+                                    iter.next();
+                                    self.increment_statement(&parent_eval_state, body.len());
+                                }
+                            } else {
+                                // Last condition failed, so this block should run.
+                                let (condition_met, result) = self.evaluate_conditional_branch(
+                                    context,
+                                    &mut iter,
+                                    &parent_eval_state,
+                                    statement.0.as_ref(),
+                                )?;
+                                last_if_statement_result = Some(condition_met);
+                                if let Some(result) = result {
+                                    return Ok(Some(result));
+                                }
+                            }
+                        }
+                        tree::Statement::ForEachStatement(statement) => {
+                            if !statement.var.member_access.is_empty() {
+                                return Err(general_error(format!(
+                                    "invalid variable in foreach statement: ${}",
+                                    statement.var.full_name(),
+                                )));
+                            }
+                            last_if_statement_result = None;
+
+                            if let Some(ParsedProgramBlock::Branch(body)) = iter.peek() {
+                                iter.next();
+
+                                let item = &statement.var.name.0;
+                                let list = &statement.range;
+
+                                let list = self.resolve_value(context, list)?;
+                                if !list.supports_list_iteration() {
+                                    return Err(general_error(format!(
+                                        "cannot iterate over a {}",
+                                        list.value_type()
+                                    )));
+                                }
+                                let len = list.len().wrap_expectation(
+                                    "value supports iteration but is missing a length",
+                                )?;
+
+                                // SAFETY: We only use this immutable borrow at the beginning of
+                                // each loop, at the start of each execution.
+                                //
+                                // This list value can only potentially contain a reference to a
+                                // stored variable. If so, we are also storing the object that does
+                                // runtime borrow checking, so borrow errors will trigger during
+                                // evaluation.
+                                let list = unsafe {
+                                    core::mem::transmute::<
+                                        MaybeReferenceValue<'_>,
+                                        MaybeReferenceValue<'_>,
+                                    >(list)
+                                };
+
+                                for i in 0..len {
+                                    let current_item = list
+                                        .list_index(i)
+                                        .wrap_expectation_with_format(format_args!(
+                                            "list has no element at index {i}, but length at beginning of foreach loop was {len}"
+                                        ))?
+                                        .to_owned();
+                                    self.vars.set(item, current_item)?;
+
+                                    let parent_eval_state = ParentEvalState {
+                                        for_each_context: Some(
+                                            ExecuteProgramBlockOverListContext::new(i),
+                                        ),
+                                        is_subsequent_iteration: parent_eval_state.is_subsequent(),
+                                    };
+
+                                    match self.evaluate_program_blocks_once(
+                                        context,
+                                        body.as_slice(),
+                                        parent_eval_state,
+                                    )? {
+                                        Some(ProgramStatementEvalResult::ContinueStatement) => {
+                                            continue;
+                                        }
+                                        Some(ProgramStatementEvalResult::BreakStatement) => {
+                                            break;
+                                        }
+                                        res @ Some(_) => return Ok(res),
+                                        None => {}
+                                    }
+                                }
+                            }
+                        }
+                        other_statement => {
+                            self.increment_statement(&parent_eval_state, 1);
+                            last_if_statement_result = None;
+                            if let Some(result) =
+                                self.evaluate_statement(context, other_statement)?
+                            {
+                                return Ok(Some(result));
+                            }
+                        }
                     }
-                    // Skip the next block if the condition was not met.
-                    //
-                    // This will always be false if last_if_statement_result is true.
-                    state.skip_next_block = !condition_met;
                 }
-                ProgramStatementEvalResult::ForEachStatement(item, list) => {
-                    // Reset the state.
-                    state.last_if_statement_result = None;
-                    state.skip_next_block = false;
-                    state.for_each_context = None;
-                    // Prepare the context for the next block.
-                    state.for_each_context =
-                        Some(ExecuteProgramBlockOverListContext::new(item, list))
+                ParsedProgramBlock::Branch(blocks) => {
+                    if let Some(result) = self.evaluate_program_blocks_once(
+                        context,
+                        blocks.as_slice(),
+                        parent_eval_state.clone(),
+                    )? {
+                        return Ok(Some(result));
+                    }
                 }
             }
         }
-        Ok(ProgramStatementEvalResult::None)
+        Ok(None)
     }
 
     fn evaluate_statement<'eval, 'program>(
         &'eval mut self,
         context: &'eval mut EvaluationContext,
         statement: &'program tree::Statement,
-        parent_state: &'eval ProgramBlockEvalState,
-    ) -> Result<ProgramStatementEvalResult<'program>>
+    ) -> Result<Option<ProgramStatementEvalResult>>
     where
         'program: 'eval,
     {
-        self.statement += 1;
         match statement {
-            tree::Statement::Empty => Ok(ProgramStatementEvalResult::None),
+            tree::Statement::Empty => Ok(None),
             tree::Statement::Assignment(assignment) => {
                 let value = self.evaluate_expr(context, &assignment.rhs)?;
                 // SAFETY: The value produced by the expression should be some newly generated
@@ -528,53 +581,28 @@ impl<'event_state> Evaluator<'event_state> {
                     core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'_>>(value)
                 };
                 self.assign_var(context, &assignment.lhs, value)?;
-                Ok(ProgramStatementEvalResult::None)
+                Ok(None)
             }
             tree::Statement::FunctionCall(statement) => {
                 self.evaluate_function_call(context, &statement)?;
-                Ok(ProgramStatementEvalResult::None)
+                Ok(None)
             }
-            tree::Statement::IfStatement(statement) => Ok(ProgramStatementEvalResult::IfStatement(
-                self.evaluate_if_statement(context, statement)?,
-            )),
-            tree::Statement::ElseIfStatement(statement) => {
-                let condition_met = if let Some(false) = parent_state.last_if_statement_result {
-                    // The last if statement was false, so this else block might apply.
-                    if let Some(statement) = &statement.0 {
-                        self.evaluate_if_statement(context, statement)?
-                    } else {
-                        true
-                    }
-                } else {
-                    // The last if statement was true (or doesn't exist), so this else block does
-                    // not apply and is not evaluated, even if there is a condition.
-                    false
-                };
-                Ok(ProgramStatementEvalResult::ElseIfStatement(condition_met))
-            }
-            tree::Statement::ForEachStatement(statement) => {
-                if !statement.var.member_access.is_empty() {
-                    return Err(general_error(format!(
-                        "invalid variable in foreach statement: ${}",
-                        statement.var.full_name(),
-                    )));
-                }
-                Ok(ProgramStatementEvalResult::ForEachStatement(
-                    &statement.var.name.0,
-                    &statement.range,
-                ))
+            tree::Statement::IfStatement(_)
+            | tree::Statement::ElseIfStatement(_)
+            | tree::Statement::ForEachStatement(_) => {
+                Err(general_error("unexpected control flow statement"))
             }
             tree::Statement::ReturnStatement(statement) => {
                 let value = match &statement.0 {
                     None => None,
                     Some(expr) => Some(self.evaluate_expr(context, expr)?),
                 };
-                Ok(ProgramStatementEvalResult::ReturnStatement(
+                Ok(Some(ProgramStatementEvalResult::ReturnStatement(
                     value.map(|value| value.to_owned()),
-                ))
+                )))
             }
-            tree::Statement::Continue(_) => Ok(ProgramStatementEvalResult::ContinueStatement),
-            tree::Statement::Break(_) => Ok(ProgramStatementEvalResult::BreakStatement),
+            tree::Statement::Continue(_) => Ok(Some(ProgramStatementEvalResult::ContinueStatement)),
+            tree::Statement::Break(_) => Ok(Some(ProgramStatementEvalResult::BreakStatement)),
         }
     }
 
@@ -584,15 +612,12 @@ impl<'event_state> Evaluator<'event_state> {
         statement: &'program tree::IfStatement,
     ) -> Result<bool> {
         let condition = self.evaluate_expr(context, &statement.0)?;
-        let condition = match condition.boolean() {
-            Some(value) => value,
-            _ => {
-                return Err(general_error(format!(
-                    "if statement condition must return a boolean, got {}",
-                    condition.value_type(),
-                )));
-            }
-        };
+        let condition = condition.boolean().ok_or_else(|| {
+            general_error(format!(
+                "if statement condition must return a boolean, got {}",
+                condition.value_type(),
+            ))
+        })?;
         Ok(condition)
     }
 
@@ -619,18 +644,15 @@ impl<'event_state> Evaluator<'event_state> {
         let effect_state = self
             .vars
             .get("effect_state")?
-            .map(|val| (*val).clone().effect_state().ok())
-            .flatten();
+            .and_then(|val| (*val).clone().effect_state().ok());
         let effect_mon_handle = self
             .vars
             .get("effect_target")?
-            .map(|val| (*val).clone().mon_handle().ok())
-            .flatten();
+            .and_then(|val| (*val).clone().mon_handle().ok());
         let event_origin_mon_handle = self
             .vars
             .get("event_origin")?
-            .map(|val| (*val).clone().mon_handle().ok())
-            .flatten();
+            .and_then(|val| (*val).clone().mon_handle().ok());
         run_function(
             context,
             function_name,

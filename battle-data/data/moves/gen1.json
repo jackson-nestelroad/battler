@@ -17,8 +17,8 @@
     "accuracy": 100,
     "pp": 25,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "doubleslap": {
     "name": "Double Slap",
@@ -28,8 +28,8 @@
     "accuracy": 85,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "cometpunch": {
     "name": "Comet Punch",
@@ -39,8 +39,8 @@
     "accuracy": 85,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Punch"],
     "multihit": [2, 5],
+    "flags": ["Contact", "Mirror", "Protect", "Punch"],
     "max_move": {
       "base_power": 100
     }
@@ -146,8 +146,8 @@
     "accuracy": 30,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "OHKO", "Protect"],
     "ohko_type": true,
+    "flags": ["Contact", "Mirror", "OHKO", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -160,8 +160,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "AllAdjacentFoes",
-    "flags": ["Charge", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "crit_ratio": 2,
+    "flags": ["Charge", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "effect": {
       "delegates": ["condition:chargemovebase"]
     }
@@ -328,8 +328,8 @@
     "accuracy": 100,
     "pp": 30,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 80
     }
@@ -432,8 +432,8 @@
     "accuracy": 85,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "horndrill": {
     "name": "Horn Drill",
@@ -442,8 +442,8 @@
     "accuracy": 30,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "OHKO", "Protect"],
     "ohko_type": true,
+    "flags": ["Contact", "Mirror", "OHKO", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -497,10 +497,10 @@
     "accuracy": 85,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/4"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "thrash": {
     "name": "Thrash",
@@ -523,10 +523,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/3"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "tailwhip": {
     "name": "Tail Whip",
@@ -573,6 +573,7 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
+    "multihit": 2,
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
       {
@@ -582,7 +583,6 @@
         }
       }
     ],
-    "multihit": 2,
     "max_move": {
       "base_power": 100
     }
@@ -595,8 +595,8 @@
     "accuracy": 95,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -724,8 +724,8 @@
     "accuracy": 90,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "damage": 20
+    "damage": 20,
+    "flags": ["Mirror", "Protect"]
   },
   "disable": {
     "name": "Disable",
@@ -765,7 +765,7 @@
           "if $source_effect.is_ability:",
           ["log_start: with_source_effect str('disabledmove:{}', $target.last_move.name)"],
           "else:",
-          ["log_start: str('disabledmove:{}',   $target.last_move.name)"],
+          ["log_start: str('disabledmove:{}',    $target.last_move.name)"],
           "$effect_state.move = $target.last_move.id"
         ],
         "on_end": ["log_end"],
@@ -1047,10 +1047,10 @@
     "accuracy": 80,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/4"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "lowkick": {
     "name": "Low Kick",
@@ -1166,8 +1166,8 @@
     "accuracy": 100,
     "pp": 25,
     "target": "Normal",
-    "flags": ["Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Heal", "Mirror", "Protect"]
   },
   "megadrain": {
     "name": "Mega Drain",
@@ -1177,8 +1177,8 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Heal", "Mirror", "Protect"]
   },
   "leechseed": {
     "name": "Leech Seed",
@@ -1252,8 +1252,8 @@
     "accuracy": 95,
     "pp": 25,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect", "Slicing"]
   },
   "solarbeam": {
     "name": "Solar Beam",
@@ -1370,8 +1370,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "damage": 40
+    "damage": 40,
+    "flags": ["Mirror", "Protect"]
   },
   "firespin": {
     "name": "Fire Spin",
@@ -1464,7 +1464,7 @@
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "$weather = func_call(effective_weather: $selected_target)",
+          "$weather = func_call(effective_weather: $target)",
           "if !$weather:",
           ["return"],
           "if $weather.is_raining:",
@@ -1502,8 +1502,8 @@
     "accuracy": 30,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "OHKO", "Protect"],
     "ohko_type": true,
+    "flags": ["Mirror", "OHKO", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -1689,8 +1689,8 @@
     "pp": 20,
     "priority": -6,
     "target": "User",
-    "flags": [],
     "user_switch": true,
+    "flags": [],
     "z_move": {
       "effect": "zpowerheal"
     },
@@ -2100,8 +2100,10 @@
             "accuracy": "exempt",
             "priority": 1,
             "target": "Scripted",
+            "advanced_targeting": {
+              "no_random_target": true
+            },
             "flags": ["Contact", "Protect"],
-            "no_random_target": true,
             "effect": {
               "callbacks": {
                 "on_ignore_immunity": ["return true"],
@@ -2188,8 +2190,8 @@
     "accuracy": 100,
     "pp": 5,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "NoParentalBond", "Protect"],
-    "self_destruct": true
+    "self_destruct": true,
+    "flags": ["Mirror", "NoParentalBond", "Protect"]
   },
   "eggbomb": {
     "name": "Egg Bomb",
@@ -2356,8 +2358,8 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Mirror", "Protect"],
     "max_move": {
       "base_power": 120
     }
@@ -2473,8 +2475,8 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Heal", "Mirror", "Protect"],
     "drain_percent": "1/2",
+    "flags": ["Heal", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
         "on_try_immunity": ["return $target.is_asleep"]
@@ -2506,8 +2508,8 @@
     "accuracy": 85,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "flags": ["Bullet", "Mirror", "Protect"]
   },
   "leechlife": {
     "name": "Leech Life",
@@ -2517,8 +2519,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Contact", "Heal", "Mirror", "Protect"]
   },
   "lovelykiss": {
     "name": "Lovely Kiss",
@@ -2545,6 +2547,7 @@
     "accuracy": 90,
     "pp": 5,
     "target": "Any",
+    "crit_ratio": 2,
     "flags": ["Charge", "Distance", "FailInstruct", "Mirror", "NoSleepTalk", "Protect"],
     "secondary_effects": [
       {
@@ -2554,7 +2557,6 @@
         }
       }
     ],
-    "crit_ratio": 2,
     "effect": {
       "delegates": ["condition:chargemovebase"]
     }
@@ -2706,8 +2708,8 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "explosion": {
     "name": "Explosion",
@@ -2717,8 +2719,8 @@
     "accuracy": 100,
     "pp": 5,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "NoParentalBond", "Protect"],
-    "self_destruct": true
+    "self_destruct": true,
+    "flags": ["Mirror", "NoParentalBond", "Protect"]
   },
   "furyswipes": {
     "name": "Fury Swipes",
@@ -2728,8 +2730,8 @@
     "accuracy": 80,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 100
     }
@@ -2742,8 +2744,8 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "multihit": 2,
+    "flags": ["Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -2878,16 +2880,7 @@
         "chance": "20%",
         "effect": {
           "callbacks": {
-            "on_hit": [
-              "$rand = func_call(random: 3)",
-              "if $rand == 0:",
-              ["$status = par"],
-              "else if $rand == 1:",
-              ["$status = frz"],
-              "else:",
-              ["$status = brn"],
-              "set_status: $target $status"
-            ]
+            "on_hit": ["set_status: $target func_call(sample: [par, frz, brn])"]
           }
         }
       }
@@ -2915,8 +2908,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
   "substitute": {
     "name": "Substitute",
@@ -2965,7 +2958,7 @@
           "$move.total_damage = $move.total_damage + $damage",
           "# Break the substitute when HP falls to 0.",
           "if $effect_state.hp == 0:",
-          ["if $move.ohko:", ["log_ohko: $target"], "remove_volatile: $target substitute"],
+          ["if $move.ohko:", ["log_ohko: $target"], "remove_volatile: $target $this.id"],
           "else:",
           ["log_activate: with_target damage"],
           "# Some move effects still apply.",
@@ -2993,6 +2986,12 @@
     "accuracy": "exempt",
     "pp": 1,
     "target": "RandomNormal",
+    "no_pp_boosts": true,
+    "recoil": {
+      "percent": "1/4",
+      "base": "userbasemaxhp",
+      "struggle": true
+    },
     "flags": [
       "Contact",
       "FailCopycat",
@@ -3005,13 +3004,7 @@
       "NoSketch",
       "NoSleepTalk",
       "Protect"
-    ],
-    "no_pp_boosts": true,
-    "recoil": {
-      "percent": "1/4",
-      "base": "userbasemaxhp",
-      "struggle": true
-    }
+    ]
   },
   "recharge": {
     "name": "Recharge",

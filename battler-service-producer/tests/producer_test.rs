@@ -731,7 +731,6 @@ async fn publishes_battle_logs() {
             "damage|mon:Meowth,player-2,1|health:74/100",
             "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
             "damage|mon:Pikachu,player-1,1|health:12/18",
-            "status|mon:Meowth,player-2,1|status:Paralysis|from:ability:Static|of:Pikachu,player-1,1",
             "residual",
             "-battlerservice:timer|battle|remainingsecs:59",
         ]
@@ -765,7 +764,6 @@ async fn publishes_battle_logs() {
             "damage|mon:Meowth,player-2,1|health:14/19",
             "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
             "damage|mon:Pikachu,player-1,1|health:67/100",
-            "status|mon:Meowth,player-2,1|status:Paralysis|from:ability:Static|of:Pikachu,player-1,1",
             "residual",
             "-battlerservice:timer|battle|remainingsecs:59",
         ]
@@ -799,7 +797,6 @@ async fn publishes_battle_logs() {
             "damage|mon:Meowth,player-2,1|health:74/100",
             "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
             "damage|mon:Pikachu,player-1,1|health:67/100",
-            "status|mon:Meowth,player-2,1|status:Paralysis|from:ability:Static|of:Pikachu,player-1,1",
             "residual",
             "-battlerservice:timer|battle|remainingsecs:59",
         ]

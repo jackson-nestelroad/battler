@@ -102,7 +102,7 @@ fn multi_attack_changes_type_from_memory() {
             "split|side:1",
             "damage|mon:Kecleon,player-2,1|health:51/120",
             "damage|mon:Kecleon,player-2,1|health:43/100",
-            "typechange|mon:Kecleon,player-2,1|types:Bug",
+            "typechange|mon:Kecleon,player-2,1|types:Bug|from:ability:Color Change",
             "residual",
             "turn|turn:2"
         ]"#,

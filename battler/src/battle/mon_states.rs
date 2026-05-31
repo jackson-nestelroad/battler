@@ -247,6 +247,28 @@ pub fn is_behind_substitute(context: &mut MonContext) -> bool {
     is_behind_substitute
 }
 
+/// Checks if the [`Mon`][`crate::battle::Mon`] is locked into its previous choice.
+pub fn is_choice_locked(context: &mut MonContext) -> bool {
+    if let Some(is_choice_locked) = context.mon().volatile_state.effect_cache.is_choice_locked {
+        return is_choice_locked;
+    }
+    let is_choice_locked = core_battle_effects::run_event_with_options::<_, _, bool>(
+        context,
+        fxlang::BattleEvent::IsChoiceLocked,
+        (),
+        core_battle_effects::RunEventOptions {
+            return_first_value: true,
+            ..Default::default()
+        },
+    );
+    context
+        .mon_mut()
+        .volatile_state
+        .effect_cache
+        .is_choice_locked = Some(is_choice_locked);
+    is_choice_locked
+}
+
 /// Checks if the [`Mon`][`crate::battle::Mon`] is protected from making contact with other Mons.
 pub fn is_contact_proof(context: &mut MonContext) -> bool {
     if let Some(is_contact_proof) = context.mon().volatile_state.effect_cache.is_contact_proof {

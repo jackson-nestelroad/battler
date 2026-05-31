@@ -64,13 +64,13 @@ fn protean_changes_type_to_match_move_once() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Greninja,player-1,1|name:Flamethrower|target:Greninja,player-2,1",
-            "typechange|mon:Greninja,player-1,1|types:Fire",
+            "typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean",
             "resisted|mon:Greninja,player-2,1",
             "split|side:1",
             "damage|mon:Greninja,player-2,1|health:175/254",
             "damage|mon:Greninja,player-2,1|health:69/100",
             "move|mon:Greninja,player-2,1|name:Water Gun|target:Greninja,player-1,1",
-            "typechange|mon:Greninja,player-2,1|types:Water",
+            "typechange|mon:Greninja,player-2,1|types:Water|from:ability:Protean",
             "supereffective|mon:Greninja,player-1,1",
             "split|side:0",
             "damage|mon:Greninja,player-1,1|health:120/254",
@@ -109,7 +109,7 @@ fn protean_resets_after_mega_evolution() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Greninja,player-1,1|name:Flamethrower|target:Greninja,player-2,1",
-            "typechange|mon:Greninja,player-1,1|types:Fire",
+            "typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean",
             "resisted|mon:Greninja,player-2,1",
             "split|side:1",
             "damage|mon:Greninja,player-2,1|health:175/254",
@@ -122,7 +122,7 @@ fn protean_resets_after_mega_evolution() {
             ["specieschange", "player-1", "Greninja-Mega"],
             "mega|mon:Greninja,player-1,1|species:Greninja-Mega|from:item:Greninjite",
             "move|mon:Greninja,player-1,1|name:Tackle|target:Greninja,player-2,1",
-            "typechange|mon:Greninja,player-1,1|types:Normal",
+            "typechange|mon:Greninja,player-1,1|types:Normal|from:ability:Protean",
             "split|side:1",
             "damage|mon:Greninja,player-2,1|health:90/254",
             "damage|mon:Greninja,player-2,1|health:36/100",

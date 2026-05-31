@@ -160,8 +160,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "override_defensive_stat": "def"
+    "override_defensive_stat": "def",
+    "flags": ["Mirror", "Protect"]
   },
   "venoshock": {
     "name": "Venoshock",
@@ -240,7 +240,7 @@
       "callbacks": {
         "on_try_use_move": [
           "if func_call(has_pseudo_weather: gravity):",
-          ["do_not_animate_last_move", "log_cant", "return stopfail"]
+          ["log_cant", "return stopfail"]
         ]
       }
     },
@@ -335,8 +335,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "will_crit": true
+    "will_crit": true,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "flameburst": {
     "name": "Flame Burst",
@@ -582,8 +582,8 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "override_offensive_mon": "Target"
+    "override_offensive_mon": "Target",
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "simplebeam": {
     "name": "Simple Beam",
@@ -724,9 +724,9 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "ignore_defensive": true,
-    "ignore_evasion": true
+    "ignore_evasion": true,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "clearsmog": {
     "name": "Clear Smog",
@@ -1121,8 +1121,8 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["NoParentalBond", "Protect"],
     "self_destruct": true,
+    "flags": ["NoParentalBond", "Protect"],
     "effect": {
       "callbacks": {
         "on_move_damage": ["return $source.hp"]
@@ -1325,8 +1325,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "user_switch": true
+    "user_switch": true,
+    "flags": ["Mirror", "Protect"]
   },
   "strugglebug": {
     "name": "Struggle Bug",
@@ -1374,8 +1374,8 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "will_crit": true
+    "will_crit": true,
+    "flags": ["Mirror", "Protect"]
   },
   "dragontail": {
     "name": "Dragon Tail",
@@ -1438,10 +1438,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/4"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "drillrun": {
     "name": "Drill Run",
@@ -1451,8 +1451,8 @@
     "accuracy": 95,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "dualchop": {
     "name": "Dual Chop",
@@ -1462,8 +1462,8 @@
     "accuracy": 90,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -1494,8 +1494,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Heal", "Mirror", "Protect"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Contact", "Heal", "Mirror", "Protect"]
   },
   "sacredsword": {
     "name": "Sacred Sword",
@@ -1505,9 +1505,9 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Slicing"],
     "ignore_defensive": true,
-    "ignore_evasion": true
+    "ignore_evasion": true,
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
   "razorshell": {
     "name": "Razor Shell",
@@ -1627,8 +1627,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "override_defensive_stat": "def"
+    "override_defensive_stat": "def",
+    "flags": ["Mirror", "Protect"]
   },
   "tailslap": {
     "name": "Tail Slap",
@@ -1638,8 +1638,8 @@
     "accuracy": 85,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -1673,10 +1673,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/4"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "geargrind": {
     "name": "Gear Grind",
@@ -1686,8 +1686,8 @@
     "accuracy": 85,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -1776,8 +1776,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect", "Slicing"],
-    "override_defensive_stat": "def"
+    "override_defensive_stat": "def",
+    "flags": ["Mirror", "NoMetronome", "Protect", "Slicing"]
   },
   "glaciate": {
     "name": "Glaciate",

@@ -683,6 +683,45 @@ pub fn remove_side_condition(context: &mut SideEffectContext, condition: &Id) ->
     )
 }
 
+pub fn swap_side_conditions(context: &mut SideEffectContext, source_side: usize) -> Result<()> {
+    let activation = EffectActivationContext {
+        side: Some(context.side().index),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("with:{source_side}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swapsideconditions".to_owned(),
+        activation,
+    )
+}
+
+pub fn swap_side_condition(
+    context: &mut SideEffectContext,
+    condition: &Id,
+    source_side: usize,
+) -> Result<()> {
+    let condition = CoreBattle::get_effect_by_id(context.as_battle_context_mut(), &condition)?
+        .name()
+        .to_owned();
+    let activation = EffectActivationContext {
+        side: Some(context.side().index),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([
+            format!("condition:{condition}"),
+            format!("source:{source_side}"),
+        ]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "swapsidecondition".to_owned(),
+        activation,
+    )
+}
 pub fn add_slot_condition(
     context: &mut SideEffectContext,
     slot: usize,
@@ -775,24 +814,34 @@ pub fn remove_pseudo_weather(context: &mut FieldEffectContext, condition: &Id) -
     )
 }
 
-pub fn type_change(
-    context: &mut MonContext,
-    types: &[Type],
-    effect: Option<EffectHandle>,
-    source: Option<MonHandle>,
-) -> Result<()> {
+pub fn type_change(context: &mut ApplyingEffectContext, types: &[Type]) -> Result<()> {
     let types = types.iter().map(|typ| typ.to_string()).join("/");
     let activation = EffectActivationContext {
-        target: Some(context.mon_handle()),
+        target: Some(context.target_handle()),
         ignore_active_move_source_effect: true,
-        source_effect: effect,
-        source,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
         additional: Vec::from_iter([format!("types:{types}")]),
         ..Default::default()
     };
     effect_activation(
         context.as_battle_context_mut(),
         "typechange".to_owned(),
+        activation,
+    )
+}
+
+pub fn reset_type_change(context: &mut ApplyingEffectContext) -> Result<()> {
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "resettypechange".to_owned(),
         activation,
     )
 }
@@ -1003,7 +1052,7 @@ pub fn add_attribute_to_last_move(context: &mut ActiveMoveContext, attribute: &s
     }
 }
 
-fn add_attribute_value_to_last_move(
+pub fn add_attribute_value_to_last_move(
     context: &mut ActiveMoveContext,
     attribute: &str,
     value: String,
@@ -1048,6 +1097,12 @@ where
     }
     add_attribute_value_to_last_move(context, "spread", target_positions.into_iter().join(";"));
     remove_attribute_from_last_move(context, "target");
+    Ok(())
+}
+
+pub fn last_move_target(context: &mut ActiveMoveContext, target: MonHandle) -> Result<()> {
+    let details = Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?;
+    add_attribute_value_to_last_move(context, "target", details.to_string());
     Ok(())
 }
 
@@ -1111,6 +1166,7 @@ pub fn swap_boosts(context: &mut ApplyingEffectContext, boosts: &[Boost]) -> Res
         activation,
     )
 }
+
 pub fn invert_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),

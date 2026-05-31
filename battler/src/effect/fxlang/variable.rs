@@ -292,13 +292,6 @@ where
                                     .unwrap_or(ValueRef::Undefined)
                             })
                             .unwrap_or(ValueRef::Undefined),
-                            "move_target" => CoreBattle::get_effect_by_handle(
-                                context.battle_context(),
-                                &effect_handle,
-                            )?
-                            .move_effect()
-                            .map(|mov| ValueRef::MoveTarget(mov.data.target))
-                            .unwrap_or(ValueRef::Undefined),
                             "multiaccuracy" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
                                 &effect_handle,
@@ -332,6 +325,22 @@ where
                             )?
                             .move_effect()
                             .map(|mov| ValueRef::Boolean(mov.data.ohko_type.is_some()))
+                            .unwrap_or(ValueRef::Undefined),
+                            "original_targets" => CoreBattle::get_effect_by_handle(
+                                context.battle_context(),
+                                &effect_handle,
+                            )?
+                            .move_effect()
+                            .map(|mov| {
+                                ValueRef::TempList(
+                                    mov.original_targets
+                                        .iter()
+                                        .map(|mon| {
+                                            ValueRefToStoredValue::new(None, ValueRef::Mon(*mon))
+                                        })
+                                        .collect(),
+                                )
+                            })
                             .unwrap_or(ValueRef::Undefined),
                             "priority" => CoreBattle::get_effect_by_handle(
                                 context.battle_context(),
@@ -722,6 +731,9 @@ where
                                     &mut context.mon_context(mon_handle)?,
                                 ))
                             }
+                            "is_choice_locked" => ValueRef::Boolean(mon_states::is_choice_locked(
+                                &mut context.mon_context(mon_handle)?,
+                            )),
                             "is_grounded" => ValueRef::Boolean(mon_states::is_grounded(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -834,6 +846,11 @@ where
                             "newly_switched" => {
                                 ValueRef::Boolean(context.mon(mon_handle)?.newly_switched)
                             }
+                            "non_external_active_move" => context
+                                .mon(mon_handle)?
+                                .non_external_active_move
+                                .map(|active_move| ValueRef::TempEffect(active_move.into()))
+                                .unwrap_or(ValueRef::Undefined),
                             "not_fully_evolved" => ValueRef::Boolean(
                                 context
                                     .battle_context()
@@ -881,6 +898,18 @@ where
                             "stats" => {
                                 ValueRef::StatTable(&context.mon(mon_handle)?.volatile_state.stats)
                             }
+                            "stats_lowered_this_turn" => ValueRef::Boolean(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .stats_lowered_this_turn,
+                            ),
+                            "stats_raised_this_turn" => ValueRef::Boolean(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .stats_raised_this_turn,
+                            ),
                             "status" => match context.mon(mon_handle)?.status.as_ref() {
                                 Some(status) => ValueRef::TempString(status.as_ref().to_owned()),
                                 None => ValueRef::Undefined,
@@ -1038,6 +1067,17 @@ where
                                     })
                                     .collect(),
                             ),
+                            "terrain" => {
+                                match context.battle_context().battle().field.terrain.clone() {
+                                    Some(terrain) => ValueRef::Effect(
+                                        context
+                                            .battle_context_mut()
+                                            .battle_mut()
+                                            .get_effect_handle_by_id(&terrain)?,
+                                    ),
+                                    None => ValueRef::Undefined,
+                                }
+                            }
                             "time" => {
                                 ValueRef::TimeOfDay(context.battle_context().battle().field.time)
                             }
@@ -1170,6 +1210,13 @@ where
                             }
                             "drops" => {
                                 ValueRef::Boost(nature.drops().try_into().map_err(general_error)?)
+                            }
+                            _ => return Err(Self::bad_member_access(member, value_type)),
+                        }
+                    } else if let ValueRef::MoveTarget(target) = value {
+                        value = match *member {
+                            "affects_mons_directly" => {
+                                ValueRef::Boolean(target.affects_mons_directly())
                             }
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
@@ -1418,6 +1465,13 @@ where
                         ),
                         "total_damage" => ValueRefMut::U64(
                             &mut context.active_move_mut(*active_move_handle)?.total_damage,
+                        ),
+                        "tracks_target" => ValueRefMut::Boolean(
+                            &mut context
+                                .active_move_mut(*active_move_handle)?
+                                .data
+                                .advanced_targeting
+                                .tracks_target,
                         ),
                         "type" => ValueRefMut::Type(
                             &mut context

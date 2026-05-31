@@ -2257,6 +2257,17 @@ impl<'effect, 'context, 'battle, 'data> SideEffectContext<'effect, 'context, 'ba
         }
     }
 
+    /// Creates a new [`SideEffectContext`] for the same effect but different target side, scoped to
+    /// the lifetime of this context.
+    pub fn change_target_context<'applying_effect>(
+        &'applying_effect mut self,
+        side: usize,
+    ) -> Result<SideEffectContext<'applying_effect, 'context, 'battle, 'data>> {
+        let source_handle = self.source_handle;
+        self.as_effect_context_mut()
+            .side_effect_context(side, source_handle)
+    }
+
     /// Returns a reference to the [`CoreBattle`].
     pub fn battle(&self) -> &CoreBattle<'data> {
         self.context.battle()

@@ -167,8 +167,22 @@ mod abilities {
 
     mod gen8 {
         mod as_one_test;
+        mod ball_fetch_test;
+        mod cotton_down_test;
+        mod curious_medicine_test;
+        mod gorilla_tactics_test;
+        mod gulp_missile_test;
+        mod ice_face_test;
+        mod mimicry_test;
+        mod mirror_armor_test;
         mod neutralizing_gas_test;
+        mod pastel_veil_test;
+        mod perish_body_test;
+        mod power_spot_test;
         mod ripen_test;
+        mod screen_cleaner_test;
+        mod stalwart_test;
+        mod wandering_spirit_test;
     }
 
     mod gen9 {
@@ -269,6 +283,13 @@ mod items {
     mod gen7 {
         mod beast_ball_test;
         mod electric_seed_test;
+    }
+
+    mod gen8 {
+        mod blunder_policy_test;
+        mod eject_pack_test;
+        mod room_service_test;
+        mod throat_spray_test;
     }
 
     mod gen9 {
@@ -573,6 +594,37 @@ mod moves {
         mod strength_sap_test;
         mod throat_chop_test;
         mod toxic_thread_test;
+    }
+
+    mod gen8 {
+        mod aura_wheel_test;
+        mod body_press_test;
+        mod burning_jealousy_test;
+        mod chloroblast_test;
+        mod clangorous_soul_test;
+        mod coaching_test;
+        mod corrosive_gas_test;
+        mod court_change_test;
+        mod dragon_darts_test;
+        mod eerie_spell_test;
+        mod eternabeam_test;
+        mod expanding_force_test;
+        mod jaw_lock_test;
+        mod lash_out_test;
+        mod lunar_blessing_test;
+        mod no_retreat_test;
+        mod obstruct_test;
+        mod octolock_test;
+        mod poltergeist_test;
+        mod shell_side_arm_test;
+        mod snipe_shot_test;
+        mod steel_roller_test;
+        mod stone_axe_test;
+        mod stuff_cheeks_test;
+        mod tar_shot_test;
+        mod teatime_test;
+        mod terrain_pulse_test;
+        mod triple_arrows_test;
     }
 }
 

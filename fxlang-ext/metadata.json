@@ -138,11 +138,6 @@
         "type": "UFraction | Undefined",
         "only_applicable_to_move": true
       },
-      "move_target": {
-        "description": "",
-        "type": "MoveTarget | Undefined",
-        "only_applicable_to_move": true
-      },
       "multiaccuracy": {
         "description": "",
         "type": "Boolean | Undefined",
@@ -162,6 +157,12 @@
       "ohko": {
         "description": "",
         "type": "Boolean | Undefined",
+        "only_applicable_to_move": true
+      },
+      "original_targets": {
+        "description": "",
+        "type": "List | Undefined",
+        "item_type": "Mon",
         "only_applicable_to_move": true
       },
       "priority": {
@@ -287,6 +288,11 @@
         "description": "",
         "type": "Boolean | Undefined",
         "only_applicable_to_active_move": true
+      },
+      "tracks_target": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
       }
     },
     "ActiveMove": {
@@ -390,6 +396,10 @@
       "target": {
         "description": "",
         "type": "MoveTarget"
+      },
+      "tracks_target": {
+        "description": "",
+        "type": "Boolean"
       },
       "type": {
         "description": "",
@@ -556,6 +566,10 @@
         "description": "",
         "type": "Boolean"
       },
+      "is_choice_locked": {
+        "description": "",
+        "type": "Boolean"
+      },
       "is_grounded": {
         "description": "",
         "type": "Boolean"
@@ -641,6 +655,10 @@
         "description": "",
         "type": "Boolean"
       },
+      "non_external_active_move": {
+        "description": "",
+        "type": "Effect | Undefined"
+      },
       "not_fully_evolved": {
         "description": "",
         "type": "Boolean"
@@ -684,6 +702,14 @@
       "stats": {
         "description": "",
         "type": "StatTable"
+      },
+      "stats_lowered_this_turn": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "stats_raised_this_turn": {
+        "description": "",
+        "type": "Boolean"
       },
       "status": {
         "description": "",
@@ -816,6 +842,10 @@
         "description": "",
         "type": "List",
         "item_type": "Side"
+      },
+      "terrain": {
+        "description": "",
+        "type": "Effect | Undefined"
       },
       "time": {
         "description": "",
@@ -955,6 +985,12 @@
       "drops": {
         "description": "",
         "type": "Boost"
+      }
+    },
+    "MoveTarget": {
+      "affects_mons_directly": {
+        "description": "",
+        "type": "Boolean"
       }
     },
     "SpecialItemData": {
@@ -1150,6 +1186,32 @@
           "name": "attribute",
           "type": "String",
           "description": "The attribute to add.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
+    },
+    "add_attribute_value_to_last_move": {
+      "description": "Adds an attribute and value to the last move used.",
+      "parameters": [
+        {
+          "name": "active_move",
+          "type": "Effect",
+          "description": "The active move.",
+          "optional": true
+        },
+        {
+          "name": "attribute",
+          "type": "String",
+          "description": "The attribute key to add.",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "String",
+          "description": "The value to add.",
           "optional": false
         }
       ],
@@ -1639,14 +1701,32 @@
       "item_type": "Boost",
       "returns_item_from_list": false
     },
-    "calculate_damage": {
-      "description": "Calculates damage for a move.",
+    "calculate_base_damage": {
+      "description": "Calculates the base damage of a move.",
       "parameters": [
         {
-          "name": "target",
-          "type": "Mon",
-          "description": "The move target.",
-          "optional": true
+          "name": "level",
+          "type": "UFraction",
+          "description": "The user level.",
+          "optional": false
+        },
+        {
+          "name": "base_power",
+          "type": "UFraction",
+          "description": "The move base_power.",
+          "optional": false
+        },
+        {
+          "name": "attack",
+          "type": "UFraction",
+          "description": "The user attack stat.",
+          "optional": false
+        },
+        {
+          "name": "defense",
+          "type": "UFraction",
+          "description": "The target defense stat.",
+          "optional": false
         }
       ],
       "flags": [],
@@ -1667,6 +1747,20 @@
           "type": "UFraction",
           "description": "The base power of the confusion attack.",
           "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "UFraction",
+      "returns_item_from_list": false
+    },
+    "calculate_damage": {
+      "description": "Calculates damage for a move.",
+      "parameters": [
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The move target.",
+          "optional": true
         }
       ],
       "flags": [],
@@ -2226,7 +2320,12 @@
           "optional": true
         }
       ],
-      "flags": [],
+      "flags": [
+        {
+          "name": "force",
+          "description": "If set, the consumption cannot be stopped."
+        }
+      ],
       "type": "Boolean",
       "returns_item_from_list": false
     },
@@ -4227,6 +4326,20 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
+    "reset_types": {
+      "description": "Resets a Mon's types.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to modify.",
+          "optional": true
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
+      "returns_item_from_list": false
+    },
     "restore_pp": {
       "description": "Restores PP to a Mon's move.",
       "parameters": [
@@ -4917,6 +5030,32 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
+    "swap_side_conditions": {
+      "description": "Swaps all eligible side conditions between two sides.",
+      "parameters": [
+        {
+          "name": "target_side",
+          "type": "Side",
+          "description": "The target side.",
+          "optional": true
+        },
+        {
+          "name": "source_side",
+          "type": "Side",
+          "description": "The source side to swap with.",
+          "optional": true
+        },
+        {
+          "name": "conditions",
+          "type": "List",
+          "description": "Eligible conditions to swap.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean",
+      "returns_item_from_list": false
+    },
     "switch_out": {
       "description": "Forces a Mon to switch out.",
       "parameters": [
@@ -5364,6 +5503,24 @@
     "with_target"
   ],
   "events": {
+    "accuracy_check_failed": {
+      "description": "Runs when the accuracy check of a move against a target fails.\n\nRuns in the context of a move target.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "accuracy_exempt": {
       "description": "Runs when the accuracy of a move against a target is being determined.\n\nRuns in the context of a move target.",
       "variables": {
@@ -6145,6 +6302,20 @@
       },
       "allows_custom_input_vars": false
     },
+    "catch_failed": {
+      "description": "Runs when a Mon fails to be caught.\n\nRuns on the item (used to catch the Mon) and in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        },
+        "item": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "change_boosts": {
       "description": "Runs when a group of stat boosts is being applied to a Mon.\n\nRuns in the context of a Mon.",
       "variables": {
@@ -6384,6 +6555,10 @@
         },
         "type": {
           "type": "Type",
+          "optional": false
+        },
+        "index": {
+          "type": "UFraction",
           "optional": false
         }
       },
@@ -6743,6 +6918,16 @@
     },
     "is_behind_substitute": {
       "description": "Runs when determining if a Mon is behind a substitute.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "is_choice_locked": {
+      "description": "Runs when determining if a Mon is locked into its previous choice.\n\nRuns in the context of a Mon.",
       "variables": {
         "mon": {
           "type": "Mon",
@@ -8201,6 +8386,24 @@
       },
       "allows_custom_input_vars": false
     },
+    "try_end": {
+      "description": "Runs when trying to end an effect.\n\nCan prevent the effect from ending.\n\nRuns on the effect.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source_effect": {
+          "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "try_heal": {
       "description": "Runs before a Mon is healed for some amount of damage.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
@@ -8237,6 +8440,10 @@
         "move": {
           "type": "ActiveMove",
           "optional": false
+        },
+        "report": {
+          "type": "Boolean",
+          "optional": true
         }
       },
       "allows_custom_input_vars": false
@@ -8445,10 +8652,6 @@
           "optional": false
         },
         "target": {
-          "type": "Mon",
-          "optional": true
-        },
-        "selected_target": {
           "type": "Mon",
           "optional": true
         }

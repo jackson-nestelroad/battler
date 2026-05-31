@@ -212,6 +212,16 @@ impl EffectState {
         *self.get_mut(Self::ENDING) = Value::Boolean(self.ending());
     }
 
+    /// Whether or not the effect is starting.
+    ///
+    /// An effect is starting if any correspondign "Start" event is currently running.
+    ///
+    /// This is needed in conjunction with [`Self::started`] because some effects may immediately
+    /// end themselves as they are starting.
+    pub fn starting(&self) -> bool {
+        self.activation_state == EffectActivationState::Starting
+    }
+
     /// Whether or not the effect is started.
     ///
     /// An effect is started if any corresponding "Start" event has run. Unlike [`Self::ending`],

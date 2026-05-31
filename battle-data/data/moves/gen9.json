@@ -120,9 +120,9 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Slicing"],
     "multiaccuracy": true,
-    "multihit": 10
+    "multihit": 10,
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Slicing"]
   },
   "icespinner": {
     "name": "Ice Spinner",
@@ -152,9 +152,9 @@
     "accuracy": "exempt",
     "pp": 1,
     "target": "User",
-    "flags": ["Heal", "NoMetronome", "NoSketch"],
     "no_pp_boosts": true,
-    "user_switch": true
+    "user_switch": true,
+    "flags": ["Heal", "NoMetronome", "NoSketch"]
   },
   "saltcure": {
     "name": "Salt Cure",
@@ -174,8 +174,8 @@
     "accuracy": 95,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": 3
+    "multihit": 3,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "mortalspin": {
     "name": "Mortal Spin",
@@ -225,8 +225,8 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "will_crit": true
+    "will_crit": true,
+    "flags": ["Mirror", "Protect"]
   },
   "torchsong": {
     "name": "Torch Song",
@@ -339,8 +339,8 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "Field",
-    "flags": ["NoMetronome"],
-    "user_switch": true
+    "user_switch": true,
+    "flags": ["NoMetronome"]
   },
   "tidyup": {
     "name": "Tidy Up",
@@ -413,8 +413,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"],
-    "multihit": 2
+    "multihit": 2,
+    "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "ragefist": {
     "name": "Rage Fist",
@@ -444,8 +444,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Heal", "Mirror", "Protect", "Slicing"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Contact", "Heal", "Mirror", "Protect", "Slicing"]
   },
   "doubleshock": {
     "name": "Double Shock",
@@ -485,8 +485,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect", "Slicing"]
   },
   "blazingtorque": {
     "name": "Blazing Torque",
@@ -612,8 +612,8 @@
     "accuracy": 90,
     "pp": 15,
     "target": "AllAdjacentFoes",
-    "flags": ["Heal", "Mirror", "Protect", "Thawing", "ThawsTarget"],
-    "drain_percent": "1/2"
+    "drain_percent": "1/2",
+    "flags": ["Heal", "Mirror", "Protect", "Thawing", "ThawsTarget"]
   },
   "syrupbomb": {
     "name": "Syrup Bomb",
@@ -633,8 +633,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect"]
   },
   "electroshot": {
     "name": "Electro Shot",
@@ -714,8 +714,8 @@
     "accuracy": 0,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Slicing"],
     "multihit": 2,
+    "flags": ["Mirror", "Protect", "Slicing"],
     "max_move": {
       "base_power": 140
     }

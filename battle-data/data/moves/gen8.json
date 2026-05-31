@@ -72,9 +72,11 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "crit_ratio": 2,
-    "tracks_target": true
+    "advanced_targeting": {
+      "tracks_target": true
+    },
+    "flags": ["Mirror", "Protect"]
   },
   "jawlock": {
     "name": "Jaw Lock",
@@ -84,7 +86,15 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "trapped"
+    },
+    "effect": {
+      "callbacks": {
+        "on_hit": ["add_volatile: $source trapped use_target_as_source"]
+      }
+    }
   },
   "stuffcheeks": {
     "name": "Stuff Cheeks",
@@ -93,7 +103,24 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "effect": {
+      "callbacks": {
+        "on_disable_move": [
+          "if !$mon.item or !func_call(item_has_flag: $mon.item berry):",
+          ["disable_move: $mon $this.id"]
+        ],
+        "on_try_use_move": [
+          "if !$user.item or !func_call(item_has_flag: $user.item berry):",
+          ["return false"]
+        ],
+        "on_hit": [
+          "if !func_call(boost: $target 'def:2'):",
+          ["return stopfail"],
+          "eat_item: $target force"
+        ]
+      }
+    }
   },
   "noretreat": {
     "name": "No Retreat",
@@ -102,7 +129,34 @@
     "accuracy": "exempt",
     "pp": 5,
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "def": 1,
+        "spa": 1,
+        "spd": 1,
+        "spe": 1
+      },
+      "volatile_status": "noretreat"
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "# Use a separate volatile so that the move can only be used once, even if the Mon is immune to trapping.",
+          "if func_call(has_volatile: $user $this.id):",
+          ["return false"],
+          "if func_call(has_volatile: $user trapped):",
+          ["$move.hit_effect.volatile_status = undefined"]
+        ]
+      }
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["log_start: with_target"],
+        "on_trap_mon": ["return true"]
+      }
+    }
   },
   "tarshot": {
     "name": "Tar Shot",
@@ -111,7 +165,19 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "hit_effect": {
+      "boosts": {
+        "spe": 1
+      },
+      "volatile_status": "tarshot"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["if $target.terastallized:", ["return false"], "log_start: with_target"],
+        "on_effectiveness": ["if $index == 0 and $effect.type == fire:", ["return $modifier + 1"]]
+      }
+    }
   },
   "magicpowder": {
     "name": "Magic Powder",
@@ -120,7 +186,12 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Powder", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Powder", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_hit": ["return func_call(set_types: $target [psychic])"]
+      }
+    }
   },
   "dragondarts": {
     "name": "Dragon Darts",
@@ -130,8 +201,11 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoParentalBond", "Protect"],
     "multihit": 2,
+    "advanced_targeting": {
+      "smart_target": true
+    },
+    "flags": ["Mirror", "NoParentalBond", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -143,7 +217,21 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "All",
-    "flags": ["BypassSubstitute"]
+    "flags": ["BypassSubstitute"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "if !$target.item or !func_call(item_has_flag: $target.item berry):",
+          ["return stop"]
+        ],
+        "on_hit": [
+          "if !$effect_state.activate:",
+          ["$effect_state.activate = true", "log_field_activate"],
+          "eat_item: $target force"
+        ],
+        "on_after_move": ["if !$effect_state.activate:", ["log_fail: $user"]]
+      }
+    }
   },
   "octolock": {
     "name": "Octolock",
@@ -152,7 +240,21 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "octolock"
+    },
+    "condition": {
+      "callbacks": {
+        "on_start": ["add_volatile: $target trapped link no_forward", "log_start: with_target"],
+        "on_residual": [
+          "if !$effect_state.source or !$effect_state.source.active or $effect_state.hp == 0:",
+          ["remove_volatile: $target $this.id", "return"],
+          "boost: $target 'def:-1' 'spd:-1'"
+        ],
+        "on_end": ["log_end: silent with_target"]
+      }
+    }
   },
   "boltbeak": {
     "name": "Bolt Beak",
@@ -162,7 +264,15 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if func_call(will_move_this_turn: $target) or $target.newly_switched:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "fishiousrend": {
     "name": "Fishious Rend",
@@ -172,7 +282,10 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Bite", "Contact", "Mirror", "Protect"]
+    "flags": ["Bite", "Contact", "Mirror", "Protect"],
+    "effect": {
+      "delegates": ["move:boltbeak"]
+    }
   },
   "courtchange": {
     "name": "Court Change",
@@ -181,7 +294,17 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Field",
-    "flags": ["Mirror"]
+    "flags": ["Mirror"],
+    "effect": {
+      "callbacks": {
+        "on_hit_field": [
+          "$side_conditions = [mist, lightscreen, reflect, spikes, safeguard, tailwind, toxicspikes, stealthrock, waterpledge, firepledge, grasspledge, stickyweb, auroraveil, luckychant, gmaxsteelsurge, gmaxcannonade, gmaxvinelash, gmaxwildfire, gmaxvolcalith]",
+          "if !func_call(swap_side_conditions: $source.foe_side $source.side $side_conditions):",
+          ["return false"],
+          "log_activate: with_source"
+        ]
+      }
+    }
   },
   "maxflare": {
     "name": "Max Flare",
@@ -691,7 +814,29 @@
     "accuracy": 100,
     "pp": 5,
     "target": "User",
-    "flags": ["Dance", "NoMetronome", "Snatch", "Sound"]
+    "flags": ["Dance", "NoMetronome", "Snatch", "Sound"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "def": 1,
+        "spa": 1,
+        "spd": 1,
+        "spe": 1
+      }
+    },
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "if $target.hp <= $target.max_hp * 1/3 or $target.max_hp == 1:",
+          ["return false"]
+        ],
+        "on_try_hit": [
+          "if !func_call(can_boost: $target $move.hit_effect.boosts):",
+          ["return stopfail"]
+        ],
+        "on_hit": ["direct_damage: $target expr($target.max_hp * 1/3)"]
+      }
+    }
   },
   "bodypress": {
     "name": "Body Press",
@@ -701,8 +846,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
-    "override_offensive_stat": "def"
+    "override_offensive_stat": "def",
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
   },
   "decorate": {
     "name": "Decorate",
@@ -711,7 +856,13 @@
     "accuracy": "exempt",
     "pp": 15,
     "target": "Normal",
-    "flags": ["BypassMaxGuard", "NoMetronome"]
+    "flags": ["BypassMaxGuard", "NoMetronome"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 2,
+        "spa": 2
+      }
+    }
   },
   "drumbeating": {
     "name": "Drum Beating",
@@ -721,7 +872,16 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
+      }
+    ]
   },
   "snaptrap": {
     "name": "Snap Trap",
@@ -731,7 +891,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
+    "hit_effect": {
+      "volatile_status": "partiallytrapped"
+    }
   },
   "pyroball": {
     "name": "Pyro Ball",
@@ -741,7 +904,15 @@
     "accuracy": 90,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "NoMetronome", "Protect", "Thawing"]
+    "flags": ["Bullet", "Mirror", "NoMetronome", "Protect", "Thawing"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "behemothblade": {
     "name": "Behemoth Blade",
@@ -771,7 +942,26 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spe": 1
+          }
+        }
+      }
+    ],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": [
+          "$base_species = func_call(base_species: $user)",
+          "if $base_species != morpeko:",
+          ["log_cant", "return stopfail"]
+        ],
+        "on_modify_move_type": ["if $user.species == morpekohangry:", ["return dark"]]
+      }
+    }
   },
   "breakingswipe": {
     "name": "Breaking Swipe",
@@ -781,7 +971,16 @@
     "accuracy": 100,
     "pp": 15,
     "target": "AllAdjacentFoes",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "atk": -1
+          }
+        }
+      }
+    ]
   },
   "branchpoke": {
     "name": "Branch Poke",
@@ -811,7 +1010,16 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "gravapple": {
     "name": "Grav Apple",
@@ -821,7 +1029,24 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "def": -1
+          }
+        }
+      }
+    ],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if func_call(has_pseudo_weather: gravity):",
+          ["return $move.base_power * 3/2"]
+        ]
+      }
+    }
   },
   "spiritbreak": {
     "name": "Spirit Break",
@@ -831,7 +1056,16 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spa": -1
+          }
+        }
+      }
+    ]
   },
   "strangesteam": {
     "name": "Strange Steam",
@@ -841,7 +1075,15 @@
     "accuracy": 95,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "confusion"
+        }
+      }
+    ]
   },
   "lifedew": {
     "name": "Life Dew",
@@ -863,7 +1105,18 @@
     "pp": 10,
     "priority": 4,
     "target": "User",
-    "flags": ["FailInstruct", "NoMetronome", "Stalling"]
+    "flags": ["FailInstruct", "NoMetronome", "Stalling"],
+    "hit_effect": {
+      "volatile_status": "protect"
+    },
+    "effect": {
+      "delegates": ["condition:protectmovebase"]
+    },
+    "condition": {
+      "callbacks": {
+        "on_activate": ["if func_call(move_makes_contact: $effect):", ["boost: $source 'def:-2'"]]
+      }
+    }
   },
   "falsesurrender": {
     "name": "False Surrender",
@@ -883,7 +1136,10 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["FailInstruct", "Mirror", "NoMetronome", "Protect", "Recharge"]
+    "flags": ["FailInstruct", "Mirror", "NoMetronome", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "eternabeam": {
     "name": "Eternabeam",
@@ -893,7 +1149,10 @@
     "accuracy": 90,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect", "Recharge"]
+    "flags": ["Mirror", "NoMetronome", "Protect", "Recharge"],
+    "user_effect": {
+      "volatile_status": "mustrecharge"
+    }
   },
   "steelbeam": {
     "name": "Steel Beam",
@@ -903,6 +1162,10 @@
     "accuracy": 95,
     "pp": 5,
     "target": "Normal",
+    "recoil": {
+      "percent": "1/2",
+      "base": "usermaxhp"
+    },
     "flags": ["Mirror", "NoMetronome", "Protect"]
   },
   "expandingforce": {
@@ -913,7 +1176,19 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if $user.effective_terrain == psychicterrain:",
+          ["$move.target = alladjacentfoes"]
+        ],
+        "on_move_base_power": [
+          "if $source.effective_terrain == psychicterrain:",
+          ["return $move.base_power * 3/2"]
+        ]
+      }
+    }
   },
   "steelroller": {
     "name": "Steel Roller",
@@ -923,7 +1198,14 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": ["if !$field.terrain:", ["return false"]],
+        "on_hit": ["clear_terrain"],
+        "on_after_substitute_damage": ["clear_terrain"]
+      }
+    }
   },
   "scaleshot": {
     "name": "Scale Shot",
@@ -933,10 +1215,16 @@
     "accuracy": 90,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Mirror", "Protect"],
     "max_move": {
       "base_power": 130
+    },
+    "user_effect": {
+      "boosts": {
+        "def": -1,
+        "spe": 1
+      }
     }
   },
   "meteorbeam": {
@@ -947,7 +1235,13 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Charge", "Mirror", "Protect"]
+    "flags": ["Charge", "Mirror", "Protect"],
+    "effect": {
+      "delegates": ["condition:chargemovebase"],
+      "callbacks": {
+        "on_charge_move": ["boost: $user 'spa:1'"]
+      }
+    }
   },
   "shellsidearm": {
     "name": "Shell Side Arm",
@@ -957,7 +1251,35 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if !$target:",
+          ["return"],
+          "$atk = func_call(get_stat: $user atk unmodified)",
+          "$spa = func_call(get_stat: $user spa unmodified)",
+          "$def = func_call(get_stat: $target def unmodified)",
+          "$spd = func_call(get_stat: $target spd unmodified)",
+          "$physical = func_call(calculate_base_damage: $user.level $move.base_power $atk $def)",
+          "$special = func_call(calculate_base_damage: $user.level $move.base_power $spa $spd)",
+          "if $physical > $special or ($physical == $special and func_call(chance: 1 2)):",
+          ["$move.category = physical", "add_move_flag: $move contact"]
+        ],
+        "on_prepare_hit": [
+          "if !func_call(is_ally: $user $target):",
+          ["add_attribute_value_to_last_move: anim $move.category.to_string"]
+        ]
+      }
+    }
   },
   "mistyexplosion": {
     "name": "Misty Explosion",
@@ -967,8 +1289,16 @@
     "accuracy": 100,
     "pp": 5,
     "target": "AllAdjacent",
+    "self_destruct": true,
     "flags": ["Mirror", "Protect"],
-    "self_destruct": true
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $source.effective_terrain == mistyterrain:",
+          ["return $move.base_power * 3/2"]
+        ]
+      }
+    }
   },
   "grassyglide": {
     "name": "Grassy Glide",
@@ -978,7 +1308,15 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_modify_priority": [
+          "if $user.effective_terrain == grassyterrain:",
+          ["return $priority + 1"]
+        ]
+      }
+    }
   },
   "risingvoltage": {
     "name": "Rising Voltage",
@@ -991,6 +1329,14 @@
     "flags": ["Mirror", "Protect"],
     "max_move": {
       "base_power": 140
+    },
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $target.effective_terrain == electricterrain:",
+          ["return $move.base_power * 2"]
+        ]
+      }
     }
   },
   "terrainpulse": {
@@ -1004,6 +1350,23 @@
     "flags": ["Mirror", "Protect", "Pulse"],
     "max_move": {
       "base_power": 130
+    },
+    "effect": {
+      "callbacks": {
+        "on_modify_move_type": [
+          "$terrain = $user.effective_terrain",
+          "if !$terrain:",
+          ["return"],
+          "if $terrain == electricterrain:",
+          ["return electric"],
+          "else if $terrain == grassyterrain:",
+          ["return grass"],
+          "else if $terrain == mistyterrain:",
+          ["return fairy"],
+          "else if $terrain == psychicterrain:",
+          ["return psychic"]
+        ]
+      }
     }
   },
   "skittersmack": {
@@ -1014,7 +1377,16 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "spa": -1
+          }
+        }
+      }
+    ]
   },
   "burningjealousy": {
     "name": "Burning Jealousy",
@@ -1024,7 +1396,16 @@
     "accuracy": 100,
     "pp": 5,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "effect": {
+          "callbacks": {
+            "on_hit": ["if $target.stats_raised_this_turn:", ["set_status: $target brn"]]
+          }
+        }
+      }
+    ]
   },
   "lashout": {
     "name": "Lash Out",
@@ -1034,7 +1415,15 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": [
+          "if $source.stats_lowered_this_turn:",
+          ["return $move.base_power * 2"]
+        ]
+      }
+    }
   },
   "poltergeist": {
     "name": "Poltergeist",
@@ -1044,7 +1433,20 @@
     "accuracy": 90,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "effect": {
+      "callbacks": {
+        "on_try_use_move": ["if !$target.item:", ["return"]],
+        "on_try_hit": [
+          "if !$target.item:",
+          ["return false"],
+          "$item = func_call(get_item: $target.item)",
+          "if !$item:",
+          ["return false"],
+          "log_activate: with_target str('item:{}', $item.name)"
+        ]
+      }
+    }
   },
   "corrosivegas": {
     "name": "Corrosive Gas",
@@ -1053,7 +1455,12 @@
     "accuracy": 100,
     "pp": 40,
     "target": "AllAdjacent",
-    "flags": ["Mirror", "Protect", "Reflectable"]
+    "flags": ["Mirror", "Protect", "Reflectable"],
+    "effect": {
+      "callbacks": {
+        "on_hit": ["if !func_call(take_item: $target):", ["log_fail: $target $this.condition"]]
+      }
+    }
   },
   "coaching": {
     "name": "Coaching",
@@ -1061,8 +1468,14 @@
     "primary_type": "Fighting",
     "accuracy": "exempt",
     "pp": 10,
-    "target": "AdjacentAlly",
-    "flags": ["BypassMaxGuard", "BypassSubstitute"]
+    "target": "AllAdjacentAllies",
+    "flags": ["BypassMaxGuard", "BypassSubstitute"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "def": 1
+      }
+    }
   },
   "flipturn": {
     "name": "Flip Turn",
@@ -1072,8 +1485,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "user_switch": true
+    "user_switch": true,
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "tripleaxel": {
     "name": "Triple Axel",
@@ -1083,11 +1496,16 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multiaccuracy": true,
     "multihit": 3,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 140
+    },
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": ["return 20 * $move.hit"]
+      }
     }
   },
   "dualwingbeat": {
@@ -1098,8 +1516,8 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "multihit": 2,
+    "flags": ["Contact", "Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -1112,7 +1530,15 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"]
+    "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ]
   },
   "junglehealing": {
     "name": "Jungle Healing",
@@ -1121,7 +1547,13 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "Allies",
-    "flags": ["BypassMaxGuard", "BypassSubstitute", "Heal", "NoMetronome"]
+    "flags": ["BypassMaxGuard", "BypassSubstitute", "Heal", "NoMetronome"],
+    "hit_effect": {
+      "heal_percent": "25%"
+    },
+    "effect": {
+      "delegates": ["move:lunarblessing"]
+    }
   },
   "wickedblow": {
     "name": "Wicked Blow",
@@ -1131,8 +1563,8 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
-    "will_crit": true
+    "will_crit": true,
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"]
   },
   "surgingstrikes": {
     "name": "Surging Strikes",
@@ -1142,9 +1574,9 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "multihit": 3,
     "will_crit": true,
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect", "Punch"],
     "max_move": {
       "base_power": 130
     }
@@ -1157,7 +1589,10 @@
     "accuracy": 90,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "hit_effect": {
+      "volatile_status": "partiallytrapped"
+    }
   },
   "dragonenergy": {
     "name": "Dragon Energy",
@@ -1167,7 +1602,10 @@
     "accuracy": 100,
     "pp": 5,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "effect": {
+      "delegates": ["move:eruption"]
+    }
   },
   "freezingglare": {
     "name": "Freezing Glare",
@@ -1177,7 +1615,15 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "10%",
+        "target": {
+          "status": "frz"
+        }
+      }
+    ]
   },
   "fierywrath": {
     "name": "Fiery Wrath",
@@ -1187,7 +1633,15 @@
     "accuracy": 100,
     "pp": 10,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "thunderouskick": {
     "name": "Thunderous Kick",
@@ -1197,7 +1651,16 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"]
+    "flags": ["Contact", "Mirror", "NoMetronome", "Protect"],
+    "secondary_effects": [
+      {
+        "target": {
+          "boosts": {
+            "def": -1
+          }
+        }
+      }
+    ]
   },
   "glaciallance": {
     "name": "Glacial Lance",
@@ -1227,7 +1690,17 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"]
+    "flags": ["BypassSubstitute", "Mirror", "Protect", "Sound"],
+    "hit_effect": {
+      "volatile_status": "deductpp"
+    },
+    "effect": {
+      "local_data": {
+        "values": {
+          "amount": 3
+        }
+      }
+    }
   },
   "direclaw": {
     "name": "Dire Claw",
@@ -1237,7 +1710,17 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "effect": {
+          "callbacks": {
+            "on_hit": ["set_status: $target func_call(sample: [psn, par, slp])"]
+          }
+        }
+      }
+    ]
   },
   "psyshieldbash": {
     "name": "Psyshield Bash",
@@ -1247,7 +1730,16 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"]
+    "flags": ["Contact", "Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "user": {
+          "boosts": {
+            "def": 1
+          }
+        }
+      }
+    ]
   },
   "powershift": {
     "name": "Power Shift",
@@ -1257,7 +1749,10 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["NoMetronome", "Snatch"]
+    "flags": ["NoMetronome", "Snatch"],
+    "hit_effect": {
+      "volatile_status": "powertrick"
+    }
   },
   "stoneaxe": {
     "name": "Stone Axe",
@@ -1267,7 +1762,14 @@
     "accuracy": 90,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"],
+    "secondary_effects": [
+      {
+        "target": {
+          "side_condition": "stealthrock"
+        }
+      }
+    ]
   },
   "springtidestorm": {
     "name": "Springtide Storm",
@@ -1277,7 +1779,17 @@
     "accuracy": 80,
     "pp": 5,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "NoMetronome", "Protect", "Wind"]
+    "flags": ["Mirror", "NoMetronome", "Protect", "Wind"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "atk": -1
+          }
+        }
+      }
+    ]
   },
   "mysticalpower": {
     "name": "Mystical Power",
@@ -1287,7 +1799,16 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "user": {
+          "boosts": {
+            "spa": 1
+          }
+        }
+      }
+    ]
   },
   "ragingfury": {
     "name": "Raging Fury",
@@ -1297,7 +1818,10 @@
     "accuracy": 100,
     "pp": 10,
     "target": "RandomNormal",
-    "flags": ["Mirror", "NoMetronome", "Protect"]
+    "flags": ["Mirror", "NoMetronome", "Protect"],
+    "user_effect": {
+      "volatile_status": "lockedmove"
+    }
   },
   "wavecrash": {
     "name": "Wave Crash",
@@ -1307,10 +1831,10 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/3"
-    }
+    },
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "chloroblast": {
     "name": "Chloroblast",
@@ -1320,11 +1844,11 @@
     "accuracy": 95,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "recoil": {
       "percent": "1/2",
       "base": "usermaxhp"
-    }
+    },
+    "flags": ["Mirror", "Protect"]
   },
   "mountaingale": {
     "name": "Mountain Gale",
@@ -1344,7 +1868,14 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["Dance", "Snatch"]
+    "flags": ["Dance", "Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "atk": 1,
+        "def": 1,
+        "spe": 1
+      }
+    }
   },
   "headlongrush": {
     "name": "Headlong Rush",
@@ -1354,7 +1885,17 @@
     "accuracy": 100,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Punch"]
+    "flags": ["Contact", "Mirror", "Protect", "Punch"],
+    "secondary_effects": [
+      {
+        "user": {
+          "boosts": {
+            "def": -1,
+            "spd": -1
+          }
+        }
+      }
+    ]
   },
   "barbbarrage": {
     "name": "Barb Barrage",
@@ -1364,7 +1905,20 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "status": "psn"
+        }
+      }
+    ],
+    "effect": {
+      "callbacks": {
+        "on_move_base_power": ["if [psn, tox] has $target.status:", ["return $move.base_power * 2"]]
+      }
+    }
   },
   "esperwing": {
     "name": "Esper Wing",
@@ -1374,8 +1928,17 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
+    "crit_ratio": 2,
     "flags": ["Mirror", "Protect"],
-    "crit_ratio": 2
+    "secondary_effects": [
+      {
+        "user": {
+          "boosts": {
+            "spe": 1
+          }
+        }
+      }
+    ]
   },
   "bittermalice": {
     "name": "Bitter Malice",
@@ -1385,7 +1948,16 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"]
+    "flags": ["Mirror", "Protect"],
+    "secondary_effects": [
+      {
+        "user": {
+          "boosts": {
+            "atk": -1
+          }
+        }
+      }
+    ]
   },
   "shelter": {
     "name": "Shelter",
@@ -1395,7 +1967,12 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "def": 2
+      }
+    }
   },
   "triplearrows": {
     "name": "Triple Arrows",
@@ -1405,8 +1982,24 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
+    "crit_ratio": 2,
     "flags": ["Mirror", "Protect"],
-    "crit_ratio": 2
+    "secondary_effects": [
+      {
+        "chance": "50%",
+        "target": {
+          "boosts": {
+            "def": -1
+          }
+        }
+      },
+      {
+        "chance": "30%",
+        "target": {
+          "volatile_status": "flinch"
+        }
+      }
+    ]
   },
   "infernalparade": {
     "name": "Infernal Parade",
@@ -1426,7 +2019,14 @@
     "accuracy": 90,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"],
+    "secondary_effects": [
+      {
+        "target": {
+          "side_condition": "spikes"
+        }
+      }
+    ]
   },
   "bleakwindstorm": {
     "name": "Bleakwind Storm",
@@ -1436,7 +2036,28 @@
     "accuracy": 80,
     "pp": 10,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"],
+    "secondary_effects": [
+      {
+        "chance": "30%",
+        "target": {
+          "boosts": {
+            "spe": -1
+          }
+        }
+      }
+    ],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "$weather = func_call(effective_weather: $target)",
+          "if !$weather:",
+          ["return"],
+          "if $weather.is_raining:",
+          ["$move.accuracy = exempt"]
+        ]
+      }
+    }
   },
   "wildboltstorm": {
     "name": "Wildbolt Storm",
@@ -1446,7 +2067,18 @@
     "accuracy": 80,
     "pp": 10,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "status": "par"
+        }
+      }
+    ],
+    "effect": {
+      "delegates": ["move:bleakwindstorm"]
+    }
   },
   "sandsearstorm": {
     "name": "Sandsear Storm",
@@ -1456,7 +2088,18 @@
     "accuracy": 80,
     "pp": 10,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Wind"]
+    "flags": ["Mirror", "Protect", "Wind"],
+    "secondary_effects": [
+      {
+        "chance": "20%",
+        "target": {
+          "status": "brn"
+        }
+      }
+    ],
+    "effect": {
+      "delegates": ["move:bleakwindstorm"]
+    }
   },
   "lunarblessing": {
     "name": "Lunar Blessing",
@@ -1466,7 +2109,15 @@
     "accuracy": "exempt",
     "pp": 5,
     "target": "Allies",
-    "flags": ["Heal", "Snatch"]
+    "flags": ["Heal", "Snatch"],
+    "hit_effect": {
+      "heal_percent": "25%"
+    },
+    "effect": {
+      "callbacks": {
+        "on_hit": ["if !func_call(cure_status: $target):", ["return false"]]
+      }
+    }
   },
   "takeheart": {
     "name": "Take Heart",
@@ -1476,7 +2127,16 @@
     "accuracy": "exempt",
     "pp": 10,
     "target": "User",
-    "flags": ["Snatch"]
+    "flags": ["Snatch"],
+    "hit_effect": {
+      "boosts": {
+        "spa": 1,
+        "spd": 1
+      }
+    },
+    "effect": {
+      "delegates": ["move:lunarblessing"]
+    }
   },
   "gmaxbefuddle": {
     "name": "G-Max Befuddle",
@@ -1683,20 +2343,17 @@
       "WeakenThroughProtection"
     ],
     "eff†ect": {
+      "local_data": {
+        "values": {
+          "amount": 2
+        }
+      },
       "callbacks": {
         "on_hit_user": [
           "if !$source.dynamaxed:",
           ["return"],
           "foreach $mon in func_call(all_foes: $source):",
-          [
-            "if !$mon.last_move:",
-            ["continue"],
-            "$last_move_id = $mon.last_move",
-            "if $mon.last_move.upgraded and $mon.last_move.upgraded_base_move.is_defined:",
-            ["$last_move_id = $mon.last_move.upgraded_base_move"],
-            "if func_call(deduct_pp: $mon $last_move_id 2) > 0:",
-            ["log_activate: with_target $mon"]
-          ]
+          ["add_volatile: $mon deductpp"]
         ]
       }
     }

@@ -186,10 +186,17 @@ impl EffectManager {
                                 EventCallbackMapping::Move(from, to) => {
                                     let from = ParsedEffect::callback_name_to_event_key(from)
                                         .wrap_error_with_message("invalid from event")?;
-                                    let to = ParsedEffect::callback_name_to_event_key(to)
-                                        .wrap_error_with_message("invalid to event")?;
+                                    let to = if !to.is_empty() {
+                                        Some(
+                                            ParsedEffect::callback_name_to_event_key(to)
+                                                .wrap_error_with_message("invalid to event")?,
+                                        )
+                                    } else {
+                                        None
+                                    };
                                     if let Some(callback) =
                                         delegate_effect.take_event(from.0, from.1)
+                                        && let Some(to) = to
                                     {
                                         delegate_effect.set_event(to.0, to.1, callback);
                                     }

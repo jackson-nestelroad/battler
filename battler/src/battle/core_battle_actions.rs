@@ -1,6 +1,7 @@
 use alloc::{
     borrow::ToOwned,
     boxed::Box,
+    collections::BTreeMap,
     format,
     string::{
         String,
@@ -317,15 +318,17 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
 fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Result<()> {
     Mon::clear_volatile(&mut context.target_context()?, true)?;
 
+    let target = context.target_handle();
     let mut source_context = context.as_battle_context_mut().mon_context(source)?;
     let boosts = source_context.mon().volatile_state.boosts.clone();
     let mut volatiles = HashMap::default();
-    for (volatile, state) in source_context.mon().volatile_state.volatiles.clone() {
+    for (volatile, mut state) in source_context.mon().volatile_state.volatiles.clone() {
         if CoreBattle::get_parsed_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
             .is_some_and(|condition| condition.condition().no_copy)
         {
             continue;
         }
+        state.set_target(target);
         volatiles.insert(volatile, state);
     }
     Mon::clear_volatile(&mut source_context, true)?;
@@ -526,7 +529,7 @@ fn do_move_internal(
         }
     }
 
-    context.mon_mut().set_active_move(active_move_handle);
+    context.mon_mut().set_active_move(active_move_handle, false);
     let mut context = context.active_move_context(active_move_handle)?;
 
     let locked_move_before = context.mon().next_turn_state.locked_move.clone();
@@ -799,7 +802,9 @@ fn use_active_move_with_using_move_state(
 
     if options.directly_used {
         context.mon_mut().volatile_state.move_this_turn_outcome = None;
-        context.mon_mut().set_active_move(active_move_handle);
+        context
+            .mon_mut()
+            .set_active_move(active_move_handle, options.external);
     }
 
     let mut context = context.active_move_context(active_move_handle)?;
@@ -810,6 +815,18 @@ fn use_active_move_with_using_move_state(
     context.active_move_mut().effect_state = effect_state;
 
     context.active_move_mut().external = options.external;
+
+    // Copy over some information from the caller move, if applicable.
+    match source_effect {
+        Some(EffectHandle::ActiveMove(source_move_handle, _)) => {
+            let priority = context
+                .as_battle_context()
+                .active_move(*source_move_handle)?
+                .priority;
+            context.active_move_mut().priority = priority;
+        }
+        _ => (),
+    }
 
     // BeforeMove event handlers can prevent the move from being used.
     if options.preventable() {
@@ -864,7 +881,8 @@ fn use_active_move_with_using_move_state(
             return_first_value: true,
             ..Default::default()
         },
-    );
+    )
+    .or(target);
 
     let outcome = use_active_move_internal(&mut context, target, options.directly_used)?;
 
@@ -990,24 +1008,20 @@ fn use_active_move_internal(
 ) -> Result<MoveOutcome> {
     modify_move_type(context, target)?;
 
-    let use_move_input = fxlang::VariableInput::from_iter([target
-        .map(fxlang::Value::Mon)
-        .unwrap_or(fxlang::Value::Undefined)]);
-
-    core_battle_effects::run_active_move_event_with_input::<_, ()>(
+    core_battle_effects::run_active_move_event::<()>(
         context,
         fxlang::BattleEvent::UseMove,
         core_battle_effects::MoveTargetForEvent::UserWithTarget(target),
-        use_move_input.clone(),
     );
 
-    core_battle_effects::run_event_with_input::<_, _, ()>(
+    core_battle_effects::run_event::<_, ()>(
         &mut context.user_applying_effect_context(target)?,
         fxlang::BattleEvent::UseMove,
-        target,
     );
 
     let targets = get_move_targets(context, target)?;
+    context.active_move_mut().original_targets = targets.clone();
+
     let target = if context.active_move().data.target.has_single_target() {
         targets.first().cloned()
     } else if !context.active_move().data.target.affects_mons_directly() {
@@ -1046,8 +1060,8 @@ fn use_active_move_internal(
         try_move_result
     };
     if !try_move_result.advance() {
+        core_battle_logs::do_not_animate_last_move(context);
         if try_move_result.failed() {
-            core_battle_logs::do_not_animate_last_move(context);
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         }
         return Ok(MoveOutcome::from(try_move_result));
@@ -1077,7 +1091,7 @@ fn use_active_move_internal(
             core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
             return Ok(MoveOutcome::Failed);
         }
-        try_direct_move(context, &targets)?
+        try_direct_move(context, &targets, target)?
     };
 
     if context.mon().hp == 0 {
@@ -1167,11 +1181,14 @@ pub fn get_move_targets(
             );
         }
         MoveTarget::AllAdjacent => {
-            targets.extend(Mon::adjacent_allies(&mut context.as_mon_context_mut())?);
-            targets.extend(Mon::adjacent_foes(&mut context.as_mon_context_mut())?);
+            targets.extend(Mon::adjacent_allies(context.as_mon_context_mut())?);
+            targets.extend(Mon::adjacent_foes(context.as_mon_context_mut())?);
+        }
+        MoveTarget::AllAdjacentAllies => {
+            targets.extend(Mon::adjacent_allies(context.as_mon_context_mut())?);
         }
         MoveTarget::AllAdjacentFoes => {
-            targets.extend(Mon::adjacent_foes(&mut context.as_mon_context_mut())?);
+            targets.extend(Mon::adjacent_foes(context.as_mon_context_mut())?);
         }
         MoveTarget::User => {
             targets.push(context.mon_handle());
@@ -1195,7 +1212,13 @@ pub fn get_move_targets(
                 None => None,
             };
 
-            if target.is_none() && !context.active_move().data.no_random_target {
+            if target.is_none()
+                && !context
+                    .active_move()
+                    .data
+                    .advanced_targeting
+                    .no_random_target
+            {
                 let mon = context.mon_handle();
                 let move_target = context.active_move().data.target;
                 target =
@@ -1207,20 +1230,46 @@ pub fn get_move_targets(
                 None => return Ok(Vec::new()),
             };
 
-            if context.battle().max_side_length() > 1 && !context.active_move().data.tracks_target {
-                target = core_battle_effects::run_event_with_options::<_, _, Option<MonHandle>>(
-                    &mut context.user_applying_effect_context(Some(target))?,
-                    fxlang::BattleEvent::RedirectTarget,
-                    target,
-                    core_battle_effects::RunEventOptions {
-                        return_first_value: true,
-                        ..Default::default()
-                    },
-                )
-                .unwrap_or(target);
+            let mut redirected = false;
+            if context.battle().max_side_length() > 1
+                && !context.active_move().data.advanced_targeting.tracks_target
+            {
+                if let Some(redirected_target) =
+                    core_battle_effects::run_event_with_options::<_, _, Option<MonHandle>>(
+                        &mut context.user_applying_effect_context(Some(target))?,
+                        fxlang::BattleEvent::RedirectTarget,
+                        target,
+                        core_battle_effects::RunEventOptions {
+                            return_first_value: true,
+                            ..Default::default()
+                        },
+                    )
+                {
+                    target = redirected_target;
+                    redirected = true;
+                }
             }
 
-            targets.push(target);
+            if !redirected && context.active_move().data.advanced_targeting.smart_target {
+                let mut allies = Vec::default();
+                for ally in Mon::adjacent_allies(&mut context.target_mon_context(target)?)?
+                    .collect::<Vec<_>>()
+                {
+                    if ally == context.mon_handle()
+                        || !Mon::is_adjacent(context.as_mon_context_mut(), ally)?
+                        || context.target_mon_context(ally)?.mon().hp == 0
+                    {
+                        continue;
+                    }
+                    allies.push(ally);
+                }
+                if allies.is_empty() || context.target_mon_context(target)?.mon().hp > 0 {
+                    targets.push(target);
+                }
+                targets.extend(allies);
+            } else {
+                targets.push(target);
+            }
         }
     }
     let targets = targets
@@ -1232,22 +1281,26 @@ pub fn get_move_targets(
                 .is_ok_and(|target| target.hp > 0)
         })
         .collect();
+
     Ok(targets)
 }
 
 /// Runs all events prior to a move hitting any targets.
-fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveEventResult> {
+fn run_try_use_move_events(
+    context: &mut ActiveMoveContext,
+    selected_target: Option<MonHandle>,
+) -> Result<MoveEventResult> {
     let result = core_battle_effects::run_active_move_event::<MoveEventResult>(
         context,
         fxlang::BattleEvent::TryUseMove,
-        core_battle_effects::MoveTargetForEvent::User,
+        core_battle_effects::MoveTargetForEvent::UserWithTarget(selected_target),
     );
 
     let result = if result.advance() {
         core_battle_effects::run_active_move_event::<MoveEventResult>(
             context,
             fxlang::BattleEvent::PrepareHit,
-            core_battle_effects::MoveTargetForEvent::User,
+            core_battle_effects::MoveTargetForEvent::UserWithTarget(selected_target),
         )
     } else {
         result
@@ -1255,13 +1308,16 @@ fn run_try_use_move_events(context: &mut ActiveMoveContext) -> Result<MoveEventR
 
     let result = if result.advance() {
         MoveEventResult::from(core_battle_effects::run_event::<_, MoveEventResult>(
-            &mut context.user_applying_effect_context(None)?,
+            &mut context.user_applying_effect_context(selected_target)?,
             fxlang::BattleEvent::PrepareHit,
         ))
     } else {
         result
     };
 
+    if !result.advance() {
+        core_battle_logs::do_not_animate_last_move(context);
+    }
     if result.failed() {
         core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
     }
@@ -1275,7 +1331,7 @@ fn try_indirect_move(
     context: &mut ActiveMoveContext,
     targets: &[MonHandle],
 ) -> Result<MoveOutcome> {
-    let try_use_move_result = run_try_use_move_events(context)?;
+    let try_use_move_result = run_try_use_move_events(context, None)?;
     if !try_use_move_result.advance() {
         return Ok(try_use_move_result.into());
     }
@@ -1376,12 +1432,16 @@ pub fn prepare_direct_move(
 }
 
 /// Tries to use a move directly against several target Mons.
-fn try_direct_move(context: &mut ActiveMoveContext, targets: &[MonHandle]) -> Result<MoveOutcome> {
-    if targets.len() > 1 {
+fn try_direct_move(
+    context: &mut ActiveMoveContext,
+    targets: &[MonHandle],
+    selected_target: Option<MonHandle>,
+) -> Result<MoveOutcome> {
+    if targets.len() > 1 && !context.active_move().data.advanced_targeting.smart_target {
         context.active_move_mut().spread_hit = true;
     }
 
-    let try_use_move_result = run_try_use_move_events(context)?;
+    let try_use_move_result = run_try_use_move_events(context, selected_target)?;
     if !try_use_move_result.advance() {
         return Ok(try_use_move_result.into());
     }
@@ -1410,7 +1470,7 @@ fn move_hit_loop_internal(
 
     for hit in 0..hits {
         // No more targets.
-        if targets.iter().all(|target| !target.outcome.success()) {
+        if targets.is_empty() || targets.iter().all(|target| !target.outcome.success()) {
             break;
         }
         if targets.iter().all(|target| {
@@ -1448,6 +1508,23 @@ fn move_hit_loop_internal(
             .iter()
             .filter_map(|target| target.outcome.success().then_some(target.handle))
             .collect::<Vec<_>>();
+
+        // No targets to hit.
+        if hit_targets.is_empty() {
+            context.active_move_mut().hit -= 1;
+            break;
+        }
+
+        // If using smart targeting, only hit one target at a time.
+        let hit_targets = if context.active_move().data.advanced_targeting.smart_target {
+            // SAFETY: Index uses modulo with `hit_targets` length, so it is always in range.
+            let target = *hit_targets.get(hit as usize % hit_targets.len()).unwrap();
+            core_battle_logs::last_move_target(context, target)?;
+            Vec::from_iter([target])
+        } else {
+            hit_targets
+        };
+
         let mut hit_targets_state =
             hit_targets_state_from_targets(hit_targets.iter().map(|target_handle| *target_handle));
 
@@ -1497,11 +1574,6 @@ fn move_hit_loop_internal(
             )?;
         }
 
-        context.active_move_mut().damaged_targets = hit_targets_state
-            .iter()
-            .filter_map(|target| (target.outcome.damage() > 0).then(|| target.handle))
-            .collect();
-
         context.active_move_mut().total_damage += hit_targets_state
             .iter()
             .map(|target| target.outcome.damage() as u64)
@@ -1510,6 +1582,15 @@ fn move_hit_loop_internal(
         for state in hit_targets_state.iter() {
             context.active_move_mut().hit_data_mut(state.handle).damage =
                 state.outcome.damage() as u64;
+
+            if state.outcome.damage() > 0
+                && !context
+                    .active_move()
+                    .damaged_targets
+                    .contains(&state.handle)
+            {
+                context.active_move_mut().damaged_targets.push(state.handle);
+            }
 
             match target_hit_results.entry(state.handle) {
                 Entry::Vacant(entry) => {
@@ -1836,6 +1917,15 @@ fn calculate_spread_damage(
     Ok(())
 }
 
+/// Calculates the base damage of a move.
+pub fn calculate_base_damage(level: u32, base_power: u32, attack: u32, defense: u32) -> u32 {
+    let base_damage = 2 * level / 5 + 2;
+    let base_damage = base_damage * base_power * attack;
+    let base_damage = base_damage / defense;
+    let base_damage = base_damage / 50;
+    base_damage
+}
+
 /// Calculates damage for an active move on a target.
 pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcomeOnTarget> {
     let target_mon_handle = context.target_mon_handle();
@@ -2010,10 +2100,8 @@ pub fn calculate_damage(context: &mut ActiveTargetContext) -> Result<MoveOutcome
         }),
     )?;
 
-    let base_damage = 2 * (level as u32) / 5 + 2;
-    let base_damage = base_damage * base_power * (attack as u32);
-    let base_damage = base_damage / (defense as u32);
-    let base_damage = base_damage / 50;
+    let base_damage =
+        calculate_base_damage(level as u32, base_power, attack as u32, defense as u32);
 
     // Damage modifiers.
     modify_damage(context, base_damage)
@@ -2046,7 +2134,10 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
 
     let target_handle = context.target_handle();
     let mut total = 0;
-    for defense in mon_states::effective_types(&mut context.target_context()?) {
+    for (i, defense) in mon_states::effective_types(&mut context.target_context()?)
+        .into_iter()
+        .enumerate()
+    {
         let modifier = context.battle().check_type_effectiveness(offense, defense);
 
         let modifier = match context.active_move_context()? {
@@ -2055,7 +2146,7 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
                     &mut context,
                     fxlang::BattleEvent::Effectiveness,
                     core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-                    [modifier.into(), defense.into()],
+                    [modifier.into(), defense.into(), (i as u64).into()],
                 )
                 .unwrap_or(modifier)
             }
@@ -2065,7 +2156,7 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         let modifier = core_battle_effects::run_event_with_input::<_, _, i8>(
             context,
             fxlang::BattleEvent::Effectiveness,
-            [modifier.into(), defense.into()],
+            [modifier.into(), defense.into(), (i as u64).into()],
         );
         total += modifier;
     }
@@ -2262,12 +2353,39 @@ mod direct_move_step {
     pub type DirectMoveStep =
         fn(&mut ActiveMoveContext, &mut [MoveStepOutcomeOnTarget]) -> Result<()>;
 
+    fn should_report_failure(
+        context: &mut ActiveMoveContext,
+        targets: &[MoveStepOutcomeOnTarget],
+        index: usize,
+    ) -> bool {
+        if !context.active_move().data.advanced_targeting.smart_target {
+            return true;
+        }
+
+        // With smart targeting, only report failures for the last target that fails.
+        if targets
+            .iter()
+            .enumerate()
+            .any(|(i, target)| i != index && !target.outcome.failed())
+        {
+            return false;
+        }
+
+        true
+    }
+
     /// Checks if targets are invulnerable.
     pub fn check_targets_invulnerability(
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             if !*core_battle_effects::run_event_with_options::<_, _, DefaultTrueBool>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::Invulnerability,
@@ -2278,7 +2396,9 @@ mod direct_move_step {
                 },
             ) {
                 target.outcome = MoveOutcome::Failed;
-                core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
+                if report_failure {
+                    core_battle_logs::miss(&mut context.target_mon_context(target.handle)?)?;
+                }
             }
         }
         Ok(())
@@ -2289,10 +2409,17 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
-            let result = core_battle_effects::run_event::<_, MoveEventResult>(
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
+            let result = core_battle_effects::run_event_with_input::<_, _, MoveEventResult>(
                 &mut context.applying_effect_context_for_target(target.handle)?,
                 fxlang::BattleEvent::TryHit,
+                report_failure,
             );
             if !result.advance() {
                 target.outcome = result.into();
@@ -2306,10 +2433,21 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             if core_battle_actions::check_move_immunity(context, target.handle)? {
-                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
                 target.outcome = MoveOutcome::Failed;
+                if report_failure {
+                    core_battle_logs::immune(
+                        &mut context.target_mon_context(target.handle)?,
+                        None,
+                    )?;
+                }
             }
         }
         Ok(())
@@ -2323,7 +2461,13 @@ mod direct_move_step {
         context: &mut ActiveMoveContext,
         targets: &mut [MoveStepOutcomeOnTarget],
     ) -> Result<()> {
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             let immune = !*core_battle_effects::run_active_move_event::<DefaultTrueBool>(
                 context,
                 fxlang::BattleEvent::TryImmunity,
@@ -2333,8 +2477,13 @@ mod direct_move_step {
             )?;
 
             if immune {
-                core_battle_logs::immune(&mut context.target_mon_context(target.handle)?, None)?;
                 target.outcome = MoveOutcome::Failed;
+                if report_failure {
+                    core_battle_logs::immune(
+                        &mut context.target_mon_context(target.handle)?,
+                        None,
+                    )?;
+                }
             }
         }
         Ok(())
@@ -2349,9 +2498,15 @@ mod direct_move_step {
             return Ok(());
         }
 
-        for target in targets.iter_mut().filter(|target| target.outcome.success()) {
+        for i in 0..targets.len() {
+            let report_failure = should_report_failure(context, targets, i);
+            // SAFETY: `i` is in the bounds of `targets`.
+            let target = targets.get_mut(i).unwrap();
+            if !target.outcome.success() {
+                continue;
+            }
             let mut context = context.target_context(target.handle)?;
-            if !accuracy_check(&mut context)? {
+            if !accuracy_check(&mut context, !report_failure)? {
                 target.outcome = MoveOutcome::Failed;
             }
         }
@@ -2359,7 +2514,7 @@ mod direct_move_step {
     }
 
     /// Runs a single accuracy check of a move against a target.
-    fn accuracy_check(context: &mut ActiveTargetContext) -> Result<bool> {
+    fn accuracy_check(context: &mut ActiveTargetContext, silent: bool) -> Result<bool> {
         let mut accuracy = context.active_move().data.accuracy;
         // OHKO moves bypass accuracy modifiers.
         if let Some(ohko) = context.active_move().data.ohko_type.clone() {
@@ -2372,7 +2527,9 @@ mod direct_move_step {
                 }
 
                 if immune {
-                    core_battle_logs::immune(&mut context.target_mon_context()?, None)?;
+                    if !silent {
+                        core_battle_logs::immune(&mut context.target_mon_context()?, None)?;
+                    }
                     return Ok(false);
                 }
 
@@ -2449,7 +2606,13 @@ mod direct_move_step {
             _ => true,
         };
         if !hit {
-            core_battle_logs::miss(&mut context.target_mon_context()?)?;
+            if !silent {
+                core_battle_logs::miss(&mut context.target_mon_context()?)?;
+            }
+            core_battle_effects::run_event::<_, ()>(
+                &mut context.applying_effect_context()?,
+                fxlang::BattleEvent::AccuracyCheckFailed,
+            );
         }
         Ok(hit)
     }
@@ -4011,12 +4174,39 @@ pub fn set_types(context: &mut ApplyingEffectContext, mut types: Vec<Type>) -> R
         types = Vec::from_iter([Type::None]);
     }
 
-    context.target_mut().volatile_state.types = types;
-    let source = context.source_handle();
-    let source_effect = context.source_effect_handle().cloned();
-    let mut context = context.target_context()?;
-    let types = context.mon().volatile_state.types.clone();
-    core_battle_logs::type_change(&mut context, &types, source_effect, source)?;
+    Mon::set_types(&mut context.target_context()?, types)?;
+
+    let types = context.target().volatile_state.types.clone();
+    core_battle_logs::type_change(context, &types)?;
+    Ok(true)
+}
+
+/// Resets the types of a Mon.
+pub fn reset_types(context: &mut ApplyingEffectContext) -> Result<bool> {
+    let context = &mut scopeguard::guard(context, |context| {
+        CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
+    });
+
+    if !context.target().active {
+        return Ok(false);
+    }
+
+    let species = context
+        .battle()
+        .dex
+        .species
+        .get_by_id(&context.target().base_species)?;
+
+    let base_types = species.data.types_iter().collect::<Vec<_>>();
+    let current_types = mon_states::effective_types_no_added_type(&mut context.target_context()?);
+
+    if base_types == current_types {
+        return Ok(false);
+    }
+
+    Mon::set_types(&mut context.target_context()?, base_types)?;
+
+    core_battle_logs::reset_type_change(context)?;
     Ok(true)
 }
 
@@ -4950,6 +5140,12 @@ pub fn end_ability_even_if_exiting(
         .ability_slot
         .effect_state
         .started()
+        && !context
+            .target()
+            .volatile_state
+            .ability_slot
+            .effect_state
+            .starting()
     {
         return Ok(());
     }
@@ -5359,12 +5555,10 @@ fn end_item_internal(
         )?;
     }
 
-    if context
-        .target()
-        .item
-        .as_ref()
-        .is_none_or(|_| !context.target().volatile_state.item_state.started())
-    {
+    if context.target().item.as_ref().is_none_or(|_| {
+        !context.target().volatile_state.item_state.started()
+            && !context.target().volatile_state.item_state.starting()
+    }) {
         return Ok(());
     }
 
@@ -5578,7 +5772,7 @@ fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool>
 }
 
 /// Makes the target Mon eat its held item (berries).
-pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
+pub fn eat_item(context: &mut ApplyingEffectContext, force: bool) -> Result<bool> {
     if !context.target().active || context.target().hp == 0 {
         return Ok(false);
     }
@@ -5595,19 +5789,13 @@ pub fn eat_item(context: &mut ApplyingEffectContext) -> Result<bool> {
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
 
-    if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::TryEatItem,
-        item_handle.clone(),
-    ) {
-        return Ok(false);
-    }
-
-    if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
-        context,
-        fxlang::BattleEvent::TryUseItem,
-        item_handle.clone(),
-    ) {
+    if !force
+        && !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
+            context,
+            fxlang::BattleEvent::TryEatItem,
+            item_handle.clone(),
+        )
+    {
         return Ok(false);
     }
 
@@ -5984,6 +6172,17 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
             shakes,
             critical,
         )?;
+        let item = EffectHandle::Item(item_id.clone());
+        core_battle_effects::run_effect_event::<_, ()>(
+            &mut context.applying_effect_context(item.clone(), None, None)?,
+            fxlang::BattleEvent::Catch,
+        );
+        core_battle_effects::run_event_with_input::<_, _, ()>(
+            context,
+            fxlang::BattleEvent::CatchFailed,
+            item,
+        );
+
         return Ok(false);
     }
 
@@ -6268,7 +6467,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
 
     // Then, manually set everything else.
     context.target_mut().volatile_state.weight = weight;
-    context.target_mut().volatile_state.types = types;
+    Mon::set_types(&mut context.target_context()?, types)?;
     Mon::set_stats(
         &mut context.target_context()?,
         stats,
@@ -7388,14 +7587,14 @@ where
 
     let applied_effect_handle = AppliedEffectHandle::new(effect_handle.clone(), location);
 
-    let end_event = if location.mon_handle().is_some() {
-        fxlang::BattleEvent::End
+    let (try_end_event, end_event) = if location.mon_handle().is_some() {
+        (Some(fxlang::BattleEvent::TryEnd), fxlang::BattleEvent::End)
     } else if location.side_index().is_some() {
-        fxlang::BattleEvent::SideEnd
+        (None, fxlang::BattleEvent::SideEnd)
     } else if location.slot_index().is_some() {
-        fxlang::BattleEvent::SlotEnd
+        (None, fxlang::BattleEvent::SlotEnd)
     } else if location.field() {
-        fxlang::BattleEvent::FieldEnd
+        (None, fxlang::BattleEvent::FieldEnd)
     } else {
         return Err(general_error(
             "condition is ending on an undefined location",
@@ -7423,6 +7622,21 @@ where
     };
 
     let event_input = callbacks.event_input(&mut context);
+
+    if let Some(try_end_event) = try_end_event
+        && !no_events
+    {
+        if !*core_battle_effects::run_effect_event_with_options::<_, _, DefaultTrueBool>(
+            context.context,
+            try_end_event,
+            event_input.clone(),
+            core_battle_effects::RunEffectEventOptions {
+                effects: Vec::from_iter([applied_effect_handle.clone()]),
+            },
+        ) {
+            return Ok(false);
+        }
+    }
 
     if !callbacks.pre_end(&mut context)? {
         return Ok(false);
@@ -7474,4 +7688,51 @@ where
     }
 
     Ok(true)
+}
+
+/// Swaps all eligible side conditions between two sides.
+pub fn swap_side_conditions(
+    context: &mut SideEffectContext,
+    source_side: usize,
+    conditions: HashSet<Id>,
+) -> Result<bool> {
+    let success;
+    let mut target_side_conditions: BTreeMap<Id, EffectState> = BTreeMap::default();
+    let mut source_side_conditions: BTreeMap<Id, EffectState> = BTreeMap::default();
+    for condition in &conditions {
+        if let Some(state) = context.side_mut().conditions.remove(condition) {
+            target_side_conditions.insert(condition.clone(), state);
+        }
+    }
+    {
+        let mut context = context.change_target_context(source_side)?;
+        for condition in &conditions {
+            if let Some(state) = context.side_mut().conditions.remove(condition) {
+                source_side_conditions.insert(condition.clone(), state);
+            }
+        }
+
+        success = !target_side_conditions.is_empty() || !source_side_conditions.is_empty();
+    }
+
+    if success {
+        core_battle_logs::swap_side_conditions(context, source_side)?;
+    }
+
+    {
+        let target_side = context.side().index;
+        let mut context = context.change_target_context(source_side)?;
+
+        for (condition, state) in target_side_conditions {
+            core_battle_logs::swap_side_condition(&mut context, &condition, target_side)?;
+            context.side_mut().conditions.insert(condition, state);
+        }
+    }
+
+    for (condition, state) in source_side_conditions {
+        core_battle_logs::swap_side_condition(context, &condition, source_side)?;
+        context.side_mut().conditions.insert(condition, state);
+    }
+
+    Ok(success)
 }

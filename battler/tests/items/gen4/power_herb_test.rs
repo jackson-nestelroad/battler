@@ -65,7 +65,7 @@ fn power_herb_removes_charge_turn() {
             "move|mon:Staraptor,player-1,1|name:Fly|noanim",
             "prepare|mon:Staraptor,player-1,1|move:Fly",
             "itemend|mon:Staraptor,player-1,1|item:Power Herb",
-            "animatemove|mon:Staraptor,player-1,1|name:Fly",
+            "animatemove|mon:Staraptor,player-1,1|name:Fly|target:Staraptor,player-2,1",
             "split|side:1",
             "damage|mon:Staraptor,player-2,1|health:43/145",
             "damage|mon:Staraptor,player-2,1|health:30/100",

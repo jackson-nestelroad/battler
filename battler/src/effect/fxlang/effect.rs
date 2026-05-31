@@ -315,6 +315,11 @@ pub enum BattleEventModifier {
     DeserializeLabeledStringEnum,
 )]
 pub enum BattleEvent {
+    /// Runs when the accuracy check of a move against a target fails.
+    ///
+    /// Runs in the context of a move target.
+    #[string = "AccuracyCheckFailed"]
+    AccuracyCheckFailed,
     /// Runs when the accuracy of a move against a target is being determined.
     ///
     /// Runs in the context of a move target.
@@ -580,6 +585,11 @@ pub enum BattleEvent {
     /// Runs on the item (used to catch the Mon) and in the context of a Mon.
     #[string = "Catch"]
     Catch,
+    /// Runs when a Mon fails to be caught.
+    ///
+    /// Runs on the item (used to catch the Mon) and in the context of a Mon.
+    #[string = "CatchFailed"]
+    CatchFailed,
     /// Runs when a group of stat boosts is being applied to a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -803,6 +813,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "IsBehindSubstitute"]
     IsBehindSubstitute,
+    /// Runs when determining if a Mon is locked into its previous choice.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "IsChoiceLocked"]
+    IsChoiceLocked,
     /// Runs when determining if a Mon is protected from making contact with other Mons.
     ///
     /// Runs in the context of a Mon.
@@ -1272,6 +1287,13 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "TryEatItem"]
     TryEatItem,
+    /// Runs when trying to end an effect.
+    ///
+    /// Can prevent the effect from ending.
+    ///
+    /// Runs on the effect.
+    #[string = "TryEnd"]
+    TryEnd,
     /// Runs before a Mon is healed for some amount of damage.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1403,6 +1425,7 @@ impl BattleEvent {
     pub fn callback_type_flags(&self) -> u32 {
         // Maintain alphabetical order.
         match self {
+            Self::AccuracyCheckFailed => CommonCallbackType::MoveVoid as u32,
             Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
             Self::Activate => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ActivateField => CommonCallbackType::FieldEffectVoid as u32,
@@ -1448,6 +1471,7 @@ impl BattleEvent {
             Self::CanEscape => CommonCallbackType::MonResult as u32,
             Self::CanHeal => CommonCallbackType::MonResult as u32,
             Self::Catch => CommonCallbackType::MonVoid as u32,
+            Self::CatchFailed => CommonCallbackType::MonVoid as u32,
             Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
             Self::ChargeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
@@ -1487,6 +1511,7 @@ impl BattleEvent {
             Self::IsAsleep => CommonCallbackType::MonResult as u32,
             Self::IsAwayFromField => CommonCallbackType::MonResult as u32,
             Self::IsBehindSubstitute => CommonCallbackType::MonResult as u32,
+            Self::IsChoiceLocked => CommonCallbackType::MonResult as u32,
             Self::IsContactProof => CommonCallbackType::MonResult as u32,
             Self::IsGrounded => CommonCallbackType::MonResult as u32,
             Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
@@ -1575,6 +1600,7 @@ impl BattleEvent {
             Self::TrapMon => CommonCallbackType::MonResult as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
             Self::TryEatItem => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::TryEnd => CommonCallbackType::EffectResult as u32,
             Self::TryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
             Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
@@ -1606,7 +1632,7 @@ impl BattleEvent {
 
     /// The target of the event callback is the "origin" of the event.
     ///
-    /// Most events target a Mon. Some event callbacks receive a Mon as the "source' of the effect.
+    /// Most events target a Mon. Some event callbacks receive a Mon as the "source" of the effect.
     /// However, some events trigger against against the source Mon. This is most common for move
     /// events that run "in the context of a move user." In this sense, the target of the event
     /// callback is actually the source.
@@ -1664,6 +1690,7 @@ impl BattleEvent {
                 ("stat", ValueType::UFraction, true),
                 ("name", ValueType::Stat, true),
             ],
+            Self::CatchFailed => &[("item", ValueType::Effect, true)],
             Self::ChangeBoosts => &[("boosts", ValueType::BoostTable, true)],
             Self::Damage => &[("damage", ValueType::UFraction, true)],
             Self::DamagingHit => &[("damage", ValueType::UFraction, true)],
@@ -1672,6 +1699,7 @@ impl BattleEvent {
             Self::Effectiveness => &[
                 ("modifier", ValueType::Fraction, true),
                 ("type", ValueType::Type, true),
+                ("index", ValueType::UFraction, true),
             ],
             Self::ForceEffectiveness => &[("modifier", ValueType::Fraction, true)],
             Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],
@@ -1728,11 +1756,11 @@ impl BattleEvent {
             Self::TakeItem => &[("item", ValueType::Effect, true)],
             Self::TryBoost => &[("boosts", ValueType::BoostTable, true)],
             Self::TryEatItem => &[("item", ValueType::Effect, true)],
+            Self::TryHit => &[("report", ValueType::Boolean, false)],
             Self::TryUseItem => &[("item", ValueType::Effect, true)],
             Self::TryHeal => &[("damage", ValueType::UFraction, true)],
             Self::TypeImmunity => &[("type", ValueType::Type, true)],
             Self::Types | Self::ForceTypes => &[("types", ValueType::List, true)],
-            Self::UseMove => &[("selected_target", ValueType::Mon, false)],
             Self::ValidateMon | Self::ValidateTeam => &[("problems", ValueType::List, true)],
             _ => &[],
         }

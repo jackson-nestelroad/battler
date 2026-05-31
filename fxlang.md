@@ -26,7 +26,7 @@ We are looking for a solution that
 1. is easy to extend for new behavior; and
 1. is relatively straightforward to use, even for complex effects.
 
-An obvious solution would be to just write different event callbacks for each effect directly in Rust. However, this solution is inflexible and is not straightforward to use, because new effects must be written directly in Rust and built directly into the binary. Furthermore, the battle library represents data in JSON, so effect callbacks and data would be completely separate.
+An obvious solution would be to just write different event callbacks for each effect directly in Rust. However, this solution is inflexible and is not straightforward to use, because new effects must be written directly in Rust and built directly into the binary. Furthermore, the battle library represents data in JSON, so event callbacks and data would be completely separate.
 
 Another solution is to create a large set of data fields that the battle library can understand to run the effect correctly. This solution is simple for most effects (for example, most effects deal damage, and most secondary effects are simple stat changes or status effects). Unfortunately, it is practically impossible to generalize all 1000+ battle effects into a set of scalar fields without many strange outliers. For example, random values cannot easily be represented in this format. Many effects also check preconditions before deciding to apply the effect at all. Various parts of the battle can be interrupted or short-circuited due to complex interactions. All in all, complex moves will always require some custom programming.
 
@@ -276,10 +276,7 @@ A "for each" statement iterates over a list (in order). Each value is assigned t
 ```json
 [
   "foreach $move_slot in $mon.move_slots:",
-  [
-    "if func_call(move_has_flag: $move_slot.id sound):",
-    ["disable_move: $mon $move_slot.id"]
-  ]
+  ["if func_call(move_has_flag: $move_slot.id sound):", ["disable_move: $mon $move_slot.id"]]
 ]
 ```
 
@@ -318,6 +315,7 @@ Since event callbacks run in the context of a battle, the fxlang evaluator runs 
 1. **Target** (optional) - The target Mon of the source effect.
 1. **Target Side** (optional) - The target side of the source effect.
 1. **Source** (optional) - The source Mon that triggered the source effect.
+1. **Origin** (optional) - The Mon that originated the event, regardless of the target or source.
 
 In the code, this means we can evaluate event callbacks under the following contexts:
 
@@ -326,6 +324,28 @@ In the code, this means we can evaluate event callbacks under the following cont
 - `PlayerEffectContext` - The program runs under the context of a player-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target player (that the source effect is being applied to), and an optional source Mon (that triggered the source effect).
 - `SideEffectContext` - The program runs under the context of a side-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), the target side (that the source effect is being applied to), and an optional source Mon (that triggered the source effect).
 - `FieldEffectContext` - The program runs under the context of a field-applying effect, which consists of an effect (which owns the event callback), an optional source effect (that triggered the event), and an optional source Mon (that triggered the source effect).
+
+##### Target vs. Source vs. Origin Mons
+
+The **target** of an event is the Mon that the event primarily runs against. For example,
+
+- If a Mon is using a move, the `UseMove` event runs targeting the Mon.
+- If a Mon is being damaged, the `Damage` event runs targeting the Mon.
+- If a Mon's Attack stat is being calculated, the `ModifyAtk` event runs targeting the Mon.
+
+The **source** of an event is the Mon that the triggered the event via the source effect. For example,
+
+- If a Mon is damaged by a move, the `DamagingHit` event runs targeting the Mon. The attacker is the source Mon.
+- If a Mon's stats are boosted, the `TryBoost` event runs targeting the Mon. The Mon that triggered the stat change is the source Mon.
+- If a Mon is calculating damage for a move against a Mon, the `ModifyDamage` event runs targeting the user. The Mon being targeted is the source Mon.
+
+The last example may be confusing. When running a move, damage/base power modifiers are typically applied to the move user. For example, the Sniper ability increases damage dealt by critical hits by 50%. The target of this damage is intuitively the "source" of the damage calculation.
+
+By setting the source to be the move target for such events, callbacks can reference the move target, and modifiers can be applied from the target as well (e.g., by defining a `SourceModifyDamage` event callback, which runs when the Mon is the source of a `ModifyDamage` event).
+
+The **origin** of an event is the primary reason why an event was triggered. Typically, this is the source Mon. However, for events that target the move user, this is actually the target Mon. The origin Mon is always set to the conceptual initiator of an event.
+
+In nearly every case, you can ignore the origin Mon. It is primarily useful for effects that must understand why an event ran. For example, the Mega Sol ability needs to override weather event callbacks whenever the ability holder is the origin, which can sometimes be the source (e.g., `ModifySpd`) or the target (e.g., `WeatherModifyDamage`).
 
 #### Context Variables
 
@@ -482,7 +502,7 @@ We now know how to write fxlang callbacks and how they execute based on differen
 For any generic effect, we want to do the following:
 
 1. When some event occurs, trigger a callback (fxlang program).
-1. In that effect callback, check if some condition is satisfied (branching).
+1. In that event callback, check if some condition is satisfied (branching).
 1. If that condition is met, trigger the effect.
    1. The effect may cause the overall event and/or source effect to fail (return a value signaling failure).
    1. The effect may modify some calculation (return a modified value).
@@ -508,9 +528,7 @@ Super Fang has a custom damage calculation, where it exactly cuts the target's H
 {
   "effect": {
     "callbacks": {
-      "on_move_damage": [
-        "return func_call(max: expr($target.undynamaxed_hp / 2) 1)"
-      ]
+      "on_move_damage": ["return func_call(max: expr($target.undynamaxed_hp / 2) 1)"]
     }
   }
 }
@@ -543,9 +561,7 @@ In this case, we can actually just modify the move's base power directly. Later,
         "else:",
         ["$effect_state.magnitude = 10", "$move.base_power = 150"]
       ],
-      "on_use_move_message": [
-        "log_activate: str('magnitude:{}', $effect_state.magnitude)"
-      ]
+      "on_use_move_message": ["log_activate: str('magnitude:{}', $effect_state.magnitude)"]
     }
   }
 }
@@ -580,10 +596,7 @@ Sturdy prevents a Mon from being knocked out by a single move. When the Mon's HP
 {
   "effect": {
     "callbacks": {
-      "on_try_hit": [
-        "if $move.ohko:",
-        ["log_immune: $target from_effect", "return stop"]
-      ],
+      "on_try_hit": ["if $move.ohko:", ["log_immune: $target from_effect", "return stopfail"]],
       "on_damage": {
         "priority": -100,
         "program": [
@@ -600,7 +613,7 @@ Sturdy prevents a Mon from being knocked out by a single move. When the Mon's HP
 
 Many effects trigger additional battle effects based on certain conditions being met. Additional effects can be triggered by calling functions that hook into the core battle engine. For example, `damage`, `heal`, `set_status`, `cure_status`, `add_volatile`, and `remove_volatile` are a few functions that operate on a target Mon. Many more battle functions exist for abilities, items, side conditions, weather, and more.
 
-Effects may also wish to reveal themselves on the battle log, in order for clients to display some special animation or message. Several functions exist to add effect activation logs consistently, based on the context of the current effect callback.
+Effects may also wish to reveal themselves on the battle log, in order for clients to display some special animation or message. Several functions exist to add effect activation logs consistently, based on the context of the current event callback.
 
 - `log_ability` - A Mon's ability is announced. Only required if there is no other log when the ability activates.
 - `log_activate` - An effect has activated, typically on some Mon but not necessarily. This is the most common function.
@@ -631,23 +644,20 @@ Effects may also wish to reveal themselves on the battle log, in order for clien
 
 #### Modifying Forwarded Effects
 
-Most functions that trigger additional battle effects or add effect activation logs use the **current evaluation context** for the forwarded effect context. For example, when calling `cure_status`, the source effect of that call becomes the _current_ effect callback being used. To be more concrete, below is the effect for the move Wake-Up Slap, which wakes up the target if it is asleep when hit:
+Most functions that trigger additional battle effects or add effect activation logs use the **current evaluation context** for the forwarded effect context. For example, when calling `cure_status`, the source effect of that call becomes the _current_ event callback being used. To be more concrete, below is the effect for the move Wake-Up Slap, which wakes up the target if it is asleep when hit:
 
 ```json
 {
   "effect": {
     "callbacks": {
-      "on_move_base_power": [
-        "if $target.is_asleep:",
-        ["return $move.base_power * 2"]
-      ],
+      "on_move_base_power": ["if $target.is_asleep:", ["return $move.base_power * 2"]],
       "on_hit": ["if $target.status == slp:", ["cure_status: $target"]]
     }
   }
 }
 ```
 
-The call to `cure_status: $target` will trigger additional events (like `CureStatus`). When these execute, the source effect variable (e.g., `$effect`) will be set to the Wake-Up Slap active move. This allows effect callbacks to see what the source effect is and even prevent the target from waking up. For example, we could make a "Deep Sleep" ability that prevents opponent Mons from waking up from Wake-Up Slap. Its effect could look as follows:
+The call to `cure_status: $target` will trigger additional events (like `CureStatus`). When these execute, the source effect variable (e.g., `$effect`) will be set to the Wake-Up Slap active move. This allows event callbacks to see what the source effect is and even prevent the target from waking up. For example, we could make a "Deep Sleep" ability that prevents opponent Mons from waking up from Wake-Up Slap. Its effect could look as follows:
 
 ```json
 {
@@ -690,6 +700,8 @@ Additional flags (special string parameters) exist that work across a variety of
 
 Generic tags:
 
+- `no_effect` - The effect is ignored.
+- `no_forward` - Forwarded effects use the source Mon, not the effect target.
 - `no_source` - The source Mon is ignored.
 - `no_source_effect` - The source effect is ignored.
 - `use_effect_as_source_effect` - This effect is used as the source effect.
@@ -699,19 +711,22 @@ Generic tags:
 - `use_effect_state_target` - `$effect_state.target` is used as the target Mon.
 - `use_effect_state_target_as_source` - `$effect_state.target` is used as the source Mon.
 - `use_source` - The source Mon is used as the target Mon.
+- `use_source_as_origin` - The source Mon is used as the origin Mon.
 - `use_source_effect` - The source effect is used as this effect.
+- `use_target_as_origin` - The target Mon is used as the origin Mon.
 - `use_target_as_source` - The target Mon is used as the source Mon.
 
 Logging tags:
 
-- `no_effect` - This effect is not logged.
+- `from_effect` - This effect is logged (when it would not be by default).
+- `no_effect` - This effect is not logged (when it would be by default).
 - `with_source` - The source Mon is logged.
 - `with_source_effect` - The source effect is logged.
 - `with_target` - The target Mon is logged.
 
 ##### A Note on Source Mons
 
-When an effect callback forwards to another effect, the default source Mon is the _owner_ of the trigger effect. For example, consider the ability "Static":
+When an event callback forwards to another effect, the default source Mon is the _owner_ of the trigger effect. For example, consider the ability "Static":
 
 ```json
 {
@@ -777,6 +792,8 @@ Pain Split does not deal damage in the traditional sense; instead, it takes the 
 
 Tri Attack has a 20% chance to either paralyze, freeze, or burn the target. This can actually be implemented as a callback on a _secondary effect_ of the move.
 
+It is correct to implement it as a secondary effect because it would be negated by the ability "Sheer Force."
+
 ```json
 {
   "secondary_effects": [
@@ -784,16 +801,7 @@ Tri Attack has a 20% chance to either paralyze, freeze, or burn the target. This
       "chance": "20%",
       "effect": {
         "callbacks": {
-          "on_hit": [
-            "$rand = func_call(random: 3)",
-            "if $rand == 0:",
-            ["$status = par"],
-            "else if $rand == 1:",
-            ["$status = frz"],
-            "else:",
-            ["$status = brn"],
-            "set_status: $target $status"
-          ]
+          "on_hit": ["set_status: $target func_call(sample: [par, frz, brn])"]
         }
       }
     }
@@ -809,10 +817,7 @@ Speed Boost raises the Mon's speed stat at the end of each turn.
 {
   "effect": {
     "callbacks": {
-      "on_residual": [
-        "if $target.active_turns > 0:",
-        ["boost: $target 'spe:1'"]
-      ]
+      "on_residual": ["if $target.active_turns > 0:", ["boost: $target 'spe:1'"]]
     }
   }
 }
@@ -831,15 +836,17 @@ In the callback below, we heal the Mon with `use_target_as_source`. This tag cau
       "on_try_hit": [
         "if $target != $source and $move.type == electric:",
         [
-          "if func_call(heal: $target expr($target.base_max_hp / 4)) == 0:",
+          "if func_call(heal: $target expr($target.base_max_hp / 4)) == 0 and $report:",
           ["log_immune: $target from_effect"],
-          "return stop"
+          "return stopfail"
         ]
       ]
     }
   }
 }
 ```
+
+Note: The `$report` variable is for the move "Dragon Darts", which runs pre-hit events for multiple targets in order to intelligently select a target. If a target fails while other targets can be selected, the failure is not reported.
 
 ##### Ability: Intimidate
 
@@ -868,8 +875,6 @@ We include `with_target` in the `log_activate` call in order for the effect acti
 ##### Ability: Static
 
 Static has a change to paralyze a move user after a Mon is hit by a move that makes contact.
-
-`use_target_as_source` serves the same purpose here: effect callbacks should include the correct source Mon (the target of this effect, which is the Mon with the ability). It also ensures the log for the status being applied to the move user contains the Mon with the ability.
 
 ```json
 {
@@ -949,9 +954,9 @@ There are several types of conditions:
 - Terrains attach to the field, one at a time.
 - Pseudo-weathers (field conditions) attach to the field.
 
-Conditions can define a **duration**, which is a number of turns after which the condition will automatically be removed from its target. Conditions without a target exist indefinitely until removed directly (such as by some effect callback) or indirectly (such as by a Mon switching out, for example, which removes volatile status conditions).
+Conditions can define a **duration**, which is a number of turns after which the condition will automatically be removed from its target. Conditions without a target exist indefinitely until removed directly (such as by some event callback) or indirectly (such as by a Mon switching out, for example, which removes volatile status conditions).
 
-Conditions can be defined on most effects _in addition to_ their core effect. For example, a move can have both an `effect` and a `condition`, both of which have a disjoint set of effect callbacks that trigger. The move effect would trigger when the move is used; the move condition would trigger when it is attached to a Mon/side/slot/field. Typically, moves attach their own conditions, but they can also attach different conditions (e.g., a move can apply a non-volatile status condition, like "Paralysis" or "Sleep").
+Conditions can be defined on most effects _in addition to_ their core effect. For example, a move can have both an `effect` and a `condition`, both of which have a disjoint set of event callbacks that trigger. The move effect would trigger when the move is used; the move condition would trigger when it is attached to a Mon/side/slot/field. Typically, moves attach their own conditions, but they can also attach different conditions (e.g., a move can apply a non-volatile status condition, like "Paralysis" or "Sleep").
 
 #### Examples
 
@@ -1005,18 +1010,15 @@ When a Mon has the Flash Fire ability, if it is hit by a Fire-type move, it is i
 {
   "effect": {
     "callbacks": {
-      "on_start": [
-        "if $effect_state.activated:",
-        ["add_volatile: $target $this.id"]
-      ],
+      "on_start": ["if $effect_state.activated:", ["add_volatile: $target $this.id"]],
       "on_try_hit": [
         "if $target == $source or $move.type != fire:",
         ["return"],
         "$move.accuracy = exempt",
-        "if !func_call(add_volatile: $target $this.id):",
+        "if !func_call(add_volatile: $target $this.id) and $report:",
         ["log_immune: $target from_effect"],
         "$effect_state.activated = true",
-        "return stop"
+        "return stopfail"
       ],
       "on_end": ["remove_volatile: $target $this.id"]
     }
@@ -1031,14 +1033,8 @@ When a Mon has the Flash Fire ability, if it is hit by a Fire-type move, it is i
         "log_start"
       ],
       "on_end": ["log_end: silent"],
-      "on_modify_atk": [
-        "if $effect.is_defined and $effect.type == fire:",
-        ["return $atk * 3/2"]
-      ],
-      "on_modify_spa": [
-        "if $effect.is_defined and $effect.type == fire:",
-        ["return $spa * 3/2"]
-      ]
+      "on_modify_atk": ["if $effect.is_defined and $effect.type == fire:", ["return $atk * 3/2"]],
+      "on_modify_spa": ["if $effect.is_defined and $effect.type == fire:", ["return $spa * 3/2"]]
     }
   }
 }
@@ -1120,36 +1116,6 @@ Similar to Paralysis, Confusion is also a generic condition applied as a volatil
 }
 ```
 
-##### Move: Light Screen
-
-Light Screen halves the damage taken by Special moves on the user's side of the battle. This move condition applies to an entire side, so the `SourceModifyDamage` callback will run for every Mon on the side where Light Screen is active.
-
-```json
-{
-  "hit_effect": { "side_condition": "lightscreen" },
-  "condition": {
-    "callbacks": {
-      "on_duration": [
-        "if $source.is_defined and func_call(has_item: $source lightclay):",
-        ["return 8"],
-        "return 5"
-      ],
-      "on_source_modify_damage": [
-        "if $target == $user or $move.category != special:",
-        ["return"],
-        "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
-        ["return"],
-        "if $format.mons_per_side > 1:",
-        ["return $damage * 2 / 3"],
-        "return $damage / 2"
-      ],
-      "on_side_start": ["log_side_start"],
-      "on_side_end": ["log_side_end"]
-    }
-  }
-}
-```
-
 ##### Move: Healing Wish
 
 Healing Wish adds a slot condition, which is a condition on a single position in battle. When a Mon needing healing switches in to the slot where Healing Wish was used, the wish is consumed and the Mon is healed.
@@ -1164,10 +1130,7 @@ Healing Wish removes itself after it is used. Otherwise, it exists until consume
   },
   "effect": {
     "callbacks": {
-      "on_try_hit": [
-        "if !func_call(can_switch: $target.player):",
-        ["return false"]
-      ]
+      "on_try_hit": ["if !func_call(can_switch: $target.player):", ["return false"]]
     }
   },
   "condition": {
@@ -1290,9 +1253,9 @@ Most functions take in an ID for simplicity, since it is typically always availa
 
 ### Local Data
 
-An effect can define a `local_data` object, which is data that can be referenced and constructed in effect callbacks to simplify dynamic effects. Currently, `local_data` has the following fields and accessors:
+An effect can define a `local_data` object, which is data that can be referenced and constructed in event callbacks to simplify dynamic effects. Currently, `local_data` has the following fields and accessors:
 
-- `moves` - A map of local moves that can be instantiated and used from within the effect callback, using the `new_active_move_from_local_data` function.
+- `moves` - A map of local moves that can be instantiated and used from within the event callback, using the `new_active_move_from_local_data` function.
 - `values` - A map of string values that can be accessed by key using the `value_from_local_data` function.
 
 #### Examples
@@ -1369,7 +1332,7 @@ The benefit here is that the modified move can be written statically in the cond
 
 A state event is a special type of battle event that represents the state of some entity, rather than some effect or calculation. A state event callback is intended to be simple, only returning a boolean result. A state event terminates as soon as some effect returns a result. In other words, as soon as we find an effect that returns "true" or "false" for a state event, that decision is used as the final result.
 
-State events allow effects to modify complex states directly with fxlang, like any other effect callback. The order in which effects modify a state can be determined by the same ordering rules as any other event.
+State events allow effects to modify complex states directly with fxlang, like any other event callback. The order in which effects modify a state can be determined by the same ordering rules as any other event.
 
 #### Examples
 
@@ -1430,7 +1393,7 @@ However, the condition induced by the move Ingrain overwrites both of these effe
 }
 ```
 
-Thus, a Mon's grounded state need not be hard-coded into the battle engine or some list of complex effects and interactions. Like any other battle event, active effect callbacks are collected, ordered, and executed to determine a Mon's state.
+Thus, a Mon's grounded state need not be hard-coded into the battle engine or some list of complex effects and interactions. Like any other battle event, active event callbacks are collected, ordered, and executed to determine a Mon's state.
 
 ##### Weather Suppression
 
@@ -1636,11 +1599,7 @@ For example, many moves force the user to recharge on their next turn: Hyper Bea
       "on_start": ["log_activate: with_target"],
       "on_before_move": {
         "priority": 11,
-        "program": [
-          "log_cant",
-          "remove_volatile: $user $this.id",
-          "return false"
-        ]
+        "program": ["log_cant", "remove_volatile: $user $this.id", "return false"]
       },
       "on_lock_move": ["return recharge"]
     }
@@ -1662,7 +1621,7 @@ Then, we only need to add the volatile to the user for any recharge move:
 
 #### With Delegate Effects
 
-Another way we can reuse common effects is with delegate effects. The `delegates` field of an effect can list one or more effect IDs. When an effect is parsed, effect callbacks of delegate effects are simply _imported_ into the target effect. In other words, delegate effect callbacks are copy-pasted into the target effect. This makes reuse much more explicit.
+Another way we can reuse common effects is with delegate effects. The `delegates` field of an effect can list one or more effect IDs. When an effect is parsed, event callbacks of delegate effects are simply _imported_ into the target effect. In other words, delegate event callbacks are copy-pasted into the target effect. This makes reuse much more explicit.
 
 Delegate effects are primarily useful for reusing callbacks specific to moves. Events like `TryUseMove` or `MoveBasePower` never run on a condition, but defining a delegate effect allows another move (or condition)'s code to be copied directly.
 
@@ -1744,17 +1703,9 @@ The `ChargeMove` event is a special event that a move can implement to do someth
         "log_prepare_move",
         "$charge_move = func_call(run_event_on_move: ChargeMove)",
         "if $charge_move.is_defined and !$charge_move:",
-        [
-          "do_not_animate_last_move",
-          "log_animate_move: $user $this.name $target",
-          "return"
-        ],
+        ["do_not_animate_last_move", "log_animate_move: $user $this.name $target", "return"],
         "if !func_call(run_event: ChargeMove):",
-        [
-          "do_not_animate_last_move",
-          "log_animate_move: $user $this.name $target",
-          "return"
-        ],
+        ["do_not_animate_last_move", "log_animate_move: $user $this.name $target", "return"],
         "add_volatile: $user twoturnmove link",
         "return stop"
       ]
@@ -1798,7 +1749,7 @@ Solar Beam is a bit more complex; in sunny weather, the move is executed immedia
 }
 ```
 
-##### Two Turn Move Volatile
+###### Two Turn Move Volatile
 
 The move base above applies the "Two Turn Move" volatile status condition. This condition is also defined generically:
 
@@ -1836,7 +1787,7 @@ The move base above applies the "Two Turn Move" volatile status condition. This 
 }
 ```
 
-##### Move Condition Volatile
+###### Move Condition Volatile
 
 The "Two Turn Move" condition immediately applies the volatile status condition for the move being used. Think of the move Fly: the user goes up in the air and is semi-invulnerable to most moves. This allows us to define the Fly condition quite elegantly:
 
@@ -1854,16 +1805,13 @@ The "Two Turn Move" condition immediately applies the volatile status condition 
         ["return"],
         "return false"
       ],
-      "on_source_modify_damage": [
-        "if [gust, twister] has $move.id:",
-        ["return $damage * 2"]
-      ]
+      "on_source_modify_damage": ["if [gust, twister] has $move.id:", ["return $damage * 2"]]
     }
   }
 }
 ```
 
-##### Putting It All Together
+###### Putting It All Together
 
 With the conditions above defined, we have all the pieces for implementing charge moves:
 
@@ -1872,6 +1820,55 @@ With the conditions above defined, we have all the pieces for implementing charg
 1. The "Two Turn Move" condition adds the move condition to the user, representing that the Mon is in the charging state for that move.
 1. After these volatile status conditions are added on the first turn, the move is interrupted and does not execute.
 1. On the second turn, the conditions above are removed, and the move fully executes.
+
+##### Screen Moves
+
+Screen moves halve the damage taken by a particular type of move on the user's side of the battle. This move condition applies to an entire side, so the `SourceModifyDamage` callback will run for every Mon on the side where screen is active.
+
+```json
+{
+  "condition": {
+    "duration": 5,
+    "callbacks": {
+      "on_source_modify_damage": [
+        "$category = func_call(value_from_local_data: category)",
+        "if $target == $user or ($category.is_defined and $move.category != $category):",
+        ["return"],
+        "if $move.effect_state.screen_weaken:",
+        ["return"],
+        "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
+        ["return"],
+        "$move.effect_state.screen_weaken = true",
+        "if $format.mons_per_side > 1:",
+        ["return $damage * 2 / 3"],
+        "return $damage / 2"
+      ],
+      "on_side_start": ["log_side_start"],
+      "on_side_end": ["log_side_end"]
+    }
+  }
+}
+```
+
+The common base ensures we implement all screens correctly. For example, "Light Screen" and "Aurora Veil" must never stack with multipliers. This is enforced by setting `$move.effect_state.screen_weake = true` and checking it early in the damage modifier callback.
+
+###### Move: Light Screen
+
+With the base above, defining Light Screen is extremely easy:
+
+```json
+{
+  "hit_effect": { "side_condition": "lightscreen" },
+  "condition": {
+    "delegates": ["condition:sidescreenmovebase"],
+    "local_data": {
+      "values": {
+        "category": "special"
+      }
+    }
+  }
+}
+```
 
 ### Explaining Complex Effects
 
@@ -1923,24 +1920,20 @@ Here is the code in all of its glory:
         "$move.total_damage = $move.total_damage + $damage",
         "# Break the substitute when HP falls to 0.",
         "if $effect_state.hp == 0:",
-        [
-          "if $move.ohko:",
-          ["log_ohko: $target"],
-          "remove_volatile: $target substitute"
-        ],
+        ["if $move.ohko:", ["log_ohko: $target"], "remove_volatile: $target $this.id"],
         "else:",
         ["log_activate: with_target damage"],
         "# Some move effects still apply.",
         "apply_recoil_damage: $damage",
         "apply_drain: $source $target $damage",
         "run_event_on_move: AfterSubstituteDamage",
-        "run_event: AfterSubstituteDamage",
+        "run_event: AfterSubstituteDamage use_source_effect",
         "return 0"
       ],
       "on_try_boost": [
-        "if $target == $source:",
+        "if $target == $source or $effect != intimidate:",
         ["return"],
-        "log_fail_unboost: $target from_effect",
+        "log_fail_unboost: from_effect",
         "return func_call(boost_table)"
       ],
       "on_end": ["log_end"]
@@ -1976,26 +1969,59 @@ For instance, here is the code for Protect:
     "volatile_status": "protect"
   },
   "effect": {
+    "delegates": ["condition:protectmovebase"]
+  },
+  "condition": {
+    "delegates": ["condition:protectmoveconditionbase"]
+  }
+}
+```
+
+Here is the code for the move base:
+
+```json
+{
+  "condition": {
     "callbacks": {
       "on_prepare_hit": [
         "return func_call(any_mon_will_move_this_turn) and func_call(run_event_for_mon: StallMove)"
       ],
       "on_hit": ["add_volatile: $target stall"]
     }
-  },
+  }
+}
+```
+
+Here is the code for the move condition base:
+
+```json
+{
   "condition": {
     "duration": 1,
+    "delegates": ["condition:weakenthroughprotectionmovebase"],
     "callbacks": {
-      "on_start": ["log_single_turn: with_target"],
+      "on_start": ["log_single_turn: with_target", "add_volatile: $target $source_effect.id link"],
       "on_try_hit": {
         "priority": 3,
         "program": [
           "if !func_call(move_has_flag: $move protect):",
           ["return"],
-          "log_activate",
+          "if $report:",
+          ["log_activate: with_target"],
+          "activate_applying_effect: $this no_forward",
+          "if $effect_state.source_effect.is_defined:",
+          ["activate_applying_effect: $effect_state.source_effect no_forward"],
           "return stop"
         ]
-      }
+      },
+      "on_hit": [
+        "if $move.upgraded:",
+        [
+          "activate_applying_effect: $this no_forward",
+          "if $effect_state.source_effect.is_defined:",
+          ["activate_applying_effect: $effect_state.source_effect no_forward"]
+        ]
+      ]
     }
   }
 }
@@ -2026,6 +2052,26 @@ Then here is the code for the stall condition:
 ```
 
 This example has one neat trick to it: when the stall condition is restarted, the duration is manually updated so that it persists on the Mon to the next turn. If a Mon does not use a stalling move on the next turn, the duration will decrease to zero at the end of the turn and the condition will end naturally.
+
+###### Extending Protect
+
+Overall, Protect is implemented similar to charge moves; different types of protection moves use the base Protect condition and implement an additional activation effect triggered when hit. For example, here is Baneful Bunker:
+
+```json
+{
+  "hit_effect": {
+    "volatile_status": "protect"
+  },
+  "effect": {
+    "delegates": ["condition:protectmovebase"]
+  },
+  "condition": {
+    "callbacks": {
+      "on_activate": ["if func_call(move_makes_contact: $effect):", ["set_status: $source psn"]]
+    }
+  }
+}
+```
 
 ##### Move: Counter
 
@@ -2154,10 +2200,13 @@ First, Sky Drop is generalized into two effects: "Immobilizing Move" and "Immobi
     "callbacks": {
       "on_start": [
         "add_volatile: $target twoturnmove use_source_effect link",
-        "add_volatile: $source immobilized use_target_as_source use_source_effect link"
+        "add_volatile: $source immobilized use_source_effect link"
       ],
       "on_drag_out": ["return false"],
-      "on_trap_mon": ["return true"],
+      "on_trap_mon": {
+        "order": 1,
+        "program": ["return true"]
+      },
       "on_redirect_target": {
         "order": 1,
         "program": ["return $effect_state.source"]
@@ -2183,13 +2232,16 @@ The "Immobilized" effect is applied to a Mon that is the target of an immobilizi
         ],
         "on_end": ["log_end: use_effect_state_source_effect"],
         "on_drag_out": ["return false"],
-        "on_trap_mon": ["return true"],
+        "on_trap_mon": {
+          "order": 1,
+          "program": ["return true"]
+        },
         "on_before_move": {
           "priority": 12,
           "program": ["return false"]
         },
         "on_invulnerability": {
-          "order": 1,
+          "order": 2,
           "program": [
             "# Allow the targeting move to hit on its second turn.",
             "if $move.id == $effect_state.move and $source == $effect_state.source:",
@@ -2222,7 +2274,7 @@ Notice that both the user and the target receive the volatile status associated 
         "if func_call(has_volatile: $source $this.id):",
         [
           "# Ensure we are targeting the original target.",
-          "$immobilizing_effect_state = func_call(volatile_effect_state: $source immobilizingmove)",
+          "$immobilizing_effect_state = func_call(volatile_status_state: $source immobilizingmove)",
           "if !$immobilizing_effect_state or $target != $immobilizing_effect_state.source:",
           ["return false"],
           "remove_volatile: $source immobilizingmove"
@@ -2242,6 +2294,7 @@ Notice that both the user and the target receive the volatile status associated 
   "condition": {
     "duration": 2,
     "callbacks": {
+      "is_away_from_field": ["return true"],
       "on_start": ["add_volatile: $target fly link"]
     }
   }
@@ -2271,41 +2324,43 @@ Turn 2 simply boils down to removing one effect, which cascade removes all linke
 Emergency Exit is an ability that immediately switches out the Mon when its HP dips below 50%. Most types of damage activate this ability. However, move damage is considered _after_ all hits of a multihit move are complete. Thus, we must trigger an activation condition check from two different events.
 
 ```json
-"effect": {
-      "callbacks": {
-        "on_after_damage": [
-          "# Move damage is handled together after secondary effects.",
-          "if $effect.is_move or $effect.id == confusion:",
+{
+  "effect": {
+    "callbacks": {
+      "on_after_damage": [
+        "# Move damage is handled together after secondary effects.",
+        "if $effect.is_move or $effect.id == confusion:",
+        ["return"],
+        "$original_hp = $target.hp + $damage",
+        "activate_ability: $original_hp"
+      ],
+      "on_after_move_secondary_effects_damage": [
+        "if $damage == 0:",
+        ["return"],
+        "activate_ability: $original_hp"
+      ],
+      "on_activate": {
+        "metadata": {
+          "parameters": ["original_hp"]
+        },
+        "program": [
+          "if !$original_hp or $battle.ending or !func_call(can_switch: $target.player):",
           ["return"],
-          "$original_hp = $target.hp + $damage",
-          "activate_ability: $original_hp"
-        ],
-        "on_after_move_secondary_effects_damage": [
-          "if $damage == 0:",
+          "if $target.hp == 0 or $target.force_switch or $target.needs_switch or $target.is_away_from_field:",
           ["return"],
-          "activate_ability: $original_hp"
-        ],
-        "on_activate": {
-          "metadata": {
-            "parameters": ["original_hp"]
-          },
-          "program": [
-            "if !$original_hp or $battle.ending or !func_call(can_switch: $target.player):",
-            ["return"],
-            "if $target.hp == 0 or $target.force_switch or $target.needs_switch or $target.is_away_from_field:",
-            ["return"],
-            "$half = $target.max_hp / 2",
-            "if $original_hp > $half and $target.hp <= $half:",
-            [
-              "foreach $mon in func_call(all_active_mons):",
-              ["set_needs_switch: $mon false"],
-              "log_activate: with_target",
-              "switch_out: $target"
-            ]
+          "$half = $target.max_hp / 2",
+          "if $original_hp > $half and $target.hp <= $half:",
+          [
+            "foreach $mon in func_call(all_active_mons):",
+            ["set_needs_switch: $mon false"],
+            "log_activate: with_target",
+            "switch_out: $target"
           ]
-        }
+        ]
       }
     }
+  }
+}
 ```
 
 1. The `AfterDamage` event callback captures non-move damage directly after it is taken.
@@ -2313,3 +2368,71 @@ Emergency Exit is an ability that immediately switches out the Mon when its HP d
 1. `Activate` is a special event that is triggered by both `AfterDamage` and `AfterMoveSecondaryEffectsDamage`. It acts as the common function between the two events. It takes `$original_hp` as a custom parameter and checks if the ability should activate and switch the target out.
 
 Note: Emergency Exit is incredibly complex and some nuances of how it works depends largely on how the battle engine is implemented. The approach above gets us as close to mainline game behavior as possible with the current battle engine design.
+
+##### Move: Stomping Tantrum
+
+Stomping Tantrum doubles in power if the Mon's move on the previous turn failed.
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_move_base_power": ["if $source.move_last_turn_failed:", ["return $move.base_power * 2"]]
+    }
+  }
+}
+```
+
+Seems simple enough, right? Well, it turns out determining the value of `move_last_turn_failed` is extremely complex. For example,
+
+- Hitting into protect does not count.
+- Hitting into immunity does count.
+- Recharge turns do not count.
+- Using a move with no effect does not count.
+- Fly being interrupted by Smack Down does not count.
+- Failing to use a move due to Gravity does count.
+- Failing to heal at full health does not count.
+- Failing to Rest due to already being asleep or at full health does count.
+- Failing to Rest due to failing to fall asleep (e.g., Electric Terrain) does not count.
+
+All this to say, complex moves can generally decide when a condition that causes a move to stop indicates a failure or not.
+
+To allow this control, several move events can return a "move event result" which offers finer-grain control over move failure condition:
+
+- Returning `false` indicates the move stops and fails immediately.
+- Returning `stopfail` indicates the move stops immediately, but it did not necessarily fail. If the move does nothing else, consider the move as failed.
+- Returning `stop` indicates the move stops immediately, but it did not necessarily fail.
+- Returning `true` (or nothing at all) indicates the move can continue.
+
+Events that return "move event results": `BeforeMove`, `Hit`, `HitField`, `HitSide`, `HitUser`, `PrepareHit`, `TryHit`, `TryHitField`, `TryHitSide`, `TryMove`, `TryUseMove`.
+
+With that in mind, let's look at Rest:
+
+```json
+{
+  "effect": {
+    "callbacks": {
+      "on_try_use_move": [
+        "if $user.is_asleep:",
+        ["return false"],
+        "if $user.hp == $user.max_hp:",
+        ["log_fail_heal: $user", "return stopfail"]
+      ],
+      "on_hit": [
+        "if !func_call(set_status: $target slp):",
+        ["return stop"],
+        "$status_state = func_call(status_effect_state: $target)",
+        "$status_state.total_time = 3",
+        "$status_state.time = 3",
+        "heal: $target $target.max_hp"
+      ]
+    }
+  }
+}
+```
+
+We can see all three stop types here:
+
+1. If the Mon is already asleep, fail immediately.
+1. If the Mon is at full health, stop and potentially fail.
+1. If the Mon cannot be put to sleep, stop without failing.

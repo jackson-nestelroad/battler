@@ -282,8 +282,8 @@
     "accuracy": 100,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "self_destruct": "ifhit",
+    "flags": ["Mirror", "Protect"],
     "hit_effect": {
       "boosts": {
         "atk": -2,
@@ -779,7 +779,6 @@
           "if $target == $source or $move.effect_state.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
           "log_activate: with_target",
-          "do_not_animate_last_move",
           "$reflected_move = func_call(clone_active_move: $move $target)",
           "$reflected_move.effect_state.reflected = true",
           "use_active_move: $target $reflected_move $source use_effect_as_source_effect",
@@ -789,7 +788,6 @@
           "if $source.side == $side or $move.effect_state.reflected or !func_call(move_has_flag: $move reflectable):",
           ["return"],
           "log_activate: with_target use_effect_state_target",
-          "do_not_animate_last_move",
           "$reflected_move = func_call(clone_active_move: $move $effect_state.target)",
           "$reflected_move.effect_state.reflected = true",
           "use_active_move: $effect_state.target $reflected_move $source use_effect_as_source_effect",
@@ -957,36 +955,12 @@
     "pp": 10,
     "target": "Normal",
     "flags": ["BypassSubstitute", "Mirror", "Protect"],
+    "hit_effect": {
+      "volatile_status": "swapabilities"
+    },
     "z_move": {
       "boosts": {
         "spe": 1
-      }
-    },
-    "effect": {
-      "callbacks": {
-        "on_try_hit": [
-          "$target_ability = $target.ability",
-          "$source_ability = $source.ability",
-          "if func_call(ability_has_flag: $target_ability permanent) or func_call(ability_has_flag: $source_ability permanent) or func_call(ability_has_flag: $target_ability noskillswap) or func_call(ability_has_flag: $source_ability noskillswap) or $target.dynamaxed:",
-          ["return false"],
-          "if !func_call(set_ability: $source $target_ability dry_run):",
-          ["return false"],
-          "if !func_call(set_ability: $target $source_ability dry_run):",
-          ["return false"]
-        ],
-        "on_hit": [
-          "$target_ability = $target.ability",
-          "$source_ability = $source.ability",
-          "log_activate: with_target with_source",
-          "$allies = func_call(is_ally: $target $source)",
-          "if $allies:",
-          [
-            "set_ability: $source $target_ability silent",
-            "set_ability: $target $source_ability silent"
-          ],
-          "else:",
-          ["set_ability: $source $target_ability", "set_ability: $target $source_ability"]
-        ]
       }
     }
   },
@@ -1187,8 +1161,8 @@
     "accuracy": 100,
     "pp": 20,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
-    "multihit": [2, 5]
+    "multihit": [2, 5],
+    "flags": ["Contact", "Mirror", "Protect"]
   },
   "camouflage": {
     "name": "Camouflage",
@@ -1336,6 +1310,7 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
+    "crit_ratio": 2,
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
       {
@@ -1344,8 +1319,7 @@
           "status": "brn"
         }
       }
-    ],
-    "crit_ratio": 2
+    ]
   },
   "mudsport": {
     "name": "Mud Sport",
@@ -1621,8 +1595,8 @@
     "accuracy": 95,
     "pp": 25,
     "target": "AllAdjacentFoes",
-    "flags": ["Mirror", "Protect", "Slicing", "Wind"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Mirror", "Protect", "Slicing", "Wind"]
   },
   "overheat": {
     "name": "Overheat",
@@ -1785,9 +1759,7 @@
     "target": "AllAdjacentFoes",
     "flags": ["Mirror", "Protect"],
     "effect": {
-      "callbacks": {
-        "on_move_base_power": ["return $move.base_power * $source.hp / $source.max_hp"]
-      }
+      "delegates": ["move:eruption"]
     }
   },
   "signalbeam": {
@@ -1874,8 +1846,8 @@
     "accuracy": 30,
     "pp": 5,
     "target": "Normal",
-    "flags": ["Mirror", "OHKO", "Protect"],
     "ohko_type": "Ice",
+    "flags": ["Mirror", "OHKO", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -1908,8 +1880,8 @@
     "accuracy": 100,
     "pp": 30,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Bullet", "Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -1932,8 +1904,8 @@
     "accuracy": 100,
     "pp": 30,
     "target": "Normal",
-    "flags": ["Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -2095,6 +2067,7 @@
     "accuracy": 100,
     "pp": 25,
     "target": "Normal",
+    "crit_ratio": 2,
     "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
       {
@@ -2103,8 +2076,7 @@
           "status": "psn"
         }
       }
-    ],
-    "crit_ratio": 2
+    ]
   },
   "covet": {
     "name": "Covet",
@@ -2135,10 +2107,10 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect"],
     "recoil": {
       "percent": "1/3"
     },
+    "flags": ["Contact", "Mirror", "Protect"],
     "secondary_effects": [
       {
         "chance": "10%",
@@ -2209,8 +2181,8 @@
     "accuracy": 100,
     "pp": 15,
     "target": "Normal",
-    "flags": ["Contact", "Mirror", "Protect", "Slicing"],
-    "crit_ratio": 2
+    "crit_ratio": 2,
+    "flags": ["Contact", "Mirror", "Protect", "Slicing"]
   },
   "dragondance": {
     "name": "Dragon Dance",
@@ -2238,8 +2210,8 @@
     "accuracy": 90,
     "pp": 10,
     "target": "Normal",
-    "flags": ["Bullet", "Mirror", "Protect"],
     "multihit": [2, 5],
+    "flags": ["Bullet", "Mirror", "Protect"],
     "max_move": {
       "base_power": 130
     }
@@ -2286,7 +2258,6 @@
         "on_try_move": [
           "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
           ["return false"],
-          "do_not_animate_last_move",
           "return stop"
         ]
       },

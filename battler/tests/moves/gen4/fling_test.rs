@@ -125,7 +125,7 @@ fn fling_causes_target_to_eat_berry() {
             "split|side:1",
             "damage|mon:Ambipom,player-2,1|health:120/135",
             "damage|mon:Ambipom,player-2,1|health:89/100",
-            "curestatus|mon:Ambipom,player-2,1|status:Bad Poison|from:item:Pecha Berry|of:Ambipom,player-1,1",
+            "curestatus|mon:Ambipom,player-2,1|status:Bad Poison|from:item:Pecha Berry",
             "itemend|mon:Ambipom,player-1,1|item:Pecha Berry|silent|from:move:Fling",
             "residual",
             "turn|turn:3"
@@ -239,7 +239,7 @@ fn fling_white_herb_uses_item() {
             "split|side:1",
             "damage|mon:Ambipom,player-2,1|health:128/135",
             "damage|mon:Ambipom,player-2,1|health:95/100",
-            "clearnegativeboosts|mon:Ambipom,player-2,1|from:item:White Herb|of:Ambipom,player-1,1",
+            "clearnegativeboosts|mon:Ambipom,player-2,1|from:item:White Herb",
             "itemend|mon:Ambipom,player-1,1|item:White Herb|silent|from:move:Fling",
             "residual",
             "turn|turn:3"

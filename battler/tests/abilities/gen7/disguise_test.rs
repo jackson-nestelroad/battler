@@ -77,8 +77,8 @@ fn disguise_consumes_super_effective_damage() {
         r#"[
             "move|mon:Mimikyu,player-1,1|name:Shadow Claw|target:Mimikyu,player-2,1",
             "split|side:1",
-            "specieschange|player:player-2|position:1|name:Mimikyu|health:220/220|species:Mimikyu-Busted|level:100|gender:U",
-            "specieschange|player:player-2|position:1|name:Mimikyu|health:100/100|species:Mimikyu-Busted|level:100|gender:U",
+            ["specieschange", "player-2", "Mimikyu-Busted"],
+            ["specieschange", "player-2", "Mimikyu-Busted"],
             "formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Busted|from:ability:Disguise",
             "split|side:1",
             "damage|mon:Mimikyu,player-2,1|from:ability:Disguise|health:193/220",
@@ -87,12 +87,13 @@ fn disguise_consumes_super_effective_damage() {
             "turn|turn:2",
             "continue",
             "move|mon:Mimikyu,player-1,1|name:Shadow Claw|target:Mimikyu,player-2,1",
+            "supereffective|mon:Mimikyu,player-2,1",
             "crit|mon:Mimikyu,player-2,1",
             "split|side:1",
-            "damage|mon:Mimikyu,player-2,1|health:58/220",
-            "damage|mon:Mimikyu,player-2,1|health:27/100",
-            "residual",
-            "turn|turn:3"
+            "damage|mon:Mimikyu,player-2,1|health:0",
+            "damage|mon:Mimikyu,player-2,1|health:0",
+            "faint|mon:Mimikyu,player-2,1",
+            "residual"
         ]"#,
     )
     .unwrap();
@@ -116,8 +117,8 @@ fn disguise_works_for_mimikyu_totem() {
             ["switch", "player-2", "Mimikyu-Totem-Disguised"],
             "move|mon:Mimikyu,player-1,1|name:Shadow Claw|target:Mimikyu,player-2,1",
             "split|side:1",
-            "specieschange|player:player-2|position:1|name:Mimikyu|health:220/220|species:Mimikyu-Totem-Busted|level:100|gender:U",
-            "specieschange|player:player-2|position:1|name:Mimikyu|health:100/100|species:Mimikyu-Totem-Busted|level:100|gender:U",
+            ["specieschange", "player-2", "Mimikyu-Totem-Busted"],
+            ["specieschange", "player-2", "Mimikyu-Totem-Busted"],
             "formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Totem-Busted|from:ability:Disguise",
             "split|side:1",
             "damage|mon:Mimikyu,player-2,1|from:ability:Disguise|health:193/220",
@@ -126,12 +127,13 @@ fn disguise_works_for_mimikyu_totem() {
             "turn|turn:2",
             "continue",
             "move|mon:Mimikyu,player-1,1|name:Shadow Claw|target:Mimikyu,player-2,1",
+            "supereffective|mon:Mimikyu,player-2,1",
             "crit|mon:Mimikyu,player-2,1",
             "split|side:1",
-            "damage|mon:Mimikyu,player-2,1|health:58/220",
-            "damage|mon:Mimikyu,player-2,1|health:27/100",
-            "residual",
-            "turn|turn:3"
+            "damage|mon:Mimikyu,player-2,1|health:0",
+            "damage|mon:Mimikyu,player-2,1|health:0",
+            "faint|mon:Mimikyu,player-2,1",
+            "residual"
         ]"#,
     )
     .unwrap();
@@ -181,8 +183,8 @@ fn transform_takes_on_mimikyu_forme_at_transformation() {
             "continue",
             "move|mon:Mimikyu,player-2,1|name:Shadow Claw|target:Mimikyu,player-1,1",
             "split|side:0",
-            "specieschange|player:player-1|position:1|name:Mimikyu|health:220/220|species:Mimikyu-Busted|level:100|gender:U",
-            "specieschange|player:player-1|position:1|name:Mimikyu|health:100/100|species:Mimikyu-Busted|level:100|gender:U",
+            ["specieschange", "player-1", "Mimikyu-Busted"],
+            ["specieschange", "player-1", "Mimikyu-Busted"],
             "formechange|mon:Mimikyu,player-1,1|species:Mimikyu-Busted|from:ability:Disguise",
             "split|side:0",
             "damage|mon:Mimikyu,player-1,1|from:ability:Disguise|health:193/220",

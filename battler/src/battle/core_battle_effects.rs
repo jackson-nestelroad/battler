@@ -914,7 +914,9 @@ fn run_effect_event_with_errors(
         event_origin_mon_handle,
     );
 
-    if let Some(effect_state_connector) = &effect_state_connector {
+    if let Some(effect_state_connector) = &effect_state_connector
+        && effect_state_connector.exists(context.battle_context_mut())?
+    {
         if event.starts_effect() {
             effect_state_connector.set_started(context.battle_context_mut())?;
         }
@@ -1036,7 +1038,7 @@ where
     'data: 'battle,
     Context: EventContext<'battle, 'data>,
 {
-    match run_callbacks_with_errors(context, input, options, callbacks) {
+    match run_callbacks_with_errors(context, event, input, options, callbacks) {
         Ok(value) => value,
         Err(error) => {
             core_battle_logs::debug_full_event_failure(
@@ -1049,42 +1051,54 @@ where
     }
 }
 
+struct RunCallbackResult {
+    value: fxlang::Value,
+    early_exit: bool,
+}
+
 fn run_callback_with_forwarding_input_with_errors(
     context: &mut UpcomingEvaluationContext,
     input: &mut fxlang::VariableInput,
     event_state: &fxlang::EventState,
     callback_handle: CallbackHandle,
     options: &RunEventOptions,
-) -> Result<Option<fxlang::Value>> {
-    let event = callback_handle.event;
+    relay_output: bool,
+) -> Result<Option<RunCallbackResult>> {
     let value = run_callback_with_errors(context, input.clone(), event_state, callback_handle)?;
     // Support for early exit.
     if let Some(value) = value {
         if value.signals_early_exit() || options.return_first_value {
-            return Ok(Some(value));
+            return Ok(Some(RunCallbackResult {
+                value,
+                early_exit: true,
+            }));
         }
 
-        let should_not_relay_output = event.has_flag(CallbackFlag::ReturnsBoolean)
-            && event
-                .input_vars()
-                .get(0)
-                .is_some_and(|input| input.1 != fxlang::ValueType::Boolean);
+        if !relay_output {
+            return Ok(Some(RunCallbackResult {
+                value,
+                early_exit: false,
+            }));
+        }
 
         // Pass the output to the next effect.
-        if !should_not_relay_output {
-            if let Some(forward_input) = input.get_mut(0) {
-                *forward_input = value;
-            } else {
-                *input = fxlang::VariableInput::from_iter([value]);
-            }
+        if let Some(forward_input) = input.get_mut(0) {
+            *forward_input = value;
+        } else {
+            *input = fxlang::VariableInput::from_iter([value]);
         }
     }
 
     Ok(None)
 }
 
+fn relay_output(event: fxlang::BattleEvent, options: &RunEventOptions) -> bool {
+    !options.return_first_value && !event.has_flag(CallbackFlag::ReturnsBoolean)
+}
+
 fn run_callbacks_with_errors<'battle, 'data, Context>(
     context: &mut Context,
+    event: fxlang::BattleEvent,
     mut input: fxlang::VariableInput,
     options: &RunEventOptions,
     callbacks: Vec<CallbackHandle>,
@@ -1093,7 +1107,10 @@ where
     'data: 'battle,
     Context: EventContext<'battle, 'data>,
 {
+    let relay_output = relay_output(event, options);
+
     let event_state = fxlang::EventState::default();
+    let mut last_result = None;
     for callback_handle in callbacks {
         if let Some(id) = callback_handle.applied_effect_handle.effect_handle.try_id() {
             if let Some(id) = context
@@ -1112,14 +1129,30 @@ where
             &event_state,
             callback_handle,
             options,
+            relay_output,
         )?;
 
-        if let Some(return_value) = result {
-            return Ok(Some(return_value));
+        if let Some(result) = result {
+            last_result = Some(result.value);
+            if result.early_exit {
+                return Ok(last_result);
+            }
+        } else {
+            last_result = None;
         }
     }
 
-    // The first input variable is always returned as the result.
+    // Events that do not relay output across callbacks track the last result here.
+    if let Some(last_result) = last_result {
+        return Ok(Some(last_result));
+    }
+
+    // No result.
+    if options.return_first_value || !relay_output {
+        return Ok(None);
+    }
+
+    // For events using relay, the first input variable is returned as the result.
     Ok(input.get(0).cloned())
 }
 
@@ -2145,7 +2178,7 @@ where
         run_residual_callbacks_with_errors(context, callbacks)?;
         Ok(None)
     } else {
-        run_callbacks_with_errors(context, input, options, callbacks)
+        run_callbacks_with_errors(context, event, input, options, callbacks)
     }
 }
 
