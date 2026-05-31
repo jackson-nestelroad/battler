@@ -6175,7 +6175,7 @@ pub fn try_catch(context: &mut MonContext, target: MonHandle, item: &Id) -> Resu
         let item = EffectHandle::Item(item_id.clone());
         core_battle_effects::run_effect_event::<_, ()>(
             &mut context.applying_effect_context(item.clone(), None, None)?,
-            fxlang::BattleEvent::Catch,
+            fxlang::BattleEvent::CatchFailed,
         );
         core_battle_effects::run_event_with_input::<_, _, ()>(
             context,
