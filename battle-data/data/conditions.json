@@ -1072,7 +1072,11 @@
           "# During Sky Drop, both the target and user have the Fly volatile.",
           "# Only the user should have the volatile removed, which cascade removes all other effects.",
           "if func_call(has_volatile: $target [fly, bounce]) and func_call(has_volatile: $target twoturnmove):",
-          ["remove_volatile: $target fly", "cancel_move: $target"],
+          [
+            "remove_volatile: $target fly",
+            "remove_volatile: $target bounce",
+            "cancel_move: $target"
+          ],
           "remove_volatile: $target magnetrise",
           "remove_volatile: $target telekinesis"
         ]
