@@ -307,7 +307,7 @@
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: TerrainChange"],
         "on_terrain_change": [
-          "$terrain = $field.terrain",
+          "$terrain = $field.effective_terrain",
           "$types = []",
           "if $terrain == electricterrain:",
           ["$types = [electric]"],

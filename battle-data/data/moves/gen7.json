@@ -608,6 +608,7 @@
       "delegates": ["move:followme"]
     },
     "condition": {
+      "no_copy": true,
       "delegates": ["movecondition:followme"],
       "callbacks": {
         "on_foe_redirect_target": {
@@ -792,7 +793,8 @@
             ["return"],
             "if func_call(is_ally: $target $source):",
             ["return"],
-            "log_activate: with_target",
+            "if $report:",
+            ["log_activate: with_target"],
             "return false"
           ]
         }
@@ -865,12 +867,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_try_move": [
-          "if func_call(has_type: $user fire):",
-          ["return"],
-          "log_fail: $user",
-          "return stopfail"
-        ],
+        "on_try_move": ["if !func_call(has_type: $user fire):", ["return false"]],
         "on_hit_user": [
           "# Remove Fire type.",
           "# Note that if we are forced into the Fire type (e.g., Terastallization), this has no effect.",

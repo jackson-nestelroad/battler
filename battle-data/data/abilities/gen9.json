@@ -178,7 +178,24 @@
   },
   "embodyaspect": {
     "name": "Embody Aspect",
-    "flags": []
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "if $effect_state.activated:",
+          ["return"],
+          "if $target.species == ogerponcornerstonemasktera:",
+          ["boost: $target 'def:1"],
+          "if $target.species == ogerponhearthflamemasktera:",
+          ["boost: $target 'atk:1"],
+          "if $target.species == ogerpontealmasktera:",
+          ["boost: $target 'spe:1"],
+          "if $target.species == ogerponwellspringmasktera:",
+          ["boost: $target 'spd:1"],
+          "$effect_state.activated = true"
+        ]
+      }
+    }
   },
   "terashift": {
     "name": "Tera Shift",
@@ -190,15 +207,53 @@
       "NoTrace",
       "NoTransform",
       "Permanent"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_switch_in": [
+          "if $mon.species == terapagos:",
+          ["log_activate: with_target", "forme_change: $mon terapagosterastal permanent"]
+        ]
+      }
+    }
   },
   "terashell": {
     "name": "Tera Shell",
-    "flags": ["Breakable", "NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"]
+    "flags": ["Breakable", "NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_modify_effectiveness": [
+          "if !$effect.is_move:",
+          ["return"],
+          "if $effect.effect_state.resisted:",
+          ["return -1"],
+          "if $effect.category == status or $effect.type == none:",
+          ["return"],
+          "if func_call(check_move_immunity: $target $effect):",
+          ["return"],
+          "if $modifier < 0 or $target.hp < $target.max_hp:",
+          ["return"],
+          "log_activate: with_target",
+          "$effect.effect_state.resisted = true",
+          "return -1"
+        ]
+      }
+    }
   },
   "teraformzero": {
     "name": "Teraform Zero",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"]
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "if !$field.weather and !$field.terrain:",
+          ["return"],
+          "log_ability",
+          "clear_weather",
+          "clear_terrain"
+        ]
+      }
+    }
   },
   "poisonpuppeteer": {
     "name": "Poison Puppeteer",

@@ -198,6 +198,7 @@ enum CommonCallbackType {
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString | CallbackFlag::ReturnsVoid,
+    MonType = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsType | CallbackFlag::ReturnsVoid,
     MonTypes =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes | CallbackFlag::ReturnsVoid,
     MonBoostModifier =
@@ -744,6 +745,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "ForceEscape"]
     ForceEscape,
+    /// Runs when determining if a Mon can terastallize.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "ForceTeraType"]
+    ForceTeraType,
     /// Runs when determining the types of a Mon, to force types early.
     ///
     /// Runs in the context of a Mon.
@@ -915,6 +921,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "ModifyDuration"]
     ModifyDuration,
+    /// Runs when determining the type effectiveness of a move.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "ModifyEffectiveness"]
+    ModifyEffectiveness,
     /// Runs when calculating the EV yield gained by a Mon.
     ///
     /// Runs in the context of a Mon.
@@ -1505,6 +1516,7 @@ impl BattleEvent {
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::ForceEffectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ForceEscape => CommonCallbackType::MonResult as u32,
+            Self::ForceTeraType => CommonCallbackType::MonType as u32,
             Self::ForceTypes => CommonCallbackType::MonTypes as u32,
             Self::Hit => CommonCallbackType::MoveControllingResult as u32,
             Self::HitField => CommonCallbackType::MoveFieldControllingResult as u32,
@@ -1534,8 +1546,9 @@ impl BattleEvent {
             Self::ModifyCritChance => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyCritRatio => CommonCallbackType::SourceMoveModifier as u32,
             Self::ModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
-            Self::ModifyDuration => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyDef => CommonCallbackType::MaybeApplyingEffectModifier as u32,
+            Self::ModifyDuration => CommonCallbackType::ApplyingEffectModifier as u32,
+            Self::ModifyEffectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::ModifyEvYield => CommonCallbackType::MonStatTableModifier as u32,
             Self::ModifyExperience => CommonCallbackType::MonModifier as u32,
             Self::ModifyFieldDuration => CommonCallbackType::FieldEffectModifier as u32,
@@ -1708,6 +1721,7 @@ impl BattleEvent {
                 ("index", ValueType::UFraction, true),
             ],
             Self::ForceEffectiveness => &[("modifier", ValueType::Fraction, true)],
+            Self::ForceTeraType => &[("type", ValueType::Type, true)],
             Self::ModifyAccuracy => &[("acc", ValueType::UFraction, true)],
             Self::ModifyActionSpeed => &[("spe", ValueType::UFraction, true)],
             Self::ModifyAtk => &[("atk", ValueType::UFraction, true)],
@@ -1725,6 +1739,7 @@ impl BattleEvent {
                 ("duration", ValueType::UFraction, true),
                 ("condition", ValueType::Effect, true),
             ],
+            Self::ModifyEffectiveness => &[("modifier", ValueType::Fraction, true)],
             Self::ModifyEvYield => &[("evs", ValueType::StatTable, true)],
             Self::ModifyExperience => &[("exp", ValueType::UFraction, true)],
             Self::ModifyFriendshipIncrease => &[("friendship", ValueType::UFraction, true)],

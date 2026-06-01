@@ -2445,9 +2445,7 @@
     "target": "Normal",
     "flags": ["Contact", "CrashDamage", "Gravity", "Mirror", "Protect"],
     "effect": {
-      "callbacks": {
-        "on_move_failed": ["damage: $user expr($user.base_max_hp / 2) $this.condition"]
-      }
+      "delegates": ["move:jumpkick"]
     }
   },
   "glare": {
@@ -2929,7 +2927,7 @@
       "callbacks": {
         "on_try_hit": [
           "if func_call(has_volatile: $source substitute) or $source.hp <= $source.max_hp / 4 or $source.max_hp == 1:",
-          ["log_fail: $source", "return stopfail"]
+          ["return false"]
         ],
         "on_hit": ["direct_damage: $target expr($target.max_hp / 4)"]
       }

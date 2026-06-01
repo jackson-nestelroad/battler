@@ -51,7 +51,8 @@
             ["return"],
             "if $move.target == user or $move.category == status:",
             ["return"],
-            "log_activate: with_target",
+            "if $report:",
+            ["log_activate: with_target"],
             "return stop"
           ]
         }
@@ -404,7 +405,8 @@
         "on_try_hit": [
           "if [all, alladjacentallies, allies, user] has $move.target or $move.category != status:",
           ["return"],
-          "log_activate: with_target",
+          "if $report:",
+          ["log_activate: with_target"],
           "return stop"
         ]
       }

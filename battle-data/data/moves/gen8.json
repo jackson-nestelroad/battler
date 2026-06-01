@@ -38,7 +38,8 @@
           "program": [
             "if func_call(move_has_flag: $move bypassmaxguard):",
             ["return"],
-            "log_activate: with_target",
+            "if $report:",
+            ["log_activate: with_target"],
             "return stop"
           ]
         }
@@ -827,14 +828,14 @@
     "effect": {
       "callbacks": {
         "on_try_use_move": [
-          "if $target.hp <= $target.max_hp * 1/3 or $target.max_hp == 1:",
+          "if $target.hp <= $target.max_hp / 3 or $target.max_hp == 1:",
           ["return false"]
         ],
         "on_try_hit": [
           "if !func_call(can_boost: $target $move.hit_effect.boosts):",
           ["return stopfail"]
         ],
-        "on_hit": ["direct_damage: $target expr($target.max_hp * 1/3)"]
+        "on_hit": ["direct_damage: $target expr($target.max_hp / 3)"]
       }
     }
   },

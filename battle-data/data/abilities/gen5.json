@@ -358,7 +358,14 @@
           ]
         ],
         "on_damaging_hit": ["if !$target.illusion:", ["return"], "end_ability: $target silent"],
-        "on_end": ["if !$target.illusion:", ["return"], "end_illusion: $target", "log_end"]
+        "on_end": ["if !$target.illusion:", ["return"], "end_illusion: $target", "log_end"],
+        "on_before_terastallization": [
+          "if !$mon.illusion:",
+          ["return"],
+          "$base_species = func_call(lookup_base_species: $mon.illusion)",
+          "if [ogerpon, terapagos] has $base_species:",
+          ["end_ability: $mon silent"]
+        ]
       }
     }
   },

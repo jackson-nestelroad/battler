@@ -114,7 +114,7 @@ fn own_tempo_heals_confusion_on_baton_pass() {
             "continue",
             "activate|mon:Trapinch,player-1,1|condition:Confusion",
             "move|mon:Trapinch,player-1,1|name:Baton Pass|target:Trapinch,player-1,1",
-            "switchout|mon:Trapinch,player-1,1",
+            "switchout|mon:Trapinch,player-1,1|copyvolatile",
             "continue",
             "split|side:0",
             ["switch", "player-1", "Spinda"],

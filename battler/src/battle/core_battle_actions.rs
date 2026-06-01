@@ -17,6 +17,7 @@ use battler_data::{
     BoostOrderIterator,
     BoostTable,
     BoostTableEntries,
+    CopyVolatileType,
     DefaultTrueBool,
     Fraction,
     Id,
@@ -129,7 +130,7 @@ fn switch_out_internal(
     context: &mut MonContext,
     being_replaced_immediately: bool,
     run_switch_out_events: bool,
-    preserve_volatile: bool,
+    copy_volatile_type: Option<CopyVolatileType>,
 ) -> Result<bool> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
@@ -160,7 +161,7 @@ fn switch_out_internal(
             }
 
             if !being_replaced_immediately {
-                core_battle_logs::switch_out(context)?;
+                core_battle_logs::switch_out(context, copy_volatile_type)?;
             }
 
             end_ability(
@@ -178,7 +179,7 @@ fn switch_out_internal(
         Mon::switch_out(context)?;
     }
 
-    if !preserve_volatile {
+    if copy_volatile_type.is_none() {
         Mon::clear_volatile(context, being_replaced_immediately)?;
     }
 
@@ -186,7 +187,10 @@ fn switch_out_internal(
 }
 
 /// Switches a Mon out immediately.
-pub fn switch_out(context: &mut MonContext, preserve_volatile: bool) -> Result<bool> {
+pub fn switch_out(
+    context: &mut MonContext,
+    copy_volatile_type: Option<CopyVolatileType>,
+) -> Result<bool> {
     if !Player::can_switch(context.as_player_context()) {
         return Ok(false);
     }
@@ -202,7 +206,7 @@ pub fn switch_out(context: &mut MonContext, preserve_volatile: bool) -> Result<b
     if context.mon().switch_state.needs_switch.is_none() {
         context.mon_mut().switch_state.needs_switch = Some(SwitchType::Normal);
     }
-    switch_out_internal(context, false, true, preserve_volatile)
+    switch_out_internal(context, false, true, copy_volatile_type)
 }
 
 /// Switches a Mon into the given position.
@@ -237,7 +241,7 @@ pub fn switch_in(
                 switch_type = Some(previous_mon_switch_type);
             }
 
-            if let Some(SwitchType::CopyVolatile) = switch_type {
+            if let Some(SwitchType::CopyVolatile(copy_volatile_type)) = switch_type {
                 copy_volatile(
                     &mut context.as_battle_context_mut().applying_effect_context(
                         EffectHandle::Condition(Id::from_known("switchout")),
@@ -246,10 +250,11 @@ pub fn switch_in(
                         None,
                     )?,
                     previous_mon,
+                    copy_volatile_type,
                 )?;
             }
 
-            if !switch_out_internal(&mut context, true, true, false)? {
+            if !switch_out_internal(&mut context, true, true, None)? {
                 return Ok(false);
             }
 
@@ -315,7 +320,11 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
     Ok(())
 }
 
-fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Result<()> {
+fn copy_volatile(
+    context: &mut ApplyingEffectContext,
+    source: MonHandle,
+    copy_volatile_type: CopyVolatileType,
+) -> Result<()> {
     Mon::clear_volatile(&mut context.target_context()?, true)?;
 
     let target = context.target_handle();
@@ -325,6 +334,7 @@ fn copy_volatile(context: &mut ApplyingEffectContext, source: MonHandle) -> Resu
     for (volatile, mut state) in source_context.mon().volatile_state.volatiles.clone() {
         if CoreBattle::get_parsed_effect_by_id(source_context.as_battle_context_mut(), &volatile)?
             .is_some_and(|condition| condition.condition().no_copy)
+            || (copy_volatile_type == CopyVolatileType::SubstituteOnly && &volatile != "substitute")
         {
             continue;
         }
@@ -1173,6 +1183,9 @@ pub fn get_move_targets(
                     .active_mon_handles_on_side(context.side().index),
             );
         }
+        MoveTarget::AlliesExceptUser => {
+            targets.extend(Mon::active_allies(context.as_mon_context_mut()));
+        }
         MoveTarget::AllyTeam => {
             targets.extend(
                 context
@@ -1687,8 +1700,10 @@ fn move_hit_loop(
             let source_side = context.side().index;
             let source_position = Mon::position_on_side_or_previous(context.as_mon_context())
                 .wrap_expectation("expected attacker to have a position")?;
+
+            let mut context = context.target_mon_context(target)?;
+            context.mon_mut().times_attacked += 1;
             context
-                .target_mon_context(target)?
                 .mon_mut()
                 .volatile_state
                 .received_attacks
@@ -2128,39 +2143,47 @@ pub fn type_effectiveness(context: &mut ApplyingEffectContext) -> Result<i8> {
         fxlang::BattleEvent::ForceEffectiveness,
         0,
     );
-    if modifier != 0 {
-        return Ok(modifier);
-    }
+    let modifier = if modifier == 0 {
+        let target_handle = context.target_handle();
+        let mut total = 0;
+        for (i, defense) in mon_states::effective_types(&mut context.target_context()?)
+            .into_iter()
+            .enumerate()
+        {
+            let modifier = context.battle().check_type_effectiveness(offense, defense);
 
-    let target_handle = context.target_handle();
-    let mut total = 0;
-    for (i, defense) in mon_states::effective_types(&mut context.target_context()?)
-        .into_iter()
-        .enumerate()
-    {
-        let modifier = context.battle().check_type_effectiveness(offense, defense);
+            let modifier = match context.active_move_context()? {
+                Some(mut context) => {
+                    core_battle_effects::run_active_move_event_with_input::<_, Option<i8>>(
+                        &mut context,
+                        fxlang::BattleEvent::Effectiveness,
+                        core_battle_effects::MoveTargetForEvent::Mon(target_handle),
+                        [modifier.into(), defense.into(), (i as u64).into()],
+                    )
+                    .unwrap_or(modifier)
+                }
+                None => modifier,
+            };
 
-        let modifier = match context.active_move_context()? {
-            Some(mut context) => {
-                core_battle_effects::run_active_move_event_with_input::<_, Option<i8>>(
-                    &mut context,
-                    fxlang::BattleEvent::Effectiveness,
-                    core_battle_effects::MoveTargetForEvent::Mon(target_handle),
-                    [modifier.into(), defense.into(), (i as u64).into()],
-                )
-                .unwrap_or(modifier)
-            }
-            None => modifier,
-        };
+            let modifier = core_battle_effects::run_event_with_input::<_, _, i8>(
+                context,
+                fxlang::BattleEvent::Effectiveness,
+                [modifier.into(), defense.into(), (i as u64).into()],
+            );
+            total += modifier;
+        }
+        total
+    } else {
+        modifier
+    };
 
-        let modifier = core_battle_effects::run_event_with_input::<_, _, i8>(
-            context,
-            fxlang::BattleEvent::Effectiveness,
-            [modifier.into(), defense.into(), (i as u64).into()],
-        );
-        total += modifier;
-    }
-    Ok(total)
+    let modifier = core_battle_effects::run_event_with_relay::<_, i8>(
+        context,
+        fxlang::BattleEvent::ModifyEffectiveness,
+        modifier,
+    );
+
+    Ok(modifier)
 }
 
 /// Calculates the type modifier of an effect against a target.
@@ -4495,7 +4518,7 @@ fn leave_battle(context: &mut PlayerContext) -> Result<()> {
             &mut context.as_battle_context_mut().mon_context(mon)?,
             false,
             false,
-            false,
+            None,
         )?;
     }
     Ok(())
@@ -6455,6 +6478,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
         move_slot.used = false;
         move_slot.simulated = true;
     }
+    let times_attacked = target_context.mon().times_attacked;
 
     // Set the species first, for the baseline transformation.
     let species = target_context.mon().volatile_state.species.clone();
@@ -6477,6 +6501,7 @@ pub fn transform_into(context: &mut ApplyingEffectContext, target: MonHandle) ->
     context.target_mut().volatile_state.boosts = boosts;
     set_ability(context, &ability_id, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;
+    context.target_mut().times_attacked = times_attacked;
 
     core_battle_logs::transform(context, target)?;
 
@@ -6933,10 +6958,11 @@ pub fn can_terastallize(context: &mut MonContext) -> Result<Option<Type>> {
     if !context.player().can_terastallize || !context.mon().active {
         return Ok(None);
     }
-    if context.mon().tera_type == Type::None {
+    let tera_type = mon_states::effective_tera_type(context);
+    if tera_type == Type::None {
         return Ok(None);
     }
-    Ok(Some(context.mon().tera_type))
+    Ok(Some(tera_type))
 }
 
 /// Terastallizes the Mon if it is able to do so.

@@ -552,7 +552,7 @@
       },
       "illusion": {
         "description": "",
-        "type": "Boolean"
+        "type": "String | Undefined"
       },
       "is_asleep": {
         "description": "",
@@ -883,6 +883,10 @@
         "description": "",
         "type": "List",
         "item_type": "Player"
+      },
+      "total_fainted": {
+        "description": "",
+        "type": "UFraction"
       }
     },
     "HitEffect": {
@@ -3525,6 +3529,20 @@
       ],
       "flags": [],
       "type": "Undefined",
+      "returns_item_from_list": false
+    },
+    "lookup_base_species": {
+      "description": "Looks up a base species ID.",
+      "parameters": [
+        {
+          "name": "species",
+          "type": "String",
+          "description": "The species to query.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "String",
       "returns_item_from_list": false
     },
     "max": {
@@ -6780,6 +6798,20 @@
       },
       "allows_custom_input_vars": false
     },
+    "force_tera_type": {
+      "description": "Runs when determining if a Mon can terastallize.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        },
+        "type": {
+          "type": "Type",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "force_types": {
       "description": "Runs when determining the types of a Mon, to force types early.\n\nRuns in the context of a Mon.",
       "variables": {
@@ -7199,6 +7231,28 @@
       },
       "allows_custom_input_vars": false
     },
+    "modify_def": {
+      "description": "Runs when calculating a Mon's Def stat.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        },
+        "def": {
+          "type": "UFraction",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "modify_duration": {
       "description": "Runs when calculating the duration of a condition applying to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
@@ -7225,8 +7279,8 @@
       },
       "allows_custom_input_vars": false
     },
-    "modify_def": {
-      "description": "Runs when calculating a Mon's Def stat.\n\nRuns in the context of an applying effect on a Mon.",
+    "modify_effectiveness": {
+      "description": "Runs when determining the type effectiveness of a move.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
         "target": {
           "type": "Mon",
@@ -7238,10 +7292,10 @@
         },
         "effect": {
           "type": "Effect",
-          "optional": true
+          "optional": false
         },
-        "def": {
-          "type": "UFraction",
+        "modifier": {
+          "type": "Fraction",
           "optional": false
         }
       },

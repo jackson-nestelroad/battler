@@ -14,6 +14,7 @@ use anyhow::{
 };
 use battler_data::{
     Fraction,
+    Id,
     Identifiable,
     ZPower,
 };
@@ -715,9 +716,14 @@ where
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
-                            "illusion" => ValueRef::Boolean(
-                                context.mon(mon_handle)?.volatile_state.illusion.is_some(),
-                            ),
+                            "illusion" => context
+                                .mon(mon_handle)?
+                                .volatile_state
+                                .illusion
+                                .as_ref()
+                                .map(|illusion| Id::from(illusion.species.as_str()))
+                                .map(|val| ValueRef::TempString(val.to_string()))
+                                .unwrap_or(ValueRef::Undefined),
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -1146,6 +1152,14 @@ where
                                         ValueRefToStoredValue::new(None, ValueRef::Player(player))
                                     })
                                     .collect(),
+                            ),
+                            "total_fainted" => ValueRef::UFraction(
+                                context
+                                    .battle_context_mut()
+                                    .side_context(side)?
+                                    .side()
+                                    .total_fainted
+                                    .into(),
                             ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }

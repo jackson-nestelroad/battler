@@ -1574,7 +1574,7 @@
           ["return"],
           "remove_volatile: $source partiallytrapped",
           "remove_volatile: $source leechseed",
-          "$side_conditions = [spikes, toxicspikes, stealthrock, stickyweb]",
+          "$side_conditions = [spikes, toxicspikes, stealthrock, stickyweb, gmaxsteelsurge]",
           "foreach $condition in $side_conditions:",
           ["remove_side_condition: $source.side $condition"]
         ]

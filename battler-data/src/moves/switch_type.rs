@@ -16,6 +16,14 @@ use serde::{
     },
 };
 
+/// The type of volatile copy to perform.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum CopyVolatileType {
+    #[default]
+    AllCopyable,
+    SubstituteOnly,
+}
+
 /// The type of user switch performed when using a move.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum SwitchType {
@@ -23,12 +31,20 @@ pub enum SwitchType {
     #[default]
     Normal,
     /// Switch out that copies all volatile effects to the replacement Mon.
-    CopyVolatile,
+    CopyVolatile(CopyVolatileType),
     /// Normal switch out if the move hit.
     IfHit,
 }
 
 impl SwitchType {
+    /// The corresponding [`CopyVolatileType`], if any.
+    pub fn copy_volatile(&self) -> Option<CopyVolatileType> {
+        match self {
+            Self::CopyVolatile(copy_volatile_type) => Some(*copy_volatile_type),
+            _ => None,
+        }
+    }
+
     /// Does the switch depend on hitting the target?
     pub fn if_hit(&self) -> bool {
         match self {
@@ -42,7 +58,8 @@ impl Display for SwitchType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Normal => write!(f, "{}", true),
-            Self::CopyVolatile => write!(f, "copyvolatile"),
+            Self::CopyVolatile(CopyVolatileType::AllCopyable) => write!(f, "copyvolatile"),
+            Self::CopyVolatile(CopyVolatileType::SubstituteOnly) => write!(f, "copysubstitute"),
             Self::IfHit => write!(f, "ifhit"),
         }
     }
@@ -52,7 +69,8 @@ impl FromStr for SwitchType {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "copyvolatile" => Ok(Self::CopyVolatile),
+            "copyvolatile" => Ok(Self::CopyVolatile(CopyVolatileType::AllCopyable)),
+            "copysubstitute" => Ok(Self::CopyVolatile(CopyVolatileType::SubstituteOnly)),
             "ifhit" => Ok(Self::IfHit),
             _ => Err(Error::msg(format!("invalid user switch type: \"{s}\""))),
         }
@@ -66,7 +84,12 @@ impl Serialize for SwitchType {
     {
         match self {
             Self::Normal => serializer.serialize_bool(true),
-            Self::CopyVolatile => serializer.serialize_str("copyvolatile"),
+            Self::CopyVolatile(CopyVolatileType::AllCopyable) => {
+                serializer.serialize_str("copyvolatile")
+            }
+            Self::CopyVolatile(CopyVolatileType::SubstituteOnly) => {
+                serializer.serialize_str("copysubstitute")
+            }
             Self::IfHit => serializer.serialize_str("ifhit"),
         }
     }
@@ -78,7 +101,10 @@ impl<'de> Visitor<'de> for UserSwitchTypeVisitor {
     type Value = SwitchType;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "true, \"copyvolatile\", or \"ifhit\"")
+        write!(
+            formatter,
+            "true, \"copyvolatile\", \"copysubstitute\", or \"ifhit\""
+        )
     }
 
     fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
@@ -112,14 +138,24 @@ impl<'de> Deserialize<'de> for SwitchType {
 #[cfg(test)]
 mod user_switch_type_test {
     use crate::{
-        moves::SwitchType,
+        moves::{
+            CopyVolatileType,
+            SwitchType,
+        },
         test_util::test_serialization,
     };
 
     #[test]
     fn serializes_to_string() {
         test_serialization(SwitchType::Normal, true);
-        test_serialization(SwitchType::CopyVolatile, "\"copyvolatile\"");
+        test_serialization(
+            SwitchType::CopyVolatile(CopyVolatileType::AllCopyable),
+            "\"copyvolatile\"",
+        );
+        test_serialization(
+            SwitchType::CopyVolatile(CopyVolatileType::SubstituteOnly),
+            "\"copysubstitute\"",
+        );
         test_serialization(SwitchType::IfHit, "\"ifhit\"");
     }
 }

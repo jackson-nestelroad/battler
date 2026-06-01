@@ -1657,7 +1657,7 @@ impl<'d> CoreBattle<'d> {
                         if let Some(switch_type) = context.mon().switch_state.needs_switch {
                             core_battle_actions::switch_out(
                                 &mut context,
-                                switch_type == SwitchType::CopyVolatile,
+                                switch_type.copy_volatile(),
                             )?;
 
                             // Mon may have fainted here.
@@ -2399,6 +2399,7 @@ impl<'d> CoreBattle<'d> {
             core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
+            context.side_mut().total_fainted += 1;
             context.battle_mut().last_exited = Some(context.mon_handle());
 
             context.player_mut().fainted_this_turn = true;
@@ -2711,5 +2712,19 @@ impl<'d> CoreBattle<'d> {
                     .is_some()
             })
             .unwrap_or(false))
+    }
+
+    /// Looks up the base species of the given species.
+    pub fn base_species_of_species(context: &Context, species: &Id) -> Result<Id> {
+        Ok(Id::from(
+            context
+                .battle()
+                .dex
+                .species
+                .get_by_id(&species)?
+                .data
+                .base_species
+                .as_str(),
+        ))
     }
 }

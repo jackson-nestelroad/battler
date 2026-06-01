@@ -189,5 +189,17 @@
         "on_side_end": ["log_side_end"]
       }
     }
+  },
+  "cannotusetwicemovebase": {
+    "name": "Cannot Use Twice Move Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_disable_move": [
+          "if $mon.last_move.is_defined and $mon.last_move.id == $this.id:",
+          ["disable_move: $mon $this.id"]
+        ]
+      }
+    }
   }
 }

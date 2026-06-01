@@ -50,6 +50,8 @@ pub struct Side {
 
     pub conditions: HashMap<Id, fxlang::EffectState>,
     pub slot_conditions: HashMap<usize, HashMap<Id, fxlang::EffectState>>,
+
+    pub total_fainted: u64,
 }
 
 // Construction and initialization logic.
@@ -74,6 +76,7 @@ impl Side {
                 index,
                 conditions: HashMap::default(),
                 slot_conditions: HashMap::default(),
+                total_fainted: 0,
             },
             players,
         ))

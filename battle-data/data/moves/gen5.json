@@ -50,7 +50,8 @@
         "on_try_hit": [
           "if !([alladjacent, alladjacentfoes] has $move.target):",
           ["return"],
-          "log_activate: with_target",
+          "if $report:",
+          ["log_activate: with_target"],
           "return stop"
         ]
       }
@@ -792,7 +793,8 @@
         "on_try_hit": [
           "if $move.priority <= 0:",
           ["return"],
-          "log_activate: with_target",
+          "if $report:",
+          ["log_activate: with_target"],
           "return stop"
         ]
       }

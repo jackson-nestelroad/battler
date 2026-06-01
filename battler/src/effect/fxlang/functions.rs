@@ -273,6 +273,7 @@ pub fn run_function(
         "log_use_move" => log_use_move(context).map(|()| None),
         "log_waiting" => log_waiting(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
+        "lookup_base_species" => lookup_base_species(context).map(|val| Some(val)),
         "max" => max(context).map(|val| Some(val)),
         "max_move" => max_move(context),
         "min" => min(context).map(|val| Some(val)),
@@ -3964,6 +3965,14 @@ fn move_action_to_value(move_action: &MoveAction) -> Value {
             Value::String(move_action.effective_move_id().to_string()),
         ),
         ("mon".to_owned(), Value::Mon(move_action.mon_action.mon)),
+        (
+            "priority".to_owned(),
+            Value::Fraction(move_action.priority.into()),
+        ),
+        (
+            "sub_priority".to_owned(),
+            Value::Fraction(move_action.sub_priority.into()),
+        ),
     ]))
 }
 
@@ -5421,6 +5430,20 @@ fn base_species(mut context: FunctionContext) -> Result<Value> {
     Mon::base_species_of_species(&context).map(|id| Value::String(id.to_string()))
 }
 
+/// Looks up a base species ID.
+///
+/// @param {[`ValueType::String`]} species The species to query.
+/// @returns {[`ValueType::String`]} The base species ID.
+fn lookup_base_species(mut context: FunctionContext) -> Result<Value> {
+    let species = context
+        .pop_front()
+        .wrap_expectation("missing species")?
+        .id()
+        .wrap_error_with_message("invalid species")?;
+    CoreBattle::base_species_of_species(context.battle_context_mut(), &species)
+        .map(|id| Value::String(id.to_string()))
+}
+
 /// Skips an effect callback.
 ///
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} effect The effect ID.
@@ -5622,7 +5645,7 @@ fn switch_out(mut context: FunctionContext) -> Result<Value> {
     let target_handle = context.target_handle_positional()?;
     let mut context = context.mon_context(target_handle)?;
     context.mon_mut().switch_state.needs_switch = Some(SwitchType::Normal);
-    core_battle_actions::switch_out(&mut context, false).map(|val| Value::Boolean(val))
+    core_battle_actions::switch_out(&mut context, None).map(|val| Value::Boolean(val))
 }
 
 /// Forces a Mon to switch out.

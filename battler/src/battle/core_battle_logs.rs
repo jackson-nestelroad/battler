@@ -11,6 +11,7 @@ use alloc::{
 use anyhow::Result;
 use battler_data::{
     Boost,
+    CopyVolatileType,
     Id,
     Stat,
     Type,
@@ -196,8 +197,18 @@ pub fn switch(context: &mut MonContext, is_drag: bool) -> Result<()> {
     full_mon_details(context, title)
 }
 
-pub fn switch_out(context: &mut MonContext) -> Result<()> {
-    let event = battle_log_entry!("switchout", ("mon", Mon::position_details(context)?));
+pub fn switch_out(
+    context: &mut MonContext,
+    copy_volatile_type: Option<CopyVolatileType>,
+) -> Result<()> {
+    let mut event = battle_log_entry!("switchout", ("mon", Mon::position_details(context)?));
+    if let Some(copy_volatile_type) = copy_volatile_type {
+        let flag = match copy_volatile_type {
+            CopyVolatileType::AllCopyable => "copyvolatile",
+            CopyVolatileType::SubstituteOnly => "copysubstitute",
+        };
+        event.add_flag(flag);
+    };
     context.battle_mut().log(event);
     Ok(())
 }
