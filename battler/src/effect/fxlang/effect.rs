@@ -1047,6 +1047,11 @@ pub enum BattleEvent {
     /// Runs in the context of a Mon.
     #[string = "OverrideMove"]
     OverrideMove,
+    /// Runs when determining if a move should be overwritten.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "OverwriteMove"]
+    OverwriteMove,
     /// Runs when determining the effective weather for a Mon. Overrides the weather without looking
     /// at the actual field weather or weather suppression effects.
     ///
@@ -1575,6 +1580,7 @@ impl BattleEvent {
             Self::MoveTargetOverride => CommonCallbackType::MonMoveTarget as u32,
             Self::NegateImmunity => CommonCallbackType::MonResult as u32,
             Self::OverrideWeather => CommonCallbackType::MonInfo as u32,
+            Self::OverwriteMove => CommonCallbackType::MonVoid as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
             Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
             Self::PlayerUse => CommonCallbackType::MonVoid as u32,

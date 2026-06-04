@@ -550,14 +550,6 @@
     "name": "Max Lure",
     "flags": []
   },
-  "rustedsword": {
-    "name": "Rusted Sword",
-    "flags": []
-  },
-  "rustedshield": {
-    "name": "Rusted Shield",
-    "flags": []
-  },
   "fossilizedbird": {
     "name": "Fossilized Bird",
     "special_data": {

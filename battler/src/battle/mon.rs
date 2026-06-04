@@ -2666,6 +2666,7 @@ impl Mon {
         }
 
         core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::DisableMove);
+        core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::OverwriteMove);
 
         for move_slot in context.mon_mut().volatile_state.move_slots.clone() {
             core_battle_effects::run_effect_event::<_, ()>(

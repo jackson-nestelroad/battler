@@ -5244,7 +5244,7 @@ pub fn set_ability(
         return Ok(false);
     }
 
-    if &context.target().volatile_state.ability_slot.ability.id == ability {
+    if !force && &context.target().volatile_state.ability_slot.ability.id == ability {
         return Ok(false);
     }
 
@@ -6585,8 +6585,7 @@ pub fn end_illusion(context: &mut ApplyingEffectContext) -> Result<bool> {
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FormeChangeType {
     Temporary,
-    Permanent,
-    PermanentRevertOnExit,
+    Permanent { revert_on_exit: bool },
     MegaEvolution,
     PrimalReversion,
     UltraBurst,
@@ -6597,11 +6596,17 @@ impl FormeChangeType {
     pub fn permanent(&self) -> bool {
         match self {
             Self::Temporary | Self::Gigantamax => false,
-            Self::Permanent
-            | Self::PermanentRevertOnExit
+            Self::Permanent { .. }
             | Self::MegaEvolution
             | Self::PrimalReversion
             | Self::UltraBurst => true,
+        }
+    }
+
+    pub fn set_ability_even_if_unchanged(&self) -> bool {
+        match self {
+            Self::Temporary | Self::Permanent { .. } | Self::Gigantamax => false,
+            Self::MegaEvolution | Self::PrimalReversion | Self::UltraBurst => true,
         }
     }
 }
@@ -6615,6 +6620,8 @@ pub fn forme_change(
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
+
+    let old_ability = context.target().base_ability.clone();
 
     if !Mon::set_species(
         &mut context.target_context()?,
@@ -6645,9 +6652,7 @@ pub fn forme_change(
     }
 
     match forme_change_type {
-        FormeChangeType::Temporary
-        | FormeChangeType::Permanent
-        | FormeChangeType::PermanentRevertOnExit => {
+        FormeChangeType::Temporary | FormeChangeType::Permanent { .. } => {
             core_battle_logs::forme_change(context)?;
         }
         FormeChangeType::MegaEvolution => {
@@ -6665,12 +6670,18 @@ pub fn forme_change(
     }
 
     // Change the ability after logs, since battle effects start triggering.
-    if forme_change_type.permanent() && context.target().hp != 0 {
-        let new_ability = context.target().base_ability.clone();
+    let new_ability = context.target().base_ability.clone();
+    if (old_ability != new_ability || forme_change_type.set_ability_even_if_unchanged())
+        && context.target().hp != 0
+    {
         set_ability(context, &new_ability, false, true, true)?;
     }
 
-    if forme_change_type == FormeChangeType::PermanentRevertOnExit {
+    if let FormeChangeType::Permanent {
+        revert_on_exit: true,
+        ..
+    } = forme_change_type
+    {
         context.target_mut().revert_forme_change_on_exit = true;
     }
 

@@ -3784,7 +3784,7 @@
       "parameters": [
         {
           "name": "active_move",
-          "type": "Effect",
+          "type": "Effect | String",
           "description": "The active move.",
           "optional": false
         }
@@ -4496,6 +4496,20 @@
     },
     "run_event_on_mon_item": {
       "description": "Runs an event on a Mon's item.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
+    },
+    "run_event_on_mon_species": {
+      "description": "Runs an event on a Mon's species.",
       "parameters": [
         {
           "name": "event",
@@ -7727,6 +7741,16 @@
     },
     "override_weather": {
       "description": "Runs when determining the effective weather for a Mon. Overrides the weather without looking\nat the actual field weather or weather suppression effects.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "overwrite_move": {
+      "description": "Runs when determining if a move should be overwritten.\n\nRuns in the context of a Mon.",
       "variables": {
         "mon": {
           "type": "Mon",

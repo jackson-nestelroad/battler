@@ -3887,6 +3887,10 @@
         "on_after_terastallization": [
           "forme_change: $mon ogerpontealmasktera permanent revertible"
         ],
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
         "on_update": [
           "$base_species = func_call(base_species: $mon)",
           "if $base_species != ogerpon:",
@@ -4907,6 +4911,10 @@
     "learnset": {},
     "effect": {
       "callbacks": {
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
         "on_update": [
           "$base_species = func_call(base_species: $mon)",
           "if $base_species != ogerpon:",

@@ -331,6 +331,7 @@ pub fn run_function(
         "run_event_for_mon" => run_event_for_mon(context).map(|val| Some(val)),
         "run_event_on_mon_ability" => run_event_on_mon_ability(context),
         "run_event_on_mon_item" => run_event_on_mon_item(context),
+        "run_event_on_mon_species" => run_event_on_mon_species(context),
         "run_event_on_mon_volatile" => run_event_on_mon_volatile(context),
         "run_event_on_move" => run_event_on_move(context),
         "sample" => sample(context),
@@ -2037,6 +2038,38 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> 
     ))
 }
 
+/// Runs an event on a Mon's species.
+///
+/// @param {[`ValueType::String`]} event The event ID.
+/// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
+fn run_event_on_mon_species(mut context: FunctionContext) -> Result<Option<Value>> {
+    let event = context
+        .pop_front()
+        .wrap_expectation("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
+
+    let mut context = context.forward_to_applying_effect_context()?;
+    let effect_handle = EffectHandle::Species(context.target().volatile_state.species.clone());
+    let target_handle = context.target_handle();
+    Ok(core_battle_effects::run_effect_event_with_options::<
+        _,
+        _,
+        Option<Value>,
+    >(
+        &mut context,
+        event,
+        (),
+        core_battle_effects::RunEffectEventOptions {
+            effects: Vec::from_iter([AppliedEffectHandle::new(
+                effect_handle,
+                AppliedEffectLocation::Mon(target_handle),
+            )]),
+        },
+    ))
+}
+
 /// Runs an event on a Mon's volatile effect.
 ///
 /// @param {[`ValueType::String`]} volatile The volatile effect ID.
@@ -2764,25 +2797,47 @@ fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>> {
 
 /// Creates a simulated move slot from an active move.
 ///
-/// @param {[`ValueType::Effect`]} active_move The active move.
+/// @param {[`ValueType::Effect`] | [`ValueType::String`]} active_move The active move.
 /// @returns {[`ValueType::MoveSlot`]} The simulated move slot.
 fn move_slot(mut context: FunctionContext) -> Result<Value> {
-    let active_move_handle = context
+    let mov = context
         .pop_front()
-        .wrap_expectation("missing active move")?
-        .active_move()
-        .wrap_error_with_message("invalid active move")?;
-    let active_move = context
-        .evaluation_context()
-        .active_move(active_move_handle)?;
-    let move_slot = MoveSlot::new_simulated(
-        active_move.id().clone(),
-        active_move.data.name.clone(),
-        active_move.data.pp,
-        active_move.data.pp,
-        active_move.data.target,
-        active_move.data.primary_type,
-    );
+        .wrap_expectation("missing active move")?;
+
+    let (id, name, pp, target, primary_type) = if mov.is_active_move() {
+        let active_move_handle = mov
+            .active_move()
+            .wrap_error_with_message("invalid active move")?;
+        let active_move = context
+            .evaluation_context()
+            .active_move(active_move_handle)?;
+        (
+            active_move.id().clone(),
+            active_move.data.name.clone(),
+            active_move.data.pp,
+            active_move.data.target,
+            active_move.data.primary_type,
+        )
+    } else {
+        let move_id = mov
+            .move_id(context.evaluation_context_mut())
+            .wrap_error_with_message("invalid move id")?;
+        let mov = context
+            .battle_context_mut()
+            .battle()
+            .dex
+            .moves
+            .get_by_id(&move_id)?;
+        (
+            mov.id().clone(),
+            mov.data.name.clone(),
+            mov.data.pp,
+            mov.data.target,
+            mov.data.primary_type,
+        )
+    };
+
+    let move_slot = MoveSlot::new_simulated(id, name, pp, pp, target, primary_type);
     Ok(Value::MoveSlot(move_slot))
 }
 
@@ -4880,7 +4935,7 @@ fn type_chart_immunity(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::String`]} forme The new forme ID.
 /// @flag permanent If set, the forme change is permanent.
 /// @flag revertible If set with the `permanent` flag, the forme change will revert on exit.
-/// @returns {[`ValueType::Boolean`]} Whether the forme was successfully changed.
+/// ability. @returns {[`ValueType::Boolean`]} Whether the forme was successfully changed.
 fn forme_change(mut context: FunctionContext) -> Result<Value> {
     let permanent = context.has_flag("permanent");
     let revertible = context.has_flag("revertible");
@@ -4895,10 +4950,8 @@ fn forme_change(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(target)?,
         &forme,
         if permanent {
-            if revertible {
-                core_battle_actions::FormeChangeType::PermanentRevertOnExit
-            } else {
-                core_battle_actions::FormeChangeType::Permanent
+            core_battle_actions::FormeChangeType::Permanent {
+                revert_on_exit: revertible,
             }
         } else {
             core_battle_actions::FormeChangeType::Temporary

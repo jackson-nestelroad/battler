@@ -280,7 +280,7 @@
           "if $target.species != eiscuenoice:",
           ["return"],
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
-          "if $weather.is_snowing:",
+          "if $weather.is_defined and $weather.is_snowing:",
           ["forme_change: $target eiscue permanent"]
         ],
         "on_start": ["run_event_on_mon_ability: WeatherChange"]

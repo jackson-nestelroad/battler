@@ -10219,6 +10219,23 @@
       "toxic": ["M"],
       "trickroom": ["M"],
       "twister": ["T"]
+    },
+    "effect": {
+      "callbacks": {
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
+        "on_update": [
+          "$base_species = func_call(base_species: $mon)",
+          "if $base_species != dialga:",
+          ["return"],
+          "if $mon.item == adamantcrystal:",
+          ["forme_change: $mon dialgaorigin permanent"],
+          "else if $mon.species != dialga:",
+          ["forme_change: $mon dialga permanent"]
+        ]
+      }
     }
   },
   "palkia": {
@@ -10337,6 +10354,23 @@
       "twister": ["T"],
       "waterpulse": ["L6"],
       "whirlpool": ["M"]
+    },
+    "effect": {
+      "callbacks": {
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
+        "on_update": [
+          "$base_species = func_call(base_species: $mon)",
+          "if $base_species != palkia:",
+          ["return"],
+          "if $mon.item == lustrousglobe:",
+          ["forme_change: $mon palkiaorigin permanent"],
+          "else if $mon.species != palkia:",
+          ["forme_change: $mon palkia permanent"]
+        ]
+      }
     }
   },
   "heatran": {
@@ -10660,11 +10694,18 @@
     },
     "effect": {
       "callbacks": {
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
         "on_update": [
-          "if $mon.base_species != $this.id:",
+          "$base_species = func_call(base_species: $mon)",
+          "if $base_species != giratina:",
           ["return"],
           "if $mon.item == griseousorb or $mon.item == griseouscore:",
-          ["forme_change: $mon giratinaorigin permanent"]
+          ["forme_change: $mon giratinaorigin permanent"],
+          "else if $mon.species != giratina:",
+          ["forme_change: $mon giratina permanent"]
         ]
       }
     }
@@ -14700,14 +14741,7 @@
     "flags": ["Restricted Legendary"],
     "learnset": {},
     "effect": {
-      "callbacks": {
-        "on_update": [
-          "if $mon.base_species != $this.id:",
-          ["return"],
-          "if !$mon.item or ($mon.item != griseousorb and $mon.item != griseouscore):",
-          ["forme_change: $mon giratina permanent"]
-        ]
-      }
+      "delegates": ["species:giratina"]
     }
   },
   "rotomheat": {
@@ -15100,7 +15134,10 @@
     "required_items": ["Adamant Crystal"],
     "changes_from": "Dialga",
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "delegates": ["species:dialga"]
+    }
   },
   "palkiaorigin": {
     "name": "Palkia-Origin",
@@ -15135,7 +15172,10 @@
     "required_items": ["Lustrous Globe"],
     "changes_from": "Palkia",
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "delegates": ["species:palkia"]
+    }
   },
   "froslassmega": {
     "name": "Froslass-Mega",

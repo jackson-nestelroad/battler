@@ -2728,12 +2728,41 @@
       }
     }
   },
+  "rustedsword": {
+    "name": "Rusted Sword",
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "zacian"
+        }
+      }
+    }
+  },
+  "rustedshield": {
+    "name": "Rusted Shield",
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "zamazenta"
+        }
+      }
+    }
+  },
   "adamantcrystal": {
     "name": "Adamant Crystal",
     "force_forme": "Dialga-Origin",
     "flags": [],
     "effect": {
-      "delegates": ["item:adamantorb"]
+      "delegates": ["item:adamantorb", "condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "dialga"
+        }
+      }
     }
   },
   "lustrousglobe": {
@@ -2741,7 +2770,12 @@
     "force_forme": "Palkia-Origin",
     "flags": [],
     "effect": {
-      "delegates": ["item:lustrousorb"]
+      "delegates": ["item:lustrousorb", "condition:untakablebyspeciesitembase"],
+      "local_data": {
+        "values": {
+          "species": "palkia"
+        }
+      }
     }
   },
   "griseouscore": {

@@ -136,6 +136,7 @@ mod abilities {
         mod stance_change_test;
         mod sweet_veil_test;
         mod symbiosis_test;
+        mod xerneas_test;
     }
 
     mod gen7 {
@@ -183,6 +184,7 @@ mod abilities {
         mod screen_cleaner_test;
         mod stalwart_test;
         mod wandering_spirit_test;
+        mod zacian_zamazenta_test;
     }
 
     mod gen9 {
