@@ -198,7 +198,10 @@ enum CommonCallbackType {
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString | CallbackFlag::ReturnsVoid,
-    MonType = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsType | CallbackFlag::ReturnsVoid,
+    MonType = CallbackFlag::TakesGeneralMon
+        | CallbackFlag::ReturnsType
+        | CallbackFlag::ReturnsString
+        | CallbackFlag::ReturnsVoid,
     MonTypes =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsTypes | CallbackFlag::ReturnsVoid,
     MonBoostModifier =

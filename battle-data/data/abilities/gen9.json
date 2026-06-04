@@ -185,13 +185,13 @@
           "if $effect_state.activated:",
           ["return"],
           "if $target.species == ogerponcornerstonemasktera:",
-          ["boost: $target 'def:1"],
+          ["boost: $target 'def:1'"],
           "if $target.species == ogerponhearthflamemasktera:",
-          ["boost: $target 'atk:1"],
+          ["boost: $target 'atk:1'"],
           "if $target.species == ogerpontealmasktera:",
-          ["boost: $target 'spe:1"],
+          ["boost: $target 'spe:1'"],
           "if $target.species == ogerponwellspringmasktera:",
-          ["boost: $target 'spd:1"],
+          ["boost: $target 'spd:1'"],
           "$effect_state.activated = true"
         ]
       }

@@ -187,9 +187,12 @@ mod abilities {
 
     mod gen9 {
         mod commander_test;
+        mod embody_aspect_test;
         mod mega_sol_test;
         mod piercing_drill_test;
+        mod tera_shell_test;
         mod tera_shift_test;
+        mod teraform_zero_test;
     }
 }
 
