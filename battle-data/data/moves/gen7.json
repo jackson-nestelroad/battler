@@ -655,6 +655,7 @@
     },
     "condition": {
       "duration": 2,
+      "copy_on_transform": true,
       "callbacks": {
         "on_start": ["log_start"],
         "on_restart": ["$effect_state.duration = 2", "log_start", "return true"],

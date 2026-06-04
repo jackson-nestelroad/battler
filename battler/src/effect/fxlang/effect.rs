@@ -2089,7 +2089,7 @@ pub type Callbacks = HashMap<String, Callback>;
 pub struct ConditionAttributes {
     /// The static duration of the effect.
     ///
-    /// Can be overwritten by the [`on_duration`][`Callbacks::on_duration`] callback.
+    /// Can be overwritten by the [`Duration`][`BattleEvent::Duration`] callback.
     pub duration: Option<u8>,
 
     /// Whether or not the effect can be copied to another Mon.
@@ -2097,6 +2097,10 @@ pub struct ConditionAttributes {
     /// If true, moves like "Baton Pass" will not copy this effect. `false` by default.
     #[serde(default)]
     pub no_copy: bool,
+
+    /// Whether or not the effect can be copied when a Mon transforms.
+    #[serde(default)]
+    pub copy_on_transform: bool,
 }
 
 impl ConditionAttributes {
@@ -2107,6 +2111,7 @@ impl ConditionAttributes {
             self.duration = Some(duration);
         }
         self.no_copy = other.no_copy || self.no_copy;
+        self.copy_on_transform = other.copy_on_transform || self.copy_on_transform;
     }
 }
 

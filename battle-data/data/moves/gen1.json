@@ -2044,6 +2044,7 @@
       }
     },
     "condition": {
+      "copy_on_transform": true,
       "callbacks": {
         "on_start": ["log_start"],
         "on_modify_crit_ratio": ["return $crit_ratio + 2"]

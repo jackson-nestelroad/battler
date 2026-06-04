@@ -48,7 +48,8 @@ fn charizard() -> Result<TeamData> {
                         "Tackle",
                         "Drill Peck",
                         "Growth",
-                        "Conversion"
+                        "Conversion",
+                        "Focus Energy"
                     ],
                     "nature": "Hardy",
                     "gender": "M",
@@ -123,6 +124,15 @@ fn transform_transforms_into_target() {
                             {
                                 "name": "Conversion",
                                 "id": "conversion",
+                                "pp": 5,
+                                "max_pp": 5,
+                                "target": "User",
+                                "type": "Normal",
+                                "disabled": false
+                            },
+                            {
+                                "name": "Focus Energy",
+                                "id": "focusenergy",
                                 "pp": 5,
                                 "max_pp": 5,
                                 "target": "User",
@@ -260,6 +270,15 @@ fn transform_transforms_into_target() {
                                 "target": "User",
                                 "type": "Normal",
                                 "disabled": false
+                            },
+                            {
+                                "name": "Focus Energy",
+                                "id": "focusenergy",
+                                "pp": 5,
+                                "max_pp": 5,
+                                "target": "User",
+                                "type": "Normal",
+                                "disabled": false
                             }
                         ],
                         "ability": "Blaze",
@@ -383,6 +402,42 @@ fn transform_copies_type_change() {
             "split|side:0",
             "damage|mon:Ditto,player-1,1|health:78/108",
             "damage|mon:Ditto,player-1,1|health:73/100",
+            "residual",
+            "turn|turn:4"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn transform_copies_crit_ratio_modifier() {
+    let mut battle = make_battle(0, ditto().unwrap(), charizard().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 4"), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 4"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Charizard,player-2,1|name:Focus Energy|target:Charizard,player-2,1",
+            "start|mon:Charizard,player-2,1|move:Focus Energy",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Ditto,player-1,1|name:Transform|target:Charizard,player-2,1",
+            "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1|species:Charizard",
+            "residual",
+            "turn|turn:3",
+            "continue",
+            "move|mon:Ditto,player-1,1|name:Focus Energy|noanim",
+            "fail|mon:Ditto,player-1,1",
             "residual",
             "turn|turn:4"
         ]"#,

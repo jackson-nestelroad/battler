@@ -1214,6 +1214,7 @@
       "volatile_status": "dragoncheer"
     },
     "condition": {
+      "copy_on_transform": true,
       "callbacks": {
         "on_start": [
           "if func_call(has_volatile: $target focusenergy):",
@@ -1316,7 +1317,7 @@
           "if !$action:",
           ["return false"],
           "$pending_move = func_call(get_move: $action.id)",
-          "if !$pending_move or ($action.priority == 0 and $action.sub_priority == 0) or $pending_move.category == status:",
+          "if !$pending_move or $action.priority == 0 or $pending_move.category == status:",
           ["return false"]
         ]
       }

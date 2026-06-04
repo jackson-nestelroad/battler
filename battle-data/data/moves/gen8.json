@@ -2279,6 +2279,7 @@
     },
     "condition": {
       "no_copy": true,
+      "copy_on_transform": true,
       "callbacks": {
         "on_start": [
           "$effect_state.layers = 1",
