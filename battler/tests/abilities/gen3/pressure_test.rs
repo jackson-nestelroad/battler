@@ -60,8 +60,8 @@ fn pressure_deducts_extra_pp_from_opponent() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "ability|mon:Dusclops,player-2,1|ability:Pressure",
             "ability|mon:Dusclops,player-1,1|ability:Pressure",
+            "ability|mon:Dusclops,player-2,1|ability:Pressure",
             "turn|turn:1"
         ]"#,
     )

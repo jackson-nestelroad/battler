@@ -405,10 +405,10 @@ impl BattleQueue {
                 } else {
                     match tie_resolution {
                         CoreBattleEngineSpeedSortTieResolution::Keep => {
-                            self.actions.insert(min, action)
+                            self.actions.insert(max, action)
                         }
                         CoreBattleEngineSpeedSortTieResolution::Reverse => {
-                            self.actions.insert(max, action)
+                            self.actions.insert(min, action)
                         }
                         CoreBattleEngineSpeedSortTieResolution::Random => self.actions.insert(
                             rand_util::range(prng, min as u64, max as u64 + 1) as usize,

@@ -239,7 +239,7 @@ fn primordial_sea_stops_when_last_mon_with_ability_switches_out() {
             "split|side:1",
             ["switch", "player-2", "Kyogre"],
             ["switch", "player-2", "Kyogre"],
-            "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-2,1",
+            "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
             "weather|weather:Heavy Rain|residual",
             "residual",
             "turn|turn:2",

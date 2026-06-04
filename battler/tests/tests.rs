@@ -189,6 +189,7 @@ mod abilities {
         mod commander_test;
         mod mega_sol_test;
         mod piercing_drill_test;
+        mod tera_shift_test;
     }
 }
 

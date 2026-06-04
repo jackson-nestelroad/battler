@@ -18,12 +18,12 @@ fn team() -> Result<TeamData> {
         r#"{
             "members": [
                 {
-                    "name": "Tapu Koko",
-                    "species": "Tapu Koko",
-                    "ability": "Electric Surge",
+                    "name": "Terapagos",
+                    "species": "Terapagos",
+                    "ability": "Tera Shift",
                     "moves": [],
                     "nature": "Hardy",
-                    "level": 100
+                    "level": 50
                 }
             ]
         }"#,
@@ -46,20 +46,35 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn electric_surge_starts_electric_terrain_on_switch_in() {
+fn tera_shift_transforms_terapagos() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "split|side:0",
-            ["switch"],
-            ["switch"],
+            ["switch", "player-1", "species:Terapagos|"],
+            ["switch", "player-1", "species:Terapagos|"],
             "split|side:1",
-            ["switch"],
-            ["switch"],
-            "fieldstart|move:Electric Terrain|from:ability:Electric Surge|of:Tapu Koko,player-1,1",
-            "turn|turn:1"
+            ["switch", "player-2", "species:Terapagos|"],
+            ["switch", "player-2", "species:Terapagos|"],
+            "activate|mon:Terapagos,player-1,1|ability:Tera Shift",
+            "split|side:0",
+            ["specieschange", "player-1", "species:Terapagos-Terastal|"],
+            ["specieschange", "player-1", "species:Terapagos-Terastal|"],
+            "formechange|mon:Terapagos,player-1,1|species:Terapagos-Terastal|from:ability:Tera Shift",
+            "activate|mon:Terapagos,player-2,1|ability:Tera Shift",
+            "split|side:1",
+            ["specieschange", "player-2", "species:Terapagos-Terastal|"],
+            ["specieschange", "player-2", "species:Terapagos-Terastal|"],
+            "formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift",
+            "turn|turn:1",
+            "continue",
+            "residual",
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();
