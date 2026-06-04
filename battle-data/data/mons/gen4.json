@@ -10664,7 +10664,7 @@
           "if $mon.base_species != $this.id:",
           ["return"],
           "if $mon.item == griseousorb or $mon.item == griseouscore:",
-          ["forme_change: $mon giratinaorigin"]
+          ["forme_change: $mon giratinaorigin permanent"]
         ]
       }
     }
@@ -14705,7 +14705,7 @@
           "if $mon.base_species != $this.id:",
           ["return"],
           "if !$mon.item or ($mon.item != griseousorb and $mon.item != griseouscore):",
-          ["forme_change: $mon giratina"]
+          ["forme_change: $mon giratina permanent"]
         ]
       }
     }

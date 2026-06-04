@@ -16,6 +16,7 @@ use crate::{
         Callback,
         Callbacks,
         ConditionAttributes,
+        LocalData,
         ParsedProgram,
         ProgramMetadata,
     },
@@ -80,6 +81,7 @@ impl SpeedOrderable for ParsedCallback {
 pub struct ParsedEffect {
     callbacks: HashMap<(BattleEvent, BattleEventModifier), ParsedCallback>,
     condition: ConditionAttributes,
+    local_data: LocalData,
 }
 
 impl ParsedEffect {
@@ -150,10 +152,15 @@ impl ParsedEffect {
     }
 
     /// Creates a new [`ParsedEffect`].
-    pub fn new(callbacks: &Callbacks, condition: ConditionAttributes) -> Result<Self> {
+    pub fn new(
+        callbacks: &Callbacks,
+        condition: ConditionAttributes,
+        local_data: LocalData,
+    ) -> Result<Self> {
         let mut parsed = Self {
             callbacks: HashMap::default(),
             condition,
+            local_data,
         };
 
         for (name, callback) in callbacks {
@@ -174,6 +181,7 @@ impl ParsedEffect {
             }
         }
         self.condition.extend(other.condition);
+        self.local_data.extend(other.local_data);
     }
 
     /// Returns the [`ParsedCallback`] for the given event and modifier.
@@ -207,6 +215,11 @@ impl ParsedEffect {
     /// The associated condition attributes.
     pub fn condition(&self) -> &ConditionAttributes {
         &self.condition
+    }
+
+    /// The associated local data.
+    pub fn local_data(&self) -> &LocalData {
+        &self.local_data
     }
 }
 

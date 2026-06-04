@@ -2884,7 +2884,22 @@
       }
     },
     "force_forme": "Ogerpon-Wellspring",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:untakablebyspeciesitembase"],
+      "callbacks": {
+        "on_source_base_power": [
+          "$base_species = func_call(base_species: $source)",
+          "if $base_species == ogerpon:",
+          ["return $base_power * 6/5"]
+        ]
+      },
+      "local_data": {
+        "values": {
+          "species": "ogerpon"
+        }
+      }
+    }
   },
   "hearthflamemask": {
     "name": "Hearthflame Mask",
@@ -2894,7 +2909,10 @@
       }
     },
     "force_forme": "Ogerpon-Hearthflame",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["item:wellspringmask"]
+    }
   },
   "cornerstonemask": {
     "name": "Cornerstone Mask",
@@ -2904,6 +2922,9 @@
       }
     },
     "force_forme": "Ogerpon-Cornerstone",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["item:wellspringmask"]
+    }
   }
 }

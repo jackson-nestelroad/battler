@@ -166,6 +166,7 @@ impl EffectManager {
                 let parsed_effect = ParsedEffect::new(
                     &fxlang_effect.callbacks,
                     fxlang_effect.attributes.condition.clone(),
+                    fxlang_effect.local_data.clone(),
                 )?;
                 let mut combined_effect = ParsedEffect::default();
                 // If we are delegating to other effects, look them up and merge our callbacks in at

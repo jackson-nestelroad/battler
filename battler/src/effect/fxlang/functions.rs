@@ -3243,13 +3243,12 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
-    let move_data = CoreBattle::get_effect_by_handle(
-        context.evaluation_context().battle_context(),
+    let move_data = CoreBattle::get_parsed_effect_by_handle(
+        context.evaluation_context_mut().battle_context_mut(),
         &effect_handle,
     )?
-    .fxlang_effect()
-    .wrap_expectation("effect does not have local data")?
-    .local_data
+    .wrap_not_found_error("effect does not exist")?
+    .local_data()
     .moves
     .get(&move_id)
     .wrap_expectation_with_format(format_args!(
@@ -5476,13 +5475,12 @@ fn value_from_local_data(mut context: FunctionContext) -> Result<Option<Value>> 
         .wrap_expectation("missing key")?
         .string()
         .wrap_error_with_message("invalid key")?;
-    Ok(CoreBattle::get_effect_by_handle(
-        context.evaluation_context().battle_context(),
+    Ok(CoreBattle::get_parsed_effect_by_handle(
+        context.evaluation_context_mut().battle_context_mut(),
         &effect_handle,
     )?
-    .fxlang_effect()
-    .wrap_expectation("effect does not have local data")?
-    .local_data
+    .wrap_not_found_error("effect does not exist")?
+    .local_data()
     .values
     .get(&key)
     .map(|val| val.clone().into()))

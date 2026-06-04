@@ -153,6 +153,9 @@ fn giratina_transforms_into_origin_forme_if_incorrect() {
             "split|side:1",
             ["switch", "player-2"],
             ["switch", "player-2"],
+            "split|side:0",
+            ["specieschange", "player-1", "species:Giratina-Origin"],
+            ["specieschange", "player-1", "species:Giratina-Origin"],
             "formechange|mon:Giratina,player-1,1|species:Giratina-Origin|from:species:Giratina",
             "turn|turn:1"
         ]"#,
@@ -176,7 +179,11 @@ fn giratina_transforms_into_altered_forme_if_incorrect() {
             "split|side:1",
             ["switch", "player-2"],
             ["switch", "player-2"],
+            "split|side:0",
+            ["specieschange", "player-1", "species:Giratina|"],
+            ["specieschange", "player-1", "species:Giratina|"],
             "formechange|mon:Giratina,player-1,1|species:Giratina|from:species:Giratina-Origin",
+            "ability|mon:Giratina,player-1,1|ability:Pressure",
             "turn|turn:1"
         ]"#,
     )

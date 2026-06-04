@@ -78,7 +78,7 @@ fn ogerpon_is_forced_to_have_grass_tera_type_and_transforms_on_terastallization(
 #[test]
 fn ogerpon_cornerstone_is_forced_to_have_rock_tera_type_and_transforms_on_terastallization() {
     let mut team_1 = team().unwrap();
-    team_1.members[0].species = "Ogerpon-Cornerstone-Mask".to_owned();
+    team_1.members[0].item = Some("Cornerstone-Mask".to_owned());
     let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -106,7 +106,7 @@ fn ogerpon_cornerstone_is_forced_to_have_rock_tera_type_and_transforms_on_terast
 #[test]
 fn ogerpon_hearthflame_is_forced_to_have_fire_tera_type_and_transforms_on_terastallization() {
     let mut team_1 = team().unwrap();
-    team_1.members[0].species = "Ogerpon-Hearthflame-Mask".to_owned();
+    team_1.members[0].item = Some("Hearthflame-Mask".to_owned());
     let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -134,7 +134,7 @@ fn ogerpon_hearthflame_is_forced_to_have_fire_tera_type_and_transforms_on_terast
 #[test]
 fn ogerpon_wellspring_is_forced_to_have_water_tera_type_and_transforms_on_terastallization() {
     let mut team_1 = team().unwrap();
-    team_1.members[0].species = "Ogerpon-Wellspring-Mask".to_owned();
+    team_1.members[0].item = Some("Wellspring-Mask".to_owned());
     let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
