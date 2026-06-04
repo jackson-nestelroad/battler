@@ -634,7 +634,14 @@ mod moves {
     }
 
     mod gen9 {
+        mod doodle_test;
+        mod glaive_rush_test;
+        mod last_respects_test;
+        mod order_up_test;
         mod revival_blessing_test;
+        mod salt_cure_test;
+        mod shed_tail_test;
+        mod silk_trap_test;
     }
 }
 
