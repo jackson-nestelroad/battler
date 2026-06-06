@@ -1219,7 +1219,11 @@ where
         }
 
         if ended {
-            if callback_handle.applied_effect_handle.end(&mut context)? {
+            if callback_handle
+                .applied_effect_handle
+                .end(&mut context)?
+                .advance()
+            {
                 continue;
             }
         }

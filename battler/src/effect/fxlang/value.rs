@@ -269,6 +269,7 @@ impl Value {
             Self::Fraction(val) if val == &Fraction::from(0i64) => true,
             Self::UFraction(val) if val == &Fraction::from(0u64) => true,
             Self::String(val) => EventResult::from_str(val).is_ok_and(|result| !result.advance()),
+            Self::EventResult(result) => !result.advance(),
             _ => false,
         }
     }
@@ -364,6 +365,7 @@ impl Value {
         match self {
             Self::Undefined => Ok(false),
             Self::Boolean(val) => Ok(val),
+            Self::EventResult(val) => Ok(val.advance()),
             val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::Boolean)),
         }
     }
@@ -1279,6 +1281,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
         match self {
             Self::Undefined => Some(false),
             Self::Boolean(val) => Some(*val),
+            Self::EventResult(result) => Some(result.advance()),
             Self::Reference(val) => val.value_ref().boolean(),
             _ => None,
         }
@@ -1580,6 +1583,7 @@ impl<'eval> ValueRef<'eval> {
         match self {
             Self::Undefined => Some(false),
             Self::Boolean(val) => Some(*val),
+            Self::EventResult(result) => Some(result.advance()),
             _ => None,
         }
     }
@@ -2435,7 +2439,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         let result = match self {
             Self::Undefined => MaybeReferenceValue::Boolean(true),
             Self::Boolean(val) => MaybeReferenceValue::Boolean(!val),
-            Self::EventResult(val) => MaybeReferenceValue::Boolean(val.advance()),
+            Self::EventResult(val) => MaybeReferenceValue::Boolean(!val.advance()),
             val @ _ if self.value_type().is_number() => val.equal(
                 MaybeReferenceValueForOperation::UFraction(Fraction::from(0u32)),
             )?,

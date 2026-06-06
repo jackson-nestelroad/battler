@@ -1,3 +1,4 @@
+use anyhow::Result;
 use serde_string_enum::{
     DeserializeLabeledStringEnum,
     SerializeLabeledStringEnum,
@@ -92,6 +93,24 @@ impl EventResult {
             (Self::StopFail | Self::StopReportFail | Self::Stop | Self::Skip, right @ _) => right,
         }
     }
+
+    /// Evaluates the closure if this result advances, otherwise returns this result.
+    pub fn and_then<F>(self, f: F) -> Self
+    where
+        F: FnOnce() -> Self,
+    {
+        if self.advance() { f() } else { self }
+    }
+
+    /// Evaluates the closure if this result advances, otherwise returns this result.
+    ///
+    /// Variant for closures that return a [`Result`].
+    pub fn and_then_try<F>(self, f: F) -> Result<Self>
+    where
+        F: FnOnce() -> Result<Self>,
+    {
+        if self.advance() { f() } else { Ok(self) }
+    }
 }
 
 impl From<bool> for EventResult {
@@ -107,4 +126,30 @@ impl From<MoveOutcomeOnTarget> for EventResult {
             _ => EventResult::Advance,
         }
     }
+}
+
+/// Returns the event result early if it does not advance.
+#[macro_export]
+macro_rules! try_event {
+    ($expr:expr) => {{
+        let res = $expr;
+        if !res.advance() {
+            return res;
+        }
+        res
+    }};
+    ($expr:expr, $wrapper:ident) => {{
+        let res = $expr;
+        if !res.advance() {
+            return $wrapper(res);
+        }
+        res
+    }};
+    ($expr:expr, $res:ident => $ret_expr:expr) => {{
+        let $res = $expr;
+        if !$res.advance() {
+            return $ret_expr;
+        }
+        $res
+    }};
 }

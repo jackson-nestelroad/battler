@@ -52,7 +52,7 @@ pub mod CallbackFlag {
     pub const ReturnsMon: u32 = 1 << 25;
     pub const ReturnsBoosts: u32 = 1 << 26;
     pub const ReturnsString: u32 = 1 << 27;
-    pub const ReturnsMoveResult: u32 = 1 << 28;
+    pub const ReturnsEventResult: u32 = 1 << 28;
     pub const ReturnsNumber: u32 = 1 << 29;
     pub const ReturnsBoolean: u32 = 1 << 30;
     pub const ReturnsVoid: u32 = 1 << 31;
@@ -78,10 +78,17 @@ enum CommonCallbackType {
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
-    ApplyingEffectResult = CallbackFlag::TakesTargetMon
+    ApplyingEffectBoolean = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+    ApplyingEffectResult = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsEventResult
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
     ApplyingEffectVoid = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
@@ -108,17 +115,24 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsBoosts
         | CallbackFlag::ReturnsVoid,
 
-    EffectResult = CallbackFlag::TakesTargetMon
+    EffectBoolean = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesSourceEffect
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsVoid,
+    EffectResult = CallbackFlag::TakesTargetMon
+        | CallbackFlag::TakesSourceMon
+        | CallbackFlag::TakesSourceEffect
+        | CallbackFlag::ReturnsEventResult
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
     EffectVoid = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesSourceEffect
         | CallbackFlag::ReturnsVoid,
 
-    NoContextResult = CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
+    NoContextBoolean = CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
     NoContextVoid = CallbackFlag::ReturnsVoid,
 
     SourceMoveModifier = CallbackFlag::TakesUserMon
@@ -129,17 +143,13 @@ enum CommonCallbackType {
     SourceMoveResult = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
     SourceMoveVoid = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
         | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsVoid,
-    SourceMoveControllingResult = CallbackFlag::TakesUserMon
-        | CallbackFlag::TakesSourceTargetMon
-        | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsMoveResult
-        | CallbackFlag::ReturnsBoolean
         | CallbackFlag::ReturnsVoid,
     SourceMoveMonModifier = CallbackFlag::TakesUserMon
         | CallbackFlag::TakesSourceTargetMon
@@ -164,7 +174,7 @@ enum CommonCallbackType {
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
-    MoveResult = CallbackFlag::TakesTargetMon
+    MoveBoolean = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsBoolean
@@ -177,13 +187,16 @@ enum CommonCallbackType {
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
         | CallbackFlag::ReturnsNumber
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
-    MoveControllingResult = CallbackFlag::TakesTargetMon
+    MoveResult = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsMoveResult
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
     MoveSecondaryEffectModifier = CallbackFlag::TakesTargetMon
         | CallbackFlag::TakesSourceMon
@@ -193,8 +206,13 @@ enum CommonCallbackType {
 
     MonModifier =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsNumber | CallbackFlag::ReturnsVoid,
-    MonResult =
+    MonBoolean =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsVoid,
+    MonResult = CallbackFlag::TakesGeneralMon
+        | CallbackFlag::ReturnsEventResult
+        | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
+        | CallbackFlag::ReturnsVoid,
     MonVoid = CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsVoid,
     MonInfo =
         CallbackFlag::TakesGeneralMon | CallbackFlag::ReturnsString | CallbackFlag::ReturnsVoid,
@@ -226,7 +244,9 @@ enum CommonCallbackType {
     SideResult = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesSourceEffect
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
 
     SideEffectVoid = CallbackFlag::TakesSide
@@ -239,28 +259,35 @@ enum CommonCallbackType {
         | CallbackFlag::ReturnsNumber
         | CallbackFlag::ReturnsVoid,
 
-    MoveSideControllingResult = CallbackFlag::TakesSide
+    MoveSideResult = CallbackFlag::TakesSide
         | CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
-        | CallbackFlag::ReturnsMoveResult
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
 
-    MoveFieldControllingResult = CallbackFlag::TakesSourceMon
+    MoveFieldResult = CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesActiveMove
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
 
     FieldVoid =
         CallbackFlag::TakesSourceMon | CallbackFlag::TakesSourceEffect | CallbackFlag::ReturnsVoid,
     FieldResult = CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesSourceEffect
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
 
     FieldEffectResult = CallbackFlag::TakesSourceMon
         | CallbackFlag::TakesEffect
+        | CallbackFlag::ReturnsEventResult
         | CallbackFlag::ReturnsBoolean
+        | CallbackFlag::ReturnsString
         | CallbackFlag::ReturnsVoid,
     FieldEffectVoid =
         CallbackFlag::TakesSourceMon | CallbackFlag::TakesEffect | CallbackFlag::ReturnsVoid,
@@ -1450,7 +1477,7 @@ impl BattleEvent {
         // Maintain alphabetical order.
         match self {
             Self::AccuracyCheckFailed => CommonCallbackType::MoveVoid as u32,
-            Self::AccuracyExempt => CommonCallbackType::MoveResult as u32,
+            Self::AccuracyExempt => CommonCallbackType::MoveBoolean as u32,
             Self::Activate => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::ActivateField => CommonCallbackType::FieldEffectVoid as u32,
             Self::ActivatePlayer => CommonCallbackType::PlayerEffectVoid as u32,
@@ -1483,7 +1510,7 @@ impl BattleEvent {
             Self::BattleEndTurn => CommonCallbackType::NoContextVoid as u32,
             Self::BeforeChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::BeforeDynamax => CommonCallbackType::MonResult as u32,
-            Self::BeforeMove => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::BeforeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::BeforeStart => CommonCallbackType::EffectResult as u32,
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
@@ -1491,9 +1518,9 @@ impl BattleEvent {
             Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
             Self::CalculateStat => CommonCallbackType::MaybeApplyingEffectModifier as u32,
-            Self::CanDynamax => CommonCallbackType::MonResult as u32,
-            Self::CanEscape => CommonCallbackType::MonResult as u32,
-            Self::CanHeal => CommonCallbackType::MonResult as u32,
+            Self::CanDynamax => CommonCallbackType::MonBoolean as u32,
+            Self::CanEscape => CommonCallbackType::MonBoolean as u32,
+            Self::CanHeal => CommonCallbackType::MonBoolean as u32,
             Self::Catch => CommonCallbackType::MonVoid as u32,
             Self::CatchFailed => CommonCallbackType::MonVoid as u32,
             Self::ChangeBoosts => CommonCallbackType::MonBoostModifier as u32,
@@ -1501,7 +1528,7 @@ impl BattleEvent {
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::CopyVolatile => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::CriticalHit => CommonCallbackType::MoveResult as u32,
+            Self::CriticalHit => CommonCallbackType::MoveBoolean as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,
             Self::DamagingHit => CommonCallbackType::MoveVoid as u32,
@@ -1523,28 +1550,28 @@ impl BattleEvent {
             Self::FieldStart => CommonCallbackType::FieldResult as u32,
             Self::Flinch => CommonCallbackType::MonVoid as u32,
             Self::ForceEffectiveness => CommonCallbackType::ApplyingEffectModifier as u32,
-            Self::ForceEscape => CommonCallbackType::MonResult as u32,
+            Self::ForceEscape => CommonCallbackType::MonBoolean as u32,
             Self::ForceTeraType => CommonCallbackType::MonType as u32,
             Self::ForceTypes => CommonCallbackType::MonTypes as u32,
-            Self::Hit => CommonCallbackType::MoveControllingResult as u32,
-            Self::HitField => CommonCallbackType::MoveFieldControllingResult as u32,
-            Self::HitSide => CommonCallbackType::MoveSideControllingResult as u32,
-            Self::HitUser => CommonCallbackType::MoveControllingResult as u32,
-            Self::IgnoreImmunity => CommonCallbackType::MoveResult as u32,
-            Self::Immunity => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::Invulnerability => CommonCallbackType::MoveResult as u32,
-            Self::IsAsleep => CommonCallbackType::MonResult as u32,
-            Self::IsAwayFromField => CommonCallbackType::MonResult as u32,
-            Self::IsBehindSubstitute => CommonCallbackType::MonResult as u32,
-            Self::IsChoiceLocked => CommonCallbackType::MonResult as u32,
-            Self::IsContactProof => CommonCallbackType::MonResult as u32,
-            Self::IsGrounded => CommonCallbackType::MonResult as u32,
-            Self::IsImmuneToEntryHazards => CommonCallbackType::MonResult as u32,
-            Self::IsRaining => CommonCallbackType::NoContextResult as u32,
-            Self::IsSemiInvulnerable => CommonCallbackType::MonResult as u32,
-            Self::IsSnowing => CommonCallbackType::NoContextResult as u32,
-            Self::IsSoundproof => CommonCallbackType::MonResult as u32,
-            Self::IsSunny => CommonCallbackType::NoContextResult as u32,
+            Self::Hit => CommonCallbackType::MoveResult as u32,
+            Self::HitField => CommonCallbackType::MoveFieldResult as u32,
+            Self::HitSide => CommonCallbackType::MoveSideResult as u32,
+            Self::HitUser => CommonCallbackType::MoveResult as u32,
+            Self::IgnoreImmunity => CommonCallbackType::MoveBoolean as u32,
+            Self::Immunity => CommonCallbackType::ApplyingEffectBoolean as u32,
+            Self::Invulnerability => CommonCallbackType::MoveBoolean as u32,
+            Self::IsAsleep => CommonCallbackType::MonBoolean as u32,
+            Self::IsAwayFromField => CommonCallbackType::MonBoolean as u32,
+            Self::IsBehindSubstitute => CommonCallbackType::MonBoolean as u32,
+            Self::IsChoiceLocked => CommonCallbackType::MonBoolean as u32,
+            Self::IsContactProof => CommonCallbackType::MonBoolean as u32,
+            Self::IsGrounded => CommonCallbackType::MonBoolean as u32,
+            Self::IsImmuneToEntryHazards => CommonCallbackType::MonBoolean as u32,
+            Self::IsRaining => CommonCallbackType::NoContextBoolean as u32,
+            Self::IsSemiInvulnerable => CommonCallbackType::MonBoolean as u32,
+            Self::IsSnowing => CommonCallbackType::NoContextBoolean as u32,
+            Self::IsSoundproof => CommonCallbackType::MonBoolean as u32,
+            Self::IsSunny => CommonCallbackType::NoContextBoolean as u32,
             Self::LockMove => CommonCallbackType::MonInfo as u32,
             Self::ModifyAccuracy => CommonCallbackType::MoveModifier as u32,
             Self::ModifyActionSpeed => CommonCallbackType::MonModifier as u32,
@@ -1578,15 +1605,15 @@ impl BattleEvent {
             Self::MoveDamage => CommonCallbackType::MoveModifier as u32,
             Self::MoveFailed => CommonCallbackType::SourceMoveVoid as u32,
             Self::MoveTargetOverride => CommonCallbackType::MonMoveTarget as u32,
-            Self::NegateImmunity => CommonCallbackType::MonResult as u32,
+            Self::NegateImmunity => CommonCallbackType::MonBoolean as u32,
             Self::OverrideWeather => CommonCallbackType::MonInfo as u32,
             Self::OverwriteMove => CommonCallbackType::MonVoid as u32,
             Self::OverrideMove => CommonCallbackType::MonInfo as u32,
-            Self::PlayerTryUseItem => CommonCallbackType::EffectResult as u32,
+            Self::PlayerTryUseItem => CommonCallbackType::EffectBoolean as u32,
             Self::PlayerUse => CommonCallbackType::MonVoid as u32,
             Self::PreMoveEffect => CommonCallbackType::SourceMoveVoid as u32,
-            Self::PrepareHit => CommonCallbackType::SourceMoveControllingResult as u32,
-            Self::PreventUsedItems => CommonCallbackType::MonResult as u32,
+            Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
+            Self::PreventUsedItems => CommonCallbackType::MonBoolean as u32,
             Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1595,7 +1622,7 @@ impl BattleEvent {
             Self::Select => CommonCallbackType::MonVoid as u32,
             Self::SetAbility => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetItem => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::SetLastMove => CommonCallbackType::MonResult as u32,
+            Self::SetLastMove => CommonCallbackType::MonBoolean as u32,
             Self::SetStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::SetTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::SetTypes => CommonCallbackType::ApplyingEffectResult as u32,
@@ -1608,37 +1635,37 @@ impl BattleEvent {
             Self::SlotEnd => CommonCallbackType::SideResult as u32,
             Self::SlotRestart => CommonCallbackType::SideResult as u32,
             Self::SlotStart => CommonCallbackType::SideResult as u32,
-            Self::StallMove => CommonCallbackType::MonResult as u32,
+            Self::StallMove => CommonCallbackType::MonBoolean as u32,
             Self::Start => CommonCallbackType::EffectResult as u32,
             Self::StartBattle => CommonCallbackType::NoContextVoid as u32,
             Self::StartUsingMove => CommonCallbackType::MonVoid as u32,
             Self::StopUsingMove => CommonCallbackType::MonVoid as u32,
             Self::SubPriority => CommonCallbackType::SourceMoveModifier as u32,
-            Self::SuppressFieldTerrain => CommonCallbackType::NoContextResult as u32,
-            Self::SuppressFieldWeather => CommonCallbackType::NoContextResult as u32,
-            Self::SuppressMonAbility => CommonCallbackType::MonResult as u32,
-            Self::SuppressMonItem => CommonCallbackType::MonResult as u32,
-            Self::SuppressMonTerrain => CommonCallbackType::MonResult as u32,
-            Self::SuppressMonWeather => CommonCallbackType::MonResult as u32,
+            Self::SuppressFieldTerrain => CommonCallbackType::NoContextBoolean as u32,
+            Self::SuppressFieldWeather => CommonCallbackType::NoContextBoolean as u32,
+            Self::SuppressMonAbility => CommonCallbackType::MonBoolean as u32,
+            Self::SuppressMonItem => CommonCallbackType::MonBoolean as u32,
+            Self::SuppressMonTerrain => CommonCallbackType::MonBoolean as u32,
+            Self::SuppressMonWeather => CommonCallbackType::MonBoolean as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::SwitchingIn => CommonCallbackType::MonVoid as u32,
             Self::SwitchOut => CommonCallbackType::MonVoid as u32,
             Self::TakeItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TerrainChange => CommonCallbackType::ApplyingEffectVoid as u32,
-            Self::TrapMon => CommonCallbackType::MonResult as u32,
+            Self::TrapMon => CommonCallbackType::MonBoolean as u32,
             Self::TryBoost => CommonCallbackType::ApplyingEffectBoostModifier as u32,
             Self::TryEatItem => CommonCallbackType::ApplyingEffectResult as u32,
             Self::TryEnd => CommonCallbackType::EffectResult as u32,
             Self::TryHeal => CommonCallbackType::ApplyingEffectModifier as u32,
-            Self::TryHit => CommonCallbackType::MoveControllingResult as u32,
-            Self::TryHitField => CommonCallbackType::MoveFieldControllingResult as u32,
-            Self::TryHitSide => CommonCallbackType::MoveSideControllingResult as u32,
-            Self::TryImmunity => CommonCallbackType::MoveResult as u32,
-            Self::TryMove => CommonCallbackType::SourceMoveControllingResult as u32,
+            Self::TryHit => CommonCallbackType::MoveResult as u32,
+            Self::TryHitField => CommonCallbackType::MoveFieldResult as u32,
+            Self::TryHitSide => CommonCallbackType::MoveSideResult as u32,
+            Self::TryImmunity => CommonCallbackType::MoveBoolean as u32,
+            Self::TryMove => CommonCallbackType::SourceMoveResult as u32,
             Self::TryPrimaryHit => CommonCallbackType::MoveHitOutcomeResult as u32,
             Self::TryUseItem => CommonCallbackType::ApplyingEffectResult as u32,
-            Self::TryUseMove => CommonCallbackType::SourceMoveControllingResult as u32,
-            Self::TypeImmunity => CommonCallbackType::MonResult as u32,
+            Self::TryUseMove => CommonCallbackType::SourceMoveResult as u32,
+            Self::TypeImmunity => CommonCallbackType::MonBoolean as u32,
             Self::Types => CommonCallbackType::MonTypes as u32,
             Self::Update => CommonCallbackType::MonVoid as u32,
             Self::UpgradeMove => CommonCallbackType::SourceMoveActiveMove as u32,
@@ -1803,12 +1830,15 @@ impl BattleEvent {
             Some(value_type) if value_type.is_number() => {
                 self.has_flag(CallbackFlag::ReturnsNumber)
             }
-            Some(ValueType::Boolean) => self.has_flag(CallbackFlag::ReturnsBoolean),
+            Some(ValueType::Boolean) => {
+                self.has_flag(CallbackFlag::ReturnsBoolean | CallbackFlag::ReturnsEventResult)
+            }
             Some(ValueType::String) => self.has_flag(
                 CallbackFlag::ReturnsString
-                    | CallbackFlag::ReturnsMoveResult
+                    | CallbackFlag::ReturnsEventResult
                     | CallbackFlag::ReturnsMoveTarget,
             ),
+            Some(ValueType::EventResult) => self.has_flag(CallbackFlag::ReturnsEventResult),
             Some(ValueType::Mon) => self.has_flag(CallbackFlag::ReturnsMon),
             Some(ValueType::ActiveMove) => self.has_flag(CallbackFlag::ReturnsActiveMove),
             Some(ValueType::BoostTable) => self.has_flag(CallbackFlag::ReturnsBoosts),
