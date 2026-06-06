@@ -1647,7 +1647,7 @@ impl BattleEvent {
             Self::UseMoveMessage => CommonCallbackType::SourceMoveVoid as u32,
             Self::ValidateMon => CommonCallbackType::MonValidator as u32,
             Self::ValidateTeam => CommonCallbackType::PlayerValidator as u32,
-            Self::Weather => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::Weather => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::WeatherChange => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::WeatherModifyDamage => CommonCallbackType::SourceMoveModifier as u32,
         }
