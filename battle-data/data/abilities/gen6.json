@@ -125,7 +125,7 @@
       "callbacks": {
         "on_try_hit": [
           "if $target != $source and func_call(move_has_flag: $move bullet):",
-          ["if $report:", ["log_immune: $target from_effect"], "return false"]
+          ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]
         ]
       }
     }

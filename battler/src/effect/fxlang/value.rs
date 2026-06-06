@@ -57,7 +57,7 @@ use crate::{
     battle::{
         FieldEnvironment,
         MonHandle,
-        MoveEventResult,
+        EventResult,
         MoveHandle,
         MoveOutcomeOnTarget,
         MoveSlot,
@@ -266,7 +266,7 @@ impl Value {
             Self::Fraction(val) if val == &Fraction::from(0i64) => true,
             Self::UFraction(val) if val == &Fraction::from(0u64) => true,
             Self::String(val) => {
-                MoveEventResult::from_str(val).is_ok_and(|result| !result.advance())
+                EventResult::from_str(val).is_ok_and(|result| !result.advance())
             }
             _ => false,
         }
@@ -745,10 +745,10 @@ impl Value {
     }
 
     /// Consumes the value into a [`MoveEventResult`].
-    pub fn move_result(self) -> Result<MoveEventResult> {
+    pub fn move_result(self) -> Result<EventResult> {
         match self {
-            Self::Boolean(val) => Ok(MoveEventResult::from(val)),
-            Self::String(val) => MoveEventResult::from_str(&val).map_err(general_error),
+            Self::Boolean(val) => Ok(EventResult::from(val)),
+            Self::String(val) => EventResult::from_str(&val).map_err(general_error),
             val @ _ => Err(general_error(format!(
                 "value of type {} cannot be converted to a move event result",
                 val.value_type(),

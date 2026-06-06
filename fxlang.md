@@ -2401,7 +2401,8 @@ To allow this control, several move events can return a "move event result" whic
 
 - Returning `false` indicates the move stops and fails immediately.
 - Returning `stopfail` indicates the move stops immediately, but it did not necessarily fail. If the move does nothing else, consider the move as failed.
-- Returning `stop` indicates the move stops immediately, but it did not necessarily fail.
+- Returning `stop` indicates the move stops immediately, but it did not necessarily fail, but it should still not be animated.
+- Returning `skip` indicates the move stops immediately, but it did not necessarily fail and should still animate.
 - Returning `true` (or nothing at all) indicates the move can continue.
 
 Events that return "move event results": `BeforeMove`, `Hit`, `HitField`, `HitSide`, `HitUser`, `PrepareHit`, `TryHit`, `TryHitField`, `TryHitSide`, `TryMove`, `TryUseMove`.

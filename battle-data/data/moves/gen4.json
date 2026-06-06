@@ -742,7 +742,7 @@
           ["return false"],
           "add_volatile: $source $this.id",
           "use_move: $source $move $target",
-          "return stop"
+          "return skip"
         ]
       }
     },

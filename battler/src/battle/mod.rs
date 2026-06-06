@@ -113,7 +113,7 @@ pub use mon::{
     ReceivedAttackEntry,
 };
 pub use move_outcome::{
-    MoveEventResult,
+    EventResult,
     MoveOutcome,
     MoveOutcomeOnTarget,
 };

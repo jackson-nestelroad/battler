@@ -449,7 +449,7 @@
           "else if $field.environment == volcano:",
           ["$transformed_move = lavaplume"],
           "use_move: $source $transformed_move $target",
-          "return stop"
+          "return skip"
         ]
       }
     }
@@ -782,6 +782,7 @@
           "$reflected_move = func_call(clone_active_move: $move $target)",
           "$reflected_move.effect_state.reflected = true",
           "use_active_move: $target $reflected_move $source use_effect_as_source_effect",
+          "$move.force_try_hit_result = stop",
           "return stop"
         ],
         "on_side_try_hit_side": [

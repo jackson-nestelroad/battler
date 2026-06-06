@@ -117,11 +117,11 @@
       "callbacks": {
         "on_after_move_secondary_effects_user": [
           "$commanded_state = func_call(volatile_status_state: $user commanded)",
-          "if !$commanded_state or !$command_state.source:",
+          "if !$commanded_state or !$commanded_state.source:",
           ["return"],
-          "if $command_state.source.species == tatsugiridroopy:",
+          "if $commanded_state.source.species == tatsugiridroopy:",
           ["boost: $user 'def:1'"],
-          "else if $command_state.source.species == tatsugiristretchy:",
+          "else if $commanded_state.source.species == tatsugiristretchy:",
           ["boost: $user 'spe:1'"],
           "else:",
           ["boost: $user 'atk:1'"]
@@ -317,21 +317,17 @@
       "callbacks": {
         "on_hit": [
           "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noroleplay):",
-          ["return stop"],
-          "$success = undefined",
+          ["return false"],
+          "$success = false",
           "foreach $mon in func_call(allies_and_self: $source):",
           [
             "if $mon.ability == $target.ability or func_call(ability_has_flag: $mon.ability permanent):",
             ["continue"],
             "if func_call(set_ability: $mon $target.ability):",
-            ["$success = true"],
-            "else if $success.is_undefined:",
-            ["$success = false"]
+            ["$success = true"]
           ],
-          "if $success.is_undefined:",
-          ["return stop"],
           "if !$success:",
-          ["return false"]
+          ["return stopreportfail"]
         ]
       }
     }
@@ -565,11 +561,11 @@
       "callbacks": {
         "on_try_hit": [
           "if !func_call(can_switch: $target.player):",
-          ["return stop"],
+          ["return stopreportfail"],
           "if func_call(has_volatile: $target substitute):",
-          ["return stop"],
-          "if $target.hp <= $target.max_hp / 2:",
-          ["return stop"]
+          ["return stopreportfail"],
+          "if $target.hp <= $target.max_hp / 2 or $target.max_hp == 1:",
+          ["return stopreportfail"]
         ],
         "on_hit": [
           "direct_damage: $target expr($target.max_hp / 2)",

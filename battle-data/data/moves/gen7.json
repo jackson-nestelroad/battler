@@ -796,7 +796,7 @@
             ["return"],
             "if $report:",
             ["log_activate: with_target"],
-            "return false"
+            "return stopfail"
           ]
         }
       }

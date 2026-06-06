@@ -56,7 +56,6 @@ use crate::{
         MonSwitchState,
         MoveAction,
         MoveActionInput,
-        MoveOutcomeOnTarget,
         MoveSlot,
         Player,
         SelectReason,
@@ -2176,12 +2175,11 @@ fn calculate_damage(mut context: FunctionContext) -> Result<Value> {
     let mut context = context
         .source_active_move_context()?
         .wrap_expectation("source effect is not an active move")?;
-    match core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)? {
-        MoveOutcomeOnTarget::Damage(damage) => Ok(Value::UFraction(damage.into())),
-        MoveOutcomeOnTarget::Success | MoveOutcomeOnTarget::Unknown => {
-            Ok(Value::UFraction(0u64.into()))
-        }
-        _ => Ok(Value::Boolean(false)),
+    let damage =
+        core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)?;
+    match damage {
+        Some(damage) => Ok(Value::UFraction(damage.into())),
+        None => Ok(Value::Boolean(false)),
     }
 }
 
@@ -3364,7 +3362,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
             preventable: preventable.then_some(preventable),
         },
     )
-    .map(|result| Value::Boolean(result.outcome().success()))
+    .map(|result| Value::Boolean(result.outcome().succeeded()))
 }
 
 /// Logs that a Mon is waiting.

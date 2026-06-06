@@ -2178,7 +2178,7 @@
           "if !$last_move or !func_call(move_has_flag: $last_move mirror) or !$last_move.callable:",
           ["return false"],
           "use_move: $source $last_move.id $target",
-          "return stop"
+          "return skip"
         ]
       }
     }
@@ -2950,7 +2950,7 @@
           "# Calculate and apply damage.",
           "$damage = func_call(calculate_damage: $target)",
           "if $damage.is_boolean and !$damage:",
-          ["log_fail: $source", "do_not_animate_last_move", "return false"],
+          ["return false"],
           "if $damage > $effect_state.hp:",
           ["$damage = $effect_state.hp"],
           "$effect_state.hp = $effect_state.hp - $damage",

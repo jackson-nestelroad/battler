@@ -812,7 +812,7 @@ where
                                     .mon(mon_handle)?
                                     .volatile_state
                                     .move_last_turn_outcome
-                                    .map(|outcome| outcome.success())
+                                    .map(|outcome| outcome.succeeded())
                                     .unwrap_or(false),
                             ),
                             "move_slots" => ValueRef::TempList(
@@ -834,7 +834,7 @@ where
                                     .mon(mon_handle)?
                                     .volatile_state
                                     .move_this_turn_outcome
-                                    .map(|outcome| !outcome.success())
+                                    .map(|outcome| !outcome.succeeded())
                                     .unwrap_or(false),
                             ),
                             "moved_this_turn" => ValueRef::Boolean(
@@ -1445,6 +1445,11 @@ where
                                 .data
                                 .force_stab,
                         ),
+                        // "force_try_hit_result" => ValueRefMut::Boolean(
+                        //     &mut context
+                        //         .active_move_mut(*active_move_handle)?
+                        //         .force_try_hit_result,
+                        // ),
                         "hit_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
                                 .active_move_mut(*active_move_handle)?
