@@ -8,6 +8,7 @@ mod core_battle;
 pub mod core_battle_actions;
 pub mod core_battle_effects;
 pub mod core_battle_logs;
+mod event_result;
 mod field;
 mod mon;
 pub mod mon_states;
@@ -112,8 +113,8 @@ pub use mon::{
     RecalculateStatsHpPolicy,
     ReceivedAttackEntry,
 };
+pub use event_result::EventResult;
 pub use move_outcome::{
-    EventResult,
     MoveOutcome,
     MoveOutcomeOnTarget,
 };

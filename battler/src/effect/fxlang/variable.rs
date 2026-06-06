@@ -1445,11 +1445,11 @@ where
                                 .data
                                 .force_stab,
                         ),
-                        // "force_try_hit_result" => ValueRefMut::Boolean(
-                        //     &mut context
-                        //         .active_move_mut(*active_move_handle)?
-                        //         .force_try_hit_result,
-                        // ),
+                        "force_try_hit_result" => ValueRefMut::OptionalEventResult(
+                            &mut context
+                                .active_move_mut(*active_move_handle)?
+                                .force_try_hit_result,
+                        ),
                         "hit_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
                                 .active_move_mut(*active_move_handle)?

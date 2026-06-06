@@ -55,9 +55,9 @@ use zone_alloc::ElementRef;
 use crate::{
     WildEncounterType,
     battle::{
+        EventResult,
         FieldEnvironment,
         MonHandle,
-        EventResult,
         MoveHandle,
         MoveOutcomeOnTarget,
         MoveSlot,
@@ -105,6 +105,7 @@ pub enum ValueType {
     Accuracy,
     Boost,
     BoostTable,
+    EventResult,
     FieldEnvironment,
     FlingData,
     Gender,
@@ -175,6 +176,7 @@ pub enum Value {
     Accuracy(Accuracy),
     Boost(Boost),
     BoostTable(BoostTable),
+    EventResult(EventResult),
     FieldEnvironment(FieldEnvironment),
     FlingData(FlingData),
     Gender(Gender),
@@ -225,6 +227,7 @@ impl Value {
             Self::Accuracy(_) => ValueType::Accuracy,
             Self::Boost(_) => ValueType::Boost,
             Self::BoostTable(_) => ValueType::BoostTable,
+            Self::EventResult(_) => ValueType::EventResult,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
@@ -265,9 +268,7 @@ impl Value {
             Self::Boolean(false) => true,
             Self::Fraction(val) if val == &Fraction::from(0i64) => true,
             Self::UFraction(val) if val == &Fraction::from(0u64) => true,
-            Self::String(val) => {
-                EventResult::from_str(val).is_ok_and(|result| !result.advance())
-            }
+            Self::String(val) => EventResult::from_str(val).is_ok_and(|result| !result.advance()),
             _ => false,
         }
     }
@@ -323,6 +324,7 @@ impl Value {
             ValueType::Accuracy => self.accuracy().map(Value::Accuracy),
             ValueType::Boost => self.boost().map(Value::Boost),
             ValueType::BoostTable => self.boost_table().map(Value::BoostTable),
+            ValueType::EventResult => self.event_result().map(Value::EventResult),
             ValueType::FieldEnvironment => self.field_environment().map(Value::FieldEnvironment),
             ValueType::FlingData => self.fling_data().map(Value::FlingData),
             ValueType::Gender => self.gender().map(Value::Gender),
@@ -562,6 +564,16 @@ impl Value {
         }
     }
 
+    /// Consumes the value into an [`EventResult`].
+    pub fn event_result(self) -> Result<EventResult> {
+        match self {
+            Self::Boolean(val) => Ok(EventResult::from(val)),
+            Self::String(val) => EventResult::from_str(&val).map_err(general_error),
+            Self::EventResult(val) => Ok(val),
+            val @ _ => Err(Self::invalid_type(val.value_type(), ValueType::EventResult)),
+        }
+    }
+
     /// Consumes the value into a move ID.
     pub fn move_id(self, context: &mut EvaluationContext) -> Result<Id> {
         match self {
@@ -741,18 +753,6 @@ impl Value {
         match self {
             Self::Boolean(val) => Ok(MoveOutcomeOnTarget::from(val)),
             _ => Ok(MoveOutcomeOnTarget::Damage(self.integer_u16()?)),
-        }
-    }
-
-    /// Consumes the value into a [`MoveEventResult`].
-    pub fn move_result(self) -> Result<EventResult> {
-        match self {
-            Self::Boolean(val) => Ok(EventResult::from(val)),
-            Self::String(val) => EventResult::from_str(&val).map_err(general_error),
-            val @ _ => Err(general_error(format!(
-                "value of type {} cannot be converted to a move event result",
-                val.value_type(),
-            ))),
         }
     }
 
@@ -1056,6 +1056,12 @@ impl From<BoostTable> for Value {
     }
 }
 
+impl From<EventResult> for Value {
+    fn from(value: EventResult) -> Self {
+        Self::EventResult(value)
+    }
+}
+
 impl From<Stat> for Value {
     fn from(value: Stat) -> Self {
         Self::Stat(value)
@@ -1131,6 +1137,7 @@ pub enum MaybeReferenceValue<'eval> {
     Accuracy(Accuracy),
     Boost(Boost),
     BoostTable(BoostTable),
+    EventResult(EventResult),
     FieldEnvironment(FieldEnvironment),
     FlingData(FlingData),
     Gender(Gender),
@@ -1182,6 +1189,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Accuracy(_) => ValueType::Accuracy,
             Self::Boost(_) => ValueType::Boost,
             Self::BoostTable(_) => ValueType::BoostTable,
+            Self::EventResult(_) => ValueType::EventResult,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
@@ -1233,6 +1241,7 @@ impl<'eval> MaybeReferenceValue<'eval> {
             Self::Accuracy(val) => Value::Accuracy(*val),
             Self::Boost(val) => Value::Boost(*val),
             Self::BoostTable(val) => Value::BoostTable(val.clone()),
+            Self::EventResult(val) => Value::EventResult(*val),
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::FlingData(val) => Value::FlingData(val.clone()),
             Self::Gender(val) => Value::Gender(*val),
@@ -1339,6 +1348,7 @@ impl From<Value> for MaybeReferenceValue<'_> {
             Value::Accuracy(val) => Self::Accuracy(val),
             Value::Boost(val) => Self::Boost(val),
             Value::BoostTable(val) => Self::BoostTable(val),
+            Value::EventResult(val) => Self::EventResult(val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(val),
@@ -1411,6 +1421,7 @@ pub enum ValueRef<'eval> {
     Boost(Boost),
     BoostTable(&'eval BoostTable),
     TempBoostTable(BoostTable),
+    EventResult(EventResult),
     FieldEnvironment(FieldEnvironment),
     FlingData(&'eval FlingData),
     Gender(Gender),
@@ -1465,6 +1476,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Boost(_) => ValueType::Boost,
             Self::BoostTable(_) => ValueType::BoostTable,
             Self::TempBoostTable(_) => ValueType::BoostTable,
+            Self::EventResult(_) => ValueType::EventResult,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
@@ -1519,6 +1531,7 @@ impl<'eval> ValueRef<'eval> {
             Self::Boost(val) => Value::Boost(*val),
             Self::BoostTable(val) => Value::BoostTable((*val).clone()),
             Self::TempBoostTable(val) => Value::BoostTable(val.clone()),
+            Self::EventResult(val) => Value::EventResult(*val),
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::FlingData(val) => Value::FlingData((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
@@ -1684,6 +1697,7 @@ impl<'eval> From<&'eval Value> for ValueRef<'eval> {
             Value::Accuracy(val) => Self::Accuracy(*val),
             Value::Boost(val) => Self::Boost(*val),
             Value::BoostTable(val) => Self::BoostTable(val),
+            Value::EventResult(val) => Self::EventResult(*val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(*val),
@@ -1792,6 +1806,8 @@ pub enum ValueRefMut<'eval> {
     Boost(&'eval mut Boost),
     BoostTable(&'eval mut BoostTable),
     OptionalBoostTable(&'eval mut Option<BoostTable>),
+    EventResult(&'eval mut EventResult),
+    OptionalEventResult(&'eval mut Option<EventResult>),
     FieldEnvironment(&'eval mut FieldEnvironment),
     FlingData(&'eval mut FlingData),
     Gender(&'eval mut Gender),
@@ -1859,6 +1875,8 @@ impl<'eval> ValueRefMut<'eval> {
             Self::Boost(_) => ValueType::Boost,
             Self::BoostTable(_) => ValueType::BoostTable,
             Self::OptionalBoostTable(_) => ValueType::BoostTable,
+            Self::EventResult(_) => ValueType::EventResult,
+            Self::OptionalEventResult(_) => ValueType::EventResult,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
@@ -2003,6 +2021,14 @@ impl<'eval> ValueRefMut<'eval> {
                     .then(|| val.boost_table())
                     .transpose()?;
             }
+            ValueRefMut::EventResult(var) => {
+                *var = val.event_result()?;
+            }
+            ValueRefMut::OptionalEventResult(var) => {
+                *var = (!val.is_undefined())
+                    .then(|| val.event_result())
+                    .transpose()?;
+            }
             ValueRefMut::FieldEnvironment(var) => {
                 *var = val.field_environment()?;
             }
@@ -2103,6 +2129,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::Accuracy(val) => Self::Accuracy(val),
             Value::Boost(val) => Self::Boost(val),
             Value::BoostTable(val) => Self::BoostTable(val),
+            Value::EventResult(val) => Self::EventResult(val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(val),
@@ -2167,6 +2194,7 @@ pub enum MaybeReferenceValueForOperation<'eval> {
     Boost(Boost),
     BoostTable(&'eval BoostTable),
     TempBoostTable(BoostTable),
+    EventResult(EventResult),
     FieldEnvironment(FieldEnvironment),
     FlingData(&'eval FlingData),
     Gender(Gender),
@@ -2223,6 +2251,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Boost(_) => ValueType::Boost,
             Self::BoostTable(_) => ValueType::BoostTable,
             Self::TempBoostTable(_) => ValueType::BoostTable,
+            Self::EventResult(_) => ValueType::EventResult,
             Self::FieldEnvironment(_) => ValueType::FieldEnvironment,
             Self::FlingData(_) => ValueType::FlingData,
             Self::Gender(_) => ValueType::Gender,
@@ -2279,6 +2308,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Boost(val) => Value::Boost(*val),
             Self::BoostTable(val) => Value::BoostTable((*val).clone()),
             Self::TempBoostTable(val) => Value::BoostTable(val.clone()),
+            Self::EventResult(val) => Value::EventResult(*val),
             Self::FieldEnvironment(val) => Value::FieldEnvironment(*val),
             Self::FlingData(val) => Value::FlingData((*val).clone()),
             Self::Gender(val) => Value::Gender(*val),
@@ -2338,24 +2368,25 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Boost(_) => 151,
             Self::BoostTable(_) => 152,
             Self::TempBoostTable(_) => 153,
-            Self::FieldEnvironment(_) => 154,
-            Self::FlingData(_) => 155,
-            Self::Gender(_) => 156,
-            Self::JudgmentData(_) => 157,
-            Self::MoveCategory(_) => 158,
-            Self::MoveSlot(_) => 159,
-            Self::MoveTarget(_) => 160,
-            Self::MultiAttackData(_) => 161,
-            Self::MultihitType(_) => 162,
-            Self::NaturalGiftData(_) => 163,
-            Self::Nature(_) => 164,
-            Self::SpecialItemData(_) => 165,
-            Self::Stat(_) => 166,
-            Self::StatTable(_) => 167,
-            Self::TechnoBlastData(_) => 168,
-            Self::TimeOfDay(_) => 169,
-            Self::Type(_) => 170,
-            Self::WildEncounterType(_) => 171,
+            Self::EventResult(_) => 154,
+            Self::FieldEnvironment(_) => 155,
+            Self::FlingData(_) => 156,
+            Self::Gender(_) => 157,
+            Self::JudgmentData(_) => 158,
+            Self::MoveCategory(_) => 159,
+            Self::MoveSlot(_) => 160,
+            Self::MoveTarget(_) => 161,
+            Self::MultiAttackData(_) => 162,
+            Self::MultihitType(_) => 163,
+            Self::NaturalGiftData(_) => 164,
+            Self::Nature(_) => 165,
+            Self::SpecialItemData(_) => 166,
+            Self::Stat(_) => 167,
+            Self::StatTable(_) => 168,
+            Self::TechnoBlastData(_) => 169,
+            Self::TimeOfDay(_) => 170,
+            Self::Type(_) => 171,
+            Self::WildEncounterType(_) => 172,
 
             Self::EffectState(_) => 200,
 
@@ -2404,6 +2435,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         let result = match self {
             Self::Undefined => MaybeReferenceValue::Boolean(true),
             Self::Boolean(val) => MaybeReferenceValue::Boolean(!val),
+            Self::EventResult(val) => MaybeReferenceValue::Boolean(val.advance()),
             val @ _ if self.value_type().is_number() => val.equal(
                 MaybeReferenceValueForOperation::UFraction(Fraction::from(0u32)),
             )?,
@@ -2710,6 +2742,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::String(lhs), Self::Boost(rhs)) => {
                 Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
+            (Self::String(lhs), Self::EventResult(rhs)) => {
+                EventResult::from_str(lhs).is_ok_and(|lhs| &lhs == rhs)
+            }
             (Self::String(lhs), Self::FieldEnvironment(rhs)) => {
                 FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -2746,6 +2781,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 Accuracy::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
             (Self::Str(lhs), Self::Boost(rhs)) => Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs)),
+            (Self::Str(lhs), Self::EventResult(rhs)) => {
+                EventResult::from_str(lhs).is_ok_and(|lhs| &lhs == rhs)
+            }
             (Self::Str(lhs), Self::FieldEnvironment(rhs)) => {
                 FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
             }
@@ -2779,6 +2817,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             }
             (Self::TempString(lhs), Self::Boost(rhs)) => {
                 Boost::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
+            }
+            (Self::TempString(lhs), Self::EventResult(rhs)) => {
+                EventResult::from_str(lhs).is_ok_and(|lhs| &lhs == rhs)
             }
             (Self::TempString(lhs), Self::FieldEnvironment(rhs)) => {
                 FieldEnvironment::from_str(lhs).is_ok_and(|lhs| lhs.eq(rhs))
@@ -2823,6 +2864,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::BoostTable(lhs), Self::TempBoostTable(rhs)) => lhs.eq(&rhs),
             (Self::TempBoostTable(lhs), Self::BoostTable(rhs)) => lhs.eq(rhs),
             (Self::TempBoostTable(lhs), Self::TempBoostTable(rhs)) => lhs.eq(rhs),
+            (Self::EventResult(lhs), Self::EventResult(rhs)) => lhs.eq(rhs),
             (Self::FieldEnvironment(lhs), Self::FieldEnvironment(rhs)) => lhs.eq(rhs),
             (Self::FlingData(lhs), Self::FlingData(rhs)) => lhs.eq(rhs),
             (Self::Gender(lhs), Self::Gender(rhs)) => lhs.eq(rhs),
@@ -2978,15 +3020,16 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             Self::Str(val) => val.to_string(),
             Self::TempString(val) => val.clone(),
             Self::Boost(val) => val.to_string(),
+            Self::EventResult(val) => val.to_string(),
             Self::FieldEnvironment(val) => val.to_string(),
             Self::Gender(val) => val.to_string(),
             Self::MoveCategory(val) => val.to_string(),
             Self::MoveTarget(val) => val.to_string(),
             Self::Nature(val) => val.to_string(),
+            Self::Stat(val) => val.to_string(),
             Self::TimeOfDay(val) => val.to_string(),
             Self::Type(val) => val.to_string(),
             Self::WildEncounterType(val) => val.to_string(),
-            Self::Stat(val) => val.to_string(),
             _ => {
                 return Err(general_error(format!(
                     "{} value is not string formattable",
@@ -3021,6 +3064,7 @@ impl<'eval> From<&'eval Value> for MaybeReferenceValueForOperation<'eval> {
             Value::Accuracy(val) => Self::Accuracy(*val),
             Value::Boost(val) => Self::Boost(*val),
             Value::BoostTable(val) => Self::BoostTable(val),
+            Value::EventResult(val) => Self::EventResult(*val),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(*val),
@@ -3071,6 +3115,7 @@ impl<'eval> From<&'eval MaybeReferenceValue<'eval>> for MaybeReferenceValueForOp
             MaybeReferenceValue::Accuracy(val) => Self::Accuracy(*val),
             MaybeReferenceValue::Boost(val) => Self::Boost(*val),
             MaybeReferenceValue::BoostTable(val) => Self::BoostTable(val),
+            MaybeReferenceValue::EventResult(val) => Self::EventResult(*val),
             MaybeReferenceValue::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             MaybeReferenceValue::FlingData(val) => Self::FlingData(val),
             MaybeReferenceValue::Gender(val) => Self::Gender(*val),
@@ -3127,6 +3172,7 @@ impl<'eval> From<ValueRef<'eval>> for MaybeReferenceValueForOperation<'eval> {
             ValueRef::Boost(val) => Self::Boost(val),
             ValueRef::BoostTable(val) => Self::BoostTable(val),
             ValueRef::TempBoostTable(val) => Self::TempBoostTable(val),
+            ValueRef::EventResult(val) => Self::EventResult(val),
             ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(val),
             ValueRef::FlingData(val) => Self::FlingData(val),
             ValueRef::Gender(val) => Self::Gender(val),
@@ -3186,6 +3232,7 @@ impl<'eval> From<&'eval ValueRefToStoredValue<'eval>> for MaybeReferenceValueFor
             ValueRef::Boost(val) => Self::Boost(*val),
             ValueRef::BoostTable(val) => Self::BoostTable(val),
             ValueRef::TempBoostTable(val) => Self::BoostTable(val),
+            ValueRef::EventResult(val) => Self::EventResult(*val),
             ValueRef::FieldEnvironment(val) => Self::FieldEnvironment(*val),
             ValueRef::FlingData(val) => Self::FlingData(*val),
             ValueRef::Gender(val) => Self::Gender(*val),
