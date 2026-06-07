@@ -242,10 +242,12 @@ pub struct ContinueStatement;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BreakStatement;
 
-/// RequireStatement -> "require" Expr
+/// RequireStatement -> "require" Expr ("else" "return" (Expr))
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[repr(transparent)]
-pub struct RequireStatement(pub Expr);
+pub struct RequireStatement {
+    pub condition: Expr,
+    pub else_return: Option<Option<Expr>>,
+}
 
 /// Statement -> Empty | FunctionCall | Assignment | IfStatement | ElseIfStatement |
 /// ForEachStatement | ReturnStatement | ContinueStatement | BreakStatement | RequireStatement

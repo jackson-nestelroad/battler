@@ -604,21 +604,33 @@ impl<'event_state> Evaluator<'event_state> {
             tree::Statement::Continue(_) => Ok(Some(ProgramStatementEvalResult::ContinueStatement)),
             tree::Statement::Break(_) => Ok(Some(ProgramStatementEvalResult::BreakStatement)),
             tree::Statement::RequireStatement(statement) => {
-                let condition = self.evaluate_expr(context, &statement.0)?;
-                let condition = MaybeReferenceValueForOperation::from(&condition);
-                let falsy = condition
-                    .negate()
-                    .wrap_error_with_message(
-                        "require statement condition must implement the negation operator",
-                    )?
-                    .boolean()
-                    .ok_or_else(|| {
-                        general_error("negation operator unexpectedly did not return a boolean")
-                    })?;
-                if falsy {
-                    return Ok(Some(ProgramStatementEvalResult::ReturnStatement(Some(
-                        condition.to_owned(),
-                    ))));
+                let failed_requirement = {
+                    let condition = self.evaluate_expr(context, &statement.condition)?;
+                    let condition = MaybeReferenceValueForOperation::from(&condition);
+                    let falsy = condition
+                        .negate()
+                        .wrap_error_with_message(
+                            "require statement condition must implement the negation operator",
+                        )?
+                        .boolean()
+                        .ok_or_else(|| {
+                            general_error("negation operator unexpectedly did not return a boolean")
+                        })?;
+                    if falsy {
+                        Some(condition.to_owned())
+                    } else {
+                        None
+                    }
+                };
+                if let Some(failed_requirement) = failed_requirement {
+                    let return_val = match &statement.else_return {
+                        None => Some(failed_requirement),
+                        Some(None) => None,
+                        Some(Some(expr)) => Some(self.evaluate_expr(context, expr)?.to_owned()),
+                    };
+                    return Ok(Some(ProgramStatementEvalResult::ReturnStatement(
+                        return_val,
+                    )));
                 }
                 Ok(None)
             }

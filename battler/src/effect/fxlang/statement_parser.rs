@@ -742,8 +742,24 @@ impl<'s> StatementParser<'s> {
             Some(Token::RequireKeyword) => self.token_parser.consume_lexeme(),
             _ => return Err(self.unexpected_token_error_with_expected_hint("require")),
         };
-        let expr = self.parse_expr()?;
-        Ok(tree::RequireStatement(expr))
+        let condition = self.parse_expr()?;
+        let mut else_return = None;
+        if let Some(Token::ElseKeyword) = self.token_parser.next_token(NextTokenContext::new())? {
+            self.token_parser.consume_lexeme();
+            match self.token_parser.next_token(NextTokenContext::new())? {
+                Some(Token::ReturnKeyword) => self.token_parser.consume_lexeme(),
+                _ => return Err(self.unexpected_token_error_with_expected_hint("return")),
+            };
+            let ret_expr = match self.token_parser.next_token(NextTokenContext::new())? {
+                Some(_) => Some(self.parse_expr()?),
+                None => None,
+            };
+            else_return = Some(ret_expr);
+        }
+        Ok(tree::RequireStatement {
+            condition,
+            else_return,
+        })
     }
 
     fn parse_function_call(&mut self) -> Result<tree::FunctionCall> {
@@ -2140,25 +2156,105 @@ mod statement_parser_test {
     fn parses_require() {
         assert_eq!(
             StatementParser::new("require $test").parse().unwrap(),
-            tree::Statement::RequireStatement(tree::RequireStatement(tree::Expr::Value(
-                tree::Value::Var(tree::Var {
+            tree::Statement::RequireStatement(tree::RequireStatement {
+                condition: tree::Expr::Value(tree::Value::Var(tree::Var {
                     name: tree::Identifier("test".to_owned()),
                     member_access: vec![],
-                })
-            )))
+                })),
+                else_return: None,
+            })
         );
 
         assert_eq!(
             StatementParser::new("require !$test").parse().unwrap(),
-            tree::Statement::RequireStatement(tree::RequireStatement(tree::Expr::PrefixUnaryExpr(
-                tree::PrefixUnaryExpr {
+            tree::Statement::RequireStatement(tree::RequireStatement {
+                condition: tree::Expr::PrefixUnaryExpr(tree::PrefixUnaryExpr {
                     ops: vec![tree::Operator::Not],
                     expr: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
                         name: tree::Identifier("test".to_owned()),
                         member_access: vec![],
                     })))
-                }
-            )))
+                }),
+                else_return: None,
+            })
+        );
+
+        assert_eq!(
+            StatementParser::new("require $test else return").parse().unwrap(),
+            tree::Statement::RequireStatement(tree::RequireStatement {
+                condition: tree::Expr::Value(tree::Value::Var(tree::Var {
+                    name: tree::Identifier("test".to_owned()),
+                    member_access: vec![],
+                })),
+                else_return: Some(None),
+            })
+        );
+
+        assert_eq!(
+            StatementParser::new("require $test else return stop").parse().unwrap(),
+            tree::Statement::RequireStatement(tree::RequireStatement {
+                condition: tree::Expr::Value(tree::Value::Var(tree::Var {
+                    name: tree::Identifier("test".to_owned()),
+                    member_access: vec![],
+                })),
+                else_return: Some(Some(tree::Expr::Value(tree::Value::StringLiteral(
+                    tree::StringLiteral("stop".to_owned())
+                )))),
+            })
+        );
+
+        assert_eq!(
+            StatementParser::new("require $test else return $other + 1").parse().unwrap(),
+            tree::Statement::RequireStatement(tree::RequireStatement {
+                condition: tree::Expr::Value(tree::Value::Var(tree::Var {
+                    name: tree::Identifier("test".to_owned()),
+                    member_access: vec![],
+                })),
+                else_return: Some(Some(tree::Expr::BinaryExpr(tree::BinaryExpr {
+                    lhs: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
+                        name: tree::Identifier("other".to_owned()),
+                        member_access: vec![],
+                    }))),
+                    rhs: vec![tree::BinaryExprRhs {
+                        op: tree::Operator::Add,
+                        expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
+                            tree::NumberLiteral::Unsigned(1u64.into())
+                        ))),
+                    }]
+                }))),
+            })
+        );
+
+        assert_eq!(
+            StatementParser::new("require $test.a + $test.b == 3 else return stop")
+                .parse()
+                .unwrap(),
+            tree::Statement::RequireStatement(tree::RequireStatement {
+                condition: tree::Expr::BinaryExpr(tree::BinaryExpr {
+                    lhs: Box::new(tree::Expr::BinaryExpr(tree::BinaryExpr {
+                        lhs: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
+                            name: tree::Identifier("test".to_owned()),
+                            member_access: vec![tree::Identifier("a".to_owned())],
+                        }))),
+                        rhs: vec![tree::BinaryExprRhs {
+                            op: tree::Operator::Add,
+                            expr: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
+                                name: tree::Identifier("test".to_owned()),
+                                member_access: vec![tree::Identifier("b".to_owned())],
+                            }))),
+                        }]
+                    })),
+                    rhs: vec![tree::BinaryExprRhs {
+                        op: tree::Operator::Equal,
+                        expr: Box::new(tree::Expr::Value(tree::Value::NumberLiteral(
+                            tree::NumberLiteral::Unsigned(3u64.into())
+                        ))),
+                    }]
+                }),
+                else_return: Some(Some(tree::Expr::Value(tree::Value::StringLiteral(
+                    tree::StringLiteral("stop".to_owned())
+                )))),
+            })
         );
     }
 
@@ -2173,14 +2269,16 @@ mod statement_parser_test {
     #[test]
     fn parses_assign_rule() {
         assert_eq!(
-            StatementParser::new("$test = assign($a = 5)").parse().unwrap(),
+            StatementParser::new("$test = assign($a = 5)")
+                .parse()
+                .unwrap(),
             tree::Statement::Assignment(tree::Assignment {
                 lhs: tree::Var {
                     name: tree::Identifier("test".to_owned()),
                     member_access: vec![],
                 },
-                rhs: tree::Expr::Value(tree::Value::ValueAssignment(tree::ValueAssignment(Box::new(
-                    tree::Assignment {
+                rhs: tree::Expr::Value(tree::Value::ValueAssignment(tree::ValueAssignment(
+                    Box::new(tree::Assignment {
                         lhs: tree::Var {
                             name: tree::Identifier("a".to_owned()),
                             member_access: vec![],
@@ -2188,8 +2286,8 @@ mod statement_parser_test {
                         rhs: tree::Expr::Value(tree::Value::NumberLiteral(
                             tree::NumberLiteral::Unsigned(5u64.into())
                         ))
-                    }
-                ))))
+                    })
+                )))
             })
         );
     }
