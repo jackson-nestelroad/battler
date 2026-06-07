@@ -429,7 +429,7 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
             items.push(item);
         }
         
-        const keywords = ['if', 'else', 'foreach', 'in', 'return', 'break', 'continue', 'and', 'or', 'has', 'hasany', 'func_call', 'expr', 'str'];
+        const keywords = ['if', 'else', 'foreach', 'in', 'return', 'break', 'continue', 'require', 'assign', 'and', 'or', 'has', 'hasany', 'func_call', 'expr', 'str'];
         for (const kw of keywords) {
             const item = new vscode.CompletionItem(kw, vscode.CompletionItemKind.Keyword);
             item.sortText = ' ' + kw;

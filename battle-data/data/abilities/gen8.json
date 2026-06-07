@@ -466,7 +466,7 @@
               "else:",
               ["log_block: with_target with_source use_effect_state_target_as_source"]
             ],
-            "return false"
+            "return stopfail"
           ]
         ]
       }

@@ -9,7 +9,7 @@
           ["return"],
           "if $effect.is_move:",
           ["log_block: with_target"],
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -40,7 +40,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_block: with_target"],
-          "return false"
+          "return stopfail"
         ],
         "on_ally_add_volatile": [
           "if ($source.is_defined and $target == $source) or !func_call(has_type: $target grass):",
@@ -49,7 +49,7 @@
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_block: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }
@@ -105,6 +105,7 @@
           [
             "if $mon == $user:",
             ["continue"],
+            "$item = undefined",
             "$item = func_call(take_item: $mon dry_run)",
             "if !$item or !func_call(set_item: $user $item dry_run):",
             ["continue"],
@@ -173,13 +174,16 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_ally_set_status": ["if $status.id == slp:", ["log_block: with_target", "return false"]],
+        "on_ally_set_status": [
+          "if $status.id == slp:",
+          ["log_block: with_target", "return stopfail"]
+        ],
         "on_ally_add_volatile": [
           "if $volatile.id == yawn:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_block: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }

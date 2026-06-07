@@ -252,7 +252,7 @@
           "# Check base species and the true base species (e.g., Diglett for Diglett-Alola) for immunity.",
           "$base_species = func_call(base_species: $target)",
           "if func_call(species_has_flag: $base_species notelekinesis) or func_call(species_has_flag: $target.base_species notelekinesis):",
-          ["log_immune: $target", "return false"],
+          ["log_immune: $target", "return stopfail"],
           "if func_call(has_volatile: $target smackdown) or func_call(has_volatile: $target ingrain):",
           ["return false"],
           "log_start"
@@ -318,11 +318,7 @@
     "condition": {
       "no_copy": true,
       "callbacks": {
-        "on_start": [
-          "if !func_call(add_volatile: $target knockdown):",
-          ["return false"],
-          "log_start"
-        ],
+        "on_start": ["require func_call(add_volatile: $target knockdown)", "log_start"],
         "on_restart": ["run_event_on_mon_volatile: $this.id Start", "return true"],
         "is_grounded": ["if $effect_state.started:", ["return true"]]
       }
@@ -494,7 +490,7 @@
           "if $target.types == [water]:",
           ["log_fail: $target $this.condition", "return"],
           "if !func_call(set_types: $target [water]):",
-          ["log_fail: $target $this.condition", "return false"]
+          ["log_fail: $target $this.condition", "return stopfail"]
         ]
       }
     }
@@ -605,7 +601,7 @@
           "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability nosimplebeam):",
           ["return false"]
         ],
-        "on_hit": ["if !func_call(set_ability: $target simple):", ["return false"]]
+        "on_hit": ["return func_call(set_ability: $target simple)"]
       }
     }
   },
@@ -630,7 +626,7 @@
           "if $target.ability == $source.ability or func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noentrainmenttarget) or func_call(ability_has_flag: $source.ability noentrainment):",
           ["return false"]
         ],
-        "on_hit": ["if !func_call(set_ability: $target $source.ability):", ["return false"]]
+        "on_hit": ["return func_call(set_ability: $target $source.ability)"]
       }
     }
   },
@@ -1095,8 +1091,9 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if !func_call(set_types: $source $target.effective_types_no_added_type) and (!$target.added_type or !func_call(add_type: $source $target.added_type)):",
-          ["return false"]
+          "$set_types = func_call(set_types: $source $target.effective_types_no_added_type)",
+          "$add_type = $target.added_type.is_defined and func_call(add_type: $source $target.added_type)",
+          "return $set_types or $add_type"
         ]
       }
     }
@@ -1147,15 +1144,10 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if !$source.item:",
-          ["return false"],
-          "if !func_call(set_item: $target $source.item dry_run):",
-          ["return false"]
+          "return $source.item.is_defined and func_call(set_item: $target $source.item dry_run)"
         ],
         "on_hit": [
-          "$item = func_call(take_item: $source)",
-          "if !$item:",
-          ["return false"],
+          "require assign($item = func_call(take_item: $source))",
           "return func_call(set_item: $target $item)"
         ]
       }

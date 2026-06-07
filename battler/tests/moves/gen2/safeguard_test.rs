@@ -71,13 +71,11 @@ fn safeguard_protects_side_from_statuses() {
             "continue",
             "move|mon:Ledian,player-2,1|name:Confuse Ray|noanim",
             "activate|mon:Ledian,player-1,1|move:Safeguard",
-            "fail|mon:Ledian,player-2,1",
             "residual",
             "turn|turn:3",
             "continue",
             "move|mon:Ledian,player-2,1|name:Toxic|noanim",
             "activate|mon:Ledian,player-1,1|move:Safeguard",
-            "fail|mon:Ledian,player-2,1",
             "residual",
             "turn|turn:4"
         ]"#,
@@ -105,7 +103,6 @@ fn safeguard_protects_against_yawn() {
             "continue",
             "move|mon:Ledian,player-2,1|name:Yawn|noanim",
             "activate|mon:Ledian,player-1,1|move:Safeguard",
-            "fail|mon:Ledian,player-2,1",
             "residual",
             "turn|turn:3"
         ]"#,

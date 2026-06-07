@@ -91,7 +91,6 @@ fn prevents_multiple_foes_falling_asleep() {
             "status|mon:Snorlax,player-2,1|status:Sleep",
             "move|mon:Snorlax,player-1,2|name:Spore|noanim",
             "activate|clause:Sleep Clause",
-            "fail|mon:Snorlax,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -115,7 +114,6 @@ fn prevents_multiple_foes_falling_asleep() {
             ["switch", "player-2", "position:1"],
             "move|mon:Snorlax,player-1,1|name:Spore|noanim",
             "activate|clause:Sleep Clause",
-            "fail|mon:Snorlax,player-1,1",
             "residual",
             "turn|turn:3"
         ]"#,

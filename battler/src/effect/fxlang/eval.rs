@@ -603,6 +603,25 @@ impl<'event_state> Evaluator<'event_state> {
             }
             tree::Statement::Continue(_) => Ok(Some(ProgramStatementEvalResult::ContinueStatement)),
             tree::Statement::Break(_) => Ok(Some(ProgramStatementEvalResult::BreakStatement)),
+            tree::Statement::RequireStatement(statement) => {
+                let condition = self.evaluate_expr(context, &statement.0)?;
+                let condition = MaybeReferenceValueForOperation::from(&condition);
+                let falsy = condition
+                    .negate()
+                    .wrap_error_with_message(
+                        "require statement condition must implement the negation operator",
+                    )?
+                    .boolean()
+                    .ok_or_else(|| {
+                        general_error("negation operator unexpectedly did not return a boolean")
+                    })?;
+                if falsy {
+                    return Ok(Some(ProgramStatementEvalResult::ReturnStatement(Some(
+                        condition.to_owned(),
+                    ))));
+                }
+                Ok(None)
+            }
         }
     }
 
@@ -742,16 +761,22 @@ impl<'event_state> Evaluator<'event_state> {
                     //
                     // Important for cases where we might check if a variable exists before
                     // accessing it.
-                    match (&lhs, rhs_expr.op) {
-                        (MaybeReferenceValueForOperation::Boolean(true), tree::Operator::Or) => {
-                            drop(lhs);
-                            value = MaybeReferenceValue::Boolean(true);
-                            continue;
+                    match rhs_expr.op {
+                        tree::Operator::Or => {
+                            if lhs.boolean()? {
+                                let result = lhs.boolean_coercion()?;
+                                drop(lhs);
+                                value = result.into();
+                                continue;
+                            }
                         }
-                        (MaybeReferenceValueForOperation::Boolean(false), tree::Operator::And) => {
-                            drop(lhs);
-                            value = MaybeReferenceValue::Boolean(false);
-                            continue;
+                        tree::Operator::And => {
+                            if !lhs.boolean()? {
+                                let result = lhs.boolean_coercion()?;
+                                drop(lhs);
+                                value = result.into();
+                                continue;
+                            }
                         }
                         _ => (),
                     }
@@ -868,6 +893,21 @@ impl<'event_state> Evaluator<'event_state> {
                     None => Ok(MaybeReferenceValue::Undefined),
                 }
             }
+            tree::Value::ValueAssignment(assignment) => {
+                let value = self.evaluate_expr(context, &assignment.0.rhs)?;
+                // SAFETY: The value produced by the expression is either a new value or a reference
+                // to a value in the battle/evaluation state. If it refers to the variable being
+                // assigned to, the variable registry's runtime borrow checking will catch the
+                // conflict. Transmuting allows us to temporarily decouple the value's lifetime from
+                // context's mutable borrow, so that context can be mutably borrowed again in
+                // assign_var.
+                let value_to_assign = unsafe {
+                    core::mem::transmute::<MaybeReferenceValue<'_>, MaybeReferenceValue<'_>>(value)
+                };
+                let assigned_value =
+                    self.assign_var_and_reborrow(context, &assignment.0.lhs, value_to_assign)?;
+                Ok(assigned_value)
+            }
             tree::Value::FormattedString(formatted_string) => {
                 self.evaluate_formatted_string(context, formatted_string)
             }
@@ -897,15 +937,18 @@ impl<'event_state> Evaluator<'event_state> {
 
     fn assign_var<'eval, 'program>(
         &'eval self,
-        context: &mut EvaluationContext,
+        context: &'eval mut EvaluationContext,
         var: &'program tree::Var,
         value: MaybeReferenceValue<'eval>,
-    ) -> Result<()> {
+    ) -> Result<()>
+    where
+        'program: 'eval,
+    {
         // Drop the reference as soon as possible, because holding it might block a mutable
         // reference to what we want to assign to.
         //
-        // For instance, assigning one property of an object to another property on the same object
-        // results in a borrow error without this drop.
+        // For instance, assigning one property of an object to another property on the same
+        // object results in a borrow error without this drop.
         let owned_value = value.to_owned();
         drop(value);
 
@@ -915,6 +958,20 @@ impl<'event_state> Evaluator<'event_state> {
         runtime_var_ref
             .assign(owned_value)
             .wrap_error_with_format(format_args!("failed to assign to ${}", var.full_name()))
+    }
+
+    fn assign_var_and_reborrow<'eval, 'program>(
+        &'eval self,
+        context: &'eval mut EvaluationContext,
+        var: &'program tree::Var,
+        value: MaybeReferenceValue<'eval>,
+    ) -> Result<MaybeReferenceValue<'eval>>
+    where
+        'program: 'eval,
+    {
+        self.assign_var(context, var, value)?;
+        let var = self.create_var(var)?;
+        Ok(MaybeReferenceValue::from(var.get(context)?))
     }
 
     fn create_var<'eval, 'program>(

@@ -4,9 +4,12 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
 };
 
-use crate::battle::MoveOutcomeOnTarget;
+use crate::{
+    battle::MoveOutcomeOnTarget,
+    general_error,
+};
 
-/// The result of a move event, which indicates how the rest of the move should be handled.
+/// The result of an event, which indicates how the rest of the effect should be handled.
 #[derive(
     Debug,
     Default,
@@ -31,12 +34,12 @@ pub enum EventResult {
     /// Stop the move.
     ///
     /// Do not animate. Report failure. Treat as skipped.
-    #[string = "StopReportFail"]
+    #[string = "stopreportfail"]
     StopReportFail,
     /// Stop the move.
     ///
     /// Do not animate. Do not report failure. Treat as skipped.
-    #[string = "Stop"]
+    #[string = "stop"]
     Stop,
     /// Skip the move.
     ///
@@ -152,4 +155,55 @@ macro_rules! try_event {
         }
         $res
     }};
+}
+
+/// An [`EventResult`] matched with an output value if successful.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct EventResultOutput<T> {
+    event_result: EventResult,
+    output: Option<T>,
+}
+
+impl<T> EventResultOutput<T> {
+    /// The event produced no output, which must be a failure.
+    pub fn no_output(event_result: EventResult) -> Result<Self> {
+        if event_result.advance() {
+            return Err(general_error(
+                "successful event result must have an output value",
+            ));
+        }
+        Ok(Self {
+            event_result,
+            output: None,
+        })
+    }
+
+    /// The event produced an output value successfully.
+    pub fn with_output(output: T) -> Self {
+        Self {
+            event_result: EventResult::Advance,
+            output: Some(output),
+        }
+    }
+
+    /// The event produced an output value successfully.
+    pub fn advance(&self) -> bool {
+        self.event_result.advance()
+    }
+
+    /// The output value, if available.
+    pub fn output(self) -> Option<T> {
+        self.output
+    }
+
+    /// Converts to a [`Result`] containing both values.
+    pub fn result(self) -> Result<T, EventResult> {
+        self.output.ok_or(self.event_result)
+    }
+}
+
+impl<T> Into<EventResult> for EventResultOutput<T> {
+    fn into(self) -> EventResult {
+        self.event_result
+    }
 }

@@ -69,6 +69,8 @@ pub(crate) enum Token {
     StrKeyword,
     ContinueKeyword,
     BreakKeyword,
+    RequireKeyword,
+    AssignKeyword,
 }
 
 mod byte {
@@ -444,6 +446,8 @@ mod token {
                 "str" => Token::StrKeyword,
                 "continue" => Token::ContinueKeyword,
                 "break" => Token::BreakKeyword,
+                "require" => Token::RequireKeyword,
+                "assign" => Token::AssignKeyword,
                 _ => Token::Identifier,
             }
         }
@@ -644,6 +648,9 @@ impl<'s> StatementParser<'s> {
                 Ok(tree::Statement::Continue(self.parse_continue_statement()?))
             }
             Some(Token::BreakKeyword) => Ok(tree::Statement::Break(self.parse_break_statement()?)),
+            Some(Token::RequireKeyword) => Ok(tree::Statement::RequireStatement(
+                self.parse_require_statement()?,
+            )),
             _ => Err(self.unexpected_token_error()),
         }
     }
@@ -730,6 +737,15 @@ impl<'s> StatementParser<'s> {
         Ok(tree::BreakStatement)
     }
 
+    fn parse_require_statement(&mut self) -> Result<tree::RequireStatement> {
+        match self.token_parser.next_token(NextTokenContext::new())? {
+            Some(Token::RequireKeyword) => self.token_parser.consume_lexeme(),
+            _ => return Err(self.unexpected_token_error_with_expected_hint("require")),
+        };
+        let expr = self.parse_expr()?;
+        Ok(tree::RequireStatement(expr))
+    }
+
     fn parse_function_call(&mut self) -> Result<tree::FunctionCall> {
         let identifier = self.parse_identifier()?;
         match self.token_parser.next_token(NextTokenContext::new())? {
@@ -801,6 +817,9 @@ impl<'s> StatementParser<'s> {
             Some(Token::ExprKeyword) => Ok(Some(tree::Value::ValueExpr(self.parse_value_expr()?))),
             Some(Token::FuncCallKeyword) => Ok(Some(tree::Value::ValueFunctionCall(
                 self.parse_value_func_call()?,
+            ))),
+            Some(Token::AssignKeyword) => Ok(Some(tree::Value::ValueAssignment(
+                self.parse_value_assignment()?,
             ))),
             Some(Token::StrKeyword) => Ok(Some(tree::Value::FormattedString(
                 self.parse_formatted_string()?,
@@ -972,6 +991,25 @@ impl<'s> StatementParser<'s> {
             _ => return Err(self.unexpected_token_error_with_expected_hint(")")),
         };
         Ok(tree::ValueFunctionCall(function_call))
+    }
+
+    fn parse_value_assignment(&mut self) -> Result<tree::ValueAssignment> {
+        match self.token_parser.next_token(NextTokenContext::new())? {
+            Some(Token::AssignKeyword) => self.token_parser.consume_lexeme(),
+            _ => return Err(self.unexpected_token_error_with_expected_hint("assign")),
+        };
+        match self.token_parser.next_token(NextTokenContext::new())? {
+            Some(Token::LeftParenthesis) => self.token_parser.consume_lexeme(),
+            _ => return Err(self.unexpected_token_error_with_expected_hint("(")),
+        };
+        self.down_one_level()?;
+        let assignment = self.parse_assignment()?;
+        self.up_one_level();
+        match self.token_parser.next_token(NextTokenContext::new())? {
+            Some(Token::RightParenthesis) => self.token_parser.consume_lexeme(),
+            _ => return Err(self.unexpected_token_error_with_expected_hint(")")),
+        };
+        Ok(tree::ValueAssignment(Box::new(assignment)))
     }
 
     fn parse_formatted_string(&mut self) -> Result<tree::FormattedString> {
@@ -2095,6 +2133,64 @@ mod statement_parser_test {
         assert_matches::assert_matches!(
             StatementParser::new("foreach $var of $list:").parse(),
             Err(err) => assert_eq!(format!("{err:#}"), "unexpected token at index 13: of (expected in)")
+        );
+    }
+
+    #[test]
+    fn parses_require() {
+        assert_eq!(
+            StatementParser::new("require $test").parse().unwrap(),
+            tree::Statement::RequireStatement(tree::RequireStatement(tree::Expr::Value(
+                tree::Value::Var(tree::Var {
+                    name: tree::Identifier("test".to_owned()),
+                    member_access: vec![],
+                })
+            )))
+        );
+
+        assert_eq!(
+            StatementParser::new("require !$test").parse().unwrap(),
+            tree::Statement::RequireStatement(tree::RequireStatement(tree::Expr::PrefixUnaryExpr(
+                tree::PrefixUnaryExpr {
+                    ops: vec![tree::Operator::Not],
+                    expr: Box::new(tree::Expr::Value(tree::Value::Var(tree::Var {
+                        name: tree::Identifier("test".to_owned()),
+                        member_access: vec![],
+                    })))
+                }
+            )))
+        );
+    }
+
+    #[test]
+    fn fails_require_missing_expr() {
+        assert_matches::assert_matches!(
+            StatementParser::new("require").parse(),
+            Err(err) => assert_eq!(format!("{err:#}"), "unexpected end of line (expected value)")
+        );
+    }
+
+    #[test]
+    fn parses_assign_rule() {
+        assert_eq!(
+            StatementParser::new("$test = assign($a = 5)").parse().unwrap(),
+            tree::Statement::Assignment(tree::Assignment {
+                lhs: tree::Var {
+                    name: tree::Identifier("test".to_owned()),
+                    member_access: vec![],
+                },
+                rhs: tree::Expr::Value(tree::Value::ValueAssignment(tree::ValueAssignment(Box::new(
+                    tree::Assignment {
+                        lhs: tree::Var {
+                            name: tree::Identifier("a".to_owned()),
+                            member_access: vec![],
+                        },
+                        rhs: tree::Expr::Value(tree::Value::NumberLiteral(
+                            tree::NumberLiteral::Unsigned(5u64.into())
+                        ))
+                    }
+                ))))
+            })
         );
     }
 }

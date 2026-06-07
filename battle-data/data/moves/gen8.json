@@ -300,8 +300,7 @@
       "callbacks": {
         "on_hit_field": [
           "$side_conditions = [mist, lightscreen, reflect, spikes, safeguard, tailwind, toxicspikes, stealthrock, waterpledge, firepledge, grasspledge, stickyweb, auroraveil, luckychant, gmaxsteelsurge, gmaxcannonade, gmaxvinelash, gmaxwildfire, gmaxvolcalith]",
-          "if !func_call(swap_side_conditions: $source.foe_side $source.side $side_conditions):",
-          ["return false"],
+          "require func_call(swap_side_conditions: $source.foe_side $source.side $side_conditions)",
           "log_activate: with_source"
         ]
       }
@@ -2116,7 +2115,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_hit": ["if !func_call(cure_status: $target):", ["return false"]]
+        "on_hit": ["return func_call(cure_status: $target)"]
       }
     }
   },

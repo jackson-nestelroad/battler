@@ -59,7 +59,6 @@ fn insomnia_resists_sleep() {
         r#"[
             "move|mon:Drowzee,player-1,1|name:Hypnosis|noanim",
             "immune|mon:Drowzee,player-2,1|from:ability:Insomnia",
-            "fail|mon:Drowzee,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

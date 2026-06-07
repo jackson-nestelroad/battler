@@ -98,7 +98,6 @@ fn uproar_continually_prevents_sleep() {
             "faint|mon:Ralts,player-2,2",
             "move|mon:Whismur,player-2,1|name:Sleep Powder|noanim",
             "fail|mon:Whismur,player-1,1|what:status:Sleep|from:move:Uproar",
-            "fail|mon:Whismur,player-2,1",
             "start|mon:Whismur,player-1,1|move:Uproar|residual",
             "residual",
             "turn|turn:4"

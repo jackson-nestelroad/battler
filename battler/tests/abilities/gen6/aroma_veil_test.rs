@@ -72,7 +72,6 @@ fn aroma_veil_prevents_taunt_for_allies() {
         r#"[
             "move|mon:Aromatisse,player-2,1|name:Taunt|noanim",
             "block|mon:Aromatisse,player-1,2|move:Taunt|from:ability:Aroma Veil",
-            "fail|mon:Aromatisse,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,

@@ -77,7 +77,7 @@
       "callbacks": {
         "on_any_try_move": [
           "if [explosion, mindblown, mistyexplosion, selfdestruct] has $move.id:",
-          ["log_cant: with_source use_effect_state_target_as_source", "return false"]
+          ["log_cant: with_source use_effect_state_target_as_source", "return stopfail"]
         ],
         "on_any_damage": ["if $effect.id == aftermath:", ["return 0"]]
       }
@@ -94,7 +94,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -209,7 +209,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -240,7 +240,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -322,7 +322,7 @@
       "callbacks": {
         "on_drag_out": {
           "order": 1,
-          "program": ["log_activate: with_target", "return false"]
+          "program": ["log_activate: with_target", "return stopfail"]
         }
       }
     }
@@ -619,7 +619,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -644,7 +644,7 @@
         "is_soundproof": ["return true"],
         "on_try_hit": [
           "if $target != $source and func_call(move_has_flag: $move sound):",
-          ["if $report:", ["log_immune: $target from_effect"], "return false"]
+          ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]
         ]
       }
     }
@@ -799,7 +799,7 @@
           "priority": 9,
           "program": [
             "if func_call(remove_volatile: $user $this.id):",
-            ["log_cant", "return false"],
+            ["log_cant", "return stopfail"],
             "add_volatile: $user $this.id"
           ]
         }
@@ -890,7 +890,7 @@
           "if $target.hp == 0 or $target.item == stickybarb:",
           ["return"],
           "if $target != $source:",
-          ["log_activate: with_target", "return false"]
+          ["log_activate: with_target", "return stopfail"]
         ]
       }
     }
@@ -1047,7 +1047,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
-          "return false"
+          "return stopfail"
         ]
       }
     }

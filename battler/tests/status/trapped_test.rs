@@ -145,7 +145,6 @@ fn ghost_types_resist_trapping() {
         r#"[
             "move|mon:Pikachu,player-2,1|name:Mean Look|noanim",
             "immune|mon:Gengar,player-1,1",
-            "fail|mon:Pikachu,player-2,1",
             "residual",
             "turn|turn:2",
             "continue",

@@ -65,7 +65,6 @@ fn powder_damages_user_on_fire_type_move() {
             "split|side:1",
             "damage|mon:Vivillon,player-2,1|from:move:Powder|health:203/270",
             "damage|mon:Vivillon,player-2,1|from:move:Powder|health:76/100",
-            "fail|mon:Vivillon,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,

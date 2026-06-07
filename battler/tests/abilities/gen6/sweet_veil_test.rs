@@ -79,12 +79,10 @@ fn sweet_veil_prevents_user_and_ally_sleep() {
         r#"[
             "move|mon:Slurpuff,player-1,1|name:Sleep Powder|noanim",
             "block|mon:Slurpuff,player-2,1|move:Sleep Powder|from:ability:Sweet Veil",
-            "fail|mon:Slurpuff,player-1,1",
             "move|mon:Slurpuff,player-1,2|name:Rest|noanim",
             "block|mon:Slurpuff,player-1,2|move:Rest|from:ability:Sweet Veil",
             "move|mon:Slurpuff,player-2,1|name:Yawn|noanim",
             "block|mon:Slurpuff,player-1,2|move:Yawn|from:ability:Sweet Veil",
-            "fail|mon:Slurpuff,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,

@@ -158,6 +158,9 @@ where
                 "is_empty" => {
                     value = ValueRef::Boolean(value.is_empty());
                 }
+                "is_true" => {
+                    value = ValueRef::Boolean(value.boolean_coercion());
+                }
                 "is_undefined" => {
                     value = ValueRef::Boolean(value.is_undefined());
                 }

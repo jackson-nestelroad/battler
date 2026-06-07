@@ -62,7 +62,7 @@
         },
         "on_before_move": [
           "if !$move.upgraded_z_move and func_call(move_has_flag: $move.id gravity):",
-          ["log_cant", "return false"]
+          ["log_cant", "return stopfail"]
         ],
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
         "on_field_end": ["log_field_end"]
@@ -459,8 +459,7 @@
           "if !$data or !$data.fling:",
           ["return false"],
           "# User can lose its item.",
-          "if !func_call(take_item: $user dry_run):",
-          ["return false"],
+          "require func_call(take_item: $user dry_run)",
           "# Modify move according to the item being flung.",
           "$effect_state.item = $item.id",
           "$effect_state.use_item = $data.fling.use_item",
@@ -581,7 +580,7 @@
           "priority": 6,
           "program": [
             "if !$move.upgraded: and func_call(move_has_flag: $move.id heal):",
-            ["log_cant", "return false"]
+            ["log_cant", "return stopfail"]
           ]
         },
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
@@ -895,7 +894,7 @@
           "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noworryseed):",
           ["return false"]
         ],
-        "on_hit": ["if !func_call(set_ability: $target insomnia):", ["return false"]]
+        "on_hit": ["return func_call(set_ability: $target insomnia)"]
       }
     }
   },

@@ -60,6 +60,7 @@ use crate::{
         EffectContext,
         EffectiveAbility,
         EventResult,
+        EventResultOutput,
         ExperienceAction,
         FieldEffectContext,
         LevelUpAction,
@@ -3759,13 +3760,14 @@ pub fn add_volatile(
                 return Ok(EventResult::StopFail);
             }
 
-            if !*core_battle_effects::run_event_with_input::<_, _, DefaultTrueBool>(
-                context.context,
-                fxlang::BattleEvent::AddVolatile,
-                context.effect_handle.clone(),
-            ) {
-                return Ok(EventResult::Fail);
-            }
+            try_event!(
+                core_battle_effects::run_event_with_input::<_, _, EventResult>(
+                    context.context,
+                    fxlang::BattleEvent::AddVolatile,
+                    context.effect_handle.clone(),
+                ),
+                Ok
+            );
 
             Ok(EventResult::Advance)
         }
@@ -5656,13 +5658,13 @@ pub fn take_item(
     context: &mut ApplyingEffectContext,
     dry_run: bool,
     silent: bool,
-) -> Result<Option<Id>> {
+) -> Result<EventResultOutput<Id>> {
     if !context.target().active {
-        return Ok(None);
+        return EventResultOutput::no_output(EventResult::Fail);
     }
     let item_id = match context.target().item.clone() {
         Some(item) => item,
-        None => return Ok(None),
+        None => return EventResultOutput::no_output(EventResult::Fail),
     };
     let item_handle = context
         .battle_mut()
@@ -5684,11 +5686,11 @@ pub fn take_item(
     });
 
     if !take_item_result.advance() {
-        return Ok(None);
+        return EventResultOutput::no_output(take_item_result);
     }
 
     if dry_run {
-        return Ok(Some(item_id));
+        return Ok(EventResultOutput::with_output(item_id));
     }
 
     end_item_internal(
@@ -5710,7 +5712,7 @@ pub fn take_item(
         item_handle,
     );
 
-    Ok(Some(item_id))
+    Ok(EventResultOutput::with_output(item_id))
 }
 
 fn after_use_item(context: &mut ApplyingEffectContext, item: Id) -> Result<bool> {

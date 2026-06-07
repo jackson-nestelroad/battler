@@ -80,6 +80,10 @@ pub use core_battle::{
     CoreBattle,
     PublicCoreBattle,
 };
+pub use event_result::{
+    EventResult,
+    EventResultOutput,
+};
 pub use field::{
     Field,
     FieldData,
@@ -113,7 +117,6 @@ pub use mon::{
     RecalculateStatsHpPolicy,
     ReceivedAttackEntry,
 };
-pub use event_result::EventResult;
 pub use move_outcome::{
     MoveOutcome,
     MoveOutcomeOnTarget,

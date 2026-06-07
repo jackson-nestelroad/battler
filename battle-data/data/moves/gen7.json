@@ -711,7 +711,7 @@
         ],
         "on_before_move": [
           "if !$move.upgraded and func_call(move_has_flag: $move sound):",
-          ["log_cant", "return false"]
+          ["log_cant", "return stopfail"]
         ],
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
         "on_end": ["log_end: silent"]
@@ -934,8 +934,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if !func_call(cure_status: $target):",
-          ["return false"],
+          "require func_call(cure_status: $target)",
           "heal: $source expr($source.max_hp / 2)"
         ]
       }
@@ -1372,7 +1371,7 @@
         "on_before_move": [
           "$volatile_state = func_call(volatile_status_state: $user $this.id)",
           "if !$volatile_state or !$volatile_state.hit:",
-          ["log_cant", "return false"]
+          ["log_cant", "return stopfail"]
         ]
       }
     },

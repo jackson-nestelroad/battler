@@ -42,6 +42,10 @@
       "description": "",
       "type": "Boolean"
     },
+    "is_true": {
+      "description": "",
+      "type": "Boolean"
+    },
     "is_undefined": {
       "description": "",
       "type": "Boolean"
@@ -289,6 +293,11 @@
         "type": "Boolean | Undefined",
         "only_applicable_to_active_move": true
       },
+      "force_try_hit_result": {
+        "description": "",
+        "type": "EventResult | Undefined",
+        "only_applicable_to_active_move": true
+      },
       "tracks_target": {
         "description": "",
         "type": "Boolean | Undefined",
@@ -380,6 +389,10 @@
       "force_stab": {
         "description": "",
         "type": "Boolean"
+      },
+      "force_try_hit_result": {
+        "description": "",
+        "type": "EventResult"
       },
       "multiaccuracy": {
         "description": "",
@@ -1280,7 +1293,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_secondary_effect_to_move": {
@@ -1320,7 +1333,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_slot_condition": {
@@ -1346,7 +1359,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_sub_ability": {
@@ -1366,7 +1379,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_type": {
@@ -1386,7 +1399,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_volatile": {
@@ -1411,7 +1424,7 @@
           "description": "If set, the volatile effect is linked to the current effect."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "adjacent_allies": {
@@ -1604,7 +1617,7 @@
         {
           "name": "damage",
           "type": "UFraction",
-          "description": "The amount of damage dealt.",
+          "description": "The amount of damage healed.",
           "optional": false
         }
       ],
@@ -1623,7 +1636,7 @@
         }
       ],
       "flags": [],
-      "type": "Undefined",
+      "type": "UFraction",
       "returns_item_from_list": false
     },
     "base_species": {
@@ -1680,7 +1693,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "boost_table": {
@@ -2019,21 +2032,21 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "clear_terrain": {
       "description": "Clears the field terrain.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "clear_weather": {
       "description": "Clears the field weather.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "clone_active_move": {
@@ -2067,7 +2080,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "damage": {
@@ -2330,7 +2343,7 @@
           "description": "If set, the consumption cannot be stopped."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "eat_given_item": {
@@ -2350,7 +2363,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "effect_has_event_callback": {
@@ -2446,7 +2459,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "end_item": {
@@ -2474,7 +2487,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "faint": {
@@ -2537,7 +2550,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "forme_change": {
@@ -2566,7 +2579,7 @@
           "description": "If set with the `permanent` flag, the forme change will revert on exit."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "get_all_moves": {
@@ -2993,7 +3006,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "is_adjacent": {
@@ -4106,7 +4119,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "prioritize_move": {
@@ -4275,7 +4288,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "remove_side_condition": {
@@ -4295,7 +4308,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "remove_slot_condition": {
@@ -4321,7 +4334,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "remove_volatile": {
@@ -4341,7 +4354,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "request_mon_selection": {
@@ -4375,7 +4388,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "restore_pp": {
@@ -4629,7 +4642,7 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_boost": {
@@ -4715,7 +4728,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_item": {
@@ -4735,7 +4748,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_needs_switch": {
@@ -4801,7 +4814,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_types": {
@@ -4821,7 +4834,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_terrain": {
@@ -4835,7 +4848,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_upgraded_to_max_move": {
@@ -4889,7 +4902,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_z_power_boosts": {
@@ -5079,7 +5092,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "swap_side_conditions": {
@@ -5105,7 +5118,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "switch_out": {
@@ -5142,7 +5155,7 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "String | Undefined",
+      "type": "String | EventResult",
       "returns_item_from_list": false
     },
     "target_location_of_mon": {
@@ -5182,7 +5195,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "type_chart_effectiveness": {
@@ -5385,7 +5398,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "use_item": {
@@ -5399,7 +5412,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "use_move": {

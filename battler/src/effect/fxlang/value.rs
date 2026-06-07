@@ -1588,6 +1588,18 @@ impl<'eval> ValueRef<'eval> {
         }
     }
 
+    /// Applies boolean coercion.
+    pub fn boolean_coercion(&self) -> bool {
+        match self {
+            Self::Undefined => false,
+            Self::Boolean(val) => *val,
+            Self::Fraction(val) => *val != 0,
+            Self::UFraction(val) => *val != 0,
+            Self::EventResult(val) => val.advance(),
+            _ => true,
+        }
+    }
+
     /// Checks if the value supports list iteration.
     pub fn supports_list_iteration(&self) -> bool {
         match self {
@@ -1810,7 +1822,7 @@ pub enum ValueRefMut<'eval> {
     Boost(&'eval mut Boost),
     BoostTable(&'eval mut BoostTable),
     OptionalBoostTable(&'eval mut Option<BoostTable>),
-    EventResult(&'eval mut EventResult),
+    EventResult(&'eval mut Value), // NOTE: EventResults are failures that can be overwritten.
     OptionalEventResult(&'eval mut Option<EventResult>),
     FieldEnvironment(&'eval mut FieldEnvironment),
     FlingData(&'eval mut FlingData),
@@ -2026,7 +2038,7 @@ impl<'eval> ValueRefMut<'eval> {
                     .transpose()?;
             }
             ValueRefMut::EventResult(var) => {
-                *var = val.event_result()?;
+                *var = val;
             }
             ValueRefMut::OptionalEventResult(var) => {
                 *var = (!val.is_undefined())
@@ -2133,7 +2145,7 @@ impl<'eval> From<&'eval mut Value> for ValueRefMut<'eval> {
             Value::Accuracy(val) => Self::Accuracy(val),
             Value::Boost(val) => Self::Boost(val),
             Value::BoostTable(val) => Self::BoostTable(val),
-            Value::EventResult(val) => Self::EventResult(val),
+            Value::EventResult(_) => Self::EventResult(value),
             Value::FieldEnvironment(val) => Self::FieldEnvironment(val),
             Value::FlingData(val) => Self::FlingData(val),
             Value::Gender(val) => Self::Gender(val),
@@ -2429,20 +2441,40 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         general_error(format!("cannot {operation} {lhs} and {rhs}"))
     }
 
-    /// Implements negation.
-    ///
-    /// For boolean coercion, all values coerce to `true` except for:
-    /// - `undefined`
-    /// - `false`
-    /// - `0`
-    pub fn negate(self) -> Result<MaybeReferenceValue<'eval>> {
+    /// Implements boolean coercion.
+    pub fn boolean_coercion(&self) -> Result<Value> {
         let result = match self {
-            Self::Undefined => MaybeReferenceValue::Boolean(true),
-            Self::Boolean(val) => MaybeReferenceValue::Boolean(!val),
-            Self::EventResult(val) => MaybeReferenceValue::Boolean(!val.advance()),
-            val @ _ if self.value_type().is_number() => val.equal(
-                MaybeReferenceValueForOperation::UFraction(Fraction::from(0u32)),
-            )?,
+            Self::Undefined => Value::Boolean(false),
+            Self::Boolean(val) => Value::Boolean(*val),
+            Self::Fraction(val) => Value::Boolean(*val != 0),
+            Self::UFraction(val) => Value::Boolean(*val != 0),
+            Self::EventResult(val) => Value::EventResult(*val),
+            _ => Value::Boolean(true),
+        };
+        Ok(result)
+    }
+
+    /// Underlying boolean value.
+    pub fn boolean(&self) -> Result<bool> {
+        let val = self.boolean_coercion()?;
+        let result = match val {
+            Value::Boolean(val) => val,
+            Value::EventResult(val) => val.advance(),
+            _ => {
+                return Err(general_error(format!(
+                    "invalid boolean coercion value type {}",
+                    val.value_type()
+                )));
+            }
+        };
+        Ok(result)
+    }
+
+    /// Implements negation.
+    pub fn negate(&self) -> Result<MaybeReferenceValue<'eval>> {
+        let result = match self.boolean_coercion()? {
+            Value::Boolean(val) => MaybeReferenceValue::Boolean(!val),
+            Value::EventResult(val) => MaybeReferenceValue::Boolean(!val.advance()),
             _ => MaybeReferenceValue::Boolean(false),
         };
         Ok(result)
@@ -2974,11 +3006,29 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
     /// Implements boolean conjunction.
     pub fn and(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
-        let result = match (self, rhs) {
-            (Self::Undefined, Self::Undefined) => false,
-            (Self::Undefined, Self::Boolean(_)) => false,
-            (Self::Boolean(_), Self::Undefined) => false,
-            (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs && rhs,
+        let result = match (self.boolean_coercion()?, rhs.boolean_coercion()?) {
+            (Value::Boolean(lhs), Value::Boolean(rhs)) => MaybeReferenceValue::Boolean(lhs && rhs),
+            (Value::Boolean(lhs), Value::EventResult(rhs)) => {
+                if lhs {
+                    MaybeReferenceValue::EventResult(rhs)
+                } else {
+                    MaybeReferenceValue::Boolean(lhs)
+                }
+            }
+            (Value::EventResult(lhs), Value::Boolean(rhs)) => {
+                if lhs.advance() {
+                    MaybeReferenceValue::Boolean(rhs)
+                } else {
+                    MaybeReferenceValue::EventResult(lhs)
+                }
+            }
+            (Value::EventResult(lhs), Value::EventResult(rhs)) => {
+                if lhs.advance() {
+                    MaybeReferenceValue::EventResult(rhs)
+                } else {
+                    MaybeReferenceValue::EventResult(lhs)
+                }
+            }
             (lhs @ _, rhs @ _) => {
                 return Err(Self::invalid_binary_operation(
                     "and",
@@ -2987,16 +3037,30 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 ));
             }
         };
-        Ok(MaybeReferenceValue::Boolean(result))
+        Ok(result)
     }
 
     /// Implements boolean disjunction.
     pub fn or(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
-        let result = match (self, rhs) {
-            (Self::Undefined, Self::Undefined) => false,
-            (Self::Undefined, Self::Boolean(rhs)) => rhs,
-            (Self::Boolean(lhs), Self::Undefined) => lhs,
-            (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs || rhs,
+        let result = match (self.boolean_coercion()?, rhs.boolean_coercion()?) {
+            (Value::Boolean(lhs), Value::Boolean(rhs)) => MaybeReferenceValue::Boolean(lhs || rhs),
+            (Value::Boolean(lhs), Value::EventResult(rhs)) => {
+                if lhs {
+                    MaybeReferenceValue::Boolean(lhs)
+                } else {
+                    MaybeReferenceValue::EventResult(rhs)
+                }
+            }
+            (Value::EventResult(lhs), Value::Boolean(rhs)) => {
+                if lhs.advance() {
+                    MaybeReferenceValue::EventResult(lhs)
+                } else {
+                    MaybeReferenceValue::Boolean(rhs)
+                }
+            }
+            (Value::EventResult(lhs), Value::EventResult(rhs)) => {
+                MaybeReferenceValue::EventResult(lhs.combine(rhs))
+            }
             (lhs @ _, rhs @ _) => {
                 return Err(Self::invalid_binary_operation(
                     "or",
@@ -3005,7 +3069,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 ));
             }
         };
-        Ok(MaybeReferenceValue::Boolean(result))
+        Ok(result)
     }
 
     /// Converts the value to a string for a formatted string.

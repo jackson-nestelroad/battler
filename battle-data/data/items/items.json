@@ -952,7 +952,7 @@
       "callbacks": {
         "on_charge_move": {
           "priority": -1,
-          "program": ["if !func_call(use_item: $user):", ["return"], "return false"]
+          "program": ["return !func_call(use_item: $user)"]
         }
       }
     }
@@ -2817,7 +2817,7 @@
         "on_set_ability": [
           "if $effect.id != trace or !$effect_state.logged_for_trace:",
           ["log_block: with_target", "$effect_state.logged_for_trace = true"],
-          "return false"
+          "return stopfail"
         ],
         "on_try_hit": [
           "if $move.id == gastroacid:",

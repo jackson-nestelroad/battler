@@ -106,7 +106,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: from_effect"],
-          "return false"
+          "return stopfail"
         ],
         "on_add_volatile": [
           "if $target.species != miniormeteor:",
@@ -115,7 +115,7 @@
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_immune: from_effect"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }
@@ -151,7 +151,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
-          "return false"
+          "return stopfail"
         ],
         "on_update": ["if $mon.status == brn:", ["log_activate: with_target", "cure_status: $mon"]]
       }
@@ -194,7 +194,7 @@
           "# If we received damage as part of a single-hit move, don't consume the berry until Berserk has activated.",
           "$healing_items = [aguavberry, enigmaberry, figyberry, iapapaberry, magoberry, sitrusberry, wikiberry, oranberry, berryjuice]",
           "if $healing_items has $item.id and $effect_state.berserk_may_activate:",
-          ["return false"]
+          ["return stopfail"]
         ],
         "on_activate": {
           "metadata": {
@@ -547,7 +547,7 @@
           "if func_call(is_ally: $user $effect_state.target):",
           ["return"],
           "log_cant: with_source use_effect_state_target_as_source",
-          "return false"
+          "return stopfail"
         ]
       }
     }

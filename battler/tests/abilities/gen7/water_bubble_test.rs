@@ -108,7 +108,6 @@ fn water_bubble_prevents_burn() {
         r#"[
             "move|mon:Araquanid,player-2,1|name:Will-O-Wisp|noanim",
             "immune|mon:Araquanid,player-1,1|from:ability:Water Bubble",
-            "fail|mon:Araquanid,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,

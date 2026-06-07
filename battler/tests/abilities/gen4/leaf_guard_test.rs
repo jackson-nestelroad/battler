@@ -64,7 +64,6 @@ fn leaf_guard_prevents_status_in_sun() {
         r#"[
             "move|mon:Budew,player-1,1|name:Thunder Wave|noanim",
             "immune|mon:Budew,player-2,1|from:ability:Leaf Guard",
-            "fail|mon:Budew,player-1,1",
             "weather|weather:Harsh Sunlight|residual",
             "residual",
             "turn|turn:3"
@@ -88,7 +87,6 @@ fn leaf_guard_prevents_yawn_in_sun() {
         r#"[
             "move|mon:Budew,player-1,1|name:Yawn|noanim",
             "activate|mon:Budew,player-2,1|ability:Leaf Guard",
-            "fail|mon:Budew,player-1,1",
             "weather|weather:Harsh Sunlight|residual",
             "residual",
             "turn|turn:3"

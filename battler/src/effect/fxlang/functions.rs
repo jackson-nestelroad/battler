@@ -365,7 +365,7 @@ pub fn run_function(
         "swap_position" => swap_position(context).map(|val| Some(val)),
         "swap_side_conditions" => swap_side_conditions(context).map(|val| Some(val)),
         "switch_out" => switch_out(context).map(|val| Some(val)),
-        "take_item" => take_item(context),
+        "take_item" => take_item(context).map(|val| Some(val)),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
         "transform_into" => transform_into(context).map(|val| Some(val)),
         "type_chart_effectiveness" => type_chart_effectiveness(context).map(|val| Some(val)),
@@ -4558,8 +4558,8 @@ fn add_move_action(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose item to take.
 /// @flag dry_run If set, the item is not actually taken.
 /// @flag silent If set, no message is displayed.
-/// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The ID of the item that was taken.
-fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
+/// @returns {[`ValueType::String`] | [`ValueType::EventResult`]} The ID of the item that was taken.
+fn take_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     let dry_run = context.has_flag("dry_run");
     let silent = context.silent();
@@ -4568,7 +4568,9 @@ fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
         dry_run,
         silent,
     )?
-    .map(|val| Value::String(val.to_string())))
+    .result()
+    .map(|val| Value::String(val.to_string()))
+    .unwrap_or_else(|err| Value::EventResult(err)))
 }
 
 /// Sets a Mon's held item.

@@ -354,7 +354,7 @@
           ["return"],
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: from_effect"],
-          "return false"
+          "return stopfail"
         ],
         "on_add_volatile": [
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
@@ -364,7 +364,7 @@
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_activate: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }

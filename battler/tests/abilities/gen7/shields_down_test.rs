@@ -112,10 +112,8 @@ fn minior_meteor_is_immune_to_status_conditions() {
         r#"[
             "move|mon:Minior,player-1,1|name:Toxic|noanim",
             "immune|mon:Minior,player-2,1|from:ability:Shields Down",
-            "fail|mon:Minior,player-1,1",
             "move|mon:Minior,player-2,1|name:Yawn|noanim",
             "immune|mon:Minior,player-1,1|from:ability:Shields Down",
-            "fail|mon:Minior,player-2,1",
             "residual",
             "turn|turn:2",
             "continue",

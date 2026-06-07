@@ -1120,7 +1120,7 @@
           "program": [
             "log_activate: with_target with_source use_effect_state_source_as_source",
             "if func_call(chance: 1 2):",
-            ["log_cant", "return false"]
+            ["log_cant", "return stopfail"]
           ]
         }
       }
@@ -1285,7 +1285,7 @@
           "if $target == $source:",
           ["return"],
           "log_activate: with_target",
-          "return false"
+          "return stopfail"
         ],
         "on_add_volatile": [
           "if $effect.is_move and $effect.effect_state.infiltrates:",
@@ -1295,7 +1295,7 @@
           "if $volatile.id != confusion and $volatile.id != yawn:",
           ["return"],
           "log_activate: with_target",
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -1950,8 +1950,7 @@
       "callbacks": {
         "on_ignore_immunity": ["return true"],
         "on_try_move": [
-          "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
-          ["return false"],
+          "require func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source)",
           "return stop"
         ]
       },
