@@ -589,6 +589,7 @@
       "duration": 5,
       "callbacks": {
         "is_raining": ["return true"],
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_source_weather_modify_damage": [
           "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
           "if $move.type == water:",
@@ -616,6 +617,7 @@
     "condition": {
       "callbacks": {
         "is_raining": ["return true"],
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_try_move": [
           "if $move.type == fire and $move.category != status:",
           ["log_fail: $user from_effect", "return stopfail"]
@@ -642,6 +644,7 @@
       "duration": 5,
       "callbacks": {
         "is_sunny": ["return true"],
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_source_weather_modify_damage": [
           "if $move.id == hydrosteam:",
           ["return $damage * 3/2"],
@@ -671,6 +674,7 @@
     "condition": {
       "callbacks": {
         "is_sunny": ["return true"],
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_try_move": [
           "if $move.type == water and $move.category != status:",
           ["log_fail: $user from_effect", "return stopfail"]
@@ -697,6 +701,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_modify_spd": {
           "priority": 10,
           "program": ["if func_call(has_type: $target rock):", ["return $spd * 3/2"]]
@@ -723,6 +728,7 @@
       "duration": 5,
       "callbacks": {
         "is_snowing": ["return true"],
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": ["log_weather: $this.name with_source_effect"],
         "on_field_residual": {
           "order": 1,
@@ -745,6 +751,7 @@
       "duration": 5,
       "callbacks": {
         "is_snowing": ["return true"],
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_modify_def": {
           "priority": 10,
           "program": ["if func_call(has_type: $target ice):", ["return $def * 3/2"]]
@@ -768,6 +775,7 @@
     "condition_type": "Weather",
     "condition": {
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_effectiveness": {
           "priority": -1,
           "program": [

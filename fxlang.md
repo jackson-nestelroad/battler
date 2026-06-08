@@ -264,7 +264,7 @@ Return statements terminate the program immediately. Any following statements ar
   "if func_call(chance: 1 5):",
   ["cure_status: $user no_effect", "return"],
   "log_cant",
-  ["return false"]
+  ["return stopfail"]
 ]
 ```
 
@@ -294,7 +294,11 @@ The above program loops through all of a Mon's move slots, disabling moves with 
 Below is another example for the move "Haze":
 
 ```json
-["foreach $mon in func_call(all_active_mons):", ["clear_boosts: $mon silent"]]
+[
+  "log: clearallboosts",
+  "foreach $mon in func_call(all_active_mons):",
+  ["clear_boosts: $mon silent"]
+]
 ```
 
 #### Guard Clauses with Requirements
@@ -515,9 +519,10 @@ You can think of `$effect_state` as a little persistent disk for an effect. It i
       "program": [
         "if $effect_state.stage < 15:",
         ["$effect_state.stage = $effect_state.stage + 1"],
-        "damage: expr($target.base_max_hp / 16 * $effect_state.stage)"
+        "damage: $target expr($target.base_max_hp / 16 * $effect_state.stage)"
       ]
-    }
+    },
+    "on_modify_catch_rate": ["return $catch_rate * 3/2"]
   }
 }
 ```
@@ -698,7 +703,10 @@ Sturdy prevents a Mon from being knocked out by a single move. When the Mon's HP
 {
   "effect": {
     "callbacks": {
-      "on_try_hit": ["if $move.ohko:", ["log_immune: $target from_effect", "return stopfail"]],
+      "on_try_hit": [
+        "if $move.ohko:",
+        ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]
+      ],
       "on_damage": {
         "priority": -100,
         "program": [
@@ -779,6 +787,17 @@ These conditions are implemented generically in the "Freeze" condition. However,
 {
   "condition": {
     "callbacks": {
+      "on_start": ["log_status: $this.name"],
+      "on_before_move": {
+        "priority": 10,
+        "program": [
+          "require !func_call(move_has_flag: $move thawing) else return",
+          "if func_call(chance: 1 5):",
+          ["cure_status: $user no_effect", "return"],
+          "log_cant",
+          ["return stopfail"]
+        ]
+      },
       "on_use_move": [
         "if func_call(move_has_flag: $move thawing):",
         ["cure_status: $user use_source_effect"]
@@ -790,7 +809,8 @@ These conditions are implemented generically in the "Freeze" condition. However,
       "on_damaging_hit": [
         "if $move.type == fire and $move.category != status:",
         ["cure_status: $target use_source_effect"]
-      ]
+      ],
+      "on_modify_catch_rate": ["return $catch_rate * 5/2"]
     }
   }
 }
@@ -1001,10 +1021,8 @@ Life Orb boosts the base power of all moves used by the holder, but it damages t
     "callbacks": {
       "on_modify_damage": ["return $damage * 13/10"],
       "on_after_move_secondary_effects_user": [
-        "if ($target.is_defined and $user == $target) or $targets.is_empty:",
-        ["return"],
-        "if $move.category == status or $user.force_switch:",
-        ["return"],
+        "require (!$target or $user != $target) and !$targets.is_empty else return",
+        "require $move.category != status and !$user.force_switch else return",
         "damage: $user expr($user.base_max_hp / 10)"
       ]
     }
@@ -1020,7 +1038,7 @@ Cheri Berry, when eaten, heals the Mon of paralysis.
 {
   "effect": {
     "callbacks": {
-      "on_player_try_use_item": ["if $target.status != par:", ["return false"]],
+      "on_player_try_use_item": ["require $target.status == par"],
       "on_player_use": ["eat_given_item: $mon $this.id"],
       "on_update": ["if $mon.status == par:", ["eat_item: $mon"]],
       "on_eat": ["if $mon.status == par:", ["cure_status: $mon"]]
@@ -1114,8 +1132,7 @@ When a Mon has the Flash Fire ability, if it is hit by a Fire-type move, it is i
     "callbacks": {
       "on_start": ["if $effect_state.activated:", ["add_volatile: $target $this.id"]],
       "on_try_hit": [
-        "if $target == $source or $move.type != fire:",
-        ["return"],
+        "require $target != $source and $move.type == fire else return",
         "$move.accuracy = exempt",
         "if !func_call(add_volatile: $target $this.id) and $report:",
         ["log_immune: $target from_effect"],
@@ -1155,7 +1172,7 @@ Paralysis is an independent condition; it is not attached to any single move or 
       "on_start": ["log_status: $this.name"],
       "on_before_move": {
         "priority": 1,
-        "program": ["if func_call(chance: 1 4):", ["log_cant", "return false"]]
+        "program": ["if func_call(chance: 1 4):", ["log_cant", "return stopfail"]]
       },
       "on_modify_spe": {
         "priority": -1,
@@ -1206,11 +1223,10 @@ Similar to Paralysis, Confusion is also a generic condition applied as a volatil
           "if $effect_state.time == 0:",
           ["remove_volatile: $user $this.id", "return"],
           "log_activate: with_target",
-          "if !func_call(chance: 33 100):",
-          ["return"],
+          "require func_call(chance: 33 100) else return",
           "$damage = func_call(calculate_confusion_damage: $user 40)",
           "damage: $user $damage no_source",
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -1232,7 +1248,7 @@ Healing Wish removes itself after it is used. Otherwise, it exists until consume
   },
   "effect": {
     "callbacks": {
-      "on_try_hit": ["if !func_call(can_switch: $target.player):", ["return false"]]
+      "on_try_hit": ["require func_call(can_switch: $target.player)"]
     }
   },
   "condition": {
@@ -1282,13 +1298,10 @@ Note the concept of being grounded, implemented as a state event callback below,
         "program": ["if $effect_state.started:", ["return true"]]
       },
       "on_before_move": [
-        "if func_call(move_has_flag: $move.id gravity):",
-        ["log_cant", "return false"]
+        "if !$move.upgraded_z_move and func_call(move_has_flag: $move.id gravity):",
+        ["log_cant", "return stopfail"]
       ],
-      "on_use_move": [
-        "if func_call(move_has_flag: $move.id gravity):",
-        ["log_cant", "return false"]
-      ],
+      "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
       "on_field_end": ["log_field_end"]
     }
   }
@@ -1372,7 +1385,9 @@ The benefit here is that the modified move can be written statically in the cond
 
 ```json
 {
-  "hit_effect": { "volatile_status": "bide" },
+  "hit_effect": {
+    "volatile_status": "bide"
+  },
   "condition": {
     "duration": 3,
     "callbacks": {
@@ -1392,13 +1407,13 @@ The benefit here is that the modified move can be written statically in the cond
         "log_end",
         "$target = $effect_state.last_damage_source",
         "# Create a new active move that deals the damage to the target, and use it directly.",
-        "$move = func_call(new_active_move_from_local_data: $this $this.id)",
+        "$move = func_call(new_active_move_from_local_data: $this $this.id $user)",
         "$move.damage = expr($effect_state.total_damage * 2)",
-        "# Remove this volatile status before using the new move, or else this callback gets triggered endlessly.",
+        "# Remove this volatile effect before using the new move, or else this callback gets triggered endlessly.",
         "remove_volatile: $user $this.id",
         "use_active_move: $user $move $target no_source_effect",
         "# Since we used the local Bide, we can exit this move early.",
-        "return false"
+        "return stop"
       ],
       "on_move_aborted": ["remove_volatile: $user $this.id"]
     },
@@ -1411,11 +1426,13 @@ The benefit here is that the modified move can be written statically in the cond
           "accuracy": "exempt",
           "priority": 1,
           "target": "Scripted",
+          "advanced_targeting": {
+            "no_random_target": true
+          },
           "flags": ["Contact", "Protect"],
-          "ignore_immunity": true,
-          "no_random_target": true,
           "effect": {
             "callbacks": {
+              "on_ignore_immunity": ["return true"],
               "on_try_use_move": [
                 "# Fail if no direct damage was received.",
                 "if $move.damage == 0:",
@@ -1489,7 +1506,7 @@ However, the condition induced by the move Ingrain overwrites both of these effe
       "on_start": ["log_start"],
       "on_residual": ["heal: $target expr($target.base_max_hp / 16)"],
       "on_trap_mon": ["return true"],
-      "on_drag_out": ["log_activate: with_target", "return false"]
+      "on_drag_out": ["log_activate: with_target", "return stop"]
     }
   }
 }
@@ -1506,15 +1523,10 @@ Let's explore how weather suppression can work in a battle. First, let's define 
 ```json
 {
   "condition": {
+    "duration": 5,
     "callbacks": {
       "is_raining": ["return true"],
-      "on_duration": [
-        "if !$source:",
-        ["return"],
-        "if func_call(has_item: $source damprock):",
-        ["return 8"],
-        "return 5"
-      ],
+      "on_duration": ["if !$source:", ["return 255"]],
       "on_source_weather_modify_damage": [
         "# Run against the target of the damage calculation, since weather can be suppressed for the target.",
         "if $move.type == water:",
@@ -1541,7 +1553,7 @@ Let's explore how weather suppression can work in a battle. First, let's define 
 Some notes about the above code:
 
 1. The `IsRaining` event is a state event that only runs for the weather on the field. Other effects can check for this property (which will trigger this state event) without needing to explicitly check for all weathers that include rain (for instance, Primordial Sea causes a different type of rain but many of the same side effects apply).
-1. The `Duration` callback returns no value if the weather did not originate from any source Mon. This allows the effect to be used as the "default weather" of the field (imagine battles that start when it's rainy in the overworld).
+1. The `Duration` callback returns a large value if the weather did not originate from any source Mon. This allows the effect to be used as the "default weather" of the field (imagine battles that start when it's rainy in the overworld).
 1. Using "source" in the damage modification event means it runs when a Mon is being targeted. This is because damage modifications due to rain only apply if the _target_ is under rain.
 
 ###### Damage Modification with Suppression
@@ -1585,7 +1597,7 @@ Third, Embargo declares that it suppresses the target's item:
 
 ```json
 {
-  "suppress_mon_item": ["return true"]
+  "suppress_mon_item": ["if $effect_state.started:", ["return true"]]
 }
 ```
 
@@ -1600,9 +1612,8 @@ Then, moves that have side effects based on the presence of rain can easily inte
   "effect": {
     "callbacks": {
       "on_use_move": [
-        "$weather = func_call(effective_weather: $selected_target)",
-        "if !$weather:",
-        ["return"],
+        "$weather = func_call(effective_weather: $target)",
+        "require $weather.is_defined else return",
         "if $weather.is_raining:",
         ["$move.accuracy = exempt"],
         "else if $weather.is_sunny:",
@@ -1645,7 +1656,7 @@ To avoid this problem, the suppression event callback simply needs to start supp
       "on_field_start": [
         "log_field_start",
         "foreach $mon in func_call(all_active_mons_in_speed_order):",
-        ["end_item: $mon silent"]
+        ["if $mon.can_suppress_item:", ["end_item: $mon silent"]]
       ],
       "on_field_restart": ["remove_pseudo_weather: $this.id", "return true"],
       "suppress_mon_item": ["if $effect_state.started:", ["return true"]],
@@ -1653,7 +1664,7 @@ To avoid this problem, the suppression event callback simply needs to start supp
       "on_field_end": [
         "log_field_end",
         "foreach $mon in func_call(all_active_mons_in_speed_order):",
-        ["if $mon.can_suppress_item:", ["end_item: $mon silent"]]
+        ["start_item: $mon silent"]
       ]
     }
   }
@@ -1701,7 +1712,7 @@ For example, many moves force the user to recharge on their next turn: Hyper Bea
       "on_start": ["log_activate: with_target"],
       "on_before_move": {
         "priority": 11,
-        "program": ["log_cant", "remove_volatile: $user $this.id", "return false"]
+        "program": ["log_cant", "remove_volatile: $user $this.id", "return stop"]
       },
       "on_lock_move": ["return recharge"]
     }
@@ -1800,14 +1811,14 @@ The `ChargeMove` event is a special event that a move can implement to do someth
   "condition": {
     "callbacks": {
       "on_try_use_move": [
-        "if func_call(remove_volatile: $user $this.id):",
-        ["return"],
+        "require !func_call(remove_volatile: $user $this.id) else return",
         "log_prepare_move",
+        "run_event: BeforeChargeMove",
         "$charge_move = func_call(run_event_on_move: ChargeMove)",
         "if $charge_move.is_defined and !$charge_move:",
-        ["do_not_animate_last_move", "log_animate_move: $user $this.name $target", "return"],
+        ["do_not_animate_last_move", "log_animate_move: $move $target", "return"],
         "if !func_call(run_event: ChargeMove):",
-        ["do_not_animate_last_move", "log_animate_move: $user $this.name $target", "return"],
+        ["do_not_animate_last_move", "log_animate_move: $move $target", "return"],
         "add_volatile: $user twoturnmove link",
         "return stop"
       ]
@@ -1838,8 +1849,7 @@ Solar Beam is a bit more complex; in sunny weather, the move is executed immedia
     "callbacks": {
       "on_charge_move": [
         "$weather = func_call(effective_weather: $user)",
-        "if $weather.is_defined and $weather.is_sunny:",
-        ["return false"]
+        "require !$weather or !$weather.is_sunny"
       ],
       "on_move_base_power": [
         "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
@@ -1901,10 +1911,10 @@ The "Two Turn Move" condition immediately applies the volatile status condition 
   "condition": {
     "duration": 2,
     "callbacks": {
+      "is_grounded": ["return false"],
       "is_semi_invulnerable": ["return true"],
       "on_invulnerability": [
-        "if [gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id:",
-        ["return"],
+        "require !([gust, twister, skyuppercut, thunder, hurricane, smackdown, thousandarrows] has $move.id) else return",
         "return false"
       ],
       "on_source_modify_damage": ["if [gust, twister] has $move.id:", ["return $damage * 2"]]
@@ -1934,12 +1944,9 @@ Screen moves halve the damage taken by a particular type of move on the user's s
     "callbacks": {
       "on_source_modify_damage": [
         "$category = func_call(value_from_local_data: category)",
-        "if $target == $user or ($category.is_defined and $move.category != $category):",
-        ["return"],
-        "if $move.effect_state.screen_weaken:",
-        ["return"],
-        "if func_call(move_crit_target: $move $target) or $move.effect_state.infiltrates:",
-        ["return"],
+        "require $target != $user and (!$category or $move.category == $category) else return",
+        "require !$move.effect_state.screen_weaken else return",
+        "require !func_call(move_crit_target: $move $target) and !$move.effect_state.infiltrates else return",
         "$move.effect_state.screen_weaken = true",
         "if $format.mons_per_side > 1:",
         ["return $damage * 2 / 3"],
@@ -1960,7 +1967,9 @@ With the base above, defining Light Screen is extremely easy:
 
 ```json
 {
-  "hit_effect": { "side_condition": "lightscreen" },
+  "hit_effect": {
+    "side_condition": "lightscreen"
+  },
   "condition": {
     "delegates": ["condition:sidescreenmovebase"],
     "local_data": {
@@ -1988,12 +1997,15 @@ Here is the code in all of its glory:
 
 ```json
 {
-  "hit_effect": { "volatile_status": "substitute" },
+  "hit_effect": {
+    "volatile_status": "substitute"
+  },
   "effect": {
     "callbacks": {
       "on_try_hit": [
-        "if func_call(has_volatile: $source substitute) or $source.hp <= $source.max_hp / 4 or $source.max_hp == 1:",
-        ["log_fail: $source", "return stop"]
+        "require !func_call(has_volatile: $source substitute)",
+        "require $source.hp > ($source.max_hp / 4)",
+        "require $source.max_hp != 1"
       ],
       "on_hit": ["direct_damage: $target expr($target.max_hp / 4)"]
     }
@@ -2106,8 +2118,7 @@ Here is the code for the move condition base:
       "on_try_hit": {
         "priority": 3,
         "program": [
-          "if !func_call(move_has_flag: $move protect):",
-          ["return"],
+          "require func_call(move_has_flag: $move protect) else return",
           "if $report:",
           ["log_activate: with_target"],
           "activate_applying_effect: $this no_forward",
@@ -2140,7 +2151,8 @@ Then here is the code for the stall condition:
       "on_restart": [
         "if $effect_state.counter < 729:",
         ["$effect_state.counter = $effect_state.counter * 3"],
-        "$effect_state.duration = 2"
+        "$effect_state.duration = 2",
+        "return true"
       ],
       "on_stall_move": [
         "$success = func_call(chance: $effect_state.counter)",
@@ -2188,8 +2200,9 @@ Counter works by adding a volatile status condition to the user at the beginning
       "on_before_turn": ["add_volatile: $mon $this.id"],
       "on_try_use_move": [
         "$effect_state = func_call(volatile_status_state: $user $this.id)",
-        "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
-        ["return false"]
+        "require $effect_state.is_defined",
+        "require $effect_state.target_side.is_defined",
+        "require $effect_state.target_position.is_defined"
       ],
       "on_move_damage": [
         "$effect_state = func_call(volatile_status_state: $source $this.id)",
@@ -2240,7 +2253,7 @@ Pursuit gets its own event (`BeforeSwitchOut`) that activates when any Mon switc
       ],
       "on_before_turn": [
         "$side = $mon.foe_side",
-        "add_side_condition: $side $this.id use_target_as_source",
+        "add_side_condition: $side $this.id",
         "$pursuit_state = func_call(side_condition_effect_state: $side $this.id)",
         "if !$pursuit_state.sources:",
         ["$pursuit_state.sources = []"],
@@ -2252,8 +2265,7 @@ Pursuit gets its own event (`BeforeSwitchOut`) that activates when any Mon switc
       ],
       "on_try_hit": [
         "$pursuit_state = func_call(side_condition_effect_state: $target.side $this.id)",
-        "if !$pursuit_state or !$pursuit_state.sources:",
-        ["return"],
+        "require $pursuit_state.is_defined and $pursuit_state.sources.is_defined else return",
         "$pursuit_state.sources = func_call(remove: $pursuit_state.sources $source)"
       ]
     }
@@ -2322,35 +2334,29 @@ The "Immobilized" effect is applied to a Mon that is the target of an immobilizi
 
 ```json
 {
-  "immobilized": {
-    "name": "Immobilized",
-    "condition_type": "Built-in",
-    "condition": {
-      "duration": 2,
-      "callbacks": {
-        "on_start": [
-          "$effect_state.move = $source_effect.id",
-          "add_volatile: $target $effect_state.move use_source_effect link"
-        ],
-        "on_end": ["log_end: use_effect_state_source_effect"],
-        "on_drag_out": ["return false"],
-        "on_trap_mon": {
-          "order": 1,
-          "program": ["return true"]
-        },
-        "on_before_move": {
-          "priority": 12,
-          "program": ["return false"]
-        },
-        "on_invulnerability": {
-          "order": 2,
-          "program": [
-            "# Allow the targeting move to hit on its second turn.",
-            "if $move.id == $effect_state.move and $source == $effect_state.source:",
-            ["return true"]
-          ]
-        }
-      }
+  "duration": 2,
+  "callbacks": {
+    "on_start": [
+      "$effect_state.move = $source_effect.id",
+      "add_volatile: $target $effect_state.move use_source_effect link"
+    ],
+    "on_end": ["log_end: use_effect_state_source_effect"],
+    "on_drag_out": ["return false"],
+    "on_trap_mon": {
+      "order": 1,
+      "program": ["return true"]
+    },
+    "on_before_move": {
+      "priority": 12,
+      "program": ["return false"]
+    },
+    "on_invulnerability": {
+      "order": 2,
+      "program": [
+        "# Allow the targeting move to hit on its second turn.",
+        "if $move.id == $effect_state.move and $source == $effect_state.source:",
+        ["return true"]
+      ]
     }
   }
 }
@@ -2368,23 +2374,21 @@ Notice that both the user and the target receive the volatile status associated 
       ],
       "on_try_immunity": [
         "if func_call(has_volatile: $source $this.id):",
-        ["if func_call(has_type: $target flying):", ["return false"]],
+        ["require !func_call(has_type: $target flying)"],
         "else:",
-        ["if $target.weight >= 2000:", ["return false"]]
+        ["require $target.weight < 2000"]
       ],
       "on_try_hit": [
         "if func_call(has_volatile: $source $this.id):",
         [
           "# Ensure we are targeting the original target.",
           "$immobilizing_effect_state = func_call(volatile_status_state: $source immobilizingmove)",
-          "if !$immobilizing_effect_state or $target != $immobilizing_effect_state.source:",
-          ["return false"],
+          "require $immobilizing_effect_state.is_defined and $target == $immobilizing_effect_state.source",
           "remove_volatile: $source immobilizingmove"
         ],
         "else:",
         [
-          "if $target.is_behind_substitute or func_call(is_ally: $source $target):",
-          ["return false"],
+          "require !$target.is_behind_substitute and !func_call(is_ally: $source $target)",
           "log_prepare_move: $target",
           "add_volatile: $source immobilizingmove use_target_as_source",
           "return stop"
@@ -2431,14 +2435,12 @@ Emergency Exit is an ability that immediately switches out the Mon when its HP d
     "callbacks": {
       "on_after_damage": [
         "# Move damage is handled together after secondary effects.",
-        "if $effect.is_move or $effect.id == confusion:",
-        ["return"],
+        "require !$effect.is_move and $effect.id != confusion else return",
         "$original_hp = $target.hp + $damage",
         "activate_ability: $original_hp"
       ],
       "on_after_move_secondary_effects_damage": [
-        "if $damage == 0:",
-        ["return"],
+        "require $damage != 0 else return",
         "activate_ability: $original_hp"
       ],
       "on_activate": {
@@ -2446,10 +2448,13 @@ Emergency Exit is an ability that immediately switches out the Mon when its HP d
           "parameters": ["original_hp"]
         },
         "program": [
-          "if !$original_hp or $battle.ending or !func_call(can_switch: $target.player):",
-          ["return"],
-          "if $target.hp == 0 or $target.force_switch or $target.needs_switch or $target.is_away_from_field:",
-          ["return"],
+          "require $original_hp.is_defined else return",
+          "require !$battle.ending else return",
+          "require func_call(can_switch: $target.player) else return",
+          "require $target.hp != 0 else return",
+          "require !$target.force_switch else return",
+          "require !$target.needs_switch else return",
+          "require !$target.is_away_from_field else return",
           "$half = $target.max_hp / 2",
           "if $original_hp > $half and $target.hp <= $half:",
           [
@@ -2508,14 +2513,12 @@ With that in mind, let's look at Rest:
   "effect": {
     "callbacks": {
       "on_try_use_move": [
-        "if $user.is_asleep:",
-        ["return false"],
+        "require !$user.is_asleep",
         "if $user.hp == $user.max_hp:",
         ["log_fail_heal: $user", "return stopfail"]
       ],
       "on_hit": [
-        "if !func_call(set_status: $target slp):",
-        ["return stop"],
+        "require func_call(set_status: $target slp) else return stop",
         "$status_state = func_call(status_effect_state: $target)",
         "$status_state.total_time = 3",
         "$status_state.time = 3",

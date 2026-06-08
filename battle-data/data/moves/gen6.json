@@ -452,6 +452,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": [
           "require $source.is_defined else return",
           "if $source_effect.is_ability:",
@@ -490,6 +491,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": [
           "require $source.is_defined else return",
           "if $source_effect.is_ability:",
@@ -988,6 +990,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": [
           "require $source.is_defined else return",
           "if $source_effect.is_ability:",
