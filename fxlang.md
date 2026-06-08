@@ -2307,24 +2307,20 @@ First, Sky Drop is generalized into two effects: "Immobilizing Move" and "Immobi
 
 ```json
 {
-  "name": "Immobilizing Move",
-  "condition_type": "Built-in",
-  "condition": {
-    "duration": 2,
-    "callbacks": {
-      "on_start": [
-        "add_volatile: $target twoturnmove use_source_effect link",
-        "add_volatile: $source immobilized use_source_effect link"
-      ],
-      "on_drag_out": ["return false"],
-      "on_trap_mon": {
-        "order": 1,
-        "program": ["return true"]
-      },
-      "on_redirect_target": {
-        "order": 1,
-        "program": ["return $effect_state.source"]
-      }
+  "duration": 2,
+  "callbacks": {
+    "on_start": [
+      "add_volatile: $target twoturnmove use_source_effect link",
+      "add_volatile: $source immobilized use_source_effect link"
+    ],
+    "on_drag_out": ["return false"],
+    "on_trap_mon": {
+      "order": 1,
+      "program": ["return true"]
+    },
+    "on_redirect_target": {
+      "order": 1,
+      "program": ["return $effect_state.source"]
     }
   }
 }
