@@ -10228,8 +10228,7 @@
         },
         "on_update": [
           "$base_species = func_call(base_species: $mon)",
-          "if $base_species != dialga:",
-          ["return"],
+          "require $base_species == dialga else return",
           "if $mon.item == adamantcrystal:",
           ["forme_change: $mon dialgaorigin permanent"],
           "else if $mon.species != dialga:",
@@ -10363,8 +10362,7 @@
         },
         "on_update": [
           "$base_species = func_call(base_species: $mon)",
-          "if $base_species != palkia:",
-          ["return"],
+          "require $base_species == palkia else return",
           "if $mon.item == lustrousglobe:",
           ["forme_change: $mon palkiaorigin permanent"],
           "else if $mon.species != palkia:",
@@ -10700,8 +10698,7 @@
         },
         "on_update": [
           "$base_species = func_call(base_species: $mon)",
-          "if $base_species != giratina:",
-          ["return"],
+          "require $base_species == giratina else return",
           "if $mon.item == griseousorb or $mon.item == griseouscore:",
           ["forme_change: $mon giratinaorigin permanent"],
           "else if $mon.species != giratina:",
@@ -14693,14 +14690,12 @@
     "effect": {
       "callbacks": {
         "on_update": [
-          "if $mon.base_species != $this.id:",
-          ["return"],
+          "require $mon.base_species == $this.id else return",
           "if $mon.status == frz or $field.time == night:",
           ["forme_change: $target shaymin permanent"]
         ],
         "on_after_set_status": [
-          "if $target.base_species != $this.id:",
-          ["return"],
+          "require $target.base_species == $this.id else return",
           "if $status.id == frz:",
           ["forme_change: $target shaymin permanent"]
         ]

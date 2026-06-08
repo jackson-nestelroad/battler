@@ -47,10 +47,8 @@
         "on_try_hit": {
           "priority": 3,
           "program": [
-            "if !func_call(move_has_flag: $move protect):",
-            ["return"],
-            "if $move.target == user or $move.category == status:",
-            ["return"],
+            "require func_call(move_has_flag: $move protect) else return",
+            "require $move.target != user and $move.category != status else return",
             "if $report:",
             ["log_activate: with_target"],
             "return stop"
@@ -129,8 +127,7 @@
       "callbacks": {
         "on_side_start": ["log_side_start"],
         "on_switch_in": [
-          "if !$mon.is_grounded or $mon.is_immune_to_entry_hazards:",
-          ["return"],
+          "require $mon.is_grounded and !$mon.is_immune_to_entry_hazards else return",
           "log_activate: with_target",
           "boost: $mon 'spe:-1'"
         ],
@@ -403,8 +400,7 @@
       "callbacks": {
         "on_side_start": ["log_single_turn: use_source with_target"],
         "on_try_hit": [
-          "if [all, alladjacentallies, allies, user] has $move.target or $move.category != status:",
-          ["return"],
+          "require !([all, alladjacentallies, allies, user] has $move.target) and $move.category == status else return",
           "if $report:",
           ["log_activate: with_target"],
           "return stop"
@@ -457,8 +453,7 @@
       "duration": 5,
       "callbacks": {
         "on_field_start": [
-          "if !$source:",
-          ["return"],
+          "require $source.is_defined else return",
           "if $source_effect.is_ability:",
           ["log_field_start: with_source_effect"],
           "else:",
@@ -496,8 +491,7 @@
       "duration": 5,
       "callbacks": {
         "on_field_start": [
-          "if !$source:",
-          ["return"],
+          "require $source.is_defined else return",
           "if $source_effect.is_ability:",
           ["log_field_start: with_source_effect"],
           "else:",
@@ -995,8 +989,7 @@
       "duration": 5,
       "callbacks": {
         "on_field_start": [
-          "if !$source:",
-          ["return"],
+          "require $source.is_defined else return",
           "if $source_effect.is_ability:",
           ["log_field_start: with_source_effect"],
           "else:",

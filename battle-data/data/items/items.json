@@ -173,7 +173,7 @@
     "effect": {
       "delegates": ["condition:choicelockingitembase"],
       "callbacks": {
-        "on_modify_atk": ["if $target.dynamaxed:", ["return"], "return $atk * 3/2"]
+        "on_modify_atk": ["require !$target.dynamaxed else return", "return $atk * 3/2"]
       }
     }
   },
@@ -193,12 +193,10 @@
         "on_use_move": {
           "priority": -1,
           "program": [
-            "if $move.category == status:",
-            ["return"],
+            "require $move.category != status else return",
             "foreach $secondary in $move.secondary_effects:",
             [
-              "if $secondary.target.is_defined and $secondary.target.volatile_status == flinch:",
-              ["return"]
+              "require !$secondary.target or $secondary.target.volatile_status != flinch else return"
             ],
             "$added_secondary = func_call(secondary_hit_effect)",
             "$added_secondary.chance = 1/10",
@@ -373,12 +371,11 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "if $target.exited or $target.hp >= $target.max_hp:",
-          ["return false"]
+          "require !$target.exited and $target.hp < $target.max_hp else return false"
         ],
         "on_player_use": ["use_given_item: $mon $this.id"],
         "on_update": ["if $mon.hp <= $mon.max_hp / 2:", ["use_item: $mon"]],
-        "on_try_use_item": ["if !$target.can_heal:", ["return false"]],
+        "on_try_use_item": ["require $target.can_heal else return false"],
         "on_use": ["heal: $mon 20"]
       }
     }
@@ -931,10 +928,8 @@
       "callbacks": {
         "on_modify_damage": ["return $damage * 13/10"],
         "on_after_move_secondary_effects_user": [
-          "if ($target.is_defined and $user == $target) or $targets.is_empty:",
-          ["return"],
-          "if $move.category == status or $user.force_switch:",
-          ["return"],
+          "require (!$target or $user != $target) and !$targets.is_empty else return",
+          "require $move.category != status and !$user.force_switch else return",
           "damage: $user expr($user.base_max_hp / 10)"
         ]
       }
@@ -1067,8 +1062,7 @@
           "priority": -10,
           "program": [
             "# Moves that call other moves are ignored.",
-            "if func_call(move_has_flag: $move callsmove):",
-            ["return"],
+            "require !func_call(move_has_flag: $move callsmove) else return",
             "$in_charge_move = func_call(has_volatile: $user twoturnmove)",
             "if $effect_state.last_move != $move.id:",
             ["$effect_state.counter = 0"],
@@ -1098,8 +1092,9 @@
         "on_modify_spe": ["return $spe / 2"],
         "on_effectiveness": [
           "# Target is grounded for other reasons.",
-          "if func_call(has_volatile: $target ingrain) or func_call(has_volatile: $target smackdown) or func_call(has_pseudo_weather: gravity):",
-          ["return"],
+          "require !func_call(has_volatile: $target ingrain) else return",
+          "require !func_call(has_volatile: $target smackdown) else return",
+          "require !func_call(has_pseudo_weather: gravity) else return",
           "# Overall effectiveness of Ground moves against a target with Flying type is 1x.",
           "if $effect.type == ground and func_call(has_type: $target flying):",
           ["return 0"]
@@ -1132,10 +1127,8 @@
     "effect": {
       "callbacks": {
         "on_after_add_volatile": [
-          "if $effect.id != attract:",
-          ["return"],
-          "if !$source or $source == $target:",
-          ["return"],
+          "require $effect.id == attract else return",
+          "require $source.is_defined and $source != $target else return",
           "add_volatile: $source attract"
         ]
       }
@@ -1244,7 +1237,7 @@
     "effect": {
       "delegates": ["condition:choicelockingitembase"],
       "callbacks": {
-        "on_modify_spe": ["if $target.dynamaxed:", ["return"], "return $spe * 3/2"]
+        "on_modify_spe": ["require !$target.dynamaxed else return", "return $spe * 3/2"]
       }
     }
   },
@@ -1260,14 +1253,12 @@
       "callbacks": {
         "on_residual": ["damage: $target expr($target.base_max_hp / 8)"],
         "on_hit": [
-          "if $source == $target or $source.item.is_defined or !func_call(move_makes_contact: $move):",
-          ["return"],
+          "require $source != $target else return",
+          "require !$source.item else return",
+          "require func_call(move_makes_contact: $move) else return",
           "# Make sure we can set the item first.",
-          "if !func_call(set_item: $source $target.item dry_run):",
-          ["return"],
-          "$item = func_call(take_item: $target)",
-          "if !$item:",
-          ["return"],
+          "require func_call(set_item: $source $target.item dry_run) else return",
+          "require !!assign($item = func_call(take_item: $target)) else return",
           "set_item: $source $item"
         ]
       }
@@ -1409,7 +1400,7 @@
     "effect": {
       "delegates": ["condition:choicelockingitembase"],
       "callbacks": {
-        "on_modify_spa": ["if $target.dynamaxed:", ["return"], "return $spa * 3/2"]
+        "on_modify_spa": ["require !$target.dynamaxed else return", "return $spa * 3/2"]
       }
     }
   },
@@ -2050,10 +2041,14 @@
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects": [
-          "if $source == $target or $source.hp == 0 or $target.hp == 0 or $move.category == status:",
-          ["return"],
-          "if !$source.active or !func_call(can_switch: $source.player) or $source.force_switch or $target.force_switch:",
-          ["return"],
+          "require $source != $target else return",
+          "require $source.hp != 0 else return",
+          "require $target.hp != 0 else return",
+          "require $move.category != status else return",
+          "require $source.active else return",
+          "require func_call(can_switch: $source.player) else return",
+          "require !$source.force_switch else return",
+          "require !$target.force_switch else return",
           "if func_call(use_item: $target):",
           ["force_switch: $source"]
         ]
@@ -2130,12 +2125,16 @@
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects": [
-          "if $source == $target or $target.hp == 0 or $move.category == status or func_call(move_has_flag: $move future):",
-          ["return"],
-          "if !func_call(can_switch: $target.player) or $target.force_switch or $target.being_called_back or $target.is_away_from_field:",
-          ["return"],
+          "require $source != $target else return",
+          "require $target.hp != 0 else return",
+          "require $move.category != status else return",
+          "require !func_call(move_has_flag: $move future) else return",
+          "require func_call(can_switch: $target.player) else return",
+          "require !$target.force_switch else return",
+          "require !$target.being_called_back else return",
+          "require !$target.is_away_from_field else return",
           "foreach $mon in func_call(all_active_or_exited_mons):",
-          ["if $mon.being_called_back:", ["return"]],
+          ["require !$mon.being_called_back else return"],
           "$effect_state.activator = $source",
           "use_item: $target"
         ],
@@ -2167,8 +2166,7 @@
     "effect": {
       "callbacks": {
         "on_damaging_hit": [
-          "if $move.damage.is_defined or func_call(effect_has_event_callback: $move MoveDamage):",
-          ["return"],
+          "require !$move.damage and !func_call(effect_has_event_callback: $move MoveDamage) else return",
           "if func_call(type_modifier_against_target: $move $target) > 0 and func_call(can_boost: $target 'atk:2' 'spa:2'):",
           ["use_item: $target"]
         ],
@@ -2643,12 +2641,13 @@
           "$activate = false",
           "foreach $boost in func_call(boostable_stats):",
           ["if func_call(get_boost: $boosts $boost) < 0:", ["$activate = true", "break"]],
-          "if !$activate:",
-          ["return"],
-          "if !func_call(can_switch: $target.player) or $target.force_switch or $target.being_called_back or $target.is_away_from_field:",
-          ["return"],
+          "require $activate else return",
+          "require func_call(can_switch: $target.player) else return",
+          "require !$target.force_switch else return",
+          "require !$target.being_called_back else return",
+          "require !$target.is_away_from_field else return",
           "foreach $mon in func_call(all_active_or_exited_mons):",
-          ["if $mon.being_called_back:", ["return"]],
+          ["require !$mon.being_called_back else return"],
           "$effect_state.activator = $source",
           "use_item: $target"
         ],

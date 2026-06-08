@@ -98,16 +98,14 @@
           ["$target.effect_state.stale = false"]
         ],
         "on_battle_end_turn": [
-          "if $battle.turn <= 100:",
-          ["return"],
+          "require $battle.turn > 100 else return",
           "$all_active_stale = true",
           "foreach $mon in func_call(all_active_mons):",
           [
             "if !$mon.effect_state.stale and !$mon.volatile_effect_state.stale:",
             ["$all_active_stale = false", "break"]
           ],
-          "if !$all_active_stale:",
-          ["return"],
+          "require $all_active_stale else return",
           "$side_cannot_switch_out_of_stale = false",
           "foreach $side in $field.sides:",
           [
@@ -133,8 +131,7 @@
             "if !$side_can_switch_out_of_stale_mon:",
             ["$side_cannot_switch_out_of_stale = true", "break"]
           ],
-          "if !$side_cannot_switch_out_of_stale:",
-          ["return"],
+          "require $side_cannot_switch_out_of_stale else return",
           "$losing_sides = []",
           "$losing_side_indices = []",
           "foreach $side in $field.sides:",
@@ -300,10 +297,8 @@
     "effect": {
       "callbacks": {
         "on_set_status": [
-          "if func_call(is_ally: $source $target):",
-          ["return"],
-          "if $status.id != slp:",
-          ["return"],
+          "require !func_call(is_ally: $source $target) else return",
+          "require $status.id == slp else return",
           "foreach $mon in func_call(all_mons_on_side: $target.side):",
           [
             "if $mon.hp == 0 or $mon.status != slp:",

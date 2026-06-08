@@ -209,7 +209,7 @@
     "literal": {
       "patterns": [
         {
-          "match": "\\b(true|false|undefined)\\b",
+          "match": "\\b(true|false|undefined|fail|stopfail|stopreportfail|stop|skip|advance)\\b",
           "name": "constant.language"
         },
         {

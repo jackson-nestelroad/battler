@@ -18,8 +18,7 @@
       "callbacks": {
         "on_try_boost": [
           "$stat = func_call(value_from_local_data: stat)",
-          "if !$stat or $target == $source:",
-          ["return"],
+          "require $stat.is_defined and $target != $source else return",
           "if func_call(get_boost: $boosts $stat) < 0:",
           [
             "$boosts = func_call(set_boost: $boosts $stat 0)",
@@ -39,8 +38,9 @@
         "on_modify_move_type": {
           "priority": -1,
           "program": [
-            "if $effect.type == none or $type != normal or $type != $effect.type:",
-            ["return"],
+            "require $effect.type != none else return",
+            "require $type == normal else return",
+            "require $type == $effect.type else return",
             "if $effect.is_move:",
             ["$effect.effect_state.type_change_boosted = true"],
             "return func_call(value_from_local_data: type)"
@@ -61,11 +61,9 @@
         "on_start": ["log_ability"],
         "on_any_base_power": [
           "$type = func_call(value_from_local_data: type)",
-          "if $move.type != $type:",
-          ["return"],
+          "require $move.type == $type else return",
           "$aura_booster = $move.effect_state.aura_booster",
-          "if $aura_booster.is_defined:",
-          ["return"],
+          "require !$aura_booster else return",
           "$move.effect_state.aura_booster = $effect_state.target",
           "if $move.effect_state.aura_break:",
           ["return $base_power * 3/4"],

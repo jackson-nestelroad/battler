@@ -2441,30 +2441,19 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
         general_error(format!("cannot {operation} {lhs} and {rhs}"))
     }
 
-    /// Implements boolean coercion.
-    pub fn boolean_coercion(&self) -> Result<Value> {
+    /// Underlying boolean value.
+    pub fn boolean(&self) -> Result<Value> {
         let result = match self {
             Self::Undefined => Value::Boolean(false),
             Self::Boolean(val) => Value::Boolean(*val),
             Self::Fraction(val) => Value::Boolean(*val != 0),
             Self::UFraction(val) => Value::Boolean(*val != 0),
             Self::EventResult(val) => Value::EventResult(*val),
-            _ => Value::Boolean(true),
-        };
-        Ok(result)
-    }
-
-    /// Underlying boolean value.
-    pub fn boolean(&self) -> Result<bool> {
-        let val = self.boolean_coercion()?;
-        let result = match val {
-            Value::Boolean(val) => val,
-            Value::EventResult(val) => val.advance(),
-            _ => {
-                return Err(general_error(format!(
-                    "invalid boolean coercion value type {}",
-                    val.value_type()
-                )));
+            val @ _ => {
+                return Err(Self::invalid_unary_operation(
+                    "boolean conversion",
+                    val.value_type(),
+                ));
             }
         };
         Ok(result)
@@ -2472,9 +2461,9 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
     /// Implements negation.
     pub fn negate(&self) -> Result<MaybeReferenceValue<'eval>> {
-        let result = match self.boolean_coercion()? {
-            Value::Boolean(val) => MaybeReferenceValue::Boolean(!val),
-            Value::EventResult(val) => MaybeReferenceValue::Boolean(!val.advance()),
+        let result = match self.boolean() {
+            Ok(Value::Boolean(val)) => MaybeReferenceValue::Boolean(!val),
+            Ok(Value::EventResult(val)) => MaybeReferenceValue::Boolean(!val.advance()),
             _ => MaybeReferenceValue::Boolean(false),
         };
         Ok(result)
@@ -3006,7 +2995,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
     /// Implements boolean conjunction.
     pub fn and(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
-        let result = match (self.boolean_coercion()?, rhs.boolean_coercion()?) {
+        let result = match (self.boolean()?, rhs.boolean()?) {
             (Value::Boolean(lhs), Value::Boolean(rhs)) => MaybeReferenceValue::Boolean(lhs && rhs),
             (Value::Boolean(lhs), Value::EventResult(rhs)) => {
                 if lhs {
@@ -3042,7 +3031,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
 
     /// Implements boolean disjunction.
     pub fn or(self, rhs: Self) -> Result<MaybeReferenceValue<'eval>> {
-        let result = match (self.boolean_coercion()?, rhs.boolean_coercion()?) {
+        let result = match (self.boolean()?, rhs.boolean()?) {
             (Value::Boolean(lhs), Value::Boolean(rhs)) => MaybeReferenceValue::Boolean(lhs || rhs),
             (Value::Boolean(lhs), Value::EventResult(rhs)) => {
                 if lhs {

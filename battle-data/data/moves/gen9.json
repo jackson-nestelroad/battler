@@ -117,8 +117,7 @@
       "callbacks": {
         "on_after_move_secondary_effects_user": [
           "$commanded_state = func_call(volatile_status_state: $user commanded)",
-          "if !$commanded_state or !$commanded_state.source:",
-          ["return"],
+          "require $commanded_state.is_defined and $commanded_state.source.is_defined else return",
           "if $commanded_state.source.species == tatsugiridroopy:",
           ["boost: $user 'def:1'"],
           "else if $commanded_state.source.species == tatsugiristretchy:",
@@ -236,7 +235,7 @@
       "callbacks": {
         "on_try_hit": [
           "foreach $mon in func_call(all_mons_in_party: $target.player):",
-          ["if $mon.fainted:", ["return"]],
+          ["require !$mon.fainted else return"],
           "return false"
         ]
       }
@@ -316,8 +315,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noroleplay):",
-          ["return false"],
+          "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability noroleplay) else return false",
           "$success = false",
           "foreach $mon in func_call(allies_and_self: $source):",
           [
@@ -326,8 +324,7 @@
             "if func_call(set_ability: $mon $target.ability):",
             ["$success = true"]
           ],
-          "if !$success:",
-          ["return stopreportfail"]
+          "require $success else return stopreportfail"
         ]
       }
     }
@@ -350,12 +347,10 @@
     "effect": {
       "callbacks": {
         "on_try_use_move": [
-          "if $target.hp <= $target.max_hp / 2 or $target.max_hp == 1:",
-          ["return false"]
+          "require $target.hp > ($target.max_hp / 2) and $target.max_hp != 1 else return false"
         ],
         "on_try_hit": [
-          "if !func_call(can_boost: $target $move.hit_effect.boosts):",
-          ["return stopfail"]
+          "require func_call(can_boost: $target $move.hit_effect.boosts) else return stopfail"
         ],
         "on_hit": ["direct_damage: $target expr($target.max_hp / 2)"]
       }
@@ -560,12 +555,9 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if !func_call(can_switch: $target.player):",
-          ["return stopreportfail"],
-          "if func_call(has_volatile: $target substitute):",
-          ["return stopreportfail"],
-          "if $target.hp <= $target.max_hp / 2 or $target.max_hp == 1:",
-          ["return stopreportfail"]
+          "require func_call(can_switch: $target.player) else return stopreportfail",
+          "require !func_call(has_volatile: $target substitute) else return stopreportfail",
+          "require $target.hp > ($target.max_hp / 2) and $target.max_hp != 1 else return stopreportfail"
         ],
         "on_hit": [
           "direct_damage: $target expr($target.max_hp / 2)",
@@ -768,7 +760,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_try_move": ["if !func_call(has_type: $user electric):", ["return false"]],
+        "on_try_move": ["require func_call(has_type: $user electric) else return false"],
         "on_hit_user": [
           "# Remove Electric type.",
           "# Note that if we are forced into the Electric type (e.g., Terastallization), this has no effect.",
@@ -1067,8 +1059,7 @@
         "on_charge_move": [
           "boost: $user 'spa:1'",
           "$weather = func_call(effective_weather: $user)",
-          "if $weather.is_defined and $weather.is_raining:",
-          ["return false"]
+          "require !$weather or !$weather.is_raining else return false"
         ]
       }
     }
@@ -1094,8 +1085,7 @@
       "callbacks": {
         "on_modify_move_type": ["if $user.species == terapagosstellar:", ["return stellar"]],
         "on_use_move": [
-          "if $user.species != terapagosstellar:",
-          ["return"],
+          "require $user.species == terapagosstellar else return",
           "if func_call(get_stat: $user atk unmodified) > func_call(get_stat: $user spa unmodified):",
           ["$move.category = physical"],
           "$move.target = alladjacentfoes"
@@ -1213,8 +1203,7 @@
       "copy_on_transform": true,
       "callbacks": {
         "on_start": [
-          "if func_call(has_volatile: $target focusenergy):",
-          ["return false"],
+          "require !func_call(has_volatile: $target focusenergy) else return false",
           "if $source_effect.is_move:",
           ["log_start"],
           "else:",
@@ -1310,11 +1299,11 @@
       "callbacks": {
         "on_try_use_move": [
           "$action = func_call(pending_move_action_this_turn: $target)",
-          "if !$action:",
-          ["return false"],
+          "require $action.is_defined else return false",
           "$pending_move = func_call(get_move: $action.id)",
-          "if !$pending_move or $action.priority == 0 or $pending_move.category == status:",
-          ["return false"]
+          "require $pending_move.is_defined else return false",
+          "require $action.priority != 0 else return false",
+          "require $pending_move.category != status else return false"
         ]
       }
     }

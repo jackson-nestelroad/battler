@@ -48,8 +48,7 @@
       "callbacks": {
         "on_side_start": ["log_single_turn: use_source with_target"],
         "on_try_hit": [
-          "if !([alladjacent, alladjacentfoes] has $move.target):",
-          ["return"],
+          "require [alladjacent, alladjacentfoes] has $move.target else return",
           "if $report:",
           ["log_activate: with_target"],
           "return stop"
@@ -253,8 +252,7 @@
           "$base_species = func_call(base_species: $target)",
           "if func_call(species_has_flag: $base_species notelekinesis) or func_call(species_has_flag: $target.base_species notelekinesis):",
           ["log_immune: $target", "return stopfail"],
-          "if func_call(has_volatile: $target smackdown) or func_call(has_volatile: $target ingrain):",
-          ["return false"],
+          "require !func_call(has_volatile: $target smackdown) and !func_call(has_volatile: $target ingrain) else return false",
           "log_start"
         ],
         "is_grounded": ["return false"],
@@ -432,8 +430,7 @@
     "effect": {
       "callbacks": {
         "on_try_immunity": [
-          "if !func_call(has_any_type: $target $source.effective_types):",
-          ["return false"]
+          "require func_call(has_any_type: $target $source.effective_types) else return false"
         ]
       }
     }
@@ -598,8 +595,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability nosimplebeam):",
-          ["return false"]
+          "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability nosimplebeam) else return false"
         ],
         "on_hit": ["return func_call(set_ability: $target simple)"]
       }
@@ -621,10 +617,11 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $target == $source or $target.dynamaxed:",
-          ["return false"],
-          "if $target.ability == $source.ability or func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noentrainmenttarget) or func_call(ability_has_flag: $source.ability noentrainment):",
-          ["return false"]
+          "require $target != $source and !$target.dynamaxed else return false",
+          "require $target.ability != $source.ability else return false",
+          "require !func_call(ability_has_flag: $target.ability permanent) else return false",
+          "require !func_call(ability_has_flag: $target.ability noentrainmenttarget) else return false",
+          "require !func_call(ability_has_flag: $source.ability noentrainment) else return false"
         ],
         "on_hit": ["return func_call(set_ability: $target $source.ability)"]
       }
@@ -647,8 +644,7 @@
       "callbacks": {
         "on_hit": [
           "$action = func_call(pending_move_action_this_turn: $target)",
-          "if !$action:",
-          ["return false"],
+          "require $action.is_defined else return false",
           "prioritize_move: $target",
           "log_activate: with_target"
         ]
@@ -787,8 +783,7 @@
       "callbacks": {
         "on_side_start": ["log_single_turn: use_source with_target"],
         "on_try_hit": [
-          "if $move.priority <= 0:",
-          ["return"],
+          "require $move.priority > 0 else return",
           "if $report:",
           ["log_activate: with_target"],
           "return stop"
@@ -816,11 +811,9 @@
         "on_try_hit": [
           "# There must be a corresponding position to switch to (i.e., player has more than one Mon).",
           "$active_positions = $target.player.total_active_positions",
-          "if $active_positions <= 1:",
-          ["return false"],
+          "require $active_positions > 1 else return false",
           "# Fail if Mon is in the middle.",
-          "if $active_positions % 2 == 1 and $target.active_position == func_call(floor: expr($active_positions / 2)):",
-          ["return false"]
+          "require ($active_positions % 2) != 1 or $target.active_position != func_call(floor: expr($active_positions / 2)) else return false"
         ],
         "on_hit": [
           "$position = $target.player.total_active_positions - $target.active_position - 1",
@@ -899,8 +892,7 @@
           "$multiplier = 1/2",
           "if $move.effect_state.multiplier.is_defined:",
           ["$multiplier = $move.effect_state.multiplier"],
-          "if !func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect):",
-          ["return stop"]
+          "require func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect) else return stop"
         ]
       }
     }
@@ -950,23 +942,21 @@
         ],
         "on_try_immunity": [
           "if func_call(has_volatile: $source $this.id):",
-          ["if func_call(has_type: $target flying):", ["return false"]],
+          ["require !func_call(has_type: $target flying) else return false"],
           "else:",
-          ["if $target.weight >= 2000:", ["return false"]]
+          ["require $target.weight < 2000 else return false"]
         ],
         "on_try_hit": [
           "if func_call(has_volatile: $source $this.id):",
           [
             "# Ensure we are targeting the original target.",
             "$immobilizing_effect_state = func_call(volatile_status_state: $source immobilizingmove)",
-            "if !$immobilizing_effect_state or $target != $immobilizing_effect_state.source:",
-            ["return false"],
+            "require $immobilizing_effect_state.is_defined and $target == $immobilizing_effect_state.source else return false",
             "remove_volatile: $source immobilizingmove"
           ],
           "else:",
           [
-            "if $target.is_behind_substitute or func_call(is_ally: $source $target):",
-            ["return false"],
+            "require !$target.is_behind_substitute and !func_call(is_ally: $source $target) else return false",
             "log_prepare_move: $target",
             "add_volatile: $source immobilizingmove use_target_as_source",
             "return stop"
@@ -1050,10 +1040,8 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if $format.mons_per_side == 1:",
-          ["return false"],
-          "if !func_call(will_move_this_turn: $target):",
-          ["return false"],
+          "require $format.mons_per_side != 1 else return false",
+          "require func_call(will_move_this_turn: $target) else return false",
           "deprioritize_move: $target",
           "log_activate: with_target"
         ]
@@ -1147,7 +1135,7 @@
           "return $source.item.is_defined and func_call(set_item: $target $source.item dry_run)"
         ],
         "on_hit": [
-          "require assign($item = func_call(take_item: $source))",
+          "require !!assign($item = func_call(take_item: $source))",
           "return func_call(set_item: $target $item)"
         ]
       }
@@ -1183,8 +1171,7 @@
       "delegates": ["condition:pledgemovebase"],
       "callbacks": {
         "on_use_move": [
-          "if !$move.effect_state.source_effect:",
-          ["return"],
+          "require $move.effect_state.source_effect.is_defined else return",
           "if $move.effect_state.source_effect.id == grasspledge:",
           [
             "$move.force_stab = true",
@@ -1208,8 +1195,7 @@
         "on_side_start": ["log_side_start"],
         "on_side_end": ["log_side_end"],
         "on_use_move": [
-          "if $move.id == secretpower:",
-          ["return"],
+          "require $move.id != secretpower else return",
           "$secondary_effects = []",
           "foreach $secondary in $move.secondary_effects:",
           [
@@ -1239,8 +1225,7 @@
       "delegates": ["condition:pledgemovebase"],
       "callbacks": {
         "on_use_move": [
-          "if !$move.effect_state.source_effect:",
-          ["return"],
+          "require $move.effect_state.source_effect.is_defined else return",
           "if $move.effect_state.source_effect.id == grasspledge:",
           [
             "$move.force_stab = true",
@@ -1283,8 +1268,7 @@
       "delegates": ["condition:pledgemovebase"],
       "callbacks": {
         "on_use_move": [
-          "if !$move.effect_state.source_effect:",
-          ["return"],
+          "require $move.effect_state.source_effect.is_defined else return",
           "if $move.effect_state.source_effect.id == firepledge:",
           [
             "$move.force_stab = true",
@@ -1717,11 +1701,9 @@
       "callbacks": {
         "on_modify_move_type": [
           "$item = $user.effective_item",
-          "if !$item:",
-          ["return"],
+          "require $item.is_defined else return",
           "$data = func_call(special_item_data: $item)",
-          "if !$data or !$data.techno_blast:",
-          ["return"],
+          "require $data.is_defined and $data.techno_blast.is_defined else return",
           "return $data.techno_blast.type"
         ]
       }

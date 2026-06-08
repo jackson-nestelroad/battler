@@ -7,12 +7,10 @@
         "on_use_move": {
           "priority": -1,
           "program": [
-            "if $move.category == status:",
-            ["return"],
+            "require $move.category != status else return",
             "foreach $secondary in $move.secondary_effects:",
             [
-              "if $secondary.target.is_defined and $secondary.target.volatile_status == flinch:",
-              ["return"]
+              "require !$secondary.target or $secondary.target.volatile_status != flinch else return"
             ],
             "$added_secondary = func_call(secondary_hit_effect)",
             "$added_secondary.chance = 1/10",
@@ -90,8 +88,7 @@
       "callbacks": {
         "on_update": ["if $mon.status == par:", ["cure_status: $mon"]],
         "on_set_status": [
-          "if $status.id != par:",
-          ["return"],
+          "require $status.id == par else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
           "return stopfail"
@@ -104,7 +101,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]],
+        "on_immunity": ["require $effect.id != sandstormweather else return false"],
         "on_modify_accuracy": ["if $field.weather == sandstormweather:", ["return $acc * 4/5"]]
       }
     }
@@ -165,7 +162,7 @@
           "if func_call(has_volatile: $mon taunt):",
           ["log_activate: with_target", "remove_volatile: $mon taunt"]
         ],
-        "on_immunity": ["if $effect.id == attract:", ["return false"]],
+        "on_immunity": ["require $effect.id != attract else return false"],
         "on_try_hit": [
           "if [attract, captivate, taunt] has $move.id:",
           ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]
@@ -205,8 +202,7 @@
       "callbacks": {
         "on_update": ["if $mon.status == slp:", ["cure_status: $mon"]],
         "on_set_status": [
-          "if $status.id != slp:",
-          ["return"],
+          "require $status.id == slp else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
           "return stopfail"
@@ -220,8 +216,7 @@
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects": [
-          "if $target.hp == 0:",
-          ["return"],
+          "require $target.hp != 0 else return",
           "$type = $move.type",
           "if $target.active and $move.category != status and !func_call(has_type: $target $type):",
           ["set_types: $target [$type]"]
@@ -236,8 +231,7 @@
       "callbacks": {
         "on_update": ["if $mon.status == psn or $mon.status == tox:", ["cure_status: $mon"]],
         "on_set_status": [
-          "if $status.id != psn and $status.id != tox:",
-          ["return"],
+          "require $status.id == psn or $status.id == tox else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
           "return stopfail"
@@ -252,8 +246,7 @@
       "callbacks": {
         "on_start": ["if $effect_state.activated:", ["add_volatile: $target $this.id"]],
         "on_try_hit": [
-          "if $target == $source or $move.type != fire:",
-          ["return"],
+          "require $target != $source and $move.type == fire else return",
           "$move.accuracy = exempt",
           "if !func_call(add_volatile: $target $this.id) and $report:",
           ["log_immune: $target from_effect"],
@@ -377,8 +370,10 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $target == $source or $move.category == status or $move.type == none or $move.id == struggle:",
-          ["return"],
+          "require $target != $source else return",
+          "require $move.category != status else return",
+          "require $move.type != none else return",
+          "require $move.id != struggle else return",
           "if func_call(type_effectiveness: $target use_source_effect) <= 0:",
           ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]
         ]
@@ -400,8 +395,9 @@
     "effect": {
       "callbacks": {
         "on_damaging_hit": [
-          "if !func_call(move_makes_contact: $move) or $source.status.is_defined or func_call(check_immunity: $source powderdust):",
-          ["return"],
+          "require func_call(move_makes_contact: $move) else return",
+          "require !$source.status else return",
+          "require !func_call(check_immunity: $source powderdust) else return",
           "$rand = func_call(random: 100)",
           "if $rand < 11:",
           ["$status = slp"],
@@ -421,10 +417,8 @@
     "effect": {
       "callbacks": {
         "on_after_set_status": [
-          "if !$source or $source == $target:",
-          ["return"],
-          "if $status.id == slp or $status.id == frz:",
-          ["return"],
+          "require $source.is_defined and $source != $target else return",
+          "require $status.id != slp and $status.id != frz else return",
           "log_activate: with_target",
           "set_status: $source $status.id"
         ]
@@ -437,8 +431,7 @@
     "effect": {
       "callbacks": {
         "on_try_boost": [
-          "if $target == $source:",
-          ["return"],
+          "require $target != $source else return",
           "$cleared = []",
           "foreach $boost in func_call(boostable_stats):",
           [
@@ -471,20 +464,17 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $target == $source or $move.type != electric:",
-          ["return"],
+          "require $target != $source and $move.type == electric else return",
           "if !func_call(boost: $target 'spa:1') and $report:",
           ["log_immune: $target from_effect"],
           "return stopfail"
         ],
         "on_any_redirect_target": [
-          "if $move.type != electric or func_call(move_has_flag: $move pledgecombo):",
-          ["return"],
+          "require $move.type == electric and !func_call(move_has_flag: $move pledgecombo) else return",
           "$redirect = $move.target",
           "if [randomnormal, adjacentfoe] has $move.target:",
           ["$redirect = normal"],
-          "if !func_call(valid_target: $user $effect_state.target $redirect):",
-          ["return"],
+          "require func_call(valid_target: $user $effect_state.target $redirect) else return",
           "log_activate: with_target",
           "return $effect_state.target"
         ]
@@ -559,8 +549,7 @@
             "if !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability notrace):",
             ["$targets = func_call(append: $targets $target)"]
           ],
-          "if $targets.is_empty:",
-          ["return"],
+          "require !$targets.is_empty else return",
           "$target = func_call(sample: $targets)",
           "set_ability: $mon $target.ability"
         ]
@@ -615,8 +604,7 @@
       "callbacks": {
         "on_update": ["if $mon.status == brn:", ["cure_status: $mon"]],
         "on_set_status": [
-          "if $status.id != brn:",
-          ["return"],
+          "require $status.id == brn else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
           "return stopfail"
@@ -766,16 +754,14 @@
     "effect": {
       "callbacks": {
         "on_residual": [
-          "if $target.item.is_defined:",
-          ["return"],
+          "require !$target.item else return",
           "$targets = []",
           "foreach $mon in func_call(all_active_mons):",
           [
             "if $mon.last_item.is_defined and $mon.item_used_this_turn and func_call(is_adjacent: $mon $target):",
             ["$targets = func_call(append: $targets $mon)"]
           ],
-          "if $targets.is_empty:",
-          ["return"],
+          "require !$targets.is_empty else return",
           "$random_target = func_call(sample: $targets)",
           "$item = $random_target.last_item",
           "$random_target.last_item = undefined",
@@ -857,8 +843,7 @@
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: WeatherChange"],
         "on_weather_change": [
-          "if func_call(base_species: $target) != castform:",
-          ["return"],
+          "require func_call(base_species: $target) == castform else return",
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
           "if !$weather:",
           ["$forme = castform"],
@@ -874,8 +859,7 @@
           ["forme_change: $target $forme"]
         ],
         "on_end": [
-          "if func_call(base_species: $target) != castform:",
-          ["return"],
+          "require func_call(base_species: $target) == castform else return",
           "forme_change: $target castform"
         ]
       }
@@ -887,8 +871,7 @@
     "effect": {
       "callbacks": {
         "on_take_item": [
-          "if $target.hp == 0 or $target.item == stickybarb:",
-          ["return"],
+          "require $target.hp != 0 and $target.item != stickybarb else return",
           "if $target != $source:",
           ["log_activate: with_target", "return stopfail"]
         ]
@@ -1043,8 +1026,7 @@
       "callbacks": {
         "on_update": ["if $mon.status == slp:", ["cure_status: $mon"]],
         "on_set_status": [
-          "if $status.id != slp:",
-          ["return"],
+          "require $status.id == slp else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
           "return stopfail"

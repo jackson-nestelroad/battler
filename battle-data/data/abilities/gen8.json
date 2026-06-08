@@ -5,8 +5,7 @@
     "effect": {
       "callbacks": {
         "on_start": [
-          "if $effect_state.boosted:",
-          ["return"],
+          "require !$effect_state.boosted else return",
           "$effect_state.boosted = true",
           "boost: $target 'atk:1'"
         ]
@@ -19,8 +18,7 @@
     "effect": {
       "callbacks": {
         "on_start": [
-          "if $effect_state.boosted:",
-          ["return"],
+          "require !$effect_state.boosted else return",
           "$effect_state.boosted = true",
           "boost: $target 'def:1'"
         ]
@@ -40,13 +38,13 @@
     "effect": {
       "callbacks": {
         "on_any_catch_failed": [
-          "if $effect_state.first_ball.is_defined:",
-          ["return"],
+          "require !$effect_state.first_ball else return",
           "$effect_state.first_ball = $item"
         ],
         "on_residual": [
-          "if $effect_state.activated or !$effect_state.first_ball or $target.item.is_defined:",
-          ["return"],
+          "require !$effect_state.activated else return",
+          "require $effect_state.first_ball.is_defined else return",
+          "require !$target.item else return",
           "$effect_state.activated = true",
           "set_item: $target $effect_state.first_ball"
         ]
@@ -85,8 +83,9 @@
     "effect": {
       "callbacks": {
         "on_try_boost": [
-          "if !$source or $target == $source or $effect == $this.id:",
-          ["return"],
+          "require $source.is_defined else return",
+          "require $target != $source else return",
+          "require $effect != $this.id else return",
           "$cleared = func_call(boost_table)",
           "foreach $boost in func_call(boostable_stats):",
           [
@@ -109,28 +108,25 @@
     "flags": ["NoTransform", "Permanent"],
     "effect": {
       "callbacks": {
-        "on_before_charge_move": ["if $move.id != dive:", ["return"], "activate_ability"],
+        "on_before_charge_move": ["require $move.id == dive else return", "activate_ability"],
         "on_source_try_primary_hit": [
-          "if $move.id != surf:",
-          ["return"],
+          "require $move.id == surf else return",
           "activate_ability: $source"
         ],
         "on_activate": [
-          "if $target.species != cramorant:",
-          ["return"],
+          "require $target.species == cramorant else return",
           "$forme = cramorantgulping",
           "if $target.hp <= $target.max_hp / 2:",
           ["$forme = cramorantgorging"],
           "forme_change: $target $forme"
         ],
         "on_damaging_hit": [
-          "if $source.hp == 0 or !$source.active or $target.is_semi_invulnerable:",
-          ["return"],
-          "if $target.species == cramorant:",
-          ["return"],
+          "require $source.hp != 0 else return",
+          "require $source.active else return",
+          "require !$target.is_semi_invulnerable else return",
+          "require $target.species != cramorant else return",
           "$base_species = func_call(base_species: $target)",
-          "if $base_species != cramorant:",
-          ["return"],
+          "require $base_species == cramorant else return",
           "damage: $source expr($source.base_max_hp / 4)",
           "if $target.species == cramorantgulping:",
           ["boost: $source 'def:-1'"],
@@ -255,21 +251,18 @@
         "on_damage": {
           "priority": 1,
           "program": [
-            "if !$effect.is_move or $effect.category != physical or $target.species != eiscue:",
-            ["return"],
+            "require $effect.is_move else return",
+            "require $effect.category == physical else return",
+            "require $target.species == eiscue else return",
             "forme_change: $target eiscuenoice permanent",
             "return 0"
           ]
         },
         "on_critical_hit": [
-          "if $target.species != eiscue:",
-          ["return"],
-          "if $move.category != physical:",
-          ["return"],
-          "if func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          ["return"],
-          "if func_call(check_move_immunity: $target $move):",
-          ["return"],
+          "require $target.species == eiscue else return",
+          "require $move.category == physical else return",
+          "require !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute) else return",
+          "require !func_call(check_move_immunity: $target $move) else return",
           "return false"
         ],
         "on_effectiveness": [
@@ -277,8 +270,7 @@
           ["return 0"]
         ],
         "on_weather_change": [
-          "if $target.species != eiscuenoice:",
-          ["return"],
+          "require $target.species == eiscuenoice else return",
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
           "if $weather.is_defined and $weather.is_snowing:",
           ["forme_change: $target eiscue permanent"]
@@ -293,8 +285,7 @@
     "effect": {
       "callbacks": {
         "on_any_base_power": [
-          "if $source == $effect_state.target or !func_call(is_ally: $source $effect_state.target):",
-          ["return"],
+          "require $source != $effect_state.target and func_call(is_ally: $source $effect_state.target) else return",
           "return $base_power * 13/10"
         ]
       }
@@ -403,7 +394,7 @@
         "on_end": [
           "# If no other Mons have this ability on the field, remove the pseudo-weather.",
           "foreach $other in func_call(all_active_mons):",
-          ["if $other != $target and func_call(has_ability: $other $this.id):", ["return"]],
+          ["require $other == $target or !func_call(has_ability: $other $this.id) else return"],
           "log_end",
           "remove_pseudo_weather: $this.id"
         ]
@@ -413,8 +404,7 @@
       "callbacks": {
         "suppress_mon_ability": [
           "# Do not suppress our own ability, so that we can trigger this condition to end.",
-          "if $effect_state.started and $mon.ability != $this.id:",
-          ["return true"]
+          "require !$effect_state.started or $mon.ability == $this.id else return true"
         ],
         "on_field_start": [
           "# If a Mon's ability is suppressed, end it.",
@@ -478,8 +468,7 @@
     "effect": {
       "callbacks": {
         "on_residual": [
-          "if $target.terastallized:",
-          ["return"],
+          "require !$target.terastallized else return",
           "if $target.species == morpeko:",
           ["forme_change: $target morpekohangry"],
           "else:",
@@ -581,8 +570,7 @@
     "effect": {
       "callbacks": {
         "on_after_fainted": [
-          "if !$effect or !$effect.is_move:",
-          ["return"],
+          "require $effect.is_defined and $effect.is_move else return",
           "boost: $mon str('spa:{}', $count)"
         ]
       }
@@ -605,8 +593,7 @@
           "$effect_state.activated = true"
         ],
         "on_start": [
-          "if $effect_state.announced or !$effect_state.activated:",
-          ["return"],
+          "require !$effect_state.announced and $effect_state.activated else return",
           "log_ability",
           "$effect_state.announced = true"
         ]

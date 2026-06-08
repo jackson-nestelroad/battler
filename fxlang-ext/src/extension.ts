@@ -22,6 +22,9 @@ import {
     preprocessMetadata
 } from './utils';
 
+const CONSTANTS = ['true', 'false', 'undefined'];
+const EVENT_RESULTS = ['fail', 'stopfail', 'stopreportfail', 'stop', 'skip', 'advance'];
+
 export function activate(context: vscode.ExtensionContext) {
     const metadataPath = path.join(context.extensionPath, 'metadata.json');
     let metadata: Metadata = {
@@ -443,11 +446,27 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
             items.push(item);
         }
 
-        const constants = ['true', 'false', 'undefined', 'stop', ...(metadata.common_flags || [])];
-        for (const c of constants) {
+        for (const c of CONSTANTS) {
             const item = new vscode.CompletionItem(c, vscode.CompletionItemKind.Constant);
             item.sortText = ' ' + c;
-            item.detail = "(Flag / Constant)";
+            item.detail = "(Constant)";
+            item.range = wordRange;
+            items.push(item);
+        }
+
+        for (const c of EVENT_RESULTS) {
+            const item = new vscode.CompletionItem(c, vscode.CompletionItemKind.Constant);
+            item.sortText = ' ' + c;
+            item.detail = "(Event Result)";
+            item.range = wordRange;
+            items.push(item);
+        }
+
+        const commonFlags = metadata.common_flags || [];
+        for (const c of commonFlags) {
+            const item = new vscode.CompletionItem(c, vscode.CompletionItemKind.Constant);
+            item.sortText = ' ' + c;
+            item.detail = "(Flag)";
             item.range = wordRange;
             items.push(item);
         }
@@ -572,10 +591,15 @@ class FxHoverProvider implements vscode.HoverProvider {
                 if (!wordRange2) return null;
                 const word2 = document.getText(wordRange2);
                 
-                const constants = ['true', 'false', 'undefined', 'stop'];
-                if (constants.includes(word2)) {
+                if (CONSTANTS.includes(word2)) {
                     const hoverText = new vscode.MarkdownString();
                     hoverText.appendMarkdown(`**Literal \`${word2}\`**`);
+                    return new vscode.Hover(hoverText);
+                }
+
+                if (EVENT_RESULTS.includes(word2)) {
+                    const hoverText = new vscode.MarkdownString();
+                    hoverText.appendMarkdown(`**Event Result \`${word2}\`**`);
                     return new vscode.Hover(hoverText);
                 }
                 

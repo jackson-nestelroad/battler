@@ -60,8 +60,7 @@
         "on_start": ["activate_ability: $target"],
         "on_end": ["remove_volatile: $target commanding"],
         "on_activate": [
-          "if $target.needs_switch:",
-          ["return"],
+          "require !$target.needs_switch else return",
           "if func_call(base_species: $target) == tatsugiri:",
           [
             "$commanding_state = func_call(volatile_status_state: $target commanding)",
@@ -182,8 +181,7 @@
     "effect": {
       "callbacks": {
         "on_start": [
-          "if $effect_state.activated:",
-          ["return"],
+          "require !$effect_state.activated else return",
           "if $target.species == ogerponcornerstonemasktera:",
           ["boost: $target 'def:1'"],
           "if $target.species == ogerponhearthflamemasktera:",
@@ -223,16 +221,12 @@
     "effect": {
       "callbacks": {
         "on_modify_effectiveness": [
-          "if !$effect.is_move:",
-          ["return"],
+          "require $effect.is_move else return",
           "if $effect.effect_state.resisted:",
           ["return -1"],
-          "if $effect.category == status or $effect.type == none:",
-          ["return"],
-          "if func_call(check_move_immunity: $target $effect):",
-          ["return"],
-          "if $modifier < 0 or $target.hp < $target.max_hp:",
-          ["return"],
+          "require $effect.category != status and $effect.type != none else return",
+          "require !func_call(check_move_immunity: $target $effect) else return",
+          "require $modifier >= 0 and $target.hp >= $target.max_hp else return",
           "log_activate: with_target",
           "$effect.effect_state.resisted = true",
           "return -1"
@@ -246,8 +240,7 @@
     "effect": {
       "callbacks": {
         "on_start": [
-          "if !$field.weather and !$field.terrain:",
-          ["return"],
+          "require $field.weather.is_defined or $field.terrain.is_defined else return",
           "log_ability",
           "clear_weather",
           "clear_terrain"

@@ -607,17 +607,11 @@ impl<'event_state> Evaluator<'event_state> {
                 let failed_requirement = {
                     let condition = self.evaluate_expr(context, &statement.condition)?;
                     let condition = MaybeReferenceValueForOperation::from(&condition);
-                    let falsy = condition
-                        .negate()
-                        .wrap_error_with_message(
-                            "require statement condition must implement the negation operator",
-                        )?
-                        .boolean()
-                        .ok_or_else(|| {
-                            general_error("negation operator unexpectedly did not return a boolean")
-                        })?;
-                    if falsy {
-                        Some(condition.to_owned())
+                    let value = condition.boolean().wrap_error_with_message(
+                        "require statement condition must convert to boolean",
+                    )?;
+                    if !value.clone().boolean()? {
+                        Some(value)
                     } else {
                         None
                     }
@@ -775,16 +769,16 @@ impl<'event_state> Evaluator<'event_state> {
                     // accessing it.
                     match rhs_expr.op {
                         tree::Operator::Or => {
-                            if lhs.boolean()? {
-                                let result = lhs.boolean_coercion()?;
+                            if lhs.boolean()?.boolean()? {
+                                let result = lhs.boolean()?;
                                 drop(lhs);
                                 value = result.into();
                                 continue;
                             }
                         }
                         tree::Operator::And => {
-                            if !lhs.boolean()? {
-                                let result = lhs.boolean_coercion()?;
+                            if !lhs.boolean()?.boolean()? {
+                                let result = lhs.boolean()?;
                                 drop(lhs);
                                 value = result.into();
                                 continue;

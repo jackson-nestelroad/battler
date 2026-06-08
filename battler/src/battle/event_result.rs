@@ -49,7 +49,7 @@ pub enum EventResult {
     /// Continue the move.
     ///
     /// Animate. Do not report failure. Treat as success.
-    #[string = "continue"]
+    #[string = "advance"]
     #[default]
     Advance,
 }
