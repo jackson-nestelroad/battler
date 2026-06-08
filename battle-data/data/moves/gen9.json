@@ -315,7 +315,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability noroleplay) else return false",
+          "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability noroleplay)",
           "$success = false",
           "foreach $mon in func_call(allies_and_self: $source):",
           [
@@ -346,9 +346,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_use_move": [
-          "require $target.hp > ($target.max_hp / 2) and $target.max_hp != 1 else return false"
-        ],
+        "on_try_use_move": ["require $target.hp > ($target.max_hp / 2) and $target.max_hp != 1"],
         "on_try_hit": [
           "require func_call(can_boost: $target $move.hit_effect.boosts) else return stopfail"
         ],
@@ -760,7 +758,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_try_move": ["require func_call(has_type: $user electric) else return false"],
+        "on_try_move": ["require func_call(has_type: $user electric)"],
         "on_hit_user": [
           "# Remove Electric type.",
           "# Note that if we are forced into the Electric type (e.g., Terastallization), this has no effect.",
@@ -1059,7 +1057,7 @@
         "on_charge_move": [
           "boost: $user 'spa:1'",
           "$weather = func_call(effective_weather: $user)",
-          "require !$weather or !$weather.is_raining else return false"
+          "require !$weather or !$weather.is_raining"
         ]
       }
     }
@@ -1203,7 +1201,7 @@
       "copy_on_transform": true,
       "callbacks": {
         "on_start": [
-          "require !func_call(has_volatile: $target focusenergy) else return false",
+          "require !func_call(has_volatile: $target focusenergy)",
           "if $source_effect.is_move:",
           ["log_start"],
           "else:",
@@ -1299,11 +1297,11 @@
       "callbacks": {
         "on_try_use_move": [
           "$action = func_call(pending_move_action_this_turn: $target)",
-          "require $action.is_defined else return false",
+          "require $action.is_defined",
           "$pending_move = func_call(get_move: $action.id)",
-          "require $pending_move.is_defined else return false",
-          "require $action.priority != 0 else return false",
-          "require $pending_move.category != status else return false"
+          "require $pending_move.is_defined",
+          "require $action.priority != 0",
+          "require $pending_move.category != status"
         ]
       }
     }

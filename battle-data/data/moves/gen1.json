@@ -743,9 +743,9 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "require $target.last_move.is_defined else return false",
-          "require $target.last_move.id != struggle else return false",
-          "require !$target.last_move.upgraded else return false"
+          "require $target.last_move.is_defined",
+          "require $target.last_move.id != struggle",
+          "require !$target.last_move.upgraded"
         ]
       }
     },
@@ -757,10 +757,10 @@
           "# The target hasn't taken its turn yet, so this turn counts as a disabled turn.",
           "if func_call(will_move_this_turn: $target):",
           ["$effect_state.duration = $effect_state.duration - 1"],
-          "require $target.last_move.is_defined else return false",
+          "require $target.last_move.is_defined",
           "# Ensure the target's last move can be disbled.",
           "foreach $move_slot in $target.move_slots:",
-          ["require $move_slot.id != $target.last_move.id or $move_slot.pp != 0 else return false"],
+          ["require $move_slot.id != $target.last_move.id or $move_slot.pp != 0"],
           "if $source_effect.is_ability:",
           ["log_start: with_source_effect str('disabledmove:{}', $target.last_move.name)"],
           "else:",
@@ -1059,7 +1059,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_hit": ["require !$target.dynamaxed else return false"],
+        "on_try_hit": ["require !$target.dynamaxed"],
         "on_move_base_power": [
           "$weight = $target.weight",
           "if $weight >= 2000:",
@@ -1094,9 +1094,9 @@
         "on_before_turn": ["add_volatile: $mon $this.id"],
         "on_try_use_move": [
           "$effect_state = func_call(volatile_status_state: $user $this.id)",
-          "require $effect_state.is_defined else return false",
-          "require $effect_state.target_side.is_defined else return false",
-          "require $effect_state.target_position.is_defined else return false"
+          "require $effect_state.is_defined",
+          "require $effect_state.target_side.is_defined",
+          "require $effect_state.target_position.is_defined"
         ],
         "on_move_damage": [
           "$effect_state = func_call(volatile_status_state: $source $this.id)",
@@ -1197,7 +1197,7 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": ["require !func_call(has_type: $target grass) else return false", "log_start"],
+        "on_start": ["require !func_call(has_type: $target grass)", "log_start"],
         "on_residual": [
           "# Leech Seed activates as long as there is a Mon in the original source position to heal.",
           "$source = func_call(mon_in_position: $effect_state.source_side $effect_state.source_position)",
@@ -1266,7 +1266,7 @@
       "callbacks": {
         "on_charge_move": [
           "$weather = func_call(effective_weather: $user)",
-          "require !$weather or !$weather.is_sunny else return false"
+          "require !$weather or !$weather.is_sunny"
         ],
         "on_move_base_power": [
           "$weak_weathers = [rainweather, heavyrainweather, sandstormweather, hailweather, snowweather]",
@@ -1740,12 +1740,12 @@
       "callbacks": {
         "on_hit": [
           "$last_move = $target.last_move",
-          "require $last_move.is_defined else return false",
-          "require !func_call(move_has_flag: $last_move failmimic) else return false",
-          "require !func_call(has_move: $source $last_move.id) else return false",
-          "require !$last_move.upgraded else return false",
+          "require $last_move.is_defined",
+          "require !func_call(move_has_flag: $last_move failmimic)",
+          "require !func_call(has_move: $source $last_move.id)",
+          "require !$last_move.upgraded",
           "$mimic_index = func_call(move_slot_index: $source $this.id)",
-          "require $mimic_index.is_defined else return false",
+          "require $mimic_index.is_defined",
           "overwrite_move_slot: $source $mimic_index func_call(move_slot: $last_move)",
           "log_start: str('mimic:{}', $last_move.name)"
         ]
@@ -2137,7 +2137,7 @@
         "on_hit": [
           "$moves = func_call(get_all_moves: 'without_flag:nometronome')",
           "$random_move = func_call(sample: $moves)",
-          "require $random_move.is_defined else return false",
+          "require $random_move.is_defined",
           "use_move: $source $random_move.id"
         ]
       }
@@ -2169,9 +2169,9 @@
       "callbacks": {
         "on_try_hit": [
           "$last_move = $target.last_move",
-          "require $last_move.is_defined else return false",
-          "require func_call(move_has_flag: $last_move mirror) else return false",
-          "require $last_move.callable else return false",
+          "require $last_move.is_defined",
+          "require func_call(move_has_flag: $last_move mirror)",
+          "require $last_move.callable",
           "use_move: $source $last_move.id $target",
           "return skip"
         ]
@@ -2758,7 +2758,7 @@
     "effect": {
       "callbacks": {
         "on_try_use_move": [
-          "require !$user.is_asleep else return false",
+          "require !$user.is_asleep",
           "if $user.hp == $user.max_hp:",
           ["log_fail_heal: $user", "return stopfail"]
         ],
@@ -2848,9 +2848,9 @@
       "callbacks": {
         "on_hit": [
           "$target_move = func_call(move_at_move_slot_index: $target 0)",
-          "require $target_move.is_defined else return false",
+          "require $target_move.is_defined",
           "$new_type = $target_move.type",
-          "require !func_call(has_type: $target $new_type) else return false",
+          "require !func_call(has_type: $target $new_type)",
           "return func_call(set_types: $target [$new_type])"
         ]
       }
@@ -2918,9 +2918,9 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "require !func_call(has_volatile: $source substitute) else return false",
-          "require $source.hp > ($source.max_hp / 4) else return false",
-          "require $source.max_hp != 1 else return false"
+          "require !func_call(has_volatile: $source substitute)",
+          "require $source.hp > ($source.max_hp / 4)",
+          "require $source.max_hp != 1"
         ],
         "on_hit": ["direct_damage: $target expr($target.max_hp / 4)"]
       }
@@ -2942,7 +2942,7 @@
           "save_move_hit_data_flag_against_target: $move $target hitsubstitute",
           "# Calculate and apply damage.",
           "$damage = func_call(calculate_damage: $target)",
-          "require !$damage.is_boolean else return false",
+          "require !$damage.is_boolean",
           "if $damage > $effect_state.hp:",
           ["$damage = $effect_state.hp"],
           "$effect_state.hp = $effect_state.hp - $damage",

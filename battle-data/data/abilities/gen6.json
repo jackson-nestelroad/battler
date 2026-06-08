@@ -375,9 +375,9 @@
         "on_start": ["$effect_state.active = true", "set_weather: heavyrainweather"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
-          "require $field.weather != heavyrainweather or $strong_weathers has $weather else return false"
+          "require $field.weather != heavyrainweather or $strong_weathers has $weather"
         ],
-        "on_clear_weather": ["require !$effect_state.active else return false"],
+        "on_clear_weather": ["require !$effect_state.active"],
         "on_end": [
           "require $field.weather == heavyrainweather else return",
           "$effect_state.active = false",
@@ -394,9 +394,9 @@
         "on_start": ["$effect_state.active = true", "set_weather: extremelyharshsunlight"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
-          "require $field.weather != extremelyharshsunlight or $strong_weathers has $weather else return false"
+          "require $field.weather != extremelyharshsunlight or $strong_weathers has $weather"
         ],
-        "on_clear_weather": ["require !$effect_state.active else return false"],
+        "on_clear_weather": ["require !$effect_state.active"],
         "on_end": [
           "require $field.weather == extremelyharshsunlight else return",
           "$effect_state.active = false",
@@ -413,7 +413,7 @@
         "on_start": ["$effect_state.active = true", "set_weather: strongwinds"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
-          "require $field.weather != strongwinds or $strong_weathers has $weather else return false"
+          "require $field.weather != strongwinds or $strong_weathers has $weather"
         ],
         "on_clear_weather": ["if $effect_state.active:", ["return false"]],
         "on_end": [

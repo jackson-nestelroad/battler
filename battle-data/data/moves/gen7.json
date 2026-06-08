@@ -415,7 +415,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_use_move": ["require $user.active_turns <= 1 else return false"]
+        "on_try_use_move": ["require $user.active_turns <= 1"]
       }
     }
   },
@@ -552,7 +552,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "require func_call(can_boost: $target 'atk:-1') else return false",
+          "require func_call(can_boost: $target 'atk:-1')",
           "$atk = func_call(get_stat: $target atk unmodified)",
           "$boosted = func_call(boost: $target 'atk:-1')",
           "$healed = func_call(heal: $source $atk) > 0",
@@ -862,7 +862,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_try_move": ["require func_call(has_type: $user fire) else return false"],
+        "on_try_move": ["require func_call(has_type: $user fire)"],
         "on_hit_user": [
           "# Remove Fire type.",
           "# Note that if we are forced into the Fire type (e.g., Terastallization), this has no effect.",
@@ -1006,16 +1006,16 @@
       "callbacks": {
         "on_hit": [
           "$last_move = $target.last_move",
-          "require $last_move.is_defined and !$target.dynamaxed else return false",
+          "require $last_move.is_defined and !$target.dynamaxed",
           "$index = func_call(move_slot_index: $target $last_move.id)",
-          "require $index.is_defined else return false",
+          "require $index.is_defined",
           "$move_slot = func_call(move_slot_at_index: $target $index)",
-          "require $move_slot.is_defined and $move_slot.pp != 0 else return false",
-          "require !$last_move.upgraded else return false",
-          "require !func_call(move_has_flag: $last_move failinstruct) else return false",
-          "require !func_call(move_has_flag: $last_move charge) else return false",
-          "require !func_call(move_has_flag: $last_move recharge) else return false",
-          "require !func_call(has_volatile: $target windingup) else return false",
+          "require $move_slot.is_defined and $move_slot.pp != 0",
+          "require !$last_move.upgraded",
+          "require !func_call(move_has_flag: $last_move failinstruct)",
+          "require !func_call(move_has_flag: $last_move charge)",
+          "require !func_call(move_has_flag: $last_move recharge)",
+          "require !func_call(has_volatile: $target windingup)",
           "log_single_turn: with_target $target with_source",
           "$action_id = func_call(add_move_action: $target $last_move.id $target.last_target_location)",
           "prioritize_move: $target $action_id $this $source"
@@ -1108,7 +1108,7 @@
       "callbacks": {
         "on_try_use_move": [
           "$weather = func_call(effective_weather: $target)",
-          "require $weather.is_defined and $weather.is_snowing else return false"
+          "require $weather.is_defined and $weather.is_snowing"
         ]
       }
     },

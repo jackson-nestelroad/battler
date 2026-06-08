@@ -252,7 +252,7 @@
           "$base_species = func_call(base_species: $target)",
           "if func_call(species_has_flag: $base_species notelekinesis) or func_call(species_has_flag: $target.base_species notelekinesis):",
           ["log_immune: $target", "return stopfail"],
-          "require !func_call(has_volatile: $target smackdown) and !func_call(has_volatile: $target ingrain) else return false",
+          "require !func_call(has_volatile: $target smackdown) and !func_call(has_volatile: $target ingrain)",
           "log_start"
         ],
         "is_grounded": ["return false"],
@@ -429,9 +429,7 @@
     "flags": ["Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_immunity": [
-          "require func_call(has_any_type: $target $source.effective_types) else return false"
-        ]
+        "on_try_immunity": ["require func_call(has_any_type: $target $source.effective_types)"]
       }
     }
   },
@@ -595,7 +593,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability nosimplebeam) else return false"
+          "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability nosimplebeam)"
         ],
         "on_hit": ["return func_call(set_ability: $target simple)"]
       }
@@ -617,11 +615,11 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "require $target != $source and !$target.dynamaxed else return false",
-          "require $target.ability != $source.ability else return false",
-          "require !func_call(ability_has_flag: $target.ability permanent) else return false",
-          "require !func_call(ability_has_flag: $target.ability noentrainmenttarget) else return false",
-          "require !func_call(ability_has_flag: $source.ability noentrainment) else return false"
+          "require $target != $source and !$target.dynamaxed",
+          "require $target.ability != $source.ability",
+          "require !func_call(ability_has_flag: $target.ability permanent)",
+          "require !func_call(ability_has_flag: $target.ability noentrainmenttarget)",
+          "require !func_call(ability_has_flag: $source.ability noentrainment)"
         ],
         "on_hit": ["return func_call(set_ability: $target $source.ability)"]
       }
@@ -644,7 +642,7 @@
       "callbacks": {
         "on_hit": [
           "$action = func_call(pending_move_action_this_turn: $target)",
-          "require $action.is_defined else return false",
+          "require $action.is_defined",
           "prioritize_move: $target",
           "log_activate: with_target"
         ]
@@ -811,9 +809,9 @@
         "on_try_hit": [
           "# There must be a corresponding position to switch to (i.e., player has more than one Mon).",
           "$active_positions = $target.player.total_active_positions",
-          "require $active_positions > 1 else return false",
+          "require $active_positions > 1",
           "# Fail if Mon is in the middle.",
-          "require ($active_positions % 2) != 1 or $target.active_position != func_call(floor: expr($active_positions / 2)) else return false"
+          "require ($active_positions % 2) != 1 or $target.active_position != func_call(floor: expr($active_positions / 2))"
         ],
         "on_hit": [
           "$position = $target.player.total_active_positions - $target.active_position - 1",
@@ -942,21 +940,21 @@
         ],
         "on_try_immunity": [
           "if func_call(has_volatile: $source $this.id):",
-          ["require !func_call(has_type: $target flying) else return false"],
+          ["require !func_call(has_type: $target flying)"],
           "else:",
-          ["require $target.weight < 2000 else return false"]
+          ["require $target.weight < 2000"]
         ],
         "on_try_hit": [
           "if func_call(has_volatile: $source $this.id):",
           [
             "# Ensure we are targeting the original target.",
             "$immobilizing_effect_state = func_call(volatile_status_state: $source immobilizingmove)",
-            "require $immobilizing_effect_state.is_defined and $target == $immobilizing_effect_state.source else return false",
+            "require $immobilizing_effect_state.is_defined and $target == $immobilizing_effect_state.source",
             "remove_volatile: $source immobilizingmove"
           ],
           "else:",
           [
-            "require !$target.is_behind_substitute and !func_call(is_ally: $source $target) else return false",
+            "require !$target.is_behind_substitute and !func_call(is_ally: $source $target)",
             "log_prepare_move: $target",
             "add_volatile: $source immobilizingmove use_target_as_source",
             "return stop"
@@ -1040,8 +1038,8 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "require $format.mons_per_side != 1 else return false",
-          "require func_call(will_move_this_turn: $target) else return false",
+          "require $format.mons_per_side != 1",
+          "require func_call(will_move_this_turn: $target)",
           "deprioritize_move: $target",
           "log_activate: with_target"
         ]

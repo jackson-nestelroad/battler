@@ -569,9 +569,7 @@
     "effect": {
       "delegates": ["condition:resistintimidateabilitybase"],
       "callbacks": {
-        "on_source_ignore_immunity": [
-          "require !func_call(has_type: $target ghost) else return true"
-        ]
+        "on_source_ignore_immunity": ["if func_call(has_type: $target ghost):", ["return true"]]
       }
     }
   },

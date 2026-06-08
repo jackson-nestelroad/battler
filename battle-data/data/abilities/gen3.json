@@ -101,7 +101,7 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_immunity": ["require $effect.id != sandstormweather else return false"],
+        "on_immunity": ["if $effect.id == sandstormweather:", ["return false"]],
         "on_modify_accuracy": ["if $field.weather == sandstormweather:", ["return $acc * 4/5"]]
       }
     }
@@ -162,7 +162,7 @@
           "if func_call(has_volatile: $mon taunt):",
           ["log_activate: with_target", "remove_volatile: $mon taunt"]
         ],
-        "on_immunity": ["require $effect.id != attract else return false"],
+        "on_immunity": ["if $effect.id == attract:", ["return false"]],
         "on_try_hit": [
           "if [attract, captivate, taunt] has $move.id:",
           ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]

@@ -5,9 +5,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon 20"]
       }
     }
@@ -18,9 +16,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require $target.status == psn or $target.status == tox else return false"
-        ],
+        "on_player_try_use_item": ["require $target.status == psn or $target.status == tox"],
         "on_player_use": ["if $mon.status == psn or $mon.status == tox:", ["cure_status: $mon"]]
       }
     }
@@ -31,7 +27,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": ["require $target.status == brn else return false"],
+        "on_player_try_use_item": ["require $target.status == brn"],
         "on_player_use": ["if $mon.status == brn:", ["cure_status: $mon"]]
       }
     }
@@ -42,7 +38,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": ["require $target.status == frz else return false"],
+        "on_player_try_use_item": ["require $target.status == frz"],
         "on_player_use": ["if $mon.status == frz:", ["cure_status: $mon"]]
       }
     }
@@ -53,7 +49,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": ["require $target.status == slp else return false"],
+        "on_player_try_use_item": ["require $target.status == slp"],
         "on_player_use": ["if $mon.status == slp:", ["cure_status: $mon"]]
       }
     }
@@ -64,7 +60,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": ["require $target.status == par else return false"],
+        "on_player_try_use_item": ["require $target.status == par"],
         "on_player_use": ["if $mon.status == par:", ["cure_status: $mon"]]
       }
     }
@@ -76,7 +72,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "require !$target.exited and ($target.status.is_defined or func_call(has_volatile: $target confusion) or $target.hp < $target.max_hp) else return false"
+          "require !$target.exited and ($target.status.is_defined or func_call(has_volatile: $target confusion) or $target.hp < $target.max_hp)"
         ],
         "on_player_use": [
           "cure_status: $mon",
@@ -92,9 +88,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon $mon.max_hp"]
       }
     }
@@ -105,9 +99,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon 120"]
       }
     }
@@ -118,9 +110,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon 60"]
       }
     }
@@ -132,7 +122,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "require $target.status.is_defined or func_call(has_volatile: $target confusion) else return false"
+          "require $target.status.is_defined or func_call(has_volatile: $target confusion)"
         ],
         "on_player_use": ["cure_status: $mon", "remove_volatile: $mon confusion"]
       }
@@ -144,7 +134,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": ["require $target.fainted else return false"],
+        "on_player_try_use_item": ["require $target.fainted"],
         "on_player_use": ["revive: $mon expr($mon.max_hp / 2)"]
       }
     }
@@ -155,7 +145,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": ["require $target.fainted else return false"],
+        "on_player_try_use_item": ["require $target.fainted"],
         "on_player_use": ["revive: $mon $mon.max_hp"]
       }
     }
@@ -166,9 +156,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon 30"]
       }
     }
@@ -179,9 +167,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon 50"]
       }
     }
@@ -192,9 +178,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon 70"]
       }
     }
@@ -205,9 +189,7 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["heal: $mon 100"]
       }
     }

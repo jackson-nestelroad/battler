@@ -111,7 +111,7 @@
           ["disable_move: $mon $this.id"]
         ],
         "on_try_use_move": [
-          "require $user.item.is_defined and func_call(item_has_flag: $user.item berry) else return false"
+          "require $user.item.is_defined and func_call(item_has_flag: $user.item berry)"
         ],
         "on_hit": [
           "require func_call(boost: $target 'def:2') else return stopfail",
@@ -142,7 +142,7 @@
       "callbacks": {
         "on_try_use_move": [
           "# Use a separate volatile so that the move can only be used once, even if the Mon is immune to trapping.",
-          "require !func_call(has_volatile: $user $this.id) else return false",
+          "require !func_call(has_volatile: $user $this.id)",
           "if func_call(has_volatile: $user trapped):",
           ["$move.hit_effect.volatile_status = undefined"]
         ]
@@ -171,7 +171,7 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": ["require !$target.terastallized else return false", "log_start: with_target"],
+        "on_start": ["require !$target.terastallized", "log_start: with_target"],
         "on_effectiveness": ["if $index == 0 and $effect.type == fire:", ["return $modifier + 1"]]
       }
     }
@@ -811,9 +811,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_use_move": [
-          "require $target.hp > ($target.max_hp / 3) and $target.max_hp != 1 else return false"
-        ],
+        "on_try_use_move": ["require $target.hp > ($target.max_hp / 3) and $target.max_hp != 1"],
         "on_try_hit": [
           "require func_call(can_boost: $target $move.hit_effect.boosts) else return stopfail"
         ],
@@ -1184,7 +1182,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_use_move": ["require $field.terrain.is_defined else return false"],
+        "on_try_use_move": ["require $field.terrain.is_defined"],
         "on_hit": ["clear_terrain"],
         "on_after_substitute_damage": ["clear_terrain"]
       }
@@ -1419,9 +1417,9 @@
       "callbacks": {
         "on_try_use_move": ["require $target.item.is_defined else return"],
         "on_try_hit": [
-          "require $target.item.is_defined else return false",
+          "require $target.item.is_defined",
           "$item = func_call(get_item: $target.item)",
-          "require $item.is_defined else return false",
+          "require $item.is_defined",
           "log_activate: with_target str('item:{}', $item.name)"
         ]
       }
@@ -2259,7 +2257,7 @@
           "log_start: str('count:{}', $effect_state.layers)"
         ],
         "on_restart": [
-          "require $effect_state.layers < 3 else return false",
+          "require $effect_state.layers < 3",
           "$effect_state.layers = $effect_state.layers + 1",
           "log_start: str('count:{}', $effect_state.layers)",
           "return true"

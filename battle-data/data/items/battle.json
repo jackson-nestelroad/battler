@@ -5,9 +5,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !func_call(has_side_condition: $target.side mist) else return false"
-        ],
+        "on_player_try_use_item": ["require !func_call(has_side_condition: $target.side mist)"],
         "on_player_use": ["add_side_condition: $mon.side mist", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -18,9 +16,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !func_call(has_volatile: $target focusenergy) else return false"
-        ],
+        "on_player_try_use_item": ["require !func_call(has_volatile: $target focusenergy)"],
         "on_player_use": ["add_volatile: $mon focusenergy", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -31,9 +27,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require func_call(can_boost: $target 'atk:2') else return false"
-        ],
+        "on_player_try_use_item": ["require func_call(can_boost: $target 'atk:2')"],
         "on_player_use": ["boost: $mon 'atk:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -44,9 +38,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require func_call(can_boost: $target 'def:2') else return false"
-        ],
+        "on_player_try_use_item": ["require func_call(can_boost: $target 'def:2')"],
         "on_player_use": ["boost: $mon 'def:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -57,9 +49,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require func_call(can_boost: $target 'spe:2') else return false"
-        ],
+        "on_player_try_use_item": ["require func_call(can_boost: $target 'spe:2')"],
         "on_player_use": ["boost: $mon 'spe:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -70,9 +60,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require func_call(can_boost: $target 'acc:2') else return false"
-        ],
+        "on_player_try_use_item": ["require func_call(can_boost: $target 'acc:2')"],
         "on_player_use": ["boost: $mon 'acc:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -83,9 +71,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require func_call(can_boost: $target 'spa:2') else return false"
-        ],
+        "on_player_try_use_item": ["require func_call(can_boost: $target 'spa:2')"],
         "on_player_use": ["boost: $mon 'spa:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -96,9 +82,7 @@
     "flags": ["Battle"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require func_call(can_boost: $target 'spd:2') else return false"
-        ],
+        "on_player_try_use_item": ["require func_call(can_boost: $target 'spd:2')"],
         "on_player_use": ["boost: $mon 'spd:2'", "increase_friendship: $mon 1 1 0"]
       }
     }
@@ -110,7 +94,7 @@
     "effect": {
       "callbacks": {
         "on_player_try_use_item": [
-          "require func_call(can_boost: $target 'atk:1' 'def:1' 'spa:1' 'spd:1' 'spe:1') else return false"
+          "require func_call(can_boost: $target 'atk:1' 'def:1' 'spa:1' 'spd:1' 'spe:1')"
         ],
         "on_player_use": [
           "boost: $mon 'atk:1' 'def:1' 'spa:1' 'spd:1' 'spe:1'",

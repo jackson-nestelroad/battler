@@ -18,7 +18,7 @@
     ],
     "effect": {
       "callbacks": {
-        "on_try_use_move": ["require $user.active_turns <= 1 else return false"]
+        "on_try_use_move": ["require $user.active_turns <= 1"]
       }
     }
   },
@@ -74,7 +74,7 @@
       "callbacks": {
         "on_try_use_move": [
           "$stockpile_state = func_call(volatile_status_state: $user $this.id)",
-          "require !$stockpile_state or $stockpile_state.layers < 3 else return false"
+          "require !$stockpile_state or $stockpile_state.layers < 3"
         ]
       }
     },
@@ -95,7 +95,7 @@
           ["$effect_state.spd = -1"]
         ],
         "on_restart": [
-          "require $effect_state.layers < 3 else return false",
+          "require $effect_state.layers < 3",
           "$effect_state.layers = $effect_state.layers + 1",
           "log_start: str('count:{}', $effect_state.layers)",
           "$def = $target.boosts.def",
@@ -157,7 +157,7 @@
         "on_try_use_move": ["return func_call(has_volatile: $user stockpile)"],
         "on_hit": [
           "$stockpile_state = func_call(volatile_status_state: $source stockpile)",
-          "require $stockpile_state.is_defined else return false",
+          "require $stockpile_state.is_defined",
           "if $stockpile_state.layers <= 1:",
           ["$heal_percent = 1/4"],
           "else if $stockpile_state.layers == 2:",
@@ -343,7 +343,7 @@
       "callbacks": {
         "on_start": ["$effect_state.lost_focus = false", "log_single_turn: with_target"],
         "on_hit": ["if $move.category != status:", ["$effect_state.lost_focus = true"]],
-        "on_add_volatile": ["require $volatile.id != flinch else return false"]
+        "on_add_volatile": ["require $volatile.id != flinch"]
       }
     }
   },
@@ -580,7 +580,7 @@
         "on_try_immunity": ["return !func_call(has_ability: $target stickyhold)"],
         "on_try_hit": [
           "# No items.",
-          "require $source.item.is_defined or $target.item.is_defined else return false",
+          "require $source.item.is_defined or $target.item.is_defined",
           "# Check that we can take and give items.",
           "if $target.item.is_defined:",
           [
@@ -620,10 +620,10 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "require $source.ability != $target.ability else return false",
-          "require !func_call(ability_has_flag: $target.ability permanent) else return false",
-          "require !func_call(ability_has_flag: $source.ability permanent) else return false",
-          "require !func_call(ability_has_flag: $target.ability noroleplay) else return false"
+          "require $source.ability != $target.ability",
+          "require !func_call(ability_has_flag: $target.ability permanent)",
+          "require !func_call(ability_has_flag: $source.ability permanent)",
+          "require !func_call(ability_has_flag: $target.ability noroleplay)"
         ],
         "on_hit": ["return func_call(set_ability: $source $target.ability)"]
       }
@@ -691,7 +691,7 @@
             ]
           ],
           "$random_move = func_call(sample: $moves)",
-          "require $random_move.is_defined else return false",
+          "require $random_move.is_defined",
           "use_move: $target $random_move"
         ]
       }
@@ -803,7 +803,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "require !$target.item and $target.last_item.is_defined else return false",
+          "require !$target.item and $target.last_item.is_defined",
           "$item = $target.last_item",
           "$target.last_item = undefined",
           "set_item: $target $item"
@@ -869,9 +869,9 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "require !$target.status else return false",
-          "require !$target.is_asleep else return false",
-          "require !func_call(check_immunity: $target slp) else return false"
+          "require !$target.status",
+          "require !$target.is_asleep",
+          "require !func_call(check_immunity: $target slp)"
         ]
       }
     },
@@ -1001,7 +1001,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "require $target.status.is_defined and !([slp, frz] has $target.status) else return false",
+          "require $target.status.is_defined and !([slp, frz] has $target.status)",
           "cure_status: $target"
         ]
       }

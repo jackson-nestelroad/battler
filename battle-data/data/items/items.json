@@ -370,12 +370,10 @@
     "flags": ["Medicine"],
     "effect": {
       "callbacks": {
-        "on_player_try_use_item": [
-          "require !$target.exited and $target.hp < $target.max_hp else return false"
-        ],
+        "on_player_try_use_item": ["require !$target.exited and $target.hp < $target.max_hp"],
         "on_player_use": ["use_given_item: $mon $this.id"],
         "on_update": ["if $mon.hp <= $mon.max_hp / 2:", ["use_item: $mon"]],
-        "on_try_use_item": ["require $target.can_heal else return false"],
+        "on_try_use_item": ["require $target.can_heal"],
         "on_use": ["heal: $mon 20"]
       }
     }

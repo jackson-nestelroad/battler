@@ -61,8 +61,10 @@
         "suppress_mon_ability": {
           "priority": 10,
           "program": [
-            "require !$mon.transformed or !func_call(ability_has_flag: $mon.ability notransform) else return true",
-            "require !func_call(ability_has_flag: $mon.ability permanent) else return false"
+            "if $mon.transformed and func_call(ability_has_flag: $mon.ability notransform):",
+            ["return true"],
+            "if func_call(ability_has_flag: $mon.ability permanent):",
+            ["return false"]
           ]
         },
         "on_modify_catch_rate": {
@@ -847,12 +849,12 @@
     "condition": {
       "callbacks": {
         "on_start": [
-          "require $target.active_move.is_defined else return false",
+          "require $target.active_move.is_defined",
           "$effect_state.move = $target.active_move.id"
         ],
         "on_try_end": [
           "# Ensure additional choice lock reasons are also removed.",
-          "require !$target.is_choice_locked else return false"
+          "require !$target.is_choice_locked"
         ],
         "on_before_move": [
           "if !$user.effective_item and $move.id != $effect_state.move and $move.id != struggle:",
@@ -1053,7 +1055,7 @@
       "duration": 0,
       "callbacks": {
         "on_start": [
-          "require !$target.is_grounded else return false",
+          "require !$target.is_grounded",
           "log_activate: with_target use_source_effect",
           "# During Sky Drop, both the target and user have the Fly volatile.",
           "# Only the user should have the volatile removed, which cascade removes all other effects.",
@@ -1076,7 +1078,7 @@
       "no_copy": true,
       "callbacks": {
         "on_start": [
-          "require $source.is_defined else return false",
+          "require $source.is_defined",
           "add_volatile: $source commanding with_source link",
           "boost: $target use_source_effect use_effect_state_source_as_source 'atk:2' 'spa:2' 'def:2' 'spd:2' 'spe:2'"
         ],
@@ -1227,13 +1229,13 @@
       "duration": 0,
       "callbacks": {
         "on_start": [
-          "require $target.last_move.is_defined else return false",
+          "require $target.last_move.is_defined",
           "$last_move_id = $target.last_move.id",
           "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
           ["$last_move_id = $target.last_move.upgraded_base_move"],
           "$amount = func_call(value_from_local_data: $source_effect amount)",
           "$pp = func_call(deduct_pp: $target $last_move_id $amount use_source_effect)",
-          "require $pp != 0 else return false"
+          "require $pp != 0"
         ]
       }
     }
