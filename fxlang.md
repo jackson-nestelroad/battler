@@ -237,7 +237,7 @@ It is often desired to use the result of an expression like a value, for functio
 
 #### Assignment Values
 
-It may be beneficial to use a variable assignment inside of an expression. We can similarly use the `assign` built-in to wrap an assignment statement into a value. The value of the assignment value is the variable itself.
+It may be beneficial to use a variable assignment inside an expression. We can similarly use the `assign` built-in to wrap an assignment statement into a value. The value of the assignment value is the variable itself.
 
 - `assign($a = 2)` - Refers to `$a`.
 - `$foo = assign($bar = func_call(random: 2))` - Assigns the same random value to two variables.
