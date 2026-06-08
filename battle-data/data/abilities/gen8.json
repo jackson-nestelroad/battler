@@ -404,7 +404,8 @@
       "callbacks": {
         "suppress_mon_ability": [
           "# Do not suppress our own ability, so that we can trigger this condition to end.",
-          "require !$effect_state.started or $mon.ability == $this.id else return true"
+          "if $effect_state.started and $mon.ability != $this.id:",
+          ["return true"]
         ],
         "on_field_start": [
           "# If a Mon's ability is suppressed, end it.",

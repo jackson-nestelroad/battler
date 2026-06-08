@@ -235,6 +235,15 @@ It is often desired to use the result of an expression like a value, for functio
 - `damage: $target expr($target.base_max_hp / 16)` - Applies damage to the target of the effect equal to 1/16 of their base maximum HP.
 - `$something = func_call(max: expr($target.hp / 2), 1)` - Takes the maximum of `$target.hp / 2` and `1`, and assigns the result to `$something`.
 
+#### Assignment Values
+
+It may be beneficial to use a variable assignment inside of an expression. We can similarly use the `assign` built-in to wrap an assignment statement into a value. The value of the assignment value is the variable itself.
+
+- `assign($a = 2)` - Refers to `$a`.
+- `$foo = assign($bar = func_call(random: 2))` - Assigns the same random value to two variables.
+
+Assignment values are really only useful in niche scenarios. They can typically be replaced by intermediate variables, but some expressions may desire it (such as those wrapped in a require statement below, which returns failures automatically).
+
 #### Returning Values
 
 Some callbacks must return a value to the battle engine. The easiest examples are damage callbacks, which determine the exact amount of damage to apply to Mon on an active move, or base power callbacks, which determine the base power to use for damage calculations.
@@ -287,6 +296,74 @@ Below is another example for the move "Haze":
 ```json
 ["foreach $mon in func_call(all_active_mons):", ["clear_boosts: $mon silent"]]
 ```
+
+#### Guard Clauses with Requirements
+
+An extremely common pattern in fxlang programs is one or more **guard clauses** (a.k.a., early returns) based on conditional requirements for the rest of the program. For example, an ability may only apply to Mons of a specific species, a move may require the target to fall asleep as a precondition, or an item may only apply under a specific condition.
+
+In an effort to simplify the vast multitude of guard clauses, a "require" statement evaluates a condition, returning the result if it evaluates to `false`. For example:
+
+```json
+[
+  "require $target.hp > expr($target.max_hp / 2)",
+  "require $target.boosts.atk < 6",
+  "require $target.max_hp != 1",
+  "direct_damage: $target expr($target.max_hp / 2)",
+  "boost: $target 'atk:12'"
+]
+```
+
+The above has three guard clauses before applying the core functionality of the move. This program implements the "Belly Drum" move.
+
+Note the same program can be written _without_ require statements. We can use negated if statements instead:
+
+```json
+[
+  "if $target.hp <= expr($target.max_hp / 2):",
+  ["return false"],
+  "if $target.boosts.atk >= 6",
+  ["return false"],
+  "if $target.max_hp == 1",
+  ["return false"],
+  "direct_damage: $target expr($target.max_hp / 2)",
+  "boost: $target 'atk:12'"
+]
+```
+
+By default, a require statement returns the result of the expression that evaluated to `false`. However, we may wish to return a different value (or `false` may simply be incompatible with the event's return type). To change the return value, `else return` can be added after the require statement.
+
+Below is the program for the stat modification effect of Choice Specs:
+
+```json
+["require !$target.dynamaxed else return", "return $spa * 3/2"]
+```
+
+Below is the simplified program for the move "Rest":
+
+```json
+["require func_call(set_status: $target slp) else return stop", "heal: $target $target.max_hp"]
+```
+
+##### Why?
+
+The real power of the require statement arrives in the fact that multiple values can be considered a failure requiring propagation. Thus, it is actually more correct to say a require statement returns values that are "falsy" (i.e., would cause if statement to be skipped).
+
+To be specific, `EventResult` values signal to the active move is a hard or soft failure. For example, the `stop` value indicates that the move should stop evaluating and not be animated, but no "But it failed!" message should be displayed (likely because the reason for the failure was already communicated, such as due to an immunity).
+
+For example, here is pseudocode for the move "Skill Swap":
+
+```json
+[
+  "# Check abilities.",
+  "...",
+  "require func_call(set_ability: $source $target.ability dry_run)",
+  "require func_call(set_ability: $target $source.ability dry_run)",
+  "...",
+  "# Set abilities."
+]
+```
+
+If the `set_ability` function call on either Mon fails, the result of that call will be propagated as the result of the move. If the ability could not be set due to an immunity, the "But it failed!" message can be completely avoided. The require statement allows this propagation to be represented elegantly and automatically.
 
 ### Parsing
 
@@ -494,6 +571,31 @@ The above process effectively relays the input between callbacks and allows call
 Relaying values is extremely important for events like `ModifyDamage`, which continuously receives `$damage` as input and outputs a new number representing the modified damage.
 
 For global events, returning no value (i.e., returning with just `return`, or just ending the program with no return) means that the callback was transparent and has no effect on the output of the event. If no value is returned, the relayed input is not overwritten. This effectively allows a `ModifyDamage` callback to only return a value when it's actually modified the damage value.
+
+#### Representing Failures
+
+Many events return a special type called `EventResult`. This type is heavily coupled with how moves are evaluated in the battle engine.
+
+A move can fail and stop evaluating at several points for a multitude of reasons. Failures may be immediate or replaceable (e.g., if some other part of the move succeeds, the failure is ignored). A failure may emit the "But it failed!" message (represented by a `fail` entry in the battle log) or it may simply cause the move to not animate (the failure reason, such as an immunity, may have already been logged).
+
+Additionally, a move like "Stomping Tantrum" directly depends on the outcome of the user's last move. A result that causes a move to stop evaluating may not be treated as a failure.
+
+The `EventResult` type aims to capture this complexity. The following are valid values with their semantics:
+
+- `false` - The move fails immediately. Do not animate. Report failure. Treat as failure.
+- `stopfail` - Stop the move. Do not animate. Do not report failure. Treat as failure.
+- `stopreportfail` - Stop the move. Do not animate. Report failure. Treat as skipped.
+- `stop` - Stop the move. Do not animate. Do not report failure. Treat as skipped.
+- `skip` - Skip the move. Animate. Do not report failure. Treat as skipped.
+- `true` - Continue the move. Animate. Do not report failure. Treat as success.
+
+Some notes:
+
+- All "stop" and "skip" values are replaceable. A success in a different part of the move will overwrite the value and cause the move to animate and be treated as a success. A move that only ends with one of these values will be treated as "skipped" (neither a success nor a failure).
+- `true` is the default value, so returning nothing is the same thing.
+- `stopreportfail` should be used very rarely. A failure is reported but not saved to the outcome of the move, which can be confusing.
+- `skip` should be used very rarely. The move stops evaluating but is still animated. It is primarily intended for moves that call other moves.
+- Require statements automatically propagate all values except for `true`.
 
 ## Creating Effects with fxlang (with Examples)
 
