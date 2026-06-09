@@ -369,6 +369,40 @@ For example, here is pseudocode for the move "Skill Swap":
 
 If the `set_ability` function call on either Mon fails, the result of that call will be propagated as the result of the move. If the ability could not be set due to an immunity, the "But it failed!" message can be completely avoided. The require statement allows this propagation to be represented elegantly and automatically.
 
+##### When to Use Require Statement vs. If Statement?
+
+Given a guard clause can be implemented two ways, either with an if statement or a require statement, it can be unclear when to use which. Frankly, the choice likely comes down to personal preference.
+
+Focus on readability: is the logic of the fxlang program easy to follow and reason through? If a require statement hurts a program's readability, it should definitely be avoided.
+
+In many cases, a require statement helps readability: "X move requires Y condition to hit successfully."
+
+Require statements are most harmful when a guard clause makes up the entirety of a program (i.e., it is the only statement) or in a program for "state" or "negative" events. While nearly all events in fxlang are successful by default (e.g., a move hits successfully by default, a status can be successfully applied by default, etc.), some events work differently:
+
+- State events check if some condition is true about a Mon, such as if it is grounded. Most state events simply return the first value returned by _any_ event callback.
+- Negative events are semantically inverted. In the battle engine, they are true by default and a `false` value short circuits the logic, but the meaning of the event is inverted. For example, effects that grant immunity from some effect to a Mon through the `Immunity` event return `false` under a specific condition. This semantic inversion can make a require statement extremely difficult to read.
+
+For example, the callback for an Electric type resisting paralysis is simply:
+
+```json
+{ "on_immunity": ["if $effect.id == par:", ["return false"]] }
+```
+
+The require statement version is much more difficult to read: `require $effect.id != par`.
+
+Likewise, here is the callback for a Dynamax Mon suppressing their choice-locking item:
+
+```json
+{
+  "suppress_mon_item": [
+    "if $mon.item.is_defined and func_call(item_has_flag: $mon.item choicelocking):",
+    ["return true"]
+  ]
+}
+```
+
+The synonymous require statement is `require !$mon.item or !func_call(item_has_flag: $mon.item choicelocking) else return true`. It is difficult to understand what is happening in this statement. A require statement with a large amount of negative disjunctions is likely better represented as an if statement, given the inverse is a conjunction of positive conditions (such as this example).
+
 ### Parsing
 
 Over the course of a battle, the callbacks for an effect may need to be evaluated numerous times. For example, many conditions apply themselves for multiple turns.
