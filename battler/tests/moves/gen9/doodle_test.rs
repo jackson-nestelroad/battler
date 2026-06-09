@@ -137,7 +137,6 @@ fn doodle_fails_if_abilities_cannot_be_set() {
             "move|mon:Grafaiai,player-1,1|name:Doodle|noanim",
             "block|mon:Grafaiai,player-1,1|move:Doodle|from:item:Ability Shield",
             "block|mon:Grafaiai,player-1,2|move:Doodle|from:item:Ability Shield",
-            "fail|mon:Grafaiai,player-1,1",
             "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
             "residual",
             "turn|turn:2"

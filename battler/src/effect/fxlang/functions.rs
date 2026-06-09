@@ -209,6 +209,7 @@ pub fn run_function(
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
         "end_item" => end_item(context).map(|()| None),
         "escape" => escape(context).map(|val| Some(val)),
+        "event_result" => event_result(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
         "faint_messages" => faint_messages(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
@@ -6040,4 +6041,16 @@ fn request_mon_selection(mut context: FunctionContext) -> Result<()> {
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     context.target_mut().volatile_state.select = Some(reason);
     Ok(())
+}
+
+/// Converts a value to an EventResult.
+///
+/// @param {[`ValueType::Boolean`] | [`ValueType::String`]} value Value.
+/// @returns {[`ValueType::EventResult`]} EventResult.
+fn event_result(mut context: FunctionContext) -> Result<Value> {
+    context
+        .pop_front()
+        .wrap_expectation("missing value")?
+        .event_result()
+        .map(|val| Value::EventResult(val))
 }

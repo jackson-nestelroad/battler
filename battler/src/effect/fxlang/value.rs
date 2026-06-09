@@ -2745,6 +2745,7 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
             (Self::Undefined, Self::Undefined) => true,
             (Self::Undefined, _) => false,
             (Self::Boolean(lhs), Self::Boolean(rhs)) => lhs.eq(rhs),
+            (Self::Boolean(lhs), Self::EventResult(rhs)) => rhs.eq(&((*lhs).into())),
             (lhs @ Self::Fraction(_), rhs @ Self::Fraction(_))
             | (lhs @ Self::Fraction(_), rhs @ Self::UFraction(_))
             | (lhs @ Self::UFraction(_), rhs @ Self::UFraction(_)) => lhs.compare_ref(rhs)?.is_eq(),

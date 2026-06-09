@@ -316,15 +316,18 @@
       "callbacks": {
         "on_hit": [
           "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability noroleplay)",
-          "$success = false",
+          "$success = func_call(event_result: false)",
           "foreach $mon in func_call(allies_and_self: $source):",
           [
             "if $mon.ability == $target.ability or func_call(ability_has_flag: $mon.ability permanent):",
             ["continue"],
-            "if func_call(set_ability: $mon $target.ability):",
-            ["$success = true"]
+            "$set_ability = func_call(set_ability: $mon $target.ability)",
+            "if $set_ability:",
+            ["$success = true"],
+            "else if !$success and $set_ability != false:",
+            ["$success = $set_ability"]
           ],
-          "require $success else return stopreportfail"
+          "return $success"
         ]
       }
     }

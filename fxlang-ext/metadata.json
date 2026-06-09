@@ -2490,6 +2490,20 @@
       "type": "EventResult",
       "returns_item_from_list": false
     },
+    "event_result": {
+      "description": "Converts a value to an EventResult.",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "Boolean | String",
+          "description": "Value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "EventResult",
+      "returns_item_from_list": false
+    },
     "faint": {
       "description": "Makes a Mon faint.",
       "parameters": [
