@@ -611,6 +611,10 @@ pub struct MonVolatileState {
     pub foes_fought_while_active: HashSet<MonHandle>,
     /// Attacks received by the Mon.
     pub received_attacks: Vec<ReceivedAttackEntry>,
+    /// Total times attacked.
+    ///
+    /// May be overwritten from the Mon's real value.
+    pub times_attacked: u64,
 
     /// A Mon needs to be selected by the player.
     pub select: Option<SelectReason>,
@@ -1905,6 +1909,7 @@ impl Mon {
             switched_out_this_turn: false,
             foes_fought_while_active: HashSet::default(),
             received_attacks: Vec::default(),
+            times_attacked: context.mon().times_attacked,
             select: None,
             effect_cache: MonEffectCache::default(),
         })

@@ -1686,7 +1686,10 @@ fn move_hit_loop(
                 .wrap_expectation("expected attacker to have a position")?;
 
             let mut context = context.target_mon_context(target)?;
+
             context.mon_mut().times_attacked += 1;
+            context.mon_mut().volatile_state.times_attacked += 1;
+
             context
                 .mon_mut()
                 .volatile_state
@@ -6430,7 +6433,7 @@ pub fn transform_into(
         move_slot.used = false;
         move_slot.simulated = true;
     }
-    let times_attacked = target_context.mon().times_attacked;
+    let times_attacked = target_context.mon().volatile_state.times_attacked;
 
     let mut volatiles: HashMap<Id, EffectState> = HashMap::default();
     for volatile in target_context
@@ -6477,7 +6480,9 @@ pub fn transform_into(
     context.target_mut().volatile_state.boosts = boosts;
     set_ability(context, &ability_id, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;
-    context.target_mut().times_attacked = times_attacked;
+    context.target_mut().volatile_state.times_attacked = times_attacked;
+
+    core_battle_logs::transform(context, target)?;
 
     // Remove any volatile that could be copied, to avoid conflicts.
     for volatile in context
@@ -6497,8 +6502,6 @@ pub fn transform_into(
     }
 
     copy_volatiles(context, volatiles)?;
-
-    core_battle_logs::transform(context, target)?;
 
     Ok(EventResult::Advance)
 }

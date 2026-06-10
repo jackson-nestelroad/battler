@@ -588,7 +588,7 @@ pub enum BattleEvent {
     BeforeTerastallization,
     /// Runs before a turn of a battle.
     ///
-    /// Runs on the effect and in the context of an applying effect on a Mon.
+    /// Runs on the move and in the context of a move user.
     #[string = "BeforeTurn"]
     BeforeTurn,
     /// Runs when determining the health at which the Mon should eat berries.
@@ -1116,7 +1116,7 @@ pub enum BattleEvent {
     PreventUsedItems,
     /// Runs before at the start of the turn, when a move is charging for the turn.
     ///
-    /// Runs in the context of a Mon.
+    /// Runs in the context of a move user.
     #[string = "PriorityChargeMove"]
     PriorityChargeMove,
     /// Runs when a move is going to target one Mon but can be redirected towards a different
@@ -1515,7 +1515,7 @@ impl BattleEvent {
             Self::BeforeSwitchIn => CommonCallbackType::MonVoid as u32,
             Self::BeforeSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::BeforeTerastallization => CommonCallbackType::MonResult as u32,
-            Self::BeforeTurn => CommonCallbackType::MonVoid as u32,
+            Self::BeforeTurn => CommonCallbackType::SourceMoveVoid as u32,
             Self::BerryEatingHealth => CommonCallbackType::MonModifier as u32,
             Self::CalculateStat => CommonCallbackType::MaybeApplyingEffectModifier as u32,
             Self::CanDynamax => CommonCallbackType::MonBoolean as u32,
@@ -1614,7 +1614,7 @@ impl BattleEvent {
             Self::PreMoveEffect => CommonCallbackType::SourceMoveVoid as u32,
             Self::PrepareHit => CommonCallbackType::SourceMoveResult as u32,
             Self::PreventUsedItems => CommonCallbackType::MonBoolean as u32,
-            Self::PriorityChargeMove => CommonCallbackType::MonVoid as u32,
+            Self::PriorityChargeMove => CommonCallbackType::SourceMoveVoid as u32,
             Self::RedirectTarget => CommonCallbackType::SourceMoveMonModifier as u32,
             Self::Residual => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::Restart => CommonCallbackType::EffectResult as u32,
@@ -1928,6 +1928,7 @@ impl BattleEvent {
             Self::ModifyCatchRate => true,
             Self::ModifySpeciesCatchRate => true,
             Self::ModifyTarget => true,
+            Self::WeatherModifyDamage => true,
             _ => false,
         }
     }

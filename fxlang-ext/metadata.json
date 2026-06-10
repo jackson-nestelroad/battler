@@ -732,6 +732,10 @@
         "description": "",
         "type": "Type | Undefined"
       },
+      "times_attacked": {
+        "description": "",
+        "type": "UFraction"
+      },
       "transformed": {
         "description": "",
         "type": "Boolean"
@@ -6292,11 +6296,19 @@
       "allows_custom_input_vars": false
     },
     "before_turn": {
-      "description": "Runs before a turn of a battle.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
+      "description": "Runs before a turn of a battle.\n\nRuns on the move and in the context of a move user.",
       "variables": {
-        "mon": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
           "type": "Mon",
           "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         }
       },
       "allows_custom_input_vars": false
@@ -7883,11 +7895,19 @@
       "allows_custom_input_vars": false
     },
     "priority_charge_move": {
-      "description": "Runs before at the start of the turn, when a move is charging for the turn.\n\nRuns in the context of a Mon.",
+      "description": "Runs before at the start of the turn, when a move is charging for the turn.\n\nRuns in the context of a move user.",
       "variables": {
-        "mon": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
           "type": "Mon",
           "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         }
       },
       "allows_custom_input_vars": false

@@ -1,0 +1,122 @@
+use anyhow::Result;
+use battler::{
+    BattleType,
+    CoreBattleEngineSpeedSortTieResolution,
+    PublicCoreBattle,
+    TeamData,
+    WrapResultError,
+};
+use battler_test_utils::{
+    LogMatch,
+    TestBattleBuilder,
+    assert_logs_since_turn_eq,
+    static_local_data_store,
+};
+
+fn team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Tinkaton",
+                    "species": "Tinkaton",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Gigaton Hammer",
+                        "Instruct"
+                    ],
+                    "nature": "Hardy",
+                    "level": 100
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
+    TestBattleBuilder::new()
+        .with_battle_type(BattleType::Singles)
+        .with_seed(seed)
+        .with_team_validation(false)
+        .with_pass_allowed(true)
+        .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
+        .add_player_to_side_1("player-1", "Player 1")
+        .add_player_to_side_2("player-2", "Player 2")
+        .with_team("player-1", team_1)
+        .with_team("player-2", team_2)
+        .build(static_local_data_store())
+}
+
+#[test]
+fn gigaton_hammer_cannot_be_used_twice() {
+    let mut team_1 = team().unwrap();
+    team_1.members[0].moves.remove(1);
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Tinkaton,player-1,1|name:Gigaton Hammer|target:Tinkaton,player-2,1",
+            "split|side:1",
+            "damage|mon:Tinkaton,player-2,1|health:87/280",
+            "damage|mon:Tinkaton,player-2,1|health:32/100",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Tinkaton,player-1,1|name:Struggle|target:Tinkaton,player-2,1",
+            "split|side:1",
+            "damage|mon:Tinkaton,player-2,1|health:45/280",
+            "damage|mon:Tinkaton,player-2,1|health:17/100",
+            "split|side:0",
+            "damage|mon:Tinkaton,player-1,1|from:Struggle Recoil|health:210/280",
+            "damage|mon:Tinkaton,player-1,1|from:Struggle Recoil|health:75/100",
+            "residual",
+            "turn|turn:3",
+            "continue",
+            "move|mon:Tinkaton,player-1,1|name:Gigaton Hammer|target:Tinkaton,player-2,1",
+            "split|side:1",
+            "damage|mon:Tinkaton,player-2,1|health:0",
+            "damage|mon:Tinkaton,player-2,1|health:0",
+            "faint|mon:Tinkaton,player-2,1",
+            "win|side:0"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn instruct_allows_gigaton_hammer_to_be_used_twice() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Tinkaton,player-1,1|name:Gigaton Hammer|target:Tinkaton,player-2,1",
+            "split|side:1",
+            "damage|mon:Tinkaton,player-2,1|health:87/280",
+            "damage|mon:Tinkaton,player-2,1|health:32/100",
+            "move|mon:Tinkaton,player-2,1|name:Instruct|target:Tinkaton,player-1,1",
+            "singleturn|mon:Tinkaton,player-1,1|move:Instruct|of:Tinkaton,player-2,1",
+            "move|mon:Tinkaton,player-1,1|name:Gigaton Hammer|target:Tinkaton,player-2,1|from:move:Instruct",
+            "split|side:1",
+            "damage|mon:Tinkaton,player-2,1|health:0",
+            "damage|mon:Tinkaton,player-2,1|health:0",
+            "faint|mon:Tinkaton,player-2,1",
+            "win|side:0"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}

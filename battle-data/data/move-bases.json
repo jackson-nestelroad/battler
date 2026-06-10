@@ -159,7 +159,7 @@
     "condition": {
       "duration": 1,
       "callbacks": {
-        "on_priority_charge_move": ["add_volatile: $mon windingup"]
+        "on_priority_charge_move": ["add_volatile: $user windingup"]
       }
     }
   },

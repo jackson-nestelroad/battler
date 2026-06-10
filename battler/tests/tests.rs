@@ -634,14 +634,31 @@ mod moves {
     }
 
     mod gen9 {
+        mod burning_bulwark_test;
+        mod chilly_reception_test;
+        mod collision_course_test;
         mod doodle_test;
+        mod double_shock_test;
+        mod dragon_cheer_test;
+        mod electro_shot_test;
+        mod fickle_beam_test;
+        mod fillet_away_test;
+        mod gigaton_hammer_test;
         mod glaive_rush_test;
+        mod hydro_steam_test;
+        mod ivy_cudgel_test;
         mod last_respects_test;
         mod order_up_test;
+        mod rage_fist_test;
+        mod raging_bull_test;
         mod revival_blessing_test;
         mod salt_cure_test;
         mod shed_tail_test;
         mod silk_trap_test;
+        mod syrup_bomb_test;
+        mod tera_starstorm_test;
+        mod tidy_up_test;
+        mod upper_hand_test;
     }
 }
 

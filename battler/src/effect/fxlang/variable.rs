@@ -928,6 +928,13 @@ where
                                 .terastallized
                                 .map(|val| ValueRef::Type(val))
                                 .unwrap_or(ValueRef::Undefined),
+                            "times_attacked" => ValueRef::UFraction(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .times_attacked
+                                    .into(),
+                            ),
                             "transformed" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.transformed,
                             ),

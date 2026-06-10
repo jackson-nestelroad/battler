@@ -1411,35 +1411,36 @@ impl<'d> CoreBattle<'d> {
             }
             Action::BeforeTurnMove(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || !context.mon().active {
+                let mut context =
+                    context.active_move_context(action.active_move_handle.wrap_expectation(
+                        "expected before turn move action to have an active move",
+                    )?)?;
+                if !context.mon().active {
                     return Ok(());
                 }
-                let mut context = context.applying_effect_context(
-                    EffectHandle::InactiveMove(action.id.clone()),
-                    None,
-                    None,
-                )?;
-                core_battle_effects::run_effect_event::<_, ()>(
+                core_battle_effects::run_active_move_event::<()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
+                    core_battle_effects::MoveTargetForEvent::User,
                 );
                 core_battle_effects::run_event::<_, ()>(
-                    &mut context,
+                    &mut context.user_applying_effect_context(None)?,
                     fxlang::BattleEvent::BeforeTurn,
                 );
             }
             Action::PriorityChargeMove(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || !context.mon().active {
+                let mut context =
+                    context.active_move_context(action.active_move_handle.wrap_expectation(
+                        "expected before turn move action to have an active move",
+                    )?)?;
+                if !context.mon().active {
                     return Ok(());
                 }
-                core_battle_effects::run_effect_event::<_, ()>(
-                    &mut context.applying_effect_context(
-                        EffectHandle::InactiveMove(action.id.clone()),
-                        None,
-                        None,
-                    )?,
+                core_battle_effects::run_active_move_event::<()>(
+                    &mut context,
                     fxlang::BattleEvent::PriorityChargeMove,
+                    core_battle_effects::MoveTargetForEvent::User,
                 );
             }
             Action::MegaEvo(action) => {

@@ -433,7 +433,7 @@
           ["return fighting"],
           "if $user.species == taurospaldeablazebreed:",
           ["return fire"],
-          "if $user.species = taurospaldeaaquabreed:",
+          "if $user.species == taurospaldeaaquabreed:",
           ["return water"]
         ]
       }
@@ -483,7 +483,7 @@
     "flags": ["Mirror", "Protect", "Thawing", "ThawsTarget"],
     "effect": {
       "callbacks": {
-        "on_source_weather_modify_damage": {
+        "on_weather_modify_damage": {
           "priority": 1,
           "program": [
             "$weather = func_call(effective_weather: $user)",
@@ -519,7 +519,7 @@
     "effect": {
       "callbacks": {
         "on_move_base_power": [
-          "if func_call(type_effectiveness: $target use_source_effect) > 0:",
+          "if func_call(type_effectiveness: $target) > 0:",
           ["return $move.base_power * 4/3"]
         ]
       }
@@ -1031,11 +1031,11 @@
     "effect": {
       "callbacks": {
         "on_modify_move_type": [
-          "if $user.species == ogerponwellspringmask:",
+          "if [ogerponwellspringmask, ogerponwellspringmasktera] has $user.species:",
           ["return water"],
-          "if $user.species == ogerponhearthflamemask:",
+          "if [ogerponhearthflamemask, ogerponhearthflamemasktera] has $user.species:",
           ["return fire"],
-          "if $user.species == ogerponcornerstonemask:",
+          "if [ogerponcornerstonemask, ogerponcornerstonemasktera] has $user.species:",
           ["return rock"]
         ],
         "on_prepare_hit": [
@@ -1120,7 +1120,7 @@
     "name": "Burning Bulwark",
     "category": "Status",
     "primary_type": "Fire",
-    "accuracy": 0,
+    "accuracy": "exempt",
     "pp": 10,
     "priority": 4,
     "target": "User",
@@ -1166,7 +1166,7 @@
     "category": "Special",
     "primary_type": "Steel",
     "base_power": 50,
-    "accuracy": 0,
+    "accuracy": "exempt",
     "pp": 10,
     "target": "Normal",
     "multihit": 2,
@@ -1193,7 +1193,7 @@
     "name": "Dragon Cheer",
     "category": "Status",
     "primary_type": "Dragon",
-    "accuracy": 0,
+    "accuracy": "exempt",
     "pp": 15,
     "target": "AlliesExceptUser",
     "flags": ["BypassSubstitute", "Sound"],
@@ -1205,14 +1205,12 @@
       "callbacks": {
         "on_start": [
           "require !func_call(has_volatile: $target focusenergy)",
-          "if $source_effect.is_move:",
-          ["log_start"],
-          "else:",
-          ["log_start: silent"],
+          "log_start",
           "$effect_state.increase = 1",
           "if func_call(has_type: $target dragon):",
           ["$effect_state.increase = 2"]
         ],
+        "on_copy_volatile": ["log_start: silent"],
         "on_modify_crit_ratio": ["return $crit_ratio + $effect_state.increase"]
       }
     }

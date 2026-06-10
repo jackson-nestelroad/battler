@@ -1091,7 +1091,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_before_turn": ["add_volatile: $mon $this.id"],
+        "on_before_turn": ["add_volatile: $user $this.id"],
         "on_try_use_move": [
           "$effect_state = func_call(volatile_status_state: $user $this.id)",
           "require $effect_state.is_defined",
@@ -2041,7 +2041,7 @@
     "condition": {
       "copy_on_transform": true,
       "callbacks": {
-        "on_start": ["log_start"],
+        "on_start": ["require !func_call(has_volatile: $target dragoncheer)", "log_start"],
         "on_modify_crit_ratio": ["return $crit_ratio + 2"]
       }
     }

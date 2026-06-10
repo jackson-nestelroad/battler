@@ -10,6 +10,7 @@ use battler_prng::{
 };
 
 use crate::{
+    WrapOptionError,
     battle::{
         Action,
         BeforeMoveAction,
@@ -69,10 +70,12 @@ impl BattleQueue {
                 let mut actions = Vec::from_iter([
                     Action::BeforeTurnMove(BeforeMoveAction::new(BeforeMoveActionInput {
                         id: action.id.clone(),
+                        active_move_handle: None,
                         mon: action.mon_action.mon,
                     })),
                     Action::PriorityChargeMove(BeforeMoveAction::new(BeforeMoveActionInput {
                         id: action.id.clone(),
+                        active_move_handle: None,
                         mon: action.mon_action.mon,
                     })),
                 ]);
@@ -104,13 +107,31 @@ impl BattleQueue {
                 let id = context.battle().queue.next_added_action_id;
                 context.battle_mut().queue.next_added_action_id += 1;
                 let mut actions = Self::sub_actions(&action);
-                actions.push(action);
+                actions.insert(0, action);
+
+                let mut active_move_handle = None;
                 for action in &mut actions {
                     if let Some(action_id) = action.action_id_mut() {
                         *action_id = id;
                     }
+
                     CoreBattle::resolve_action(context, action)?;
+
+                    match action {
+                        Action::Move(action) => {
+                            active_move_handle = Some(action.active_move_handle.wrap_expectation(
+                                "expected active move after resolving move action",
+                            )?);
+                        }
+                        Action::BeforeTurnMove(action) | Action::PriorityChargeMove(action) => {
+                            action.active_move_handle = Some(active_move_handle.wrap_expectation(
+                                "expected active move handle for move sub-action",
+                            )?);
+                        }
+                        _ => (),
+                    }
                 }
+
                 Ok((actions, id))
             }
         }
