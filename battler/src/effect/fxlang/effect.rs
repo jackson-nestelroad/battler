@@ -407,6 +407,11 @@ pub enum BattleEvent {
     /// Runs in the context of an applying effect on a Mon.
     #[string = "AddVolatile"]
     AddVolatile,
+    /// Runs after a primary battle action finishes.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterAction"]
+    AfterAction,
     /// Runs after a new pseudo-weather is added to the field.
     ///
     /// Only runs if the pseudo-weather has been added successfully. This event will not undo the
@@ -520,6 +525,11 @@ pub enum BattleEvent {
     /// Runs on the active move and in the context of a move target.
     #[string = "AfterSubstituteDamage"]
     AfterSubstituteDamage,
+    /// Runs after a Mon switches out.
+    ///
+    /// Runs in the context of a Mon.
+    #[string = "AfterSwitchOut"]
+    AfterSwitchOut,
     /// Runs after a Mon has its item taken.
     ///
     /// Runs in the context of an applying effect on a Mon.
@@ -1485,6 +1495,7 @@ impl BattleEvent {
             Self::AddPseudoWeather => CommonCallbackType::FieldEffectResult as u32,
             Self::AddType => CommonCallbackType::ApplyingEffectResult as u32,
             Self::AddVolatile => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::AfterAction => CommonCallbackType::MonVoid as u32,
             Self::AfterAddPseudoWeather => CommonCallbackType::FieldEffectVoid as u32,
             Self::AfterAddVolatile => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterBoost => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -1503,6 +1514,7 @@ impl BattleEvent {
             Self::AfterSetItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSetStatus => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterSubstituteDamage => CommonCallbackType::MoveVoid as u32,
+            Self::AfterSwitchOut => CommonCallbackType::MonVoid as u32,
             Self::AfterTakeItem => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::AfterTerastallization => CommonCallbackType::MonVoid as u32,
             Self::AfterUseItem => CommonCallbackType::ApplyingEffectVoid as u32,
@@ -2138,9 +2150,9 @@ pub struct ConditionAttributes {
     #[serde(default)]
     pub no_copy: bool,
 
-    /// Whether or not the effect can be copied when a Mon transforms.
+    /// Whether or not the effect should be copied when a Mon copies boosts.
     #[serde(default)]
-    pub copy_on_transform: bool,
+    pub copy_with_boosts: bool,
 }
 
 impl ConditionAttributes {
@@ -2151,7 +2163,7 @@ impl ConditionAttributes {
             self.duration = Some(duration);
         }
         self.no_copy = other.no_copy || self.no_copy;
-        self.copy_on_transform = other.copy_on_transform || self.copy_on_transform;
+        self.copy_with_boosts = other.copy_with_boosts || self.copy_with_boosts;
     }
 }
 

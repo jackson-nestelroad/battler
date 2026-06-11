@@ -652,7 +652,7 @@
     },
     "condition": {
       "duration": 2,
-      "copy_on_transform": true,
+      "copy_with_boosts": true,
       "callbacks": {
         "on_start": ["log_start"],
         "on_restart": ["$effect_state.duration = 2", "log_start", "return true"],
@@ -1356,7 +1356,7 @@
       "delegates": ["condition:windingupmovebase"],
       "callbacks": {
         "on_before_move": [
-          "$volatile_state = func_call(volatile_status_state: $user $this.id)",
+          "$volatile_state = func_call(volatile_status_effect_state: $user $this.id)",
           "if !$volatile_state or !$volatile_state.hit:",
           ["log_cant", "return stopfail"]
         ]

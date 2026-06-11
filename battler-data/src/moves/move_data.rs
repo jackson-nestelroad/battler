@@ -64,6 +64,8 @@ pub struct SecondaryEffectData {
     pub target: Option<HitEffect>,
     /// Secondary hit effect on the user of the move.
     pub user: Option<HitEffect>,
+    /// Source effect to use instead of the move.
+    pub source_effect: Option<String>,
     /// Dynamic battle effects.
     #[serde(default)]
     pub effect: serde_json::Value,

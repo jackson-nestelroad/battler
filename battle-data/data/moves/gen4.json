@@ -93,7 +93,7 @@
           "if func_call(has_type: $mon dark) and $type == psychic:",
           ["return false"]
         ],
-        "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"]]
+        "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"], "return $boosts"]
       }
     }
   },

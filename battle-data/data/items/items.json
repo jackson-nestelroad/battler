@@ -2838,7 +2838,10 @@
         "power": 30
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:clearbody"]
+    }
   },
   "mirrorherb": {
     "name": "Mirror Herb",
@@ -2847,7 +2850,20 @@
         "power": 30
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:opportunist"],
+      "callbacks": {
+        "on_after_action": [
+          "require $effect_state.boosts.is_defined else return",
+          "use_item: $mon"
+        ],
+        "on_use": [
+          "require $effect_state.boosts.is_defined else return",
+          "boost: $mon $effect_state.boosts"
+        ]
+      }
+    }
   },
   "punchingglove": {
     "name": "Punching Glove",
@@ -2856,7 +2872,19 @@
         "power": 30
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "require func_call(move_has_flag: $move punch) else return",
+          "return $base_power * 11/10"
+        ],
+        "on_use_move": [
+          "require func_call(move_has_flag: $move punch) else return",
+          "remove_move_flag: $move contact"
+        ]
+      }
+    }
   },
   "covertcloak": {
     "name": "Covert Cloak",
@@ -2865,7 +2893,10 @@
         "power": 30
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["ability:shielddust"]
+    }
   },
   "loadeddice": {
     "name": "Loaded Dice",
@@ -2885,19 +2916,6 @@
       }
     }
   },
-  "auspiciousarmor": {
-    "name": "Auspicious Armor",
-    "special_data": {
-      "fling": {
-        "power": 30
-      }
-    },
-    "flags": []
-  },
-  "leaderscrest": {
-    "name": "Leader's Crest",
-    "flags": []
-  },
   "fairyfeather": {
     "name": "Fairy Feather",
     "special_data": {
@@ -2905,7 +2923,15 @@
         "power": 10
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Fairy"
+        }
+      }
+    }
   },
   "wellspringmask": {
     "name": "Wellspring Mask",

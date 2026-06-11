@@ -187,6 +187,7 @@ pub fn run_function(
         "clear_terrain" => clear_terrain(context).map(|val| Some(val)),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
         "clone_active_move" => clone_active_move(context).map(|val| Some(val)),
+        "copy_boosts" => copy_boosts(context).map(|val| Some(val)),
         "cure_status" => cure_status(context).map(|val| Some(val)),
         "damage" => damage(context).map(|val| Some(val)),
         "debug_log" => debug_log(context).map(|()| None),
@@ -314,6 +315,7 @@ pub fn run_function(
         "pseudo_weather_effect_state" => pseudo_weather_effect_state(context),
         "random" => random(context).map(|val| Some(val)),
         "random_target" => random_target(context),
+        "read_event_state_value" => read_event_state_value(context),
         "received_attack" => received_attack(context).map(|val| Some(val)),
         "remove" => remove(context).map(|val| Some(val)),
         "remove_move_flag" => remove_move_flag(context).map(|()| None),
@@ -335,6 +337,7 @@ pub fn run_function(
         "run_event_on_mon_volatile" => run_event_on_mon_volatile(context),
         "run_event_on_move" => run_event_on_move(context),
         "sample" => sample(context),
+        "save_event_state_value" => save_event_state_value(context).map(|()| None),
         "save_move_hit_data_flag_against_target" => {
             save_move_hit_data_flag_against_target(context).map(|()| None)
         }
@@ -383,7 +386,7 @@ pub fn run_function(
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
         "value_from_local_data" => value_from_local_data(context),
-        "volatile_status_state" => volatile_status_state(context),
+        "volatile_status_effect_state" => volatile_status_effect_state(context),
         "will_move_this_turn" => will_move_this_turn(context).map(|val| Some(val)),
         "z_move" => z_move(context),
         _ => Err(general_error(format!(
@@ -2572,7 +2575,7 @@ fn disable_move(mut context: FunctionContext) -> Result<()> {
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose volatile state to retrieve.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} [effect] The volatile effect ID.
 /// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The volatile effect state.
-fn volatile_status_state(mut context: FunctionContext) -> Result<Option<Value>> {
+fn volatile_status_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context.target_handle_positional()?;
     let volatile_id = context
         .pop_front()
@@ -3726,6 +3729,29 @@ fn clear_weather(mut context: FunctionContext) -> Result<Value> {
 fn clear_terrain(mut context: FunctionContext) -> Result<Value> {
     core_battle_actions::clear_terrain(&mut context.forward_to_field_effect()?)
         .map(Value::EventResult)
+}
+
+/// Copies boosts (and associated volatiles) from the target Mon.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to copy boosts to.
+/// @param {[`ValueType::Mon`]} target The Mon to copy boosts from.
+/// @flag silent If set, no message is displayed.
+/// @returns {[`ValueType::EventResult`]} The outcome of the copy.
+fn copy_boosts(mut context: FunctionContext) -> Result<Value> {
+    let silent = context.silent();
+    let mon_handle = context.target_handle_positional()?;
+    let copy_from_handle = context
+        .pop_front()
+        .wrap_expectation("missing copy target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid copy target")?;
+
+    core_battle_actions::copy_boosts(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        copy_from_handle,
+        silent,
+    )
+    .map(|val| Value::EventResult(val))
 }
 
 /// Transforms a Mon into another species.
@@ -5522,6 +5548,34 @@ fn skip_effect_callback(mut context: FunctionContext) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Saves an arbitrary value to the event state.
+///
+/// @param {[`ValueType::String`]} key Key.
+/// @param {[`ValueType::Any`]} value Value.
+fn save_event_state_value(mut context: FunctionContext) -> Result<()> {
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    let value = context.pop_front().wrap_expectation("missing value")?;
+    context.event_state().save_value(key, value);
+    Ok(())
+}
+
+/// Reads an arbitrary value from the event state.
+///
+/// @param {[`ValueType::String`]} key Key.
+/// @returns {[`ValueType::Any`]} Value.
+fn read_event_state_value(mut context: FunctionContext) -> Result<Option<Value>> {
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    Ok(context.event_state().read_value(&key))
 }
 
 /// Gets a value from an effect's local data.

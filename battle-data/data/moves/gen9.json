@@ -116,7 +116,7 @@
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects_user": [
-          "$commanded_state = func_call(volatile_status_state: $user commanded)",
+          "$commanded_state = func_call(volatile_status_effect_state: $user commanded)",
           "require $commanded_state.is_defined and $commanded_state.source.is_defined else return",
           "if $commanded_state.source.species == tatsugiridroopy:",
           ["boost: $user 'def:1'"],
@@ -1201,7 +1201,7 @@
       "volatile_status": "dragoncheer"
     },
     "condition": {
-      "copy_on_transform": true,
+      "copy_with_boosts": true,
       "callbacks": {
         "on_start": [
           "require !func_call(has_volatile: $target focusenergy)",

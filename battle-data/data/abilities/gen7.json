@@ -171,39 +171,9 @@
     "name": "Berserk",
     "flags": [],
     "effect": {
+      "delegates": ["condition:hpactivatedabilitybase"],
       "callbacks": {
-        "on_after_damage": [
-          "# Delay eating healing berries if we expect Berserk to activate for a single-hit move.",
-          "if $effect.is_move and !$effect.multihit and !$effect.ignore_all_secondary_effects:",
-          ["$effect_state.berserk_may_activate = true"]
-        ],
-        "on_after_move_secondary_effects_damage": [
-          "require $damage != 0 else return",
-          "activate_ability: $original_hp"
-        ],
-        "on_after_move": [
-          "# If secondary effects were suppressed, we still need to reset state.",
-          "$effect_state.berserk_may_activate = false"
-        ],
-        "on_try_eat_item": [
-          "# Healing items are consumed because HP dropped below a threshold.",
-          "# If we received damage as part of a single-hit move, don't consume the berry until Berserk has activated.",
-          "$healing_items = [aguavberry, enigmaberry, figyberry, iapapaberry, magoberry, sitrusberry, wikiberry, oranberry, berryjuice]",
-          "require !($healing_items has $item.id) or !$effect_state.berserk_may_activate else return stopfail"
-        ],
-        "on_activate": {
-          "metadata": {
-            "parameters": ["original_hp"]
-          },
-          "program": [
-            "$effect_state.berserk_may_activate = false",
-            "require $original_hp.is_defined else return",
-            "require $target.hp != 0 else return",
-            "$half = $target.max_hp / 2",
-            "if $original_hp > $half and $target.hp <= $half:",
-            ["boost: $target 'spa:1'"]
-          ]
-        }
+        "on_activate": ["boost: $target 'spa:1'"]
       }
     }
   },

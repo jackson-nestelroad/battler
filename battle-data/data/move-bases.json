@@ -147,7 +147,11 @@
     "condition": {
       "duration": 1,
       "callbacks": {
-        "on_before_move": ["add_pseudo_weather: moldbreaker"],
+        "on_before_move": [
+          "$category = func_call(value_from_local_data: category)",
+          "require !$category or $move.category == $category else return",
+          "add_pseudo_weather: moldbreaker"
+        ],
         "on_move_aborted": ["run_event_on_move: AfterMove"],
         "on_after_move": ["remove_pseudo_weather: moldbreaker"]
       }

@@ -1093,13 +1093,13 @@
       "callbacks": {
         "on_before_turn": ["add_volatile: $user $this.id"],
         "on_try_use_move": [
-          "$effect_state = func_call(volatile_status_state: $user $this.id)",
+          "$effect_state = func_call(volatile_status_effect_state: $user $this.id)",
           "require $effect_state.is_defined",
           "require $effect_state.target_side.is_defined",
           "require $effect_state.target_position.is_defined"
         ],
         "on_move_damage": [
-          "$effect_state = func_call(volatile_status_state: $source $this.id)",
+          "$effect_state = func_call(volatile_status_effect_state: $source $this.id)",
           "if !$effect_state:",
           ["return 0"],
           "return $effect_state.damage"
@@ -2039,7 +2039,7 @@
       }
     },
     "condition": {
-      "copy_on_transform": true,
+      "copy_with_boosts": true,
       "callbacks": {
         "on_start": ["require !func_call(has_volatile: $target dragoncheer)", "log_start"],
         "on_modify_crit_ratio": ["return $crit_ratio + 2"]
@@ -2960,7 +2960,7 @@
           "return 0"
         ],
         "on_try_boost": [
-          "require $target != $source and $effect == intimidate else return",
+          "require $target != $source and [intimidate, supersweetsyrup] has $effect.id else return",
           "log_fail_unboost: from_effect",
           "return func_call(boost_table)"
         ],

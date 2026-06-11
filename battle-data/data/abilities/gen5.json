@@ -279,9 +279,14 @@
     "flags": [],
     "effect": {
       "callbacks": {
-        "on_source_damaging_hit": [
-          "if func_call(move_makes_contact: $move) and func_call(chance: 3 10):",
-          ["set_status: $target psn"]
+        "on_use_move": [
+          "require $move.category != status and func_call(move_makes_contact: $move) else return",
+          "$added_secondary = func_call(secondary_hit_effect)",
+          "$added_secondary.chance = 3/10",
+          "$added_secondary.target = func_call(hit_effect)",
+          "$added_secondary.target.status = psn",
+          "$added_secondary.source_effect = $this.id",
+          "add_secondary_effect_to_move: $move $added_secondary"
         ]
       }
     }

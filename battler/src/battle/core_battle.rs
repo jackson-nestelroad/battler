@@ -1623,6 +1623,11 @@ impl<'d> CoreBattle<'d> {
             .is_none_or(|action| action.independent())
         {
             Self::update(context)?;
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                &mut context
+                    .effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
+                fxlang::BattleEvent::AfterAction,
+            )?;
         }
 
         let mut some_switch_needed = false;

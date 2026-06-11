@@ -1,43 +1,151 @@
 {
   "lingeringaroma": {
     "name": "Lingering Aroma",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "$ability = $source.ability",
+          "require !func_call(ability_has_flag: $ability permanent) else return",
+          "require $ability != $this.id else return",
+          "require func_call(move_makes_contact: $move) else return",
+          "set_ability: $source $this.id"
+        ]
+      }
+    }
   },
   "seedsower": {
     "name": "Seed Sower",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "require func_call(move_makes_contact: $move) else return",
+          "set_terrain: grassyterrain"
+        ]
+      }
+    }
   },
   "thermalexchange": {
     "name": "Thermal Exchange",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": ["require $move.type == fire else return", "boost: $target 'atk:1'"],
+        "on_set_status": [
+          "require $status.id == brn else return",
+          "if $effect.is_move and !$effect.is_move_secondary:",
+          ["log_immune: $target from_effect"],
+          "return stopfail"
+        ],
+        "on_update": ["if $mon.status == brn:", ["cure_status: $mon"]]
+      }
+    }
   },
   "angershell": {
     "name": "Anger Shell",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:hpactivatedabilitybase"],
+      "callbacks": {
+        "on_activate": ["boost: $target 'atk:1' 'spa:1' 'spe:1' 'def:-1' 'spd:-1'"]
+      }
+    }
   },
   "purifyingsalt": {
     "name": "Purifying Salt",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_set_status": [
+          "if $effect.is_move and !$effect.is_move_secondary:",
+          ["log_immune: $target from_effect"],
+          "return stopfail"
+        ],
+        "on_add_volatile": [
+          "if $volatile.id == yawn:",
+          [
+            "if $effect.is_move and !$effect.is_move_secondary:",
+            ["log_immune: $target from_effect"],
+            "return stopfail"
+          ]
+        ],
+        "on_source_modify_atk": [
+          "if $effect.is_defined and $effect.type == ghost:",
+          ["return $atk / 2"]
+        ],
+        "on_source_modify_spa": [
+          "if $effect.is_defined and $effect.type == ghost:",
+          ["return $spa / 2"]
+        ]
+      }
+    }
   },
   "wellbakedbody": {
     "name": "Well-Baked Body",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "require $target != $source and $move.type == fire else return",
+          "if !func_call(boost: $target 'def:2'):",
+          ["log_immune: $target from_effect"],
+          "return stopfail"
+        ]
+      }
+    }
   },
   "windrider": {
     "name": "Wind Rider",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "require $target != $source and func_call(move_has_flag: $move wind) else return",
+          "if !func_call(boost: $target 'atk:1') and $report:",
+          ["log_immune: $target from_effect"],
+          "return stopfail"
+        ],
+        "on_start": [
+          "require func_call(has_side_condition: $target.side tailwind) else return",
+          "boost: $target 'atk:1'"
+        ],
+        "on_side_condition_start": ["run_event_on_mon_ability: start"]
+      }
+    }
   },
   "guarddog": {
     "name": "Guard Dog",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "delegates": ["ability:suctioncups", "condition:resistintimidateabilitybase"]
+    }
   },
   "rockypayload": {
     "name": "Rocky Payload",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_modify_atk": ["if $effect.is_defined and $effect.type == rock:", ["return $atk * 3/2"]],
+        "on_modify_spa": ["if $effect.is_defined and $effect.type == rock:", ["return $spa * 3/2"]]
+      }
+    }
   },
   "windpower": {
     "name": "Wind Power",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "require func_call(move_has_flag: $move wind) else return",
+          "add_volatile: $target charge"
+        ],
+        "on_side_condition_start": [
+          "require $condition.id == tailwind else return",
+          "add_volatile: $target charge"
+        ]
+      }
+    }
   },
   "zerotohero": {
     "name": "Zero to Hero",
@@ -49,7 +157,23 @@
       "NoTrace",
       "NoTransform",
       "Permanent"
-    ]
+    ],
+    "effect": {
+      "callbacks": {
+        "on_after_switch_out": [
+          "require func_call(base_species: $mon) == palafin else return",
+          "require $mon.species != palafinhero else return",
+          "forme_change: $mon palafinhero permanent",
+          "$effect_state.displayed = false"
+        ],
+        "on_switch_in": [
+          "require func_call(base_species: $mon) == palafin else return",
+          "require !$effect_state.displayed and $mon.species == palafinhero else return",
+          "log_activate: with_target",
+          "$effect_state.displayed = true"
+        ]
+      }
+    }
   },
   "commander": {
     "name": "Commander",
@@ -63,7 +187,7 @@
           "require !$target.needs_switch else return",
           "if func_call(base_species: $target) == tatsugiri:",
           [
-            "$commanding_state = func_call(volatile_status_state: $target commanding)",
+            "$commanding_state = func_call(volatile_status_effect_state: $target commanding)",
             "if $commanding_state.is_defined:",
             ["$ally = $commanding_state.source"],
             "else:",
@@ -85,95 +209,392 @@
   },
   "electromorphosis": {
     "name": "Electromorphosis",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": ["add_volatile: $target charge"]
+      }
+    }
   },
   "protosynthesis": {
     "name": "Protosynthesis",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"]
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_ability: WeatherChange"],
+        "on_weather_change": [
+          "$volatile_state = func_call(volatile_status_effect_state: $target $this.id)",
+          "if $field.weather.is_defined and $field.weather == harshsunlight:",
+          ["add_volatile: $target $this.id"],
+          "else if $volatile_state.is_defined and !$volatile_state.from_booster:",
+          ["remove_volatile: $target $this.id"]
+        ],
+        "on_end": [
+          "$volatile_state = func_call(volatile_status_effect_state: $target $this.id)",
+          "require $volatile_state.is_defined else return",
+          "$volatile_state.force_ended = true",
+          "remove_volatile: $target $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "no_copy": true,
+      "callbacks": {
+        "on_start": [
+          "if $source_effect.id == boosterenergy:",
+          ["$effect_state.from_booster = true", "log_activate: with_target with_source_effect"],
+          "else:",
+          ["log_activate: with_target"],
+          "$effect_state.best_stat = func_call(best_stat: $target unmodified)",
+          "log_start: str('stat:{}', $effect_state.best_stat)"
+        ],
+        "on_modify_atk": ["if $effect_state.best_stat == atk:", ["return $atk * 13/10"]],
+        "on_modify_def": ["if $effect_state.best_stat == def:", ["return $def * 13/10"]],
+        "on_modify_spa": ["if $effect_state.best_stat == spa:", ["return $spa * 13/10"]],
+        "on_modify_spd": ["if $effect_state.best_stat == spd:", ["return $spd * 13/10"]],
+        "on_modify_spe": ["if $effect_state.best_stat == spe:", ["return $spe * 3/2"]],
+        "log_end": ["if $effect_state.force_ended:", ["log_end: silent"], "else:", ["log_end"]]
+      }
+    }
   },
   "quarkdrive": {
     "name": "Quark Drive",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"]
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace", "NoTransform"],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_ability: TerrainChange"],
+        "on_terrain_change": [
+          "$volatile_state = func_call(volatile_status_effect_state: $target $this.id)",
+          "if $field.terrain.is_defined and $field.terrain == electricterrain:",
+          ["add_volatile: $target $this.id"],
+          "else if $volatile_state.is_defined and !$volatile_state.from_booster:",
+          ["remove_volatile: $target $this.id"]
+        ],
+        "on_end": [
+          "$volatile_state = func_call(volatile_status_effect_state: $target $this.id)",
+          "require $volatile_state.is_defined else return",
+          "$volatile_state.force_ended = true",
+          "remove_volatile: $target $this.id"
+        ]
+      }
+    },
+    "condition": {
+      "delegates": ["abilitycondition:protosynthesis"]
+    }
   },
   "goodasgold": {
     "name": "Good as Gold",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "require $move.category == status and $target != source else return",
+          "if $report:",
+          ["log_immune: $target from_effect"],
+          "return stop"
+        ]
+      }
+    }
   },
   "vesselofruin": {
     "name": "Vessel of Ruin",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_any_modify_spa": [
+          "require !func_call(has_ability: $target $this.id) else return",
+          "$ruined_spa = func_call(read_event_state_value: ruined_spa)",
+          "if !$ruined_spa:",
+          ["save_event_state_value: ruined_spa $effect_state.target"],
+          "if $ruined_spa != $effect_state.target:",
+          ["return"],
+          "return $spa * 3/4"
+        ]
+      }
+    }
   },
   "swordofruin": {
     "name": "Sword of Ruin",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_any_modify_def": [
+          "require !func_call(has_ability: $target $this.id) else return",
+          "$ruined_def = func_call(read_event_state_value: ruined_def)",
+          "if !$ruined_def:",
+          ["save_event_state_value: ruined_def $effect_state.target"],
+          "if $ruined_def != $effect_state.target:",
+          ["return"],
+          "return $def * 3/4"
+        ]
+      }
+    }
   },
   "tabletsofruin": {
     "name": "Tablets of Ruin",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_any_modify_atk": [
+          "require !func_call(has_ability: $target $this.id) else return",
+          "$ruined_atk = func_call(read_event_state_value: ruined_atk)",
+          "if !$ruined_atk:",
+          ["save_event_state_value: ruined_atk $effect_state.target"],
+          "if $ruined_atk != $effect_state.target:",
+          ["return"],
+          "return $def * 3/4"
+        ]
+      }
+    }
   },
   "beadsofruin": {
     "name": "Beads of Ruin",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["log_ability"],
+        "on_any_modify_spd": [
+          "require !func_call(has_ability: $target $this.id) else return",
+          "$ruined_spd = func_call(read_event_state_value: ruined_spd)",
+          "if !$ruined_spd:",
+          ["save_event_state_value: ruined_spd $effect_state.target"],
+          "if $ruined_spd != $effect_state.target:",
+          ["return"],
+          "return $def * 3/4"
+        ]
+      }
+    }
   },
   "orichalcumpulse": {
     "name": "Orichalcum Pulse",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["set_weather: harshsunlight", "log_activate: with_target"],
+        "on_modify_atk": [
+          "$weather = func_call(effective_weather: $target)",
+          "if $weather.is_defined and $weather.is_sunny:",
+          ["return $atk * 4/3"]
+        ]
+      }
+    }
   },
   "hadronengine": {
     "name": "Hadron Engine",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["set_terrain: electricterrain", "log_activate: with_target"],
+        "on_modify_spa": [
+          "$terrain = $target.effective_terrain",
+          "if $terrain.is_defined and $terrain.is_sunny:",
+          ["return $spa * 4/3"]
+        ]
+      }
+    }
   },
   "opportunist": {
     "name": "Opportunist",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_foe_after_boost": [
+          "require $effect.id != $this.id and $effect.id != mirrorherb else return",
+          "if !$effect_state.boosts:",
+          ["$effect_state.boosts = func_call(boost_table)"],
+          "foreach $boost in func_call(boostable_stats):",
+          [
+            "$value = func_call(get_boost: $boosts $boost)",
+            "if $value > 0:",
+            ["$effect_state.boosts = func_call(set_boost: $effect_state.boosts $boost $value"]
+          ]
+        ],
+        "on_after_action": [
+          "require $effect_state.boosts.is_defined else return",
+          "boost: $mon $effect_state.boosts",
+          "$effect_state.boosts = undefined"
+        ]
+      }
+    }
   },
   "cudchew": {
     "name": "Cud Chew",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_eat_item": [
+          "require func_call(item_has_flag: $item berry) else return",
+          "$effect_state.berry = $item",
+          "$effect_state.counter = 2",
+          "if $effect_state.residual:",
+          ["$effect_state.counter = 1"]
+        ],
+        "on_residual": [
+          "require $effect_state.item.is_defined and $target.hp > 0 else return",
+          "if $effect_state.counter > 0:",
+          ["$effect_state.counter = $effect_state.counter - 1"],
+          "require $effect_state.counter == 0 else return",
+          "log_activate: with_target",
+          "$effect_state.residual = true",
+          "eat_given_item: $target $effect_state.item",
+          "$effect_state.residual = false"
+        ]
+      }
+    }
   },
   "sharpness": {
     "name": "Sharpness",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_source_base_power": [
+          "if func_call(move_has_flag: $move slicing):",
+          ["return $base_power * 3/2"]
+        ]
+      }
+    }
   },
   "supremeoverlord": {
     "name": "Supreme Overlord",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "require $target.side.total_fainted > 0 else return",
+          "log_activate: with_target",
+          "$fainted = func_call(min: $target.side.total_fainted 5)",
+          "log_start: str('fallen:{}', $fainted) silent",
+          "$effect_state.fallen = $fainted"
+        ],
+        "on_end": ["log_end: silent"],
+        "on_source_base_power": [
+          "require $effect_state.fallen.is_defined and $effect_state.fallen > 0 else return",
+          "return $base_power * (10 + $effect_state.fallen) / 10"
+        ]
+      }
+    }
   },
   "costar": {
     "name": "Costar",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "$allies = func_call(adjacent_allies: $target)",
+          "require !$allies.is_empty else return",
+          "$ally = func_call(sample: $allies)",
+          "require $ally.is_defined else return",
+          "copy_boosts: $target $ally"
+        ]
+      }
+    }
   },
   "toxicdebris": {
     "name": "Toxic Debris",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "$side = $source.side",
+          "if func_call(is_ally: $source $target):",
+          ["$side = $source.side.foe_side"],
+          "require $move.category == physical else return",
+          "$side_condition_state = func_call(side_condition_effect_state: $side toxicspikes)",
+          "require !$side_condition_state or $side_condition_state.layers < 2 else return",
+          "add_side_condition: $side toxicspikes"
+        ]
+      }
+    }
   },
   "armortail": {
     "name": "Armor Tail",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "delegates": ["ability:dazzling"]
+    }
   },
   "eartheater": {
     "name": "Earth Eater",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "callbacks": {
+        "on_try_hit": [
+          "require $target != $source and $move.type == ground else return",
+          "if func_call(heal: $target expr($target.base_max_hp / 4)) == 0 and $report:",
+          ["log_immune: $target from_effect"],
+          "return stopfail"
+        ]
+      }
+    }
   },
   "myceliummight": {
     "name": "Mycelium Might",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:ignoreabilitymovebase"],
+      "callbacks": {
+        "on_sub_priority": ["require $move.category == status else return", "return -1"]
+      },
+      "local_data": {
+        "values": {
+          "category": "status"
+        }
+      }
+    }
   },
   "mindseye": {
     "name": "Mind's Eye",
-    "flags": ["Breakable"]
+    "flags": ["Breakable"],
+    "effect": {
+      "delegates": ["ability:keeneye", "ability:foresight;on_start=>"]
+    }
   },
   "supersweetsyrup": {
     "name": "Supersweet Syrup",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "require !$effect_state.triggered else return",
+          "$effect_state.triggered = true",
+          "log_ability",
+          "foreach $target in func_call(adjacent_foes: $target):",
+          ["boost: $target 'eva:-1'"]
+        ]
+      }
+    }
   },
   "hospitality": {
     "name": "Hospitality",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": [
+          "foreach $ally in func_call(adjacent_allies: $target):",
+          ["heal: $ally expr($ally.base_max_hp / 4)"]
+        ]
+      }
+    }
   },
   "toxicchain": {
     "name": "Toxic Chain",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "require $move.category != status else return",
+          "$added_secondary = func_call(secondary_hit_effect)",
+          "$added_secondary.chance = 3/10",
+          "$added_secondary.target = func_call(hit_effect)",
+          "$added_secondary.target.status = tox",
+          "$added_secondary.source_effect = $this.id",
+          "add_secondary_effect_to_move: $move $added_secondary"
+        ]
+      }
+    }
   },
   "embodyaspect": {
     "name": "Embody Aspect",
@@ -250,7 +671,17 @@
   },
   "poisonpuppeteer": {
     "name": "Poison Puppeteer",
-    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"]
+    "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"],
+    "effect": {
+      "callbacks": {
+        "on_any_after_set_status": [
+          "require func_call(base_species: $target) == pecharunt else return",
+          "require $source == $effect_state.target and $effect.is_move else return",
+          "require [psn, tox] has $status.id else return",
+          "add_volatile: $target confusion"
+        ]
+      }
+    }
   },
   "piercingdrill": {
     "name": "Piercing Drill",

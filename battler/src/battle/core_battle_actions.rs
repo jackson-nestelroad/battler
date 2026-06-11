@@ -166,6 +166,11 @@ fn switch_out_internal(
                 core_battle_logs::switch_out(context, copy_volatile_type)?;
             }
 
+            core_battle_effects::run_event::<MonContext, ()>(
+                context,
+                fxlang::BattleEvent::AfterSwitchOut,
+            );
+
             end_ability(
                 &mut context.applying_effect_context(
                     EffectHandle::Condition(Id::from_known("switchout")),
@@ -5810,6 +5815,8 @@ pub fn eat_given_item(context: &mut ApplyingEffectContext, item: &Id) -> Result<
         item_handle,
     );
 
+    context.target_mut().ate_item = true;
+
     Ok(EventResult::Advance)
 }
 
@@ -6382,6 +6389,70 @@ pub fn can_ultra_burst(context: &mut MonContext) -> Result<Option<UltraBurst>> {
     }));
 }
 
+/// Copies boosts (and associated volatiles) from the target Mon.
+pub fn copy_boosts(
+    context: &mut ApplyingEffectContext,
+    target: MonHandle,
+    silent: bool,
+) -> Result<EventResult> {
+    let mut target_context = context.as_battle_context_mut().mon_context(target)?;
+    if !target_context.mon().active {
+        return Ok(EventResult::Fail);
+    }
+
+    let boosts = target_context.mon().volatile_state.boosts.clone();
+    let mut volatiles: HashMap<Id, EffectState> = HashMap::default();
+    for volatile in target_context
+        .mon()
+        .volatile_state
+        .volatiles
+        .keys()
+        .cloned()
+        .collect::<Vec<_>>()
+    {
+        if CoreBattle::get_parsed_effect_by_id(target_context.as_battle_context_mut(), &volatile)?
+            .is_none_or(|condition| !condition.condition().copy_with_boosts)
+        {
+            continue;
+        }
+        let state = target_context
+            .mon()
+            .volatile_state
+            .volatiles
+            .get(&volatile)
+            .cloned()
+            .wrap_expectation("expected volatile status state to exist after lookup")?;
+        volatiles.insert(volatile, state);
+    }
+
+    context.target_mut().volatile_state.boosts = boosts;
+
+    // Remove any volatile that could be copied, to avoid conflicts.
+    for volatile in context
+        .target()
+        .volatile_state
+        .volatiles
+        .keys()
+        .cloned()
+        .collect::<Vec<_>>()
+    {
+        if CoreBattle::get_parsed_effect_by_id(context.as_battle_context_mut(), &volatile)?
+            .is_none_or(|condition| !condition.condition().copy_with_boosts)
+        {
+            continue;
+        }
+        remove_volatile(context, &volatile, false)?;
+    }
+
+    copy_volatiles(context, volatiles)?;
+
+    if !silent {
+        core_battle_logs::copy_boosts(context, target)?;
+    }
+
+    Ok(EventResult::Advance)
+}
+
 /// Transforms the Mon into the target Mon.
 ///
 /// Used to implement the move "Transform."
@@ -6400,7 +6471,7 @@ pub fn transform_into(
         return Ok(EventResult::Fail);
     }
 
-    let mut target_context = context.as_battle_context_mut().mon_context(target)?;
+    let target_context = context.as_battle_context_mut().mon_context(target)?;
     if !target_context.mon().active
         || target_context.mon().volatile_state.transformed
         || target_context.mon().volatile_state.illusion.is_some()
@@ -6417,7 +6488,6 @@ pub fn transform_into(
         .volatile_state
         .base_stored_stats
         .clone();
-    let boosts = target_context.mon().volatile_state.boosts.clone();
     let ability_id = target_context
         .mon()
         .volatile_state
@@ -6434,30 +6504,6 @@ pub fn transform_into(
         move_slot.simulated = true;
     }
     let times_attacked = target_context.mon().volatile_state.times_attacked;
-
-    let mut volatiles: HashMap<Id, EffectState> = HashMap::default();
-    for volatile in target_context
-        .mon()
-        .volatile_state
-        .volatiles
-        .keys()
-        .cloned()
-        .collect::<Vec<_>>()
-    {
-        if CoreBattle::get_parsed_effect_by_id(target_context.as_battle_context_mut(), &volatile)?
-            .is_none_or(|condition| !condition.condition().copy_on_transform)
-        {
-            continue;
-        }
-        let state = target_context
-            .mon()
-            .volatile_state
-            .volatiles
-            .get(&volatile)
-            .cloned()
-            .wrap_expectation("expected volatile status state to exist after lookup")?;
-        volatiles.insert(volatile, state);
-    }
 
     // Set the species first, for the baseline transformation.
     let species = target_context.mon().volatile_state.species.clone();
@@ -6477,31 +6523,13 @@ pub fn transform_into(
         false,
         RecalculateStatsHpPolicy::DoNotUpdate,
     )?;
-    context.target_mut().volatile_state.boosts = boosts;
     set_ability(context, &ability_id, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;
     context.target_mut().volatile_state.times_attacked = times_attacked;
 
     core_battle_logs::transform(context, target)?;
 
-    // Remove any volatile that could be copied, to avoid conflicts.
-    for volatile in context
-        .target()
-        .volatile_state
-        .volatiles
-        .keys()
-        .cloned()
-        .collect::<Vec<_>>()
-    {
-        if CoreBattle::get_parsed_effect_by_id(context.as_battle_context_mut(), &volatile)?
-            .is_none_or(|condition| !condition.condition().copy_on_transform)
-        {
-            continue;
-        }
-        remove_volatile(context, &volatile, false)?;
-    }
-
-    copy_volatiles(context, volatiles)?;
+    try_event!(copy_boosts(context, target, true)?, Ok);
 
     Ok(EventResult::Advance)
 }

@@ -1192,6 +1192,23 @@ pub fn invert_boosts(context: &mut ApplyingEffectContext) -> Result<()> {
     )
 }
 
+pub fn copy_boosts(context: &mut ApplyingEffectContext, target: MonHandle) -> Result<()> {
+    let source = Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?;
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        ignore_active_move_source_effect: true,
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("source:{source}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "copyboosts".to_owned(),
+        activation,
+    )
+}
+
 pub fn debug_event_failure(
     context: &mut Context,
     event: fxlang::BattleEvent,

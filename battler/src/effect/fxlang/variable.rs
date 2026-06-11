@@ -1555,6 +1555,9 @@ where
                 ValueRefMut::SecondaryHitEffect(secondary_effect) => {
                     value = match *member {
                         "chance" => ValueRefMut::OptionalFractionU16(&mut secondary_effect.chance),
+                        "source_effect" => {
+                            ValueRefMut::OptionalString(&mut secondary_effect.source_effect)
+                        }
                         "target" => ValueRefMut::OptionalHitEffect(&mut secondary_effect.target),
                         "user" => ValueRefMut::OptionalHitEffect(&mut secondary_effect.user),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),

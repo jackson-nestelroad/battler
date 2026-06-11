@@ -24,6 +24,7 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. If Mon is not fainted:
       1. `BeforeSwitchOut`.
       1. `SwitchOut`.
+      1. `AfterSwitchOut`.
       1. Ability `End`.
       1. `Exit`.
    1. Clear volatile effects.
@@ -400,6 +401,11 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. _(extension)_ `Weather`.
 1. Before running the `Residual` event, the duration of the effect is subtracted by one. If duration reaches 0, the `End` event (or `FieldEnd`, `SideEnd`, `SlotEnd`, according to the location of the effect) is run instead, and the effect is removed.
    1. Before ending an effect: `TryEnd`.
+
+## After Action
+
+1. `Update`.
+1. `AfterAction`.
 
 ## End
 

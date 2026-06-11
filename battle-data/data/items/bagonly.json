@@ -903,5 +903,18 @@
   "linkingcord": {
     "name": "Linking Cord",
     "flags": []
+  },
+  "auspiciousarmor": {
+    "name": "Auspicious Armor",
+    "special_data": {
+      "fling": {
+        "power": 30
+      }
+    },
+    "flags": []
+  },
+  "leaderscrest": {
+    "name": "Leader's Crest",
+    "flags": []
   }
 }

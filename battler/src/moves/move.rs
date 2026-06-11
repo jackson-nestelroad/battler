@@ -401,6 +401,21 @@ impl Move {
         }
     }
 
+    /// Returns the source effect for the hit effect.
+    pub fn hit_effect_source_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&str> {
+        match hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => None,
+            MoveHitEffectType::SecondaryEffect(target, hit, index) => self
+                .secondary_effects
+                .get(&(target, hit))?
+                .get(index)?
+                .data
+                .source_effect
+                .as_ref()
+                .map(|s| s.as_str()),
+        }
+    }
+
     /// Returns the corresponding fxlang effect for the hit effect.
     pub fn fxlang_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&fxlang::Effect> {
         match hit_effect_type {

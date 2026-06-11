@@ -940,6 +940,10 @@
       "user": {
         "description": "",
         "type": "HitEffect | Undefined"
+      },
+      "source_effect": {
+        "description": "",
+        "type": "String"
       }
     },
     "BoostTable": {
@@ -2071,6 +2075,31 @@
       ],
       "flags": [],
       "type": "ActiveMove",
+      "returns_item_from_list": false
+    },
+    "copy_boosts": {
+      "description": "Copies boosts (and associated volatiles) from the target Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to copy boosts to.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The Mon to copy boosts from.",
+          "optional": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "silent",
+          "description": "If set, no message is displayed."
+        }
+      ],
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "cure_status": {
@@ -4226,6 +4255,20 @@
       "type": "Mon | Undefined",
       "returns_item_from_list": false
     },
+    "read_event_state_value": {
+      "description": "Reads an arbitrary value from the event state.",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "String",
+          "description": "Key.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Any",
+      "returns_item_from_list": false
+    },
     "received_attack": {
       "description": "Checks if a Mon received an attack this turn.",
       "parameters": [
@@ -4600,6 +4643,26 @@
       "flags": [],
       "type": "unknown",
       "returns_item_from_list": true
+    },
+    "save_event_state_value": {
+      "description": "Saves an arbitrary value to the event state.",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "String",
+          "description": "Key.",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Any",
+          "description": "Value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "save_move_hit_data_flag_against_target": {
       "description": "Saves a flag on a move's hit data for a target.",
@@ -5505,7 +5568,7 @@
       "type": "String | Undefined",
       "returns_item_from_list": false
     },
-    "volatile_status_state": {
+    "volatile_status_effect_state": {
       "description": "Gets the effect state for a volatile status condition.",
       "parameters": [
         {
@@ -5747,6 +5810,16 @@
         },
         "volatile": {
           "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "after_action": {
+      "description": "Runs after a primary battle action finishes.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
           "optional": false
         }
       },
@@ -6115,6 +6188,16 @@
         },
         "move": {
           "type": "ActiveMove",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "after_switch_out": {
+      "description": "Runs after a Mon switches out.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
           "optional": false
         }
       },
