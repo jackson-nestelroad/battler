@@ -2180,7 +2180,9 @@ mod statement_parser_test {
         );
 
         assert_eq!(
-            StatementParser::new("require $test else return").parse().unwrap(),
+            StatementParser::new("require $test else return")
+                .parse()
+                .unwrap(),
             tree::Statement::RequireStatement(tree::RequireStatement {
                 condition: tree::Expr::Value(tree::Value::Var(tree::Var {
                     name: tree::Identifier("test".to_owned()),
@@ -2191,7 +2193,9 @@ mod statement_parser_test {
         );
 
         assert_eq!(
-            StatementParser::new("require $test else return stop").parse().unwrap(),
+            StatementParser::new("require $test else return stop")
+                .parse()
+                .unwrap(),
             tree::Statement::RequireStatement(tree::RequireStatement {
                 condition: tree::Expr::Value(tree::Value::Var(tree::Var {
                     name: tree::Identifier("test".to_owned()),
@@ -2204,7 +2208,9 @@ mod statement_parser_test {
         );
 
         assert_eq!(
-            StatementParser::new("require $test else return $other + 1").parse().unwrap(),
+            StatementParser::new("require $test else return $other + 1")
+                .parse()
+                .unwrap(),
             tree::Statement::RequireStatement(tree::RequireStatement {
                 condition: tree::Expr::Value(tree::Value::Var(tree::Var {
                     name: tree::Identifier("test".to_owned()),
