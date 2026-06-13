@@ -30,7 +30,6 @@ use battler_data::{
     SpeciesFlag,
     SwitchType,
     Type,
-    TypeEffectiveness,
     ZMoveData,
     ZPower,
 };
@@ -376,8 +375,6 @@ pub fn run_function(
         "type_chart_effectiveness" => type_chart_effectiveness(context).map(|val| Some(val)),
         "type_chart_immunity" => type_chart_immunity(context).map(|val| Some(val)),
         "type_effectiveness" => type_effectiveness(context).map(|val| Some(val)),
-        "type_has_no_effect_against" => type_has_no_effect_against(context).map(|val| Some(val)),
-        "type_is_weak_against" => type_is_weak_against(context).map(|val| Some(val)),
         "type_modifier" => type_modifier(context).map(|val| Some(val)),
         "type_modifier_against_target" => type_modifier_against_target(context),
         "undynamaxed_hp_calculation" => undynamaxed_hp_calculation(context).map(|val| Some(val)),
@@ -3859,74 +3856,6 @@ fn all_types(context: FunctionContext) -> Result<Value> {
     types.sort();
     let types = types.into_iter().map(|typ| Value::Type(typ)).collect();
     Ok(Value::List(types))
-}
-
-/// Checks if a type is weak against another type.
-///
-/// @param {[`ValueType::Type`]} attack_type The attacking type.
-/// @param {[`ValueType::Type`]} defense_type The defending type.
-/// @returns {[`ValueType::Boolean`]} Whether the attack type is weak against the defense type.
-fn type_is_weak_against(mut context: FunctionContext) -> Result<Value> {
-    let offense = context
-        .pop_front()
-        .wrap_expectation("missing offensive type")?
-        .mon_type()
-        .wrap_error_with_message("invalid offensive type")?;
-    let defense = context
-        .pop_front()
-        .wrap_expectation("missing defensive type")?
-        .mon_type()
-        .wrap_error_with_message("invalid defensive type")?;
-    Ok(Value::Boolean(
-        context
-            .evaluation_context()
-            .battle_context()
-            .battle()
-            .dex
-            .type_chart()
-            .types
-            .get(&offense)
-            .map(|types| {
-                types
-                    .get(&defense)
-                    .is_some_and(|effectiveness| effectiveness == &TypeEffectiveness::Weak)
-            })
-            .unwrap_or(false),
-    ))
-}
-
-/// Checks if a type has no effect against another type.
-///
-/// @param {[`ValueType::Type`]} attack_type The attacking type.
-/// @param {[`ValueType::Type`]} defense_type The defending type.
-/// @returns {[`ValueType::Boolean`]} Whether the attack type has no effect.
-fn type_has_no_effect_against(mut context: FunctionContext) -> Result<Value> {
-    let offense = context
-        .pop_front()
-        .wrap_expectation("missing offensive type")?
-        .mon_type()
-        .wrap_error_with_message("invalid offensive type")?;
-    let defense = context
-        .pop_front()
-        .wrap_expectation("missing defensive type")?
-        .mon_type()
-        .wrap_error_with_message("invalid defensive type")?;
-    Ok(Value::Boolean(
-        context
-            .evaluation_context()
-            .battle_context()
-            .battle()
-            .dex
-            .type_chart()
-            .types
-            .get(&offense)
-            .map(|types| {
-                types
-                    .get(&defense)
-                    .is_some_and(|effectiveness| effectiveness == &TypeEffectiveness::None)
-            })
-            .unwrap_or(false),
-    ))
 }
 
 /// Appends an element to a list.

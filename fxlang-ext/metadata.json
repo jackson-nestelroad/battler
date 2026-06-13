@@ -5366,46 +5366,6 @@
       "type": "UFraction",
       "returns_item_from_list": false
     },
-    "type_has_no_effect_against": {
-      "description": "Checks if a type has no effect against another type.",
-      "parameters": [
-        {
-          "name": "attack_type",
-          "type": "Type",
-          "description": "The attacking type.",
-          "optional": false
-        },
-        {
-          "name": "defense_type",
-          "type": "Type",
-          "description": "The defending type.",
-          "optional": false
-        }
-      ],
-      "flags": [],
-      "type": "Boolean",
-      "returns_item_from_list": false
-    },
-    "type_is_weak_against": {
-      "description": "Checks if a type is weak against another type.",
-      "parameters": [
-        {
-          "name": "attack_type",
-          "type": "Type",
-          "description": "The attacking type.",
-          "optional": false
-        },
-        {
-          "name": "defense_type",
-          "type": "Type",
-          "description": "The defending type.",
-          "optional": false
-        }
-      ],
-      "flags": [],
-      "type": "Boolean",
-      "returns_item_from_list": false
-    },
     "type_modifier": {
       "description": "Calculates a type modifier.",
       "parameters": [

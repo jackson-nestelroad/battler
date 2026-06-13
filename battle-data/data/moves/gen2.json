@@ -291,7 +291,7 @@
           [
             "if func_call(has_type: $source $type):",
             ["continue"],
-            "if func_call(type_is_weak_against: $last_type $type) or func_call(type_has_no_effect_against: $last_type $type):",
+            "if func_call(type_chart_effectiveness: $last_type [$type]) < 0 or func_call(type_chart_immunity: $last_type [$type]):",
             ["$types = func_call(append: $types $type)"]
           ],
           "require !$types.is_empty",
