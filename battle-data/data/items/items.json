@@ -2790,7 +2790,25 @@
         "power": 30
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_start": ["run_event_on_mon_item: Update"],
+        "on_update": [
+          "require $effect_state.started and !$mon.transformed else return",
+          "$weather = $field.effective_weather",
+          "$terrain = $field.effective_terrain",
+          "if func_call(has_ability: $mon protosynthesis) and (!$weather or $weather != harshsunlight) and func_call(use_item: $mon):",
+          ["add_volatile: $mon protosynthesis"],
+          "if func_call(has_ability: $mon quarkdrive) and (!$terrain or $terrain != electricterrain) and func_call(use_item: $mon):",
+          ["add_volatile: $mon quarkdrive"]
+        ],
+        "on_take_item": [
+          "if func_call(species_has_flag: func_call(base_species: $target) paradox):",
+          ["return false"]
+        ]
+      }
+    }
   },
   "abilityshield": {
     "name": "Ability Shield",

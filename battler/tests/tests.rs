@@ -188,13 +188,28 @@ mod abilities {
     }
 
     mod gen9 {
+        mod anger_shell_test;
         mod commander_test;
         mod embody_aspect_test;
+        mod good_as_gold_test;
+        mod lingering_aroma_test;
         mod mega_sol_test;
+        mod opportunist_test;
+        mod orichalcum_pulse_test;
         mod piercing_drill_test;
+        mod protosynthesis_test;
+        mod purifying_salt_test;
+        mod quark_drive_test;
+        mod seed_sower_test;
         mod tera_shell_test;
         mod tera_shift_test;
         mod teraform_zero_test;
+        mod thermal_exchange_test;
+        mod vessel_of_ruin_test;
+        mod well_baked_body_test;
+        mod wind_power_test;
+        mod wind_rider_test;
+        mod zero_to_hero_test;
     }
 }
 

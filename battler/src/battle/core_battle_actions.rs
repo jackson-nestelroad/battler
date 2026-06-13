@@ -3169,6 +3169,10 @@ pub fn boost(
         return Ok(EventResult::Fail);
     }
 
+    if original_boosts.non_zero_iter().count() == 0 {
+        return Ok(EventResult::Stop);
+    }
+
     let original_boosts = core_battle_effects::run_event_with_relay::<_, BoostTable>(
         &mut context.target_context()?,
         fxlang::BattleEvent::ChangeBoosts,

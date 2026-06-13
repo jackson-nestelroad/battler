@@ -1,4 +1,7 @@
-use alloc::string::String;
+use alloc::string::{
+    String,
+    ToString,
+};
 use core::str::FromStr;
 
 use anyhow::Result;
@@ -137,18 +140,25 @@ impl ParsedEffect {
             None => BattleEventModifier::default(),
         };
 
-        let event = parts
-            .map(|part| {
-                let mut chars = part.chars();
-                match chars.next() {
-                    Some(char) => char.to_uppercase().collect::<String>() + chars.as_str(),
-                    None => String::default(),
-                }
-            })
-            .join("");
+        let capitalize = |s: &str| {
+            let mut chars = s.chars();
+            match chars.next() {
+                Some(char) => char.to_uppercase().collect::<String>() + chars.as_str(),
+                None => String::default(),
+            }
+        };
 
-        let event = BattleEvent::from_str(&event).map_err(general_error)?;
-        Ok((event, modifier))
+        let event = parts.map(capitalize).join("");
+
+        // If the event does not exist, try it with the modifier added back.
+        match BattleEvent::from_str(&event).map_err(general_error) {
+            Ok(event) => Ok((event, modifier)),
+            Err(_) => {
+                let event = BattleEvent::from_str(&(capitalize(&modifier.to_string()) + &event))
+                    .map_err(general_error)?;
+                Ok((event, BattleEventModifier::None))
+            }
+        }
     }
 
     /// Creates a new [`ParsedEffect`].

@@ -2419,6 +2419,26 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
+    "effect_state_delete_key": {
+      "description": "Deletes a key from an effect state object.",
+      "parameters": [
+        {
+          "name": "effect_state",
+          "type": "EffectState",
+          "description": "The effect state to modify.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to delete.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Object",
+      "returns_item_from_list": false
+    },
     "effective_weather": {
       "description": "Gets the effective weather for a Mon.",
       "parameters": [

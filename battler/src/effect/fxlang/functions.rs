@@ -203,6 +203,7 @@ pub fn run_function(
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "effect_has_event_callback" => effect_has_event_callback(context).map(|val| Some(val)),
+        "effect_state_delete_key" => effect_state_delete_key(context),
         "effective_weather" => effective_weather(context),
         "end_ability" => end_ability(context).map(|()| None),
         "end_battle" => end_battle(context).map(|()| None),
@@ -5275,6 +5276,28 @@ fn object_set(mut context: FunctionContext) -> Result<Value> {
     let value = context.pop_front().wrap_expectation("missing value")?;
     object.insert(key, value);
     Ok(Value::Object(object))
+}
+
+/// Deletes a key from an effect state object.
+///
+/// @param {[`ValueType::EffectState`]} effect_state The effect state to modify.
+/// @param {[`ValueType::String`]} key The key to delete.
+/// @returns {[`ValueType::Object`]} The modified object.
+fn effect_state_delete_key(mut context: FunctionContext) -> Result<Option<Value>> {
+    let effect_state = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .effect_state()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+
+    Ok(effect_state
+        .get_mut(context.battle_context_mut())?
+        .remove(&key))
 }
 
 /// Returns an 's' if the number is not 1.

@@ -86,9 +86,9 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_damaging_hit": [
+        "on_try_hit": [
           "require $target != $source and $move.type == fire else return",
-          "if !func_call(boost: $target 'def:2'):",
+          "if !func_call(boost: $target 'def:2') and $report:",
           ["log_immune: $target from_effect"],
           "return stopfail"
         ]
@@ -110,7 +110,7 @@
           "require func_call(has_side_condition: $target.side tailwind) else return",
           "boost: $target 'atk:1'"
         ],
-        "on_side_condition_start": ["run_event_on_mon_ability: start"]
+        "on_side_side_condition_start": ["run_event_on_mon_ability: Start use_effect_state_target"]
       }
     }
   },
@@ -140,9 +140,9 @@
           "require func_call(move_has_flag: $move wind) else return",
           "add_volatile: $target charge"
         ],
-        "on_side_condition_start": [
+        "on_side_side_condition_start": [
           "require $condition.id == tailwind else return",
-          "add_volatile: $target charge"
+          "add_volatile: $effect_state.target charge"
         ]
       }
     }
@@ -164,13 +164,13 @@
           "require func_call(base_species: $mon) == palafin else return",
           "require $mon.species != palafinhero else return",
           "forme_change: $mon palafinhero permanent",
-          "$effect_state.displayed = false"
+          "$mon.effect_state.displayed = false"
         ],
         "on_switch_in": [
           "require func_call(base_species: $mon) == palafin else return",
-          "require !$effect_state.displayed and $mon.species == palafinhero else return",
+          "require !$mon.effect_state.displayed and $mon.species == palafinhero else return",
           "log_activate: with_target",
-          "$effect_state.displayed = true"
+          "$mon.effect_state.displayed = true"
         ]
       }
     }
@@ -224,7 +224,8 @@
         "on_start": ["run_event_on_mon_ability: WeatherChange"],
         "on_weather_change": [
           "$volatile_state = func_call(volatile_status_effect_state: $target $this.id)",
-          "if $field.weather.is_defined and $field.weather == harshsunlight:",
+          "$weather = $field.effective_weather",
+          "if $weather.is_defined and $weather.is_sunny:",
           ["add_volatile: $target $this.id"],
           "else if $volatile_state.is_defined and !$volatile_state.from_booster:",
           ["remove_volatile: $target $this.id"]
@@ -253,7 +254,7 @@
         "on_modify_spa": ["if $effect_state.best_stat == spa:", ["return $spa * 13/10"]],
         "on_modify_spd": ["if $effect_state.best_stat == spd:", ["return $spd * 13/10"]],
         "on_modify_spe": ["if $effect_state.best_stat == spe:", ["return $spe * 3/2"]],
-        "log_end": ["if $effect_state.force_ended:", ["log_end: silent"], "else:", ["log_end"]]
+        "on_end": ["if $effect_state.force_ended:", ["log_end: silent"], "else:", ["log_end"]]
       }
     }
   },
@@ -265,7 +266,8 @@
         "on_start": ["run_event_on_mon_ability: TerrainChange"],
         "on_terrain_change": [
           "$volatile_state = func_call(volatile_status_effect_state: $target $this.id)",
-          "if $field.terrain.is_defined and $field.terrain == electricterrain:",
+          "$terrain = $field.effective_terrain",
+          "if $terrain.is_defined and $terrain == electricterrain:",
           ["add_volatile: $target $this.id"],
           "else if $volatile_state.is_defined and !$volatile_state.from_booster:",
           ["remove_volatile: $target $this.id"]
@@ -288,7 +290,7 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "require $move.category == status and $target != source else return",
+          "require $move.category == status and $target != $source else return",
           "if $report:",
           ["log_immune: $target from_effect"],
           "return stop"
@@ -306,9 +308,11 @@
           "require !func_call(has_ability: $target $this.id) else return",
           "$ruined_spa = func_call(read_event_state_value: ruined_spa)",
           "if !$ruined_spa:",
-          ["save_event_state_value: ruined_spa $effect_state.target"],
-          "if $ruined_spa != $effect_state.target:",
-          ["return"],
+          [
+            "$ruined_spa = $effect_state.target",
+            "save_event_state_value: ruined_spa $effect_state.target"
+          ],
+          "require $ruined_spa == $effect_state.target else return",
           "return $spa * 3/4"
         ]
       }
@@ -324,7 +328,10 @@
           "require !func_call(has_ability: $target $this.id) else return",
           "$ruined_def = func_call(read_event_state_value: ruined_def)",
           "if !$ruined_def:",
-          ["save_event_state_value: ruined_def $effect_state.target"],
+          [
+            "$ruined_spa = $effect_state.target",
+            "save_event_state_value: ruined_def $effect_state.target"
+          ],
           "if $ruined_def != $effect_state.target:",
           ["return"],
           "return $def * 3/4"
@@ -342,7 +349,10 @@
           "require !func_call(has_ability: $target $this.id) else return",
           "$ruined_atk = func_call(read_event_state_value: ruined_atk)",
           "if !$ruined_atk:",
-          ["save_event_state_value: ruined_atk $effect_state.target"],
+          [
+            "$ruined_spa = $effect_state.target",
+            "save_event_state_value: ruined_atk $effect_state.target"
+          ],
           "if $ruined_atk != $effect_state.target:",
           ["return"],
           "return $def * 3/4"
@@ -360,7 +370,10 @@
           "require !func_call(has_ability: $target $this.id) else return",
           "$ruined_spd = func_call(read_event_state_value: ruined_spd)",
           "if !$ruined_spd:",
-          ["save_event_state_value: ruined_spd $effect_state.target"],
+          [
+            "$ruined_spa = $effect_state.target",
+            "save_event_state_value: ruined_spd $effect_state.target"
+          ],
           "if $ruined_spd != $effect_state.target:",
           ["return"],
           "return $def * 3/4"
@@ -375,7 +388,7 @@
       "callbacks": {
         "on_start": ["set_weather: harshsunlight", "log_activate: with_target"],
         "on_modify_atk": [
-          "$weather = func_call(effective_weather: $target)",
+          "$weather = $field.effective_weather",
           "if $weather.is_defined and $weather.is_sunny:",
           ["return $atk * 4/3"]
         ]
@@ -389,7 +402,7 @@
       "callbacks": {
         "on_start": ["set_terrain: electricterrain", "log_activate: with_target"],
         "on_modify_spa": [
-          "$terrain = $target.effective_terrain",
+          "$terrain = $field.effective_terrain",
           "if $terrain.is_defined and $terrain.is_sunny:",
           ["return $spa * 4/3"]
         ]
@@ -409,13 +422,16 @@
           [
             "$value = func_call(get_boost: $boosts $boost)",
             "if $value > 0:",
-            ["$effect_state.boosts = func_call(set_boost: $effect_state.boosts $boost $value"]
+            [
+              "$current = func_call(get_boost: $effect_state.boosts $boost)",
+              "$effect_state.boosts = func_call(set_boost: $effect_state.boosts $boost expr($current + $value))"
+            ]
           ]
         ],
         "on_after_action": [
-          "require $effect_state.boosts.is_defined else return",
-          "boost: $mon $effect_state.boosts",
-          "$effect_state.boosts = undefined"
+          "$boosts = func_call(effect_state_delete_key: $effect_state boosts)",
+          "require $boosts.is_defined else return",
+          "boost: $mon $boosts"
         ]
       }
     }
