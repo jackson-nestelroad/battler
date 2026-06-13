@@ -203,7 +203,7 @@ pub fn run_function(
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "effect_has_event_callback" => effect_has_event_callback(context).map(|val| Some(val)),
-        "effect_state_delete_key" => effect_state_delete_key(context),
+        "effect_state_remove_key" => effect_state_remove_key(context),
         "effective_weather" => effective_weather(context),
         "end_ability" => end_ability(context).map(|()| None),
         "end_battle" => end_battle(context).map(|()| None),
@@ -4659,7 +4659,7 @@ fn eat_item(mut context: FunctionContext) -> Result<Value> {
 /// Makes a Mon eat a specific item.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to eat.
-/// @param {[`ValueType::String`] | [`ValueType::Effect`]} item The item ID to eat.
+/// @param {[`ValueType::String`]} item The item ID to eat.
 /// @returns {[`ValueType::EventResult`]} Whether the item was eaten.
 fn eat_given_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
@@ -5278,12 +5278,12 @@ fn object_set(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::Object(object))
 }
 
-/// Deletes a key from an effect state object.
+/// Removes a key from an effect state object.
 ///
 /// @param {[`ValueType::EffectState`]} effect_state The effect state to modify.
-/// @param {[`ValueType::String`]} key The key to delete.
-/// @returns {[`ValueType::Object`]} The modified object.
-fn effect_state_delete_key(mut context: FunctionContext) -> Result<Option<Value>> {
+/// @param {[`ValueType::String`]} key The key to remove.
+/// @returns {[`ValueType::Any`]} The value that was present, if any.
+fn effect_state_remove_key(mut context: FunctionContext) -> Result<Option<Value>> {
     let effect_state = context
         .pop_front()
         .wrap_expectation("missing object")?

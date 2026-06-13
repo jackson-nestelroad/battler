@@ -433,6 +433,7 @@ fn transform_copies_crit_ratio_modifier() {
             "continue",
             "move|mon:Ditto,player-1,1|name:Transform|target:Charizard,player-2,1",
             "transform|mon:Ditto,player-1,1|into:Charizard,player-2,1|species:Charizard",
+            "start|mon:Ditto,player-1,1|move:Focus Energy|silent",
             "residual",
             "turn|turn:3",
             "continue",

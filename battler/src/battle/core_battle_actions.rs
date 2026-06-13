@@ -248,6 +248,8 @@ pub fn switch_in(
                 switch_type = Some(previous_mon_switch_type);
             }
 
+            // TODO: We should really apply these volatiles AFTER the switch in has occurred, so
+            // that they are logged afterwards.
             if let Some(SwitchType::CopyVolatile(copy_volatile_type)) = switch_type {
                 copy_volatile_for_switch(
                     &mut context.as_battle_context_mut().applying_effect_context(
@@ -6431,6 +6433,10 @@ pub fn copy_boosts(
 
     context.target_mut().volatile_state.boosts = boosts;
 
+    if !silent {
+        core_battle_logs::copy_boosts(context, target)?;
+    }
+
     // Remove any volatile that could be copied, to avoid conflicts.
     for volatile in context
         .target()
@@ -6447,12 +6453,7 @@ pub fn copy_boosts(
         }
         remove_volatile(context, &volatile, false)?;
     }
-
     copy_volatiles(context, volatiles)?;
-
-    if !silent {
-        core_battle_logs::copy_boosts(context, target)?;
-    }
 
     Ok(EventResult::Advance)
 }

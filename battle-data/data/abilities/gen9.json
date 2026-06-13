@@ -429,7 +429,7 @@
           ]
         ],
         "on_after_action": [
-          "$boosts = func_call(effect_state_delete_key: $effect_state boosts)",
+          "$boosts = func_call(effect_state_remove_key: $effect_state boosts)",
           "require $boosts.is_defined else return",
           "boost: $mon $boosts"
         ]
@@ -443,20 +443,20 @@
       "callbacks": {
         "on_eat_item": [
           "require func_call(item_has_flag: $item berry) else return",
-          "$effect_state.berry = $item",
+          "$effect_state.berry = $item.id",
           "$effect_state.counter = 2",
-          "if $effect_state.residual:",
+          "if $battle.in_residual:",
           ["$effect_state.counter = 1"]
         ],
         "on_residual": [
-          "require $effect_state.item.is_defined and $target.hp > 0 else return",
+          "require $effect_state.berry.is_defined and $target.hp > 0 else return",
           "if $effect_state.counter > 0:",
           ["$effect_state.counter = $effect_state.counter - 1"],
           "require $effect_state.counter == 0 else return",
           "log_activate: with_target",
-          "$effect_state.residual = true",
-          "eat_given_item: $target $effect_state.item",
-          "$effect_state.residual = false"
+          "eat_given_item: $target $effect_state.berry",
+          "effect_state_remove_key: $effect_state berry",
+          "effect_state_remove_key: $effect_state counter"
         ]
       }
     }
@@ -485,7 +485,7 @@
           "log_start: str('fallen:{}', $fainted) silent",
           "$effect_state.fallen = $fainted"
         ],
-        "on_end": ["log_end: silent"],
+        "on_end": ["require $effect_state.fallen.is_defined else return", "log_end: silent"],
         "on_source_base_power": [
           "require $effect_state.fallen.is_defined and $effect_state.fallen > 0 else return",
           "return $base_power * (10 + $effect_state.fallen) / 10"
@@ -520,6 +520,7 @@
           "require $move.category == physical else return",
           "$side_condition_state = func_call(side_condition_effect_state: $side toxicspikes)",
           "require !$side_condition_state or $side_condition_state.layers < 2 else return",
+          "log_activate: with_target",
           "add_side_condition: $side toxicspikes"
         ]
       }
@@ -565,7 +566,11 @@
     "name": "Mind's Eye",
     "flags": ["Breakable"],
     "effect": {
-      "delegates": ["ability:keeneye", "ability:foresight;on_start=>"]
+      "delegates": ["ability:keeneye"],
+      "callbacks": {
+        "on_use_move": ["$move.ignore_evasion = true"],
+        "on_source_ignore_immunity": ["if func_call(has_type: $target ghost):", ["return true"]]
+      }
     }
   },
   "supersweetsyrup": {
@@ -690,9 +695,9 @@
     "flags": ["NoEntrainment", "NoReceiver", "NoRolePlay", "NoSkillSwap", "NoTrace"],
     "effect": {
       "callbacks": {
-        "on_any_after_set_status": [
-          "require func_call(base_species: $target) == pecharunt else return",
-          "require $source == $effect_state.target and $effect.is_move else return",
+        "on_source_after_set_status": [
+          "require func_call(base_species: $effect_state.target) == pecharunt else return",
+          "require $effect.is_move else return",
           "require [psn, tox] has $status.id else return",
           "add_volatile: $target confusion"
         ]

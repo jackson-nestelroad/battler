@@ -298,6 +298,11 @@
         "type": "EventResult | Undefined",
         "only_applicable_to_active_move": true
       },
+      "ignore_evasion": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
       "tracks_target": {
         "description": "",
         "type": "Boolean | Undefined",
@@ -393,6 +398,10 @@
       "force_try_hit_result": {
         "description": "",
         "type": "EventResult"
+      },
+      "ignore_evasion": {
+        "description": "",
+        "type": "Boolean"
       },
       "multiaccuracy": {
         "description": "",
@@ -826,6 +835,10 @@
     },
     "Battle": {
       "ending": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "in_residual": {
         "description": "",
         "type": "Boolean"
       },
@@ -2390,7 +2403,7 @@
         },
         {
           "name": "item",
-          "type": "String | Effect",
+          "type": "String",
           "description": "The item ID to eat.",
           "optional": false
         }
@@ -2419,8 +2432,8 @@
       "type": "Boolean",
       "returns_item_from_list": false
     },
-    "effect_state_delete_key": {
-      "description": "Deletes a key from an effect state object.",
+    "effect_state_remove_key": {
+      "description": "Removes a key from an effect state object.",
       "parameters": [
         {
           "name": "effect_state",
@@ -2431,12 +2444,12 @@
         {
           "name": "key",
           "type": "String",
-          "description": "The key to delete.",
+          "description": "The key to remove.",
           "optional": false
         }
       ],
       "flags": [],
-      "type": "Object",
+      "type": "Any",
       "returns_item_from_list": false
     },
     "effective_weather": {
@@ -6581,7 +6594,7 @@
           "type": "Mon",
           "optional": true
         },
-        "effect": {
+        "source_effect": {
           "type": "Effect",
           "optional": false
         }

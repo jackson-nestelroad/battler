@@ -2042,6 +2042,10 @@
       "copy_with_boosts": true,
       "callbacks": {
         "on_start": ["require !func_call(has_volatile: $target dragoncheer)", "log_start"],
+        "on_copy_volatile": [
+          "require $source_effect.is_move or $source_effect.is_ability else return",
+          "log_start: silent"
+        ],
         "on_modify_crit_ratio": ["return $crit_ratio + 2"]
       }
     }

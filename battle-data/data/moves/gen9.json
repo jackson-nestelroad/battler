@@ -1210,7 +1210,10 @@
           "if func_call(has_type: $target dragon):",
           ["$effect_state.increase = 2"]
         ],
-        "on_copy_volatile": ["log_start: silent"],
+        "on_copy_volatile": [
+          "require $source_effect.is_move or $source_effect.is_ability else return",
+          "log_start: silent"
+        ],
         "on_modify_crit_ratio": ["return $crit_ratio + $effect_state.increase"]
       }
     }

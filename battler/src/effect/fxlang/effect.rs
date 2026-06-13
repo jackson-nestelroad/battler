@@ -1539,7 +1539,7 @@ impl BattleEvent {
             Self::ChargeMove => CommonCallbackType::SourceMoveResult as u32,
             Self::ClearTerrain => CommonCallbackType::FieldEffectResult as u32,
             Self::ClearWeather => CommonCallbackType::FieldEffectResult as u32,
-            Self::CopyVolatile => CommonCallbackType::ApplyingEffectResult as u32,
+            Self::CopyVolatile => CommonCallbackType::EffectResult as u32,
             Self::CriticalHit => CommonCallbackType::MoveBoolean as u32,
             Self::CureStatus => CommonCallbackType::ApplyingEffectResult as u32,
             Self::Damage => CommonCallbackType::ApplyingEffectModifier as u32,

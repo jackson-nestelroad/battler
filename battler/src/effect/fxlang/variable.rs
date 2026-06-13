@@ -1028,6 +1028,9 @@ where
                             "ending" => {
                                 ValueRef::Boolean(context.battle_context().battle().ending())
                             }
+                            "in_residual" => {
+                                ValueRef::Boolean(context.battle_context().battle().in_residual())
+                            }
                             "last_move" => context
                                 .battle_context()
                                 .battle()
@@ -1470,6 +1473,12 @@ where
                             &mut context
                                 .active_move_mut(*active_move_handle)?
                                 .ignore_all_secondary_effects,
+                        ),
+                        "ignore_evasion" => ValueRefMut::Boolean(
+                            &mut context
+                                .active_move_mut(*active_move_handle)?
+                                .data
+                                .ignore_evasion,
                         ),
                         "multiaccuracy" => ValueRefMut::Boolean(
                             &mut context

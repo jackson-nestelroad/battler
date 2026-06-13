@@ -20,8 +20,8 @@ fn team() -> Result<TeamData> {
                 {
                     "name": "Espathra",
                     "species": "Espathra",
-                    "ability": "Opportunist",
-                    "item": "Throat Spray",
+                    "ability": "No Ability",
+                    "item": "Mirror Herb",
                     "moves": [
                         "Swords Dance",
                         "Torch Song",
@@ -51,7 +51,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
 }
 
 #[test]
-fn opportunist_copies_stat_boosts() {
+fn mirror_herb_copies_stat_boosts() {
     let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
@@ -62,10 +62,12 @@ fn opportunist_copies_stat_boosts() {
         r#"[
             "move|mon:Espathra,player-1,1|name:Swords Dance|target:Espathra,player-1,1",
             "boost|mon:Espathra,player-1,1|stat:atk|by:2",
-            "boost|mon:Espathra,player-2,1|stat:atk|by:2|from:ability:Opportunist",
+            "itemend|mon:Espathra,player-2,1|item:Mirror Herb",
+            "boost|mon:Espathra,player-2,1|stat:atk|by:2|from:item:Mirror Herb",
             "move|mon:Espathra,player-2,1|name:Swords Dance|target:Espathra,player-2,1",
             "boost|mon:Espathra,player-2,1|stat:atk|by:2",
-            "boost|mon:Espathra,player-1,1|stat:atk|by:2|from:ability:Opportunist",
+            "itemend|mon:Espathra,player-1,1|item:Mirror Herb",
+            "boost|mon:Espathra,player-1,1|stat:atk|by:2|from:item:Mirror Herb",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -75,8 +77,10 @@ fn opportunist_copies_stat_boosts() {
 }
 
 #[test]
-fn opportunist_compounds_stat_boosts() {
-    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+fn mirror_herb_compounds_stat_boosts() {
+    let mut team_1 = team().unwrap();
+    team_1.members[0].item = Some("Throat Spray".to_owned());
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
@@ -91,7 +95,8 @@ fn opportunist_compounds_stat_boosts() {
             "boost|mon:Espathra,player-1,1|stat:spa|by:1",
             "itemend|mon:Espathra,player-1,1|item:Throat Spray",
             "boost|mon:Espathra,player-1,1|stat:spa|by:1|from:item:Throat Spray",
-            "boost|mon:Espathra,player-2,1|stat:spa|by:2|from:ability:Opportunist",
+            "itemend|mon:Espathra,player-2,1|item:Mirror Herb",
+            "boost|mon:Espathra,player-2,1|stat:spa|by:2|from:item:Mirror Herb",
             "move|mon:Espathra,player-2,1|name:Tackle|target:Espathra,player-1,1",
             "split|side:0",
             "damage|mon:Espathra,player-1,1|health:138/155",

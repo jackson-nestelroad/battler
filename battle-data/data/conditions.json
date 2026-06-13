@@ -369,6 +369,8 @@
         "on_start": [
           "if $source_effect.id == lockedmove:",
           ["log_start: fatigue"],
+          "else if $source_effect.is_ability:",
+          ["log_start: with_source_effect"],
           "else:",
           ["log_start"],
           "$effect_state.time = func_call(random: 2 6)"

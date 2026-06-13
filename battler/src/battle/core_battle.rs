@@ -302,6 +302,7 @@ pub struct CoreBattle<'d> {
     mid_turn: bool,
     started: bool,
     in_pre_battle: bool,
+    in_residual: bool,
     ending: bool,
     ended: bool,
     next_effect_order: u32,
@@ -391,6 +392,7 @@ impl<'d> CoreBattle<'d> {
             mid_turn: false,
             started: false,
             in_pre_battle: false,
+            in_residual: false,
             ending: false,
             ended: false,
             next_effect_order: 0,
@@ -780,6 +782,10 @@ impl<'d> CoreBattle<'d> {
 
     pub fn started(&self) -> bool {
         self.started
+    }
+
+    pub fn in_residual(&self) -> bool {
+        self.in_residual
     }
 
     pub fn ending(&self) -> bool {
@@ -1481,6 +1487,7 @@ impl<'d> CoreBattle<'d> {
                 }
             }
             Action::Residual => {
+                context.battle_mut().in_residual = true;
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
                 core_battle_effects::run_event_with_options::<_, _, ()>(
@@ -1493,6 +1500,7 @@ impl<'d> CoreBattle<'d> {
                     },
                 );
                 context.battle_mut().log(battle_log_entry!("residual"));
+                context.battle_mut().in_residual = false;
             }
             Action::Experience(action) => {
                 core_battle_actions::gain_experience(

@@ -190,21 +190,31 @@ mod abilities {
     mod gen9 {
         mod anger_shell_test;
         mod commander_test;
+        mod costar_test;
+        mod cud_chew_test;
+        mod earth_eater_test;
         mod embody_aspect_test;
         mod good_as_gold_test;
+        mod hospitality_test;
         mod lingering_aroma_test;
         mod mega_sol_test;
+        mod minds_eye_test;
+        mod mycelium_might_test;
         mod opportunist_test;
         mod orichalcum_pulse_test;
         mod piercing_drill_test;
+        mod poison_puppeteer_test;
         mod protosynthesis_test;
         mod purifying_salt_test;
         mod quark_drive_test;
         mod seed_sower_test;
+        mod supersweet_syrup_test;
+        mod supreme_overlord_test;
         mod tera_shell_test;
         mod tera_shift_test;
         mod teraform_zero_test;
         mod thermal_exchange_test;
+        mod toxic_debris_test;
         mod vessel_of_ruin_test;
         mod well_baked_body_test;
         mod wind_power_test;
@@ -315,6 +325,8 @@ mod items {
 
     mod gen9 {
         mod loaded_dice_test;
+        mod mirror_herb_test;
+        mod punching_glove_test;
     }
 
     mod medicine {
