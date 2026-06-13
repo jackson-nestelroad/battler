@@ -201,7 +201,7 @@
     "keyword": {
       "patterns": [
         {
-          "match": "\\b(if|else|foreach|in|return|continue|break|expr|func_call|str|or|and|has|hasany)\\b",
+          "match": "\\b(if|else|foreach|in|return|continue|break|require|assign|expr|func_call|str|or|and|has|hasany)\\b",
           "name": "keyword.control"
         }
       ]
@@ -209,7 +209,7 @@
     "literal": {
       "patterns": [
         {
-          "match": "\\b(true|false|undefined)\\b",
+          "match": "\\b(true|false|undefined|fail|stopfail|stopreportfail|stop|skip|advance)\\b",
           "name": "constant.language"
         },
         {
@@ -240,7 +240,7 @@
     "function_name": {
       "patterns": [
         {
-          "match": "\\G\\s*(?!(?:if|else|foreach|in|return|continue|break|has|hasany|and|or|expr|func_call|str)\\b)([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
+          "match": "\\G\\s*(?!(?:if|else|foreach|in|return|continue|break|require|assign|has|hasany|and|or|expr|func_call|str)\\b)([a-zA-Z_\\-][a-zA-Z0-9_\\-]*)",
           "captures": {
             "1": {
               "name": "entity.name.function"

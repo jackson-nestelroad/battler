@@ -3877,9 +3877,34 @@
       "spd": 96,
       "spe": 110
     },
+    "base_forme": "Teal-Mask",
     "formes": ["Ogerpon-Wellspring-Mask", "Ogerpon-Hearthflame-Mask", "Ogerpon-Cornerstone-Mask"],
     "flags": [],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_force_tera_type": ["return grass"],
+        "on_after_terastallization": [
+          "forme_change: $mon ogerpontealmasktera permanent revertible"
+        ],
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
+        "on_update": [
+          "$base_species = func_call(base_species: $mon)",
+          "require $base_species == ogerpon else return",
+          "if $mon.item == wellspringmask:",
+          ["forme_change: $mon ogerponwellspringmask permanent"],
+          "else if $mon.item == hearthflamemask:",
+          ["forme_change: $mon ogerponhearthflamemask permanent"],
+          "else if $mon.item == cornerstonemask:",
+          ["forme_change: $mon ogerponcornerstonemask permanent"],
+          "else if $mon.species != ogerpon:",
+          ["forme_change: $mon ogerpon permanent"]
+        ]
+      }
+    }
   },
   "archaludon": {
     "name": "Archaludon",
@@ -4098,7 +4123,12 @@
     },
     "formes": ["Terapagos-Terastal", "Terapagos-Stellar"],
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_force_tera_type": ["return none"]
+      }
+    }
   },
   "pecharunt": {
     "name": "Pecharunt",
@@ -4753,7 +4783,16 @@
       "spe": 110
     },
     "flags": [],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "delegates": ["species:ogerpon"],
+      "callbacks": {
+        "on_force_tera_type": ["return water"],
+        "on_after_terastallization": [
+          "forme_change: $mon ogerponwellspringmasktera permanent revertible"
+        ]
+      }
+    }
   },
   "ogerponhearthflamemask": {
     "name": "Ogerpon-Hearthflame-Mask",
@@ -4785,7 +4824,16 @@
       "spe": 110
     },
     "flags": [],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "delegates": ["species:ogerpon"],
+      "callbacks": {
+        "on_force_tera_type": ["return fire"],
+        "on_after_terastallization": [
+          "forme_change: $mon ogerponhearthflamemasktera permanent revertible"
+        ]
+      }
+    }
   },
   "ogerponcornerstonemask": {
     "name": "Ogerpon-Cornerstone-Mask",
@@ -4816,6 +4864,167 @@
       "spd": 96,
       "spe": 110
     },
+    "flags": [],
+    "learnset": {},
+    "effect": {
+      "delegates": ["species:ogerpon"],
+      "callbacks": {
+        "on_force_tera_type": ["return rock"],
+        "on_after_terastallization": [
+          "forme_change: $mon ogerponcornerstonemasktera permanent revertible"
+        ]
+      }
+    }
+  },
+  "ogerpontealmasktera": {
+    "name": "Ogerpon-Teal-Mask-Tera",
+    "base_species": "Ogerpon",
+    "forme": "Teal-Mask-Tera",
+    "class": "Mask",
+    "color": "Green",
+    "primary_type": "Grass",
+    "abilities": ["Embody Aspect"],
+    "gender_ratio": 254,
+    "catch_rate": 5,
+    "egg_groups": ["Undiscovered"],
+    "hatch_time": 50,
+    "height": 12,
+    "weight": 398,
+    "base_exp_yield": 275,
+    "leveling_rate": "Slow",
+    "ev_yield": {
+      "atk": 3
+    },
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 80,
+      "atk": 120,
+      "def": 84,
+      "spa": 60,
+      "spd": 96,
+      "spe": 110
+    },
+    "battle_only_forme": true,
+    "changes_from": "Ogerpon",
+    "flags": [],
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
+        "on_update": [
+          "$base_species = func_call(base_species: $mon)",
+          "require $base_species == ogerpon else return",
+          "if $mon.item == wellspringmask:",
+          ["forme_change: $mon ogerponwellspringmasktera permanent revertible"],
+          "else if $mon.item == hearthflamemask:",
+          ["forme_change: $mon ogerponhearthflamemasktera permanent revertible"],
+          "else if $mon.item == cornerstonemask:",
+          ["forme_change: $mon ogerponcornerstonemasktera permanent revertible"],
+          "else if $mon.species != ogerpontealmasktera:",
+          ["forme_change: $mon ogerpontealmasktera permanent revertible"]
+        ]
+      }
+    }
+  },
+  "ogerponwellspringmasktera": {
+    "name": "Ogerpon-Wellspring-Mask-Tera",
+    "base_species": "Ogerpon",
+    "forme": "Wellspring-Mask-Tera",
+    "class": "Mask",
+    "color": "Green",
+    "primary_type": "Water",
+    "abilities": ["Embody Aspect"],
+    "gender_ratio": 254,
+    "catch_rate": 5,
+    "egg_groups": ["Undiscovered"],
+    "hatch_time": 50,
+    "height": 12,
+    "weight": 398,
+    "base_exp_yield": 275,
+    "leveling_rate": "Slow",
+    "ev_yield": {
+      "atk": 3
+    },
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 80,
+      "atk": 120,
+      "def": 84,
+      "spa": 60,
+      "spd": 96,
+      "spe": 110
+    },
+    "battle_only_forme": true,
+    "changes_from": "Ogerpon-Wellspring-Mask",
+    "flags": [],
+    "learnset": {}
+  },
+  "ogerponhearthflamemasktera": {
+    "name": "Ogerpon-Hearthflame-Mask-Tera",
+    "base_species": "Ogerpon",
+    "forme": "Hearthflame-Mask-Tera",
+    "class": "Mask",
+    "color": "Green",
+    "primary_type": "Fire",
+    "abilities": ["Embody Aspect"],
+    "gender_ratio": 254,
+    "catch_rate": 5,
+    "egg_groups": ["Undiscovered"],
+    "hatch_time": 50,
+    "height": 12,
+    "weight": 398,
+    "base_exp_yield": 275,
+    "leveling_rate": "Slow",
+    "ev_yield": {
+      "atk": 3
+    },
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 80,
+      "atk": 120,
+      "def": 84,
+      "spa": 60,
+      "spd": 96,
+      "spe": 110
+    },
+    "battle_only_forme": true,
+    "changes_from": "Ogerpon-Hearthflame-Mask",
+    "flags": [],
+    "learnset": {}
+  },
+  "ogerponcornerstonemasktera": {
+    "name": "Ogerpon-Cornerstone-Mask-Tera",
+    "base_species": "Ogerpon",
+    "forme": "Cornerstone-Mask-Tera",
+    "class": "Mask",
+    "color": "Green",
+    "primary_type": "Rock",
+    "abilities": ["Embody Aspect"],
+    "gender_ratio": 254,
+    "catch_rate": 5,
+    "egg_groups": ["Undiscovered"],
+    "hatch_time": 50,
+    "height": 12,
+    "weight": 398,
+    "base_exp_yield": 275,
+    "leveling_rate": "Slow",
+    "ev_yield": {
+      "atk": 3
+    },
+    "base_friendship": 0,
+    "base_stats": {
+      "hp": 80,
+      "atk": 120,
+      "def": 84,
+      "spa": 60,
+      "spd": 96,
+      "spe": 110
+    },
+    "battle_only_forme": true,
+    "changes_from": "Ogerpon-Cornerstone-Mask",
     "flags": [],
     "learnset": {}
   },
@@ -4851,7 +5060,13 @@
     "battle_only_forme": true,
     "changes_from": "Terapagos",
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "callbacks": {
+        "on_force_tera_type": ["return stellar"],
+        "on_after_terastallization": ["forme_change: $mon terapagosstellar permanent revertible"]
+      }
+    }
   },
   "terapagosstellar": {
     "name": "Terapagos-Stellar",

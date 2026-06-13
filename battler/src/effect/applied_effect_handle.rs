@@ -3,6 +3,7 @@ use anyhow::Result;
 use crate::{
     battle::{
         EffectContext,
+        EventResult,
         MonHandle,
         MoveHandle,
         core_battle_actions,
@@ -193,7 +194,7 @@ impl AppliedEffectHandle {
     }
 
     /// Ends the applied effect.
-    pub fn end(&self, context: &mut EffectContext) -> Result<bool> {
+    pub fn end(&self, context: &mut EffectContext) -> Result<EventResult> {
         match self.location {
             AppliedEffectLocation::None
             | AppliedEffectLocation::ActiveMove(_)
@@ -205,14 +206,15 @@ impl AppliedEffectHandle {
             | AppliedEffectLocation::MonType(_)
             | AppliedEffectLocation::Side(_)
             | AppliedEffectLocation::Field
-            | AppliedEffectLocation::Player(_) => Ok(false),
+            | AppliedEffectLocation::Player(_) => Ok(EventResult::Fail),
             AppliedEffectLocation::MonStatus(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
                 core_battle_actions::clear_status(&mut context)
             }
             AppliedEffectLocation::MonTerastallization(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;
-                core_battle_actions::end_terastallization(&mut context).map(|()| true)
+                core_battle_actions::end_terastallization(&mut context)
+                    .map(|()| EventResult::Advance)
             }
             AppliedEffectLocation::MonVolatile(mon) => {
                 let mut context = context.applying_effect_context(None, mon)?;

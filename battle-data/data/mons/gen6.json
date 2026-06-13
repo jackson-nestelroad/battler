@@ -6586,6 +6586,19 @@
       "toxic": ["M"],
       "wonderroom": ["T"],
       "zenheadbutt": ["T"]
+    },
+    "effect": {
+      "callbacks": {
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
+        "on_update": [
+          "$base_species = func_call(base_species: $mon)",
+          "if $base_species == xerneas and $mon.species == xerneasneutral:",
+          ["forme_change: $mon xerneas permanent revertible"]
+        ]
+      }
     }
   },
   "yveltal": {

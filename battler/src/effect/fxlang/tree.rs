@@ -54,6 +54,10 @@ pub struct ValueExpr(pub Box<Expr>);
 #[repr(transparent)]
 pub struct ValueFunctionCall(pub FunctionCall);
 
+/// ValueAssignment -> "assign(" Assignment ")"
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ValueAssignment(pub Box<Assignment>);
+
 /// FormattedString -> "str(" StringLiteral ("," Values)? ")"
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FormattedString {
@@ -79,7 +83,8 @@ impl Var {
     }
 }
 
-/// Value -> "undefined" | Bool | Number | String | List | Var | ValueExpr | ValueFunctionCall
+/// Value -> "undefined" | Bool | Number | String | List | Var | ValueExpr | ValueFunctionCall |
+/// ValueAssignment
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Value {
     UndefinedLiteral,
@@ -90,6 +95,7 @@ pub enum Value {
     Var(Var),
     ValueExpr(ValueExpr),
     ValueFunctionCall(ValueFunctionCall),
+    ValueAssignment(ValueAssignment),
     FormattedString(FormattedString),
 }
 
@@ -236,8 +242,15 @@ pub struct ContinueStatement;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BreakStatement;
 
+/// RequireStatement -> "require" Expr ("else" "return" (Expr))
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RequireStatement {
+    pub condition: Expr,
+    pub else_return: Option<Option<Expr>>,
+}
+
 /// Statement -> Empty | FunctionCall | Assignment | IfStatement | ElseIfStatement |
-/// ForEachStatement | ReturnStatement | ContinueStatement | BreakStatement
+/// ForEachStatement | ReturnStatement | ContinueStatement | BreakStatement | RequireStatement
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub enum Statement {
     #[default]
@@ -250,4 +263,5 @@ pub enum Statement {
     ReturnStatement(ReturnStatement),
     Continue(ContinueStatement),
     Break(BreakStatement),
+    RequireStatement(RequireStatement),
 }

@@ -1,4 +1,7 @@
-use alloc::string::String;
+use alloc::string::{
+    String,
+    ToString,
+};
 use core::str::FromStr;
 
 use anyhow::Result;
@@ -16,6 +19,7 @@ use crate::{
         Callback,
         Callbacks,
         ConditionAttributes,
+        LocalData,
         ParsedProgram,
         ProgramMetadata,
     },
@@ -80,6 +84,7 @@ impl SpeedOrderable for ParsedCallback {
 pub struct ParsedEffect {
     callbacks: HashMap<(BattleEvent, BattleEventModifier), ParsedCallback>,
     condition: ConditionAttributes,
+    local_data: LocalData,
 }
 
 impl ParsedEffect {
@@ -135,25 +140,37 @@ impl ParsedEffect {
             None => BattleEventModifier::default(),
         };
 
-        let event = parts
-            .map(|part| {
-                let mut chars = part.chars();
-                match chars.next() {
-                    Some(char) => char.to_uppercase().collect::<String>() + chars.as_str(),
-                    None => String::default(),
-                }
-            })
-            .join("");
+        let capitalize = |s: &str| {
+            let mut chars = s.chars();
+            match chars.next() {
+                Some(char) => char.to_uppercase().collect::<String>() + chars.as_str(),
+                None => String::default(),
+            }
+        };
 
-        let event = BattleEvent::from_str(&event).map_err(general_error)?;
-        Ok((event, modifier))
+        let event = parts.map(capitalize).join("");
+
+        // If the event does not exist, try it with the modifier added back.
+        match BattleEvent::from_str(&event).map_err(general_error) {
+            Ok(event) => Ok((event, modifier)),
+            Err(_) => {
+                let event = BattleEvent::from_str(&(capitalize(&modifier.to_string()) + &event))
+                    .map_err(general_error)?;
+                Ok((event, BattleEventModifier::None))
+            }
+        }
     }
 
     /// Creates a new [`ParsedEffect`].
-    pub fn new(callbacks: &Callbacks, condition: ConditionAttributes) -> Result<Self> {
+    pub fn new(
+        callbacks: &Callbacks,
+        condition: ConditionAttributes,
+        local_data: LocalData,
+    ) -> Result<Self> {
         let mut parsed = Self {
             callbacks: HashMap::default(),
             condition,
+            local_data,
         };
 
         for (name, callback) in callbacks {
@@ -174,6 +191,7 @@ impl ParsedEffect {
             }
         }
         self.condition.extend(other.condition);
+        self.local_data.extend(other.local_data);
     }
 
     /// Returns the [`ParsedCallback`] for the given event and modifier.
@@ -207,6 +225,11 @@ impl ParsedEffect {
     /// The associated condition attributes.
     pub fn condition(&self) -> &ConditionAttributes {
         &self.condition
+    }
+
+    /// The associated local data.
+    pub fn local_data(&self) -> &LocalData {
+        &self.local_data
     }
 }
 

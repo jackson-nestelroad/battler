@@ -104,7 +104,7 @@ fn teatime_fails_if_no_mons_have_berry() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Polteageist,player-1,1|name:Teatime|spread",
+            "move|mon:Polteageist,player-1,1|name:Teatime|noanim",
             "fail|mon:Polteageist,player-1,1",
             "residual",
             "turn|turn:3",

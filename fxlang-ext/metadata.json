@@ -42,6 +42,10 @@
       "description": "",
       "type": "Boolean"
     },
+    "is_true": {
+      "description": "",
+      "type": "Boolean"
+    },
     "is_undefined": {
       "description": "",
       "type": "Boolean"
@@ -289,6 +293,16 @@
         "type": "Boolean | Undefined",
         "only_applicable_to_active_move": true
       },
+      "force_try_hit_result": {
+        "description": "",
+        "type": "EventResult | Undefined",
+        "only_applicable_to_active_move": true
+      },
+      "ignore_evasion": {
+        "description": "",
+        "type": "Boolean | Undefined",
+        "only_applicable_to_active_move": true
+      },
       "tracks_target": {
         "description": "",
         "type": "Boolean | Undefined",
@@ -378,6 +392,14 @@
         "type": "UFraction"
       },
       "force_stab": {
+        "description": "",
+        "type": "Boolean"
+      },
+      "force_try_hit_result": {
+        "description": "",
+        "type": "EventResult"
+      },
+      "ignore_evasion": {
         "description": "",
         "type": "Boolean"
       },
@@ -552,7 +574,7 @@
       },
       "illusion": {
         "description": "",
-        "type": "Boolean"
+        "type": "String | Undefined"
       },
       "is_asleep": {
         "description": "",
@@ -719,6 +741,10 @@
         "description": "",
         "type": "Type | Undefined"
       },
+      "times_attacked": {
+        "description": "",
+        "type": "UFraction"
+      },
       "transformed": {
         "description": "",
         "type": "Boolean"
@@ -812,6 +838,10 @@
         "description": "",
         "type": "Boolean"
       },
+      "in_residual": {
+        "description": "",
+        "type": "Boolean"
+      },
       "last_move": {
         "description": "",
         "type": "Effect | Undefined"
@@ -883,6 +913,10 @@
         "description": "",
         "type": "List",
         "item_type": "Player"
+      },
+      "total_fainted": {
+        "description": "",
+        "type": "UFraction"
       }
     },
     "HitEffect": {
@@ -919,6 +953,10 @@
       "user": {
         "description": "",
         "type": "HitEffect | Undefined"
+      },
+      "source_effect": {
+        "description": "",
+        "type": "String"
       }
     },
     "BoostTable": {
@@ -1276,7 +1314,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_secondary_effect_to_move": {
@@ -1316,7 +1354,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_slot_condition": {
@@ -1342,7 +1380,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_sub_ability": {
@@ -1362,7 +1400,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_type": {
@@ -1382,7 +1420,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "add_volatile": {
@@ -1407,7 +1445,7 @@
           "description": "If set, the volatile effect is linked to the current effect."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "adjacent_allies": {
@@ -1600,7 +1638,7 @@
         {
           "name": "damage",
           "type": "UFraction",
-          "description": "The amount of damage dealt.",
+          "description": "The amount of damage healed.",
           "optional": false
         }
       ],
@@ -1619,7 +1657,7 @@
         }
       ],
       "flags": [],
-      "type": "Undefined",
+      "type": "UFraction",
       "returns_item_from_list": false
     },
     "base_species": {
@@ -1676,7 +1714,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "boost_table": {
@@ -2015,21 +2053,21 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "clear_terrain": {
       "description": "Clears the field terrain.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "clear_weather": {
       "description": "Clears the field weather.",
       "parameters": [],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "clone_active_move": {
@@ -2052,6 +2090,31 @@
       "type": "ActiveMove",
       "returns_item_from_list": false
     },
+    "copy_boosts": {
+      "description": "Copies boosts (and associated volatiles) from the target Mon.",
+      "parameters": [
+        {
+          "name": "mon",
+          "type": "Mon",
+          "description": "The Mon to copy boosts to.",
+          "optional": true
+        },
+        {
+          "name": "target",
+          "type": "Mon",
+          "description": "The Mon to copy boosts from.",
+          "optional": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "silent",
+          "description": "If set, no message is displayed."
+        }
+      ],
+      "type": "EventResult",
+      "returns_item_from_list": false
+    },
     "cure_status": {
       "description": "Cures a Mon's status condition.",
       "parameters": [
@@ -2063,7 +2126,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "damage": {
@@ -2326,7 +2389,7 @@
           "description": "If set, the consumption cannot be stopped."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "eat_given_item": {
@@ -2340,13 +2403,13 @@
         },
         {
           "name": "item",
-          "type": "String | Effect",
+          "type": "String",
           "description": "The item ID to eat.",
           "optional": false
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "effect_has_event_callback": {
@@ -2367,6 +2430,26 @@
       ],
       "flags": [],
       "type": "Boolean",
+      "returns_item_from_list": false
+    },
+    "effect_state_remove_key": {
+      "description": "Removes a key from an effect state object.",
+      "parameters": [
+        {
+          "name": "effect_state",
+          "type": "EffectState",
+          "description": "The effect state to modify.",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "description": "The key to remove.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Any",
       "returns_item_from_list": false
     },
     "effective_weather": {
@@ -2442,7 +2525,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "end_item": {
@@ -2470,7 +2553,21 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
+      "returns_item_from_list": false
+    },
+    "event_result": {
+      "description": "Converts a value to an EventResult.",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "Boolean | String",
+          "description": "Value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "faint": {
@@ -2533,7 +2630,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "forme_change": {
@@ -2562,7 +2659,7 @@
           "description": "If set with the `permanent` flag, the forme change will revert on exit."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "get_all_moves": {
@@ -2989,7 +3086,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "is_adjacent": {
@@ -3527,6 +3624,20 @@
       "type": "Undefined",
       "returns_item_from_list": false
     },
+    "lookup_base_species": {
+      "description": "Looks up a base species ID.",
+      "parameters": [
+        {
+          "name": "species",
+          "type": "String",
+          "description": "The species to query.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "String",
+      "returns_item_from_list": false
+    },
     "max": {
       "description": "Returns the maximum of two values.",
       "parameters": [
@@ -3766,7 +3877,7 @@
       "parameters": [
         {
           "name": "active_move",
-          "type": "Effect",
+          "type": "Effect | String",
           "description": "The active move.",
           "optional": false
         }
@@ -4088,7 +4199,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "prioritize_move": {
@@ -4177,6 +4288,20 @@
       "type": "Mon | Undefined",
       "returns_item_from_list": false
     },
+    "read_event_state_value": {
+      "description": "Reads an arbitrary value from the event state.",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "String",
+          "description": "Key.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Any",
+      "returns_item_from_list": false
+    },
     "received_attack": {
       "description": "Checks if a Mon received an attack this turn.",
       "parameters": [
@@ -4257,7 +4382,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "remove_side_condition": {
@@ -4277,7 +4402,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "remove_slot_condition": {
@@ -4303,7 +4428,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "remove_volatile": {
@@ -4323,7 +4448,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "request_mon_selection": {
@@ -4357,7 +4482,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "restore_pp": {
@@ -4490,6 +4615,20 @@
       "type": "Boolean | Undefined",
       "returns_item_from_list": false
     },
+    "run_event_on_mon_species": {
+      "description": "Runs an event on a Mon's species.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "String",
+          "description": "The event ID.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Boolean | Undefined",
+      "returns_item_from_list": false
+    },
     "run_event_on_mon_volatile": {
       "description": "Runs an event on a Mon's volatile effect.",
       "parameters": [
@@ -4537,6 +4676,26 @@
       "flags": [],
       "type": "unknown",
       "returns_item_from_list": true
+    },
+    "save_event_state_value": {
+      "description": "Saves an arbitrary value to the event state.",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "String",
+          "description": "Key.",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Any",
+          "description": "Value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
     },
     "save_move_hit_data_flag_against_target": {
       "description": "Saves a flag on a move's hit data for a target.",
@@ -4597,7 +4756,7 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_boost": {
@@ -4683,7 +4842,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_item": {
@@ -4703,7 +4862,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_needs_switch": {
@@ -4769,7 +4928,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_types": {
@@ -4789,7 +4948,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_terrain": {
@@ -4803,7 +4962,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_upgraded_to_max_move": {
@@ -4857,7 +5016,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "set_z_power_boosts": {
@@ -5047,7 +5206,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "swap_side_conditions": {
@@ -5073,7 +5232,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "switch_out": {
@@ -5110,7 +5269,7 @@
           "description": "If set, no message is displayed."
         }
       ],
-      "type": "String | Undefined",
+      "type": "String | EventResult",
       "returns_item_from_list": false
     },
     "target_location_of_mon": {
@@ -5150,7 +5309,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "type_chart_effectiveness": {
@@ -5353,7 +5512,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "use_item": {
@@ -5367,7 +5526,7 @@
         }
       ],
       "flags": [],
-      "type": "Boolean",
+      "type": "EventResult",
       "returns_item_from_list": false
     },
     "use_move": {
@@ -5442,7 +5601,7 @@
       "type": "String | Undefined",
       "returns_item_from_list": false
     },
-    "volatile_status_state": {
+    "volatile_status_effect_state": {
       "description": "Gets the effect state for a volatile status condition.",
       "parameters": [
         {
@@ -5684,6 +5843,16 @@
         },
         "volatile": {
           "type": "Effect",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "after_action": {
+      "description": "Runs after a primary battle action finishes.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
           "optional": false
         }
       },
@@ -6057,6 +6226,16 @@
       },
       "allows_custom_input_vars": false
     },
+    "after_switch_out": {
+      "description": "Runs after a Mon switches out.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "after_take_item": {
       "description": "Runs after a Mon has its item taken.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
@@ -6233,11 +6412,19 @@
       "allows_custom_input_vars": false
     },
     "before_turn": {
-      "description": "Runs before a turn of a battle.\n\nRuns on the effect and in the context of an applying effect on a Mon.",
+      "description": "Runs before a turn of a battle.\n\nRuns on the move and in the context of a move user.",
       "variables": {
-        "mon": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
           "type": "Mon",
           "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         }
       },
       "allows_custom_input_vars": false
@@ -6407,7 +6594,7 @@
           "type": "Mon",
           "optional": true
         },
-        "effect": {
+        "source_effect": {
           "type": "Effect",
           "optional": false
         }
@@ -6775,6 +6962,20 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "force_tera_type": {
+      "description": "Runs when determining if a Mon can terastallize.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        },
+        "type": {
+          "type": "Type",
           "optional": false
         }
       },
@@ -7199,6 +7400,28 @@
       },
       "allows_custom_input_vars": false
     },
+    "modify_def": {
+      "description": "Runs when calculating a Mon's Def stat.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
+          "optional": true
+        },
+        "def": {
+          "type": "UFraction",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "modify_duration": {
       "description": "Runs when calculating the duration of a condition applying to a Mon.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
@@ -7225,8 +7448,8 @@
       },
       "allows_custom_input_vars": false
     },
-    "modify_def": {
-      "description": "Runs when calculating a Mon's Def stat.\n\nRuns in the context of an applying effect on a Mon.",
+    "modify_effectiveness": {
+      "description": "Runs when determining the type effectiveness of a move.\n\nRuns in the context of an applying effect on a Mon.",
       "variables": {
         "target": {
           "type": "Mon",
@@ -7238,10 +7461,10 @@
         },
         "effect": {
           "type": "Effect",
-          "optional": true
+          "optional": false
         },
-        "def": {
-          "type": "UFraction",
+        "modifier": {
+          "type": "Fraction",
           "optional": false
         }
       },
@@ -7681,6 +7904,16 @@
       },
       "allows_custom_input_vars": false
     },
+    "overwrite_move": {
+      "description": "Runs when determining if a move should be overwritten.\n\nRuns in the context of a Mon.",
+      "variables": {
+        "mon": {
+          "type": "Mon",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
     "override_move": {
       "description": "Runs when a Mon uses a move, to override the chosen move.\n\nRuns in the context of a Mon.",
       "variables": {
@@ -7778,11 +8011,19 @@
       "allows_custom_input_vars": false
     },
     "priority_charge_move": {
-      "description": "Runs before at the start of the turn, when a move is charging for the turn.\n\nRuns in the context of a Mon.",
+      "description": "Runs before at the start of the turn, when a move is charging for the turn.\n\nRuns in the context of a move user.",
       "variables": {
-        "mon": {
+        "move": {
+          "type": "ActiveMove",
+          "optional": false
+        },
+        "user": {
           "type": "Mon",
           "optional": false
+        },
+        "target": {
+          "type": "Mon",
+          "optional": true
         }
       },
       "allows_custom_input_vars": false

@@ -5,11 +5,10 @@
     "effect": {
       "callbacks": {
         "on_ally_add_volatile": [
-          "if !([attract, disable, encore, healblock, taunt, torment] has $volatile.id):",
-          ["return"],
+          "require [attract, disable, encore, healblock, taunt, torment] has $volatile.id else return",
           "if $effect.is_move:",
           ["log_block: with_target"],
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -20,8 +19,7 @@
     "effect": {
       "callbacks": {
         "on_ally_try_boost": [
-          "if ($source.is_defined and $target == $source) or !func_call(has_type: $target grass):",
-          ["return"],
+          "require (!$source or $target != $source) and func_call(has_type: $target grass) else return",
           "$cleared = []",
           "foreach $boost in func_call(boostable_stats):",
           [
@@ -36,20 +34,20 @@
           "return $boosts"
         ],
         "on_ally_set_status": [
-          "if ($source.is_defined and $target == $source) or !func_call(has_type: $target grass) or $effect.id == yawn:",
-          ["return"],
+          "require !$source or $target != $source else return",
+          "require func_call(has_type: $target grass) else return",
+          "require $effect.id != yawn else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_block: with_target"],
-          "return false"
+          "return stopfail"
         ],
         "on_ally_add_volatile": [
-          "if ($source.is_defined and $target == $source) or !func_call(has_type: $target grass):",
-          ["return"],
+          "require (!$source or $target != $source) and func_call(has_type: $target grass) else return",
           "if $volatile.id == yawn:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_block: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }
@@ -70,14 +68,12 @@
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
-          "if $effect_state.activated:",
-          ["return"],
-          "if $move.effect_state.reflected or func_call(move_has_flag: $move future) or func_call(move_has_flag: $move callsmove):",
-          ["return"],
-          "if $move.type == none:",
-          ["return"],
-          "if !func_call(set_types: $user [$move.type]):",
-          ["return"],
+          "require !$effect_state.activated else return",
+          "require !$move.effect_state.reflected else return",
+          "require !func_call(move_has_flag: $move future) else return",
+          "require !func_call(move_has_flag: $move callsmove) else return",
+          "require $move.type != none else return",
+          "require func_call(set_types: $user [$move.type]) else return",
           "$effect_state.activated = true"
         ],
         "on_after_mega_evolution": ["$effect_state.activated = false"]
@@ -99,12 +95,17 @@
     "effect": {
       "callbacks": {
         "on_after_move_secondary_effects_user": [
-          "if $user.needs_switch or $move.damaged_targets.is_empty or $user.item.is_defined or func_call(has_volatile: $user gem) or $move.id == fling or $move.category == status:",
-          ["return"],
+          "require !$user.needs_switch else return",
+          "require !$move.damaged_targets.is_empty else return",
+          "require !$user.item else return",
+          "require !func_call(has_volatile: $user gem) else return",
+          "require $move.id != fling else return",
+          "require $move.category != status else return",
           "foreach $mon in func_call(speed_sort_mons: $move.damaged_targets):",
           [
             "if $mon == $user:",
             ["continue"],
+            "$item = undefined",
             "$item = func_call(take_item: $mon dry_run)",
             "if !$item or !func_call(set_item: $user $item dry_run):",
             ["continue"],
@@ -125,7 +126,7 @@
       "callbacks": {
         "on_try_hit": [
           "if $target != $source and func_call(move_has_flag: $move bullet):",
-          ["if $report:", ["log_immune: $target from_effect"], "return false"]
+          ["if $report:", ["log_immune: $target from_effect"], "return stopfail"]
         ]
       }
     }
@@ -136,8 +137,7 @@
     "effect": {
       "callbacks": {
         "on_after_each_boost": [
-          "if !$source or func_call(is_ally: $target $source):",
-          ["return"],
+          "require $source.is_defined and !func_call(is_ally: $target $source) else return",
           "if $value < 0:",
           ["boost: $target 'spa:2'"]
         ]
@@ -173,13 +173,16 @@
     "flags": ["Breakable"],
     "effect": {
       "callbacks": {
-        "on_ally_set_status": ["if $status.id == slp:", ["log_block: with_target", "return false"]],
+        "on_ally_set_status": [
+          "if $status.id == slp:",
+          ["log_block: with_target", "return stopfail"]
+        ],
         "on_ally_add_volatile": [
           "if $volatile.id == yawn:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_block: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }
@@ -199,10 +202,8 @@
     "effect": {
       "callbacks": {
         "on_use_move": [
-          "if func_call(base_species: $user) != aegislash:",
-          ["return"],
-          "if $move.category == status and $move.id != kingsshield:",
-          ["return"],
+          "require func_call(base_species: $user) == aegislash else return",
+          "require $move.category != status or $move.id == kingsshield else return",
           "$species = aegislashblade",
           "if $move.id == kingsshield:",
           ["$species = aegislash"],
@@ -252,15 +253,10 @@
     "effect": {
       "callbacks": {
         "on_ally_after_use_item": [
-          "if $target.needs_switch:",
-          ["return"],
+          "require !$target.needs_switch else return",
           "$source = $effect_state.target",
-          "$ally_item = func_call(take_item: $source dry_run)",
-          "if !$ally_item or !func_call(set_item: $target $ally_item dry_run):",
-          ["return"],
-          "$ally_item = func_call(take_item: $source)",
-          "if !$ally_item:",
-          ["return"],
+          "require !!assign($ally_item = func_call(take_item: $source dry_run)) and func_call(set_item: $target $ally_item dry_run) else return",
+          "require !!assign($ally_item = func_call(take_item: $source)) else return",
           "set_item: $target $ally_item"
         ]
       }
@@ -320,8 +316,13 @@
     "effect": {
       "callbacks": {
         "on_prepare_hit": [
-          "if $move.category == status or $move.multihit.is_defined or func_call(move_has_flag: $move noparentalbond) or func_call(move_has_flag: $move charge) or func_call(move_has_flag: $move future) or $move.spread_hit or $move.upgraded:",
-          ["return"],
+          "require $move.category != status else return",
+          "require !$move.multihit else return",
+          "require !func_call(move_has_flag: $move noparentalbond) else return",
+          "require !func_call(move_has_flag: $move charge) else return",
+          "require !func_call(move_has_flag: $move future) else return",
+          "require !$move.spread_hit else return",
+          "require !$move.upgraded else return",
           "$move.multihit = 2",
           "$move.effect_state.parental_bond = true"
         ],
@@ -374,13 +375,11 @@
         "on_start": ["$effect_state.active = true", "set_weather: heavyrainweather"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
-          "if $field.weather == heavyrainweather and !($strong_weathers has $weather):",
-          ["return false"]
+          "require $field.weather != heavyrainweather or $strong_weathers has $weather"
         ],
-        "on_clear_weather": ["if $effect_state.active:", ["return false"]],
+        "on_clear_weather": ["require !$effect_state.active"],
         "on_end": [
-          "if $field.weather != heavyrainweather:",
-          ["return"],
+          "require $field.weather == heavyrainweather else return",
           "$effect_state.active = false",
           "clear_weather"
         ]
@@ -395,13 +394,11 @@
         "on_start": ["$effect_state.active = true", "set_weather: extremelyharshsunlight"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
-          "if $field.weather == extremelyharshsunlight and !($strong_weathers has $weather):",
-          ["return false"]
+          "require $field.weather != extremelyharshsunlight or $strong_weathers has $weather"
         ],
-        "on_clear_weather": ["if $effect_state.active:", ["return false"]],
+        "on_clear_weather": ["require !$effect_state.active"],
         "on_end": [
-          "if $field.weather != extremelyharshsunlight:",
-          ["return"],
+          "require $field.weather == extremelyharshsunlight else return",
           "$effect_state.active = false",
           "clear_weather"
         ]
@@ -416,13 +413,11 @@
         "on_start": ["$effect_state.active = true", "set_weather: strongwinds"],
         "on_set_weather": [
           "$strong_weathers = [extremelyharshsunlight, heavyrainweather, strongwinds]",
-          "if $field.weather == strongwinds and !($strong_weathers has $weather):",
-          ["return false"]
+          "require $field.weather != strongwinds or $strong_weathers has $weather"
         ],
         "on_clear_weather": ["if $effect_state.active:", ["return false"]],
         "on_end": [
-          "if $field.weather != strongwinds:",
-          ["return"],
+          "require $field.weather == strongwinds else return",
           "$effect_state.active = false",
           "clear_weather"
         ]

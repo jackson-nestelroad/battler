@@ -22,14 +22,12 @@
       "callbacks": {
         "on_after_damage": [
           "# Move damage is handled together after secondary effects.",
-          "if $effect.is_move or $effect.id == confusion:",
-          ["return"],
+          "require !$effect.is_move and $effect.id != confusion else return",
           "$original_hp = $target.hp + $damage",
           "activate_ability: $original_hp"
         ],
         "on_after_move_secondary_effects_damage": [
-          "if $damage == 0:",
-          ["return"],
+          "require $damage != 0 else return",
           "activate_ability: $original_hp"
         ],
         "on_activate": {
@@ -37,10 +35,13 @@
             "parameters": ["original_hp"]
           },
           "program": [
-            "if !$original_hp or $battle.ending or !func_call(can_switch: $target.player):",
-            ["return"],
-            "if $target.hp == 0 or $target.force_switch or $target.needs_switch or $target.is_away_from_field:",
-            ["return"],
+            "require $original_hp.is_defined else return",
+            "require !$battle.ending else return",
+            "require func_call(can_switch: $target.player) else return",
+            "require $target.hp != 0 else return",
+            "require !$target.force_switch else return",
+            "require !$target.needs_switch else return",
+            "require !$target.is_away_from_field else return",
             "$half = $target.max_hp / 2",
             "if $original_hp > $half and $target.hp <= $half:",
             [
@@ -91,8 +92,7 @@
         "on_start": ["run_event_on_mon_ability: Residual"],
         "on_residual": [
           "$base_species = func_call(base_species: $target)",
-          "if $base_species != minior or $target.hp == 0:",
-          ["return"],
+          "require $base_species == minior and $target.hp != 0 else return",
           "if $target.hp > $target.max_hp / 2:",
           ["forme_change: $target miniormeteor"],
           "else:",
@@ -102,20 +102,18 @@
           ]
         ],
         "on_set_status": [
-          "if $target.species != miniormeteor:",
-          ["return"],
+          "require $target.species == miniormeteor else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: from_effect"],
-          "return false"
+          "return stopfail"
         ],
         "on_add_volatile": [
-          "if $target.species != miniormeteor:",
-          ["return"],
+          "require $target.species == miniormeteor else return",
           "if $volatile.id == yawn:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_immune: from_effect"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }
@@ -147,11 +145,10 @@
         "on_modify_atk": ["if $effect.is_defined and $effect.type == water:", ["return $atk * 2"]],
         "on_modify_spa": ["if $effect.is_defined and $effect.type == water:", ["return $spa * 2"]],
         "on_set_status": [
-          "if $status.id != brn:",
-          ["return"],
+          "require $status.id == brn else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: $target from_effect"],
-          "return false"
+          "return stopfail"
         ],
         "on_update": ["if $mon.status == brn:", ["log_activate: with_target", "cure_status: $mon"]]
       }
@@ -174,43 +171,9 @@
     "name": "Berserk",
     "flags": [],
     "effect": {
+      "delegates": ["condition:hpactivatedabilitybase"],
       "callbacks": {
-        "on_after_damage": [
-          "# Delay eating healing berries if we expect Berserk to activate for a single-hit move.",
-          "if $effect.is_move and !$effect.multihit and !$effect.ignore_all_secondary_effects:",
-          ["$effect_state.berserk_may_activate = true"]
-        ],
-        "on_after_move_secondary_effects_damage": [
-          "if $damage == 0:",
-          ["return"],
-          "activate_ability: $original_hp"
-        ],
-        "on_after_move": [
-          "# If secondary effects were suppressed, we still need to reset state.",
-          "$effect_state.berserk_may_activate = false"
-        ],
-        "on_try_eat_item": [
-          "# Healing items are consumed because HP dropped below a threshold.",
-          "# If we received damage as part of a single-hit move, don't consume the berry until Berserk has activated.",
-          "$healing_items = [aguavberry, enigmaberry, figyberry, iapapaberry, magoberry, sitrusberry, wikiberry, oranberry, berryjuice]",
-          "if $healing_items has $item.id and $effect_state.berserk_may_activate:",
-          ["return false"]
-        ],
-        "on_activate": {
-          "metadata": {
-            "parameters": ["original_hp"]
-          },
-          "program": [
-            "$effect_state.berserk_may_activate = false",
-            "if !$original_hp:",
-            ["return"],
-            "if $target.hp == 0:",
-            ["return"],
-            "$half = $target.max_hp / 2",
-            "if $original_hp > $half and $target.hp <= $half:",
-            ["boost: $target 'spa:1'"]
-          ]
-        }
+        "on_activate": ["boost: $target 'spa:1'"]
       }
     }
   },
@@ -291,8 +254,7 @@
         "on_start": ["run_event_on_mon_ability: Residual"],
         "on_residual": [
           "$base_species = func_call(base_species: $target)",
-          "if $base_species != wishiwashi or $target.hp == 0:",
-          ["return"],
+          "require $base_species == wishiwashi and $target.hp != 0 else return",
           "if $target.level >= 20 and $target.hp > $target.max_hp / 4:",
           ["forme_change: $target wishiwashischool"],
           "else:",
@@ -318,8 +280,7 @@
         "on_damage": {
           "priority": 1,
           "program": [
-            "if !$effect.is_move or !([mimikyu, mimikyutotemdisguised] has $target.species):",
-            ["return"],
+            "require $effect.is_move and [mimikyu, mimikyutotemdisguised] has $target.species else return",
             "activate_ability",
             "return 0"
           ]
@@ -332,17 +293,13 @@
           "damage: $target expr($target.base_max_hp / 8)"
         ],
         "on_critical_hit": [
-          "if !([mimikyu, mimikyutotemdisguised] has $target.species):",
-          ["return"],
-          "if func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute):",
-          ["return"],
-          "if func_call(check_move_immunity: $target $move):",
-          ["return"],
+          "require [mimikyu, mimikyutotemdisguised] has $target.species else return",
+          "require !func_call(move_hit_data_has_flag_against_target: $move $target hitsubstitute) else return",
+          "require !func_call(check_move_immunity: $target $move) else return",
           "return false"
         ],
         "on_effectiveness": [
-          "if $effect.category == status:",
-          ["return"],
+          "require $effect.category != status else return",
           "if func_call(run_event_on_mon_ability: CriticalHit use_source_effect no_forward) == false:",
           ["return 0"]
         ]
@@ -363,12 +320,11 @@
     "effect": {
       "callbacks": {
         "on_after_fainted": [
-          "if !$effect or !$effect.is_move:",
-          ["return"],
-          "if $mon.species != greninjabattlebond or $mon.hp == 0 or $mon.foe_side.mons_left == 0:",
-          ["return"],
-          "if $mon.effect_state.battle_bond_triggered:",
-          ["return"],
+          "require $effect.is_defined and $effect.is_move else return",
+          "require $mon.species == greninjabattlebond else return",
+          "require $mon.hp != 0 else return",
+          "require $mon.foe_side.mons_left != 0 else return",
+          "require !$mon.effect_state.battle_bond_triggered else return",
           "activate_ability"
         ],
         "on_activate": [
@@ -399,10 +355,8 @@
       "callbacks": {
         "on_residual": [
           "$base_species = func_call(base_species: $target)",
-          "if $base_species != zygarde or $target.hp == 0:",
-          ["return"],
-          "if $target.species == zygardecomplete or $target.hp > $target.max_hp / 2:",
-          ["return"],
+          "require $base_species == zygarde and $target.hp != 0 else return",
+          "require $target.species != zygardecomplete and $target.hp <= ($target.max_hp / 2) else return",
           "forme_change: $target zygardecomplete permanent revertible"
         ]
       }
@@ -447,11 +401,9 @@
         "on_damaging_hit": {
           "order": 1,
           "program": [
-            "if $target.hp > 0:",
-            ["return"],
+            "require $target.hp <= 0 else return",
             "$original_hp = func_call(move_target_original_hp: $move $target)",
-            "if !$original_hp:",
-            ["return"],
+            "require $original_hp.is_defined else return",
             "damage: $source func_call(undynamaxed_hp_calculation: $target $original_hp)"
           ]
         }
@@ -467,7 +419,7 @@
         "on_end": [
           "# If no other Mons have this ability on the field, remove the pseudo-weather.",
           "foreach $other in func_call(all_active_mons):",
-          ["if $other != $target and func_call(has_ability: $other $this.id):", ["return"]],
+          ["require $other == $target or !func_call(has_ability: $other $this.id) else return"],
           "remove_pseudo_weather: $this.id"
         ]
       }
@@ -475,8 +427,9 @@
     "condition": {
       "callbacks": {
         "on_after_move": [
-          "if !func_call(move_has_flag: $move dance) or !$success or $move.external:",
-          ["return"],
+          "require func_call(move_has_flag: $move dance) else return",
+          "require $success else return",
+          "require !$move.external else return",
           "$dancers = []",
           "foreach $mon in func_call(reverse: func_call(all_active_mons_in_speed_order_and_ability_effect_order)):",
           [
@@ -488,10 +441,8 @@
           "foreach $dancer in $dancers:",
           [
             "faint_messages",
-            "if $battle.ending:",
-            ["return"],
-            "if $dancer.fainted:",
-            ["return"],
+            "require !$battle.ending else return",
+            "require !$dancer.fainted else return",
             "log_activate: with_target $dancer",
             "if func_call(is_ally: $dancer $user):",
             ["$move_target = $target"],
@@ -540,14 +491,13 @@
         "on_foe_try_move": [
           "$target_all_exceptions = [perishsong, flowershield, rototiller]",
           "$target_field_exceptions = [haze]",
-          "if $move.target == foeside or ($move.target == all and !($target_all_exceptions has $move.id)) or ($move.target == field and $target_field_exceptions has $move.id):",
-          ["return"],
-          "if $move.priority == 0:",
-          ["return"],
-          "if func_call(is_ally: $user $effect_state.target):",
-          ["return"],
+          "require $move.target != foeside else return",
+          "require $move.target != all or $target_all_exceptions has $move.id else return",
+          "require $move.target != field or !($target_field_exceptions has $move.id) else return",
+          "require $move.priority != 0 else return",
+          "require !func_call(is_ally: $user $effect_state.target) else return",
           "log_cant: with_source use_effect_state_target_as_source",
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -579,10 +529,8 @@
     "effect": {
       "callbacks": {
         "on_ally_faint": [
-          "if $effect_state.target.hp == 0:",
-          ["return"],
-          "if func_call(ability_has_flag: $target.ability noreceiver):",
-          ["return"],
+          "require $effect_state.target.hp != 0 else return",
+          "require !func_call(ability_has_flag: $target.ability noreceiver) else return",
           "set_ability: $effect_state.target $target.ability"
         ]
       }
@@ -601,8 +549,7 @@
     "effect": {
       "callbacks": {
         "on_after_fainted": [
-          "if !$effect or !$effect.is_move:",
-          ["return"],
+          "require $effect.is_defined and $effect.is_move else return",
           "boost: $mon str('{}:{}', func_call(best_stat: $mon unboosted unmodified), $count)"
         ]
       }
@@ -638,15 +585,13 @@
         "on_update": [
           "# Ensure Silvally is the correct forme.",
           "# Note that when team validation is used, Silvally is forced into the correct forme.",
-          "if func_call(base_species: $mon) != silvally or !$mon.item:",
-          ["return"],
+          "require func_call(base_species: $mon) == silvally and $mon.item.is_defined else return",
           "$type = normal",
           "$data = func_call(special_item_data: $mon.item)",
           "if $data.is_defined and $data.multi_attack.is_defined:",
           ["$type = $data.multi_attack.type.to_string"],
           "$species = func_call(get_species: str('silvally-{}', $type))",
-          "if !$species:",
-          ["return"],
+          "require $species.is_defined else return",
           "if $mon.species != $species.id:",
           ["forme_change: $mon $species.id permanent"]
         ],

@@ -50,6 +50,9 @@ pub enum MoveTarget {
     /// All active Mons on the user's team.
     #[string = "Allies"]
     Allies,
+    /// All allies (excluding the user).
+    #[string = "AlliesExceptUser"]
+    AlliesExceptUser,
     /// The user's side.
     #[string = "AllySide"]
     AllySide,
@@ -152,7 +155,9 @@ impl MoveTarget {
         match self {
             Self::AdjacentAlly
             | Self::AdjacentAllyOrUser
+            | Self::AllAdjacentAllies
             | Self::Allies
+            | Self::AlliesExceptUser
             | Self::AllySide
             | Self::AllyTeam => false,
             _ => true,
@@ -166,6 +171,7 @@ impl MoveTarget {
             | Self::AdjacentAllyOrUser
             | Self::AdjacentFoe
             | Self::AllAdjacent
+            | Self::AllAdjacentAllies
             | Self::AllAdjacentFoes
             | Self::Normal
             | Self::RandomNormal => true,
@@ -214,8 +220,8 @@ impl MoveTarget {
             Self::AdjacentFoe | Self::AllAdjacentFoes => is_adjacent && is_foe,
             Self::All => true,
             Self::AllAdjacent => is_adjacent,
-            Self::Allies => !is_foe && !is_self,
-            Self::AllySide | Self::AllyTeam => !is_foe,
+            Self::Allies | Self::AllySide | Self::AllyTeam => !is_foe,
+            Self::AlliesExceptUser => !is_foe && !is_self,
             Self::Any => !is_self,
             Self::Field => true,
             Self::FoeSide => is_foe,

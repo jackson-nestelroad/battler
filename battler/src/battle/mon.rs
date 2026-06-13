@@ -513,6 +513,7 @@ pub struct MonEffectCache {
     pub effective_types: Option<Vec<Type>>,
     pub effective_types_no_added_type: Option<Vec<Type>>,
     pub effective_types_before_forced_types: Option<Vec<Type>>,
+    pub effective_tera_type: Option<Type>,
 
     pub effective_ability: Option<Option<EffectiveAbility>>,
     pub effective_item: Option<Option<Id>>,
@@ -610,6 +611,10 @@ pub struct MonVolatileState {
     pub foes_fought_while_active: HashSet<MonHandle>,
     /// Attacks received by the Mon.
     pub received_attacks: Vec<ReceivedAttackEntry>,
+    /// Total times attacked.
+    ///
+    /// May be overwritten from the Mon's real value.
+    pub times_attacked: u64,
 
     /// A Mon needs to be selected by the player.
     pub select: Option<SelectReason>,
@@ -682,6 +687,7 @@ pub struct Mon {
     pub exited: Option<MonExitType>,
     pub newly_switched: bool,
     pub ate_item: bool,
+    pub times_attacked: u64,
 
     pub next_turn_state: MonNextTurnState,
     pub switch_state: MonSwitchState,
@@ -816,6 +822,7 @@ impl Mon {
             exited: None,
             newly_switched: false,
             ate_item: false,
+            times_attacked: 0,
             next_turn_state: MonNextTurnState::default(),
             switch_state: MonSwitchState::default(),
             volatile_state: MonVolatileState::default(),
@@ -1270,6 +1277,16 @@ impl Mon {
         };
 
         Ok(diff <= reach)
+    }
+
+    /// Creates an iterator over all active allies.
+    pub fn active_allies<'m>(context: &'m mut MonContext) -> impl Iterator<Item = MonHandle> + 'm {
+        let side = context.side().index;
+        let mon_handle = context.mon_handle();
+        context
+            .battle()
+            .active_mon_handles_on_side(side)
+            .filter(move |mon| *mon != mon_handle)
     }
 
     /// Creates an iterator over all active allies and this Mon.
@@ -1892,6 +1909,7 @@ impl Mon {
             switched_out_this_turn: false,
             foes_fought_while_active: HashSet::default(),
             received_attacks: Vec::default(),
+            times_attacked: context.mon().times_attacked,
             select: None,
             effect_cache: MonEffectCache::default(),
         })
@@ -2137,16 +2155,10 @@ impl Mon {
 
     /// Looks up the base species of this Mon's base species.
     pub fn base_species_of_species(context: &MonContext) -> Result<Id> {
-        Ok(Id::from(
-            context
-                .battle()
-                .dex
-                .species
-                .get_by_id(&context.mon().base_species)?
-                .data
-                .base_species
-                .as_str(),
-        ))
+        CoreBattle::base_species_of_species(
+            context.as_battle_context(),
+            &context.mon().base_species,
+        )
     }
 
     /// Overwrites the move slot at the given index.
@@ -2659,6 +2671,7 @@ impl Mon {
         }
 
         core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::DisableMove);
+        core_battle_effects::run_event::<_, ()>(context, fxlang::BattleEvent::OverwriteMove);
 
         for move_slot in context.mon_mut().volatile_state.move_slots.clone() {
             core_battle_effects::run_effect_event::<_, ()>(

@@ -14,6 +14,7 @@ use anyhow::{
 };
 use battler_data::{
     Fraction,
+    Id,
     Identifiable,
     ZPower,
 };
@@ -156,6 +157,9 @@ where
                 }
                 "is_empty" => {
                     value = ValueRef::Boolean(value.is_empty());
+                }
+                "is_true" => {
+                    value = ValueRef::Boolean(value.boolean_coercion());
                 }
                 "is_undefined" => {
                     value = ValueRef::Boolean(value.is_undefined());
@@ -715,9 +719,14 @@ where
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
                             "hp" => ValueRef::UFraction(context.mon(mon_handle)?.hp.into()),
-                            "illusion" => ValueRef::Boolean(
-                                context.mon(mon_handle)?.volatile_state.illusion.is_some(),
-                            ),
+                            "illusion" => context
+                                .mon(mon_handle)?
+                                .volatile_state
+                                .illusion
+                                .as_ref()
+                                .map(|illusion| Id::from(illusion.species.as_str()))
+                                .map(|val| ValueRef::TempString(val.to_string()))
+                                .unwrap_or(ValueRef::Undefined),
                             "is_asleep" => ValueRef::Boolean(mon_states::is_asleep(
                                 &mut context.mon_context(mon_handle)?,
                             )),
@@ -806,7 +815,7 @@ where
                                     .mon(mon_handle)?
                                     .volatile_state
                                     .move_last_turn_outcome
-                                    .map(|outcome| outcome.success())
+                                    .map(|outcome| outcome.succeeded())
                                     .unwrap_or(false),
                             ),
                             "move_slots" => ValueRef::TempList(
@@ -828,7 +837,7 @@ where
                                     .mon(mon_handle)?
                                     .volatile_state
                                     .move_this_turn_outcome
-                                    .map(|outcome| !outcome.success())
+                                    .map(|outcome| !outcome.succeeded())
                                     .unwrap_or(false),
                             ),
                             "moved_this_turn" => ValueRef::Boolean(
@@ -919,6 +928,13 @@ where
                                 .terastallized
                                 .map(|val| ValueRef::Type(val))
                                 .unwrap_or(ValueRef::Undefined),
+                            "times_attacked" => ValueRef::UFraction(
+                                context
+                                    .mon(mon_handle)?
+                                    .volatile_state
+                                    .times_attacked
+                                    .into(),
+                            ),
                             "transformed" => ValueRef::Boolean(
                                 context.mon(mon_handle)?.volatile_state.transformed,
                             ),
@@ -1011,6 +1027,9 @@ where
                         value = match *member {
                             "ending" => {
                                 ValueRef::Boolean(context.battle_context().battle().ending())
+                            }
+                            "in_residual" => {
+                                ValueRef::Boolean(context.battle_context().battle().in_residual())
                             }
                             "last_move" => context
                                 .battle_context()
@@ -1146,6 +1165,14 @@ where
                                         ValueRefToStoredValue::new(None, ValueRef::Player(player))
                                     })
                                     .collect(),
+                            ),
+                            "total_fainted" => ValueRef::UFraction(
+                                context
+                                    .battle_context_mut()
+                                    .side_context(side)?
+                                    .side()
+                                    .total_fainted
+                                    .into(),
                             ),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
@@ -1431,6 +1458,11 @@ where
                                 .data
                                 .force_stab,
                         ),
+                        "force_try_hit_result" => ValueRefMut::OptionalEventResult(
+                            &mut context
+                                .active_move_mut(*active_move_handle)?
+                                .force_try_hit_result,
+                        ),
                         "hit_effect" => ValueRefMut::OptionalHitEffect(
                             &mut context
                                 .active_move_mut(*active_move_handle)?
@@ -1441,6 +1473,12 @@ where
                             &mut context
                                 .active_move_mut(*active_move_handle)?
                                 .ignore_all_secondary_effects,
+                        ),
+                        "ignore_evasion" => ValueRefMut::Boolean(
+                            &mut context
+                                .active_move_mut(*active_move_handle)?
+                                .data
+                                .ignore_evasion,
                         ),
                         "multiaccuracy" => ValueRefMut::Boolean(
                             &mut context
@@ -1526,6 +1564,9 @@ where
                 ValueRefMut::SecondaryHitEffect(secondary_effect) => {
                     value = match *member {
                         "chance" => ValueRefMut::OptionalFractionU16(&mut secondary_effect.chance),
+                        "source_effect" => {
+                            ValueRefMut::OptionalString(&mut secondary_effect.source_effect)
+                        }
                         "target" => ValueRefMut::OptionalHitEffect(&mut secondary_effect.target),
                         "user" => ValueRefMut::OptionalHitEffect(&mut secondary_effect.user),
                         _ => return Err(Self::bad_member_or_mutable_access(member, value_type)),

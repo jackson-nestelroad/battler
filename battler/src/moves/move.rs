@@ -25,7 +25,10 @@ use hashbrown::{
 };
 
 use crate::{
-    battle::MonHandle,
+    battle::{
+        EventResult,
+        MonHandle,
+    },
     effect::fxlang,
     general_error,
 };
@@ -226,6 +229,10 @@ pub struct Move {
     pub ignore_all_secondary_effects: bool,
     /// The index of the last move log associated with this move.
     pub last_move_log: Option<usize>,
+    /// Was the move failure logged?
+    pub fail_reported: bool,
+    /// Forced result of any new `TryHit` event.
+    pub force_try_hit_result: Option<EventResult>,
 
     /// Original HPs of all targets before applying move hits.
     pub target_original_hps: HashMap<MonHandle, u16>,
@@ -281,6 +288,8 @@ impl Move {
             upgraded: None,
             ignore_all_secondary_effects: false,
             last_move_log: None,
+            fail_reported: false,
+            force_try_hit_result: None,
             target_original_hps: HashMap::default(),
             effect_state: fxlang::EffectState::default(),
             unlinked,
@@ -389,6 +398,21 @@ impl Move {
                 .data
                 .user
                 .as_mut(),
+        }
+    }
+
+    /// Returns the source effect for the hit effect.
+    pub fn hit_effect_source_effect(&self, hit_effect_type: MoveHitEffectType) -> Option<&str> {
+        match hit_effect_type {
+            MoveHitEffectType::PrimaryEffect => None,
+            MoveHitEffectType::SecondaryEffect(target, hit, index) => self
+                .secondary_effects
+                .get(&(target, hit))?
+                .get(index)?
+                .data
+                .source_effect
+                .as_ref()
+                .map(|s| s.as_str()),
         }
     }
 

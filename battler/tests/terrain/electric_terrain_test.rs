@@ -109,7 +109,6 @@ fn electric_terrain_fails_yawn() {
             "continue",
             "move|mon:Furfrou,player-1,1|name:Yawn|noanim",
             "activate|mon:Furfrou,player-2,1|move:Electric Terrain",
-            "fail|mon:Furfrou,player-1,1",
             "residual",
             "turn|turn:3"
         ]"#,
@@ -137,7 +136,6 @@ fn electric_terrain_prevents_sleep() {
             "continue",
             "move|mon:Furfrou,player-1,1|name:Sleep Powder|noanim",
             "activate|mon:Furfrou,player-2,1|move:Electric Terrain",
-            "fail|mon:Furfrou,player-1,1",
             "residual",
             "turn|turn:3"
         ]"#,

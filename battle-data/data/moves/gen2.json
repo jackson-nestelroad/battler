@@ -31,10 +31,10 @@
       "callbacks": {
         "on_hit": [
           "$last_move = $target.last_move",
-          "if !$last_move or $source.transformed or func_call(has_move: $source $last_move.id):",
-          ["return false"],
-          "if func_call(move_has_flag: $last_move nosketch) or $last_move.upgraded:",
-          ["return false"],
+          "require $last_move.is_defined",
+          "require !$source.transformed",
+          "require !func_call(has_move: $source $last_move.id)",
+          "require !func_call(move_has_flag: $last_move nosketch) and !$last_move.upgraded",
           "$sketch_index = func_call(move_slot_index: $source $this.id)",
           "overwrite_move_slot: $source $sketch_index func_call(move_slot: $last_move) override_base_slot",
           "log_activate: with_target use_source str('newmove:{}', $last_move.name)"
@@ -82,13 +82,9 @@
     "effect": {
       "callbacks": {
         "on_after_hit": [
-          "if $source.item.is_defined:",
-          ["return"],
-          "$item = func_call(take_item: $target)",
-          "if !$item:",
-          ["return"],
-          "if !func_call(set_item: $source $item):",
-          ["return"]
+          "require !$source.item else return",
+          "require !!assign($item = func_call(take_item: $target)) else return",
+          "require func_call(set_item: $source $item) else return"
         ]
       }
     }
@@ -151,7 +147,7 @@
     "condition": {
       "no_copy": true,
       "callbacks": {
-        "on_start": ["if !$target.is_asleep:", ["return false"], "log_start"],
+        "on_start": ["require $target.is_asleep", "log_start"],
         "on_residual": ["damage: $target expr($target.base_max_hp / 4)"],
         "on_after_cure_status": ["remove_volatile: $target $this.id"]
       }
@@ -225,8 +221,7 @@
           "if func_call(has_type: $source ghost):",
           ["$effect_state.apply_self_damage = true", "return"],
           "$effect_state.apply_self_damage = false",
-          "if func_call(has_volatile: $target $this.id):",
-          ["return false"],
+          "require !func_call(has_volatile: $target $this.id)",
           "$move.hit_effect.volatile_status = undefined",
           "$move.user_effect = func_call(hit_effect)",
           "$move.user_effect.boosts = func_call(boost_table: 'spe:-1' 'atk:1' 'def:1')"
@@ -289,8 +284,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if !$target.last_move_used:",
-          ["return false"],
+          "require $target.last_move_used.is_defined",
           "$types = []",
           "$last_type = $target.last_move_used.type",
           "foreach $type in func_call(all_types):",
@@ -300,8 +294,7 @@
             "if func_call(type_is_weak_against: $last_type $type) or func_call(type_has_no_effect_against: $last_type $type):",
             ["$types = func_call(append: $types $type)"]
           ],
-          "if $types.is_empty:",
-          ["return false"],
+          "require !$types.is_empty",
           "$type = func_call(sample: $types)",
           "return func_call(set_types: $source [$type])"
         ]
@@ -497,8 +490,9 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if $target.hp <= expr($target.max_hp / 2) or $target.boosts.atk >= 6 or $target.max_hp == 1:",
-          ["return false"],
+          "require $target.hp > expr($target.max_hp / 2)",
+          "require $target.boosts.atk < 6",
+          "require $target.max_hp != 1",
           "direct_damage: $target expr($target.max_hp / 2)",
           "boost: $target 'atk:12'"
         ]
@@ -585,15 +579,13 @@
           "log_side_start: str('count:{}', $effect_state.layers)"
         ],
         "on_side_restart": [
-          "if $effect_state.layers >= 3:",
-          ["return false"],
+          "require $effect_state.layers < 3",
           "$effect_state.layers = $effect_state.layers + 1",
           "log_side_start: str('count:{}', $effect_state.layers)",
           "return true"
         ],
         "on_switch_in": [
-          "if !$mon.is_grounded or $mon.is_immune_to_entry_hazards:",
-          ["return"],
+          "require $mon.is_grounded and !$mon.is_immune_to_entry_hazards else return",
           "if $effect_state.layers == 1:",
           ["$den = 8"],
           "else if $effect_state.layers == 2:",
@@ -650,7 +642,7 @@
           "if func_call(has_type: $mon ghost) and ($type == normal or $type == fighting):",
           ["return false"]
         ],
-        "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"]]
+        "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"], "return $boosts"]
       }
     }
   },
@@ -677,14 +669,16 @@
       "callbacks": {
         "on_start": ["log_single_move: with_target"],
         "on_faint": [
-          "if !$source or !$effect or func_call(is_ally: $target $source) or $source.dynamaxed:",
-          ["return"],
+          "require $source.is_defined else return",
+          "require $effect.is_defined else return",
+          "require !func_call(is_ally: $target $source) else return",
+          "require !$source.dynamaxed else return",
           "if $effect.is_move and !func_call(move_has_flag: $effect future):",
           ["log_activate: with_target", "faint: $source"]
         ],
         "on_before_move": {
           "priority": 999,
-          "program": ["if $move.id == $this.id:", ["return"], "remove_volatile: $user $this.id"]
+          "program": ["require $move.id != $this.id else return", "remove_volatile: $user $this.id"]
         }
       }
     }
@@ -705,7 +699,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["if func_call(has_volatile: $target $this.id):", ["return false"]],
+        "on_try_hit": ["require !func_call(has_volatile: $target $this.id)"],
         "on_hit": [
           "if !$effect_state.activate:",
           ["$effect_state.activate = true", "log_field_activate"]
@@ -918,7 +912,7 @@
       "callbacks": {
         "on_move_base_power": [
           "$base_power = $move.base_power",
-          "$rollout_state = func_call(volatile_status_state: $source $this.id)",
+          "$rollout_state = func_call(volatile_status_effect_state: $source $this.id)",
           "if $rollout_state.is_defined:",
           [
             "$base_power = $base_power * 2 ^ $rollout_state.hit_count",
@@ -1030,7 +1024,7 @@
       "callbacks": {
         "on_move_base_power": [
           "add_volatile: $source $this.id",
-          "$volatile_state = func_call(volatile_status_state: $source $this.id)",
+          "$volatile_state = func_call(volatile_status_effect_state: $source $this.id)",
           "return func_call(clamp_number: expr($move.base_power * $volatile_state.multiplier) 1 160)"
         ]
       }
@@ -1103,8 +1097,7 @@
       "no_copy": true,
       "callbacks": {
         "on_start": [
-          "if !($target.gender == m and $source.gender == f) and !($target.gender == f and $source.gender == m):",
-          ["return false"],
+          "require ($target.gender == m and $source.gender == f) or ($target.gender == f and $source.gender == m)",
           "if !$source_effect.is_move:",
           ["log_start: with_source_effect"],
           "else:",
@@ -1120,7 +1113,7 @@
           "program": [
             "log_activate: with_target with_source use_effect_state_source_as_source",
             "if func_call(chance: 1 2):",
-            ["log_cant", "return false"]
+            ["log_cant", "return stopfail"]
           ]
         }
       }
@@ -1159,8 +1152,7 @@
             ["$moves = func_call(append: $moves $potential_move.id)"]
           ],
           "$random_move = func_call(sample: $moves)",
-          "if !$random_move:",
-          ["return false"],
+          "require $random_move.is_defined",
           "use_move: $source $random_move"
         ]
       }
@@ -1278,24 +1270,18 @@
         "on_side_start": ["log_side_start"],
         "on_side_end": ["log_side_end"],
         "on_set_status": [
-          "if $effect.id == yawn:",
-          ["return"],
-          "if $effect.is_move and $effect.effect_state.infiltrates:",
-          ["return"],
-          "if $target == $source:",
-          ["return"],
+          "require $effect.id != yawn else return",
+          "require !$effect.is_move or !$effect.effect_state.infiltrates else return",
+          "require $target != $source else return",
           "log_activate: with_target",
-          "return false"
+          "return stopfail"
         ],
         "on_add_volatile": [
-          "if $effect.is_move and $effect.effect_state.infiltrates:",
-          ["return"],
-          "if $target == $source:",
-          ["return"],
-          "if $volatile.id != confusion and $volatile.id != yawn:",
-          ["return"],
+          "require !$effect.is_move or !$effect.effect_state.infiltrates else return",
+          "require $target != $source else return",
+          "require $volatile.id == confusion or $volatile.id == yawn else return",
           "log_activate: with_target",
-          "return false"
+          "return stopfail"
         ]
       }
     }
@@ -1437,8 +1423,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if !func_call(can_switch: $target.player):",
-          ["return false"],
+          "require func_call(can_switch: $target.player)",
           "# Avoids Pursuit.",
           "$target.skip_before_switch_out = true"
         ]
@@ -1466,20 +1451,16 @@
       "no_copy": true,
       "callbacks": {
         "on_start": [
-          "if !$target.last_move:",
-          ["return false"],
+          "require $target.last_move.is_defined",
           "$last_move_id = $target.last_move.id",
           "if $target.last_move.upgraded and $target.last_move.upgraded_base_move.is_defined:",
           ["$last_move_id = $last_move.upgraded_base_move"],
           "$last_move = func_call(get_move: $last_move_id)",
-          "if !$last_move or func_call(move_has_flag: $last_move failencore):",
-          ["return false"],
+          "require $last_move.is_defined and !func_call(move_has_flag: $last_move failencore)",
           "$index = func_call(move_slot_index: $target $last_move.id)",
-          "if $index.is_undefined:",
-          ["return false"],
+          "require $index.is_defined",
           "$move_slot = func_call(move_slot_at_index: $target $index)",
-          "if !$move_slot or $move_slot.pp == 0:",
-          ["return false"],
+          "require $move_slot.is_defined and $move_slot.pp != 0",
           "$effect_state.move = $last_move.id",
           "log_start",
           "if func_call(will_move_this_turn: $target):",
@@ -1495,8 +1476,7 @@
         ],
         "on_end": ["log_end"],
         "on_disable_move": [
-          "if !func_call(has_move: $mon $effect_state.move):",
-          ["return"],
+          "require func_call(has_move: $mon $effect_state.move) else return",
           "foreach $move_slot in $mon.move_slots:",
           ["if $move_slot.id != $effect_state.move:", ["disable_move: $mon $move_slot.id"]]
         ]
@@ -1519,12 +1499,12 @@
           ["return $move.base_power * 2"]
         ],
         "on_before_turn": [
-          "$side = $mon.foe_side",
+          "$side = $user.foe_side",
           "add_side_condition: $side $this.id",
           "$pursuit_state = func_call(side_condition_effect_state: $side $this.id)",
           "if !$pursuit_state.sources:",
           ["$pursuit_state.sources = []"],
-          "$pursuit_state.sources = func_call(append: $pursuit_state.sources $mon)"
+          "$pursuit_state.sources = func_call(append: $pursuit_state.sources $user)"
         ],
         "on_use_move": [
           "if $target.being_called_back or $target.needs_switch:",
@@ -1532,8 +1512,7 @@
         ],
         "on_try_hit": [
           "$pursuit_state = func_call(side_condition_effect_state: $target.side $this.id)",
-          "if !$pursuit_state or !$pursuit_state.sources:",
-          ["return"],
+          "require $pursuit_state.is_defined and $pursuit_state.sources.is_defined else return",
           "$pursuit_state.sources = func_call(remove: $pursuit_state.sources $source)"
         ]
       }
@@ -1570,11 +1549,10 @@
       "callbacks": {
         "on_after_substitute_damage": ["run_event_on_move: AfterHit"],
         "on_after_hit": [
-          "if $source.hp == 0:",
-          ["return"],
+          "require $source.hp != 0 else return",
           "remove_volatile: $source partiallytrapped",
           "remove_volatile: $source leechseed",
-          "$side_conditions = [spikes, toxicspikes, stealthrock, stickyweb]",
+          "$side_conditions = [spikes, toxicspikes, stealthrock, stickyweb, gmaxsteelsurge]",
           "foreach $condition in $side_conditions:",
           ["remove_side_condition: $source.side $condition"]
         ]
@@ -1672,8 +1650,7 @@
           ["$factor = 2/3"],
           "else:",
           ["$factor = 1/4"],
-          "if !func_call(heal: $target expr($target.max_hp * $factor) primary_effect):",
-          ["return stop"]
+          "require func_call(heal: $target expr($target.max_hp * $factor) primary_effect) else return stop"
         ]
       }
     }
@@ -1817,14 +1794,15 @@
     "flags": ["FailMeFirst", "NoAssist", "NoMetronome", "Protect"],
     "effect": {
       "callbacks": {
-        "on_before_turn": ["add_volatile: $mon $this.id"],
+        "on_before_turn": ["add_volatile: $user $this.id"],
         "on_try_use_move": [
-          "$effect_state = func_call(volatile_status_state: $user $this.id)",
-          "if !$effect_state or !$effect_state.target_side or $effect_state.target_position.is_undefined:",
-          ["return false"]
+          "$effect_state = func_call(volatile_status_effect_state: $user $this.id)",
+          "require $effect_state.is_defined",
+          "require $effect_state.target_side.is_defined",
+          "require $effect_state.target_position.is_defined"
         ],
         "on_move_damage": [
-          "$effect_state = func_call(volatile_status_state: $source $this.id)",
+          "$effect_state = func_call(volatile_status_effect_state: $source $this.id)",
           "if !$effect_state:",
           ["return 0"],
           "return $effect_state.damage"
@@ -1837,10 +1815,8 @@
       "callbacks": {
         "on_start": ["$effect_state.damage = 0"],
         "on_redirect_target": [
-          "if $move.id != counter:",
-          ["return"],
-          "if !$effect_state.target_side or $effect_state.target_position.is_undefined:",
-          ["return"],
+          "require $move.id == counter else return",
+          "require $effect_state.target_side.is_defined and $effect_state.target_position.is_defined else return",
           "return func_call(mon_in_position: $effect_state.target_side $effect_state.target_position)"
         ],
         "on_damaging_hit": [
@@ -1950,8 +1926,7 @@
       "callbacks": {
         "on_ignore_immunity": ["return true"],
         "on_try_move": [
-          "if !func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source):",
-          ["return false"],
+          "require func_call(add_slot_condition: $target.side $target.position futuremove use_target_as_source)",
           "return stop"
         ]
       },

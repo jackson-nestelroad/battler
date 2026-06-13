@@ -302,6 +302,7 @@ pub struct CoreBattle<'d> {
     mid_turn: bool,
     started: bool,
     in_pre_battle: bool,
+    in_residual: bool,
     ending: bool,
     ended: bool,
     next_effect_order: u32,
@@ -391,6 +392,7 @@ impl<'d> CoreBattle<'d> {
             mid_turn: false,
             started: false,
             in_pre_battle: false,
+            in_residual: false,
             ending: false,
             ended: false,
             next_effect_order: 0,
@@ -780,6 +782,10 @@ impl<'d> CoreBattle<'d> {
 
     pub fn started(&self) -> bool {
         self.started
+    }
+
+    pub fn in_residual(&self) -> bool {
+        self.in_residual
     }
 
     pub fn ending(&self) -> bool {
@@ -1411,35 +1417,36 @@ impl<'d> CoreBattle<'d> {
             }
             Action::BeforeTurnMove(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || !context.mon().active {
+                let mut context =
+                    context.active_move_context(action.active_move_handle.wrap_expectation(
+                        "expected before turn move action to have an active move",
+                    )?)?;
+                if !context.mon().active {
                     return Ok(());
                 }
-                let mut context = context.applying_effect_context(
-                    EffectHandle::InactiveMove(action.id.clone()),
-                    None,
-                    None,
-                )?;
-                core_battle_effects::run_effect_event::<_, ()>(
+                core_battle_effects::run_active_move_event::<()>(
                     &mut context,
                     fxlang::BattleEvent::BeforeTurn,
+                    core_battle_effects::MoveTargetForEvent::User,
                 );
                 core_battle_effects::run_event::<_, ()>(
-                    &mut context,
+                    &mut context.user_applying_effect_context(None)?,
                     fxlang::BattleEvent::BeforeTurn,
                 );
             }
             Action::PriorityChargeMove(action) => {
                 let mut context = context.mon_context(action.mon_action.mon)?;
-                if !context.mon().active || !context.mon().active {
+                let mut context =
+                    context.active_move_context(action.active_move_handle.wrap_expectation(
+                        "expected before turn move action to have an active move",
+                    )?)?;
+                if !context.mon().active {
                     return Ok(());
                 }
-                core_battle_effects::run_effect_event::<_, ()>(
-                    &mut context.applying_effect_context(
-                        EffectHandle::InactiveMove(action.id.clone()),
-                        None,
-                        None,
-                    )?,
+                core_battle_effects::run_active_move_event::<()>(
+                    &mut context,
                     fxlang::BattleEvent::PriorityChargeMove,
+                    core_battle_effects::MoveTargetForEvent::User,
                 );
             }
             Action::MegaEvo(action) => {
@@ -1480,6 +1487,7 @@ impl<'d> CoreBattle<'d> {
                 }
             }
             Action::Residual => {
+                context.battle_mut().in_residual = true;
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
                 core_battle_effects::run_event_with_options::<_, _, ()>(
@@ -1492,6 +1500,7 @@ impl<'d> CoreBattle<'d> {
                     },
                 );
                 context.battle_mut().log(battle_log_entry!("residual"));
+                context.battle_mut().in_residual = false;
             }
             Action::Experience(action) => {
                 core_battle_actions::gain_experience(
@@ -1622,6 +1631,11 @@ impl<'d> CoreBattle<'d> {
             .is_none_or(|action| action.independent())
         {
             Self::update(context)?;
+            core_battle_effects::run_event_for_each_active_mon_with_effect(
+                &mut context
+                    .effect_context(EffectHandle::Condition(Id::from_known("update")), None)?,
+                fxlang::BattleEvent::AfterAction,
+            )?;
         }
 
         let mut some_switch_needed = false;
@@ -1657,7 +1671,7 @@ impl<'d> CoreBattle<'d> {
                         if let Some(switch_type) = context.mon().switch_state.needs_switch {
                             core_battle_actions::switch_out(
                                 &mut context,
-                                switch_type == SwitchType::CopyVolatile,
+                                switch_type.copy_volatile(),
                             )?;
 
                             // Mon may have fainted here.
@@ -2399,6 +2413,7 @@ impl<'d> CoreBattle<'d> {
             core_battle_effects::run_event::<_, ()>(&mut context, fxlang::BattleEvent::Exit);
 
             Mon::clear_state_on_exit(&mut context, MonExitType::Fainted)?;
+            context.side_mut().total_fainted += 1;
             context.battle_mut().last_exited = Some(context.mon_handle());
 
             context.player_mut().fainted_this_turn = true;
@@ -2711,5 +2726,19 @@ impl<'d> CoreBattle<'d> {
                     .is_some()
             })
             .unwrap_or(false))
+    }
+
+    /// Looks up the base species of the given species.
+    pub fn base_species_of_species(context: &Context, species: &Id) -> Result<Id> {
+        Ok(Id::from(
+            context
+                .battle()
+                .dex
+                .species
+                .get_by_id(&species)?
+                .data
+                .base_species
+                .as_str(),
+        ))
     }
 }

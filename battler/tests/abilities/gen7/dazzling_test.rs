@@ -79,7 +79,6 @@ fn dazzling_prevents_single_target_attacking_priority_move() {
         r#"[
             "move|mon:Decidueye,player-1,2|name:Quick Attack|noanim",
             "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
-            "fail|mon:Decidueye,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -103,7 +102,6 @@ fn dazzling_prevents_prankster_boosted_move() {
         r#"[
             "move|mon:Decidueye,player-1,2|name:Thunder Wave|noanim",
             "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
-            "fail|mon:Decidueye,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -124,7 +122,6 @@ fn dazzling_prevents_multi_target_priority_move() {
         r#"[
             "move|mon:Decidueye,player-1,2|name:Growl|noanim",
             "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
-            "fail|mon:Decidueye,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -145,7 +142,6 @@ fn dazzling_prevents_perish_song() {
         r#"[
             "move|mon:Decidueye,player-1,2|name:Perish Song|noanim",
             "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
-            "fail|mon:Decidueye,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -166,7 +162,6 @@ fn dazzling_prevents_flower_shield() {
         r#"[
             "move|mon:Decidueye,player-1,2|name:Flower Shield|noanim",
             "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
-            "fail|mon:Decidueye,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -187,7 +182,6 @@ fn dazzling_prevents_field_targeting_move() {
         r#"[
             "move|mon:Decidueye,player-1,2|name:Fairy Lock|noanim",
             "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
-            "fail|mon:Decidueye,player-1,2",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -289,10 +283,8 @@ fn dazzling_prevents_move_called_by_instruct() {
         r#"[
             "move|mon:Decidueye,player-1,2|name:Thunder Wave|noanim",
             "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
-            "fail|mon:Decidueye,player-1,2",
             "move|mon:Decidueye,player-2,2|name:Instruct|noanim",
             "cant|mon:Decidueye,player-2,2|from:ability:Dazzling|of:Bruxish,player-1,1",
-            "fail|mon:Decidueye,player-2,2",
             "residual",
             "turn|turn:2"
         ]"#,

@@ -57,8 +57,9 @@
         "on_source_try_primary_hit": {
           "order": 1,
           "program": [
-            "if $target == $source or $move.category == status or func_call(move_has_flag: $move pledgecombo):",
-            ["return"],
+            "require $target != $source else return",
+            "require $move.category != status else return",
+            "require !func_call(move_has_flag: $move pledgecombo) else return",
             "if $move.type == func_call(value_from_local_data: type):",
             ["use_item: $source"]
           ]
@@ -74,8 +75,7 @@
       "callbacks": {
         "on_take_item": [
           "$base_species = func_call(base_species: $target)",
-          "if $base_species == func_call(value_from_local_data: species):",
-          ["return false"]
+          "require $base_species != func_call(value_from_local_data: species)"
         ]
       }
     }

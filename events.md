@@ -24,6 +24,7 @@ Note that this is not meant to be an exact description of how battles work. Many
    1. If Mon is not fainted:
       1. `BeforeSwitchOut`.
       1. `SwitchOut`.
+      1. `AfterSwitchOut`.
       1. Ability `End`.
       1. `Exit`.
    1. Clear volatile effects.
@@ -41,6 +42,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 ## Before Turn Start
 
 1. `DisableMove` can selectively disable moves for each Mon.
+1. `OverwriteMove` can selectively overwrite moves for each Mon.
 1. `TrapMon` will set the Mon as trapped.
 1. `PreventUsedItems` will prevent the Mon from using items.
 1. `LockMove` affects move request if applicable.
@@ -204,7 +206,7 @@ Note that this is not meant to be an exact description of how battles work. Many
                         1. `WeatherModifyDamage`.
                         1. Randomize base damage.
                         1. `ModifyStab`.
-                        1. Type effectiveness: `IgnoreImmunity`, `ForceEffectiveness`, `Effectiveness`.
+                        1. Type effectiveness: `IgnoreImmunity`, `ForceEffectiveness`, `Effectiveness`, `ModifyEffectiveness`.
                         1. `ModifyDamage`.
                   1. Apply damage for each target:
                      1. Check immunity: `Immunity`.
@@ -400,6 +402,11 @@ Note that this is not meant to be an exact description of how battles work. Many
 1. Before running the `Residual` event, the duration of the effect is subtracted by one. If duration reaches 0, the `End` event (or `FieldEnd`, `SideEnd`, `SlotEnd`, according to the location of the effect) is run instead, and the effect is removed.
    1. Before ending an effect: `TryEnd`.
 
+## After Action
+
+1. `Update`.
+1. `AfterAction`.
+
 ## End
 
 1. `EndBattle` for each active Mon.
@@ -409,6 +416,7 @@ Note that this is not meant to be an exact description of how battles work. Many
 ### Mons
 
 - `BerryEatingHealth`.
+- `ForceTeraType`.
 - `ForceTypes`.
 - `IsAsleep`.
 - `IsAwayFromField`.

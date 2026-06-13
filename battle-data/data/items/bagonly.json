@@ -550,14 +550,6 @@
     "name": "Max Lure",
     "flags": []
   },
-  "rustedsword": {
-    "name": "Rusted Sword",
-    "flags": []
-  },
-  "rustedshield": {
-    "name": "Rusted Shield",
-    "flags": []
-  },
   "fossilizedbird": {
     "name": "Fossilized Bird",
     "special_data": {
@@ -910,6 +902,19 @@
   },
   "linkingcord": {
     "name": "Linking Cord",
+    "flags": []
+  },
+  "auspiciousarmor": {
+    "name": "Auspicious Armor",
+    "special_data": {
+      "fling": {
+        "power": 30
+      }
+    },
+    "flags": []
+  },
+  "leaderscrest": {
+    "name": "Leader's Crest",
     "flags": []
   }
 }

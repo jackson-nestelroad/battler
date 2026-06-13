@@ -18,8 +18,7 @@
       "callbacks": {
         "on_try_boost": [
           "$stat = func_call(value_from_local_data: stat)",
-          "if !$stat or $target == $source:",
-          ["return"],
+          "require $stat.is_defined and $target != $source else return",
           "if func_call(get_boost: $boosts $stat) < 0:",
           [
             "$boosts = func_call(set_boost: $boosts $stat 0)",
@@ -39,8 +38,9 @@
         "on_modify_move_type": {
           "priority": -1,
           "program": [
-            "if $effect.type == none or $type != normal or $type != $effect.type:",
-            ["return"],
+            "require $effect.type != none else return",
+            "require $type == normal else return",
+            "require $type == $effect.type else return",
             "if $effect.is_move:",
             ["$effect.effect_state.type_change_boosted = true"],
             "return func_call(value_from_local_data: type)"
@@ -61,15 +61,45 @@
         "on_start": ["log_ability"],
         "on_any_base_power": [
           "$type = func_call(value_from_local_data: type)",
-          "if $move.type != $type:",
-          ["return"],
+          "require $move.type == $type else return",
           "$aura_booster = $move.effect_state.aura_booster",
-          "if $aura_booster.is_defined:",
-          ["return"],
+          "require !$aura_booster else return",
           "$move.effect_state.aura_booster = $effect_state.target",
           "if $move.effect_state.aura_break:",
           ["return $base_power * 3/4"],
           "return $base_power * 4/3"
+        ]
+      }
+    }
+  },
+  "hpactivatedabilitybase": {
+    "name": "HP Activated Ability Base",
+    "condition_type": "Built-in",
+    "condition": {
+      "callbacks": {
+        "on_after_damage": [
+          "# Delay eating healing berries if we expect Berserk to activate for a single-hit move.",
+          "if $effect.is_move and !$effect.multihit and !$effect.ignore_all_secondary_effects:",
+          ["$effect_state.ability_may_activate = true"]
+        ],
+        "on_after_move_secondary_effects_damage": [
+          "require $damage != 0 else return",
+          "$effect_state.ability_may_activate = false",
+          "require $original_hp.is_defined else return",
+          "require $target.hp != 0 else return",
+          "$half = $target.max_hp / 2",
+          "if $original_hp > $half and $target.hp <= $half:",
+          ["activate_ability"]
+        ],
+        "on_after_move": [
+          "# If secondary effects were suppressed, we still need to reset state.",
+          "$effect_state.ability_may_activate = false"
+        ],
+        "on_try_eat_item": [
+          "# Healing items are consumed because HP dropped below a threshold.",
+          "# If we received damage as part of a single-hit move, don't consume the berry until Berserk has activated.",
+          "$healing_items = [aguavberry, enigmaberry, figyberry, iapapaberry, magoberry, sitrusberry, wikiberry, oranberry, berryjuice]",
+          "require !($healing_items has $item.id) or !$effect_state.ability_may_activate else return stopfail"
         ]
       }
     }

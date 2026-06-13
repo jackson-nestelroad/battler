@@ -79,8 +79,8 @@ fn forewarn_reveals_strongest_move_of_one_foe() {
             "split|side:1",
             ["switch", "player-2"],
             ["switch", "player-2"],
-            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Dark Pulse|of:Musharna,player-2,1",
             "activate|mon:Musharna,player-1,1|ability:Forewarn|move:Dark Pulse|of:Musharna,player-2,1",
+            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Dark Pulse|of:Musharna,player-2,1",
             "turn|turn:1"
         ]"#,
     )
@@ -110,8 +110,8 @@ fn forewarn_reveals_strongest_move_of_one_foe_using_rng_for_ties() {
             "split|side:1",
             ["switch", "player-2"],
             ["switch", "player-2"],
-            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Pound|of:Musharna,player-2,2",
-            "activate|mon:Musharna,player-1,1|ability:Forewarn|move:Tackle|of:Musharna,player-2,2",
+            "activate|mon:Musharna,player-1,1|ability:Forewarn|move:Pound|of:Musharna,player-2,2",
+            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Tackle|of:Musharna,player-2,2",
             "turn|turn:1"
         ]"#,
     )
@@ -140,8 +140,8 @@ fn forewarn_reveals_ohko_move() {
             "split|side:1",
             ["switch", "player-2"],
             ["switch", "player-2"],
-            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Guillotine|of:Musharna,player-2,1",
             "activate|mon:Musharna,player-1,1|ability:Forewarn|move:Guillotine|of:Musharna,player-2,1",
+            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Guillotine|of:Musharna,player-2,1",
             "turn|turn:1"
         ]"#,
     )
@@ -170,8 +170,8 @@ fn forewarn_reveals_attacking_move_with_no_base_power() {
             "split|side:1",
             ["switch", "player-2"],
             ["switch", "player-2"],
-            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Magnitude|of:Musharna,player-2,1",
             "activate|mon:Musharna,player-1,1|ability:Forewarn|move:Magnitude|of:Musharna,player-2,1",
+            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Magnitude|of:Musharna,player-2,1",
             "turn|turn:1"
         ]"#,
     )
@@ -200,8 +200,8 @@ fn forewarn_reveals_counter() {
             "split|side:1",
             ["switch", "player-2"],
             ["switch", "player-2"],
-            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Counter|of:Musharna,player-2,1",
             "activate|mon:Musharna,player-1,1|ability:Forewarn|move:Counter|of:Musharna,player-2,1",
+            "activate|mon:Musharna,player-1,2|ability:Forewarn|move:Counter|of:Musharna,player-2,1",
             "turn|turn:1"
         ]"#,
     )

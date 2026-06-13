@@ -101,7 +101,6 @@ fn trace_copies_target_ability() {
             "ability|mon:Ralts,player-1,1|ability:Insomnia|from:ability:Trace",
             "move|mon:Ralts,player-2,1|name:Sleep Powder|noanim",
             "immune|mon:Ralts,player-1,1|from:ability:Insomnia",
-            "fail|mon:Ralts,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,

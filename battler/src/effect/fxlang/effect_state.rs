@@ -130,6 +130,11 @@ impl EffectState {
             .or_insert(Value::Undefined)
     }
 
+    /// Removes a key from the object, returning the value that was present at the key.
+    pub fn remove(&mut self, key: &str) -> Option<Value> {
+        self.values.remove(key)
+    }
+
     /// The duration of the effect.
     pub fn duration(&self) -> Option<u8> {
         self.get(Self::DURATION)?.clone().integer_u8().ok()

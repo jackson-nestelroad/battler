@@ -43,3 +43,11 @@ pub struct LocalData {
     #[serde(default)]
     pub values: HashMap<String, LocalDataValue>,
 }
+
+impl LocalData {
+    /// Extends the local data with other local data, overriding data if applicable.
+    pub fn extend(&mut self, other: Self) {
+        self.moves.extend(other.moves);
+        self.values.extend(other.values);
+    }
+}

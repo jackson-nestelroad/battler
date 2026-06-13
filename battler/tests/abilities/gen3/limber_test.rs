@@ -59,7 +59,6 @@ fn limber_prevents_paralysis() {
         r#"[
             "move|mon:Sudowoodo,player-1,1|name:Thunder Wave|noanim",
             "immune|mon:Sudowoodo,player-2,1|from:ability:Limber",
-            "fail|mon:Sudowoodo,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

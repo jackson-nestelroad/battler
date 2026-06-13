@@ -1,6 +1,7 @@
 use anyhow::Result;
 use battler_data::{
     HitEffect,
+    Id,
     MonOverride,
 };
 
@@ -1334,8 +1335,27 @@ impl<'active_move, 'mon, 'player, 'side, 'context, 'battle, 'data>
     ) -> Result<ApplyingEffectContext<'active_target, 'active_target, 'battle, 'data>> {
         let source_handle = self.mon_handle();
         let target_handle = self.target_mon_handle();
+        let source_effect = self
+            .active_move()
+            .hit_effect_source_effect(self.as_active_move_context().hit_effect_type)
+            .map(|s| Id::from(s));
+        let source_effect = match source_effect {
+            Some(source_effect) => Some(
+                self.battle_mut()
+                    .get_effect_handle_by_id(&source_effect)?
+                    .clone(),
+            ),
+            None => None,
+        };
+
         ApplyingEffectContext::new(
-            self.as_active_move_context_mut().effect_context()?.into(),
+            match source_effect {
+                Some(source_effect) => self
+                    .as_battle_context_mut()
+                    .effect_context(source_effect, None)?
+                    .into(),
+                None => self.as_active_move_context_mut().effect_context()?.into(),
+            },
             Some(source_handle),
             target_handle,
         )

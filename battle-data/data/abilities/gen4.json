@@ -33,8 +33,7 @@
     "effect": {
       "callbacks": {
         "on_source_base_power": [
-          "if $target.gender == u or $source.gender == u:",
-          ["return"],
+          "require $target.gender != u and $source.gender != u else return",
           "if $target.gender == $source.gender:",
           ["return $base_power * 5/4"],
           "return $base_power * 3/4"
@@ -76,8 +75,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if $target.hp == 0:",
-          ["return"],
+          "require $target.hp != 0 else return",
           "if func_call(move_crit_target: $move $target):",
           ["boost: $target 'atk:12'"]
         ]
@@ -271,8 +269,7 @@
         "on_modify_move_type": {
           "priority": 1,
           "program": [
-            "if $effect.type == none or func_call(effect_has_event_callback: $effect ModifyMoveType):",
-            ["return"],
+            "require $effect.type != none and !func_call(effect_has_event_callback: $effect ModifyMoveType) else return",
             "if $effect_state.is_defined:",
             ["$effect_state.normalized = true"],
             "return normal"
@@ -350,21 +347,19 @@
       "callbacks": {
         "on_set_status": [
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
-          "if !$weather.is_defined or !$weather.is_sunny:",
-          ["return"],
+          "require $weather.is_defined and $weather.is_sunny else return",
           "if $effect.is_move and !$effect.is_move_secondary:",
           ["log_immune: from_effect"],
-          "return false"
+          "return stopfail"
         ],
         "on_add_volatile": [
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
-          "if !$weather.is_defined or !$weather.is_sunny:",
-          ["return"],
+          "require $weather.is_defined and $weather.is_sunny else return",
           "if $volatile.id == yawn:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_activate: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }
@@ -380,8 +375,9 @@
           ["return true"]
         ],
         "on_start": [
-          "if !$target.item or func_call(item_has_flag: $target.item noklutz) or !$target.can_suppress_item:",
-          ["return"],
+          "require $target.item.is_defined else return",
+          "require !func_call(item_has_flag: $target.item noklutz) else return",
+          "require $target.can_suppress_item else return",
           "end_item: $target silent"
         ],
         "on_end": ["start_item: $target silent"]
@@ -485,8 +481,7 @@
               ["$foes = func_call(append: $foes $foe)", "$moves = func_call(append: $moves $move)"]
             ]
           ],
-          "if $moves.is_empty:",
-          ["return"],
+          "require !$moves.is_empty else return",
           "$i = func_call(random: $moves.length)",
           "$foe = func_call(index: $foes $i)",
           "$move = func_call(index: $moves $i)",
@@ -502,11 +497,9 @@
       "callbacks": {
         "on_any_modify_boosts": [
           "# Do not ignore our own boosts.",
-          "if $source == $target or $target == $effect_state.target:",
-          ["return"],
+          "require $source != $target and $target != $effect_state.target else return",
           "# Context must be an active move.",
-          "if !$effect.is_defined or !$effect.is_move:",
-          ["return"],
+          "require $effect.is_defined and $effect.is_move else return",
           "# We are using a move against a target.",
           "if $effect.source == $effect_state.target:",
           ["$boosts.def = 0", "$boosts.spd = 0", "$boosts.eva = 0"],
@@ -586,20 +579,17 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $target == $source or $move.type != water:",
-          ["return"],
+          "require $target != $source and $move.type == water else return",
           "if !func_call(boost: $target 'spa:1') and $report:",
           ["log_immune: $target from_effect"],
           "return stopfail"
         ],
         "on_any_redirect_target": [
-          "if $move.type != water or func_call(move_has_flag: $move pledgecombo):",
-          ["return"],
+          "require $move.type == water and !func_call(move_has_flag: $move pledgecombo) else return",
           "$redirect = $move.target",
           "if [randomnormal, adjacentfoe] has $move.target:",
           ["$redirect = normal"],
-          "if !func_call(valid_target: $user $effect_state.target $redirect):",
-          ["return"],
+          "require func_call(valid_target: $user $effect_state.target $redirect) else return",
           "log_activate: with_target",
           "return $effect_state.target"
         ]
@@ -699,15 +689,13 @@
         "on_update": [
           "# Ensure Arceus is the correct forme.",
           "# Note that when team validation is used, Arceus is forced into the correct forme.",
-          "if func_call(base_species: $mon) != arceus or !$mon.item:",
-          ["return"],
+          "require func_call(base_species: $mon) == arceus and $mon.item.is_defined else return",
           "$type = normal",
           "$data = func_call(special_item_data: $mon.item)",
           "if $data.is_defined and $data.judgment.is_defined:",
           ["$type = $data.judgment.type.to_string"],
           "$species = func_call(get_species: str('arceus-{}', $type))",
-          "if !$species:",
-          ["return"],
+          "require $species.is_defined else return",
           "if $mon.species != $species.id:",
           ["forme_change: $mon $species.id permanent"]
         ],
@@ -732,8 +720,9 @@
       "callbacks": {
         "on_start": ["run_event_on_mon_ability: WeatherChange"],
         "on_weather_change": [
-          "if func_call(base_species: $target) != cherrim or $target.transformed or $target.hp == 0:",
-          ["return"],
+          "require func_call(base_species: $target) == cherrim else return",
+          "require !$target.transformed else return",
+          "require $target.hp != 0 else return",
           "$weather = func_call(effective_weather: $target use_target_as_origin)",
           "$species = cherrim",
           "if $weather.is_defined and $weather.is_sunny:",
@@ -760,8 +749,7 @@
     "effect": {
       "callbacks": {
         "on_residual": [
-          "if $target.hp == 0:",
-          ["return"],
+          "require $target.hp != 0 else return",
           "foreach $foe in func_call(all_foes: $target):",
           ["if $target.is_asleep:", ["damage: $foe expr($foe.base_max_hp / 8)"]]
         ]

@@ -62,7 +62,7 @@
         },
         "on_before_move": [
           "if !$move.upgraded_z_move and func_call(move_has_flag: $move.id gravity):",
-          ["log_cant", "return false"]
+          ["log_cant", "return stopfail"]
         ],
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
         "on_field_end": ["log_field_end"]
@@ -93,7 +93,7 @@
           "if func_call(has_type: $mon dark) and $type == psychic:",
           ["return false"]
         ],
-        "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"]]
+        "on_modify_boosts": ["if $boosts.eva > 0:", ["$boosts.eva = 0"], "return $boosts"]
       }
     }
   },
@@ -166,14 +166,13 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["if !func_call(can_switch: $target.player):", ["return false"]]
+        "on_try_hit": ["require func_call(can_switch: $target.player)"]
       }
     },
     "condition": {
       "callbacks": {
         "on_switch_in": [
-          "if $mon.fainted or ($mon.hp >= $mon.max_hp and !$mon.status):",
-          ["return"],
+          "require !$mon.fainted and ($mon.hp < $mon.max_hp or $mon.status) else return",
           "log_activate: with_target",
           "heal: $mon $mon.max_hp",
           "cure_status: $mon",
@@ -215,20 +214,16 @@
       "callbacks": {
         "on_modify_move_type": [
           "$item = $user.effective_item",
-          "if !$item:",
-          ["return"],
+          "require $item.is_defined else return",
           "$data = func_call(special_item_data: $item)",
-          "if !$data or !$data.natural_gift:",
-          ["return"],
+          "require $data.is_defined and $data.natural_gift.is_defined else return",
           "return $data.natural_gift.type"
         ],
         "on_prepare_hit": [
           "$item = $user.effective_item",
-          "if !$item:",
-          ["return false"],
+          "require $item.is_defined",
           "$data = func_call(special_item_data: $item)",
-          "if !$data or !$data.natural_gift:",
-          ["return false"],
+          "require $data.is_defined and $data.natural_gift.is_defined",
           "discard_item: $user silent",
           "$move.base_power = $data.natural_gift.power"
         ]
@@ -262,11 +257,8 @@
       "callbacks": {
         "on_hit": [
           "$item = $target.item",
-          "if !$item or !func_call(item_has_flag: $item berry):",
-          ["return"],
-          "$item = func_call(take_item: $target)",
-          "if !$item:",
-          ["return"],
+          "require $item.is_defined and func_call(item_has_flag: $item berry) else return",
+          "require !!assign($item = func_call(take_item: $target)) else return",
           "eat_given_item: $source $item"
         ]
       }
@@ -315,8 +307,7 @@
             "if func_call(get_boost: $target.boosts $stat) < 6:",
             ["$potential = func_call(append: $potential $stat)"]
           ],
-          "if $potential.is_empty:",
-          ["return false"],
+          "require !$potential.is_empty",
           "$stat = func_call(sample: $potential)",
           "$boosts = func_call(boost_table)",
           "$boosts = func_call(set_boost: $boosts $stat 2)",
@@ -335,10 +326,7 @@
     "flags": ["FailMeFirst", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_use_move": [
-          "if !func_call(last_attack: $user has_damage different_side):",
-          ["return false"]
-        ],
+        "on_try_use_move": ["require !!func_call(last_attack: $user has_damage different_side)"],
         "on_modify_target": [
           "$attack = func_call(last_attack: $user has_damage different_side)",
           "if $attack.is_defined:",
@@ -452,15 +440,12 @@
         "on_prepare_hit": [
           "# User has an item that is not suppressed.",
           "$item = $user.effective_item",
-          "if !$item:",
-          ["return false"],
+          "require $item.is_defined",
           "# Item can be flung.",
           "$data = func_call(special_item_data: $item)",
-          "if !$data or !$data.fling:",
-          ["return false"],
+          "require $data.is_defined and $data.fling.is_defined",
           "# User can lose its item.",
-          "if !func_call(take_item: $user dry_run):",
-          ["return false"],
+          "require !!func_call(take_item: $user dry_run)",
           "# Modify move according to the item being flung.",
           "$effect_state.item = $item.id",
           "$effect_state.use_item = $data.fling.use_item",
@@ -506,10 +491,8 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if $source == $target:",
-          ["return"],
-          "if !$source.status:",
-          ["return false"],
+          "require $source != $target else return",
+          "require $source.status.is_defined",
           "$move.hit_effect.status = $source.status"
         ],
         "on_hit": ["cure_status: $source"]
@@ -535,8 +518,7 @@
           "if $effect_state.source_effect.is_defined:",
           ["$caller = $effect_state.source_effect.id"],
           "$index = func_call(move_slot_index: $source $caller)",
-          "if $index.is_undefined:",
-          ["return false"],
+          "require $index.is_defined",
           "$move_slot = func_call(move_slot_at_index: $source $index)",
           "if !$move_slot:",
           ["return 40"],
@@ -581,7 +563,7 @@
           "priority": 6,
           "program": [
             "if !$move.upgraded: and func_call(move_has_flag: $move.id heal):",
-            ["log_cant", "return false"]
+            ["log_cant", "return stopfail"]
           ]
         },
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
@@ -656,10 +638,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": [
-          "if func_call(ability_has_flag: $target.ability permanent):",
-          ["return false"]
-        ]
+        "on_try_hit": ["require !func_call(ability_has_flag: $target.ability permanent)"]
       }
     },
     "condition": {
@@ -669,10 +648,7 @@
           "if $target.can_suppress_ability:",
           ["end_ability: use_effect_state_source_as_source"]
         ],
-        "on_copy_volatile": [
-          "if func_call(ability_has_flag: $target.ability permanent):",
-          ["return false"]
-        ],
+        "on_copy_volatile": ["require !func_call(ability_has_flag: $target.ability permanent)"],
         "on_end": [
           "# This volatile can only end if Mon is switched out, so this never happens.",
           "if $target.being_called_back:",
@@ -735,14 +711,14 @@
       "callbacks": {
         "on_try_hit": [
           "$action = func_call(pending_move_action_this_turn: $target)",
-          "if !$action:",
-          ["return false"],
+          "require $action.is_defined",
           "$move = func_call(new_active_move: $action.effective_id $source)",
-          "if $move.category == status or func_call(move_has_flag: $move failmefirst) or !$move.callable:",
-          ["return false"],
+          "require $move.category != status",
+          "require !func_call(move_has_flag: $move failmefirst)",
+          "require $move.callable",
           "add_volatile: $source $this.id",
           "use_move: $source $move $target",
-          "return stop"
+          "return skip"
         ]
       }
     },
@@ -779,14 +755,14 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if !$battle.last_move:",
-          ["return false"],
+          "require $battle.last_move.is_defined",
           "$last_move_id = $battle.last_move.id",
           "if $battle.last_move.upgraded and $battle.last_move.upgraded_base_move.is_defined:",
           ["$last_move_id = $battle.last_move.upgraded_base_move"],
           "$last_move = func_call(get_move: $last_move_id)",
-          "if !$last_move or !$last_move.callable or func_call(move_has_flag: $last_move failcopycat):",
-          ["return false"],
+          "require $last_move.is_defined",
+          "require $last_move.callable",
+          "require !func_call(move_has_flag: $last_move failcopycat)",
           "use_move: $target $last_move.id"
         ]
       }
@@ -892,10 +868,9 @@
     "effect": {
       "callbacks": {
         "on_try_hit": [
-          "if func_call(ability_has_flag: $target.ability permanent) or func_call(ability_has_flag: $target.ability noworryseed):",
-          ["return false"]
+          "require !func_call(ability_has_flag: $target.ability permanent) and !func_call(ability_has_flag: $target.ability noworryseed)"
         ],
-        "on_hit": ["if !func_call(set_ability: $target insomnia):", ["return false"]]
+        "on_hit": ["return func_call(set_ability: $target insomnia)"]
       }
     }
   },
@@ -913,11 +888,9 @@
       "callbacks": {
         "on_try_hit": [
           "$action = func_call(pending_move_action_this_turn: $target)",
-          "if !$action:",
-          ["return false"],
+          "require $action.is_defined",
           "$pending_move = func_call(get_move: $action.id)",
-          "if !$pending_move or ($pending_move.category == status and $pending_move.id != mefirst):",
-          ["return false"]
+          "require $pending_move.is_defined and ($pending_move.category != status or $pending_move.id == mefirst)"
         ]
       }
     }
@@ -945,19 +918,16 @@
           "log_side_start: str('count:{}', $effect_state.layers)"
         ],
         "on_side_restart": [
-          "if $effect_state.layers >= 2:",
-          ["return false"],
+          "require $effect_state.layers < 2",
           "$effect_state.layers = $effect_state.layers + 1",
           "log_side_start: str('count:{}', $effect_state.layers)",
           "return true"
         ],
         "on_switch_in": [
-          "if !$mon.is_grounded:",
-          ["return"],
+          "require $mon.is_grounded else return",
           "if func_call(has_type: $mon poison):",
           ["remove_side_condition: $mon.side $this.id", "return"],
-          "if $mon.is_immune_to_entry_hazards:",
-          ["return"],
+          "require !$mon.is_immune_to_entry_hazards else return",
           "if $effect_state.layers >= 2:",
           ["set_status: $mon tox"],
           "else:",
@@ -1031,8 +1001,7 @@
     "effect": {
       "callbacks": {
         "on_try_move": [
-          "if func_call(has_volatile: $target smackdown) or func_call(has_volatile: $target ingrain):",
-          ["return false"]
+          "require !func_call(has_volatile: $target smackdown) and !func_call(has_volatile: $target ingrain)"
         ]
       }
     },
@@ -1914,8 +1883,7 @@
       "callbacks": {
         "on_side_start": ["log_side_start"],
         "on_switch_in": [
-          "if $mon.is_immune_to_entry_hazards:",
-          ["return"],
+          "require !$mon.is_immune_to_entry_hazards else return",
           "$type_modifier = func_call(type_modifier: $mon)",
           "damage: $mon expr($mon.max_hp * (2 ^ $type_modifier) / 8)"
         ],
@@ -1981,11 +1949,9 @@
       "callbacks": {
         "on_modify_move_type": [
           "$item = $user.effective_item",
-          "if !$item:",
-          ["return"],
+          "require $item.is_defined else return",
           "$data = func_call(special_item_data: $item)",
-          "if !$data or !$data.judgment:",
-          ["return"],
+          "require $data.is_defined and $data.judgment.is_defined else return",
           "return $data.judgment.type"
         ]
       }
@@ -2159,7 +2125,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["if !func_call(can_switch: $target.player):", ["return false"]]
+        "on_try_hit": ["require func_call(can_switch: $target.player)"]
       }
     },
     "condition": {
@@ -2168,8 +2134,7 @@
           "$needs_pp_restore = false",
           "foreach $move_slot in $mon.move_slots:",
           ["if $move_slot.pp < $move_slot.max_pp:", ["$needs_pp_restore = true"]],
-          "if $mon.fainted or ($mon.hp >= $mon.max_hp and !$mon.status and !$needs_pp_restore):",
-          ["return"],
+          "require !$mon.fainted and ($mon.hp < $mon.max_hp or $mon.status.is_defined or $needs_pp_restore) else return",
           "log_activate: with_target",
           "heal: $mon $mon.max_hp",
           "cure_status: $mon",
@@ -2225,10 +2190,8 @@
     "effect": {
       "callbacks": {
         "on_try_use_move": [
-          "if $move.effect_state.reflected:",
-          ["return"],
-          "if $user.species != darkrai:",
-          ["return false"]
+          "require !$move.effect_state.reflected else return",
+          "require $user.species == darkrai"
         ]
       }
     }

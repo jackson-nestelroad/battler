@@ -398,8 +398,7 @@
           "$multiplier = 1/2",
           "if func_call(effective_weather: $target) == sandstormweather:",
           ["$multiplier = 2/3"],
-          "if !func_call(heal: $target expr($target.max_hp * $multiplier) primary_effect):",
-          ["return stop"]
+          "require func_call(heal: $target expr($target.max_hp * $multiplier) primary_effect) else return stop"
         ]
       }
     }
@@ -416,7 +415,7 @@
     "flags": ["Contact", "Mirror", "Protect"],
     "effect": {
       "callbacks": {
-        "on_try_use_move": ["if $user.active_turns > 1:", ["return false"]]
+        "on_try_use_move": ["require $user.active_turns <= 1"]
       }
     }
   },
@@ -522,8 +521,7 @@
           "$multiplier = 1/2",
           "if $target.effective_terrain == grassyterrain:",
           ["$multiplier = 2/3"],
-          "if !func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect):",
-          ["return stop"]
+          "require func_call(heal: $target expr($target.base_max_hp * $multiplier) primary_effect) else return stop"
         ]
       }
     }
@@ -554,8 +552,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if !func_call(can_boost: $target 'atk:-1'):",
-          ["return false"],
+          "require func_call(can_boost: $target 'atk:-1')",
           "$atk = func_call(get_stat: $target atk unmodified)",
           "$boosted = func_call(boost: $target 'atk:-1')",
           "$healed = func_call(heal: $source $atk) > 0",
@@ -608,6 +605,7 @@
       "delegates": ["move:followme"]
     },
     "condition": {
+      "no_copy": true,
       "delegates": ["movecondition:followme"],
       "callbacks": {
         "on_foe_redirect_target": {
@@ -654,6 +652,7 @@
     },
     "condition": {
       "duration": 2,
+      "copy_with_boosts": true,
       "callbacks": {
         "on_start": ["log_start"],
         "on_restart": ["$effect_state.duration = 2", "log_start", "return true"],
@@ -709,7 +708,7 @@
         ],
         "on_before_move": [
           "if !$move.upgraded and func_call(move_has_flag: $move sound):",
-          ["log_cant", "return false"]
+          ["log_cant", "return stopfail"]
         ],
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
         "on_end": ["log_end: silent"]
@@ -775,9 +774,9 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": [
-          "if !$source:",
-          ["return"],
+          "require $source.is_defined else return",
           "if $source_effect.is_ability:",
           ["log_field_start: with_source_effect"],
           "else:",
@@ -788,12 +787,11 @@
         "on_try_hit": {
           "priority": 4,
           "program": [
-            "if $move.priority <= 0 or $move.target == user:",
-            ["return"],
-            "if func_call(is_ally: $target $source):",
-            ["return"],
-            "log_activate: with_target",
-            "return false"
+            "require $move.priority > 0 and $move.target != user else return",
+            "require !func_call(is_ally: $target $source) else return",
+            "if $report:",
+            ["log_activate: with_target"],
+            "return stopfail"
           ]
         }
       }
@@ -865,12 +863,7 @@
     "user_effect": {},
     "effect": {
       "callbacks": {
-        "on_try_move": [
-          "if func_call(has_type: $user fire):",
-          ["return"],
-          "log_fail: $user",
-          "return stopfail"
-        ],
+        "on_try_move": ["require func_call(has_type: $user fire)"],
         "on_hit_user": [
           "# Remove Fire type.",
           "# Note that if we are forced into the Fire type (e.g., Terastallization), this has no effect.",
@@ -936,8 +929,7 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if !func_call(cure_status: $target):",
-          ["return false"],
+          "require func_call(cure_status: $target)",
           "heal: $source expr($source.max_hp / 2)"
         ]
       }
@@ -956,8 +948,7 @@
       "callbacks": {
         "on_modify_move_type": [
           "$types = $user.effective_types",
-          "if $types.is_empty:",
-          ["return"],
+          "require !$types.is_empty else return",
           "$type = func_call(index: $types 0)",
           "return $type"
         ]
@@ -976,10 +967,8 @@
     "effect": {
       "callbacks": {
         "on_hit": [
-          "if func_call(ability_has_flag: $target.ability permanent):",
-          ["return"],
-          "if $target.newly_switched or func_call(will_move_this_turn: $target):",
-          ["return"],
+          "require !func_call(ability_has_flag: $target.ability permanent) else return",
+          "require !$target.newly_switched and !func_call(will_move_this_turn: $target) else return",
           "add_volatile: $target gastroacid"
         ],
         "on_after_substitute_damage": ["run_event_on_move: Hit"]
@@ -1018,20 +1007,16 @@
       "callbacks": {
         "on_hit": [
           "$last_move = $target.last_move",
-          "if !$last_move or $target.dynamaxed:",
-          ["return false"],
+          "require $last_move.is_defined and !$target.dynamaxed",
           "$index = func_call(move_slot_index: $target $last_move.id)",
-          "if $index.is_undefined:",
-          ["return false"],
+          "require $index.is_defined",
           "$move_slot = func_call(move_slot_at_index: $target $index)",
-          "if !$move_slot or $move_slot.pp == 0:",
-          ["return false"],
-          "if $last_move.upgraded:",
-          ["return false"],
-          "if func_call(move_has_flag: $last_move failinstruct) or func_call(move_has_flag: $last_move charge) or func_call(move_has_flag: $last_move recharge):",
-          ["return false"],
-          "if func_call(has_volatile: $target windingup):",
-          ["return false"],
+          "require $move_slot.is_defined and $move_slot.pp != 0",
+          "require !$last_move.upgraded",
+          "require !func_call(move_has_flag: $last_move failinstruct)",
+          "require !func_call(move_has_flag: $last_move charge)",
+          "require !func_call(move_has_flag: $last_move recharge)",
+          "require !func_call(has_volatile: $target windingup)",
           "log_single_turn: with_target $target with_source",
           "$action_id = func_call(add_move_action: $target $last_move.id $target.last_target_location)",
           "prioritize_move: $target $action_id $this $source"
@@ -1124,8 +1109,7 @@
       "callbacks": {
         "on_try_use_move": [
           "$weather = func_call(effective_weather: $target)",
-          "if !$weather or !$weather.is_snowing:",
-          ["return false"]
+          "require $weather.is_defined and $weather.is_snowing"
         ]
       }
     },
@@ -1372,9 +1356,9 @@
       "delegates": ["condition:windingupmovebase"],
       "callbacks": {
         "on_before_move": [
-          "$volatile_state = func_call(volatile_status_state: $user $this.id)",
+          "$volatile_state = func_call(volatile_status_effect_state: $user $this.id)",
           "if !$volatile_state or !$volatile_state.hit:",
-          ["log_cant", "return false"]
+          ["log_cant", "return stopfail"]
         ]
       }
     },
@@ -1383,8 +1367,7 @@
       "callbacks": {
         "on_start": ["log_single_turn: with_target"],
         "on_hit": [
-          "if func_call(is_ally: $target $source) or $move.category != physical:",
-          ["return"],
+          "require !func_call(is_ally: $target $source) and $move.category == physical else return",
           "$effect_state.hit = true",
           "$action = func_call(pending_move_action_this_turn: $target)",
           "if $action.is_defined:",
@@ -1520,8 +1503,7 @@
             "if $value > 0:",
             ["$boosts = func_call(set_boost: $boosts $boost $value)", "$activate = true"]
           ],
-          "if !$activate:",
-          ["return"],
+          "require $activate else return",
           "log_activate: with_target with_source",
           "clear_positive_boosts: $target",
           "boost: $source $boosts"
@@ -1621,11 +1603,9 @@
       "callbacks": {
         "on_modify_move_type": [
           "$item = $user.effective_item",
-          "if !$item:",
-          ["return"],
+          "require $item.is_defined else return",
           "$data = func_call(special_item_data: $item)",
-          "if !$data or !$data.multi_attack:",
-          ["return"],
+          "require $data.is_defined and $data.multi_attack.is_defined else return",
           "return $data.multi_attack.type"
         ]
       }

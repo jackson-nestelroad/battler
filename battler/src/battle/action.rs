@@ -151,6 +151,7 @@ impl MoveAction {
 pub struct BeforeMoveActionInput {
     pub id: Id,
     pub mon: MonHandle,
+    pub active_move_handle: Option<MoveHandle>,
 }
 
 /// A before move action.
@@ -158,6 +159,7 @@ pub struct BeforeMoveActionInput {
 pub struct BeforeMoveAction {
     pub id: Id,
     pub mon_action: MonAction,
+    pub active_move_handle: Option<MoveHandle>,
     pub priority: i32,
     pub sub_priority: i32,
 }
@@ -168,6 +170,7 @@ impl BeforeMoveAction {
         Self {
             id: input.id,
             mon_action: MonAction::new(input.mon),
+            active_move_handle: input.active_move_handle,
             priority: 0,
             sub_priority: 0,
         }

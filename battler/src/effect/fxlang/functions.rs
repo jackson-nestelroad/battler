@@ -56,7 +56,6 @@ use crate::{
         MonSwitchState,
         MoveAction,
         MoveActionInput,
-        MoveOutcomeOnTarget,
         MoveSlot,
         Player,
         SelectReason,
@@ -160,8 +159,8 @@ pub fn run_function(
         "allies_and_self" => allies_and_self(context).map(|val| Some(val)),
         "any_mon_will_move_this_turn" => any_mon_will_move_this_turn(context).map(|val| Some(val)),
         "append" => append(context).map(|val| Some(val)),
-        "apply_drain" => apply_drain(context).map(|()| None),
-        "apply_recoil_damage" => apply_recoil_damage(context).map(|()| None),
+        "apply_drain" => apply_drain(context).map(|val| Some(val)),
+        "apply_recoil_damage" => apply_recoil_damage(context).map(|val| Some(val)),
         "base_species" => base_species(context).map(|val| Some(val)),
         "best_stat" => best_stat(context).map(|val| Some(val)),
         "boost" => boost(context).map(|val| Some(val)),
@@ -188,6 +187,7 @@ pub fn run_function(
         "clear_terrain" => clear_terrain(context).map(|val| Some(val)),
         "clear_weather" => clear_weather(context).map(|val| Some(val)),
         "clone_active_move" => clone_active_move(context).map(|val| Some(val)),
+        "copy_boosts" => copy_boosts(context).map(|val| Some(val)),
         "cure_status" => cure_status(context).map(|val| Some(val)),
         "damage" => damage(context).map(|val| Some(val)),
         "debug_log" => debug_log(context).map(|()| None),
@@ -203,6 +203,7 @@ pub fn run_function(
         "eat_item" => eat_item(context).map(|val| Some(val)),
         "eat_given_item" => eat_given_item(context).map(|val| Some(val)),
         "effect_has_event_callback" => effect_has_event_callback(context).map(|val| Some(val)),
+        "effect_state_remove_key" => effect_state_remove_key(context),
         "effective_weather" => effective_weather(context),
         "end_ability" => end_ability(context).map(|()| None),
         "end_battle" => end_battle(context).map(|()| None),
@@ -210,6 +211,7 @@ pub fn run_function(
         "end_illusion" => end_illusion(context).map(|val| Some(val)),
         "end_item" => end_item(context).map(|()| None),
         "escape" => escape(context).map(|val| Some(val)),
+        "event_result" => event_result(context).map(|val| Some(val)),
         "faint" => faint(context).map(|()| None),
         "faint_messages" => faint_messages(context).map(|()| None),
         "floor" => floor(context).map(|val| Some(val)),
@@ -273,6 +275,7 @@ pub fn run_function(
         "log_use_move" => log_use_move(context).map(|()| None),
         "log_waiting" => log_waiting(context).map(|()| None),
         "log_weather" => log_weather(context).map(|()| None),
+        "lookup_base_species" => lookup_base_species(context).map(|val| Some(val)),
         "max" => max(context).map(|val| Some(val)),
         "max_move" => max_move(context),
         "min" => min(context).map(|val| Some(val)),
@@ -313,6 +316,7 @@ pub fn run_function(
         "pseudo_weather_effect_state" => pseudo_weather_effect_state(context),
         "random" => random(context).map(|val| Some(val)),
         "random_target" => random_target(context),
+        "read_event_state_value" => read_event_state_value(context),
         "received_attack" => received_attack(context).map(|val| Some(val)),
         "remove" => remove(context).map(|val| Some(val)),
         "remove_move_flag" => remove_move_flag(context).map(|()| None),
@@ -330,9 +334,11 @@ pub fn run_function(
         "run_event_for_mon" => run_event_for_mon(context).map(|val| Some(val)),
         "run_event_on_mon_ability" => run_event_on_mon_ability(context),
         "run_event_on_mon_item" => run_event_on_mon_item(context),
+        "run_event_on_mon_species" => run_event_on_mon_species(context),
         "run_event_on_mon_volatile" => run_event_on_mon_volatile(context),
         "run_event_on_move" => run_event_on_move(context),
         "sample" => sample(context),
+        "save_event_state_value" => save_event_state_value(context).map(|()| None),
         "save_move_hit_data_flag_against_target" => {
             save_move_hit_data_flag_against_target(context).map(|()| None)
         }
@@ -364,7 +370,7 @@ pub fn run_function(
         "swap_position" => swap_position(context).map(|val| Some(val)),
         "swap_side_conditions" => swap_side_conditions(context).map(|val| Some(val)),
         "switch_out" => switch_out(context).map(|val| Some(val)),
-        "take_item" => take_item(context),
+        "take_item" => take_item(context).map(|val| Some(val)),
         "target_location_of_mon" => target_location_of_mon(context).map(|val| Some(val)),
         "transform_into" => transform_into(context).map(|val| Some(val)),
         "type_chart_effectiveness" => type_chart_effectiveness(context).map(|val| Some(val)),
@@ -381,7 +387,7 @@ pub fn run_function(
         "use_move" => use_move(context).map(|val| Some(val)),
         "valid_target" => valid_target(context).map(|val| Some(val)),
         "value_from_local_data" => value_from_local_data(context),
-        "volatile_status_state" => volatile_status_state(context),
+        "volatile_status_effect_state" => volatile_status_effect_state(context),
         "will_move_this_turn" => will_move_this_turn(context).map(|val| Some(val)),
         "z_move" => z_move(context),
         _ => Err(general_error(format!(
@@ -1678,14 +1684,14 @@ fn has_volatile(mut context: FunctionContext) -> Result<Value> {
 /// Cures a Mon's status condition.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to cure.
-/// @returns {[`ValueType::Boolean`]} Whether the status was cured.
+/// @returns {[`ValueType::EventResult`]} Whether the status was cured.
 fn cure_status(mut context: FunctionContext) -> Result<Value> {
     let silent = context.silent();
     let no_effect = context.no_effect();
     let mon_handle = context.target_handle_positional()?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     core_battle_actions::cure_status(&mut context, silent, !no_effect)
-        .map(|val| Value::Boolean(val))
+        .map(|val| Value::EventResult(val))
 }
 
 /// Checks if a move has a specific flag.
@@ -1882,7 +1888,7 @@ fn add_move_flag(mut context: FunctionContext) -> Result<()> {
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} [effect] The volatile effect ID.
 /// @flag link If set, the volatile effect is linked to the current effect.
-/// @returns {[`ValueType::Boolean`]} Whether the volatile effect was added.
+/// @returns {[`ValueType::EventResult`]} Whether the volatile effect was added.
 fn add_volatile(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let volatile = context
@@ -1898,14 +1904,14 @@ fn add_volatile(mut context: FunctionContext) -> Result<Value> {
         false,
         link_handle.as_ref(),
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Removes a volatile effect from a Mon.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} [effect] The volatile effect ID.
-/// @returns {[`ValueType::Boolean`]} Whether the volatile effect was removed.
+/// @returns {[`ValueType::EventResult`]} Whether the volatile effect was removed.
 fn remove_volatile(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let volatile = context
@@ -1918,7 +1924,7 @@ fn remove_volatile(mut context: FunctionContext) -> Result<Value> {
     let volatile = Id::from(volatile);
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     core_battle_actions::remove_volatile(&mut context, &volatile, no_events)
-        .map(|val| Value::Boolean(val))
+        .map(|val| Value::EventResult(val))
 }
 
 /// Runs a battle event.
@@ -2036,6 +2042,38 @@ fn run_event_on_mon_item(mut context: FunctionContext) -> Result<Option<Value>> 
     ))
 }
 
+/// Runs an event on a Mon's species.
+///
+/// @param {[`ValueType::String`]} event The event ID.
+/// @returns {[`ValueType::Boolean`] | [`ValueType::Undefined`]}
+fn run_event_on_mon_species(mut context: FunctionContext) -> Result<Option<Value>> {
+    let event = context
+        .pop_front()
+        .wrap_expectation("missing event")?
+        .string()
+        .wrap_error_with_message("invalid event")?;
+    let event = BattleEvent::from_str(&event).map_err(general_error)?;
+
+    let mut context = context.forward_to_applying_effect_context()?;
+    let effect_handle = EffectHandle::Species(context.target().volatile_state.species.clone());
+    let target_handle = context.target_handle();
+    Ok(core_battle_effects::run_effect_event_with_options::<
+        _,
+        _,
+        Option<Value>,
+    >(
+        &mut context,
+        event,
+        (),
+        core_battle_effects::RunEffectEventOptions {
+            effects: Vec::from_iter([AppliedEffectHandle::new(
+                effect_handle,
+                AppliedEffectLocation::Mon(target_handle),
+            )]),
+        },
+    ))
+}
+
 /// Runs an event on a Mon's volatile effect.
 ///
 /// @param {[`ValueType::String`]} volatile The volatile effect ID.
@@ -2142,12 +2180,11 @@ fn calculate_damage(mut context: FunctionContext) -> Result<Value> {
     let mut context = context
         .source_active_move_context()?
         .wrap_expectation("source effect is not an active move")?;
-    match core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)? {
-        MoveOutcomeOnTarget::Damage(damage) => Ok(Value::UFraction(damage.into())),
-        MoveOutcomeOnTarget::Success | MoveOutcomeOnTarget::Unknown => {
-            Ok(Value::UFraction(0u64.into()))
-        }
-        _ => Ok(Value::Boolean(false)),
+    let damage =
+        core_battle_actions::calculate_damage(&mut context.target_context(target_handle)?)?;
+    match damage {
+        Some(damage) => Ok(Value::UFraction(damage.into())),
+        None => Ok(Value::Boolean(false)),
     }
 }
 
@@ -2307,8 +2344,8 @@ fn revive(mut context: FunctionContext) -> Result<Value> {
 ///
 /// @param {[`ValueType::Mon`]} [target] The target Mon.
 /// @param {[`ValueType::Mon`]} [source] The source Mon.
-/// @param {[`ValueType::UFraction`]} damage The amount of damage dealt.
-fn apply_drain(mut context: FunctionContext) -> Result<()> {
+/// @param {[`ValueType::UFraction`]} damage The amount of damage healed.
+fn apply_drain(mut context: FunctionContext) -> Result<Value> {
     let target_handle = context.target_handle_positional()?;
     let source_handle = context.source_handle_positional()?;
     let damage = context
@@ -2324,12 +2361,14 @@ fn apply_drain(mut context: FunctionContext) -> Result<()> {
         )?,
         damage,
     )
+    .map(|val| Value::UFraction(val.into()))
 }
 
 /// Applies recoil damage to the move user.
 ///
 /// @param {[`ValueType::UFraction`]} damage The amount of damage dealt to the target.
-fn apply_recoil_damage(mut context: FunctionContext) -> Result<()> {
+/// @returns {[`ValueType::UFraction`]} Damage dealt.
+fn apply_recoil_damage(mut context: FunctionContext) -> Result<Value> {
     let damage = context
         .pop_front()
         .wrap_expectation("missing damage")?
@@ -2339,13 +2378,14 @@ fn apply_recoil_damage(mut context: FunctionContext) -> Result<()> {
         .source_active_move_context()?
         .wrap_expectation("source effect is not an active move")?;
     core_battle_actions::apply_recoil_damage(&mut context, damage)
+        .map(|val| Value::UFraction(val.into()))
 }
 
 /// Sets a Mon's status condition.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} status The status ID.
-/// @returns {[`ValueType::Boolean`]} Whether the status was successfully set.
+/// @returns {[`ValueType::EventResult`]} Whether the status was successfully set.
 fn set_status(mut context: FunctionContext) -> Result<Value> {
     let primary_effect = context.primary_effect();
     let mon_handle = context.target_handle_positional()?;
@@ -2361,7 +2401,7 @@ fn set_status(mut context: FunctionContext) -> Result<Value> {
         &status,
         primary_effect,
     )
-    .map(|val| Value::Boolean(val.success()))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Checks if two Mons are allies.
@@ -2536,7 +2576,7 @@ fn disable_move(mut context: FunctionContext) -> Result<()> {
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose volatile state to retrieve.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} [effect] The volatile effect ID.
 /// @returns {[`ValueType::EffectState`] | [`ValueType::Undefined`]} The volatile effect state.
-fn volatile_status_state(mut context: FunctionContext) -> Result<Option<Value>> {
+fn volatile_status_effect_state(mut context: FunctionContext) -> Result<Option<Value>> {
     let mon_handle = context.target_handle_positional()?;
     let volatile_id = context
         .pop_front()
@@ -2652,7 +2692,7 @@ fn can_boost(mut context: FunctionContext) -> Result<Value> {
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to boost.
 /// @param {[`ValueType::BoostTable`]} boosts The boosts to apply.
-/// @returns {[`ValueType::Boolean`]} Whether the boosts were successfully applied.
+/// @returns {[`ValueType::EventResult`]} The outcome of the boost.
 fn boost(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
 
@@ -2666,7 +2706,8 @@ fn boost(mut context: FunctionContext) -> Result<Value> {
         .source_handle()
         .is_some_and(|source| source == context.target_handle());
 
-    core_battle_actions::boost(&mut context, boosts, false, is_self).map(|val| Value::Boolean(val))
+    core_battle_actions::boost(&mut context, boosts, false, is_self)
+        .map(|val| Value::EventResult(val))
 }
 
 /// Creates a boost table from a list of stat:amount strings.
@@ -2763,25 +2804,47 @@ fn move_slot_at_index(mut context: FunctionContext) -> Result<Option<Value>> {
 
 /// Creates a simulated move slot from an active move.
 ///
-/// @param {[`ValueType::Effect`]} active_move The active move.
+/// @param {[`ValueType::Effect`] | [`ValueType::String`]} active_move The active move.
 /// @returns {[`ValueType::MoveSlot`]} The simulated move slot.
 fn move_slot(mut context: FunctionContext) -> Result<Value> {
-    let active_move_handle = context
+    let mov = context
         .pop_front()
-        .wrap_expectation("missing active move")?
-        .active_move()
-        .wrap_error_with_message("invalid active move")?;
-    let active_move = context
-        .evaluation_context()
-        .active_move(active_move_handle)?;
-    let move_slot = MoveSlot::new_simulated(
-        active_move.id().clone(),
-        active_move.data.name.clone(),
-        active_move.data.pp,
-        active_move.data.pp,
-        active_move.data.target,
-        active_move.data.primary_type,
-    );
+        .wrap_expectation("missing active move")?;
+
+    let (id, name, pp, target, primary_type) = if mov.is_active_move() {
+        let active_move_handle = mov
+            .active_move()
+            .wrap_error_with_message("invalid active move")?;
+        let active_move = context
+            .evaluation_context()
+            .active_move(active_move_handle)?;
+        (
+            active_move.id().clone(),
+            active_move.data.name.clone(),
+            active_move.data.pp,
+            active_move.data.target,
+            active_move.data.primary_type,
+        )
+    } else {
+        let move_id = mov
+            .move_id(context.evaluation_context_mut())
+            .wrap_error_with_message("invalid move id")?;
+        let mov = context
+            .battle_context_mut()
+            .battle()
+            .dex
+            .moves
+            .get_by_id(&move_id)?;
+        (
+            mov.id().clone(),
+            mov.data.name.clone(),
+            mov.data.pp,
+            mov.data.target,
+            mov.data.primary_type,
+        )
+    };
+
+    let move_slot = MoveSlot::new_simulated(id, name, pp, pp, target, primary_type);
     Ok(Value::MoveSlot(move_slot))
 }
 
@@ -3242,13 +3305,12 @@ fn new_active_move_from_local_data(mut context: FunctionContext) -> Result<Value
         .string()
         .wrap_error_with_message("invalid move")?;
     let move_id = Id::from(move_id);
-    let move_data = CoreBattle::get_effect_by_handle(
-        context.evaluation_context().battle_context(),
+    let move_data = CoreBattle::get_parsed_effect_by_handle(
+        context.evaluation_context_mut().battle_context_mut(),
         &effect_handle,
     )?
-    .fxlang_effect()
-    .wrap_expectation("effect does not have local data")?
-    .local_data
+    .wrap_not_found_error("effect does not exist")?
+    .local_data()
     .moves
     .get(&move_id)
     .wrap_expectation_with_format(format_args!(
@@ -3309,7 +3371,7 @@ fn use_active_move(mut context: FunctionContext) -> Result<Value> {
             preventable: preventable.then_some(preventable),
         },
     )
-    .map(|result| Value::Boolean(result.outcome().success()))
+    .map(|result| Value::Boolean(result.outcome().succeeded()))
 }
 
 /// Logs that a Mon is waiting.
@@ -3586,7 +3648,7 @@ fn move_at_move_slot_index(mut context: FunctionContext) -> Result<Option<Value>
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::List`]} types The list of types.
-/// @returns {[`ValueType::Boolean`]} Whether the types were successfully set.
+/// @returns {[`ValueType::EventResult`]} Whether the types were successfully set.
 fn set_types(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let types = context
@@ -3595,24 +3657,24 @@ fn set_types(mut context: FunctionContext) -> Result<Value> {
         .types_list()
         .wrap_error_with_message("invalid types")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
-    core_battle_actions::set_types(&mut context, types).map(|val| Value::Boolean(val))
+    core_battle_actions::set_types(&mut context, types).map(|val| Value::EventResult(val))
 }
 
 /// Resets a Mon's types.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
-/// @returns {[`ValueType::Boolean`]} Whether the types were successfully reset.
+/// @returns {[`ValueType::EventResult`]} Whether the types were successfully reset.
 fn reset_types(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
-    core_battle_actions::reset_types(&mut context).map(|val| Value::Boolean(val))
+    core_battle_actions::reset_types(&mut context).map(|val| Value::EventResult(val))
 }
 
 /// Adds a type to a Mon.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::Type`]} type_to_add The type to add.
-/// @returns {[`ValueType::Boolean`]} Whether the type was successfully added.
+/// @returns {[`ValueType::EventResult`]} Whether the type was successfully added.
 fn add_type(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let typ = context
@@ -3621,13 +3683,13 @@ fn add_type(mut context: FunctionContext) -> Result<Value> {
         .mon_type()
         .wrap_error_with_message("invalid type")?;
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
-    core_battle_actions::add_type(&mut context, typ).map(|val| Value::Boolean(val))
+    core_battle_actions::add_type(&mut context, typ).map(|val| Value::EventResult(val))
 }
 
 /// Sets the field weather.
 ///
 /// @param {[`ValueType::String`]} weather The weather ID.
-/// @returns {[`ValueType::Boolean`]} Whether the weather was successfully set.
+/// @returns {[`ValueType::EventResult`]} Whether the weather was successfully set.
 fn set_weather(mut context: FunctionContext) -> Result<Value> {
     let weather = context
         .pop_front()
@@ -3636,13 +3698,13 @@ fn set_weather(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid weather")?;
     let weather = Id::from(weather);
     core_battle_actions::set_weather(&mut context.forward_to_field_effect()?, &weather)
-        .map(Value::Boolean)
+        .map(Value::EventResult)
 }
 
 /// Sets the field terrain.
 ///
 /// @param {[`ValueType::String`]} terrain The terrain ID.
-/// @returns {[`ValueType::Boolean`]} Whether the terrain was successfully set.
+/// @returns {[`ValueType::EventResult`]} Whether the terrain was successfully set.
 fn set_terrain(mut context: FunctionContext) -> Result<Value> {
     let terrain = context
         .pop_front()
@@ -3651,28 +3713,53 @@ fn set_terrain(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid terrain")?;
     let terrain = Id::from(terrain);
     core_battle_actions::set_terrain(&mut context.forward_to_field_effect()?, &terrain)
-        .map(Value::Boolean)
+        .map(Value::EventResult)
 }
 
 /// Clears the field weather.
 ///
-/// @returns {[`ValueType::Boolean`]} Whether the weather was successfully cleared.
+/// @returns {[`ValueType::EventResult`]} Whether the weather was successfully cleared.
 fn clear_weather(mut context: FunctionContext) -> Result<Value> {
-    core_battle_actions::clear_weather(&mut context.forward_to_field_effect()?).map(Value::Boolean)
+    core_battle_actions::clear_weather(&mut context.forward_to_field_effect()?)
+        .map(Value::EventResult)
 }
 
 /// Clears the field terrain.
 ///
-/// @returns {[`ValueType::Boolean`]} Whether the terrain was successfully cleared.
+/// @returns {[`ValueType::EventResult`]} Whether the terrain was successfully cleared.
 fn clear_terrain(mut context: FunctionContext) -> Result<Value> {
-    core_battle_actions::clear_terrain(&mut context.forward_to_field_effect()?).map(Value::Boolean)
+    core_battle_actions::clear_terrain(&mut context.forward_to_field_effect()?)
+        .map(Value::EventResult)
+}
+
+/// Copies boosts (and associated volatiles) from the target Mon.
+///
+/// @param {[`ValueType::Mon`]} [mon] The Mon to copy boosts to.
+/// @param {[`ValueType::Mon`]} target The Mon to copy boosts from.
+/// @flag silent If set, no message is displayed.
+/// @returns {[`ValueType::EventResult`]} The outcome of the copy.
+fn copy_boosts(mut context: FunctionContext) -> Result<Value> {
+    let silent = context.silent();
+    let mon_handle = context.target_handle_positional()?;
+    let copy_from_handle = context
+        .pop_front()
+        .wrap_expectation("missing copy target")?
+        .mon_handle()
+        .wrap_error_with_message("invalid copy target")?;
+
+    core_battle_actions::copy_boosts(
+        &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
+        copy_from_handle,
+        silent,
+    )
+    .map(|val| Value::EventResult(val))
 }
 
 /// Transforms a Mon into another species.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to transform.
 /// @param {[`ValueType::Mon`]} target The Mon to transform into.
-/// @returns {[`ValueType::Boolean`]} Whether the transformation was successful.
+/// @returns {[`ValueType::EventResult`]} Whether the transformation was successful.
 fn transform_into(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let transform_into_handle = context
@@ -3685,14 +3772,14 @@ fn transform_into(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         transform_into_handle,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Sets a Mon's illusion species.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the illusion.
 /// @param {[`ValueType::Mon`]} target The Mon to imitate.
-/// @returns {[`ValueType::Boolean`]} Whether the illusion was successfully set.
+/// @returns {[`ValueType::EventResult`]} Whether the illusion was successfully set.
 fn set_illusion(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let transform_into_handle = context
@@ -3705,20 +3792,20 @@ fn set_illusion(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         transform_into_handle,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Ends a Mon's illusion.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose illusion to end.
-/// @returns {[`ValueType::Boolean`]} Whether the illusion was successfully ended.
+/// @returns {[`ValueType::EventResult`]} Whether the illusion was successfully ended.
 fn end_illusion(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
 
     core_battle_actions::end_illusion(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Checks if a Mon can escape from battle.
@@ -3733,11 +3820,11 @@ fn can_escape(mut context: FunctionContext) -> Result<Value> {
 /// Makes a Mon escape from battle.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to escape.
-/// @returns {[`ValueType::Boolean`]} Whether the Mon escaped.
+/// @returns {[`ValueType::EventResult`]} Whether the Mon escaped.
 fn escape(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     core_battle_actions::try_escape(&mut context.mon_context(mon_handle)?, true)
-        .map(|val| Value::Boolean(val))
+        .map(|val| Value::EventResult(val))
 }
 
 /// Creates a new hit effect object.
@@ -3964,6 +4051,14 @@ fn move_action_to_value(move_action: &MoveAction) -> Value {
             Value::String(move_action.effective_move_id().to_string()),
         ),
         ("mon".to_owned(), Value::Mon(move_action.mon_action.mon)),
+        (
+            "priority".to_owned(),
+            Value::Fraction(move_action.priority.into()),
+        ),
+        (
+            "sub_priority".to_owned(),
+            Value::Fraction(move_action.sub_priority.into()),
+        ),
     ]))
 }
 
@@ -4012,7 +4107,7 @@ fn will_move_this_turn(context: FunctionContext) -> Result<Value> {
 ///
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} side_condition The side condition ID.
-/// @returns {[`ValueType::Boolean`]} Whether the side condition was removed.
+/// @returns {[`ValueType::EventResult`]} Whether the side condition was removed.
 fn remove_side_condition(mut context: FunctionContext) -> Result<Value> {
     let side = context.target_side_index_positional()?;
     let condition = context
@@ -4021,10 +4116,11 @@ fn remove_side_condition(mut context: FunctionContext) -> Result<Value> {
         .string()
         .wrap_error_with_message("invalid side condition")?;
     let condition = Id::from(condition);
-    Ok(Value::Boolean(core_battle_actions::remove_side_condition(
+    core_battle_actions::remove_side_condition(
         &mut context.forward_to_side_effect(side)?,
         &condition,
-    )?))
+    )
+    .map(|val| Value::EventResult(val))
 }
 
 /// Makes a Mon faint.
@@ -4264,7 +4360,7 @@ fn set_pp(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::UFraction`]} slot The slot index.
 /// @param {[`ValueType::String`]} condition The slot condition ID.
-/// @returns {[`ValueType::Boolean`]} Whether the slot condition was successfully added.
+/// @returns {[`ValueType::EventResult`]} Whether the slot condition was successfully added.
 fn add_slot_condition(mut context: FunctionContext) -> Result<Value> {
     let side_index = context.target_side_index_positional()?;
     let slot = context
@@ -4287,14 +4383,14 @@ fn add_slot_condition(mut context: FunctionContext) -> Result<Value> {
         &condition,
         link_handle.as_ref(),
     );
-    value.map(|val| Value::Boolean(val))
+    value.map(|val| Value::EventResult(val))
 }
 /// Removes a slot condition.
 ///
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::UFraction`]} slot The slot index.
 /// @param {[`ValueType::String`]} condition The slot condition ID.
-/// @returns {[`ValueType::Boolean`]} Whether the slot condition was removed.
+/// @returns {[`ValueType::EventResult`]} Whether the slot condition was removed.
 fn remove_slot_condition(mut context: FunctionContext) -> Result<Value> {
     let side_index = context.target_side_index_positional()?;
     let slot = context
@@ -4310,15 +4406,15 @@ fn remove_slot_condition(mut context: FunctionContext) -> Result<Value> {
     let condition = Id::from(condition);
 
     let mut context = context.forward_to_side_effect(side_index)?;
-    let value = core_battle_actions::remove_slot_condition(&mut context, slot, &condition);
-    value.map(|val| Value::Boolean(val))
+    core_battle_actions::remove_slot_condition(&mut context, slot, &condition)
+        .map(|val| Value::EventResult(val))
 }
 
 /// Adds a side condition to a side.
 ///
 /// @param {[`ValueType::Side`]} [side] The side to modify.
 /// @param {[`ValueType::String`]} [condition] The condition effect ID.
-/// @returns {[`ValueType::Boolean`]} Whether the condition was added.
+/// @returns {[`ValueType::EventResult`]} Whether the condition was added.
 fn add_side_condition(mut context: FunctionContext) -> Result<Value> {
     let side_index = context.target_side_index_positional()?;
     let condition = context
@@ -4330,9 +4426,8 @@ fn add_side_condition(mut context: FunctionContext) -> Result<Value> {
     let link_handle = context.link_handle()?;
 
     let mut context = context.forward_to_side_effect(side_index)?;
-    let value =
-        core_battle_actions::add_side_condition(&mut context, &condition, link_handle.as_ref());
-    value.map(|val| Value::Boolean(val))
+    core_battle_actions::add_side_condition(&mut context, &condition, link_handle.as_ref())
+        .map(|val| Value::EventResult(val))
 }
 
 /// Checks if two Mons are adjacent.
@@ -4491,8 +4586,8 @@ fn add_move_action(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::Mon`]} [mon] The Mon whose item to take.
 /// @flag dry_run If set, the item is not actually taken.
 /// @flag silent If set, no message is displayed.
-/// @returns {[`ValueType::String`] | [`ValueType::Undefined`]} The ID of the item that was taken.
-fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
+/// @returns {[`ValueType::String`] | [`ValueType::EventResult`]} The ID of the item that was taken.
+fn take_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     let dry_run = context.has_flag("dry_run");
     let silent = context.silent();
@@ -4501,14 +4596,16 @@ fn take_item(mut context: FunctionContext) -> Result<Option<Value>> {
         dry_run,
         silent,
     )?
-    .map(|val| Value::String(val.to_string())))
+    .result()
+    .map(|val| Value::String(val.to_string()))
+    .unwrap_or_else(|err| Value::EventResult(err)))
 }
 
 /// Sets a Mon's held item.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} item The item ID.
-/// @returns {[`ValueType::Boolean`]} Whether the item was successfully set.
+/// @returns {[`ValueType::EventResult`]} Whether the item was successfully set.
 fn set_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     let item = context
@@ -4518,11 +4615,12 @@ fn set_item(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid item")?;
     let dry_run = context.has_flag("dry_run");
 
-    Ok(Value::Boolean(core_battle_actions::set_item(
+    core_battle_actions::set_item(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &item,
         dry_run,
-    )?))
+    )
+    .map(|val| Value::EventResult(val))
 }
 
 /// Decreases a Mon's weight.
@@ -4547,7 +4645,7 @@ fn decrease_weight(mut context: FunctionContext) -> Result<()> {
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to eat.
 /// @flag force If set, the consumption cannot be stopped.
-/// @returns {[`ValueType::Boolean`]} Whether the item was eaten.
+/// @returns {[`ValueType::EventResult`]} Whether the item was eaten.
 fn eat_item(mut context: FunctionContext) -> Result<Value> {
     let force = context.has_flag("force");
     let mon = context.target_handle_positional()?;
@@ -4555,14 +4653,14 @@ fn eat_item(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         force,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Makes a Mon eat a specific item.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to eat.
-/// @param {[`ValueType::String`] | [`ValueType::Effect`]} item The item ID to eat.
-/// @returns {[`ValueType::Boolean`]} Whether the item was eaten.
+/// @param {[`ValueType::String`]} item The item ID to eat.
+/// @returns {[`ValueType::EventResult`]} Whether the item was eaten.
 fn eat_given_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     let item = context
@@ -4575,24 +4673,24 @@ fn eat_given_item(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &item,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Uses a Mon's held item.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the item.
-/// @returns {[`ValueType::Boolean`]} Whether the item was successfully used.
+/// @returns {[`ValueType::EventResult`]} Whether the item was successfully used.
 fn use_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     core_battle_actions::use_item(&mut context.forward_to_applying_effect_context_with_target(mon)?)
-        .map(|val| Value::Boolean(val))
+        .map(|val| Value::EventResult(val))
 }
 
 /// Uses a specific item.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon using the item.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} item The item ID to use.
-/// @returns {[`ValueType::Boolean`]} Whether the item was successfully used.
+/// @returns {[`ValueType::EventResult`]} Whether the item was successfully used.
 fn use_given_item(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     let item = context
@@ -4605,7 +4703,7 @@ fn use_given_item(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &item,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Makes a Mon discard its held item.
@@ -4652,7 +4750,7 @@ fn valid_target(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} ability The new ability ID.
 /// @flag dry_run If set, the ability is not actually changed.
 /// @flag silent If set, no message is displayed.
-/// @returns {[`ValueType::Boolean`]} Whether the ability was successfully set.
+/// @returns {[`ValueType::EventResult`]} Whether the ability was successfully set.
 fn set_ability(mut context: FunctionContext) -> Result<Value> {
     let silent = context.silent();
     let dry_run = context.has_flag("dry_run");
@@ -4669,7 +4767,7 @@ fn set_ability(mut context: FunctionContext) -> Result<Value> {
         false,
         silent,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Checks if a Mon received an attack this turn.
@@ -4872,7 +4970,7 @@ fn type_chart_immunity(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::String`]} forme The new forme ID.
 /// @flag permanent If set, the forme change is permanent.
 /// @flag revertible If set with the `permanent` flag, the forme change will revert on exit.
-/// @returns {[`ValueType::Boolean`]} Whether the forme was successfully changed.
+/// ability. @returns {[`ValueType::EventResult`]} Whether the forme was successfully changed.
 fn forme_change(mut context: FunctionContext) -> Result<Value> {
     let permanent = context.has_flag("permanent");
     let revertible = context.has_flag("revertible");
@@ -4887,23 +4985,21 @@ fn forme_change(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(target)?,
         &forme,
         if permanent {
-            if revertible {
-                core_battle_actions::FormeChangeType::PermanentRevertOnExit
-            } else {
-                core_battle_actions::FormeChangeType::Permanent
+            core_battle_actions::FormeChangeType::Permanent {
+                revert_on_exit: revertible,
             }
         } else {
             core_battle_actions::FormeChangeType::Temporary
         },
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Executes a primal reversion.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`]} forme The primal forme ID.
-/// @returns {[`ValueType::Boolean`]} Whether the primal reversion was successful.
+/// @returns {[`ValueType::EventResult`]} Whether the primal reversion was successful.
 fn primal_reversion(mut context: FunctionContext) -> Result<Value> {
     let target = context.target_handle_positional()?;
     let forme = context
@@ -4916,7 +5012,7 @@ fn primal_reversion(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(target)?,
         &forme,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Ends a Mon's Dynamax state.
@@ -5182,6 +5278,28 @@ fn object_set(mut context: FunctionContext) -> Result<Value> {
     Ok(Value::Object(object))
 }
 
+/// Removes a key from an effect state object.
+///
+/// @param {[`ValueType::EffectState`]} effect_state The effect state to modify.
+/// @param {[`ValueType::String`]} key The key to remove.
+/// @returns {[`ValueType::Any`]} The value that was present, if any.
+fn effect_state_remove_key(mut context: FunctionContext) -> Result<Option<Value>> {
+    let effect_state = context
+        .pop_front()
+        .wrap_expectation("missing object")?
+        .effect_state()
+        .wrap_error_with_message("invalid object")?;
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+
+    Ok(effect_state
+        .get_mut(context.battle_context_mut())?
+        .remove(&key))
+}
+
 /// Returns an 's' if the number is not 1.
 ///
 /// @param {[`ValueType::UFraction`]} number The number to check.
@@ -5202,7 +5320,7 @@ fn plural(mut context: FunctionContext) -> Result<Value> {
 /// Adds pseudo-weather to the field.
 ///
 /// @param {[`ValueType::String`]} weather The pseudo-weather ID.
-/// @returns {[`ValueType::Boolean`]} Whether the pseudo-weather was successfully added.
+/// @returns {[`ValueType::EventResult`]} Whether the pseudo-weather was successfully added.
 fn add_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
     let pseudo_weather = context
         .pop_front()
@@ -5217,13 +5335,13 @@ fn add_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
         &pseudo_weather,
         link_handle.as_ref(),
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Removes pseudo-weather from the field.
 ///
 /// @param {[`ValueType::String`]} weather The pseudo-weather ID.
-/// @returns {[`ValueType::Boolean`]} Whether the pseudo-weather was successfully removed.
+/// @returns {[`ValueType::EventResult`]} Whether the pseudo-weather was successfully removed.
 fn remove_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
     let pseudo_weather = context
         .pop_front()
@@ -5236,7 +5354,7 @@ fn remove_pseudo_weather(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_field_effect()?,
         &pseudo_weather,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Checks if a pseudo-weather is active on the field.
@@ -5401,14 +5519,14 @@ fn swap_boosts(mut context: FunctionContext) -> Result<()> {
 /// Inverts a Mon's boosts.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
-/// @returns {[`ValueType::Boolean`]} Whether the boosts were successfully inverted.
+/// @returns {[`ValueType::EventResult`]} The outcome of the boost inversion.
 fn invert_boosts(mut context: FunctionContext) -> Result<Value> {
     let target = context.target_handle_positional()?;
 
     core_battle_actions::invert_boosts(
         &mut context.forward_to_applying_effect_context_with_target(target)?,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Gets a Mon's base species ID.
@@ -5419,6 +5537,20 @@ fn base_species(mut context: FunctionContext) -> Result<Value> {
     let mon = context.target_handle_positional()?;
     let context = context.mon_context(mon)?;
     Mon::base_species_of_species(&context).map(|id| Value::String(id.to_string()))
+}
+
+/// Looks up a base species ID.
+///
+/// @param {[`ValueType::String`]} species The species to query.
+/// @returns {[`ValueType::String`]} The base species ID.
+fn lookup_base_species(mut context: FunctionContext) -> Result<Value> {
+    let species = context
+        .pop_front()
+        .wrap_expectation("missing species")?
+        .id()
+        .wrap_error_with_message("invalid species")?;
+    CoreBattle::base_species_of_species(context.battle_context_mut(), &species)
+        .map(|id| Value::String(id.to_string()))
 }
 
 /// Skips an effect callback.
@@ -5441,6 +5573,34 @@ fn skip_effect_callback(mut context: FunctionContext) -> Result<()> {
     Ok(())
 }
 
+/// Saves an arbitrary value to the event state.
+///
+/// @param {[`ValueType::String`]} key Key.
+/// @param {[`ValueType::Any`]} value Value.
+fn save_event_state_value(mut context: FunctionContext) -> Result<()> {
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    let value = context.pop_front().wrap_expectation("missing value")?;
+    context.event_state().save_value(key, value);
+    Ok(())
+}
+
+/// Reads an arbitrary value from the event state.
+///
+/// @param {[`ValueType::String`]} key Key.
+/// @returns {[`ValueType::Any`]} Value.
+fn read_event_state_value(mut context: FunctionContext) -> Result<Option<Value>> {
+    let key = context
+        .pop_front()
+        .wrap_expectation("missing key")?
+        .string()
+        .wrap_error_with_message("invalid key")?;
+    Ok(context.event_state().read_value(&key))
+}
+
 /// Gets a value from an effect's local data.
 ///
 /// @param {[`ValueType::Effect`]} [effect] The effect handle.
@@ -5453,13 +5613,12 @@ fn value_from_local_data(mut context: FunctionContext) -> Result<Option<Value>> 
         .wrap_expectation("missing key")?
         .string()
         .wrap_error_with_message("invalid key")?;
-    Ok(CoreBattle::get_effect_by_handle(
-        context.evaluation_context().battle_context(),
+    Ok(CoreBattle::get_parsed_effect_by_handle(
+        context.evaluation_context_mut().battle_context_mut(),
         &effect_handle,
     )?
-    .fxlang_effect()
-    .wrap_expectation("effect does not have local data")?
-    .local_data
+    .wrap_not_found_error("effect does not exist")?
+    .local_data()
     .values
     .get(&key)
     .map(|val| val.clone().into()))
@@ -5581,7 +5740,7 @@ fn get_move_targets(mut context: FunctionContext) -> Result<Value> {
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to swap.
 /// @param {[`ValueType::UFraction`]} position The target position index.
-/// @returns {[`ValueType::Boolean`]} Whether the swap was successful.
+/// @returns {[`ValueType::EventResult`]} Whether the swap was successful.
 fn swap_position(mut context: FunctionContext) -> Result<Value> {
     let target_handle = context.target_handle_positional()?;
     let position = context
@@ -5594,7 +5753,7 @@ fn swap_position(mut context: FunctionContext) -> Result<Value> {
         position,
         false,
     )
-    .map(Value::Boolean)
+    .map(Value::EventResult)
 }
 
 /// Sets whether a Mon needs to switch out.
@@ -5622,19 +5781,19 @@ fn switch_out(mut context: FunctionContext) -> Result<Value> {
     let target_handle = context.target_handle_positional()?;
     let mut context = context.mon_context(target_handle)?;
     context.mon_mut().switch_state.needs_switch = Some(SwitchType::Normal);
-    core_battle_actions::switch_out(&mut context, false).map(|val| Value::Boolean(val))
+    core_battle_actions::switch_out(&mut context, None).map(|val| Value::Boolean(val))
 }
 
 /// Forces a Mon to switch out.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to switch.
-/// @returns {[`ValueType::Boolean`]} Whether the Mon was forced to switch.
+/// @returns {[`ValueType::EventResult`]} Whether the Mon was forced to switch.
 fn force_switch(mut context: FunctionContext) -> Result<Value> {
     let target_handle = context.target_handle_positional()?;
     core_battle_actions::force_switch(
         &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Activates a Mon's ability.
@@ -5858,7 +6017,7 @@ fn undynamaxed_hp_calculation(mut context: FunctionContext) -> Result<Value> {
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} ability The sub-ability ID.
-/// @returns {[`ValueType::Boolean`]} Whether the sub-ability was successfully added.
+/// @returns {[`ValueType::EventResult`]} Whether the sub-ability was successfully added.
 fn add_sub_ability(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     let ability_id = context
@@ -5870,19 +6029,19 @@ fn add_sub_ability(mut context: FunctionContext) -> Result<Value> {
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
         &ability_id,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Clears all sub-abilities from a Mon's ability.
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
-/// @returns {[`ValueType::Boolean`]} Whether the sub-ability was successfully added.
+/// @returns {[`ValueType::EventResult`]} Whether the sub-ability was successfully added.
 fn clear_sub_abilities(mut context: FunctionContext) -> Result<Value> {
     let mon_handle = context.target_handle_positional()?;
     core_battle_actions::clear_sub_abilities(
         &mut context.forward_to_applying_effect_context_with_target(mon_handle)?,
     )
-    .map(|val| Value::Boolean(val))
+    .map(|val| Value::EventResult(val))
 }
 
 /// Swaps all eligible side conditions between two sides.
@@ -5890,7 +6049,7 @@ fn clear_sub_abilities(mut context: FunctionContext) -> Result<Value> {
 /// @param {[`ValueType::Side`]} [target_side] The target side.
 /// @param {[`ValueType::Side`]} [source_side] The source side to swap with.
 /// @param {[`ValueType::List`]} conditions Eligible conditions to swap.
-/// @returns {[`ValueType::Boolean`]} Whether at least one swap occurred.
+/// @returns {[`ValueType::EventResult`]} Whether at least one swap occurred.
 fn swap_side_conditions(mut context: FunctionContext) -> Result<Value> {
     let target_side = context.target_side_index_positional()?;
     let source_side = context.source_side_index_positional()?;
@@ -5908,7 +6067,7 @@ fn swap_side_conditions(mut context: FunctionContext) -> Result<Value> {
         source_side,
         conditions,
     )
-    .map(Value::Boolean)
+    .map(Value::EventResult)
 }
 
 /// Calculates the base damage of a move.
@@ -5959,4 +6118,16 @@ fn request_mon_selection(mut context: FunctionContext) -> Result<()> {
     let mut context = context.forward_to_applying_effect_context_with_target(mon_handle)?;
     context.target_mut().volatile_state.select = Some(reason);
     Ok(())
+}
+
+/// Converts a value to an EventResult.
+///
+/// @param {[`ValueType::Boolean`] | [`ValueType::String`]} value Value.
+/// @returns {[`ValueType::EventResult`]} EventResult.
+fn event_result(mut context: FunctionContext) -> Result<Value> {
+    context
+        .pop_front()
+        .wrap_expectation("missing value")?
+        .event_result()
+        .map(|val| Value::EventResult(val))
 }

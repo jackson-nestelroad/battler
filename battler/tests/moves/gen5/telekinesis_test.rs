@@ -251,7 +251,6 @@ fn telekinesis_fails_against_diglett() {
         r#"[
             "move|mon:Musharna,player-1,1|name:Telekinesis|noanim",
             "immune|mon:Diglett,player-2,1",
-            "fail|mon:Musharna,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

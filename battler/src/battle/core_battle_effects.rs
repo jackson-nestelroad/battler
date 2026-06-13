@@ -24,10 +24,10 @@ use crate::{
         Context,
         CoreBattle,
         EffectContext,
+        EventResult,
         FieldEffectContext,
         MonContext,
         MonHandle,
-        MoveEventResult,
         MoveHandle,
         MoveOutcomeOnTarget,
         PlayerContext,
@@ -303,9 +303,9 @@ impl OptionalEventOutput for MoveHandle {
     }
 }
 
-impl OptionalEventOutput for MoveEventResult {
+impl OptionalEventOutput for EventResult {
     fn from_fxlang_value(val: Option<fxlang::Value>) -> Option<Self> {
-        val.map(|val| val.move_result().ok()).flatten()
+        val.map(|val| val.event_result().ok()).flatten()
     }
 }
 
@@ -1219,7 +1219,11 @@ where
         }
 
         if ended {
-            if callback_handle.applied_effect_handle.end(&mut context)? {
+            if callback_handle
+                .applied_effect_handle
+                .end(&mut context)?
+                .advance()
+            {
                 continue;
             }
         }

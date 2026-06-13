@@ -207,7 +207,7 @@ fn gastro_acid_cannot_be_passed_to_unsuppressible_ability() {
             "turn|turn:2",
             "continue",
             "move|mon:Shedinja,player-2,1|name:Baton Pass|target:Shedinja,player-2,1",
-            "switchout|mon:Shedinja,player-2,1",
+            "switchout|mon:Shedinja,player-2,1|copyvolatile",
             "continue",
             "split|side:1",
             ["switch", "player-2", "Komala"],

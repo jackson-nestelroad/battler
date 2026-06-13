@@ -626,3 +626,27 @@ pub fn move_makes_contact(context: &mut ActiveMoveContext) -> bool {
     // Check if the attacker is contact-proof.
     return !is_contact_proof(context.as_mon_context_mut());
 }
+
+/// The effective Terastallization type for the Mon.
+pub fn effective_tera_type(context: &mut MonContext) -> Type {
+    if let Some(effective_tera_type) = context
+        .mon()
+        .volatile_state
+        .effect_cache
+        .effective_tera_type
+        .clone()
+    {
+        return effective_tera_type;
+    }
+    let effective_tera_type = core_battle_effects::run_event_with_relay::<_, Type>(
+        context,
+        fxlang::BattleEvent::ForceTeraType,
+        context.mon().tera_type,
+    );
+    context
+        .mon_mut()
+        .volatile_state
+        .effect_cache
+        .effective_tera_type = Some(effective_tera_type);
+    effective_tera_type
+}

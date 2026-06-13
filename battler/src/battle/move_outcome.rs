@@ -3,26 +3,28 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
 };
 
+use crate::battle::EventResult;
+
 /// The outcome of a move used on a single turn of battle.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
 pub enum MoveOutcome {
-    /// The move was skipped. In other words, it neither succeeded or failed.
+    /// The move was skipped. In other words, it neither succeeded nor failed.
     #[string = "Skipped"]
     Skipped,
     /// THe move failed completely.
     #[string = "Failed"]
     Failed,
     /// The move succeeded. This can also mean partially succeeded.
-    #[string = "Success"]
-    Success,
+    #[string = "Succeeded"]
+    Succeeded,
 }
 
 impl MoveOutcome {
-    pub fn success(&self) -> bool {
+    pub fn succeeded(&self) -> bool {
         match self {
-            Self::Success => true,
+            Self::Succeeded => true,
             _ => false,
         }
     }
@@ -37,17 +39,28 @@ impl MoveOutcome {
 
 impl From<bool> for MoveOutcome {
     fn from(value: bool) -> Self {
-        if value { Self::Success } else { Self::Failed }
+        if value { Self::Succeeded } else { Self::Failed }
     }
 }
 
-impl From<MoveEventResult> for MoveOutcome {
-    fn from(value: MoveEventResult) -> Self {
+impl From<MoveOutcomeOnTarget> for MoveOutcome {
+    fn from(value: MoveOutcomeOnTarget) -> Self {
+        if value.success() {
+            MoveOutcome::Succeeded
+        } else if value.failed() {
+            MoveOutcome::Failed
+        } else {
+            MoveOutcome::Skipped
+        }
+    }
+}
+
+impl From<EventResult> for MoveOutcome {
+    fn from(value: EventResult) -> Self {
         match value {
-            MoveEventResult::Fail => Self::Failed,
-            MoveEventResult::StopFail => Self::Failed,
-            MoveEventResult::Stop => Self::Skipped,
-            MoveEventResult::Advance => Self::Success,
+            EventResult::Fail | EventResult::StopFail => Self::Failed,
+            EventResult::StopReportFail | EventResult::Stop | EventResult::Skip => Self::Skipped,
+            EventResult::Advance => Self::Succeeded,
         }
     }
 }
@@ -56,52 +69,61 @@ impl From<MoveEventResult> for MoveOutcome {
 ///
 /// Differs from [`MoveOutcome`] in that it roughly tracks the effect a move had on a single target,
 /// rather than the outcome of the use of the move as a whole.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MoveOutcomeOnTarget {
-    /// It is unknown how the move affected the target.
+    // Move has not done anything to the target.
+    //
+    // Treated as a successful hit by default.
     Unknown,
-    /// The move failed to do anything to the target.
-    Failure,
-    /// The move was stopped, but it did not necessarily fail.
-    Stopped,
-    /// The move hit a Substitute.
+    // Move has failed or hit with no damage.
+    EventResult(EventResult),
+    // Move hit a Substitute.
+    //
+    // Successful, but should not continue executing.
     HitSubstitute,
-    /// The move successfully hit the target.
-    #[default]
-    Success,
-    /// The move successfully dealt damage to the target.
+    // Move applied damage.
     Damage(u16),
 }
 
 impl MoveOutcomeOnTarget {
     /// Did the move succeed?
-    pub fn success(&self) -> bool {
+    fn success(&self) -> bool {
         match self {
-            Self::Stopped | Self::Failure => false,
-            _ => true,
+            Self::Unknown | Self::Damage(_) | Self::HitSubstitute => true,
+            Self::EventResult(result) => result.advance(),
         }
     }
 
     /// Did the move hit anything (including a Substitute)?
     pub fn hit(&self) -> bool {
-        match self {
-            Self::Failure | Self::Stopped => false,
-            _ => true,
-        }
+        self.success()
     }
 
     /// Did the move hit the target as intended?
-    pub fn hit_target(&self) -> bool {
-        match self {
-            Self::Failure | Self::Stopped | Self::HitSubstitute => false,
-            _ => true,
-        }
+    pub fn advance(&self) -> bool {
+        self.success() && *self != Self::HitSubstitute
     }
 
     /// Did the move fail?
     pub fn failed(&self) -> bool {
         match self {
-            Self::Failure => true,
+            Self::EventResult(result) => result.failed(),
+            _ => false,
+        }
+    }
+
+    /// Should the move report a failure?
+    pub fn report_failure(&self) -> bool {
+        match self {
+            Self::EventResult(result) => result.report_failure(),
+            _ => false,
+        }
+    }
+
+    /// Should the move not animate?
+    pub fn do_not_animate(&self) -> bool {
+        match self {
+            Self::EventResult(result) => result.do_not_animate(),
             _ => false,
         }
     }
@@ -120,97 +142,33 @@ impl MoveOutcomeOnTarget {
     /// whole.
     pub fn combine(&self, other: Self) -> Self {
         match (*self, other) {
-            (Self::Unknown, right @ _) => right,
-            (Self::Failure, Self::Unknown) => Self::Failure,
-            (Self::Failure, Self::Stopped) => Self::Failure,
-            (Self::Failure, right @ _) => right,
-            (Self::Stopped, right @ _) => right,
-            (Self::HitSubstitute, Self::Unknown) => Self::HitSubstitute,
-            (Self::HitSubstitute, right @ _) => right,
-            (Self::Success, Self::Damage(right)) => Self::Damage(right),
-            (Self::Success, _) => Self::Success,
+            (Self::Unknown, right) => right,
+            (left @ _, Self::Unknown) => left,
+            (Self::HitSubstitute, right) => right,
+            (Self::EventResult(a), Self::EventResult(b)) => Self::EventResult(a.combine(b)),
             (Self::Damage(left), Self::Damage(right)) => Self::Damage(left + right),
             (left @ Self::Damage(_), _) => left,
+            (_, right @ Self::Damage(_)) => right,
+            (left @ Self::EventResult(result), _) if result.advance() => left,
+            (Self::EventResult(_), right) => right,
         }
+    }
+}
+
+impl Default for MoveOutcomeOnTarget {
+    fn default() -> Self {
+        Self::EventResult(EventResult::default())
     }
 }
 
 impl From<bool> for MoveOutcomeOnTarget {
     fn from(value: bool) -> Self {
-        if value { Self::Success } else { Self::Failure }
+        Self::EventResult(EventResult::from(value))
     }
 }
 
-impl From<MoveEventResult> for MoveOutcomeOnTarget {
-    fn from(value: MoveEventResult) -> Self {
-        match value {
-            MoveEventResult::Fail => Self::Failure,
-            MoveEventResult::StopFail => Self::Failure,
-            MoveEventResult::Stop => Self::Stopped,
-            MoveEventResult::Advance => Self::Success,
-        }
-    }
-}
-
-/// The result of a move event, which indicates how the rest of the move should be handled.
-#[derive(
-    Debug,
-    Default,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    SerializeLabeledStringEnum,
-    DeserializeLabeledStringEnum,
-)]
-pub enum MoveEventResult {
-    /// Fail the move immediately.
-    #[string = "fail"]
-    Fail,
-    /// Stop the move, but the move did not necessarily fail, but if this is the only result, then
-    /// the move did fail.
-    #[string = "stopfail"]
-    StopFail,
-    /// Stop the move, but the move did not necessarily fail.
-    #[string = "stop"]
-    Stop,
-    /// Continue the move.
-    #[string = "continue"]
-    #[default]
-    Advance,
-}
-
-impl MoveEventResult {
-    /// Keep executing the move?
-    pub fn advance(&self) -> bool {
-        match self {
-            Self::Advance => true,
-            _ => false,
-        }
-    }
-
-    /// Fail the move immediately?
-    pub fn failed(&self) -> bool {
-        match self {
-            Self::Fail => true,
-            _ => false,
-        }
-    }
-
-    /// Combines two results into one.
-    pub fn combine(&self, other: Self) -> Self {
-        match (*self, other) {
-            (Self::Advance, _) => Self::Advance,
-            (_, Self::Advance) => Self::Advance,
-            (Self::Fail, _) => Self::Fail,
-            (Self::StopFail, right @ _) => right,
-            (Self::Stop, right @ _) => right,
-        }
-    }
-}
-
-impl From<bool> for MoveEventResult {
-    fn from(value: bool) -> Self {
-        if value { Self::Advance } else { Self::Fail }
+impl From<EventResult> for MoveOutcomeOnTarget {
+    fn from(value: EventResult) -> Self {
+        Self::EventResult(value)
     }
 }

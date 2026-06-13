@@ -113,6 +113,7 @@ fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCo
         .with_seed(seed)
         .with_team_validation(false)
         .with_pass_allowed(true)
+        .with_terastallization(true)
         .with_speed_sort_tie_resolution(CoreBattleEngineSpeedSortTieResolution::Keep)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
@@ -332,6 +333,122 @@ fn illusion_ends_when_ability_is_suppressed_with_neutralizing_gass() {
             "switch|player:player-2|position:1|name:Zoroark|health:100/100|species:Zoroark|level:50|gender:U",
             "residual",
             "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn illusion_does_not_end_when_terastallizing() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,tera"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["switch", "player-1", "name:Entei", "species:Entei"],
+            ["switch", "player-1", "name:Entei", "species:Entei"],
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "tera|mon:Entei,player-1,1|type:Dark",
+            "move|mon:Entei,player-1,1|name:Tackle|target:Samurott,player-2,1",
+            "split|side:1",
+            "damage|mon:Samurott,player-2,1|health:127/155",
+            "damage|mon:Samurott,player-2,1|health:82/100",
+            "split|side:0",
+            "damage|mon:Entei,player-1,1|from:item:Life Orb|health:108/120",
+            "damage|mon:Entei,player-1,1|from:item:Life Orb|health:90/100",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn illusion_ends_when_terastallizing_into_ogerpon() {
+    let mut team_1 = team().unwrap();
+    team_1.members[5].name = "Ogerpon".to_owned();
+    team_1.members[5].species = "Ogerpon".to_owned();
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,tera"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["switch", "player-1", "name:Ogerpon", "species:Ogerpon"],
+            ["switch", "player-1", "name:Ogerpon", "species:Ogerpon"],
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "split|side:0",
+            ["replace", "player-1", "species:Zoroark"],
+            ["replace", "player-1", "species:Zoroark"],
+            "end|mon:Zoroark,player-1,1|ability:Illusion",
+            "tera|mon:Zoroark,player-1,1|type:Dark",
+            "move|mon:Zoroark,player-1,1|name:Tackle|target:Samurott,player-2,1",
+            "split|side:1",
+            "damage|mon:Samurott,player-2,1|health:127/155",
+            "damage|mon:Samurott,player-2,1|health:82/100",
+            "split|side:0",
+            "damage|mon:Zoroark,player-1,1|from:item:Life Orb|health:108/120",
+            "damage|mon:Zoroark,player-1,1|from:item:Life Orb|health:90/100",
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn illusion_ends_when_terastallizing_into_terapagos() {
+    let mut team_1 = team().unwrap();
+    team_1.members[5].name = "Terapagos".to_owned();
+    team_1.members[5].species = "Terapagos".to_owned();
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 3"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,tera"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["switch", "player-1", "name:Terapagos", "species:Terapagos"],
+            ["switch", "player-1", "name:Terapagos", "species:Terapagos"],
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "split|side:0",
+            ["replace", "player-1", "species:Zoroark"],
+            ["replace", "player-1", "species:Zoroark"],
+            "end|mon:Zoroark,player-1,1|ability:Illusion",
+            "tera|mon:Zoroark,player-1,1|type:Dark",
+            "move|mon:Zoroark,player-1,1|name:Tackle|target:Samurott,player-2,1",
+            "split|side:1",
+            "damage|mon:Samurott,player-2,1|health:127/155",
+            "damage|mon:Samurott,player-2,1|health:82/100",
+            "split|side:0",
+            "damage|mon:Zoroark,player-1,1|from:item:Life Orb|health:108/120",
+            "damage|mon:Zoroark,player-1,1|from:item:Life Orb|health:90/100",
+            "residual",
+            "turn|turn:3"
         ]"#,
     )
     .unwrap();

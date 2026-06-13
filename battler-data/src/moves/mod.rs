@@ -35,4 +35,7 @@ pub use move_target::MoveTarget;
 pub use multihit_type::MultihitType;
 pub use ohko_type::OhkoType;
 pub use self_destruct_type::SelfDestructType;
-pub use switch_type::SwitchType;
+pub use switch_type::{
+    CopyVolatileType,
+    SwitchType,
+};

@@ -58,7 +58,7 @@ fn electric_surge_starts_electric_terrain_on_switch_in() {
             "split|side:1",
             ["switch"],
             ["switch"],
-            "fieldstart|move:Electric Terrain|from:ability:Electric Surge|of:Tapu Koko,player-2,1",
+            "fieldstart|move:Electric Terrain|from:ability:Electric Surge|of:Tapu Koko,player-1,1",
             "turn|turn:1"
         ]"#,
     )

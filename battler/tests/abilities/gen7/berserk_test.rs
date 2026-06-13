@@ -83,7 +83,7 @@ fn berserk_boosts_special_attack_when_health_drops_below_half() {
 }
 
 #[test]
-fn berserk_boosts_after_berry_for_single_hit_move() {
+fn berserk_boosts_before_berry_for_single_hit_move() {
     let mut team_2 = team().unwrap();
     team_2.members[0].item = Some("Sitrus Berry".to_owned());
     let mut battle = make_battle(0, team().unwrap(), team_2).unwrap();

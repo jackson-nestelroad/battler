@@ -191,7 +191,6 @@ fn soak_fails_on_multitype() {
         r#"[
             "move|mon:Alomomola,player-1,1|name:Soak|noanim",
             "fail|mon:Arceus,player-2,1|what:move:Soak",
-            "fail|mon:Alomomola,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

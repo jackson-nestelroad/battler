@@ -121,7 +121,6 @@ fn mind_blown_does_not_deal_recoil_if_canceled_by_damp() {
         r#"[
             "move|mon:Blacephalon,player-1,1|name:Mind Blown|noanim",
             "cant|mon:Blacephalon,player-1,1|from:ability:Damp|of:Blacephalon,player-2,1",
-            "fail|mon:Blacephalon,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

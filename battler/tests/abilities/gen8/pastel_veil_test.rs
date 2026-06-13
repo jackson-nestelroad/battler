@@ -84,13 +84,11 @@ fn pastel_veil_prevents_poison_for_user_and_allies() {
         r#"[
             "move|mon:Rapidash,player-1,1|name:Toxic|noanim",
             "immune|mon:Rapidash,player-2,1|from:ability:Pastel Veil",
-            "fail|mon:Rapidash,player-1,1",
             "residual",
             "turn|turn:2",
             "continue",
             "move|mon:Rapidash,player-1,1|name:Toxic|noanim",
             "block|mon:Darmanitan,player-2,2|move:Toxic|from:ability:Pastel Veil|of:Rapidash,player-2,1",
-            "fail|mon:Rapidash,player-1,1",
             "residual",
             "turn|turn:3"
         ]"#,

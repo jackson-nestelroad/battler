@@ -2854,7 +2854,19 @@
     "learnset": {},
     "effect": {
       "callbacks": {
-        "on_can_dynamax": ["return false"]
+        "on_can_dynamax": ["return false"],
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
+        "on_update": [
+          "$base_species = func_call(base_species: $mon)",
+          "require $base_species == zacian else return",
+          "if $mon.item == rustedsword:",
+          ["forme_change: $mon zaciancrowned permanent"],
+          "else if $mon.species != zacian:",
+          ["forme_change: $mon zacian permanent"]
+        ]
       }
     }
   },
@@ -2890,7 +2902,19 @@
     "learnset": {},
     "effect": {
       "callbacks": {
-        "on_can_dynamax": ["return false"]
+        "on_can_dynamax": ["return false"],
+        "on_switch_in": {
+          "order": 1,
+          "program": ["run_event_on_mon_species: Update"]
+        },
+        "on_update": [
+          "$base_species = func_call(base_species: $mon)",
+          "require $base_species == zamazenta else return",
+          "if $mon.item == rustedshield:",
+          ["forme_change: $mon zamazentacrowned permanent"],
+          "else if $mon.species != zamazenta:",
+          ["forme_change: $mon zamazenta permanent"]
+        ]
       }
     }
   },
@@ -3682,7 +3706,21 @@
     "required_items": ["Rusted Sword"],
     "changes_from": "Zacian",
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "delegates": ["species:zacian"],
+      "callbacks": {
+        "on_overwrite_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if $move_slot.id == ironhead:",
+            [
+              "overwrite_move_slot: $mon func_call(move_slot_index: $move_slot.id) func_call(move_slot: behemothblade)"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "zamazentacrowned": {
     "name": "Zamazenta-Crowned",
@@ -3717,7 +3755,21 @@
     "required_items": ["Rusted Shield"],
     "changes_from": "Zamazenta",
     "flags": ["Restricted Legendary"],
-    "learnset": {}
+    "learnset": {},
+    "effect": {
+      "delegates": ["species:zamazenta"],
+      "callbacks": {
+        "on_overwrite_move": [
+          "foreach $move_slot in $mon.move_slots:",
+          [
+            "if $move_slot.id == ironhead:",
+            [
+              "overwrite_move_slot: $mon func_call(move_slot_index: $move_slot.id) func_call(move_slot: behemothbash)"
+            ]
+          ]
+        ]
+      }
+    }
   },
   "eternatuseternamax": {
     "name": "Eternatus-Eternamax",

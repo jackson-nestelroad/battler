@@ -47,11 +47,10 @@
         "on_try_hit": {
           "priority": 3,
           "program": [
-            "if !func_call(move_has_flag: $move protect):",
-            ["return"],
-            "if $move.target == user or $move.category == status:",
-            ["return"],
-            "log_activate: with_target",
+            "require func_call(move_has_flag: $move protect) else return",
+            "require $move.target != user and $move.category != status else return",
+            "if $report:",
+            ["log_activate: with_target"],
             "return stop"
           ]
         }
@@ -128,8 +127,7 @@
       "callbacks": {
         "on_side_start": ["log_side_start"],
         "on_switch_in": [
-          "if !$mon.is_grounded or $mon.is_immune_to_entry_hazards:",
-          ["return"],
+          "require $mon.is_grounded and !$mon.is_immune_to_entry_hazards else return",
           "log_activate: with_target",
           "boost: $mon 'spe:-1'"
         ],
@@ -402,9 +400,9 @@
       "callbacks": {
         "on_side_start": ["log_single_turn: use_source with_target"],
         "on_try_hit": [
-          "if [all, alladjacentallies, allies, user] has $move.target or $move.category != status:",
-          ["return"],
-          "log_activate: with_target",
+          "require !([all, alladjacentallies, allies, user] has $move.target) and $move.category == status else return",
+          "if $report:",
+          ["log_activate: with_target"],
           "return stop"
         ]
       }
@@ -454,9 +452,9 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": [
-          "if !$source:",
-          ["return"],
+          "require $source.is_defined else return",
           "if $source_effect.is_ability:",
           ["log_field_start: with_source_effect"],
           "else:",
@@ -493,9 +491,9 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": [
-          "if !$source:",
-          ["return"],
+          "require $source.is_defined else return",
           "if $source_effect.is_ability:",
           ["log_field_start: with_source_effect"],
           "else:",
@@ -506,14 +504,14 @@
         "on_set_status": [
           "if $effect.id == yawn or ($effect.is_move and !$effect.is_move_secondary):",
           ["log_activate: with_target"],
-          "return false"
+          "return stopfail"
         ],
         "on_add_volatile": [
           "if $volatile.id == yawn or $volatile.id == confusion:",
           [
             "if $effect.is_move and !$effect.is_move_secondary:",
             ["log_activate: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ]
       }
@@ -892,7 +890,7 @@
         "on_start": ["log_single_turn: with_target"],
         "on_try_move": [
           "if $move.type == fire:",
-          ["log_activate: with_target", "damage: $user expr($user.max_hp / 4)", "return false"]
+          ["log_activate: with_target", "damage: $user expr($user.max_hp / 4)", "return stopfail"]
         ]
       }
     }
@@ -946,7 +944,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return func_call(has_ability: $target [plus,    minus])"]
+        "on_try_hit": ["return func_call(has_ability: $target [plus, minus])"]
       }
     }
   },
@@ -992,9 +990,9 @@
     "condition": {
       "duration": 5,
       "callbacks": {
+        "on_duration": ["if !$source:", ["return 255"]],
         "on_field_start": [
-          "if !$source:",
-          ["return"],
+          "require $source.is_defined else return",
           "if $source_effect.is_ability:",
           ["log_field_start: with_source_effect"],
           "else:",
@@ -1006,12 +1004,12 @@
           [
             "if $effect.id == yawn or ($effect.is_move and !$effect.is_move_secondary):",
             ["log_activate: with_target"],
-            "return false"
+            "return stopfail"
           ]
         ],
         "on_add_volatile": [
           "if $volatile.id == yawn:",
-          ["log_activate: with_target", "return false"]
+          ["log_activate: with_target", "return stopfail"]
         ],
         "on_source_base_power": ["if $move.type == electric:", ["return $base_power * 13/10"]]
       }
