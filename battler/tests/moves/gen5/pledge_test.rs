@@ -226,7 +226,7 @@ fn water_fire_combo_doubles() {
             "split|side:1",
             "damage|mon:Samurott,player-2,1|health:87/155",
             "damage|mon:Samurott,player-2,1|health:57/100",
-            "sidestart|side:1|move:Water Pledge",
+            "sidestart|side:0|move:Water Pledge",
             "residual",
             "turn|turn:2",
             "continue",

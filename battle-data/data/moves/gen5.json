@@ -1181,8 +1181,8 @@
           [
             "$move.force_stab = true",
             "$move.type = water",
-            "$move.hit_effect = func_call(hit_effect)",
-            "$move.hit_effect.side_condition = waterpledge"
+            "$move.user_effect = func_call(hit_effect)",
+            "$move.user_effect.side_condition = waterpledge"
           ]
         ]
       }
@@ -1235,8 +1235,8 @@
           [
             "$move.force_stab = true",
             "$move.type = water",
-            "$move.hit_effect = func_call(hit_effect)",
-            "$move.hit_effect.side_condition = waterpledge"
+            "$move.user_effect = func_call(hit_effect)",
+            "$move.user_effect.side_condition = waterpledge"
           ]
         ]
       }
