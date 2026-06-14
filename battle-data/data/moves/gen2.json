@@ -1815,7 +1815,7 @@
       "callbacks": {
         "on_start": ["$effect_state.damage = 0"],
         "on_redirect_target": [
-          "require $move.id == counter else return",
+          "require $move.id == mirrorcoat else return",
           "require $effect_state.target_side.is_defined and $effect_state.target_position.is_defined else return",
           "return func_call(mon_in_position: $effect_state.target_side $effect_state.target_position)"
         ],
