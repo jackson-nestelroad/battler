@@ -1117,13 +1117,18 @@
           "return func_call(mon_in_position: $effect_state.target_side $effect_state.target_position)"
         ],
         "on_damaging_hit": [
-          "if !func_call(is_ally: $source $target) and $move.category == physical:",
-          [
-            "$effect_state.target_side = $source.side",
-            "$effect_state.target_position = $source.position",
-            "$effect_state.damage = 2 * $damage"
-          ]
+          "$category = func_call(value_from_local_data: category)",
+          "require !func_call(is_ally: $source $target) else return",
+          "require !$category or $move.category == $category else return",
+          "$effect_state.target_side = $source.side",
+          "$effect_state.target_position = $source.position",
+          "$effect_state.damage = 2 * $damage"
         ]
+      },
+      "local_data": {
+        "values": {
+          "category": "physical"
+        }
       }
     }
   },
