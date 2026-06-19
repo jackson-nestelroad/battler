@@ -1815,6 +1815,8 @@ As a rule of thumb:
 
 Stomping Tantrum requires all core battle actions and event callbacks to consider how they fail, which makes it one of the most far-reaching moves in the engine.
 
+### Honorable Mentions
+
 Here are some moves, in no particular order, that did not make the list but are interesting nonetheless:
 
 1. Ally Switch (Gen 5) - Swaps the position of two Pokémon. Increasing chance of failing between turns (same as Protect but a different counter).
