@@ -2,25 +2,25 @@
 
 ## Background
 
-In the fall of 2023, I started writing a Pokémon battle engine using the Rust programming language. My goal was purely recreational: I wanted a project that allowed me to write more Rust, and I wanted the challenge of exploring how to implement such a dynamic battle mechanics and interactions in a statically-compiled language. With this in mind, I started writing `battler`: a Rust-based Pokémon battle engine.
+In the fall of 2023, I started writing a Pokémon battle engine using the Rust programming language. My goal was purely recreational: I wanted a project that allowed me to write more Rust, and I wanted the challenge of exploring how to implement such dynamic battle mechanics and interactions in a statically-compiled language. With this in mind, I started writing `battler`: a Rust-based Pokémon battle engine.
 
-`battler` focuses on the backend logic of a Pokémon battle. It focuses on producing a battle log, which can be consumed by clients for understanding the flow of a battle (and adding UI elements on top of it).
+`battler` focuses on the backend logic of a Pokémon battle, producing a battle log that can be consumed by clients to understand the flow of a battle (and to build UI elements on top of it).
 
 ### Battle Mechanics
 
-If you are not familiar, Pokémon battles are turn-based. Players bring a team of Pokémon to battle against one another. On each turn, each player can make an action for each of their active Pokémon. An action can be using a move, switching out, using an item, or escaping (there are more niche actions, but you get the picture).
+If you are unfamiliar with the games, Pokémon battles are turn-based. Players bring a team of Pokémon to battle against one another. On each turn, each player can perform an action for each of their active Pokémon. An action can involve using a move, switching out, using an item, or escaping (though there are other, more niche actions).
 
-Pokémon moves on their own are complex. Pokémon moves can apply damage against one or more targets, or they can apply some condition to a Pokémon, side, or even the field itself. Some moves can hit multiple times, apply recoil damage, heal the user, have a random chance to apply some secondary effect, and more.
+Pokémon moves are complex on their own. They can deal damage to one or more targets, or apply conditions to a Pokémon, side, or even the field itself. Some moves can hit multiple times, apply recoil damage, heal the user, have a random chance to apply some secondary effect, and more.
 
-While moves are complex on their own, they are far from the only thing that impacts a battle. There are abilities, items, statuses, volatile statuses (which can stack), weather, side conditions, field conditions, and more. These effects introduce complex interactions with _other_ effects, including moves.
+While moves are complex on their own, they are far from the only thing that impacts a battle. There are abilities, items, statuses, volatile statuses (which can stack), weather, side conditions, field conditions, and more. These effects introduce complex interactions with other effects, including moves.
 
-This high complexity makes supporting things like 900+ moves and 180+ abilities (Generation 9 was the most recent generation at the time of starting the battle engine) practically impossible in the core logic of a battle engine.
+This high complexity makes supporting things like 900+ moves and 180+ abilities (Generation 9 was the most recent generation at the time I started writing the battle engine) practically impossible in the core logic of a battle engine.
 
 We need to make battle effects easy to program for different battle events and conditions.
 
 ### Separating Data from Mechanics
 
-A guiding principle of `battler` is that battle data (e.g., moves, abilities, items) are represented completely independent of the battle engine itself.
+A guiding principle of `battler` is that battle data (e.g., moves, abilities, items) is represented completely independently of the battle engine itself.
 
 The core battle engine is written in Rust and solely focuses on general mechanics, such as how Pokémon are represented, how various parts of the battle are modified in generic ways, and how battle actions are queued and executed.
 
@@ -28,11 +28,11 @@ On the other hand, the battle data itself is loaded into the battle engine on st
 
 Because of this design of separating battle data from the core battle engine, complex and highly-specialized effects cannot be "hard-coded" in the battle engine directly. Additionally, static data schemas are not adequate for capturing the vast majority of battle effects. Various parts of a move can be interrupted or short-circuited due to complex interactions, and even something as simple as a random chance and branching cannot easily be represented. Custom moves and effects will always require some sort of custom programming.
 
-We desire a mix of both: custom programming outside of the battle engine itself.
+We desire the best of both worlds: structured data definitions and custom programming outside of the battle engine itself.
 
 ### Introducing: fxlang
 
-The solution I imagined very early on was an interpreted scripting language that could be embedded directly within the battle data itself. As in, the JSON data for a move, ability, item, or other condition could contain the custom programming directly!
+The solution I imagined very early on was an interpreted scripting language that could be embedded directly within the battle data itself. Specifically, the JSON data for a move, ability, item, or other condition can contain the custom programming directly!
 
 **fxlang** (short for effects language) is a JSON-based interpreted language for writing battle effect event callbacks. Effect activation works as follows:
 
@@ -42,7 +42,7 @@ The solution I imagined very early on was an interpreted scripting language that
 
 fxlang supports anything a simple scripting language does: variables, lists, objects, expressions, function calls, branching, and iteration.
 
-fxlang hooks directly into the battle engine for mutating the battle. It has battle-specific variables types (e.g., Mons, effects, boost tables), properties for accessing state, and functions for triggering common effects (e.g., stat boosts, setting a status, changing an ability).
+fxlang hooks directly into the battle engine for mutating the battle. It has battle-specific variable types (e.g., Pokémon, effects, boost tables), properties for accessing state, and functions for triggering common effects (e.g., stat boosts, setting a status, changing an ability).
 
 #### Examples
 
@@ -81,7 +81,7 @@ Here is the fxlang effect for the ability "Static":
 }
 ```
 
-Here is the fxlang effect for the "Sleep" status condition":
+Here is the fxlang effect for the "Sleep" status condition:
 
 ```json
 {
@@ -160,11 +160,11 @@ In short, there is core battle engine support and battle data for:
 
 ## Using fxlang to Analyze Battle Effects
 
-As a sort of celebration of this achievement, I thought it would be interesting to use the fxlang effects and conditions (implemented for all the different battle mechanics and effects) to highlight some of the _most complex battle effects_.
+As a sort of celebration of this achievement, I thought it would be interesting to use the fxlang effects and conditions (implemented for all the different battle mechanics and effects) to highlight some of the most complex battle effects.
 
-While complexity is certainly subjective, I attempted to analyze on the following properties:
+While complexity is certainly subjective, I attempted to analyze the following properties:
 
-1. **Statement Count (Length)** - The total count of active fxlang statements across all the effect's resolved callbacks (ignoring whitespace and comments)
+1. **Statement Count (Length)** - The total count of active fxlang statements across all the effect's resolved callbacks (ignoring whitespace and comments).
 2. **Statement Uniqueness Score** - Measures how unique the code statements are. The fewer effects that have a given statement, the better the score. In other words, one-off statements (e.g., a unique function call) score higher than generic, highly-reused statements.
 3. **Feature Uniqueness Score** - Measures the usage of rare language properties or custom functions. All variables, functions, and event callbacks are extracted.
 4. **Control Flow Complexity** - The count of branching keywords in resolved statements.
@@ -175,7 +175,7 @@ These factors are used to give us a starting list. I will additionally introduce
 
 ## Battle Mechanics
 
-Generations 6 through 9 introduces special battle mechanics, which can be activated once per battle when a Pokémon is making a move. Since there are only four generational gimmicks, we can analyze all of them.
+Generations 6 through 9 introduce special battle mechanics, which can be activated once per battle when a Pokémon makes a move. Since there are only four generational gimmicks, we can analyze all of them.
 
 ### #4 - Mega Evolution
 
@@ -190,9 +190,9 @@ none!
 
 </details>
 
-Mega Evolution allows a Pokémon holding their respective Mega Stone item to change into a more powerful forme for the duration of the battle.
+Mega Evolution allows a Pokémon holding its respective Mega Stone to change into a more powerful forme for the duration of the battle.
 
-Mega Evolution is essentially just a glorified forme change. In fact, it is implemented entirely within the battle engine itself (no fxlang code). The reason for this is that choosing to Mega Evolve is closely tied to player state (chosen in player input, validated against player state, stored as an action on the battle queue).
+Mega Evolution is essentially just a glorified forme change. In fact, it is implemented entirely within the battle engine itself (no fxlang code). The reason for this is that choosing to Mega Evolve is closely tied to player state (it is chosen in player input, validated against player state, and stored as an action on the battle queue).
 
 Thus, Mega Evolution is the simplest mechanic: its logic for generating and validating the decision to Mega Evolve and the forme change logic are completely reusable in other parts of the battle.
 
@@ -256,7 +256,7 @@ A Pokémon can Dynamax and use Max Moves for 3 turns or until it switches out. A
 
 Dynamax is implemented almost entirely as a volatile status applied to the Pokémon. However, it did introduce several new mechanics with decent complexity:
 
-1. Moves automatically upgrade to their equivalent Max Move. Max Moves themselves
+1. Moves automatically upgrade to their equivalent Max Moves, which feature unique secondary effects.
 2. The Pokémon's HP is increased by an amount determined by its Dynamax level. Many other HP-modifying effects that used a Pokémon's maximum HP had to be adjusted to use the "un-Dynamaxed maximum HP" value.
 3. Gigantamax performs a forme change on top of the Dynamax volatile status.
 4. Dynamax Pokémon are additionally immune to several volatile statuses and other effects (e.g., choice-locking items, force switches).
@@ -324,7 +324,7 @@ _Introduced: Generation 9_
 
 Terastallization changes a Pokémon's type for the duration of the battle. A Terastallized Pokémon gains a boosted STAB multiplier for its moves.
 
-Like Dynamax, Terastallization is implemented as an fxlang condition applied to a Mon. However, since Terastallization is a non-volatile property, the battle engine tracks a Pokémon's Terastallization status and applies the condition universally.
+Like Dynamax, Terastallization is implemented as an fxlang condition applied to a Pokémon. However, since Terastallization is a non-volatile property, the battle engine tracks a Pokémon's Terastallization status and applies the condition universally.
 
 Terastallization is not overly complex on its own: it forces the Pokémon to be a specific type, prevents any type modifiers, and increases STAB. However, Terastallization _additionally_ introduces the new Stellar type (which can only be applied in the Terastallization condition). The Stellar type adds much more complexity: a Stellar-type Pokémon gains STAB on a move once per battle.
 
@@ -391,7 +391,7 @@ The most complex battle mechanic goes to Z-Moves. A Pokémon holding an eligible
 
 Z-Crystal eligibility and activation is completely tracked in the battle engine. When a Pokémon prepares to use a Z-Move, the battle engine adds the "Z-Power" volatile status, which holds the logic for a) upgrading the selected move to the proper Z-Move and b) applying the Z-Power effect (for status moves).
 
-Every single status move between Generations 1 and 7 were required to add their corresponding Z-Power effect. The sheer amount of changes that Z-Moves required across all battle data adds to its complexity.
+Every single status move between Generations 1 and 7 was required to add its corresponding Z-Power effect. The sheer volume of changes that Z-Moves required across all battle data adds to their complexity.
 
 There are several other interactions that make Z-Moves complex:
 
@@ -453,7 +453,7 @@ _Introduced: Generation 6_
 
 </details>
 
-Trick-or-Treat and Forest's Curse are two moves with a unique effect: they _add_ a type to the Pokémon. Unlike changing a Pokémon's type, adding a type preserves the Pokémon's existing typing and simply adds a volatile type on top. An added type allows a Pokémon to have up to three types instead of two!
+Trick-or-Treat and Forest's Curse are two moves with a unique effect: they _add_ a type to the Pokémon. Unlike changing a Pokémon's type, adding a type preserves the Pokémon's existing typing and simply adds a volatile type on top. This allows a Pokémon to have up to three types simultaneously!
 
 The battle engine must account for the added type property in all of its logic for representing and using a Pokémon's list of types.
 
@@ -504,9 +504,9 @@ _Introduced: Generation 2_
 
 </details>
 
-Curse is an entirely different move based on if the user is a Ghost type. Ghost types will host half of their HP and curse the user with a volatile status. Non-ghost types will have simple stat boosts and drops applied.
+Curse is an entirely different move depending on whether the user is a Ghost type. Ghost-type users will lose half of their maximum HP and curse the target with a volatile status. Non-Ghost types will have simple stat boosts and drops applied.
 
-The move is complex due to its high branching. Additionally, the battle engine itself must be able to represent the effective move target type to the player for target selection. For example, in a Double battle, Ghost types are required to select a target when using Curse. However, if the Pokémon changes type before the move is used, the target must be adjusted to hit the user.
+The move is complex due to its high amount of branching. Additionally, the battle engine itself must be able to represent the effective target of the move to the player for target selection. For example, in a Double battle, Ghost-type Pokémon are required to select a target when using Curse. However, if the Pokémon changes type before the move is executed, the target must be adjusted to hit the user itself.
 
 ### #21 - Disable
 
@@ -538,7 +538,7 @@ _Introduced: Generation 1_
         "if func_call(will_move_this_turn: $target):",
         ["$effect_state.duration = $effect_state.duration - 1"],
         "require $target.last_move.is_defined",
-        "# Ensure the target's last move can be disbled.",
+        "# Ensure the target's last move can be disabled.",
         "foreach $move_slot in $target.move_slots:",
         ["require $move_slot.id != $target.last_move.id or $move_slot.pp != 0"],
         "if $source_effect.is_ability:",
@@ -620,7 +620,7 @@ _Introduced: Generation 2_
 
 </details>
 
-Encore temporarily forces the target to repeat its last move. The base move of an upgraded move is considered, and the volatile status can disappear if the Pokémon no longer knows the encored move.
+Encore temporarily forces the target to repeat its last move. The base move of an upgraded move is considered, and the volatile status is removed if the Pokémon no longer knows the encored move.
 
 The logic for determining the base move is quite involved, and an additional event is required for forcing a Pokémon into its encored move when it is affected mid-turn.
 
@@ -736,7 +736,7 @@ Swallow:
 
 Stockpile temporarily increases a Pokémon's defense stats, up to three times. The volatile status allows the Pokémon to use the Spit Up or Swallow move. Spit Up damages a target, powered by the number of times Stockpile was used. Likewise, Swallow heals the user for an amount based on the Stockpile count.
 
-Stockpile is complex because it connects to two other moves. Additionally, the move volatile status must remember the number of boosts applied by the move, so that the boosts can reset after the volatile status is removed.
+Stockpile is complex because it connects to two other moves. Additionally, the move's volatile status must remember the number of boosts applied by the move, so that the boosts can be reset after the volatile status is removed.
 
 ### #18 - Countering Moves
 
@@ -798,7 +798,7 @@ Counter:
 
 Counter and Mirror Coat have the same effect for physical and special moves respectively. During the turn, they save the last damage taken from an attacker. Once the Pokémon uses the move, they hit their attacker for double the damage.
 
-Counter requires a special event callback that begins the effect at the start of the turn, then the move must properly store attacker data for target redirection and damage calculation.
+Counter requires a special event callback that begins the effect at the start of the turn; the move must also properly store attacker data for target redirection and damage calculation.
 
 ### #17 - Transform
 
@@ -851,7 +851,7 @@ _Introduced: Generation 2_
 
 Sketch overwrites itself with the target's last move. The effect is permanent.
 
-Sketch on its own is not the most complex, but it is incredibly unique. It relies on the core battle engine supporting overwriting the move slot.
+Sketch on its own is not the most complex, but it is incredibly unique. It relies on the core battle engine supporting overwriting a move slot.
 
 ### #15 - Item Taking Moves
 
@@ -929,7 +929,7 @@ Knock Off:
 
 </details>
 
-Several moves take the target's held item. The added complexity in these moves is that each move must first check that the item can be taken in the first place, with a "dry-run." Some items simply cannot be taken, such as Mega Stones and Z-Crystals for their respective species and items held by a Pokémon with the Sticky Hold ability.
+Several moves take the target's held item. The added complexity in these moves is that each move must first check that the item can be taken in the first place, with a 'dry run'. Some items simply cannot be taken, such as Mega Stones and Z-Crystals on their respective species, or items held by a Pokémon with the Sticky Hold ability.
 
 ### #14 - Fling
 
@@ -1133,7 +1133,7 @@ The flow above is highly generic and satisfies several types of two-turn moves:
 - Solar Beam skips the charge turn in sunny weather.
 - Skull Bash boosts the user's defense stat on the charge turn.
 
-The code above for this flow by using the move's volatile status as a tracker for if the move can execute. If the Pokémon does not have the move's volatile status, it enters the charge turn and receives the volatile status. If the Pokémon does have the move's volatile status, it executes the move.
+The code above implements this flow by using the move's volatile status as a tracker to determine if the move can execute. If the Pokémon does not have the move's volatile status, it enters the charge turn and receives the volatile status. If the Pokémon does have the move's volatile status, it executes the move.
 
 Additional complexity is introduced for running events during the charge turn (e.g., Cramorant with Gulp Missile must change formes when using Dive) and retargeting (moves that call other moves may not have the correct target type).
 
@@ -1240,7 +1240,7 @@ Protect has several variants that apply an additional effect when a Pokémon hit
 
 Protect is considered quite complex due to several unique features:
 
-- The chance of Protect failing on each subsequent use is multiplied by 1/3. Other moves share this same counter, so it is captured in the "Stall" volatile status.
+- The chance of Protect failing on each subsequent use is multiplied by one-third. Other moves share this same counter, so it is captured in the "Stall" volatile status.
 - The Protect volatile status applies the protection. When an attacker hits into the protection, it activates the source effect (in order to provide additional effects against the attacker).
 - Other moves can interact with Protect differently. Moves such as Feint break Protect entirely. Z-Moves and Max Moves hit through Protect but for only 25% of their intended damage.
 
@@ -1401,7 +1401,7 @@ Instruct:
 
 </details>
 
-Several moves can call _other_ moves. We group these moves together because the ability to use a move from another move is shared between all of these moves, but the actual logic in the battle engine to do so is quite complex and has several implications on how the move execution flow works.
+Several moves can call _other_ moves. We group these moves together because the ability to use a move from another move is shared among all of them, but the actual logic in the battle engine to do so is quite complex and has several implications for how the move execution flow works.
 
 Internally, the battle engine distinguishes between "inactive" and "active" moves. An inactive move is the static data for the move, referenced by ID. Since the exact properties of a move can be highly dynamic based on who uses the move and when it is used, an active move makes a copy of the static move data while a Pokémon uses it. Thus, an active move is a dynamic instance of a move, referenced by a unique numerical handle internally.
 
@@ -1409,11 +1409,11 @@ There are actually three functions for running a move directly from an event cal
 
 - `use_active_move` - Uses a move already registered as an active move. Useful when the event callback needs to modify something about the active move prior to using it.
 - `use_move` - Uses a move by ID. Effectively registers the active move, then calls `use_active_move`.
-- `do_move` - Executes a selected move by ID, as if the user selected it. Things like move overrides, target selection PP deductions, and more are included here.
+- `do_move` - Executes a selected move by ID, as if the user selected it. Things like move overrides, target selection, PP deductions, and more are handled here.
 
 Allowing moves to call other moves requires careful logic organization, which continually had to be refined as more moves and features were added to the battle engine.
 
-Instruct works a bit differently: it adds a new move action to the battle queue entirely and forces it to execute next. This approach is used because Instruct order _another_ Pokémon to use a move, rather than the Pokémon using a move directly. Regardless, it is called out here for its similarity.
+Instruct works a bit differently: it adds a new move action to the battle queue entirely and forces it to execute next. This approach is used because Instruct orders _another_ Pokémon to use a move, rather than having the user perform the move itself. Regardless, it is called out here for its similarity.
 
 While several moves utilize this feature to call other moves, they all rely on the core battle engine doing all the heavy lifting to represent "moves within moves" properly.
 
@@ -1494,7 +1494,7 @@ The local data construct allows an effect to define arbitrary, dynamic data for 
 
 These moves are even more complex when you consider the fact that the original user of the move may no longer be on the field at the time the move is executed: this means the move can technically be used by an inactive Pokémon!
 
-Future-using moves build on the previous category of "moves that call other moves," so they rank as a bit more complex just due to the additional logic needed to support them.
+Future-using moves build on the previous category of "moves that call other moves," so they rank as slightly more complex due to the additional logic needed to support them.
 
 ### #9 - Bide
 
@@ -1586,7 +1586,7 @@ none!
 
 </details>
 
-Dragon Darts deals two hits with a unique targeting strategy: the first hit applies to the selected target, and the second hit applies to _another_ target. However, for both hits, if either target would take no damage for nearly any reason (e.g., immunity, protection, invulnerability, accuracy), the hit applies to the other Pokémon (if possible). This smart targeting technique is exclusive to Dragon Darts.
+Dragon Darts deals two hits with a unique targeting strategy: the first hit is applied to the selected target, and the second hit is applied to another target. However, for both hits, if either target would take no damage for nearly any reason (e.g., immunity, protection, invulnerability, accuracy), the hit is applied to the other Pokémon (if possible). This smart targeting technique is exclusive to Dragon Darts.
 
 Dragon Darts has no fxlang code, because the targeting is handled entirely by the core battle engine. The battle engine pretends the move will hit _all_ foes in the preparation stage, then right before it applies the move's hit effect, it iteratively applies hits on a single target.
 
@@ -1650,7 +1650,7 @@ Swap Abilities:
 
 Skill Swap swaps the abilities between the user and target. Some abilities are permanent or may simply disallow Skill Swap from taking an effect altogether.
 
-First, the move checks that the abilities _can_ be swapped with a "dry run." For example, the Ability Shield item prevents the holder's ability from changing. If the dry runs succeed, the two ability changes are applied. As an additional layer of complexity, the abilities are only announced if the move is used on a foe: Skill Swap between allies does not reveal the abilities.
+First, the move checks that the abilities _can_ be swapped with a 'dry run'. For example, the Ability Shield item prevents the holder's ability from changing. If the dry runs succeed, the two ability changes are applied. As an additional layer of complexity, the abilities are only announced if the move is used on a foe: Skill Swap between allies does not reveal the abilities.
 
 ### #6 - Ability and Item Suppressing Moves
 
@@ -1712,9 +1712,9 @@ Embargo:
 
 Starting in Generation 4, a Pokémon's ability and held item could be completely suppressed. Gastro Acid suppresses all effects of the target's ability, though the Pokémon still possesses the ability. Embargo suppresses all effects of the target's item, though the Pokémon still holds the item.
 
-Suppression is implemented directly in the battle engine. If a Pokémon's ability or item is found to be suppressed (via some dedicated event callback), it is excluded when generating the list of event callbacks to run for a triggering event. Since suppression is activated by its own event, each event now recursively applies its own events, creating a circular dependency and risk of infinite recursion. The battle engine avoids checking for suppression for a certain set of "low-level" events (e.g., suppression events).
+Suppression is implemented directly in the battle engine. If a Pokémon's ability or item is found to be suppressed (via some dedicated event callback), it is excluded when generating the list of event callbacks to run for a triggering event. Since suppression is activated by its own event, checking for suppression recursively evaluates events, creating a circular dependency and a risk of infinite recursion. The battle engine avoids checking for suppression for a certain set of "low-level" events (e.g., suppression events).
 
-Additionally, the battle engine itself can significantly slow down performance wise with so many events running all the time. State events, including any effect suppression, is _cached_ by the battle engine. State caches are cleared any time a new effect is added to the battle.
+Additionally, the battle engine itself can significantly slow down performance-wise with so many events running all the time. State events, including any effect suppression, are cached by the battle engine. State caches are cleared any time a new effect is added to the battle.
 
 When an effect is suppressed, the "end" event runs in order to signal that the effect is no longer active. Later, if the suppression ends, the effect must be started up again with the "start" event.
 
@@ -1813,19 +1813,17 @@ As a rule of thumb:
 - `stopfail` is used for a failure that already had a message reported, such as an immunity granted by an ability.
 - `stop` is used to stop a move without marking it as a failure.
 
-Stomping Tantrum requires all core battle actions and event callbacks to consider how they fail, which makes it one of the most far-reaching moves implemented.
-
-### Honorable Mentions
+Stomping Tantrum requires all core battle actions and event callbacks to consider how they fail, which makes it one of the most far-reaching moves in the engine.
 
 Here are some moves, in no particular order, that did not make the list but are interesting nonetheless:
 
 1. Ally Switch (Gen 5) - Swaps the position of two Pokémon. Increasing chance of failing between turns (same as Protect but a different counter).
 2. Baton Pass (Gen 2) - Switches the user out, passing copyable volatile statuses to the incoming Pokémon.
 3. Beat Up (Gen 2) - Hits once for each unfainted Pokémon in the player's party. The base power of each hit is determined by the Pokémon's raw attack stat.
-4. Camouflage (Gen 3) - Sets the user's type based on the battle environment. Terrain and the direct field environment (e.g., in grass, on water, in a cave) effect the type selected.
+4. Camouflage (Gen 3) - Sets the user's type based on the battle environment. Terrain and the direct field environment (e.g., in grass, on water, in a cave) affect the type selected.
 5. Conversion 2 (Gen 2) - Sets the user's type to a random type that will resist (or be immune to) the target's last move.
 6. Destiny Bond (Gen 2) / Grudge (Gen 3) - Applies a volatile status until the user makes another move, applying an effect if the Pokémon faints while the volatile status is active. Destiny Bond causes the attacker to faint; Grudge drains the PP of the attacker's last move.
-7. Focus Punch (Gen 3) - Winds up at the start of turn. The move fails if the user takes is hit before it can use the move.
+7. Focus Punch (Gen 3) - Winds up at the start of turn. The move fails if the user is hit before it can use the move.
 8. Freezy Frost (Gen 7) - Removes all stat boosts from all Pokémon on the field.
 9. Gravity (Gen 4) - Applies a pseudo-weather that grounds Pokémon, increases accuracy, and disables specific moves.
 10. Imprison (Gen 3) - Prevents foes from using any move that the user also knows.
@@ -1839,10 +1837,10 @@ Here are some moves, in no particular order, that did not make the list but are 
 18. Smack Down (Gen 5) - Knocks the target down, removing several volatile statuses and grounding the target.
 19. Spectral Thief (Gen 7) - Steals the target's positive stat boosts before hitting for damage.
 20. Spikes (Gen 2) / Toxic Spikes (Gen 4) - Creates a multi-layer entry hazard that damages (or poisons) foes on switch in.
-21. Telekinesis (Gen 5)- Lifts the target into the air, marking them as "un-grounded." Certain species (e.g., Diglett, Dugtrio, Mega Gengar) are immune.
+21. Telekinesis (Gen 5) - Lifts the target into the air, marking them as "un-grounded." Certain species (e.g., Diglett, Dugtrio, Mega Gengar) are immune.
 22. Topsy-Turvy (Gen 6) - Inverts the target's boosts.
 23. Trump Card (Gen 4) - Increases base power based on the amount of PP left on the move.
-24. Uproar (Gen 3) - Causes the user to continually make an uproar over three turns, preventing any Pokémon from falling asleep.
+24. Uproar (Gen 3) - Causes the user to continually make an uproar over three turns, preventing all Pokémon from falling asleep.
 25. Wonder Room (Gen 5) - Swaps the Defense and Special Defense stats in the base calculation for the entire field.
 
 ### #3 - Pursuit
@@ -1902,9 +1900,9 @@ _Introduced: Generation 2_
 
 </details>
 
-Pursuit significantly increases the complexity of switch actions. Pursuit waits for a Pokémon to switch out. Before the switch is executed, the move is used to damage the target, possibly interrupting the switch altogether by knocking out the target.
+Pursuit significantly increases the complexity of switch actions by waiting for a Pokémon to switch out. Before the switch is executed, the move is used to damage the target, potentially interrupting the switch entirely by knocking the target out.
 
-Pursuit is so interesting because it is so unique: no other move works this way. The fxlang code for this move is some of the most non-straightforward, technical code out of all battle effects.
+Pursuit is interesting because it is unique: no other move works in this manner. The fxlang code for this move is some of the most non-straightforward, technical code out of all battle effects.
 
 ### #2 - Sky Drop
 
@@ -2025,7 +2023,7 @@ Sky Drop uses two unique volatile statuses: "immobilizing move" and "immobilized
 
 Additionally, the Sky Drop volatile status applies the Fly volatile status and sets a special "is away from field" property. Some effects, such as a Pokémon's Eject Button, cannot activate in this state.
 
-To avoid the nasty glitch from the official games, the core battle engine allows volatile statuses to be "linked" together. When a volatile status ends, all linked effects are also immediately removed. This special handling greatly simplifies the error handling: if the move fails or the user leaves the Sky Drop state for whatever reason, the target's state is cleaned up as well.
+To avoid the nasty glitch from the official games, the core battle engine allows volatile statuses to be `linked` together. When a volatile status ends, all linked effects are also immediately removed. This special handling greatly simplifies the error handling: if the move fails or the user leaves the Sky Drop state for whatever reason, the target's state is cleaned up as well.
 
 To put it all together, Sky Drop applies the following volatile statuses, all linked together:
 
@@ -2138,7 +2136,7 @@ _Introduced: Generation 3_
         "require !$target.item else return",
         "$targets = []",
         "foreach $mon in func_call(all_active_mons):",
-        ['
+        [
           "if $mon.last_item.is_defined and $mon.item_used_this_turn and func_call(is_adjacent: $mon $target):",
           ["$targets = func_call(append: $targets $mon)"]
         ],
@@ -2155,9 +2153,9 @@ _Introduced: Generation 3_
 
 </details>
 
-The in-battle effect for Pickup was actually introduced in Generation 5. At the end of the turn in which another Pokémon used an item, a Pokémon with Pickup will collect the item.
+The in-battle effect for Pickup was actually introduced in Generation 5. At the end of a turn in which another Pokémon used an item, a Pokémon with Pickup collects that item.
 
-This ability is somewhat complex because it requires the battle engine to track last items (not just for this ability) and if an item was used in the same turn (exclusive to this ability).
+This ability is somewhat complex because it requires the battle engine to track last items (not just for this ability) and whether an item was used in the same turn (exclusive to this ability).
 
 ### #20 - Pastel Veil
 
@@ -2210,7 +2208,7 @@ _Introduced: Generation 8_
 
 </details>
 
-Pastel Veil prevents a Pokémon and its allies from being poisoned. Its complexity mostly arrives in the multitude of potential log messages:
+Pastel Veil prevents a Pokémon and its allies from being poisoned. Its complexity mostly arises from the multitude of potential log messages:
 
 - If the ability holder is prevented from being poisoned, the ability is reported as an immunity.
 - If an ally is prevented from being poisoned, the action is reported as blocked by the holder's ability.
@@ -2255,7 +2253,7 @@ _Introduced: Generation 9_
 
 Opportunist collects all positive stat boosts an opposing Pokémon receives. At the end of an independent action (such as using a move), the Pokémon receives the same stat boosts.
 
-The complexity of this ability mostly arrives from its uniqueness. It collects stat boosts on its persistent effect state and clears it at the end of an action. The `AfterAction` event is unique to this effect!
+The complexity of this ability mostly stems from its uniqueness. It collects stat boosts on its persistent effect state and clears them at the end of an action. The `AfterAction` event is unique to this effect!
 
 ### #18 - Protosynthesis and Quark Drive
 
@@ -2355,7 +2353,7 @@ _Introduced: Generation 6_
 
 Magician steals a target's item as a secondary effect of the ability holder's move. It has several preconditions before looping through each damaged target and attempting to steal the item.
 
-The item stealing code is always complex because it must be checked before executed: we must know that we can both take the target's item and give it to the Pokémon. If we cannot give the item to the Pokémon, we should not take it from the target in the first place. This is why effects always dry run through both taking and setting the item.
+The item-stealing code is always complex because it must be checked before being executed: we must know that we can both take the target's item and give it to the user. If we cannot give the item to the user, we should not take it from the target in the first place. This is why effects always dry run through both taking and setting the item.
 
 ### #16 - Forewarn
 
@@ -2439,9 +2437,9 @@ _Introduced: Generation 3_
 
 </details>
 
-Trace changes the Pokémon's ability into a random opponent's ability whenever it gets the chance. Trace can activate as soon as a Pokémon enters the battle. If Trace is unable to find an ability to copy, it will continue to look for one throughout the battle.
+Trace changes the Pokémon's ability into a random opponent's ability whenever possible. Trace can activate as soon as a Pokémon enters the battle. If Trace is unable to find an ability to copy, it will continue to look for one throughout the battle.
 
-Trace is an interesting ability in terms of how frequently it attempts to activate. Additionally, the Ability Shield item blocks Trace from activating. When a Pokémon loses its Ability Shield (such as from being hit by Knock Off), Trace will immediately activate afterwards.
+Trace is an interesting ability in terms of how frequently it attempts to activate. Additionally, the Ability Shield item blocks Trace from activating. When a Pokémon loses its Ability Shield (such as from being hit by Knock Off), Trace immediately activates.
 
 ### #14 - Forme-Changing Abilities
 
@@ -2623,9 +2621,9 @@ Many abilities change a specific Pokémon's forme, either permanently (preserved
 - Every turn (Hunger Switch).
 - Switching out (Zero to Hero).
 
-It may be cheap to combine all of these different abilities together, but they all are conceptually similar. When some condition activates, the current and intended species of a Pokémon must be compared, triggering a forme change if necessary.
+It may seem oversimplified to group all of these different abilities together, but they are conceptually similar. When some condition activates, the current and intended species of a Pokémon must be compared, triggering a forme change if necessary.
 
-All forme change abilities do not activate when gained via Transform. Most abilities have both a base species check (e.g., Zen Mode cannot activate if the holder's base species is not Darmanitan) and a transform check (implemented as a "NoTransform" flag that suppresses the ability if the holder is transformed).
+Forme-changing abilities do not activate when gained via Transform. Most abilities have both a base species check (e.g., Zen Mode, for instance, cannot activate if the holder's base species is not Darmanitan) and a transform check (implemented as a "NoTransform" flag that suppresses the ability if the holder is transformed).
 
 ### #13 - Multitype and RKS System
 
@@ -2750,15 +2748,15 @@ _Introduced: Generation 8_
 
 </details>
 
-Ripen doubles the effects from berries eaten in battle. Of course, "doubling" depends on the context:
+Ripen doubles the effects of berries eaten in battle. Of course, "doubling" depends on the context:
 
 - Healing effects heal twice as much HP.
 - Boosting effects boost twice as much.
 - Damage-reducing berries reduce twice as much damage.
-- PP restoring effects restore twice as much PP.
-- Damaging berries deal twice as much damage.
+- PP-restoring effects restore twice as much PP.
+- Damage-dealing berries deal twice as much damage.
 
-All of these doubling effects must be implemented on the same ability, which gives this ability one of the widest reaching effects.
+All of these doubling effects must be implemented on the same ability, which gives this ability one of the most wide-reaching effects.
 
 ### #11 - Berserk and Anger Shell
 
@@ -2815,11 +2813,11 @@ HP Activated Ability Base:
 
 </details>
 
-Berserk boosts the ability holder's Special Attack each time its HP drops below half due to a damaging move. Anger Shell has the same effect with a wider array of boosts (boosts attack stats and speed, dropping defenses).
+Berserk boosts the ability holder's Special Attack each time its HP drops below half due to a damaging move. Anger Shell has a similar effect but with a wider array of boosts, increasing attack stats and speed while dropping defenses.
 
 Due to the activation conditions being the same, the triggering logic is shared in an ability base. The effect activates as a secondary effect of the move (each move tracks a target's original HP, specifically for this type of check).
 
-One catch is that a healing berry _should not_ be eaten if the move hits only once and the ability would activate. This rule benefits the user: stat boosts are granted before HP is restored above half. This edge case is implemented by preventing a berry from being eaten until after a move finishes executing.
+One catch is that a healing berry should not be eaten if the move hits only once and the ability would activate. This rule benefits the user: stat boosts are granted before HP is restored above 50%. This edge case is implemented by preventing a berry from being eaten until after a move finishes executing.
 
 The activation timing of these abilities is very delicate and requires some juggling with berry activation timing.
 
@@ -2867,7 +2865,7 @@ _Introduced: Generation 5_
 
 Illusion changes the Pokémon's physical appearance to match that of the Pokémon in the player's last party position. The illusion breaks when the Pokémon is hit by a damaging move.
 
-Illusion on its own is not as complex as it sounds. The battle log already presents Pokémon in the battle log in specific ways (full details in switch logs, partial details in any other log). The battle engine simply tracks a volatile property for the Pokémon's physical appearance, which can be added and removed by the ability.
+Illusion is not as complex as it sounds. The battle log already presents Pokémon in the battle log in specific ways (full details in switch logs, partial details in any other log). The battle engine simply tracks a volatile property for the Pokémon's physical appearance, which can be added and removed by the ability.
 
 The volatile physical appearance and the tracking for which Pokémon is the last in the player's party (which changes dynamically based on switches) are completely unique to this ability.
 
@@ -2959,7 +2957,7 @@ Ice Face:
 Disguise and Ice Face were purposefully left out of the "Forme-Changing Abilities" section earlier. Both abilities completely consume an initial damaging hit when the Pokémon is in a particular forme:
 
 - Disguise prevents a damaging hit when Mimikyu is in its Disguised forme. It transforms into its Busted forme permanently afterwards.
-- Ice Face prevents a physical damaging hit when Eiscue is in its Ice Face forme. It transform into its Noice forme afterwards. Ice Face can be restored if the weather changes to Hail or Snow.
+- Ice Face prevents a physical damaging hit when Eiscue is in its Ice Face forme. It transforms into its Noice forme afterwards. Ice Face can be restored if the weather changes to Hail or Snow.
 
 These abilities are complex because they negate damage, critical hits, and type effectiveness for the initial damaging hit. They add an extra layer of complexity on top of other forme-changing abilities.
 
@@ -2993,9 +2991,9 @@ _Introduced: Generation 5_
 
 </details>
 
-Sheer Force boosts the base power of moves by 30% at the cost of removing all secondary effects. The core battle engine must account for skipping secondary effects, since they are baked into the move execution flow from static fields (e.g., stat boosts, chances to apply a status) and custom events.
+Sheer Force boosts the base power of moves by 30% at the cost of removing all secondary effects. The core battle engine must account for skipping secondary effects, since they are baked into the move execution flow via static fields (e.g., stat boosts, chances to apply a status) and custom events.
 
-Sheer Force requires us to implement anything that counts as a secondary effect correctly. For example, it is possible for a damaging move to also define a primary hit effect to apply some status or boost, but this would be incorrect. Primary hit effects are not skipped while secondary effects are. Additionally, several custom effects are considered secondary effects, such as thawing a target, ability effects such as Color Change or Berserk, item effects such as Life Orb or Shell Bell, and much more.
+Sheer Force requires us to implement anything that counts as a secondary effect correctly. For example, it is possible for a damaging move to also define a primary hit effect to apply some status or boost, but this would be incorrect. Primary hit effects are not skipped while secondary effects are. Additionally, several custom effects are considered secondary effects, such as thawing a target, ability effects such as Color Change or Berserk, item effects such as Life Orb or Shell Bell, and many others.
 
 The large amount of interactions with Sheer Force gives it a decent ranking on the complexity scale.
 
@@ -3047,9 +3045,9 @@ Ignore Ability Move Base:
 
 </details>
 
-Mold Breaker suppresses the effects of "breakable" abilities while the ability holder uses a move. For example, a suppressed Wonder Guard allows the attacker to hit the target without a super-effective move.
+Mold Breaker suppresses the effects of 'breakable' abilities while the ability holder uses a move. For example, a suppressed Wonder Guard allows an attacker to hit the target without a super-effective move.
 
-Mold Breaker is implemented as a pseudo-weather that suppresses abilities. The pseudo-weather is added before the move and removed afterwards. This process of adding a pseudo-weather during a move is a move base so moves that ignore abilities (e.g., Sunsteel Strike, Moongeist Beam) can reuse the same effect.
+Mold Breaker is implemented as a pseudo-weather that suppresses abilities. The pseudo-weather is added before the move and removed afterwards. This process of adding a pseudo-weather during a move is encapsulated in a move base, so moves that ignore abilities (e.g., Sunsteel Strike, Moongeist Beam) can reuse the same effect.
 
 Mold Breaker is complex because it is implemented in such a unique way. Additionally, ability suppression as a whole is already complex, so handling it dynamically during a move's execution adds to a battle's dynamism.
 
@@ -3114,11 +3112,11 @@ Dancer has one of the most unique implementations:
 
 1. A pseudo-weather on the field tracks Dancer's activation after a dance move.
 2. External moves (e.g., not an independent move action) are not copied. This prevents infinite recursion.
-3. Ability activates in reverse speed order.
+3. The ability activates in reverse speed order.
 4. Before a move is used, the effect must check that the battle is not ending.
-5. The dance move is executed against the proper target (allies attack the same target, foes attack each other).
+5. The dance move is executed against the proper target (allies attack the same target, foes attack the user).
 
-Dancer has the opportunity to execute the most number of moves per battle if multiple Pokémon with the ability use a dance move.
+Dancer has the opportunity to execute the largest number of moves per battle if multiple Pokémon with the ability use a dance move.
 
 ### #5 - As One
 
@@ -3171,7 +3169,7 @@ To support As One in a reusable, extendable way, the core battle engine introduc
 
 With this implementation, As One's fxlang code does exactly what the ability says it does: it grants the Pokémon two abilities at the same time.
 
-While sub-abilities were not required to implement this ability, the large amount of considerations for either approach makes this ability one of the most complex and interesting. While most abilities that combine other ability effects are implemented with delegates (e.g., the new Eelevate ability copies the effects of Levitate and Beast Boost), it is interesting to consider more types of abilities that act like As One.
+While sub-abilities were not required to implement this ability, the large number of considerations for either approach makes this ability one of the most complex and interesting. While most abilities that combine other ability effects are implemented with delegates (e.g., the new Eelevate ability copies the effects of Levitate and Beast Boost), it is interesting to consider more types of abilities that act like As One.
 
 ### #5 - Mega Sol
 
@@ -3215,7 +3213,7 @@ To implement this overriding, the core battle engine tracks the "origin" Pokémo
 
 This implementation may feel like overkill, but it is actually the most correct. We do not need to hard-code the consideration for weather overrides in all weather-impacted event callbacks; the core battle engine handles this complexity for us.
 
-However, there are cases where a weather override should not be respected. For example, if a Pokémon with Mega Sol uses the move Rainy Dance, Mega Sol _could_ force Castform into its Sunny forme by the rules of weather overrides. However, this interaction would make no sense. As a result, weather-responding effects like the Forecast ability must be modified to _not_ respect weather overrides.
+However, there are cases where a weather override should not be respected. For example, if a Pokémon with Mega Sol uses the move Rainy Dance, Mega Sol could force Castform into its Sunny forme by the rules of weather overrides. However, this interaction would make no sense. As a result, weather-responding effects such as the Forecast ability must be modified to not respect weather overrides.
 
 All this to say, Mega Sol's implementation may look simple on the surface, but the core battle engine does a lot of heavy lifting to make weather overrides as transparent to all other battle effects as possible.
 
@@ -3228,7 +3226,7 @@ Here are some abilities, in no particular order, that did not make the list but 
 3. Contrary (Gen 5) - Flips stat boosts and drops.
 4. Costar (Gen 9) - Copies an adjacent ally's stat boosts and drops.
 5. Cud Chew (Gen 9) - Consumes an eaten berry a second time two turns later.
-6. Delta Stream (Gen 6) - Starts the Strong Winds weather, which protects Flying types from super-effective damage. The weather stays active while any Pokémon with Delta Stream is active, or until another strong weather is set on the field.
+6. Delta Stream (Gen 6) - Starts the Strong Winds weather, which protects Flying-type Pokémon from super-effective damage. The weather stays active while any Pokémon with Delta Stream is active, or until another strong weather is set on the field.
 7. Flash Fire (Gen 3) - Grants immunity to Fire-type attacks, activating an effect that boosts both attack stats when hit.
 8. Flower Veil (Gen 6) - Protects Grass-type allies from stat drops and non-volatile statuses.
 9. Magic Bounce (Gen 5) - Reflects certain moves back at the attacker (same as Magic Coat).
@@ -3237,7 +3235,7 @@ Here are some abilities, in no particular order, that did not make the list but 
 12. Parental Bond (Gen 6) - Turns every attacking move into a two-hit move. The second hit deals quarter damage.
 13. Prankster (Gen 5) - Boosts the priority of status moves. Dark types are immune to Prankster-boosted moves.
 14. Slow Start (Gen 4) - Halves attack and speed for five turns.
-15. Stench (Gen 3) - Adds a 10% chance to cause the target to flinch to all attacking moves (unless it already has a chance to flinch).
+15. Stench (Gen 3) - Adds a 10% chance to cause the target to flinch for all attacking moves (unless it already has a chance to flinch).
 16. Wandering Spirit (Gen 8) - Swaps abilities with an attack on a damaging hit.
 
 ### #3 - Neutralizing Gas
@@ -3299,15 +3297,15 @@ It is implemented by adding a pseudo-weather to the field to suppress abilities.
 
 When a Pokémon's ability is suppressed, the ability's `End` event must run (in order for the ability to trigger any cleanup or remove any effects). Likewise, when Neutralizing Gas is lifted, abilities must be restarted.
 
-As mentioned earlier with ability-suppressing moves, ability suppression in general is very complex. The core battle engine does some heavy lifting for us: it caches if an ability is suppressed, if it _could_ be suppressed, and if it is started. Neutralizing Gas leverages these properties heavily:
+As mentioned earlier with ability-suppressing moves, ability suppression in general is very complex. The core battle engine does some heavy lifting for us: it caches whether an ability is suppressed, whether it could be suppressed, and whether it has started. Neutralizing Gas leverages these properties heavily:
 
-- When started, an ability is ended only if the ability _can_ be suppressed. At this stage, the suppression is not active.
+- When started, an ability is ended only if the ability can be suppressed. At this stage, the suppression is not active.
 - When active (started), each Pokémon's ability is suppressed.
 - When ending, an ability is started. Internally, if the ability is already started, nothing happens.
 
 Additionally, Neutralizing Gas cannot suppress itself, or else the event callback to end the effect would not run.
 
-Neutralizing Gas' global effect on the effect, as well as the complexities of suppression itself, make this ability quite tricky to implement.
+Neutralizing Gas's global effect on the field, as well as the complexities of suppression itself, makes this ability quite tricky to implement.
 
 ### #2 - Commander
 
@@ -3392,7 +3390,7 @@ Commanding:
 
 </details>
 
-Commander causes Tatsugiri to leap inside an ally Dondozo's mouth, granting it some massive stat boosts. While Tatsugiri is inside Dondozo, it is unable to move or be hit by nearly anything.
+Commander causes Tatsugiri to leap inside an ally Dondozo's mouth, granting Dondozo massive stat boosts. While Tatsugiri is inside Dondozo, it is unable to move or be hit by nearly anything.
 
 Commander is implemented as two volatile statuses:
 
@@ -3400,7 +3398,7 @@ Commander is implemented as two volatile statuses:
 2. The "Commanded" volatile status adds the "Commanding" volatile status to the source (Tatsugiri).
 3. The "Commanding" volatile status locks the Pokémon into passing (unable to make any moves), grants it total invulnerability, and marks it as "away from the field" (similar to Sky Drop).
 
-Commander is quite an interesting ability. It does not require the same heavy lifting from the battle engine as other complex effects, but is very complex in its own right in terms of its fxlang code and impact on the battle (one Pokémon is practically removed from the field while in the commanding state).
+Commander is quite an interesting ability. It does not require the same heavy lifting from the battle engine as other complex effects, but it is very complex in its own right in terms of its fxlang code and impact on the battle (one Pokémon is practically removed from the field while in the commanding state).
 
 ### #1 - Emergency Exit and Wimp Out
 
@@ -3459,17 +3457,17 @@ Emergency Exit and Wimp Out have the exact same effect. When a Pokémon's HP dro
 
 The activation condition for Emergency Exit may look similar to Berserk. However, Berserk can only activate from move-inflicted damage; Emergency Exit can activate for any damage. On its own, this change is not too tricky, but move-inflicted damage works differently: Emergency Exit only activates after the last hit of a multi-hit move. Thus, the activation logic must account for where the damage is coming from and what the Pokémon's original HP was before the damage.
 
-Additionally, Emergency Exit switches the user out immediately. Typically, mid-turn switches are activated either in the normal move execution flow (there is a standard field for switching a user out, such as during U-turn). This switch waits until around the end of the move to perform the switch out. Emergency Exit works differently: the Pokémon can switch out basically whenever. For example, a Pokémon with Emergency Exit can switch in, be damaged by entry hazards, then immediately switch out!
+Additionally, Emergency Exit switches the user out immediately. Typically, mid-turn switches are activated in the normal move execution flow (there is a standard field for switching a user out, such as during U-turn). These switches wait until around the end of the move to perform the switch out. Emergency Exit works differently: the Pokémon can switch out basically whenever. For example, a Pokémon with Emergency Exit can switch in, be damaged by entry hazards, then immediately switch out!
 
-This different timing forces us to account for a Pokémon being inactive at stages of the battle when it normally would not be. The core battle engine and many other functions needed to be much more strict with its active checks.
+This different timing forces us to account for a Pokémon being inactive at stages of the battle when it normally would not be. The core battle engine and many other functions needed to be much more strict with their active checks.
 
 Finally, Emergency Exit cancels out any pending switch action. For example, a user switch incurred by using U-turn will not execute if Emergency Exit activates.
 
-All in all, Emergency Exit is incredibly tedious in its activation timing. Some nuances of how it works largely depends on how the battle engine itself is implemented. The approach outlined above gets us as clone to the mainline game behavior as possible, given the current battle engine organization. Nonetheless, there are still some gaps: Shell Bell should activate before Emergency Exit activates (even if HP rises above 50%), but our current implementation does not do this (and it is unclear how to do this at all).
+All in all, Emergency Exit is incredibly tedious in its activation timing. Some nuances of how it works largely depend on how the battle engine itself is implemented. The approach outlined above gets us as close to the mainline game behavior as possible, given the current battle engine organization. Nonetheless, there are still some gaps: Shell Bell should activate before Emergency Exit activates (even if HP rises above 50%), but our current implementation does not do this (and it is unclear how to do this at all).
 
 ## Items
 
-We will look at the top 21 most complex abilities.
+We will look at the top 17 most complex items.
 
 In general, items are much simpler than moves or abilities. Still, it is interesting to see how they stack up.
 
@@ -3544,7 +3542,7 @@ _Introduced: Generation 3_
 
 </details>
 
-White Herb is consumed and clears all stat drops whenever possible. It is not particularly complex (but it is relative to other items!).
+White Herb is consumed and clears all stat drops whenever possible. It is not particularly complex (but it is relatively complex compared to other items!).
 
 ### #15 - Sticky Barb
 
@@ -3729,7 +3727,7 @@ Primal Reversion Item Base:
 
 </details>
 
-Red Orb and Blue Orb are conceptually similar to a Mega Stone, except they activate Primal Reversion as soon as the holder enters the field. Primal Reversion is functionally just a forme change with a special name.
+Red Orb and Blue Orb are conceptually similar to Mega Stones, except they activate Primal Reversion as soon as the holder enters the field. Primal Reversion is functionally just a forme change with a special name.
 
 ### #11 - Forme-Changing Items
 
@@ -3809,7 +3807,7 @@ Several items can change the forme of its holder:
 - Rusted Shield transforms Zamazenta into its Crowned forme.
 - Wellspring Mask, Hearthflame Mask, and Cornerstone Mask transform Ogerpon into its respective forme.
 
-These items do not do much on their own: they may boost the move power for their respective species, and they are generally untakable. The forme-changing functionality of these items is typically implemented _outside_ of a battle. However, to enforce consistency, each _species_ has event callbacks ensuring the forme is consistent with the item. For example, Giratina's `Update` event transforms into Origin forme or Altered forme depending on if it is holding the Griseous Orb (or Griseous Core).
+These items do not do much on their own: they may boost move power for their respective species, and they are generally untakable. The forme-changing functionality of these items is typically implemented _outside_ of a battle. However, to enforce consistency, each _species_ has event callbacks ensuring the forme is consistent with the item. For example, Giratina's `Update` event transforms into Origin forme or Altered forme depending on if it is holding the Griseous Orb (or Griseous Core).
 
 The reason we implement the forme-changing functionality on the species is because if a Giratina Origin forme enters a battle without its item, it needs to be reverted. The only place this effect could activate is on the species itself (formes typically have a delegate effect to the base species).
 
@@ -3899,9 +3897,9 @@ _Introduced: Generation 3_
 
 </details>
 
-The Repeat Ball makes a Pokémon easier to catch if the trainer has already caught it before. Many Poké Balls have unique effects, but the Repeat Ball is the most unique compared to anything else in the rest of the battle engine. To implement the Repeat Ball accurately, the battle engine needs an understanding of a player's Pokédex.
+The Repeat Ball makes a Pokémon easier to catch if the trainer has caught it before. Many Poké Balls have unique effects, but the Repeat Ball is the most unique compared to anything else in the rest of the battle engine. To implement the Repeat Ball accurately, the battle engine needs an understanding of the player's Pokédex.
 
-To support this, when creating a battle, a player can be created with a set of species registered in its Pokédex. In theory, this does not truly need to be the whole Pokédex; it could just contain species in the battle that are registered.
+To support this, when creating a battle, a player can be created with a set of species registered in their Pokédex. In theory, this does not truly need to be the whole Pokédex; it could just contain species in the battle that are registered.
 
 ### #8 - Protective Pads and Heavy-Duty Boots
 
@@ -3938,7 +3936,7 @@ Heavy-Duty Boots:
 
 Protective Pads and Heavy-Duty Boots are implemented the same way: they simply set some state property for the holder which must be honored where applicable. Protective Pads mark the holder as "contact-proof," which is checked internally by the function that checks if a move makes contact. Heavy-Duty Boots mark the holder as immune to entry hazards, which must be honored by each effect that considers itself an entry hazard.
 
-The use of these state event callbacks is purely to avoid hard-coding these item names in multiple places. If the names of these items must change, or if another item must supply the same effect, they simply hook into the same state event.
+The use of these state event callbacks is purely designed to avoid hard-coding these item names in multiple places. If the names of these items must change, or if another item must supply the same effect, they simply hook into the same state event.
 
 ### #7 - Metronome
 
@@ -3982,7 +3980,7 @@ _Introduced: Generation 4_
 
 </details>
 
-The Metronome item boosts the damage dealt by moves used consecutively by the holder. The item gives the holder a volatile status that keeps a counter each time a moved is used consecutively.
+The Metronome item boosts the damage dealt by moves used consecutively by the holder. The item gives the holder a volatile status that keeps a counter each time a move is used consecutively.
 
 ### #6 - Leppa Berry
 
@@ -4046,7 +4044,7 @@ _Introduced: Generation 1_
 
 </details>
 
-A Revive can be used from the player's bag on a fainted Mon to revive them with 50% of their HP. This item is not complex, but it requires us to implement reviving in the battle engine. Before Generation 9 introduced Revival Blessing, the Revive item was the _only_ way to Revive a Pokémon. Given bag items are not applicable in competitive play, this mechanic only applied to single-player battles for a long time.
+A Revive can be used from the player's bag on a fainted Pokémon to revive them with 50% of their HP. This item is not complex, but it requires us to implement reviving in the battle engine. Before Generation 9 introduced Revival Blessing, the Revive item was the _only_ way to revive a Pokémon. Given bag items are not applicable in competitive play, this mechanic only applied to single-player battles for a long time.
 
 ### #4 - Utility Umbrella
 
@@ -4197,7 +4195,7 @@ Choice items boost a single stat of its holder by 50%, at the cost of locking th
 
 Choice items are implemented by setting both a choice-locked state on the Pokémon and adding a volatile status for the choice lock itself. The choice lock volatile status is only removed if _all_ reasons for being choice locked are also removed.
 
-Choice locking is implemented this way because the ability Gorilla Tactics works the exact same as the Choice Band item. Choice Band and Gorilla Tactics can stack: they both put the Pokémon into the choice lock state. If the item is removed but the ability is not, the Pokémon must remain choice locked (and same if the ability is removed but the item is not). This duplication requires us to keep track of what effects are putting the Pokémon in the choice lock state.
+Choice locking is implemented this way because the ability Gorilla Tactics works exactly the same as the Choice Band item. Choice Band and Gorilla Tactics can stack: they both put the Pokémon into the choice lock state. If the item is removed but the ability is not, the Pokémon must remain choice locked (and same if the ability is removed but the item is not). This duplication requires us to keep track of what effects are putting the Pokémon in the choice lock state.
 
 ### #1 - Eject Button and Eject Pack
 
@@ -4276,6 +4274,6 @@ As mentioned with the Emergency Exit ability, switching a Pokémon out at an arb
 
 ## Conclusion
 
-Pokémon battles are highly complex, with a tons of niche interactions that can occur. The highly dynamic nature of Pokémon battles is what has made them continue to be thrilling over the last 30 years.
+Pokémon battles are highly complex, with a ton of niche interactions that can occur. The highly dynamic nature of Pokémon battles is what has made them continue to be thrilling over the last 30 years.
 
 I hope looking at some of the most complex moves, abilities, and items (at least from the perspective of my battle engine, `battler`) has been interesting to see just how deep some of the battle engine mechanics can go. As Pokémon continues to unveil new mechanics and effects, I hope to continue to expand `battler` to support everything Pokémon battles have to offer and more!
