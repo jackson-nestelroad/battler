@@ -48,7 +48,10 @@
               "foreach $mon in func_call(all_active_mons):",
               ["set_needs_switch: $mon false"],
               "log_activate: with_target",
-              "switch_out: $target"
+              "if $target.player.wild_encounter_type.is_defined:",
+              ["escape: $target"],
+              "else:",
+              ["switch_out: $target"]
             ]
           ]
         }
