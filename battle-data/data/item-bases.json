@@ -37,7 +37,7 @@
     }
   },
   "healandconfusebytasteitembase": {
-    "name": "Heal And Confuse By Taste Item Base",
+    "name": "Heal and Confuse by Taste Item Base",
     "condition_type": "Built-in",
     "condition": {
       "callbacks": {
@@ -97,10 +97,7 @@
         "on_switch_in": [
           "$base_species = func_call(base_species: $mon)",
           "if !$mon.transformed and $base_species == func_call(value_from_local_data: species):",
-          [
-            "$effect_state.primal_reversion = true",
-            "primal_reversion: $mon func_call(value_from_local_data: primalforme)"
-          ]
+          ["primal_reversion: $mon func_call(value_from_local_data: primalforme)"]
         ]
       }
     }

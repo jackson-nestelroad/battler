@@ -388,7 +388,7 @@
           "log_ability",
           "# Use a pseudo-weather for suppression two reasons:",
           "# 1. A pseudo-weather affects all Mons on the field with one condition.",
-          "# 2. Due to the implementation of how we avoid infinite recursion in effect callbacks, abilities cannot suppress other abilities.",
+          "# 2. Due to the implementation of how we avoid infinite recursion in event callbacks, abilities cannot suppress other abilities.",
           "add_pseudo_weather: $this.id"
         ],
         "on_end": [
