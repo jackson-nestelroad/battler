@@ -241,6 +241,7 @@ pub fn switch_in(
     let previous_team_position = context.mon().effective_team_position;
 
     let mon_handle = context.mon_handle();
+    let mut copied_volatiles = None;
     if let Some(previous_mon) = context.player().active_or_exited_mon_handle(position) {
         let mut context = context.as_battle_context_mut().mon_context(previous_mon)?;
         if context.mon().hp > 0 {
@@ -248,19 +249,16 @@ pub fn switch_in(
                 switch_type = Some(previous_mon_switch_type);
             }
 
-            // TODO: We should really apply these volatiles AFTER the switch in has occurred, so
-            // that they are logged afterwards.
+            // Copy volatiles out now, then apply after the switch in log.
             if let Some(SwitchType::CopyVolatile(copy_volatile_type)) = switch_type {
-                copy_volatile_for_switch(
-                    &mut context.as_battle_context_mut().applying_effect_context(
-                        EffectHandle::Condition(Id::from_known("switchout")),
-                        Some(previous_mon),
-                        mon_handle,
-                        None,
-                    )?,
+                copied_volatiles = Some((
                     previous_mon,
-                    copy_volatile_type,
-                )?;
+                    copy_volatiles_for_switch(
+                        &mut context.as_battle_context_mut().mon_context(mon_handle)?,
+                        previous_mon,
+                        copy_volatile_type,
+                    )?,
+                ));
             }
 
             if !switch_out_internal(&mut context, true, true, None)? {
@@ -278,6 +276,19 @@ pub fn switch_in(
     Mon::switch_in(context, position)?;
 
     core_battle_logs::switch(context, is_drag)?;
+
+    if let Some((previous_mon, copied)) = copied_volatiles {
+        context.mon_mut().volatile_state.boosts = copied.boosts;
+        copy_volatiles(
+            &mut context.as_battle_context_mut().applying_effect_context(
+                EffectHandle::Condition(Id::from_known("switchout")),
+                Some(previous_mon),
+                mon_handle,
+                None,
+            )?,
+            copied.volatiles,
+        )?;
+    }
 
     if is_drag {
         // The Mon was dragged in, so all events run immediately, potentially in the context of a
@@ -329,12 +340,17 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
     Ok(())
 }
 
-fn copy_volatile_for_switch(
-    context: &mut ApplyingEffectContext,
+struct CopiedVolatilesForSwitch {
+    boosts: BoostTable,
+    volatiles: HashMap<Id, EffectState>,
+}
+
+fn copy_volatiles_for_switch(
+    context: &mut MonContext,
     source: MonHandle,
     copy_volatile_type: CopyVolatileType,
-) -> Result<()> {
-    Mon::clear_volatile(&mut context.target_context()?, true)?;
+) -> Result<CopiedVolatilesForSwitch> {
+    Mon::clear_volatile(context, true)?;
 
     let mut source_context = context.as_battle_context_mut().mon_context(source)?;
     let boosts = source_context.mon().volatile_state.boosts.clone();
@@ -350,11 +366,7 @@ fn copy_volatile_for_switch(
     }
     Mon::clear_volatile(&mut source_context, true)?;
 
-    context.target_mut().volatile_state.boosts = boosts;
-
-    copy_volatiles(context, volatiles)?;
-
-    Ok(())
+    Ok(CopiedVolatilesForSwitch { boosts, volatiles })
 }
 
 fn copy_volatiles(
@@ -1066,8 +1078,6 @@ fn use_active_move_internal(
         core_battle_logs::fail(context.as_mon_context_mut(), None, None)?;
         return Ok(MoveOutcome::Skipped);
     }
-
-    // TODO: Targeted event.
 
     let try_move_result = core_battle_effects::run_active_move_event::<EventResult>(
         context,
@@ -4265,8 +4275,14 @@ fn calculate_exp_gain(context: &mut MonContext, fainted_mon_handle: MonHandle) -
         exp,
     );
 
-    // TODO: Custom experience modifiers set on the battle itself, to simulate outside effects (like
-    // Exp Charm).
+    let exp = Fraction::from(exp)
+        * context
+            .player()
+            .player_options
+            .experience
+            .custom_modifier
+            .unwrap_or(Fraction::from(1u32));
+    let exp = exp.floor();
 
     Ok(exp)
 }
@@ -4397,8 +4413,15 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
             .foes_fought_while_active
             .contains(&foe_handle);
 
-        // TODO: If Exp Share is activated, all Mons get experience.
-        if !participated {
+        let participation_modifier = if participated {
+            Fraction::from(1u32)
+        } else {
+            match &context.player().player_options.experience.share {
+                Some(share) => share.modifier,
+                None => Fraction::from(0u32),
+            }
+        };
+        if participation_modifier == 0 {
             return Ok(());
         }
 
@@ -4436,6 +4459,9 @@ pub fn give_out_experience(context: &mut Context, fainted_mon_handle: MonHandle)
         // unexpectedly.
 
         let exp = calculate_exp_gain(&mut context, fainted_mon_handle)?;
+        let exp = Fraction::from(exp) * participation_modifier;
+        let exp = exp.floor();
+
         let mon_handle = context.mon_handle();
         match context
             .battle_mut()
@@ -5933,7 +5959,7 @@ pub fn player_use_item(
     let target = CoreBattle::get_item_target(context, item, target)?;
     core_battle_logs::use_item(context.as_player_context_mut(), item, target)?;
     if !player_use_item_internal(context, item, target, input)? {
-        // TODO: Some sort of additional attribute to the item log?
+        core_battle_logs::last_item_had_no_target(context.as_battle_context_mut());
         return Ok(false);
     }
 
@@ -5954,7 +5980,8 @@ pub fn player_use_item_internal(
     match item_target {
         Some(item_target) => {
             if target.is_none() && item_target.requires_target() {
-                // TODO: Some sort of additional attribute to the item log?
+                core_battle_logs::last_item_had_no_target(context.as_battle_context_mut());
+                core_battle_logs::fail_use_item(context.as_player_context_mut(), &item_id, None)?;
                 return Ok(false);
             }
         }
@@ -7135,9 +7162,31 @@ pub fn swap_position(
             context.mon_mut().active_position = Some(old_position);
             context.mon_mut().effective_team_position = old_position;
         }
-
-        // TODO: Swap event on both Mons.
     }
+
+    let effect_handle = context.effect_handle().clone();
+    let source_effect_handle = context.source_effect_handle().cloned();
+
+    if let Some(target) = target {
+        core_battle_effects::run_event::<_, ()>(
+            &mut context.as_battle_context_mut().applying_effect_context(
+                effect_handle.clone(),
+                Some(source),
+                target,
+                source_effect_handle.clone(),
+            )?,
+            fxlang::BattleEvent::Swap,
+        );
+    }
+    core_battle_effects::run_event::<_, ()>(
+        &mut context.as_battle_context_mut().applying_effect_context(
+            effect_handle,
+            target,
+            source,
+            source_effect_handle,
+        )?,
+        fxlang::BattleEvent::Swap,
+    );
 
     Ok(EventResult::Advance)
 }

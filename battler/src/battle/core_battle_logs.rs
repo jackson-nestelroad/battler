@@ -1117,6 +1117,29 @@ pub fn last_move_target(context: &mut ActiveMoveContext, target: MonHandle) -> R
     Ok(())
 }
 
+fn add_attribute_to_last_item(context: &mut Context, attribute: &str) {
+    if let Some(index) = context.battle().last_item_log() {
+        context.battle_mut().add_attribute_to_log(index, attribute);
+    }
+}
+
+fn remove_attribute_from_last_item(context: &mut Context, attribute: &str) {
+    if let Some(index) = context.battle().last_item_log() {
+        context
+            .battle_mut()
+            .remove_attribute_from_log(index, attribute);
+    }
+}
+
+pub fn last_item_had_no_target(context: &mut Context) {
+    add_attribute_to_last_item(context, "notarget");
+}
+
+pub fn do_not_animate_last_item(context: &mut Context) {
+    add_attribute_to_last_item(context, "noanim");
+    remove_attribute_from_last_item(context, "target");
+}
+
 pub fn hit_count(context: &mut Context, hits: u8) -> Result<()> {
     let event = battle_log_entry!("hitcount", ("hits", hits));
     context.battle_mut().log(event);
@@ -1286,7 +1309,8 @@ pub fn use_item(context: &mut PlayerContext, item: &Id, target: Option<MonHandle
             Mon::position_details(&context.as_battle_context_mut().mon_context(target)?)?,
         ));
     }
-    context.battle_mut().log(event);
+    let index = context.battle_mut().log(event);
+    context.battle_mut().set_last_item_log(index);
     Ok(())
 }
 

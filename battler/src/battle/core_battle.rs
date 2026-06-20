@@ -310,6 +310,7 @@ pub struct CoreBattle<'d> {
     last_move: Option<MoveHandle>,
     last_successful_move: Option<MoveHandle>,
     last_exited: Option<MonHandle>,
+    last_item_log: Option<usize>,
 
     input_log: HashMap<usize, HashMap<u64, String>>,
 
@@ -400,6 +401,7 @@ impl<'d> CoreBattle<'d> {
             last_move: None,
             last_successful_move: None,
             last_exited: None,
+            last_item_log: None,
             input_log,
             _pin: PhantomPinned,
         };
@@ -778,6 +780,14 @@ impl<'d> CoreBattle<'d> {
 
     pub fn set_last_successful_move(&mut self, last_successful_move: Option<MoveHandle>) {
         self.last_successful_move = last_successful_move;
+    }
+
+    pub fn last_item_log(&self) -> Option<usize> {
+        self.last_item_log
+    }
+
+    pub fn set_last_item_log(&mut self, index: usize) {
+        self.last_item_log = Some(index);
     }
 
     pub fn started(&self) -> bool {
@@ -2393,7 +2403,6 @@ impl<'d> CoreBattle<'d> {
                     .or_insert(0u64) += 1;
             }
 
-            // TODO: BeforeFaint event.
             core_battle_logs::faint(&mut context)?;
 
             let mon_handle = context.mon_handle();

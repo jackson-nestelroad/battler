@@ -9,6 +9,7 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     CoreBattleOptions,
     DataStore,
+    ExperienceOptions,
     FieldData,
     FieldEnvironment,
     FormatData,
@@ -184,6 +185,7 @@ impl TestBattleBuilder {
             player_options: PlayerOptions {
                 has_affection: true,
                 has_strict_bag: true,
+                experience: ExperienceOptions::default(),
                 mons_caught: 151,
                 cannot_mega_evolve: false,
                 cannot_z_move: false,

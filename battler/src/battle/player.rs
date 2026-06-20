@@ -25,6 +25,7 @@ use battler_choice::{
     choice_results_from_string,
 };
 use battler_data::{
+    Fraction,
     Id,
     Identifiable,
     ItemFlag,
@@ -225,6 +226,26 @@ impl PlayerType {
     }
 }
 
+/// Options for an Exp. Share activated for a player.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct ExperienceShareOptions {
+    /// The modifier applied to experience given to Mons that did not participate in an
+    /// experience-generating event.
+    pub modifier: Fraction<u32>,
+}
+
+/// Options for how the player gains experience points.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct ExperienceOptions {
+    /// Options for an Exp. Share, if activated.
+    #[serde(default)]
+    pub share: Option<ExperienceShareOptions>,
+
+    /// Any custom modifier applied to experience calculation.
+    #[serde(default)]
+    pub custom_modifier: Option<Fraction<u32>>,
+}
+
 /// Options for the player that are not specific to any player type.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct PlayerOptions {
@@ -235,6 +256,10 @@ pub struct PlayerOptions {
     /// If the player requires strict bag checks for using items.
     #[serde(default)]
     pub has_strict_bag: bool,
+
+    /// Options for how the player gains experience points.
+    #[serde(default)]
+    pub experience: ExperienceOptions,
 
     /// The number of Mons caught by the player.
     ///

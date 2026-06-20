@@ -369,6 +369,10 @@ Note that this is not meant to be an exact description of how battles work. Many
 
 1. `ModifyWeight`.
 
+## Swap Position
+
+1. `Swap`.
+
 ## Giving Experience
 
 1. Gain EVs.

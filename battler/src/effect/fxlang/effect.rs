@@ -1306,6 +1306,11 @@ pub enum BattleEvent {
     /// Runs on the effect.
     #[string = "SuppressMonWeather"]
     SuppressMonWeather,
+    /// Runs when a Mon swaps positions when another Mon.
+    ///
+    /// Runs in the context of an applying effect on a Mon.
+    #[string = "Swap"]
+    Swap,
     /// Runs when a Mon switches in.
     ///
     /// Runs in the context of a Mon.
@@ -1659,6 +1664,7 @@ impl BattleEvent {
             Self::SuppressMonItem => CommonCallbackType::MonBoolean as u32,
             Self::SuppressMonTerrain => CommonCallbackType::MonBoolean as u32,
             Self::SuppressMonWeather => CommonCallbackType::MonBoolean as u32,
+            Self::Swap => CommonCallbackType::ApplyingEffectVoid as u32,
             Self::SwitchIn => CommonCallbackType::MonVoid as u32,
             Self::SwitchingIn => CommonCallbackType::MonVoid as u32,
             Self::SwitchOut => CommonCallbackType::MonVoid as u32,

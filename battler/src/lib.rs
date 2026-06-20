@@ -32,6 +32,8 @@ pub use battle::{
     CoreBattleEngineRandomizeBaseDamage,
     CoreBattleEngineSpeedSortTieResolution,
     CoreBattleOptions,
+    ExperienceOptions,
+    ExperienceShareOptions,
     FieldData,
     FieldEnvironment,
     LearnMoveRequest,

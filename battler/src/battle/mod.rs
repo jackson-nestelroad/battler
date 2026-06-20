@@ -127,6 +127,8 @@ pub use outside_effect::{
     evaluate_outside_effect,
 };
 pub use player::{
+    ExperienceOptions,
+    ExperienceShareOptions,
     Player,
     PlayerBattleData,
     PlayerData,
