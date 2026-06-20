@@ -97,9 +97,9 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 
 # Crates residing within this repository.
-battler-choice = { path = "./battler-choice", default-features = false }
-battler-data = { path = "./battler-data", default-features = false }
-battler-prng = { path = "./battler-prng", default-features = false, features = ["alloc"] }
+battler-choice = { version = "0.3", default-features = false }
+battler-data = { version = "0.3", default-features = false }
+battler-prng = { version = "0.3", default-features = false, features = ["alloc"] }
 battler-wamp = "0.5"
 battler-wamp-uri = "0.1"
 battler-wamp-values = "~0.2.2"
