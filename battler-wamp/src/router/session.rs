@@ -256,7 +256,7 @@ pub struct SessionHandle {
     id: Id,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
-    message_tx: mpsc::Sender<Message>,
+    message_tx: mpsc::UnboundedSender<Message>,
 
     closed_session_rx: broadcast::Receiver<()>,
     rpc_yield_rx: broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>,
@@ -286,14 +286,13 @@ impl SessionHandle {
 
     /// Sends a message over the session.
     pub async fn send_message(&self, message: Message) -> Result<()> {
-        self.message_tx.send(message).await.map_err(Error::new)
+        self.message_tx.send(message).map_err(Error::new)
     }
 
     /// Closes the session.
     pub async fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
             .send(goodbye_with_close_reason(close_reason))
-            .await
             .map_err(Error::new)
     }
 
@@ -314,7 +313,7 @@ impl SessionHandle {
 pub struct Session {
     id: Id,
     connection_type: ConnectionType,
-    message_tx: mpsc::Sender<Message>,
+    message_tx: mpsc::UnboundedSender<Message>,
     service_message_tx: mpsc::Sender<Message>,
     state: RwLock<SessionState>,
     shared_state: Arc<RwLock<SharedSessionState>>,
@@ -335,7 +334,7 @@ impl Session {
     pub fn new(
         id: Id,
         connection_type: ConnectionType,
-        message_tx: mpsc::Sender<Message>,
+        message_tx: mpsc::UnboundedSender<Message>,
         service_message_tx: mpsc::Sender<Message>,
     ) -> Self {
         let id_allocator = SequentialIdAllocator::default();
