@@ -920,18 +920,18 @@ where
 
     /// Disconnects from the router.
     pub async fn disconnect(&self) -> Result<()> {
-        let mut peer_state = self.peer_state.lock().await;
+        let service = {
+            let mut peer_state = self.peer_state.lock().await;
+            peer_state.take().map(|state| state.service)
+        };
 
-        match peer_state.take() {
-            Some(peer_state) => {
-                info!(
-                    "Peer {} was instructed to disconnect from the router",
-                    self.config.name
-                );
-                peer_state.service.cancel()?;
-                peer_state.service.join().await?;
-            }
-            None => (),
+        if let Some(service) = service {
+            info!(
+                "Peer {} was instructed to disconnect from the router",
+                self.config.name
+            );
+            service.cancel()?;
+            service.join().await?;
         }
         Ok(())
     }
