@@ -943,8 +943,8 @@ impl Session {
         })
         .await?;
         // Activate the procedure and send confirmation while holding the procedure state lock.
-        // This guarantees that the client receives the REGISTERED confirmation before any concurrent
-        // invocations can be routed and queued on this session.
+        // This guarantees that the client receives the REGISTERED confirmation before any
+        // concurrent invocations can be routed and queued on this session.
         ProcedureManager::activate_procedure(&context, &message.procedure, || async {
             self.send_message(Message::Registered(RegisteredMessage {
                 register_request: message.request,
