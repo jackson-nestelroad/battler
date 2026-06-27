@@ -1120,6 +1120,23 @@ impl<'d> BattlerService<'d> {
         Ok(battle.log_for_side(side, |log| log.subscribe()).await)
     }
 
+    fn unwrap_battle(
+        battle: Arc<LiveBattleManager<'d>>,
+        context: &str,
+    ) -> LiveBattleManager<'d> {
+        let mut battle_opt = Some(battle);
+        for _ in 0..1000 {
+            match Arc::try_unwrap(battle_opt.take().unwrap()) {
+                Ok(battle) => return battle,
+                Err(battle_arc) => {
+                    battle_opt = Some(battle_arc);
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+            }
+        }
+        panic!("battle could not be unwrapped during {context} (leaked references exist)");
+    }
+
     /// Deletes a battle.
     pub async fn delete(&self, battle: Uuid) -> Result<()> {
         {
@@ -1139,11 +1156,7 @@ impl<'d> BattlerService<'d> {
             // SAFETY: Must call shutdown here to join all tasks that are using the battle, so that
             // the battle does not outlive this object.
             battle.shutdown().await;
-            let battle = Arc::try_unwrap(battle)
-                .map_err(|_| {
-                    Error::msg("battle could not be unwrapped during deletion after shutdown")
-                })
-                .unwrap();
+            let battle = tokio::task::block_in_place(|| Self::unwrap_battle(battle, "deletion"));
 
             let players = battle.players().await;
             for player in players {
@@ -1217,11 +1230,7 @@ impl Drop for BattlerService<'_> {
                 // SAFETY: Must synchronously cancel and wait for tasks to finish, so that the
                 // battle does not outlive this object.
                 battle.cancel();
-                Arc::try_unwrap(battle)
-                    .map_err(|_| {
-                        Error::msg("battle could not be unwrapped during drop after cancel")
-                    })
-                    .unwrap();
+                Self::unwrap_battle(battle, "drop after cancel");
             }
         });
     }
