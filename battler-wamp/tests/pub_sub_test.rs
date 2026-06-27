@@ -1123,12 +1123,7 @@ mod subscription_wildcard_match_test {
             .unwrap();
 
         async fn handler(mut subscription: Subscription) {
-            loop {
-                match subscription.event_rx.recv().await {
-                    Ok(_) => return,
-                    _ => (),
-                }
-            }
+            subscription.event_rx.recv().await.unwrap();
         }
 
         tokio::spawn(handler(subscription))
@@ -1156,7 +1151,9 @@ mod subscription_wildcard_match_test {
                             Ok(_) => {
                                 panic!("unexpected event {event:?}");
                             }
-                            _ => (),
+                            Err(_) => {
+                                return;
+                            }
                         }
                     }
                     _ = cancel_rx.recv() => {

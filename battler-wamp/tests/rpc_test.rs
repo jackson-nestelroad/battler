@@ -385,9 +385,9 @@ async fn peer_cancels_call_immediately() {
 
     async fn handler(mut procedure: Procedure) {
         loop {
-            if let Ok(ProcedureMessage::Interrupt(_)) = procedure.procedure_message_rx.recv().await
-            {
-                break;
+            match procedure.procedure_message_rx.recv().await.unwrap() {
+                ProcedureMessage::Interrupt(_) => break,
+                _ => (),
             }
         }
     }
@@ -1252,20 +1252,17 @@ mod procedure_wildcard_match_test {
             uri: WildcardUri,
             mut cancel_rx: broadcast::Receiver<()>,
         ) {
-            loop {
-                tokio::select! {
-                    message = procedure.procedure_message_rx.recv() => {
-                        match message {
-                            Ok(ProcedureMessage::Invocation(invocation)) => {
-                                invocation.respond_ok(RpcYield::default()).await.unwrap();
-                                return;
-                            }
-                            _ => (),
+            tokio::select! {
+                message = procedure.procedure_message_rx.recv() => {
+                    match message.unwrap() {
+                        ProcedureMessage::Invocation(invocation) => {
+                            invocation.respond_ok(RpcYield::default()).await.unwrap();
                         }
+                        _ => panic!("expected invocation"),
                     }
-                    _ = cancel_rx.recv() => {
-                        panic!("no invocation received for {uri}");
-                    }
+                }
+                _ = cancel_rx.recv() => {
+                    panic!("no invocation received for {uri}");
                 }
             }
         }
@@ -1300,6 +1297,9 @@ mod procedure_wildcard_match_test {
                         match message {
                             Ok(ProcedureMessage::Invocation(invocation)) => {
                                 panic!("unexpected invocation {invocation:?}")
+                            }
+                            Err(_) => {
+                                return;
                             }
                             _ => (),
                         }

@@ -196,7 +196,11 @@ impl Service {
 
     async fn end(&mut self) -> Result<()> {
         // Ignore error with the stream, since it may already be closed.
-        self.stream.close().await.ok();
+        // Set a short timeout on the close handshake to prevent deadlocks if the peer is
+        // dead/unresponsive.
+        tokio::time::timeout(Duration::from_millis(500), self.stream.close())
+            .await
+            .ok();
         self.end_tx.send(())?;
         Ok(())
     }
