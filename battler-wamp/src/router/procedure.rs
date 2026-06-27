@@ -277,10 +277,21 @@ impl ProcedureManager {
     ///
     /// Required for proper ordering of messages. The procedure should not receive invocations until
     /// after the peer has received the registration confirmation.
-    pub async fn activate_procedure<S>(context: &RealmContext<'_, S>, procedure: &WildcardUri) {
+    pub async fn activate_procedure<S, F, Fut>(
+        context: &RealmContext<'_, S>,
+        procedure: &WildcardUri,
+        after_activation: F,
+    ) -> Result<()>
+    where
+        F: FnOnce() -> Fut,
+        Fut: std::future::Future<Output = Result<()>>,
+    {
         if let Some(procedure) = context.procedure(procedure).await {
-            procedure.state.lock().await.active = true;
+            let mut state = procedure.state.lock().await;
+            state.active = true;
+            after_activation().await?;
         }
+        Ok(())
     }
 
     /// Deregisters a procedure.

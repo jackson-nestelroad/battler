@@ -806,14 +806,17 @@ impl Session {
                 .insert(subscription, message.topic.clone())
         })
         .await?;
-        self.send_message(Message::Subscribed(SubscribedMessage {
-            subscribe_request: message.request,
-            subscription,
-        }))
+        // Activate the subscription and send confirmation while holding the subscription lock.
+        // This guarantees that the client receives the SUBSCRIBED confirmation before any matching
+        // concurrent publisher events can be routed and queued on this session.
+        TopicManager::activate_subscription(&context, self.id, &message.topic, || async {
+            self.send_message(Message::Subscribed(SubscribedMessage {
+                subscribe_request: message.request,
+                subscription,
+            }))
+            .await
+        })
         .await?;
-        // Activate the subscription only after sending the response, so that the peer does not
-        // receive events prior to the confirmation.
-        TopicManager::activate_subscription(&context, self.id, &message.topic).await;
         Ok(())
     }
 
@@ -939,14 +942,17 @@ impl Session {
                 .insert(registration, message.procedure.clone())
         })
         .await?;
-        self.send_message(Message::Registered(RegisteredMessage {
-            register_request: message.request,
-            registration,
-        }))
+        // Activate the procedure and send confirmation while holding the procedure state lock.
+        // This guarantees that the client receives the REGISTERED confirmation before any concurrent
+        // invocations can be routed and queued on this session.
+        ProcedureManager::activate_procedure(&context, &message.procedure, || async {
+            self.send_message(Message::Registered(RegisteredMessage {
+                register_request: message.request,
+                registration,
+            }))
+            .await
+        })
         .await?;
-        // Activate the procedure only after sending the response, so that the peer does not
-        // receive invocations prior to the confirmation.
-        ProcedureManager::activate_procedure(&mut context, &message.procedure).await;
         Ok(())
     }
 

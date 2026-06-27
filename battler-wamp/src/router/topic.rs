@@ -172,16 +172,24 @@ impl TopicManager {
     ///
     /// Required for proper ordering of events. The subscription should not receive events until
     /// after the peer has received the subscription confirmation.
-    pub async fn activate_subscription<S>(
+    pub async fn activate_subscription<S, F, Fut>(
         context: &RealmContext<'_, S>,
         session: Id,
         topic: &WildcardUri,
-    ) {
+        after_activation: F,
+    ) -> Result<()>
+    where
+        F: FnOnce() -> Fut,
+        Fut: std::future::Future<Output = Result<()>>,
+    {
         if let Some(topic) = context.topic(topic).await {
-            if let Some(subscriber) = topic.subscribers.write().await.get_mut(&session) {
+            let mut subscribers = topic.subscribers.write().await;
+            if let Some(subscriber) = subscribers.get_mut(&session) {
                 subscriber.active = true;
+                after_activation().await?;
             }
         }
+        Ok(())
     }
 
     /// Unsubscribes from a topic.

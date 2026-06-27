@@ -621,7 +621,7 @@ async fn receives_pattern_based_events_with_generator() {
         PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
     )
     .start(
-        create_peer("publisher").unwrap(),
+        create_peer("subscriber").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     subscriber_handle.wait_until_ready().await.unwrap();
