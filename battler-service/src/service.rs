@@ -883,9 +883,15 @@ impl<'d> LiveBattleManager<'d> {
 
     async fn shutdown(&self) {
         log::trace!("Shutting down live battle {}", self.uuid);
-        let mut state = self.state.lock().await;
-        state.proceed_tasks.shutdown().await;
-        state.current_timer_tasks.shutdown().await;
+        let (mut proceed_tasks, mut current_timer_tasks) = {
+            let mut state = self.state.lock().await;
+            (
+                std::mem::replace(&mut state.proceed_tasks, JoinSet::new()),
+                std::mem::replace(&mut state.current_timer_tasks, JoinSet::new()),
+            )
+        };
+        proceed_tasks.shutdown().await;
+        current_timer_tasks.shutdown().await;
     }
 
     fn cancel(&self) {
@@ -985,7 +991,7 @@ impl<'d> BattlerService<'d> {
     ///
     /// All log entries for all battles will be sent over this channel for consumption.
     ///
-    /// This method can only be called once. Subsequent calls will return [`None`],
+    /// This method can only be called once. Subsequent calls will return [`None`].
     pub fn take_global_log_rx(&mut self) -> Option<mpsc::UnboundedReceiver<GlobalLogEntry>> {
         self.global_log_rx.take()
     }
