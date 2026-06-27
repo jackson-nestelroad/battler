@@ -342,8 +342,8 @@ impl Session {
         let (closed_session_tx, _) = broadcast::channel(16);
         let (rpc_yield_tx, _) = broadcast::channel(16);
         let (rpc_yield_cancel_tx, rpc_yield_cancel_rx) = broadcast::channel(16);
-        let (publish_tx, _) = broadcast::channel(16);
-        let (procedure_message_tx, _) = broadcast::channel(16);
+        let (publish_tx, _) = broadcast::channel(1024);
+        let (procedure_message_tx, _) = broadcast::channel(1024);
         Self {
             id,
             connection_type,

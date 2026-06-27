@@ -499,12 +499,12 @@ impl Session {
         let (established_session_tx, _) = broadcast::channel(16);
         let (closed_session_tx, _) = broadcast::channel(16);
         let (auth_challenge_tx, _) = broadcast::channel(16);
-        let (subscribed_tx, _) = broadcast::channel(16);
-        let (unsubscribed_tx, _) = broadcast::channel(16);
-        let (published_tx, _) = broadcast::channel(16);
-        let (registered_tx, _) = broadcast::channel(16);
-        let (unregistered_tx, _) = broadcast::channel(16);
-        let (rpc_result_tx, _) = broadcast::channel(16);
+        let (subscribed_tx, _) = broadcast::channel(128);
+        let (unsubscribed_tx, _) = broadcast::channel(128);
+        let (published_tx, _) = broadcast::channel(128);
+        let (registered_tx, _) = broadcast::channel(128);
+        let (unregistered_tx, _) = broadcast::channel(128);
+        let (rpc_result_tx, _) = broadcast::channel(128);
         Self {
             name,
             service_message_tx,
@@ -818,7 +818,7 @@ impl Session {
                 Ok(())
             }
             Message::Subscribed(message) => {
-                let (event_tx, event_rx) = broadcast::channel(16);
+                let (event_tx, event_rx) = broadcast::channel(1024);
                 self.modify_established_session_state(|state| {
                     state
                         .subscriptions
@@ -882,7 +882,7 @@ impl Session {
                 Ok(())
             }
             Message::Registered(message) => {
-                let (procedure_tx, procedure_message_rx) = broadcast::channel(16);
+                let (procedure_tx, procedure_message_rx) = broadcast::channel(1024);
                 self.modify_established_session_state(|state| {
                     state
                         .procedures

@@ -7,6 +7,7 @@ use anyhow::{
 use log::{
     error,
     info,
+    warn,
 };
 use tokio::sync::{
     broadcast::{
@@ -211,7 +212,17 @@ impl Connection {
             tokio::select! {
                 // Received a publish message.
                 publish_message = publish_rx.recv() => {
-                    session.handle_ordered_publish(&context, publish_message?).await?;
+                    match publish_message {
+                        Ok(msg) => {
+                            session.handle_ordered_publish(&context, msg).await?;
+                        }
+                        Err(RecvError::Lagged(skipped)) => {
+                            warn!("Session {} lagged by {} publications", session.id(), skipped);
+                        }
+                        Err(RecvError::Closed) => {
+                            break;
+                        }
+                    }
                 }
                 // The session loop is done, so we should also be done.
                 _ = session_loop_done_rx.recv() => {
@@ -262,17 +273,27 @@ impl Connection {
             tokio::select! {
                 // Received an ordered message.
                 message = procedure_message_rx.recv() => {
-                    match message? {
-                        ProcedureMessage::Call(call_message) => {
-                            let call_request_id = match session.handle_ordered_call(&context, call_message).await? {
-                                Some(call_request_id) => call_request_id,
-                                None => continue,
-                            };
-                            // Handle the invocation asynchronously.
-                            tokio::spawn(Self::handle_invocation(context.clone(), session.clone(), call_request_id, handle_message_result_tx.clone()));
-                        },
-                        ProcedureMessage::Cancel(cancel_message) => {
-                            session.handle_ordered_cancel(&context, cancel_message).await?;
+                    match message {
+                        Ok(msg) => {
+                            match msg {
+                                ProcedureMessage::Call(call_message) => {
+                                    let call_request_id = match session.handle_ordered_call(&context, call_message).await? {
+                                        Some(call_request_id) => call_request_id,
+                                        None => continue,
+                                    };
+                                    // Handle the invocation asynchronously.
+                                    tokio::spawn(Self::handle_invocation(context.clone(), session.clone(), call_request_id, handle_message_result_tx.clone()));
+                                },
+                                ProcedureMessage::Cancel(cancel_message) => {
+                                    session.handle_ordered_cancel(&context, cancel_message).await?;
+                                }
+                            }
+                        }
+                        Err(RecvError::Lagged(skipped)) => {
+                            warn!("Session {} lagged by {} procedure messages", session.id(), skipped);
+                        }
+                        Err(RecvError::Closed) => {
+                            break;
                         }
                     }
                 }
