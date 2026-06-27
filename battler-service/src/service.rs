@@ -1120,10 +1120,7 @@ impl<'d> BattlerService<'d> {
         Ok(battle.log_for_side(side, |log| log.subscribe()).await)
     }
 
-    fn unwrap_battle(
-        battle: Arc<LiveBattleManager<'d>>,
-        context: &str,
-    ) -> LiveBattleManager<'d> {
+    fn unwrap_battle(battle: Arc<LiveBattleManager<'d>>, context: &str) -> LiveBattleManager<'d> {
         let mut battle_opt = Some(battle);
         for _ in 0..1000 {
             match Arc::try_unwrap(battle_opt.take().unwrap()) {
