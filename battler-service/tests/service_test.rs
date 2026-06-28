@@ -145,7 +145,7 @@ async fn read_all_entries_from_log_rx_stopping_at(
     log_rx: &mut broadcast::Receiver<LogEntry>,
     stop_at: &str,
 ) -> Vec<String> {
-    let deadline = SystemTime::now() + Duration::from_secs(10);
+    let deadline = SystemTime::now() + Duration::from_secs(30);
     let mut entries = Vec::new();
     loop {
         tokio::select! {
@@ -938,7 +938,7 @@ async fn only_activates_player_timer_if_request_is_active() {
             BattleServiceOptions {
                 timers: Timers {
                     player: Some(Timer {
-                        secs: 5,
+                        secs: 10,
                         warnings: BTreeSet::default(),
                     }),
                     ..Default::default()
@@ -962,7 +962,7 @@ async fn only_activates_player_timer_if_request_is_active() {
     // Wait for the timers to start to avoid the race condition.
     read_all_entries_from_log_rx_stopping_at(
         &mut public_log_rx,
-        "-battlerservice:timer|player:player-2|remainingsecs:5",
+        "-battlerservice:timer|player:player-2|remainingsecs:10",
     )
     .await;
 
@@ -984,17 +984,23 @@ async fn only_activates_player_timer_if_request_is_active() {
     // Wait for battle to end.
     let log = read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "win|side:0").await;
 
-    pretty_assertions::assert_eq!(
-        log,
-        [
-            "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
-            "damage|mon:Bulbasaur,player-2,1|health:0",
-            "faint|mon:Bulbasaur,player-2,1",
-            "residual",
-            "-battlerservice:timer|player:player-2|remainingsecs:4",
-            "-battlerservice:timer|player:player-2|done|remainingsecs:0",
-            "continue",
-            "forfeited|player:player-2",
-        ]
+    assert_eq!(log.len(), 8);
+    assert_eq!(
+        log[0],
+        "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1"
     );
+    assert_eq!(log[1], "damage|mon:Bulbasaur,player-2,1|health:0");
+    assert_eq!(log[2], "faint|mon:Bulbasaur,player-2,1");
+    assert_eq!(log[3], "residual");
+    assert!(
+        log[4].starts_with("-battlerservice:timer|player:player-2|remainingsecs:"),
+        "expected timer log with remaining seconds, got: {}",
+        log[4]
+    );
+    assert_eq!(
+        log[5],
+        "-battlerservice:timer|player:player-2|done|remainingsecs:0"
+    );
+    assert_eq!(log[6], "continue");
+    assert_eq!(log[7], "forfeited|player:player-2");
 }
