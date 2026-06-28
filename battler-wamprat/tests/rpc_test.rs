@@ -197,9 +197,13 @@ async fn registers_methods_on_reconnect() {
     );
     callee_handle.wait_until_ready().await.unwrap();
 
+    let mut callee_session_finished_rx = callee_handle.session_finished_rx();
+
     // Stop the router to disconnect the peer.
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+
+    callee_session_finished_rx.recv().await.unwrap();
 
     // Restart the router.
     let (router_handle, router_join_handle) = start_router(8888).await.unwrap();

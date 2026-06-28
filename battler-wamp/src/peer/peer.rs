@@ -475,7 +475,8 @@ where
         self.session_finished_tx.subscribe()
     }
 
-    fn connection_finished_rx(&self) -> broadcast::Receiver<()> {
+    /// Receiver channel for the entire connection finishing.
+    pub fn connection_finished_rx(&self) -> broadcast::Receiver<()> {
         self.connection_finished_tx.subscribe()
     }
 

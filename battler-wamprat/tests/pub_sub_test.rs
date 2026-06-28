@@ -310,9 +310,13 @@ async fn resubscribes_on_reconnect() {
         Ok(())
     );
 
+    let mut subscriber_session_finished_rx = subscriber_handle.session_finished_rx();
+
     // Stop the router to disconnect the peer.
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+
+    subscriber_session_finished_rx.recv().await.unwrap();
 
     // Restart the router.
     let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
@@ -358,8 +362,13 @@ async fn resubscribes_on_reconnect() {
         Ok(())
     );
 
+    let mut subscriber_session_finished_rx = subscriber_handle.session_finished_rx();
+
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+
+    subscriber_session_finished_rx.recv().await.unwrap();
+
     let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
     subscriber_handle.wait_until_ready().await.unwrap();
 

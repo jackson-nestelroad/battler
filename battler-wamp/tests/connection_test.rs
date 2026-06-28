@@ -47,6 +47,7 @@ async fn peer_connects_to_router() {
 
     let (router_handle, router_join_handle) = start_router().await.unwrap();
     let peer = create_peer().unwrap();
+    let mut connection_finished_rx = peer.connection_finished_rx();
 
     // Connect to the router.
     assert_matches::assert_matches!(
@@ -61,6 +62,8 @@ async fn peer_connects_to_router() {
     // untracked connection not attached to any realm.
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+
+    connection_finished_rx.recv().await.unwrap();
 
     // The peer is not connected.
     assert_matches::assert_matches!(peer.join_realm(REALM).await, Err(err) => {

@@ -248,6 +248,7 @@ pub struct PeerHandle<S> {
     peer_state: Arc<RwLock<PeerState>>,
     session_established_rx: broadcast::Receiver<()>,
     session_ready_rx: broadcast::Receiver<()>,
+    session_finished_rx: broadcast::Receiver<()>,
 }
 
 impl<S> PeerHandle<S>
@@ -268,6 +269,11 @@ where
     /// running.
     pub fn error_rx(&self) -> broadcast::Receiver<ChannelTransmittableError> {
         self.error_rx.resubscribe()
+    }
+
+    /// Receiver channel for a single session finishing, for reconnection logic.
+    pub fn session_finished_rx(&self) -> broadcast::Receiver<()> {
+        self.session_finished_rx.resubscribe()
     }
 
     /// The current session ID, as given by the router.
@@ -557,6 +563,7 @@ where
             peer_state: self.peer_state.clone(),
             session_established_rx: self.session_established_rx.resubscribe(),
             session_ready_rx: self.session_ready_rx.resubscribe(),
+            session_finished_rx: self.session_finished_rx.resubscribe(),
         }
     }
 }
@@ -608,6 +615,8 @@ pub struct Peer<S> {
     session_established_rx: broadcast::Receiver<()>,
     session_ready_tx: broadcast::Sender<()>,
     session_ready_rx: broadcast::Receiver<()>,
+    session_finished_tx: broadcast::Sender<()>,
+    session_finished_rx: broadcast::Receiver<()>,
 }
 
 impl<S> Peer<S>
@@ -624,6 +633,7 @@ where
         let peer = Arc::new(peer);
         let (session_established_tx, session_established_rx) = broadcast::channel(16);
         let (session_ready_tx, session_ready_rx) = broadcast::channel(16);
+        let (session_finished_tx, session_finished_rx) = broadcast::channel(16);
 
         Self {
             peer: peer.clone(),
@@ -637,6 +647,8 @@ where
             session_established_rx,
             session_ready_tx,
             session_ready_rx,
+            session_finished_tx,
+            session_finished_rx,
         }
     }
 
@@ -651,6 +663,7 @@ where
         let peer_state = self.peer_state.clone();
         let session_established_rx = self.session_established_rx.resubscribe();
         let session_ready_rx = self.session_ready_rx.resubscribe();
+        let session_finished_rx = self.session_finished_rx.resubscribe();
         let start_handle = tokio::spawn(self.run(cancel_rx, error_tx));
         (
             PeerHandle {
@@ -661,6 +674,7 @@ where
                 peer_state,
                 session_established_rx,
                 session_ready_rx,
+                session_finished_rx,
             },
             start_handle,
         )
@@ -695,6 +709,8 @@ where
         loop {
             tokio::select! {
                 _ = session_finished_rx.recv() => {
+                    *self.peer_state.write().await = PeerState::Disconnected;
+                    self.session_finished_tx.send(()).ok();
                     break
                 }
                 _ = cancel_rx.recv() => {
