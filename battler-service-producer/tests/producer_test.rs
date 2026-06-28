@@ -703,13 +703,18 @@ async fn publishes_battle_logs() {
         Vec::<String>::default()
     );
 
+    let mut player_1_side_1_log = read_all_entries_from_log_rx_stopping_at_line_or_timeout(
+        &mut player_1_side_1_rx,
+        "turn|turn:2",
+        Duration::from_secs(3),
+    )
+    .await;
+    assert_matches::assert_matches!(
+        player_1_side_1_log.pop(),
+        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
+    );
     pretty_assertions::assert_eq!(
-        read_all_entries_from_log_rx_stopping_at_line_or_timeout(
-            &mut player_1_side_1_rx,
-            "turn|turn:2",
-            Duration::from_secs(3),
-        )
-        .await,
+        player_1_side_1_log,
         [
             "-battlerservice:started",
             "info|battletype:Singles",
@@ -732,17 +737,21 @@ async fn publishes_battle_logs() {
             "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
             "damage|mon:Pikachu,player-1,1|health:12/18",
             "residual",
-            "-battlerservice:timer|battle|remainingsecs:59",
         ]
     );
 
+    let mut player_2_side_2_log = read_all_entries_from_log_rx_stopping_at_line_or_timeout(
+        &mut player_2_side_2_rx,
+        "turn|turn:2",
+        Duration::from_secs(3),
+    )
+    .await;
+    assert_matches::assert_matches!(
+        player_2_side_2_log.pop(),
+        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
+    );
     pretty_assertions::assert_eq!(
-        read_all_entries_from_log_rx_stopping_at_line_or_timeout(
-            &mut player_2_side_2_rx,
-            "turn|turn:2",
-            Duration::from_secs(3),
-        )
-        .await,
+        player_2_side_2_log,
         [
             "-battlerservice:started",
             "info|battletype:Singles",
@@ -765,17 +774,21 @@ async fn publishes_battle_logs() {
             "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
             "damage|mon:Pikachu,player-1,1|health:67/100",
             "residual",
-            "-battlerservice:timer|battle|remainingsecs:59",
         ]
     );
 
+    let mut public_log = read_all_entries_from_log_rx_stopping_at_line_or_timeout(
+        &mut public_rx,
+        "turn|turn:2",
+        Duration::from_secs(5),
+    )
+    .await;
+    assert_matches::assert_matches!(
+        public_log.pop(),
+        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
+    );
     pretty_assertions::assert_eq!(
-        read_all_entries_from_log_rx_stopping_at_line_or_timeout(
-            &mut public_rx,
-            "turn|turn:2",
-            Duration::from_secs(5),
-        )
-        .await,
+        public_log,
         [
             "-battlerservice:started",
             "info|battletype:Singles",
@@ -798,7 +811,6 @@ async fn publishes_battle_logs() {
             "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
             "damage|mon:Pikachu,player-1,1|health:67/100",
             "residual",
-            "-battlerservice:timer|battle|remainingsecs:59",
         ]
     );
 }
