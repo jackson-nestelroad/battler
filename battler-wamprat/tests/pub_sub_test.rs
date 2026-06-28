@@ -268,19 +268,23 @@ async fn resubscribes_on_reconnect() {
     let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
 
     // Create a publisher and subscriber.
-    let (publisher_handle, publisher_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
+    let mut publisher_builder = PeerBuilder::new(PeerConnectionType::Remote(
         format!("ws://{}", router_handle.local_addr()),
-    ))
-    .start(
+    ));
+    publisher_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
+    publisher_builder.connection_config_mut().max_consecutive_failures = 100;
+    let (publisher_handle, publisher_join_handle) = publisher_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     publisher_handle.wait_until_ready().await.unwrap();
 
-    let (subscriber_handle, subscriber_handle_join_handle) = PeerBuilder::new(
-        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
-    )
-    .start(
+    let mut subscriber_builder = PeerBuilder::new(PeerConnectionType::Remote(
+        format!("ws://{}", router_handle.local_addr()),
+    ));
+    subscriber_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
+    subscriber_builder.connection_config_mut().max_consecutive_failures = 100;
+    let (subscriber_handle, subscriber_handle_join_handle) = subscriber_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
@@ -405,19 +409,23 @@ async fn retries_publish_during_reconnect() {
     let (router_handle, router_join_handle) = start_router(0).await.unwrap();
 
     // Create a publisher and subscriber.
-    let (publisher_handle, publisher_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
+    let mut publisher_builder = PeerBuilder::new(PeerConnectionType::Remote(
         format!("ws://{}", router_handle.local_addr()),
-    ))
-    .start(
+    ));
+    publisher_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
+    publisher_builder.connection_config_mut().max_consecutive_failures = 100;
+    let (publisher_handle, publisher_join_handle) = publisher_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     publisher_handle.wait_until_ready().await.unwrap();
 
-    let (subscriber_handle, subscriber_handle_join_handle) = PeerBuilder::new(
-        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
-    )
-    .start(
+    let mut subscriber_builder = PeerBuilder::new(PeerConnectionType::Remote(
+        format!("ws://{}", router_handle.local_addr()),
+    ));
+    subscriber_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
+    subscriber_builder.connection_config_mut().max_consecutive_failures = 100;
+    let (subscriber_handle, subscriber_handle_join_handle) = subscriber_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
