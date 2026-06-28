@@ -191,7 +191,9 @@ async fn registers_methods_on_reconnect() {
         router_handle.local_addr()
     )));
     peer_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
-    peer_builder.connection_config_mut().max_consecutive_failures = 100;
+    peer_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
     peer_builder.add_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
     let (callee_handle, callee_join_handle) = peer_builder.start(
         create_peer("callee").unwrap(),
@@ -251,7 +253,9 @@ async fn retries_call_during_reconnect() {
         router_handle.local_addr()
     )));
     callee_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
-    callee_builder.connection_config_mut().max_consecutive_failures = 100;
+    callee_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
     callee_builder.add_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
     let (callee_handle, callee_join_handle) = callee_builder.start(
         create_peer("callee").unwrap(),
@@ -264,7 +268,9 @@ async fn retries_call_during_reconnect() {
         router_handle.local_addr()
     )));
     caller_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
-    caller_builder.connection_config_mut().max_consecutive_failures = 100;
+    caller_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
     let (caller_handle, caller_join_handle) = caller_builder.start(
         create_peer("caller").unwrap(),
         Uri::try_from(REALM).unwrap(),
