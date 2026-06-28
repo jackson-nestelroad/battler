@@ -441,8 +441,8 @@ where
     }
 
     fn direct_connect(context: &RouterContext<S>) -> DirectConnection {
-        let (router_to_peer_tx, router_to_peer_rx) = mpsc::channel(16);
-        let (peer_to_router_tx, peer_to_router_rx) = mpsc::channel(16);
+        let (router_to_peer_tx, router_to_peer_rx) = mpsc::unbounded_channel();
+        let (peer_to_router_tx, peer_to_router_rx) = mpsc::unbounded_channel();
         let router_stream = DirectMessageStream::new(router_to_peer_tx, peer_to_router_rx);
         let peer_stream = DirectMessageStream::new(peer_to_router_tx, router_to_peer_rx);
         let uuid = Self::start_connection_over_stream(context, Box::new(router_stream));

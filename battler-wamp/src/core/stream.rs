@@ -146,7 +146,10 @@ pub struct DirectMessageStream {
 
 impl DirectMessageStream {
     /// Creates a direct message stream.
-    pub fn new(message_tx: mpsc::Sender<Message>, message_rx: mpsc::Receiver<Message>) -> Self {
+    pub fn new(
+        message_tx: mpsc::UnboundedSender<Message>,
+        message_rx: mpsc::UnboundedReceiver<Message>,
+    ) -> Self {
         let stream = futures_util::stream::unfold(message_rx, move |mut message_rx| async {
             match message_rx.recv().await {
                 Some(message) => Some((StreamMessage::Message(message), message_rx)),
@@ -157,7 +160,7 @@ impl DirectMessageStream {
             message_tx,
             move |message_tx, message: StreamMessage| async {
                 match message {
-                    StreamMessage::Message(message) => message_tx.send(message).await?,
+                    StreamMessage::Message(message) => message_tx.send(message)?,
                     StreamMessage::Ping(_) => (),
                 }
                 Ok::<_, mpsc::error::SendError<_>>(message_tx)
