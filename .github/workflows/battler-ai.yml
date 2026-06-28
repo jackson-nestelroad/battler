@@ -1,0 +1,30 @@
+name: battler-ai
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  DATA_DIR: ${{ github.workspace }}/battle-data/data
+  CRATE_ROOT: ${{ github.workspace }}
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+jobs:
+  test-battler-ai:
+    name: Run battler-ai tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-ai tests
+        run: cargo test -p "battler-ai*"
