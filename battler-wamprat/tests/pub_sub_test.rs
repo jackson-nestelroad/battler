@@ -168,7 +168,7 @@ async fn receives_events() {
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe(
@@ -299,7 +299,7 @@ async fn resubscribes_on_reconnect() {
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe(
@@ -448,7 +448,7 @@ async fn retries_publish_during_reconnect() {
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe(
@@ -533,7 +533,7 @@ async fn receives_pattern_based_events() {
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe_pattern_matched(MessageEventHandler { events_tx })
@@ -660,7 +660,7 @@ async fn receives_pattern_based_events_with_generator() {
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe_pattern_matched_with_generator(

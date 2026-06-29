@@ -521,7 +521,7 @@ struct PlayerState {
 
 impl PlayerState {
     fn new() -> Self {
-        let (update_tx, _) = broadcast::channel(16);
+        let (update_tx, _) = broadcast::channel(48);
         Self {
             proposed_battles: BTreeSet::default(),
             update_tx,

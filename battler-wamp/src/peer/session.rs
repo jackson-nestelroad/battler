@@ -496,9 +496,9 @@ impl Session {
     /// Creates a new session over a service.
     pub fn new(name: String, service_message_tx: mpsc::Sender<Message>) -> Self {
         let id_allocator = SequentialIdAllocator::default();
-        let (established_session_tx, _) = broadcast::channel(16);
-        let (closed_session_tx, _) = broadcast::channel(16);
-        let (auth_challenge_tx, _) = broadcast::channel(16);
+        let (established_session_tx, _) = broadcast::channel(48);
+        let (closed_session_tx, _) = broadcast::channel(48);
+        let (auth_challenge_tx, _) = broadcast::channel(48);
         let (subscribed_tx, _) = broadcast::channel(128);
         let (unsubscribed_tx, _) = broadcast::channel(128);
         let (published_tx, _) = broadcast::channel(128);

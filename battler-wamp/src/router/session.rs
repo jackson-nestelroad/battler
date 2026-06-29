@@ -360,9 +360,9 @@ impl Session {
         service_message_tx: mpsc::Sender<Message>,
     ) -> Self {
         let id_allocator = SequentialIdAllocator::default();
-        let (closed_session_tx, _) = broadcast::channel(16);
-        let (rpc_yield_tx, _) = broadcast::channel(16);
-        let (rpc_yield_cancel_tx, rpc_yield_cancel_rx) = broadcast::channel(16);
+        let (closed_session_tx, _) = broadcast::channel(48);
+        let (rpc_yield_tx, _) = broadcast::channel(48);
+        let (rpc_yield_cancel_tx, rpc_yield_cancel_rx) = broadcast::channel(48);
         let (publish_tx, _) = broadcast::channel(1024);
         let (procedure_message_tx, _) = broadcast::channel(1024);
         Self {

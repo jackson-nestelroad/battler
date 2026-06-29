@@ -317,7 +317,7 @@ impl Connection {
     ) -> Result<bool> {
         let mut finish_on_close = false;
         let mut router_end_rx = context.router().end_rx();
-        let (handle_message_result_tx, mut handle_message_result_rx) = mpsc::channel(16);
+        let (handle_message_result_tx, mut handle_message_result_rx) = mpsc::channel(48);
 
         // Start two separate loops for ordering guarantees of PUBLISH and CALL messages.
         tokio::spawn(Self::publish_loop(

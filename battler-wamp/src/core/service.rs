@@ -86,10 +86,10 @@ pub struct Service {
 impl Service {
     /// Creates a new service over a message stream.
     pub fn new(name: String, stream: Box<dyn MessageStream>) -> Self {
-        let (message_tx, _) = broadcast::channel(16);
+        let (message_tx, _) = broadcast::channel(48);
         let (end_tx, end_rx) = broadcast::channel(1);
         let (cancel_tx, cancel_rx) = broadcast::channel(1);
-        let (user_message_tx, user_message_rx) = mpsc::channel(16);
+        let (user_message_tx, user_message_rx) = mpsc::channel(48);
         Self {
             name,
             stream,

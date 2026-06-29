@@ -1242,7 +1242,7 @@ mod subscription_wildcard_match_test {
         );
         assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             subscribe_that_expects_no_event(
                 &subscriber,
@@ -1365,7 +1365,7 @@ mod subscription_wildcard_match_test {
         );
         assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             subscribe_that_expects_no_event(
                 &subscriber,

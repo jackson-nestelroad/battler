@@ -631,9 +631,9 @@ where
         procedures: impl Iterator<Item = (WildcardUri, PreregisteredProcedure)>,
     ) -> Self {
         let peer = Arc::new(peer);
-        let (session_established_tx, session_established_rx) = broadcast::channel(16);
-        let (session_ready_tx, session_ready_rx) = broadcast::channel(16);
-        let (session_finished_tx, session_finished_rx) = broadcast::channel(16);
+        let (session_established_tx, session_established_rx) = broadcast::channel(48);
+        let (session_ready_tx, session_ready_rx) = broadcast::channel(48);
+        let (session_finished_tx, session_finished_rx) = broadcast::channel(48);
 
         Self {
             peer: peer.clone(),
@@ -658,8 +658,8 @@ where
     pub fn start(self) -> (PeerHandle<S>, JoinHandle<()>) {
         let peer = self.peer.clone();
         let subscriber = self.subscriber.clone();
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
-        let (error_tx, error_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
+        let (error_tx, error_rx) = broadcast::channel(48);
         let peer_state = self.peer_state.clone();
         let session_established_rx = self.session_established_rx.resubscribe();
         let session_ready_rx = self.session_ready_rx.resubscribe();
@@ -784,7 +784,7 @@ where
         procedure: Arc<Box<dyn Procedure>>,
         mut procedure_message_rx: broadcast::Receiver<ProcedureMessage>,
     ) {
-        let (invocation_done_tx, mut invocation_done_rx) = mpsc::channel(16);
+        let (invocation_done_tx, mut invocation_done_rx) = mpsc::channel(48);
         let mut invocations = HashMap::default();
         loop {
             tokio::select! {

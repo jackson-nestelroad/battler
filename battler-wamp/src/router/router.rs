@@ -264,7 +264,7 @@ where
         let cancel_rx = self.cancel_rx.resubscribe();
 
         let cancel_tx = self.cancel_tx.clone();
-        let (control_tx, control_rx) = mpsc::channel(16);
+        let (control_tx, control_rx) = mpsc::channel(48);
         let context = RouterContext::new(self);
         let start_handle = tokio::spawn(Self::handle_connections(
             context.clone(),

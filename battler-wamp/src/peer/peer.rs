@@ -453,8 +453,8 @@ where
         transport_factory: Box<dyn TransportFactory<S>>,
     ) -> Result<Self> {
         config.validate()?;
-        let (session_finished_tx, _) = broadcast::channel(16);
-        let (connection_finished_tx, _) = broadcast::channel(16);
+        let (session_finished_tx, _) = broadcast::channel(48);
+        let (connection_finished_tx, _) = broadcast::channel(48);
         let (drop_tx, _) = broadcast::channel(1);
         let (end_active_connection_tx, _) = broadcast::channel(1);
         Ok(Self {
@@ -527,7 +527,7 @@ where
 
         // Start the service and message handler.
         let service = Service::new(self.config.name.clone(), stream);
-        let (message_tx, message_rx) = mpsc::channel(16);
+        let (message_tx, message_rx) = mpsc::channel(48);
         let service_message_rx = service.message_rx();
         let end_rx = service.end_rx();
         let drop_rx = self.drop_tx.subscribe();
@@ -1336,8 +1336,8 @@ where
             .await?;
 
         let session_finished_rx = self.session_finished_rx();
-        let (rpc_result_tx, rpc_result_rx) = mpsc::channel(16);
-        let (cancel_tx, cancel_rx) = mpsc::channel(16);
+        let (rpc_result_tx, rpc_result_rx) = mpsc::channel(48);
+        let (cancel_tx, cancel_rx) = mpsc::channel(48);
         let results_join_handle = tokio::spawn(Self::wait_for_results(
             request_id,
             session_rpc_result_rx,
