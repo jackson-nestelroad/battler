@@ -1339,6 +1339,9 @@ impl Session {
             .session(callee_details.callee.session)
             .await
             .ok_or_else(|| Error::new(InteractionError::Canceled))?;
+
+        tokio::task::yield_now().await;
+
         let mut rpc_yield_rx = invocation
             .state
             .lock()
