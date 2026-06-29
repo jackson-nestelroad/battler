@@ -2214,12 +2214,20 @@ async fn cancellation_occurs_for_shared_registration() {
     }
 
     async fn stalling_handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
+        let mut active_invocation: Option<Invocation> = None;
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
-                ProcedureMessage::Invocation(_) => {
+                ProcedureMessage::Invocation(invocation) => {
+                    active_invocation = Some(invocation);
                     invocation_received_tx.send(()).await.unwrap();
                 }
                 ProcedureMessage::Interrupt(_) => {
+                    if let Some(invocation) = active_invocation.take() {
+                        invocation
+                            .respond::<InteractionError>(Err(InteractionError::Canceled))
+                            .await
+                            .unwrap();
+                    }
                     break;
                 }
             }
