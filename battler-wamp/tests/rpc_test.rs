@@ -2213,10 +2213,7 @@ async fn cancellation_occurs_for_shared_registration() {
         }
     }
 
-    async fn stalling_handler(
-        mut procedure: Procedure,
-        invocation_received_tx: mpsc::Sender<()>,
-    ) {
+    async fn stalling_handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
         while let Ok(message) = procedure.procedure_message_rx.recv().await {
             match message {
                 ProcedureMessage::Invocation(_) => {
@@ -2246,10 +2243,7 @@ async fn cancellation_occurs_for_shared_registration() {
         .await
         .unwrap();
 
-    tokio::spawn(stalling_handler(
-        procedure,
-        invocation_received_tx.clone(),
-    ));
+    tokio::spawn(stalling_handler(procedure, invocation_received_tx.clone()));
 
     let rpc = caller
         .call(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())
