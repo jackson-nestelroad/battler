@@ -174,7 +174,14 @@ impl TestContext {
     async fn run_producer(&mut self) {
         let (stop_tx, stop_rx) = broadcast::channel(1);
         let data = static_local_data_store();
-        let peer = new_web_socket_peer(battler_wamp::peer::PeerConfig::default()).unwrap();
+        let peer = new_web_socket_peer(battler_wamp::peer::PeerConfig {
+            name: format!(
+                "producer-{}",
+                std::thread::current().name().unwrap_or("NO_THREAD_NAME")
+            ),
+            ..Default::default()
+        })
+        .unwrap();
         let config = battler_wamprat_schema::PeerConfig {
             connection: PeerConnectionConfig::new(PeerConnectionType::Direct(
                 self.router_handle.clone(),
@@ -215,7 +222,10 @@ impl TestContext {
 
 fn create_peer(name: &str) -> Result<WebSocketPeer> {
     let config = battler_wamp::peer::PeerConfig {
-        name: name.to_owned(),
+        name: format!(
+            "{name}-{}",
+            std::thread::current().name().unwrap_or("NO_THREAD_NAME")
+        ),
         ..Default::default()
     };
     new_web_socket_peer(config)
