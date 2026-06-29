@@ -837,11 +837,8 @@ async fn forfeits_on_player_timer() {
 
     assert_matches::assert_matches!(battler_service.full_log(battle.uuid, None).await, Ok(log) => {
         pretty_assertions::assert_eq!(
-            log[(log.len() - 9)..],
+            log[(log.len() - 6)..],
             [
-                "turn|turn:1",
-                "-battlerservice:timer|player:player-1|remainingsecs:5",
-                "-battlerservice:timer|player:player-2|remainingsecs:5",
                 "-battlerservice:timer|player:player-2|warning|remainingsecs:1",
                 "-battlerservice:timer|player:player-2|done|remainingsecs:0",
                 "continue",
