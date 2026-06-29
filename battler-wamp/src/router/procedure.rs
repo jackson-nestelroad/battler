@@ -315,20 +315,16 @@ impl ProcedureManager {
         session: Id,
         procedure: &WildcardUri,
     ) {
-        let remove = if let Some(p) = Self::get(context, procedure).await {
+        let mut procedures = context.realm().procedure_manager.procedures.write().await;
+
+        let remove = if let Some(p) = procedures.find(procedure.split()) {
             p.remove_callee(session).await == 0
         } else {
             false
         };
 
         if remove {
-            context
-                .realm()
-                .procedure_manager
-                .procedures
-                .write()
-                .await
-                .remove(procedure.split());
+            procedures.remove(procedure.split());
         }
     }
 
