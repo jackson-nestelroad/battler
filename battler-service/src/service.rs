@@ -125,8 +125,8 @@ impl<'d> LiveBattle<'d> {
         let battle = PublicCoreBattle::new(options, data, engine_options)?;
         let logs = SplitLogs::new(uuid, sides.len(), global_log_tx);
 
-        let (choice_made_tx, _) = broadcast::channel(16);
-        let (cancel_timers_tx, _) = broadcast::channel(16);
+        let (choice_made_tx, _) = broadcast::channel(48);
+        let (cancel_timers_tx, _) = broadcast::channel(48);
 
         let players = sides
             .iter()
