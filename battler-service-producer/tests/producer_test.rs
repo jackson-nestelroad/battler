@@ -153,30 +153,64 @@ impl BattleAuthorizer for Authorizer {
     }
 }
 
-async fn run_producer(router: RouterHandle) -> Result<JoinHandle<Result<()>>> {
-    let data = static_local_data_store();
-    let peer = new_web_socket_peer(battler_wamp::peer::PeerConfig::default())?;
-    let config = battler_wamprat_schema::PeerConfig {
-        connection: PeerConnectionConfig::new(PeerConnectionType::Direct(router)),
-        auth_methods: Vec::default(),
-    };
-    let (started_tx, started_rx) = oneshot::channel();
-    let handle = tokio::spawn(run_battler_service_producer(
-        data,
-        CoreBattleEngineOptions {
-            log_time: false,
-            ..Default::default()
-        },
-        config,
-        peer,
-        Modules {
-            authorizer: Box::new(Authorizer),
-            stop_rx: None,
-            started_tx: Some(started_tx),
-        },
-    ));
-    started_rx.await?;
-    Ok(handle)
+struct TestContext {
+    router_handle: RouterHandle,
+    router_join_handle: JoinHandle<()>,
+    producer_stop_tx: Option<broadcast::Sender<()>>,
+    producer_join_handle: Option<JoinHandle<Result<()>>>,
+}
+
+impl TestContext {
+    async fn new() -> Self {
+        let (router_handle, router_join_handle) = start_router().await.unwrap();
+        Self {
+            router_handle,
+            router_join_handle,
+            producer_stop_tx: None,
+            producer_join_handle: None,
+        }
+    }
+
+    async fn run_producer(&mut self) {
+        let (stop_tx, stop_rx) = broadcast::channel(1);
+        let data = static_local_data_store();
+        let peer = new_web_socket_peer(battler_wamp::peer::PeerConfig::default()).unwrap();
+        let config = battler_wamprat_schema::PeerConfig {
+            connection: PeerConnectionConfig::new(PeerConnectionType::Direct(
+                self.router_handle.clone(),
+            )),
+            auth_methods: Vec::default(),
+        };
+        let (started_tx, started_rx) = oneshot::channel();
+        let handle = tokio::spawn(run_battler_service_producer(
+            data,
+            CoreBattleEngineOptions {
+                log_time: false,
+                ..Default::default()
+            },
+            config,
+            peer,
+            Modules {
+                authorizer: Box::new(Authorizer),
+                stop_rx: Some(stop_rx),
+                started_tx: Some(started_tx),
+            },
+        ));
+        started_rx.await.unwrap();
+        self.producer_stop_tx = Some(stop_tx);
+        self.producer_join_handle = Some(handle);
+    }
+
+    async fn teardown(self) {
+        if let Some(stop_tx) = self.producer_stop_tx {
+            stop_tx.send(()).ok();
+        }
+        if let Some(handle) = self.producer_join_handle {
+            handle.await.ok();
+        }
+        self.router_handle.cancel().ok();
+        self.router_join_handle.await.ok();
+    }
 }
 
 fn create_peer(name: &str) -> Result<WebSocketPeer> {
@@ -342,11 +376,11 @@ async fn read_all_entries_from_log_rx_stopping_at_line_or_timeout(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn lists_battles() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let consumer = start_consumer(
         "player-1",
-        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
+        PeerConnectionType::Remote(format!("ws://{}", context.router_handle.local_addr())),
         create_peer("player-1").unwrap(),
     )
     .await
@@ -364,15 +398,16 @@ async fn lists_battles() {
             });
         }
     );
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn authorizes_battle_creation() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let consumer = start_consumer(
         "player-1",
-        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
+        PeerConnectionType::Remote(format!("ws://{}", context.router_handle.local_addr())),
         create_peer("player-1").unwrap(),
     )
     .await
@@ -395,16 +430,17 @@ async fn authorizes_battle_creation() {
             });
         }
     );
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn creates_battle() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let player_1 = new_client(
         start_consumer(
             "player-1",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-1").unwrap(),
         )
         .await
@@ -413,7 +449,7 @@ async fn creates_battle() {
     let player_2 = new_client(
         start_consumer(
             "player-2",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-2").unwrap(),
         )
         .await
@@ -451,16 +487,17 @@ async fn creates_battle() {
             pretty_assertions::assert_eq!(battles, []);
         }
     );
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn owner_can_start_and_delete_battle() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let player_1 = new_client(
         start_consumer(
             "player-1",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-1").unwrap(),
         )
         .await
@@ -469,7 +506,7 @@ async fn owner_can_start_and_delete_battle() {
     let player_2 = new_client(
         start_consumer(
             "player-2",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-2").unwrap(),
         )
         .await
@@ -519,16 +556,17 @@ async fn owner_can_start_and_delete_battle() {
     assert_matches::assert_matches!(player_2.battles(usize::MAX, 0).await, Ok(battles) => {
         pretty_assertions::assert_eq!(battles, []);
     });
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn player_can_update_team() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let player_1 = new_client(
         start_consumer(
             "player-1",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-1").unwrap(),
         )
         .await
@@ -561,16 +599,17 @@ async fn player_can_update_team() {
             assert_eq!(err.to_string(), "player-1 cannot act as player-2");
         }
     );
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn player_can_participate_in_battle() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let player_1 = new_client(
         start_consumer(
             "player-1",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-1").unwrap(),
         )
         .await
@@ -606,16 +645,17 @@ async fn player_can_participate_in_battle() {
     assert_matches::assert_matches!(player_1.make_choice(battle.uuid, "player-2", "move 0").await, Err(err) => {
         assert_eq!(err.to_string(), "player-1 cannot act as player-2");
     });
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn publishes_battle_logs() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let player_1 = new_client(
         start_consumer(
             "player-1",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-1").unwrap(),
         )
         .await
@@ -624,7 +664,7 @@ async fn publishes_battle_logs() {
     let player_2 = new_client(
         start_consumer(
             "player-2",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-2").unwrap(),
         )
         .await
@@ -633,7 +673,7 @@ async fn publishes_battle_logs() {
     let player_3 = new_client(
         start_consumer(
             "player-3",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-3").unwrap(),
         )
         .await
@@ -813,16 +853,17 @@ async fn publishes_battle_logs() {
             "residual",
         ]
     );
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn remote_connection_cannot_publish_battle_log() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let bad_producer = BattlerService::producer_builder(PeerConfig {
         connection: PeerConnectionConfig::new(PeerConnectionType::Remote(format!(
             "ws://{}",
-            router_handle.local_addr()
+            context.router_handle.local_addr()
         ))),
         auth_methods: Vec::default(),
     })
@@ -838,16 +879,17 @@ async fn remote_connection_cannot_publish_battle_log() {
     ).await, Err(err) => {
         assert_eq!(err.to_string(), "remote connection cannot publish");
     });
+    context.teardown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn player_reads_full_log() {
-    let (router_handle, _) = start_router().await.unwrap();
-    run_producer(router_handle.clone()).await.unwrap();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
     let player_1 = new_client(
         start_consumer(
             "player-1",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-1").unwrap(),
         )
         .await
@@ -856,7 +898,7 @@ async fn player_reads_full_log() {
     let player_2 = new_client(
         start_consumer(
             "player-2",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-2").unwrap(),
         )
         .await
@@ -865,7 +907,7 @@ async fn player_reads_full_log() {
     let player_3 = new_client(
         start_consumer(
             "player-3",
-            PeerConnectionType::Direct(router_handle.clone()),
+            PeerConnectionType::Direct(context.router_handle.clone()),
             create_peer("player-3").unwrap(),
         )
         .await
@@ -938,4 +980,5 @@ async fn player_reads_full_log() {
             assert_eq!(err.to_string(), "player-3 is not on given side");
         }
     );
+    context.teardown().await;
 }

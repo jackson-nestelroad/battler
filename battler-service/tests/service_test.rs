@@ -296,11 +296,12 @@ async fn starts_battle_and_reports_player_and_request_data() {
         .await
         .unwrap();
 
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
 
     assert_matches::assert_matches!(
         battler_service.player_data(battle.uuid, "player-1").await,
@@ -349,11 +350,12 @@ async fn plays_battle_and_finishes_and_deletes() {
         .await
         .unwrap();
 
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
 
     assert_matches::assert_matches!(
         battler_service
@@ -414,11 +416,12 @@ async fn returns_filtered_logs_by_side() {
         .await
         .unwrap();
 
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
 
     // Read all logs from the battle starting; we only care to verify the first turn.
     while let Ok(_) = public_log_rx.try_recv() {}
@@ -798,11 +801,9 @@ async fn forfeits_on_player_timer() {
         .await
         .unwrap();
 
-    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
-
-    // Wait for battle to start.
     let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for timers to start.
     read_all_entries_from_log_rx_stopping_at(
@@ -888,9 +889,9 @@ async fn selects_random_moves_on_action_timer() {
         .await
         .unwrap();
 
-    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
-
     let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for turn 1.
     read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
@@ -949,9 +950,9 @@ async fn only_activates_player_timer_if_request_is_active() {
         .await
         .unwrap();
 
-    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
-
     let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for turn 1.
     read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
