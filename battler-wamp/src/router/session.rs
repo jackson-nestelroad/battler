@@ -994,7 +994,7 @@ impl Session {
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
         let mut context = context.realm_context(&realm)?;
-        ProcedureManager::unregister(&mut context, &procedure).await;
+        ProcedureManager::unregister(&mut context, self.id, &procedure).await;
         self.send_message(Message::Unregistered(UnregisteredMessage {
             unregister_request: message.request,
         }))
@@ -1656,7 +1656,7 @@ impl Session {
                 state.subscriptions.clear();
 
                 for procedure in state.procedures.values() {
-                    ProcedureManager::unregister(&mut context, &procedure).await;
+                    ProcedureManager::unregister(&mut context, id, &procedure).await;
                 }
                 state.procedures.clear();
 

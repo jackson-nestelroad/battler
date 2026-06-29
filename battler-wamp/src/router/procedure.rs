@@ -140,6 +140,21 @@ impl Procedure {
         Ok(())
     }
 
+    /// Removes a callee from the procedure registration.
+    ///
+    /// Returns the number of remaining callees.
+    async fn remove_callee(&self, callee: Id) -> usize {
+        let mut registration = self.registration.lock().await;
+        registration.callees.retain(|c| c.session != callee);
+        if registration.callees.is_empty() {
+            0
+        } else {
+            registration.last_callee_index =
+                registration.last_callee_index % registration.callees.len();
+            registration.callees.len()
+        }
+    }
+
     /// The caller's identity should be disclosed to the callee.
     pub fn disclose_caller(&self) -> bool {
         self.options.disclose_caller
@@ -295,14 +310,26 @@ impl ProcedureManager {
     }
 
     /// Deregisters a procedure.
-    pub async fn unregister<S>(context: &RealmContext<'_, S>, procedure: &WildcardUri) {
-        context
-            .realm()
-            .procedure_manager
-            .procedures
-            .write()
-            .await
-            .remove(procedure.split());
+    pub async fn unregister<S>(
+        context: &RealmContext<'_, S>,
+        session: Id,
+        procedure: &WildcardUri,
+    ) {
+        let remove = if let Some(p) = Self::get(context, procedure).await {
+            p.remove_callee(session).await == 0
+        } else {
+            false
+        };
+
+        if remove {
+            context
+                .realm()
+                .procedure_manager
+                .procedures
+                .write()
+                .await
+                .remove(procedure.split());
+        }
     }
 
     /// Gets the procedure matching the URI.
