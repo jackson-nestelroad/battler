@@ -11,7 +11,7 @@ env:
   CARGO_TERM_COLOR: always
   DATA_DIR: ${{ github.workspace }}/battle-data/data
   CRATE_ROOT: ${{ github.workspace }}
-  TOKIO_WORKER_THREADS: 4
+  TOKIO_WORKER_THREADS: 8
 
 jobs:
   build-no-std:
