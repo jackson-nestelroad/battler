@@ -1463,8 +1463,8 @@ impl Session {
                                 ..Default::default()
                             })
                         ).await?;
-                        return Err(InteractionError::Canceled.into());
                     }
+                    return Err(InteractionError::Canceled.into());
                 }
                 _ = timeout => {
                     // Dealer-initiated timeout: interrupt the callee (if supported) and error out immediately.
