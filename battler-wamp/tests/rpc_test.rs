@@ -2213,6 +2213,22 @@ async fn cancellation_occurs_for_shared_registration() {
         }
     }
 
+    async fn stalling_handler(
+        mut procedure: Procedure,
+        invocation_received_tx: mpsc::Sender<()>,
+    ) {
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(_) => {
+                    invocation_received_tx.send(()).await.unwrap();
+                }
+                ProcedureMessage::Interrupt(_) => {
+                    break;
+                }
+            }
+        }
+    }
+
     let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
     tokio::spawn(unavailable_handler(
         procedure,
@@ -2230,7 +2246,7 @@ async fn cancellation_occurs_for_shared_registration() {
         .await
         .unwrap();
 
-    tokio::spawn(unavailable_handler(
+    tokio::spawn(stalling_handler(
         procedure,
         invocation_received_tx.clone(),
     ));
