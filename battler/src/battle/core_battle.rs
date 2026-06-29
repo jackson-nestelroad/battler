@@ -1900,8 +1900,8 @@ impl<'d> CoreBattle<'d> {
                 context.battle_mut().log(battle_log_entry!("tie"));
             }
         }
-        context.battle_mut().ended = true;
         context.battle_mut().log.commit();
+        context.battle_mut().ended = true;
         Self::clear_requests(context)?;
         Ok(())
     }

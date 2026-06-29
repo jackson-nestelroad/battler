@@ -45,7 +45,7 @@ pub struct Side {
 }
 
 /// The state of a [`Battle`].
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BattleState {
     /// The battle is being prepared.
     #[serde(rename = "preparing")]

@@ -190,6 +190,10 @@ async fn registers_methods_on_reconnect() {
         "ws://{}",
         router_handle.local_addr()
     )));
+    peer_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
+    peer_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
     peer_builder.add_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
     let (callee_handle, callee_join_handle) = peer_builder.start(
         create_peer("callee").unwrap(),
@@ -197,9 +201,13 @@ async fn registers_methods_on_reconnect() {
     );
     callee_handle.wait_until_ready().await.unwrap();
 
+    let mut callee_session_finished_rx = callee_handle.session_finished_rx();
+
     // Stop the router to disconnect the peer.
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+
+    callee_session_finished_rx.recv().await.unwrap();
 
     // Restart the router.
     let (router_handle, router_join_handle) = start_router(8888).await.unwrap();
@@ -240,21 +248,30 @@ async fn retries_call_during_reconnect() {
     // Start a router.
     let (router_handle, router_join_handle) = start_router(0).await.unwrap();
 
-    let mut peer_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+    let mut callee_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
         "ws://{}",
         router_handle.local_addr()
     )));
-    peer_builder.add_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
-    let (callee_handle, callee_join_handle) = peer_builder.start(
+    callee_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
+    callee_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
+    callee_builder.add_procedure(Uri::try_from("com.battler.add2").unwrap(), AddHandler);
+    let (callee_handle, callee_join_handle) = callee_builder.start(
         create_peer("callee").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     callee_handle.wait_until_ready().await.unwrap();
 
-    let (caller_handle, caller_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
-        format!("ws://{}", router_handle.local_addr()),
-    ))
-    .start(
+    let mut caller_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    caller_builder.connection_config_mut().reconnect_delay = std::time::Duration::from_millis(50);
+    caller_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
+    let (caller_handle, caller_join_handle) = caller_builder.start(
         create_peer("caller").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );

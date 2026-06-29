@@ -7,6 +7,7 @@ use anyhow::{
 use log::{
     error,
     info,
+    warn,
 };
 use tokio::sync::{
     broadcast::{
@@ -111,7 +112,7 @@ impl Connection {
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session_id = context.router().id_allocator.generate_id().await;
-        let (message_tx, message_rx) = mpsc::channel(16);
+        let (message_tx, message_rx) = mpsc::unbounded_channel();
         let session = Session::new(session_id, connection_type, message_tx, service_message_tx);
 
         info!(
@@ -127,7 +128,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Session,
-        message_rx: mpsc::Receiver<Message>,
+        message_rx: mpsc::UnboundedReceiver<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
@@ -211,7 +212,17 @@ impl Connection {
             tokio::select! {
                 // Received a publish message.
                 publish_message = publish_rx.recv() => {
-                    session.handle_ordered_publish(&context, publish_message?).await?;
+                    match publish_message {
+                        Ok(msg) => {
+                            session.handle_ordered_publish(&context, msg).await?;
+                        }
+                        Err(RecvError::Lagged(skipped)) => {
+                            warn!("Session {} lagged by {} publications", session.id(), skipped);
+                        }
+                        Err(RecvError::Closed) => {
+                            break;
+                        }
+                    }
                 }
                 // The session loop is done, so we should also be done.
                 _ = session_loop_done_rx.recv() => {
@@ -262,17 +273,27 @@ impl Connection {
             tokio::select! {
                 // Received an ordered message.
                 message = procedure_message_rx.recv() => {
-                    match message? {
-                        ProcedureMessage::Call(call_message) => {
-                            let call_request_id = match session.handle_ordered_call(&context, call_message).await? {
-                                Some(call_request_id) => call_request_id,
-                                None => continue,
-                            };
-                            // Handle the invocation asynchronously.
-                            tokio::spawn(Self::handle_invocation(context.clone(), session.clone(), call_request_id, handle_message_result_tx.clone()));
-                        },
-                        ProcedureMessage::Cancel(cancel_message) => {
-                            session.handle_ordered_cancel(&context, cancel_message).await?;
+                    match message {
+                        Ok(msg) => {
+                            match msg {
+                                ProcedureMessage::Call(call_message) => {
+                                    let call_request_id = match session.handle_ordered_call(&context, call_message).await? {
+                                        Some(call_request_id) => call_request_id,
+                                        None => continue,
+                                    };
+                                    // Handle the invocation asynchronously.
+                                    tokio::spawn(Self::handle_invocation(context.clone(), session.clone(), call_request_id, handle_message_result_tx.clone()));
+                                },
+                                ProcedureMessage::Cancel(cancel_message) => {
+                                    session.handle_ordered_cancel(&context, cancel_message).await?;
+                                }
+                            }
+                        }
+                        Err(RecvError::Lagged(skipped)) => {
+                            warn!("Session {} lagged by {} procedure messages", session.id(), skipped);
+                        }
+                        Err(RecvError::Closed) => {
+                            break;
                         }
                     }
                 }
@@ -289,14 +310,14 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Arc<Session>,
-        mut message_rx: mpsc::Receiver<Message>,
+        mut message_rx: mpsc::UnboundedReceiver<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         session_loop_done_rx: broadcast::Receiver<()>,
     ) -> Result<bool> {
         let mut finish_on_close = false;
         let mut router_end_rx = context.router().end_rx();
-        let (handle_message_result_tx, mut handle_message_result_rx) = mpsc::channel(16);
+        let (handle_message_result_tx, mut handle_message_result_rx) = mpsc::channel(48);
 
         // Start two separate loops for ordering guarantees of PUBLISH and CALL messages.
         tokio::spawn(Self::publish_loop(

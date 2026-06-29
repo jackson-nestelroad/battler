@@ -887,7 +887,6 @@ async fn publish_matches_subscription_by_prefix() {
         Ok(())
     );
 
-    tokio::time::sleep(Duration::from_millis(200)).await;
     assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
 
     let mut topics_seen = Vec::default();
@@ -987,7 +986,6 @@ async fn publish_matches_subscription_by_wildcard() {
         Ok(())
     );
 
-    tokio::time::sleep(Duration::from_millis(200)).await;
     assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
 
     let mut topics_seen = Vec::default();
@@ -1067,7 +1065,6 @@ async fn publish_matches_subscription_by_wildcard_prefix() {
         Ok(())
     );
 
-    tokio::time::sleep(Duration::from_millis(200)).await;
     assert_matches::assert_matches!(subscriber.unsubscribe(subscription.id).await, Ok(()));
 
     let mut topics_seen = Vec::default();
@@ -1116,7 +1113,6 @@ mod subscription_wildcard_match_test {
         peer: &Peer<S>,
         uri: WildcardUri,
         match_style: Option<MatchStyle>,
-        cancel_rx: broadcast::Receiver<()>,
     ) -> JoinHandle<()>
     where
         S: Send + 'static,
@@ -1126,29 +1122,11 @@ mod subscription_wildcard_match_test {
             .await
             .unwrap();
 
-        async fn handler(
-            mut subscription: Subscription,
-            uri: WildcardUri,
-            mut cancel_rx: broadcast::Receiver<()>,
-        ) {
-            loop {
-                tokio::select! {
-                    event = subscription.event_rx.recv() => {
-                        match event {
-                            Ok(_) => {
-                                return;
-                            }
-                            _ => (),
-                        }
-                    }
-                    _ = cancel_rx.recv() => {
-                        panic!("no event received for {uri}");
-                    }
-                }
-            }
+        async fn handler(mut subscription: Subscription) {
+            subscription.event_rx.recv().await.unwrap();
         }
 
-        tokio::spawn(handler(subscription, uri, cancel_rx))
+        tokio::spawn(handler(subscription))
     }
 
     async fn subscribe_that_expects_no_event<S>(
@@ -1173,7 +1151,9 @@ mod subscription_wildcard_match_test {
                             Ok(_) => {
                                 panic!("unexpected event {event:?}");
                             }
-                            _ => (),
+                            Err(_) => {
+                                return;
+                            }
                         }
                     }
                     _ = cancel_rx.recv() => {
@@ -1210,12 +1190,10 @@ mod subscription_wildcard_match_test {
         );
         assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
         let handles = Vec::from_iter([subscribe_that_expects_event(
             &subscriber,
             WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
             None,
-            cancel_rx.resubscribe(),
         )
         .await]);
 
@@ -1229,10 +1207,13 @@ mod subscription_wildcard_match_test {
             Ok(_)
         );
 
-        // A small delay to ensure published events are received by the peer.
-        tokio::time::sleep(Duration::from_millis(200)).await;
-        cancel_tx.send(()).unwrap();
-        for result in futures_util::future::join_all(handles).await {
+        let results = tokio::time::timeout(
+            Duration::from_secs(5),
+            futures_util::future::join_all(handles),
+        )
+        .await
+        .unwrap();
+        for result in results {
             assert_matches::assert_matches!(result, Ok(()));
         }
     }
@@ -1261,7 +1242,7 @@ mod subscription_wildcard_match_test {
         );
         assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             subscribe_that_expects_no_event(
                 &subscriber,
@@ -1274,7 +1255,6 @@ mod subscription_wildcard_match_test {
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3").unwrap(),
                 Some(MatchStyle::Prefix),
-                cancel_rx.resubscribe(),
             )
             .await,
         ]);
@@ -1289,10 +1269,14 @@ mod subscription_wildcard_match_test {
             Ok(_)
         );
 
-        // A small delay to ensure published events are received by the peer.
-        tokio::time::sleep(Duration::from_millis(200)).await;
         cancel_tx.send(()).unwrap();
-        for result in futures_util::future::join_all(handles).await {
+        let results = tokio::time::timeout(
+            Duration::from_secs(5),
+            futures_util::future::join_all(handles),
+        )
+        .await
+        .unwrap();
+        for result in results {
             assert_matches::assert_matches!(result, Ok(()));
         }
     }
@@ -1321,20 +1305,17 @@ mod subscription_wildcard_match_test {
         );
         assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
         let handles = Vec::from_iter([
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3").unwrap(),
                 Some(MatchStyle::Prefix),
-                cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
                 Some(MatchStyle::Prefix),
-                cancel_rx.resubscribe(),
             )
             .await,
         ]);
@@ -1349,10 +1330,13 @@ mod subscription_wildcard_match_test {
             Ok(_)
         );
 
-        // A small delay to ensure published events are received by the peer.
-        tokio::time::sleep(Duration::from_millis(200)).await;
-        cancel_tx.send(()).unwrap();
-        for result in futures_util::future::join_all(handles).await {
+        let results = tokio::time::timeout(
+            Duration::from_secs(5),
+            futures_util::future::join_all(handles),
+        )
+        .await
+        .unwrap();
+        for result in results {
             assert_matches::assert_matches!(result, Ok(()));
         }
     }
@@ -1381,7 +1365,7 @@ mod subscription_wildcard_match_test {
         );
         assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             subscribe_that_expects_no_event(
                 &subscriber,
@@ -1394,7 +1378,6 @@ mod subscription_wildcard_match_test {
                 &subscriber,
                 WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
                 Some(MatchStyle::Wildcard),
-                cancel_rx.resubscribe(),
             )
             .await,
         ]);
@@ -1409,10 +1392,14 @@ mod subscription_wildcard_match_test {
             Ok(_)
         );
 
-        // A small delay to ensure published events are received by the peer.
-        tokio::time::sleep(Duration::from_millis(200)).await;
         cancel_tx.send(()).unwrap();
-        for result in futures_util::future::join_all(handles).await {
+        let results = tokio::time::timeout(
+            Duration::from_secs(5),
+            futures_util::future::join_all(handles),
+        )
+        .await
+        .unwrap();
+        for result in results {
             assert_matches::assert_matches!(result, Ok(()));
         }
     }
@@ -1441,34 +1428,29 @@ mod subscription_wildcard_match_test {
         );
         assert_matches::assert_matches!(subscriber.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
         let handles = Vec::from_iter([
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4.e5").unwrap(),
                 None,
-                cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2.c3.d4").unwrap(),
                 Some(MatchStyle::Prefix),
-                cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1.b2..d4.e5").unwrap(),
                 Some(MatchStyle::Wildcard),
-                cancel_rx.resubscribe(),
             )
             .await,
             subscribe_that_expects_event(
                 &subscriber,
                 WildcardUri::try_from("a1....e5").unwrap(),
                 Some(MatchStyle::Wildcard),
-                cancel_rx.resubscribe(),
             )
             .await,
         ]);
@@ -1483,10 +1465,13 @@ mod subscription_wildcard_match_test {
             Ok(_)
         );
 
-        // A small delay to ensure published events are received by the peer.
-        tokio::time::sleep(Duration::from_millis(200)).await;
-        cancel_tx.send(()).unwrap();
-        for result in futures_util::future::join_all(handles).await {
+        let results = tokio::time::timeout(
+            Duration::from_secs(5),
+            futures_util::future::join_all(handles),
+        )
+        .await
+        .unwrap();
+        for result in results {
             assert_matches::assert_matches!(result, Ok(()));
         }
     }

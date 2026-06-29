@@ -385,9 +385,9 @@ async fn peer_cancels_call_immediately() {
 
     async fn handler(mut procedure: Procedure) {
         loop {
-            if let Ok(ProcedureMessage::Interrupt(_)) = procedure.procedure_message_rx.recv().await
-            {
-                break;
+            match procedure.procedure_message_rx.recv().await.unwrap() {
+                ProcedureMessage::Interrupt(_) => break,
+                _ => (),
             }
         }
     }
@@ -436,7 +436,7 @@ async fn peer_cancels_call_after_invocation() {
         .await
         .unwrap();
 
-    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(48);
 
     async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
         let mut invocation_id = Id::MAX;
@@ -502,7 +502,7 @@ async fn peer_kills_call_and_gets_result() {
         .await
         .unwrap();
 
-    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(48);
     async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
         async fn handle_invocation(invocation: Invocation, mut interrupt_rx: mpsc::Receiver<()>) {
             loop {
@@ -524,7 +524,7 @@ async fn peer_kills_call_and_gets_result() {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
                     invocation_received_tx.send(()).await.unwrap();
-                    let (interrupt_tx, interrupt_rx) = mpsc::channel(16);
+                    let (interrupt_tx, interrupt_rx) = mpsc::channel(48);
                     interrupt_txs.insert(invocation.id(), interrupt_tx);
                     tokio::spawn(handle_invocation(invocation, interrupt_rx));
                 }
@@ -771,7 +771,7 @@ async fn peer_kills_progressive_call_and_ends_stream() {
         .await
         .unwrap();
 
-    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(48);
     async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
         async fn handle_invocation(invocation: Invocation, mut interrupt_rx: mpsc::Receiver<()>) {
             loop {
@@ -793,7 +793,7 @@ async fn peer_kills_progressive_call_and_ends_stream() {
             match message {
                 ProcedureMessage::Invocation(invocation) => {
                     invocation_received_tx.send(()).await.unwrap();
-                    let (interrupt_tx, interrupt_rx) = mpsc::channel(16);
+                    let (interrupt_tx, interrupt_rx) = mpsc::channel(48);
                     interrupt_txs.insert(invocation.id(), interrupt_tx);
                     tokio::spawn(handle_invocation(invocation, interrupt_rx));
                 }
@@ -861,7 +861,7 @@ async fn progressive_call_interrupted_when_caller_leaves() {
 
     // Must wait for the invocation to be received, since a canceled call could never be sent to the
     // callee.
-    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(48);
 
     async fn handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
         async fn handle_invocation(invocation: Invocation) {
@@ -1252,20 +1252,17 @@ mod procedure_wildcard_match_test {
             uri: WildcardUri,
             mut cancel_rx: broadcast::Receiver<()>,
         ) {
-            loop {
-                tokio::select! {
-                    message = procedure.procedure_message_rx.recv() => {
-                        match message {
-                            Ok(ProcedureMessage::Invocation(invocation)) => {
-                                invocation.respond_ok(RpcYield::default()).await.unwrap();
-                                return;
-                            }
-                            _ => (),
+            tokio::select! {
+                message = procedure.procedure_message_rx.recv() => {
+                    match message.unwrap() {
+                        ProcedureMessage::Invocation(invocation) => {
+                            invocation.respond_ok(RpcYield::default()).await.unwrap();
                         }
+                        _ => panic!("expected invocation"),
                     }
-                    _ = cancel_rx.recv() => {
-                        panic!("no invocation received for {uri}");
-                    }
+                }
+                _ = cancel_rx.recv() => {
+                    panic!("no invocation received for {uri}");
                 }
             }
         }
@@ -1300,6 +1297,9 @@ mod procedure_wildcard_match_test {
                         match message {
                             Ok(ProcedureMessage::Invocation(invocation)) => {
                                 panic!("unexpected invocation {invocation:?}")
+                            }
+                            Err(_) => {
+                                return;
                             }
                             _ => (),
                         }
@@ -1338,7 +1338,7 @@ mod procedure_wildcard_match_test {
         );
         assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([register_handler_that_expects_invocation(
             &callee,
             WildcardUri::try_from("a1.b2.c3.d4.e55").unwrap(),
@@ -1387,7 +1387,7 @@ mod procedure_wildcard_match_test {
         );
         assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             register_handler_that_expects_no_invocation(
                 &callee,
@@ -1445,7 +1445,7 @@ mod procedure_wildcard_match_test {
         );
         assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             register_handler_that_expects_no_invocation(
                 &callee,
@@ -1503,7 +1503,7 @@ mod procedure_wildcard_match_test {
         );
         assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             register_handler_that_expects_no_invocation(
                 &callee,
@@ -1561,7 +1561,7 @@ mod procedure_wildcard_match_test {
         );
         assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             register_handler_that_expects_no_invocation(
                 &callee,
@@ -1619,7 +1619,7 @@ mod procedure_wildcard_match_test {
         );
         assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             register_handler_that_expects_invocation(
                 &callee,
@@ -1677,7 +1677,7 @@ mod procedure_wildcard_match_test {
         );
         assert_matches::assert_matches!(callee.join_realm(REALM).await, Ok(()));
 
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let handles = Vec::from_iter([
             register_handler_that_expects_no_invocation(
                 &callee,
@@ -2213,7 +2213,28 @@ async fn cancellation_occurs_for_shared_registration() {
         }
     }
 
-    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(16);
+    async fn stalling_handler(mut procedure: Procedure, invocation_received_tx: mpsc::Sender<()>) {
+        let mut active_invocation: Option<Invocation> = None;
+        while let Ok(message) = procedure.procedure_message_rx.recv().await {
+            match message {
+                ProcedureMessage::Invocation(invocation) => {
+                    active_invocation = Some(invocation);
+                    invocation_received_tx.send(()).await.unwrap();
+                }
+                ProcedureMessage::Interrupt(_) => {
+                    if let Some(invocation) = active_invocation.take() {
+                        invocation
+                            .respond::<InteractionError>(Err(InteractionError::Canceled))
+                            .await
+                            .unwrap();
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    let (invocation_received_tx, mut invocation_received_rx) = mpsc::channel(48);
     tokio::spawn(unavailable_handler(
         procedure,
         invocation_received_tx.clone(),
@@ -2230,10 +2251,7 @@ async fn cancellation_occurs_for_shared_registration() {
         .await
         .unwrap();
 
-    tokio::spawn(unavailable_handler(
-        procedure,
-        invocation_received_tx.clone(),
-    ));
+    tokio::spawn(stalling_handler(procedure, invocation_received_tx.clone()));
 
     let rpc = caller
         .call(Uri::try_from("com.battler.fn").unwrap(), RpcCall::default())

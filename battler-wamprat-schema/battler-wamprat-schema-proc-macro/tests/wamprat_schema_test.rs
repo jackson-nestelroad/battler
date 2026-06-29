@@ -243,7 +243,7 @@ async fn generates_pub_sub_for_calculator_topics() {
     .unwrap();
     consumer.wait_until_ready().await.unwrap();
 
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         consumer.subscribe_ping(PingHandler { events_tx }).await,
         Ok(())
@@ -413,7 +413,7 @@ async fn generates_pub_sub_for_chat_topics() {
     .unwrap();
     consumer.wait_until_ready().await.unwrap();
 
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         consumer
             .subscribe_message(MessageHandler { events_tx })
@@ -526,7 +526,7 @@ async fn generates_pub_sub_for_chat_topics_for_particular_channel() {
         channel: "main".to_owned(),
     };
 
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         consumer
             .subscribe_channel_message(&pattern, MessageHandler { events_tx })

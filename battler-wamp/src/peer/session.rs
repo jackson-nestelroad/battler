@@ -77,6 +77,8 @@ struct EstablishedSessionState {
     subscriptions: HashMap<Id, Subscription>,
     procedures: HashMap<Id, Procedure>,
     active_invocations: HashMap<Id, Id>,
+    pending_unsubscriptions: HashMap<Id, Id>,
+    pending_unregistrations: HashMap<Id, Id>,
 }
 
 impl Debug for EstablishedSessionState {
@@ -494,15 +496,15 @@ impl Session {
     /// Creates a new session over a service.
     pub fn new(name: String, service_message_tx: mpsc::Sender<Message>) -> Self {
         let id_allocator = SequentialIdAllocator::default();
-        let (established_session_tx, _) = broadcast::channel(16);
-        let (closed_session_tx, _) = broadcast::channel(16);
-        let (auth_challenge_tx, _) = broadcast::channel(16);
-        let (subscribed_tx, _) = broadcast::channel(16);
-        let (unsubscribed_tx, _) = broadcast::channel(16);
-        let (published_tx, _) = broadcast::channel(16);
-        let (registered_tx, _) = broadcast::channel(16);
-        let (unregistered_tx, _) = broadcast::channel(16);
-        let (rpc_result_tx, _) = broadcast::channel(16);
+        let (established_session_tx, _) = broadcast::channel(48);
+        let (closed_session_tx, _) = broadcast::channel(48);
+        let (auth_challenge_tx, _) = broadcast::channel(48);
+        let (subscribed_tx, _) = broadcast::channel(128);
+        let (unsubscribed_tx, _) = broadcast::channel(128);
+        let (published_tx, _) = broadcast::channel(128);
+        let (registered_tx, _) = broadcast::channel(128);
+        let (unregistered_tx, _) = broadcast::channel(128);
+        let (rpc_result_tx, _) = broadcast::channel(128);
         Self {
             name,
             service_message_tx,
@@ -642,14 +644,18 @@ impl Session {
             }
             Message::Unsubscribe(message) => {
                 self.modify_established_session_state(|state| {
-                    state.subscriptions.remove(&message.subscribed_subscription)
+                    state
+                        .pending_unsubscriptions
+                        .insert(message.request, message.subscribed_subscription)
                 })
                 .await?;
                 Ok(())
             }
             Message::Unregister(message) => {
                 self.modify_established_session_state(|state| {
-                    state.procedures.remove(&message.registered_registration)
+                    state
+                        .pending_unregistrations
+                        .insert(message.request, message.registered_registration)
                 })
                 .await?;
                 Ok(())
@@ -730,6 +736,8 @@ impl Session {
                     subscriptions: HashMap::default(),
                     procedures: HashMap::default(),
                     active_invocations: HashMap::default(),
+                    pending_unsubscriptions: HashMap::default(),
+                    pending_unregistrations: HashMap::default(),
                 }))
                 .await
             }
@@ -775,6 +783,10 @@ impl Session {
                         self.subscribed_tx.send(Err(message.try_into()?))?;
                     }
                     Message::UNSUBSCRIBE_TAG => {
+                        self.modify_established_session_state(|state| {
+                            state.pending_unsubscriptions.remove(&error_message.request);
+                        })
+                        .await?;
                         self.unsubscribed_tx.send(Err(message.try_into()?))?;
                     }
                     Message::PUBLISH_TAG => {
@@ -784,7 +796,11 @@ impl Session {
                         self.registered_tx.send(Err(message.try_into()?))?;
                     }
                     Message::UNREGISTER_TAG => {
-                        self.registered_tx.send(Err(message.try_into()?))?;
+                        self.modify_established_session_state(|state| {
+                            state.pending_unregistrations.remove(&error_message.request);
+                        })
+                        .await?;
+                        self.unregistered_tx.send(Err(message.try_into()?))?;
                     }
                     Message::CALL_TAG => {
                         self.rpc_result_tx.send(Err(message.try_into()?))?;
@@ -802,7 +818,7 @@ impl Session {
                 Ok(())
             }
             Message::Subscribed(message) => {
-                let (event_tx, event_rx) = broadcast::channel(16);
+                let (event_tx, event_rx) = broadcast::channel(1024);
                 self.modify_established_session_state(|state| {
                     state
                         .subscriptions
@@ -818,6 +834,15 @@ impl Session {
                 Ok(())
             }
             Message::Unsubscribed(message) => {
+                self.modify_established_session_state(|state| {
+                    if let Some(sub_id) = state
+                        .pending_unsubscriptions
+                        .remove(&message.unsubscribe_request)
+                    {
+                        state.subscriptions.remove(&sub_id);
+                    }
+                })
+                .await?;
                 self.unsubscribed_tx
                     .send(Ok(peer_session_message::Unsubscription {
                         request_id: message.unsubscribe_request,
@@ -857,7 +882,7 @@ impl Session {
                 Ok(())
             }
             Message::Registered(message) => {
-                let (procedure_tx, procedure_message_rx) = broadcast::channel(16);
+                let (procedure_tx, procedure_message_rx) = broadcast::channel(1024);
                 self.modify_established_session_state(|state| {
                     state
                         .procedures
@@ -873,6 +898,15 @@ impl Session {
                 Ok(())
             }
             Message::Unregistered(message) => {
+                self.modify_established_session_state(|state| {
+                    if let Some(reg_id) = state
+                        .pending_unregistrations
+                        .remove(&message.unregister_request)
+                    {
+                        state.procedures.remove(&reg_id);
+                    }
+                })
+                .await?;
                 self.unregistered_tx
                     .send(Ok(peer_session_message::Unregistration {
                         request_id: message.unregister_request,

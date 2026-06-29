@@ -96,6 +96,7 @@ enum TimerLogType {
 /// For non-atomic operations, the [`LiveBattleManager`] may make mutations to state in this object.
 struct LiveBattle<'d> {
     uuid: Uuid,
+    state: BattleState,
     battle: PublicCoreBattle<'d>,
     metadata: BattleMetadata,
     sides: Vec<Side>,
@@ -124,8 +125,8 @@ impl<'d> LiveBattle<'d> {
         let battle = PublicCoreBattle::new(options, data, engine_options)?;
         let logs = SplitLogs::new(uuid, sides.len(), global_log_tx);
 
-        let (choice_made_tx, _) = broadcast::channel(16);
-        let (cancel_timers_tx, _) = broadcast::channel(16);
+        let (choice_made_tx, _) = broadcast::channel(48);
+        let (cancel_timers_tx, _) = broadcast::channel(48);
 
         let players = sides
             .iter()
@@ -139,6 +140,7 @@ impl<'d> LiveBattle<'d> {
 
         LiveBattle {
             uuid,
+            state: BattleState::Preparing,
             battle,
             metadata,
             sides,
@@ -192,13 +194,7 @@ impl<'d> LiveBattle<'d> {
     }
 
     fn battle_state(&self) -> BattleState {
-        if !self.battle.started() {
-            BattleState::Preparing
-        } else if !self.battle.ended() {
-            BattleState::Active
-        } else {
-            BattleState::Finished
-        }
+        self.state
     }
 
     fn battle_status(&self) -> BattleStatus {
@@ -306,6 +302,9 @@ impl<'d> LiveBattle<'d> {
             false
         };
         self.update_log();
+        if self.battle.ended() {
+            self.state = BattleState::Finished;
+        }
         Ok(continued)
     }
 
@@ -476,6 +475,7 @@ impl<'d> LiveBattleManager<'d> {
             live_battle.battle.start()?;
             live_battle.inject_log_entries(["started"]);
             live_battle.update_log();
+            live_battle.state = BattleState::Active;
         }
         Self::proceed(
             self.live_battle.clone(),
@@ -883,9 +883,15 @@ impl<'d> LiveBattleManager<'d> {
 
     async fn shutdown(&self) {
         log::trace!("Shutting down live battle {}", self.uuid);
-        let mut state = self.state.lock().await;
-        state.proceed_tasks.shutdown().await;
-        state.current_timer_tasks.shutdown().await;
+        let (mut proceed_tasks, mut current_timer_tasks) = {
+            let mut state = self.state.lock().await;
+            (
+                std::mem::replace(&mut state.proceed_tasks, JoinSet::new()),
+                std::mem::replace(&mut state.current_timer_tasks, JoinSet::new()),
+            )
+        };
+        proceed_tasks.shutdown().await;
+        current_timer_tasks.shutdown().await;
     }
 
     fn cancel(&self) {
@@ -985,7 +991,7 @@ impl<'d> BattlerService<'d> {
     ///
     /// All log entries for all battles will be sent over this channel for consumption.
     ///
-    /// This method can only be called once. Subsequent calls will return [`None`],
+    /// This method can only be called once. Subsequent calls will return [`None`].
     pub fn take_global_log_rx(&mut self) -> Option<mpsc::UnboundedReceiver<GlobalLogEntry>> {
         self.global_log_rx.take()
     }
@@ -1120,6 +1126,20 @@ impl<'d> BattlerService<'d> {
         Ok(battle.log_for_side(side, |log| log.subscribe()).await)
     }
 
+    fn unwrap_battle(battle: Arc<LiveBattleManager<'d>>, context: &str) -> LiveBattleManager<'d> {
+        let mut battle_opt = Some(battle);
+        for _ in 0..1000 {
+            match Arc::try_unwrap(battle_opt.take().unwrap()) {
+                Ok(battle) => return battle,
+                Err(battle_arc) => {
+                    battle_opt = Some(battle_arc);
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+            }
+        }
+        panic!("battle could not be unwrapped during {context} (leaked references exist)");
+    }
+
     /// Deletes a battle.
     pub async fn delete(&self, battle: Uuid) -> Result<()> {
         {
@@ -1139,11 +1159,7 @@ impl<'d> BattlerService<'d> {
             // SAFETY: Must call shutdown here to join all tasks that are using the battle, so that
             // the battle does not outlive this object.
             battle.shutdown().await;
-            let battle = Arc::try_unwrap(battle)
-                .map_err(|_| {
-                    Error::msg("battle could not be unwrapped during deletion after shutdown")
-                })
-                .unwrap();
+            let battle = tokio::task::block_in_place(|| Self::unwrap_battle(battle, "deletion"));
 
             let players = battle.players().await;
             for player in players {
@@ -1217,11 +1233,7 @@ impl Drop for BattlerService<'_> {
                 // SAFETY: Must synchronously cancel and wait for tasks to finish, so that the
                 // battle does not outlive this object.
                 battle.cancel();
-                Arc::try_unwrap(battle)
-                    .map_err(|_| {
-                        Error::msg("battle could not be unwrapped during drop after cancel")
-                    })
-                    .unwrap();
+                Self::unwrap_battle(battle, "drop after cancel");
             }
         });
     }

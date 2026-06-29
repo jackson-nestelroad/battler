@@ -168,7 +168,7 @@ async fn receives_events() {
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe(
@@ -268,26 +268,38 @@ async fn resubscribes_on_reconnect() {
     let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
 
     // Create a publisher and subscriber.
-    let (publisher_handle, publisher_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
-        format!("ws://{}", router_handle.local_addr()),
-    ))
-    .start(
+    let mut publisher_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    publisher_builder.connection_config_mut().reconnect_delay =
+        std::time::Duration::from_millis(50);
+    publisher_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
+    let (publisher_handle, publisher_join_handle) = publisher_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     publisher_handle.wait_until_ready().await.unwrap();
 
-    let (subscriber_handle, subscriber_handle_join_handle) = PeerBuilder::new(
-        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
-    )
-    .start(
+    let mut subscriber_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    subscriber_builder.connection_config_mut().reconnect_delay =
+        std::time::Duration::from_millis(50);
+    subscriber_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
+    let (subscriber_handle, subscriber_handle_join_handle) = subscriber_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe(
@@ -310,9 +322,13 @@ async fn resubscribes_on_reconnect() {
         Ok(())
     );
 
+    let mut subscriber_session_finished_rx = subscriber_handle.session_finished_rx();
+
     // Stop the router to disconnect the peer.
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+
+    subscriber_session_finished_rx.recv().await.unwrap();
 
     // Restart the router.
     let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
@@ -358,8 +374,13 @@ async fn resubscribes_on_reconnect() {
         Ok(())
     );
 
+    let mut subscriber_session_finished_rx = subscriber_handle.session_finished_rx();
+
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();
+
+    subscriber_session_finished_rx.recv().await.unwrap();
+
     let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
     subscriber_handle.wait_until_ready().await.unwrap();
 
@@ -396,26 +417,38 @@ async fn retries_publish_during_reconnect() {
     let (router_handle, router_join_handle) = start_router(0).await.unwrap();
 
     // Create a publisher and subscriber.
-    let (publisher_handle, publisher_join_handle) = PeerBuilder::new(PeerConnectionType::Remote(
-        format!("ws://{}", router_handle.local_addr()),
-    ))
-    .start(
+    let mut publisher_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    publisher_builder.connection_config_mut().reconnect_delay =
+        std::time::Duration::from_millis(50);
+    publisher_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
+    let (publisher_handle, publisher_join_handle) = publisher_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     publisher_handle.wait_until_ready().await.unwrap();
 
-    let (subscriber_handle, subscriber_handle_join_handle) = PeerBuilder::new(
-        PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
-    )
-    .start(
+    let mut subscriber_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    subscriber_builder.connection_config_mut().reconnect_delay =
+        std::time::Duration::from_millis(50);
+    subscriber_builder
+        .connection_config_mut()
+        .max_consecutive_failures = 100;
+    let (subscriber_handle, subscriber_handle_join_handle) = subscriber_builder.start(
         create_peer("publisher").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe(
@@ -500,7 +533,7 @@ async fn receives_pattern_based_events() {
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe_pattern_matched(MessageEventHandler { events_tx })
@@ -621,13 +654,13 @@ async fn receives_pattern_based_events_with_generator() {
         PeerConnectionType::Remote(format!("ws://{}", router_handle.local_addr())),
     )
     .start(
-        create_peer("publisher").unwrap(),
+        create_peer("subscriber").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     subscriber_handle.wait_until_ready().await.unwrap();
 
     // Create a subscription that writes events to a channel.
-    let (events_tx, mut events_rx) = broadcast::channel(16);
+    let (events_tx, mut events_rx) = broadcast::channel(48);
     assert_matches::assert_matches!(
         subscriber_handle
             .subscribe_pattern_matched_with_generator(

@@ -200,7 +200,7 @@
 //!     subscriber.wait_until_ready().await.unwrap();
 //!
 //!     // Subscribe.
-//!     let (ping_tx, mut ping_rx) = broadcast::channel(16);
+//!     let (ping_tx, mut ping_rx) = broadcast::channel(48);
 //!     subscriber
 //!         .subscribe(
 //!             Uri::try_from("com.battler_wamprat.ping").unwrap(),
@@ -352,7 +352,7 @@
 //!     subscriber.wait_until_ready().await.unwrap();
 //!
 //!     // Subscribe.
-//!     let (ping_tx, mut ping_rx) = broadcast::channel(16);
+//!     let (ping_tx, mut ping_rx) = broadcast::channel(48);
 //!     subscriber
 //!         .subscribe_pattern_matched(PingEventHandler { ping_tx })
 //!         .await

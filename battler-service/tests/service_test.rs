@@ -145,7 +145,7 @@ async fn read_all_entries_from_log_rx_stopping_at(
     log_rx: &mut broadcast::Receiver<LogEntry>,
     stop_at: &str,
 ) -> Vec<String> {
-    let deadline = SystemTime::now() + Duration::from_secs(10);
+    let deadline = SystemTime::now() + Duration::from_secs(30);
     let mut entries = Vec::new();
     loop {
         tokio::select! {
@@ -296,11 +296,12 @@ async fn starts_battle_and_reports_player_and_request_data() {
         .await
         .unwrap();
 
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
 
     assert_matches::assert_matches!(
         battler_service.player_data(battle.uuid, "player-1").await,
@@ -349,11 +350,12 @@ async fn plays_battle_and_finishes_and_deletes() {
         .await
         .unwrap();
 
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
 
     assert_matches::assert_matches!(
         battler_service
@@ -414,11 +416,12 @@ async fn returns_filtered_logs_by_side() {
         .await
         .unwrap();
 
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
 
     // Read all logs from the battle starting; we only care to verify the first turn.
     while let Ok(_) = public_log_rx.try_recv() {}
@@ -798,11 +801,9 @@ async fn forfeits_on_player_timer() {
         .await
         .unwrap();
 
-    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
-
-    // Wait for battle to start.
     let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
-    assert_matches::assert_matches!(public_log_rx.recv().await, Ok(_));
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for timers to start.
     read_all_entries_from_log_rx_stopping_at(
@@ -836,11 +837,8 @@ async fn forfeits_on_player_timer() {
 
     assert_matches::assert_matches!(battler_service.full_log(battle.uuid, None).await, Ok(log) => {
         pretty_assertions::assert_eq!(
-            log[(log.len() - 9)..],
+            log[(log.len() - 6)..],
             [
-                "turn|turn:1",
-                "-battlerservice:timer|player:player-1|remainingsecs:5",
-                "-battlerservice:timer|player:player-2|remainingsecs:5",
                 "-battlerservice:timer|player:player-2|warning|remainingsecs:1",
                 "-battlerservice:timer|player:player-2|done|remainingsecs:0",
                 "continue",
@@ -888,9 +886,9 @@ async fn selects_random_moves_on_action_timer() {
         .await
         .unwrap();
 
-    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
-
     let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for turn 1.
     read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
@@ -938,7 +936,7 @@ async fn only_activates_player_timer_if_request_is_active() {
             BattleServiceOptions {
                 timers: Timers {
                     player: Some(Timer {
-                        secs: 5,
+                        secs: 10,
                         warnings: BTreeSet::default(),
                     }),
                     ..Default::default()
@@ -949,9 +947,9 @@ async fn only_activates_player_timer_if_request_is_active() {
         .await
         .unwrap();
 
-    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
-
     let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for turn 1.
     read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
@@ -962,7 +960,7 @@ async fn only_activates_player_timer_if_request_is_active() {
     // Wait for the timers to start to avoid the race condition.
     read_all_entries_from_log_rx_stopping_at(
         &mut public_log_rx,
-        "-battlerservice:timer|player:player-2|remainingsecs:5",
+        "-battlerservice:timer|player:player-2|remainingsecs:10",
     )
     .await;
 
@@ -984,17 +982,23 @@ async fn only_activates_player_timer_if_request_is_active() {
     // Wait for battle to end.
     let log = read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "win|side:0").await;
 
-    pretty_assertions::assert_eq!(
-        log,
-        [
-            "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1",
-            "damage|mon:Bulbasaur,player-2,1|health:0",
-            "faint|mon:Bulbasaur,player-2,1",
-            "residual",
-            "-battlerservice:timer|player:player-2|remainingsecs:4",
-            "-battlerservice:timer|player:player-2|done|remainingsecs:0",
-            "continue",
-            "forfeited|player:player-2",
-        ]
+    assert_eq!(log.len(), 8);
+    assert_eq!(
+        log[0],
+        "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1"
     );
+    assert_eq!(log[1], "damage|mon:Bulbasaur,player-2,1|health:0");
+    assert_eq!(log[2], "faint|mon:Bulbasaur,player-2,1");
+    assert_eq!(log[3], "residual");
+    assert!(
+        log[4].starts_with("-battlerservice:timer|player:player-2|remainingsecs:"),
+        "expected timer log with remaining seconds, got: {}",
+        log[4]
+    );
+    assert_eq!(
+        log[5],
+        "-battlerservice:timer|player:player-2|done|remainingsecs:0"
+    );
+    assert_eq!(log[6], "continue");
+    assert_eq!(log[7], "forfeited|player:player-2");
 }

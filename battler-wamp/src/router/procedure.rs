@@ -140,6 +140,21 @@ impl Procedure {
         Ok(())
     }
 
+    /// Removes a callee from the procedure registration.
+    ///
+    /// Returns the number of remaining callees.
+    async fn remove_callee(&self, callee: Id) -> usize {
+        let mut registration = self.registration.lock().await;
+        registration.callees.retain(|c| c.session != callee);
+        if registration.callees.is_empty() {
+            0
+        } else {
+            registration.last_callee_index =
+                registration.last_callee_index % registration.callees.len();
+            registration.callees.len()
+        }
+    }
+
     /// The caller's identity should be disclosed to the callee.
     pub fn disclose_caller(&self) -> bool {
         self.options.disclose_caller
@@ -277,21 +292,40 @@ impl ProcedureManager {
     ///
     /// Required for proper ordering of messages. The procedure should not receive invocations until
     /// after the peer has received the registration confirmation.
-    pub async fn activate_procedure<S>(context: &RealmContext<'_, S>, procedure: &WildcardUri) {
+    pub async fn activate_procedure<S, F, Fut>(
+        context: &RealmContext<'_, S>,
+        procedure: &WildcardUri,
+        after_activation: F,
+    ) -> Result<()>
+    where
+        F: FnOnce() -> Fut,
+        Fut: std::future::Future<Output = Result<()>>,
+    {
         if let Some(procedure) = context.procedure(procedure).await {
-            procedure.state.lock().await.active = true;
+            let mut state = procedure.state.lock().await;
+            state.active = true;
+            after_activation().await?;
         }
+        Ok(())
     }
 
     /// Deregisters a procedure.
-    pub async fn unregister<S>(context: &RealmContext<'_, S>, procedure: &WildcardUri) {
-        context
-            .realm()
-            .procedure_manager
-            .procedures
-            .write()
-            .await
-            .remove(procedure.split());
+    pub async fn unregister<S>(
+        context: &RealmContext<'_, S>,
+        session: Id,
+        procedure: &WildcardUri,
+    ) {
+        let mut procedures = context.realm().procedure_manager.procedures.write().await;
+
+        let remove = if let Some(p) = procedures.find(procedure.split()) {
+            p.remove_callee(session).await == 0
+        } else {
+            false
+        };
+
+        if remove {
+            procedures.remove(procedure.split());
+        }
     }
 
     /// Gets the procedure matching the URI.

@@ -331,7 +331,7 @@
 //!         }
 //!     }
 //!
-//!     let (events_tx, mut events_rx) = broadcast::channel(16);
+//!     let (events_tx, mut events_rx) = broadcast::channel(48);
 //!     assert_matches::assert_matches!(
 //!         consumer.subscribe_ping(PingHandler { events_tx }).await,
 //!         Ok(())
@@ -361,7 +361,7 @@
 //!         }
 //!     }
 //!
-//!     let (events_tx, mut events_rx) = broadcast::channel(16);
+//!     let (events_tx, mut events_rx) = broadcast::channel(48);
 //!     assert_matches::assert_matches!(
 //!         consumer
 //!             .subscribe_message(MessageHandler { events_tx })

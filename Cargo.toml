@@ -97,19 +97,19 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 
 # Crates residing within this repository.
-battler-choice = { version = "0.3", default-features = false }
-battler-data = { version = "0.3", default-features = false }
-battler-prng = { version = "0.3", default-features = false, features = ["alloc"] }
-battler-wamp = "0.5"
-battler-wamp-uri = "0.1"
-battler-wamp-values = "~0.2.2"
-battler-wamprat = "0.7"
-battler-wamprat-error = "0.2"
-battler-wamprat-message = "~0.1.3"
-battler-wamprat-schema = "0.4"
-battler-wamprat-uri = "0.5"
-serde-struct-tuple = "~0.1.3"
-serde-struct-tuple-enum = "0.1"
+battler-choice = { version = "0.3", path = "battler-choice", default-features = false }
+battler-data = { version = "0.3", path = "battler-data", default-features = false }
+battler-prng = { version = "0.3", path = "battler-prng", default-features = false, features = ["alloc"] }
+battler-wamp = { version = "0.5", path = "battler-wamp" }
+battler-wamp-uri = { version = "0.1", path = "battler-wamp/battler-wamp-uri" }
+battler-wamp-values = { version = "~0.2.2", path = "battler-wamp/battler-wamp-values" }
+battler-wamprat = { version = "0.7", path = "battler-wamprat" }
+battler-wamprat-error = { version = "0.2", path = "battler-wamprat/battler-wamprat-error" }
+battler-wamprat-message = { version = "~0.1.3", path = "battler-wamprat/battler-wamprat-message" }
+battler-wamprat-schema = { version = "0.4", path = "battler-wamprat-schema" }
+battler-wamprat-uri = { version = "0.5", path = "battler-wamprat/battler-wamprat-uri" }
+serde-struct-tuple = { version = "~0.1.3", path = "battler-wamp/serde-struct-tuple" }
+serde-struct-tuple-enum = { version = "0.1", path = "battler-wamp/serde-struct-tuple-enum" }
 
 [profile.test]
 opt-level = 2

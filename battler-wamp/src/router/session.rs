@@ -224,11 +224,33 @@ struct RpcInvocationCalleeDetails {
     caller_identification: bool,
 }
 
-#[derive(Debug, Default)]
 struct RpcInvocationState {
-    current_callee: Option<RpcInvocationCalleeDetails>,
     callees_attempted: HashSet<Id>,
     canceled: bool,
+    current_callee: Option<RpcInvocationCalleeDetails>,
+    current_callee_rpc_yield_rx:
+        Option<broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>>,
+}
+
+impl Debug for RpcInvocationState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RpcInvocationState")
+            .field("callees_attempted", &self.callees_attempted)
+            .field("canceled", &self.canceled)
+            .field("current_callee", &self.current_callee)
+            .finish()
+    }
+}
+
+impl Default for RpcInvocationState {
+    fn default() -> Self {
+        Self {
+            callees_attempted: HashSet::default(),
+            canceled: false,
+            current_callee: None,
+            current_callee_rpc_yield_rx: None,
+        }
+    }
 }
 
 /// The result of an RPC invocation.
@@ -256,7 +278,7 @@ pub struct SessionHandle {
     id: Id,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
-    message_tx: mpsc::Sender<Message>,
+    message_tx: mpsc::UnboundedSender<Message>,
 
     closed_session_rx: broadcast::Receiver<()>,
     rpc_yield_rx: broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>,
@@ -286,14 +308,13 @@ impl SessionHandle {
 
     /// Sends a message over the session.
     pub async fn send_message(&self, message: Message) -> Result<()> {
-        self.message_tx.send(message).await.map_err(Error::new)
+        self.message_tx.send(message).map_err(Error::new)
     }
 
     /// Closes the session.
     pub async fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
             .send(goodbye_with_close_reason(close_reason))
-            .await
             .map_err(Error::new)
     }
 
@@ -314,7 +335,7 @@ impl SessionHandle {
 pub struct Session {
     id: Id,
     connection_type: ConnectionType,
-    message_tx: mpsc::Sender<Message>,
+    message_tx: mpsc::UnboundedSender<Message>,
     service_message_tx: mpsc::Sender<Message>,
     state: RwLock<SessionState>,
     shared_state: Arc<RwLock<SharedSessionState>>,
@@ -335,15 +356,15 @@ impl Session {
     pub fn new(
         id: Id,
         connection_type: ConnectionType,
-        message_tx: mpsc::Sender<Message>,
+        message_tx: mpsc::UnboundedSender<Message>,
         service_message_tx: mpsc::Sender<Message>,
     ) -> Self {
         let id_allocator = SequentialIdAllocator::default();
-        let (closed_session_tx, _) = broadcast::channel(16);
-        let (rpc_yield_tx, _) = broadcast::channel(16);
-        let (rpc_yield_cancel_tx, rpc_yield_cancel_rx) = broadcast::channel(16);
-        let (publish_tx, _) = broadcast::channel(16);
-        let (procedure_message_tx, _) = broadcast::channel(16);
+        let (closed_session_tx, _) = broadcast::channel(48);
+        let (rpc_yield_tx, _) = broadcast::channel(48);
+        let (rpc_yield_cancel_tx, rpc_yield_cancel_rx) = broadcast::channel(48);
+        let (publish_tx, _) = broadcast::channel(1024);
+        let (procedure_message_tx, _) = broadcast::channel(1024);
         Self {
             id,
             connection_type,
@@ -806,14 +827,17 @@ impl Session {
                 .insert(subscription, message.topic.clone())
         })
         .await?;
-        self.send_message(Message::Subscribed(SubscribedMessage {
-            subscribe_request: message.request,
-            subscription,
-        }))
+        // Activate the subscription and send confirmation while holding the subscription lock.
+        // This guarantees that the client receives the SUBSCRIBED confirmation before any matching
+        // concurrent publisher events can be routed and queued on this session.
+        TopicManager::activate_subscription(&context, self.id, &message.topic, || async {
+            self.send_message(Message::Subscribed(SubscribedMessage {
+                subscribe_request: message.request,
+                subscription,
+            }))
+            .await
+        })
         .await?;
-        // Activate the subscription only after sending the response, so that the peer does not
-        // receive events prior to the confirmation.
-        TopicManager::activate_subscription(&context, self.id, &message.topic).await;
         Ok(())
     }
 
@@ -939,14 +963,17 @@ impl Session {
                 .insert(registration, message.procedure.clone())
         })
         .await?;
-        self.send_message(Message::Registered(RegisteredMessage {
-            register_request: message.request,
-            registration,
-        }))
+        // Activate the procedure and send confirmation while holding the procedure state lock.
+        // This guarantees that the client receives the REGISTERED confirmation before any
+        // concurrent invocations can be routed and queued on this session.
+        ProcedureManager::activate_procedure(&context, &message.procedure, || async {
+            self.send_message(Message::Registered(RegisteredMessage {
+                register_request: message.request,
+                registration,
+            }))
+            .await
+        })
         .await?;
-        // Activate the procedure only after sending the response, so that the peer does not
-        // receive invocations prior to the confirmation.
-        ProcedureManager::activate_procedure(&mut context, &message.procedure).await;
         Ok(())
     }
 
@@ -967,7 +994,7 @@ impl Session {
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
         let mut context = context.realm_context(&realm)?;
-        ProcedureManager::unregister(&mut context, &procedure).await;
+        ProcedureManager::unregister(&mut context, self.id, &procedure).await;
         self.send_message(Message::Unregistered(UnregisteredMessage {
             unregister_request: message.request,
         }))
@@ -1220,6 +1247,8 @@ impl Session {
                     callee_details.callee.session
                 ))
             })?;
+        let rpc_yield_rx = session.session.rpc_yield_rx.resubscribe();
+        invocation.state.lock().await.current_callee_rpc_yield_rx = Some(rpc_yield_rx);
         session
             .session
             .send_message(Message::Invocation(InvocationMessage {
@@ -1310,7 +1339,16 @@ impl Session {
             .session(callee_details.callee.session)
             .await
             .ok_or_else(|| Error::new(InteractionError::Canceled))?;
-        let mut rpc_yield_rx = callee.session.rpc_yield_rx.resubscribe();
+
+        let mut rpc_yield_rx = invocation
+            .state
+            .lock()
+            .await
+            .current_callee_rpc_yield_rx
+            .take()
+            .ok_or_else(|| {
+                BasicError::Internal("expected invocation to have a yield receiver".to_owned())
+            })?;
         let mut cancel_rx = self.rpc_yield_cancel_rx.resubscribe();
         let mut closed_session_rx = self.closed_session_tx.subscribe();
 
@@ -1426,8 +1464,8 @@ impl Session {
                                 ..Default::default()
                             })
                         ).await?;
-                        return Err(InteractionError::Canceled.into());
                     }
+                    return Err(InteractionError::Canceled.into());
                 }
                 _ = timeout => {
                     // Dealer-initiated timeout: interrupt the callee (if supported) and error out immediately.
@@ -1619,7 +1657,7 @@ impl Session {
                 state.subscriptions.clear();
 
                 for procedure in state.procedures.values() {
-                    ProcedureManager::unregister(&mut context, &procedure).await;
+                    ProcedureManager::unregister(&mut context, id, &procedure).await;
                 }
                 state.procedures.clear();
 

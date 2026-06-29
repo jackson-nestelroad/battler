@@ -142,7 +142,7 @@ pub struct AiPlayer<'d> {
 impl<'d> AiPlayer<'d> {
     /// Creates a new player.
     pub fn new(id: String, options: AiPlayerOptions, modules: AiPlayerModules<'d>) -> Self {
-        let (error_tx, _) = broadcast::channel(16);
+        let (error_tx, _) = broadcast::channel(48);
         let (task_tx, task_rx) = mpsc::channel(1);
         Self {
             id,
@@ -164,7 +164,7 @@ impl<'d> AiPlayer<'d> {
     /// the returned handle.
     pub async fn start(self) -> Result<AiPlayerHandle<'d>> {
         let id = self.id.clone();
-        let (cancel_tx, cancel_rx) = broadcast::channel(16);
+        let (cancel_tx, cancel_rx) = broadcast::channel(48);
         let error_rx = self.error_tx.subscribe();
         let (task_tx, task_rx) = mpsc::channel(1);
 
