@@ -96,6 +96,7 @@ enum TimerLogType {
 /// For non-atomic operations, the [`LiveBattleManager`] may make mutations to state in this object.
 struct LiveBattle<'d> {
     uuid: Uuid,
+    state: BattleState,
     battle: PublicCoreBattle<'d>,
     metadata: BattleMetadata,
     sides: Vec<Side>,
@@ -139,6 +140,7 @@ impl<'d> LiveBattle<'d> {
 
         LiveBattle {
             uuid,
+            state: BattleState::Preparing,
             battle,
             metadata,
             sides,
@@ -192,13 +194,7 @@ impl<'d> LiveBattle<'d> {
     }
 
     fn battle_state(&self) -> BattleState {
-        if !self.battle.started() {
-            BattleState::Preparing
-        } else if !self.battle.ended() {
-            BattleState::Active
-        } else {
-            BattleState::Finished
-        }
+        self.state
     }
 
     fn battle_status(&self) -> BattleStatus {
@@ -306,6 +302,9 @@ impl<'d> LiveBattle<'d> {
             false
         };
         self.update_log();
+        if self.battle.ended() {
+            self.state = BattleState::Finished;
+        }
         Ok(continued)
     }
 
@@ -476,6 +475,7 @@ impl<'d> LiveBattleManager<'d> {
             live_battle.battle.start()?;
             live_battle.inject_log_entries(["started"]);
             live_battle.update_log();
+            live_battle.state = BattleState::Active;
         }
         Self::proceed(
             self.live_battle.clone(),

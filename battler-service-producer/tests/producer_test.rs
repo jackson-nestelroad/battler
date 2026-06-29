@@ -379,6 +379,8 @@ async fn read_all_entries_from_log_rx_stopping_at_line_or_timeout(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn lists_battles() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let consumer = start_consumer(
@@ -406,6 +408,8 @@ async fn lists_battles() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn authorizes_battle_creation() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let consumer = start_consumer(
@@ -438,6 +442,8 @@ async fn authorizes_battle_creation() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn creates_battle() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let player_1 = new_client(
@@ -495,6 +501,8 @@ async fn creates_battle() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn owner_can_start_and_delete_battle() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let player_1 = new_client(
@@ -564,6 +572,8 @@ async fn owner_can_start_and_delete_battle() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn player_can_update_team() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let player_1 = new_client(
@@ -607,6 +617,8 @@ async fn player_can_update_team() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn player_can_participate_in_battle() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let player_1 = new_client(
@@ -653,6 +665,8 @@ async fn player_can_participate_in_battle() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn publishes_battle_logs() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let player_1 = new_client(
@@ -861,6 +875,8 @@ async fn publishes_battle_logs() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn remote_connection_cannot_publish_battle_log() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let mut connection = PeerConnectionConfig::new(PeerConnectionType::Remote(format!(
@@ -890,6 +906,8 @@ async fn remote_connection_cannot_publish_battle_log() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn player_reads_full_log() {
+    battler_test_utils::collect_logs();
+
     let mut context = TestContext::new().await;
     context.run_producer().await;
     let player_1 = new_client(
