@@ -229,9 +229,12 @@ async fn start_consumer<S>(
 where
     S: Send + 'static,
 {
+    let mut connection = PeerConnectionConfig::new(connection_type);
+    connection.reconnect_delay = Duration::from_millis(50);
+    connection.max_consecutive_failures = 100;
     let consumer = BattlerService::consumer(
         battler_wamprat_schema::PeerConfig {
-            connection: PeerConnectionConfig::new(connection_type),
+            connection,
             auth_methods: Vec::from_iter([battler_wamp::peer::SupportedAuthMethod::Undisputed {
                 id: name.to_owned(),
                 role: "user".to_owned(),
@@ -860,11 +863,14 @@ async fn publishes_battle_logs() {
 async fn remote_connection_cannot_publish_battle_log() {
     let mut context = TestContext::new().await;
     context.run_producer().await;
+    let mut connection = PeerConnectionConfig::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        context.router_handle.local_addr()
+    )));
+    connection.reconnect_delay = Duration::from_millis(50);
+    connection.max_consecutive_failures = 100;
     let bad_producer = BattlerService::producer_builder(PeerConfig {
-        connection: PeerConnectionConfig::new(PeerConnectionType::Remote(format!(
-            "ws://{}",
-            context.router_handle.local_addr()
-        ))),
+        connection,
         auth_methods: Vec::default(),
     })
     .start(create_peer("player-1").unwrap())
