@@ -1340,7 +1340,6 @@ impl Session {
             .await
             .ok_or_else(|| Error::new(InteractionError::Canceled))?;
 
-        debug!("jnestelroad: attempting to get rpc_yield_rx");
         let mut rpc_yield_rx = invocation
             .state
             .lock()
@@ -1350,7 +1349,6 @@ impl Session {
             .ok_or_else(|| {
                 BasicError::Internal("expected invocation to have a yield receiver".to_owned())
             })?;
-        debug!("jnestelroad: got rpc_yield_rx");
         let mut cancel_rx = self.rpc_yield_cancel_rx.resubscribe();
         let mut closed_session_rx = self.closed_session_tx.subscribe();
 
@@ -1434,7 +1432,6 @@ impl Session {
             };
             tokio::select! {
                 rpc_yield = rpc_yield_rx.recv() => {
-                    debug!("jnestelroad: got message out of rpc_yield_rx: {rpc_yield:?}");
                     match rpc_yield.map_err(|err| match err {
                         RecvError::Closed => Error::new(InteractionError::Canceled),
                         _ => err.into()
