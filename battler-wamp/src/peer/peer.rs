@@ -1074,6 +1074,7 @@ where
             })
             .await?;
         let request_id = id_allocator.generate_id().await;
+        let acknowledge = event.options.acknowledge.unwrap_or(false);
 
         message_tx
             .send(Message::Publish(PublishMessage {
@@ -1091,6 +1092,10 @@ where
                 arguments_keyword: event.arguments_keyword,
             }))
             .await?;
+
+        if !acknowledge {
+            return Ok(());
+        }
 
         let mut session_finished_rx = self.session_finished_rx();
         loop {

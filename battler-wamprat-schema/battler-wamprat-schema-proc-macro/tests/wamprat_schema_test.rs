@@ -270,7 +270,15 @@ async fn generates_pub_sub_for_calculator_topics() {
     assert_matches::assert_matches!(consumer.unsubscribe_ping().await, Ok(()));
 
     assert_matches::assert_matches!(
-        producer.publish_ping(Ping, PublishOptions::default()).await,
+        producer
+            .publish_ping(
+                Ping,
+                PublishOptions {
+                    acknowledge: Some(true),
+                    ..Default::default()
+                }
+            )
+            .await,
         Ok(())
     );
     assert_matches::assert_matches!(events_rx.recv().await, Err(RecvError::Closed));
@@ -481,7 +489,10 @@ async fn generates_pub_sub_for_chat_topics() {
                     author: "user1".to_owned(),
                     content: "baz".to_owned()
                 }),
-                PublishOptions::default()
+                PublishOptions {
+                    acknowledge: Some(true),
+                    ..Default::default()
+                }
             )
             .await,
         Ok(())
@@ -588,7 +599,10 @@ async fn generates_pub_sub_for_chat_topics_for_particular_channel() {
                     author: "user1".to_owned(),
                     content: "baz".to_owned()
                 }),
-                PublishOptions::default()
+                PublishOptions {
+                    acknowledge: Some(true),
+                    ..Default::default()
+                }
             )
             .await,
         Ok(())

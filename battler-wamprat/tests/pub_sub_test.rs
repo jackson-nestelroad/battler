@@ -265,7 +265,7 @@ async fn resubscribes_on_reconnect() {
     test_utils::setup::setup_test_environment();
 
     // Start a router.
-    let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
+    let (router_handle, router_join_handle) = start_router(9889).await.unwrap();
 
     // Create a publisher and subscriber.
     let mut publisher_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
@@ -293,7 +293,7 @@ async fn resubscribes_on_reconnect() {
         .connection_config_mut()
         .max_consecutive_failures = 100;
     let (subscriber_handle, subscriber_handle_join_handle) = subscriber_builder.start(
-        create_peer("publisher").unwrap(),
+        create_peer("subscriber").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     subscriber_handle.wait_until_ready().await.unwrap();
@@ -316,7 +316,10 @@ async fn resubscribes_on_reconnect() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("first".to_owned())),
-                PublishOptions::default(),
+                PublishOptions {
+                    acknowledge: Some(true),
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -329,9 +332,10 @@ async fn resubscribes_on_reconnect() {
     router_join_handle.await.unwrap();
 
     subscriber_session_finished_rx.recv().await.unwrap();
+    tokio::time::sleep(std::time::Duration::from_millis(250)).await;
 
     // Restart the router.
-    let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
+    let (router_handle, router_join_handle) = start_router(9889).await.unwrap();
 
     // Wait again, to ensure we are properly subscribed before publishing the message.
     subscriber_handle.wait_until_ready().await.unwrap();
@@ -342,7 +346,10 @@ async fn resubscribes_on_reconnect() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("second".to_owned())),
-                PublishOptions::default(),
+                PublishOptions {
+                    acknowledge: Some(true),
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -380,8 +387,9 @@ async fn resubscribes_on_reconnect() {
     router_join_handle.await.unwrap();
 
     subscriber_session_finished_rx.recv().await.unwrap();
+    tokio::time::sleep(std::time::Duration::from_millis(250)).await;
 
-    let (router_handle, router_join_handle) = start_router(8889).await.unwrap();
+    let (router_handle, router_join_handle) = start_router(9889).await.unwrap();
     subscriber_handle.wait_until_ready().await.unwrap();
 
     assert_matches::assert_matches!(
@@ -389,7 +397,10 @@ async fn resubscribes_on_reconnect() {
             .publish(
                 Uri::try_from("com.battler.message").unwrap(),
                 MessageEvent(MessageEventArgs("third".to_owned())),
-                PublishOptions::default(),
+                PublishOptions {
+                    acknowledge: Some(true),
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -442,7 +453,7 @@ async fn retries_publish_during_reconnect() {
         .connection_config_mut()
         .max_consecutive_failures = 100;
     let (subscriber_handle, subscriber_handle_join_handle) = subscriber_builder.start(
-        create_peer("publisher").unwrap(),
+        create_peer("subscriber").unwrap(),
         Uri::try_from(REALM).unwrap(),
     );
     subscriber_handle.wait_until_ready().await.unwrap();
@@ -468,7 +479,10 @@ async fn retries_publish_during_reconnect() {
                 .publish(
                     Uri::try_from("com.battler.message").unwrap(),
                     MessageEvent(MessageEventArgs("Hello, world!".to_owned())),
-                    PublishOptions::default(),
+                    PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
                 )
                 .await,
             Ok(())

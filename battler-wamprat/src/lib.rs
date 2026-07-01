@@ -179,7 +179,10 @@
 //!         .publish(
 //!             Uri::try_from("com.battler_wamprat.ping").unwrap(),
 //!             PingEvent(PingEventArgs("Hello, World!".to_owned())),
-//!             PublishOptions::default(),
+//!             PublishOptions {
+//!                 acknowledge: Some(true),
+//!                 ..Default::default()
+//!             },
 //!         )
 //!         .await
 //!         .unwrap();
@@ -315,7 +318,10 @@
 //!         .publish(
 //!             Uri::try_from("com.battler_wamprat.ping.v1").unwrap(),
 //!             PingEvent(PingEventArgs("foo".to_owned())),
-//!             PublishOptions::default(),
+//!             PublishOptions {
+//!                 acknowledge: Some(true),
+//!                 ..Default::default()
+//!             },
 //!         )
 //!         .await
 //!         .unwrap();
@@ -323,7 +329,10 @@
 //!         .publish(
 //!             Uri::try_from("com.battler_wamprat.ping.invalid").unwrap(),
 //!             PingEvent(PingEventArgs("bar".to_owned())),
-//!             PublishOptions::default(),
+//!             PublishOptions {
+//!                 acknowledge: Some(true),
+//!                 ..Default::default()
+//!             },
 //!         )
 //!         .await
 //!         .unwrap();
@@ -331,7 +340,10 @@
 //!         .publish(
 //!             Uri::try_from("com.battler_wamprat.ping.v2").unwrap(),
 //!             PingEvent(PingEventArgs("baz".to_owned())),
-//!             PublishOptions::default(),
+//!             PublishOptions {
+//!                 acknowledge: Some(true),
+//!                 ..Default::default()
+//!             },
 //!         )
 //!         .await
 //!         .unwrap();

@@ -884,12 +884,16 @@ impl Session {
         context: &RouterContext<S>,
         message: PublishMessage,
     ) -> Result<()> {
+        let options = PublishOptions::try_from(&message)?;
+        let acknowledge = options.acknowledge.unwrap_or(false);
         if let Err(err) = self
-            .handle_ordered_publish_internal(context, &message)
+            .handle_ordered_publish_internal(context, &message, options)
             .await
         {
-            self.send_message(error_for_request(&Message::Publish(message), &err))
-                .await?;
+            if acknowledge {
+                self.send_message(error_for_request(&Message::Publish(message), &err))
+                    .await?;
+            }
         }
         Ok(())
     }
@@ -898,8 +902,9 @@ impl Session {
         &self,
         context: &RouterContext<S>,
         message: &PublishMessage,
+        options: PublishOptions,
     ) -> Result<()> {
-        let options = PublishOptions::try_from(message)?;
+        let acknowledge = options.acknowledge.unwrap_or(false);
         let realm = self
             .get_from_established_session_state(|state| state.realm.clone())
             .await?;
@@ -913,11 +918,14 @@ impl Session {
             options,
         )
         .await?;
-        self.send_message(Message::Published(PublishedMessage {
-            publish_request: message.request,
-            publication,
-        }))
-        .await
+        if acknowledge {
+            self.send_message(Message::Published(PublishedMessage {
+                publish_request: message.request,
+                publication,
+            }))
+            .await?;
+        }
+        Ok(())
     }
 
     async fn handle_register<S>(
@@ -1159,19 +1167,19 @@ impl Session {
                 .roles()
                 .await
                 .callee
-                .is_some_and(|features| features.progressive_call_results);
+                .is_some_and(|features| features.features.progressive_call_results);
         let forward_timeout_to_callee = session
             .session
             .roles()
             .await
             .callee
-            .is_some_and(|features| features.call_timeout);
+            .is_some_and(|features| features.features.call_timeout);
         let caller_identification = session
             .session
             .roles()
             .await
             .callee
-            .is_some_and(|features| features.caller_identification);
+            .is_some_and(|features| features.features.caller_identification);
 
         let callee_details = RpcInvocationCalleeDetails {
             callee,
@@ -1232,10 +1240,9 @@ impl Session {
             let identity = self
                 .get_from_established_session_state(|state| state.identity.clone())
                 .await?;
-            if let Some(identity) = identity {
-                details.insert("caller_authid".to_owned(), Value::String(identity.id));
-                details.insert("caller_authrole".to_owned(), Value::String(identity.role));
-            }
+            let identity = identity.unwrap_or_default();
+            details.insert("caller_authid".to_owned(), Value::String(identity.id));
+            details.insert("caller_authrole".to_owned(), Value::String(identity.role));
         }
 
         let session = context
@@ -1374,7 +1381,7 @@ impl Session {
                     .roles()
                     .await
                     .callee
-                    .map(|feature| feature.call_canceling)
+                    .map(|feature| feature.features.call_canceling)
                     .unwrap_or(false),
                 callee_details.progressive_call_results,
                 if callee_details.forward_timeout_to_callee {
@@ -1548,7 +1555,7 @@ impl Session {
             .roles()
             .await
             .callee
-            .is_some_and(|features| features.call_canceling)
+            .is_some_and(|features| features.features.call_canceling)
         {
             mode = CallCancelMode::Skip;
         }

@@ -128,10 +128,7 @@ impl Procedure {
         if self.options.invocation_policy == InvocationPolicy::Single
             && self.registration.lock().await.callees_len() > 0
         {
-            return Err(BasicError::NotAllowed(
-                "procedure does not allow more than one callee".to_owned(),
-            )
-            .into());
+            return Err(InteractionError::ProcedureAlreadyExists.into());
         }
         self.registration
             .lock()

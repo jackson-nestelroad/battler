@@ -6,7 +6,11 @@ use battler_wamp_uri::{
     InvalidUri,
     Uri,
 };
-use battler_wamp_values::Value;
+use battler_wamp_values::{
+    Dictionary,
+    List,
+    Value,
+};
 use thiserror::Error;
 
 use crate::{
@@ -24,6 +28,8 @@ use crate::{
 pub struct WampError {
     reason: Uri,
     message: String,
+    arguments: List,
+    arguments_keyword: Dictionary,
 }
 
 impl WampError {
@@ -35,6 +41,26 @@ impl WampError {
         Self {
             reason,
             message: message.into(),
+            arguments: List::default(),
+            arguments_keyword: Dictionary::default(),
+        }
+    }
+
+    /// Creates a new WAMP error with payload.
+    pub fn new_with_payload<S>(
+        reason: Uri,
+        message: S,
+        arguments: List,
+        arguments_keyword: Dictionary,
+    ) -> Self
+    where
+        S: Into<String>,
+    {
+        Self {
+            reason,
+            message: message.into(),
+            arguments,
+            arguments_keyword,
         }
     }
 
@@ -47,23 +73,27 @@ impl WampError {
     pub fn message(&self) -> &str {
         &self.message
     }
+
+    /// The positional arguments.
+    pub fn arguments(&self) -> &List {
+        &self.arguments
+    }
+
+    /// The keyword arguments.
+    pub fn arguments_keyword(&self) -> &Dictionary {
+        &self.arguments_keyword
+    }
 }
 
 impl Into<WampError> for Error {
     fn into(self) -> WampError {
-        WampError {
-            reason: uri_for_error(&self),
-            message: self.to_string(),
-        }
+        WampError::new(uri_for_error(&self), self.to_string())
     }
 }
 
 impl Into<WampError> for &Error {
     fn into(self) -> WampError {
-        WampError {
-            reason: uri_for_error(self),
-            message: self.to_string(),
-        }
+        WampError::new(uri_for_error(self), self.to_string())
     }
 }
 
@@ -207,7 +237,15 @@ impl Into<WampError> for InteractionError {
 ///
 /// Standard WAMP errors are converted to the correct variant of [`BasicError`] or
 /// [`InteractionError`]. Otherwise, the reason and message are stored in [`WampError`].
-fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
+fn error_from_uri_reason_and_message(
+    reason: Uri,
+    message: String,
+    mut arguments: List,
+    arguments_keyword: Dictionary,
+) -> Error {
+    if arguments.len() == 1 && arguments[0].string().is_some_and(|val| val == &message) {
+        arguments = List::default();
+    }
     match reason.as_ref() {
         "wamp.error.not_found" => BasicError::NotFound(message).into(),
         "wamp.error.invalid_argument" => BasicError::InvalidArgument(message).into(),
@@ -235,7 +273,7 @@ fn error_from_uri_reason_and_message(reason: Uri, message: String) -> Error {
         "wamp.error.no_available_callee" => InteractionError::NoAvailableCallee.into(),
         "wamp.error.invalid_uri" => InvalidUri.into(),
         "com.battler_wamp.peer_not_connected" => PeerNotConnectedError.into(),
-        _ => WampError::new(reason, message).into(),
+        _ => WampError::new_with_payload(reason, message, arguments, arguments_keyword).into(),
     }
 }
 
@@ -245,6 +283,11 @@ fn extract_error_uri_reason_and_message(message: &Message) -> Result<(&Uri, &str
         Some(reason) => reason,
         None => return Err(Error::msg("message does not contain a reason uri")),
     };
+    if let Message::Error(message) = message {
+        if let Some(Value::String(arg)) = message.arguments.first() {
+            return Ok((reason, arg.as_str()));
+        }
+    }
     let message = match message
         .details()
         .map(|details| details.get("message"))
@@ -260,7 +303,18 @@ impl Into<Error> for &Message {
     fn into(self) -> Error {
         match extract_error_uri_reason_and_message(self) {
             Ok((reason, message)) => {
-                error_from_uri_reason_and_message(reason.clone(), message.to_owned())
+                let (arguments, arguments_keyword) = match self {
+                    Message::Error(message) => {
+                        (message.arguments.clone(), message.arguments_keyword.clone())
+                    }
+                    _ => (List::default(), Dictionary::default()),
+                };
+                error_from_uri_reason_and_message(
+                    reason.clone(),
+                    message.to_owned(),
+                    arguments,
+                    arguments_keyword,
+                )
             }
             Err(err) => err.context("message does not contain any error"),
         }
@@ -275,13 +329,27 @@ impl Into<Error> for &Message {
 pub struct ChannelTransmittableError {
     pub error: WampError,
     pub request_id: Option<Id>,
+    pub arguments: List,
+    pub arguments_keyword: Dictionary,
 }
 
 // Manual implementation, rather than using [`thiserror::Error`], to ensure we maintain URI reason
 // in the error type.
+
 impl Into<Error> for ChannelTransmittableError {
     fn into(self) -> Error {
-        error_from_uri_reason_and_message(self.error.reason, self.error.message)
+        error_from_uri_reason_and_message(
+            self.error.reason,
+            self.error.message,
+            self.arguments,
+            self.arguments_keyword,
+        )
+    }
+}
+
+impl std::fmt::Display for ChannelTransmittableError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.error.reason, self.error.message)
     }
 }
 
@@ -289,9 +357,22 @@ impl TryFrom<&Message> for ChannelTransmittableError {
     type Error = Error;
     fn try_from(value: &Message) -> std::result::Result<Self, Self::Error> {
         let (reason, message) = extract_error_uri_reason_and_message(&value)?;
+        let (arguments, arguments_keyword) = match value {
+            Message::Error(message) => {
+                (message.arguments.clone(), message.arguments_keyword.clone())
+            }
+            _ => (List::default(), Dictionary::default()),
+        };
         Ok(Self {
-            error: WampError::new(reason.clone(), message),
+            error: WampError::new_with_payload(
+                reason.clone(),
+                message,
+                arguments.clone(),
+                arguments_keyword.clone(),
+            ),
             request_id: value.request_id(),
+            arguments,
+            arguments_keyword,
         })
     }
 }
@@ -299,9 +380,22 @@ impl TryFrom<&Message> for ChannelTransmittableError {
 impl From<&Error> for ChannelTransmittableError {
     fn from(value: &Error) -> Self {
         // We must maintain URIs as much as possible inside and outside the library.
+        if let Some(error) = value.downcast_ref::<Self>() {
+            return error.clone();
+        }
+        if let Some(error) = value.downcast_ref::<WampError>() {
+            return Self {
+                error: error.clone(),
+                request_id: None,
+                arguments: error.arguments().clone(),
+                arguments_keyword: error.arguments_keyword().clone(),
+            };
+        }
         Self {
             error: WampError::new(uri_for_error(value), value.to_string()),
             request_id: None,
+            arguments: List::default(),
+            arguments_keyword: Dictionary::default(),
         }
     }
 }
@@ -331,6 +425,8 @@ pub(crate) fn uri_for_error(error: &Error) -> Uri {
         Uri::from_known("com.battler_wamp.recv_error")
     } else if error.is::<PeerNotConnectedError>() {
         Uri::from_known("com.battler_wamp.peer_not_connected")
+    } else if let Some(error) = error.downcast_ref::<ChannelTransmittableError>() {
+        error.error.reason.clone()
     } else if let Some(error) = error.downcast_ref::<WampError>() {
         error.reason.clone()
     } else {

@@ -122,8 +122,9 @@ where
         let extra = value
             .details
             .get("authextra")
-            .ok_or_else(|| Error::msg("missing authextra"))?;
-        let extra = Extra::wamp_deserialize(extra.clone())?;
+            .cloned()
+            .unwrap_or_else(|| Value::Dictionary(Dictionary::default()));
+        let extra = Extra::wamp_deserialize(extra)?;
         Ok(Self { id, methods, extra })
     }
 }

@@ -178,7 +178,10 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::hash::HashMap,
+//!     core::{
+//!         hash::HashMap,
+//!         publish_options::PublishOptions,
+//!     },
 //!     peer::{
 //!         Peer,
 //!         PeerConfig,
@@ -240,6 +243,10 @@
 //!                     "foo".to_owned(),
 //!                     Value::String("bar".to_owned()),
 //!                 )]),
+//!                 options: PublishOptions {
+//!                     acknowledge: Some(true),
+//!                     ..Default::default()
+//!                 },
 //!                 ..Default::default()
 //!             },
 //!         )
@@ -296,6 +303,7 @@
 //!     core::{
 //!         hash::HashMap,
 //!         match_style::MatchStyle,
+//!         publish_options::PublishOptions,
 //!     },
 //!     peer::{
 //!         Peer,
@@ -357,6 +365,10 @@
 //!             Uri::try_from("com.battler_wamp.topics.1").unwrap(),
 //!             PublishedEvent {
 //!                 arguments: List::from_iter([Value::Integer(123)]),
+//!                 options: PublishOptions {
+//!                     acknowledge: Some(true),
+//!                     ..Default::default()
+//!                 },
 //!                 ..Default::default()
 //!             },
 //!         )
@@ -367,6 +379,10 @@
 //!             Uri::try_from("com.battler_wamp.topics.2").unwrap(),
 //!             PublishedEvent {
 //!                 arguments: List::from_iter([Value::Integer(456)]),
+//!                 options: PublishOptions {
+//!                     acknowledge: Some(true),
+//!                     ..Default::default()
+//!                 },
 //!                 ..Default::default()
 //!             },
 //!         )
