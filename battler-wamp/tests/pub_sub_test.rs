@@ -147,6 +147,7 @@ async fn peer_receives_published_messages_for_topic() {
                     "index".to_owned(),
                     Value::Integer(*i)
                 )]),
+                details: Dictionary::default(),
                 topic: Some(Uri::try_from("com.battler.topic1").unwrap()),
             });
         });

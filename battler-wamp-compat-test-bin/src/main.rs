@@ -91,6 +91,8 @@ enum Commands {
         auth_id: String,
         #[arg(long, default_value = "")]
         auth_secret: String,
+        #[arg(long, default_value = "json")]
+        serializer: String,
     },
 }
 
@@ -171,8 +173,9 @@ async fn main() -> Result<()> {
             scenario,
             auth_id,
             auth_secret,
+            serializer,
         } => {
-            run_client_scenario(&url, &realm, &scenario, &auth_id, &auth_secret).await?;
+            run_client_scenario(&url, &realm, &scenario, &auth_id, &auth_secret, &serializer).await?;
         }
     }
     Ok(())
@@ -229,11 +232,17 @@ async fn run_client_scenario(
     scenario: &str,
     auth_id: &str,
     auth_secret: &str,
+    serializer: &str,
 ) -> Result<()> {
     let client_name = format!("rust-client-{}", scenario);
     let mut config = PeerConfig::default();
     config.name = client_name.clone();
-    config.serializers = std::collections::HashSet::from_iter([SerializerType::Json]);
+    
+    let serializer_type = match serializer {
+        "msgpack" => SerializerType::MessagePack,
+        _ => SerializerType::Json,
+    };
+    config.serializers = std::collections::HashSet::from_iter([serializer_type]);
     config.callee.enforce_timeouts = true;
     let peer = new_web_socket_peer(config)?;
     peer.connect(url).await?;
@@ -592,6 +601,145 @@ async fn run_client_scenario(
                 println!("RESPONDED");
             }
             peer.unregister(procedure.id).await?;
+        }
+        "rpc-caller-disclose" => {
+            let authid = peer.welcome_details().await
+                .and_then(|details| details.get("authid").cloned())
+                .unwrap_or(Value::Null);
+            println!("RUST_CLIENT_AUTHID: {:?}", authid);
+
+            println!("CALLING_DISCLOSE");
+            let result = peer
+                .call_and_wait(
+                    Uri::try_from("com.compat.caller_disclose")?,
+                    RpcCall {
+                        disclose_me: Some(true),
+                        ..Default::default()
+                    },
+                )
+                .await;
+            match result {
+                Ok(res) => println!("DISCLOSE_RESULT: {:?}", res.arguments),
+                Err(e) => println!("DISCLOSE_ERROR: {:?}", e),
+            }
+        }
+        "rpc-callee-pattern" => {
+            let mut proc_wildcard = peer
+                .register_with_options(
+                    WildcardUri::try_from("com.compat.pattern..match")?,
+                    ProcedureOptions {
+                        match_style: Some(MatchStyle::Wildcard),
+                        ..Default::default()
+                    },
+                )
+                .await?;
+            println!("REGISTERED_WILDCARD");
+
+            let mut proc_prefix = peer
+                .register_with_options(
+                    WildcardUri::try_from("com.compat.pattern.prefix")?,
+                    ProcedureOptions {
+                        match_style: Some(MatchStyle::Prefix),
+                        ..Default::default()
+                    },
+                )
+                .await?;
+            println!("REGISTERED_PREFIX");
+
+            // Process one wildcard invocation and one prefix invocation
+            for _ in 0..2 {
+                tokio::select! {
+                    msg = proc_wildcard.procedure_message_rx.recv() => {
+                        if let Ok(ProcedureMessage::Invocation(invocation)) = msg {
+                            let proc_name = invocation.procedure.clone().map(|u| u.to_string()).unwrap_or_default();
+                            println!("WILDCARD_INVOCATED: {}", proc_name);
+                            invocation.respond_ok(RpcYield {
+                                arguments: List::from_iter([Value::String(proc_name)]),
+                                ..Default::default()
+                            }).await?;
+                        }
+                    }
+                    msg = proc_prefix.procedure_message_rx.recv() => {
+                        if let Ok(ProcedureMessage::Invocation(invocation)) = msg {
+                            let proc_name = invocation.procedure.clone().map(|u| u.to_string()).unwrap_or_default();
+                            println!("PREFIX_INVOCATED: {}", proc_name);
+                            invocation.respond_ok(RpcYield {
+                                arguments: List::from_iter([Value::String(proc_name)]),
+                                ..Default::default()
+                            }).await?;
+                        }
+                    }
+                }
+            }
+
+            peer.unregister(proc_wildcard.id).await?;
+            peer.unregister(proc_prefix.id).await?;
+        }
+        "pubsub-subscriber-pattern" => {
+            let mut sub_wildcard = peer
+                .subscribe_with_options(
+                    WildcardUri::try_from("com.compat.pattern..topic")?,
+                    SubscriptionOptions {
+                        match_style: Some(MatchStyle::Wildcard),
+                    },
+                )
+                .await?;
+            println!("SUBSCRIBED_WILDCARD");
+
+            let mut sub_prefix = peer
+                .subscribe_with_options(
+                    WildcardUri::try_from("com.compat.pattern.prefix")?,
+                    SubscriptionOptions {
+                        match_style: Some(MatchStyle::Prefix),
+                    },
+                )
+                .await?;
+            println!("SUBSCRIBED_PREFIX");
+
+            for _ in 0..2 {
+                tokio::select! {
+                    event = sub_wildcard.event_rx.recv() => {
+                        if let Ok(event) = event {
+                            println!(
+                                "WILDCARD_EVENT: {} {:?}",
+                                event.topic.as_ref().map(|t| t.to_string()).unwrap_or_default(),
+                                event.arguments
+                            );
+                        }
+                    }
+                    event = sub_prefix.event_rx.recv() => {
+                        if let Ok(event) = event {
+                            println!(
+                                "PREFIX_EVENT: {} {:?}",
+                                event.topic.as_ref().map(|t| t.to_string()).unwrap_or_default(),
+                                event.arguments
+                            );
+                        }
+                    }
+                }
+            }
+
+            peer.unsubscribe(sub_wildcard.id).await?;
+            peer.unsubscribe(sub_prefix.id).await?;
+            println!("UNSUBSCRIBED");
+        }
+        "pubsub-subscriber-disclose" => {
+            let mut sub = peer
+                .subscribe(Uri::try_from("com.compat.pub_disclose")?)
+                .await?;
+            println!("SUBSCRIBED");
+
+            if let Ok(event) = sub.event_rx.recv().await {
+                let publisher = event.details.get("publisher").cloned().unwrap_or(Value::Null);
+                let publisher_authid = event.details.get("publisher_authid").cloned().unwrap_or(Value::Null);
+                let publisher_authrole = event.details.get("publisher_authrole").cloned().unwrap_or(Value::Null);
+                println!(
+                    "EVENT_RECEIVED: publisher: {:?} authid: {:?} authrole: {:?}",
+                    publisher, publisher_authid, publisher_authrole
+                );
+            }
+
+            peer.unsubscribe(sub.id).await?;
         }
 
         _ => {

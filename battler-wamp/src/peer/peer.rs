@@ -241,6 +241,7 @@ pub struct RpcCall {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
     pub timeout: Option<Duration>,
+    pub disclose_me: Option<bool>,
 }
 
 /// A result of a procedure call.
@@ -487,6 +488,17 @@ where
     pub async fn current_session_id(&self) -> Option<Id> {
         self.get_from_peer_state(async |peer_state: &PeerState| {
             peer_state.session.current_session_id().await
+        })
+        .await
+        .ok()
+        .map(|(_, val)| val)
+        .flatten()
+    }
+
+    /// The welcome message details dictionary from establishing the session.
+    pub async fn welcome_details(&self) -> Option<Dictionary> {
+        self.get_from_peer_state(async |peer_state: &PeerState| {
+            peer_state.session.welcome_details().await
         })
         .await
         .ok()
@@ -1328,6 +1340,10 @@ where
                 "timeout".to_owned(),
                 Value::Integer(timeout.as_millis() as u64),
             );
+        }
+
+        if let Some(disclose_me) = rpc_call.disclose_me {
+            options.insert("disclose_me".to_owned(), Value::Bool(disclose_me));
         }
 
         message_tx

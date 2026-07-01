@@ -8,26 +8,25 @@ import * as autobahn from 'autobahn';
 import * as fs from 'fs';
 import * as net from 'net';
 
-// Monkeypatch Autobahn's Session prototype to negotiate call_timeout and call_canceling features.
-// This is necessary because Autobahn JS disables these features by default in its static roles.
-const originalSendWamp = (autobahn as any).Session.prototype._send_wamp;
-(autobahn as any).Session.prototype._send_wamp = function(msg: any) {
-    if (msg && msg[0] === 1) { // HELLO
-        const details = msg[2] || {};
-        if (details.roles) {
-            if (details.roles.callee) {
-                if (!details.roles.callee.features) details.roles.callee.features = {};
-                details.roles.callee.features.call_timeout = true;
-                details.roles.callee.features.call_canceling = true;
-            }
-            if (details.roles.caller) {
-                if (!details.roles.caller.features) details.roles.caller.features = {};
-                details.roles.caller.features.call_timeout = true;
-                details.roles.caller.features.call_canceling = true;
+// Monkeypatch Autobahn's Session prototype to negotiate call_timeout and call_canceling caller features.
+const originalJoin = (autobahn as any).Session.prototype.join;
+(autobahn as any).Session.prototype.join = function(realm: any, authmethods: any, authid: any, authextra: any) {
+    const self = this;
+    const originalSendWamp = self._send_wamp;
+    self._send_wamp = function(msg: any) {
+        if (msg && msg[0] === 1) { // HELLO
+            const details = msg[2] || {};
+            if (details.roles) {
+                if (details.roles.caller) {
+                    if (!details.roles.caller.features) details.roles.caller.features = {};
+                    details.roles.caller.features.call_timeout = true;
+                    details.roles.caller.features.call_canceling = true;
+                }
             }
         }
-    }
-    return originalSendWamp.call(this, msg);
+        return originalSendWamp.call(this, msg);
+    };
+    return originalJoin.call(this, realm, authmethods, authid, authextra);
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -166,7 +165,7 @@ describe('WAMP Client Compatibility Tests', () => {
         controlClient = new autobahn.Connection({
             url: `ws://127.0.0.1:${serverPort}`,
             realm: 'com.compat.test',
-            max_retries: 0,
+            max_retries: 5,
             authid: 'test-user'
         });
 
@@ -205,6 +204,12 @@ describe('WAMP Client Compatibility Tests', () => {
         const client = runRustClient(serverPort, 'client-invalid-realm');
         const lines = await client.lines;
         assert.ok(lines.some(l => l.includes('SUCCESS: rejected with error')));
+    });
+
+    test('T1.7: MessagePack Serializer Handshake (Client Scenario)', async () => {
+        const client = runRustClient(serverPort, 'pubsub', ['--serializer', 'msgpack']);
+        const lines = await client.lines;
+        assert.ok(lines.includes('SUBSCRIBED'));
     });
 
     test('T3.1: Pub/Sub Basic (Client Scenario)', async () => {
@@ -264,6 +269,35 @@ describe('WAMP Client Compatibility Tests', () => {
         assert.ok(lines.some(l => l.includes('EVENT:') && l.includes('100') && l.includes('com.compat.foo.status')));
     });
 
+    test('T3.6: Pattern-Based Pub/Sub (Subscriber Client Scenario)', async () => {
+        const client = runRustClient(serverPort, 'pubsub-subscriber-pattern');
+        await client.waitForLine('SUBSCRIBED_WILDCARD');
+        await client.waitForLine('SUBSCRIBED_PREFIX');
+
+        // Publish to wildcard
+        await controlClient.session!.publish('com.compat.pattern.test.topic', ['wildcard-payload']);
+        // Publish to prefix
+        await controlClient.session!.publish('com.compat.pattern.prefix.sub', ['prefix-payload']);
+
+        const lines = await client.lines;
+        assert.ok(lines.some(l => l.includes('WILDCARD_EVENT: com.compat.pattern.test.topic') && l.includes('wildcard-payload')));
+        assert.ok(lines.some(l => l.includes('PREFIX_EVENT: com.compat.pattern.prefix.sub') && l.includes('prefix-payload')));
+    });
+
+    test('T3.7: Publisher Identification (Subscriber Client Scenario)', async () => {
+        const client = runRustClient(serverPort, 'pubsub-subscriber-disclose');
+        await client.waitForLine('SUBSCRIBED');
+
+        // Publish with disclose_me: true
+        await controlClient.session!.publish('com.compat.pub_disclose', [], {}, { disclose_me: true });
+
+        const lines = await client.lines;
+        const line = lines.find(l => l.includes('EVENT_RECEIVED:'));
+        assert.ok(line);
+        assert.match(line, /publisher: Integer\(\d+\)/);
+        assert.match(line, new RegExp('authid: String\\("' + controlSessionDetails?.authid + '"\\)'));
+    });
+
     test('T4.1: Basic RPC (Callee Client Scenario)', async () => {
         const client = runRustClient(serverPort, 'rpc-callee');
         await client.waitForLine('REGISTERED');
@@ -295,7 +329,7 @@ describe('WAMP Client Compatibility Tests', () => {
         // Control client registers a procedure that throws a WAMP application error
         const reg = await controlClient.session!.register(
             'com.compat.error_proc',
-            () => { throw new (autobahn as any).ApplicationError('com.compat.error.custom', ['ts error payload']); }
+            () => { throw new (autobahn as any).Error('com.compat.error.custom', ['ts error payload']); }
         );
         controlRegistrations.push(reg);
 
@@ -390,46 +424,59 @@ describe('WAMP Client Compatibility Tests', () => {
         await Promise.all([rrA.lines, rrB.lines]);
     });
 
-    test('T4.6: Progressive Call Results (TS Caller, Rust Callee)', async () => {
-        const client = runRustClient(serverPort, 'rpc-callee-progressive');
-        await client.waitForLine('REGISTERED');
+    test('T4.6: RPC Pattern Matching (Callee Client Scenario)', async () => {
+        const client = runRustClient(serverPort, 'rpc-callee-pattern');
+        await client.waitForLine('REGISTERED_WILDCARD');
+        await client.waitForLine('REGISTERED_PREFIX');
 
-        // Call with receive_progress so the Rust callee's progressive yields reach us.
-        // Autobahn uses when.js deferred notify for progress; for single positional
-        // args it passes the scalar directly (not a Result object).
-        const progressResults: number[] = [];
-        const finalResult = await new Promise<number>((resolve, reject) => {
-            const d = (controlClient.session as any).call(
-                'com.compat.callee_progress',
-                [],
-                {},
-                { receive_progress: true }
-            );
-            d.then(
-                (res: any) => resolve(res?.args ? res.args[0] : res),
-                (err: any) => reject(err),
-                (p: any) => { progressResults.push(p?.args ? p.args[0] : p); }
-            );
-        });
+        // Call wildcard matching procedure
+        const resWildcard = await controlClient.session!.call('com.compat.pattern.foo.match');
+        assert.strictEqual(resWildcard, 'com.compat.pattern.foo.match');
 
-        assert.deepStrictEqual(progressResults, [10, 20]);
-        assert.strictEqual(finalResult, 30);
+        // Call prefix matching procedure
+        const resPrefix = await controlClient.session!.call('com.compat.pattern.prefix.bar');
+        assert.strictEqual(resPrefix, 'com.compat.pattern.prefix.bar');
 
         const lines = await client.lines;
-        assert.ok(lines.includes('PROGRESS_SENT: 10'));
-        assert.ok(lines.includes('PROGRESS_SENT: 20'));
-        assert.ok(lines.includes('RESPONDED'));
+        assert.ok(lines.includes('WILDCARD_INVOCATED: com.compat.pattern.foo.match'));
+        assert.ok(lines.includes('PREFIX_INVOCATED: com.compat.pattern.prefix.bar'));
     });
 
-    test('T4.7: Caller Identification (Callee Client Scenario)', async () => {
-        const client = runRustClient(serverPort, 'rpc-disclose-caller');
-        await client.waitForLine('REGISTERED');
+    test('T4.7: Caller Identification', async (t) => {
+        await t.test('Callee Client Scenario', async () => {
+            const client = runRustClient(serverPort, 'rpc-disclose-caller');
+            await client.waitForLine('REGISTERED');
 
-        // Control client calls procedure disclosing caller identity
-        const res = await controlClient.session!.call('com.compat.disclose', [], {}, { disclose_me: true });
-        assert.strictEqual(res, controlSessionDetails.authid);
+            // Control client calls procedure disclosing caller identity
+            const res = await controlClient.session!.call('com.compat.disclose', [], {}, { disclose_me: true });
+            assert.strictEqual(res, controlSessionDetails.authid);
 
-        await client.lines;
+            await client.lines;
+        });
+
+        await t.test('Caller Client Scenario', async () => {
+            let callerAuthid: string | null = null;
+            let callerSession: number | null = null;
+            const reg = await controlClient.session!.register('com.compat.caller_disclose', (args, kwargs, details) => {
+                callerAuthid = details.caller_authid || null;
+                callerSession = details.caller || null;
+                return 'ok';
+            });
+            controlRegistrations.push(reg);
+
+            const client = runRustClient(serverPort, 'rpc-caller-disclose');
+            const authidLine = await client.waitForLine('RUST_CLIENT_AUTHID:');
+            const match = authidLine.match(/RUST_CLIENT_AUTHID: String\("([^"]+)"\)/);
+            const expectedAuthid = match ? match[1] : null;
+
+            await client.waitForLine('DISCLOSE_RESULT');
+
+            assert.ok(expectedAuthid);
+            assert.strictEqual(callerAuthid, expectedAuthid);
+            assert.ok(typeof callerSession === 'number' && callerSession > 0);
+
+            await controlClient.session!.unregister(reg);
+        });
     });
 
     test('T4.8: RPC Call Timeout (Caller Client Scenario)', async () => {
@@ -469,23 +516,54 @@ describe('WAMP Client Compatibility Tests', () => {
         assert.ok(lines.includes('CANCEL_RESPONDED'));
     });
 
-    test('T4.10: Progressive Call Results (Caller Client Scenario)', async () => {
-        // Control client registers progressive procedure
-        const reg = await controlClient.session!.register('com.compat.progress', (args, kwargs, details) => {
-            if (details.progress) {
-                details.progress([10]);
-                details.progress([20]);
-            }
-            return 30;
+    test('T4.10: Progressive Call Results', async (t) => {
+        await t.test('TS Caller, Rust Callee', async () => {
+            const client = runRustClient(serverPort, 'rpc-callee-progressive');
+            await client.waitForLine('REGISTERED');
+
+            const progressResults: number[] = [];
+            const finalResult = await new Promise<number>((resolve, reject) => {
+                const d = (controlClient.session as any).call(
+                    'com.compat.callee_progress',
+                    [],
+                    {},
+                    { receive_progress: true }
+                );
+                d.then(
+                    (res: any) => resolve(res?.args ? res.args[0] : res),
+                    (err: any) => reject(err),
+                    (p: any) => { progressResults.push(p?.args ? p.args[0] : p); }
+                );
+            });
+
+            assert.deepStrictEqual(progressResults, [10, 20]);
+            assert.strictEqual(finalResult, 30);
+
+            const lines = await client.lines;
+            assert.ok(lines.includes('PROGRESS_SENT: 10'));
+            assert.ok(lines.includes('PROGRESS_SENT: 20'));
+            assert.ok(lines.includes('RESPONDED'));
         });
-        controlRegistrations.push(reg);
 
-        const client = runRustClient(serverPort, 'rpc-progressive');
-        const lines = await client.lines;
-        assert.ok(lines.some(l => l.includes('PROGRESS_RESULT: [Integer(10)] progress: true')));
-        assert.ok(lines.some(l => l.includes('PROGRESS_RESULT: [Integer(20)] progress: true')));
-        assert.ok(lines.some(l => l.includes('PROGRESS_RESULT: [Integer(30)] progress: false')));
+        await t.test('Caller Client Scenario', async () => {
+            // Control client registers progressive procedure
+            const reg = await controlClient.session!.register('com.compat.progress', (args, kwargs, details) => {
+                if (details.progress) {
+                    details.progress([10]);
+                    details.progress([20]);
+                }
+                return 30;
+            });
+            controlRegistrations.push(reg);
 
-        await controlClient.session!.unregister(reg);
+            const client = runRustClient(serverPort, 'rpc-progressive');
+            const lines = await client.lines;
+            assert.ok(lines.some(l => l.includes('PROGRESS_RESULT: [Integer(10)] progress: true')));
+            assert.ok(lines.some(l => l.includes('PROGRESS_RESULT: [Integer(20)] progress: true')));
+            assert.ok(lines.some(l => l.includes('PROGRESS_RESULT: [Integer(30)] progress: false')));
+
+            await controlClient.session!.unregister(reg);
+        });
     });
+
 });

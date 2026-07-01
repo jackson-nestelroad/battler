@@ -1,0 +1,736 @@
+TAP version 13
+# [CLIENT-client-invalid-realm] [2m2026-07-01T06:22:33.049182Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-client-invalid-realm
+# [CLIENT-client-invalid-realm] [2m2026-07-01T06:22:33.050392Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-client-invalid-realm failed: failed to handle ABORT message: no such realm
+# [CLIENT-client-invalid-realm] SUCCESS: rejected with error: no such realm
+# [CLIENT-client-invalid-realm] [2m2026-07-01T06:22:33.050414Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-client-invalid-realm is disconnecting from the router
+# Subtest: WAMP Client Compatibility Tests
+    # Subtest: T1.2: Joining Invalid Realm (Client Check)
+    ok 1 - T1.2: Joining Invalid Realm (Client Check)
+      ---
+      duration_ms: 66.171625
+      type: 'test'
+      ...
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.117331Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-pubsub
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.119395Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-pubsub established session 3127382106222870 on realm com.compat.test
+# [CLIENT-pubsub] SUBSCRIBED
+# [CLIENT-pubsub] PUBLISHED
+# [CLIENT-pubsub] EVENT: ReceivedEvent { arguments: [Integer(123), String("test")], arguments_keyword: {"foo": String("bar")}, details: {"publisher_authid": String("Q3XG-VFQ7-CPUV-ECXS-H6EU-4JWT"), "publisher": Integer(3127382106222870), "publisher_authrole": String("anonymous")}, topic: None }
+# [CLIENT-pubsub] UNSUBSCRIBED
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.122549Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub finished
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.122610Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-pubsub was instructed to disconnect from the router
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.122635Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.122648Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub is disconnecting from the router
+    # Subtest: T3.1: Pub/Sub Basic (Client Scenario)
+    ok 2 - T3.1: Pub/Sub Basic (Client Scenario)
+      ---
+      duration_ms: 71.408083
+      type: 'test'
+      ...
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.185185Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-pubsub
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.187165Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-pubsub established session 3893578603926846 on realm com.compat.test
+# [CLIENT-pubsub] SUBSCRIBED
+# [CLIENT-pubsub] PUBLISHED
+# [CLIENT-pubsub] EVENT: ReceivedEvent { arguments: [Integer(123), String("test")], arguments_keyword: {"foo": String("bar")}, details: {"publisher_authid": String("FTHH-4WMH-CVUY-JM47-3XHT-Q3RX"), "publisher": Integer(3893578603926846), "publisher_authrole": String("anonymous")}, topic: None }
+# [CLIENT-pubsub] UNSUBSCRIBED
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.189607Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub finished
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.189752Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-pubsub was instructed to disconnect from the router
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.190055Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-pubsub] [2m2026-07-01T06:22:33.190144Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub is disconnecting from the router
+    # Subtest: T3.2: Pub/Sub Basic (TS Subscriber, Rust Publisher)
+    ok 3 - T3.2: Pub/Sub Basic (TS Subscriber, Rust Publisher)
+      ---
+      duration_ms: 267.324958
+      type: 'test'
+      ...
+# [CLIENT-pubsub-prefix] [2m2026-07-01T06:22:33.453033Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-pubsub-prefix
+# [CLIENT-pubsub-prefix] [2m2026-07-01T06:22:33.454669Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-pubsub-prefix established session 4198959429090424 on realm com.compat.test
+# [CLIENT-pubsub-prefix] SUBSCRIBED
+# [CLIENT-pubsub-prefix] EVENT: [Integer(42)] on topic: Some(Uri("com.compat.prefix_subtopic"))
+# [CLIENT-pubsub-prefix] [2m2026-07-01T06:22:33.457484Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-prefix finished
+# [CLIENT-pubsub-prefix] [2m2026-07-01T06:22:33.457588Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-pubsub-prefix was instructed to disconnect from the router
+# [CLIENT-pubsub-prefix] [2m2026-07-01T06:22:33.457656Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-prefix failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-pubsub-prefix] [2m2026-07-01T06:22:33.457682Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-prefix is disconnecting from the router
+    # Subtest: T3.3: Prefix-based Subscription Matching (Client Scenario)
+    ok 4 - T3.3: Prefix-based Subscription Matching (Client Scenario)
+      ---
+      duration_ms: 67.835042
+      type: 'test'
+      ...
+# [CLIENT-pubsub-wildcard] [2m2026-07-01T06:22:33.519300Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-pubsub-wildcard
+# [CLIENT-pubsub-wildcard] [2m2026-07-01T06:22:33.521147Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-pubsub-wildcard established session 2298988714647349 on realm com.compat.test
+# [CLIENT-pubsub-wildcard] SUBSCRIBED
+# [CLIENT-pubsub-wildcard] EVENT: [Integer(100)] on topic: Some(Uri("com.compat.foo.status"))
+# [CLIENT-pubsub-wildcard] [2m2026-07-01T06:22:33.523667Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-wildcard finished
+# [CLIENT-pubsub-wildcard] [2m2026-07-01T06:22:33.523704Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-pubsub-wildcard was instructed to disconnect from the router
+# [CLIENT-pubsub-wildcard] [2m2026-07-01T06:22:33.523731Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-wildcard failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-pubsub-wildcard] [2m2026-07-01T06:22:33.523744Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-wildcard is disconnecting from the router
+    # Subtest: T3.4: Wildcard-based Subscription Matching (Client Scenario)
+    ok 5 - T3.4: Wildcard-based Subscription Matching (Client Scenario)
+      ---
+      duration_ms: 65.156291
+      type: 'test'
+      ...
+# [CLIENT-rpc-callee] [2m2026-07-01T06:22:33.583444Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-callee
+# [CLIENT-rpc-callee] [2m2026-07-01T06:22:33.585359Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-callee established session 7004543564429648 on realm com.compat.test
+# [CLIENT-rpc-callee] REGISTERED
+# [CLIENT-rpc-callee] INVOCATION: [Integer(12)]
+# [CLIENT-rpc-callee] RESPONDED
+# [CLIENT-rpc-callee] UNREGISTERED
+# [CLIENT-rpc-callee] [2m2026-07-01T06:22:33.589471Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee finished
+# [CLIENT-rpc-callee] [2m2026-07-01T06:22:33.589556Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-callee was instructed to disconnect from the router
+# [CLIENT-rpc-callee] [2m2026-07-01T06:22:33.589601Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-callee] [2m2026-07-01T06:22:33.589614Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee is disconnecting from the router
+    # Subtest: T4.1: Basic RPC (Callee Client Scenario)
+    ok 6 - T4.1: Basic RPC (Callee Client Scenario)
+      ---
+      duration_ms: 66.798
+      type: 'test'
+      ...
+# [CLIENT-rpc-caller] [2m2026-07-01T06:22:33.654886Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-caller
+# [CLIENT-rpc-caller] [2m2026-07-01T06:22:33.656796Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-caller established session 6051542437909872 on realm com.compat.test
+# [CLIENT-rpc-caller] CALLING
+# [CLIENT-rpc-caller] RESULT: [Integer(30)]
+# [CLIENT-rpc-caller] [2m2026-07-01T06:22:33.659029Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller finished
+# [CLIENT-rpc-caller] [2m2026-07-01T06:22:33.659067Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-caller was instructed to disconnect from the router
+# [CLIENT-rpc-caller] [2m2026-07-01T06:22:33.659079Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-caller] [2m2026-07-01T06:22:33.659093Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller is disconnecting from the router
+    # Subtest: T4.1: Basic RPC (Caller Client Scenario)
+    ok 7 - T4.1: Basic RPC (Caller Client Scenario)
+      ---
+      duration_ms: 69.167625
+      type: 'test'
+      ...
+# [CLIENT-rpc-caller-error] [2m2026-07-01T06:22:33.721328Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-caller-error
+# [CLIENT-rpc-caller-error] [2m2026-07-01T06:22:33.723728Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-caller-error established session 4154547630201355 on realm com.compat.test
+# Exception raised in invocation handler: Error {
+#   error: 'com.compat.error.custom',
+#   args: [ 'ts error payload' ],
+#   kwargs: {}
+# }
+# [CLIENT-rpc-caller-error] CALL_ERROR: ts error payload
+# [CLIENT-rpc-caller-error] [2m2026-07-01T06:22:33.726759Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller-error finished
+# [CLIENT-rpc-caller-error] [2m2026-07-01T06:22:33.726791Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-caller-error was instructed to disconnect from the router
+# [CLIENT-rpc-caller-error] [2m2026-07-01T06:22:33.726801Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller-error failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-caller-error] [2m2026-07-01T06:22:33.726813Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller-error is disconnecting from the router
+    # Subtest: T4.2: RPC Error Propagation (TS Callee, Rust Caller)
+    ok 8 - T4.2: RPC Error Propagation (TS Callee, Rust Caller)
+      ---
+      duration_ms: 68.381166
+      type: 'test'
+      ...
+# [CLIENT-rpc-unregister] [2m2026-07-01T06:22:33.788460Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-unregister
+# [CLIENT-rpc-unregister] [2m2026-07-01T06:22:33.791384Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-unregister established session 2193676202774040 on realm com.compat.test
+# [CLIENT-rpc-unregister] REGISTERED
+# [CLIENT-rpc-unregister] UNREGISTERED
+# [CLIENT-rpc-unregister] [2m2026-07-01T06:22:33.793881Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-unregister finished
+# [CLIENT-rpc-unregister] [2m2026-07-01T06:22:33.793947Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-unregister was instructed to disconnect from the router
+# [CLIENT-rpc-unregister] [2m2026-07-01T06:22:33.793968Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-unregister failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-unregister] [2m2026-07-01T06:22:33.793983Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-unregister is disconnecting from the router
+    # Subtest: T4.3: Unregistering a Procedure (Client Scenario)
+    ok 9 - T4.3: Unregistering a Procedure (Client Scenario)
+      ---
+      duration_ms: 65.811625
+      type: 'test'
+      ...
+# [CLIENT-rpc-error] [2m2026-07-01T06:22:33.855922Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-error
+# [CLIENT-rpc-error] [2m2026-07-01T06:22:33.857803Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-error established session 7716570161923816 on realm com.compat.test
+# [CLIENT-rpc-error] REGISTERED
+# [CLIENT-rpc-error] RESPONDED_ERROR
+# T4.4 ERROR DETAILS: {
+#   error: 'com.compat.error.custom',
+#   message: undefined,
+#   args: [ 'custom callee error payload' ],
+#   kwargs: {},
+#   details: undefined
+# }
+# [CLIENT-rpc-error] [2m2026-07-01T06:22:33.860741Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-error finished
+# [CLIENT-rpc-error] [2m2026-07-01T06:22:33.860772Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-error was instructed to disconnect from the router
+# [CLIENT-rpc-error] [2m2026-07-01T06:22:33.860804Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-error failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-error] [2m2026-07-01T06:22:33.860819Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-error is disconnecting from the router
+    # Subtest: T4.4: RPC Error Propagation (Callee Client Scenario)
+    ok 10 - T4.4: RPC Error Propagation (Callee Client Scenario)
+      ---
+      duration_ms: 66.059958
+      type: 'test'
+      ...
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.924027Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-shared
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.925759Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-shared established session 7234331239544037 on realm com.compat.test
+# [CLIENT-rpc-shared] REGISTERED_SHARED
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.935736Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-shared
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.937474Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-shared established session 6561738859638649 on realm com.compat.test
+# [CLIENT-rpc-shared] REGISTER_FAILED: procedure already exists
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.938890Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared finished
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.938906Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-shared was instructed to disconnect from the router
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.938911Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.938922Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared is disconnecting from the router
+# [CLIENT-rpc-shared] RESPONDED
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.941553Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared finished
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.941609Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-shared was instructed to disconnect from the router
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.941640Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.941651Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared is disconnecting from the router
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.951857Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-shared
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.951859Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-shared
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.954404Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-shared established session 2632138472471044 on realm com.compat.test
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.954404Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-shared established session 4487702746641188 on realm com.compat.test
+# [CLIENT-rpc-shared] REGISTERED_SHARED
+# [CLIENT-rpc-shared] REGISTERED_SHARED
+# [CLIENT-rpc-shared] RESPONDED
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.957225Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared finished
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.957277Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-shared was instructed to disconnect from the router
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.957309Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.957321Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared is disconnecting from the router
+# [CLIENT-rpc-shared] RESPONDED
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.958371Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared finished
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.958422Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-shared was instructed to disconnect from the router
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.958450Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-shared] [2m2026-07-01T06:22:33.958460Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-shared is disconnecting from the router
+    # Subtest: T4.5: Shared Registration (Client Scenario)
+    ok 11 - T4.5: Shared Registration (Client Scenario)
+      ---
+      duration_ms: 98.368333
+      type: 'test'
+      ...
+# [CLIENT-rpc-callee-progressive] [2m2026-07-01T06:22:34.019201Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-callee-progressive
+# [CLIENT-rpc-callee-progressive] [2m2026-07-01T06:22:34.020899Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-callee-progressive established session 5614311423316011 on realm com.compat.test
+# [CLIENT-rpc-callee-progressive] REGISTERED
+# [CLIENT-rpc-callee-progressive] PROGRESS_SENT: 10
+# [CLIENT-rpc-callee-progressive] PROGRESS_SENT: 20
+# [CLIENT-rpc-callee-progressive] RESPONDED
+# [CLIENT-rpc-callee-progressive] [2m2026-07-01T06:22:34.023880Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee-progressive finished
+# [CLIENT-rpc-callee-progressive] [2m2026-07-01T06:22:34.023913Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-callee-progressive was instructed to disconnect from the router
+# [CLIENT-rpc-callee-progressive] [2m2026-07-01T06:22:34.023937Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee-progressive failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-callee-progressive] [2m2026-07-01T06:22:34.023948Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee-progressive is disconnecting from the router
+    # Subtest: T4.6: Progressive Call Results (TS Caller, Rust Callee)
+    ok 12 - T4.6: Progressive Call Results (TS Caller, Rust Callee)
+      ---
+      duration_ms: 65.644916
+      type: 'test'
+      ...
+# [CLIENT-rpc-disclose-caller] [2m2026-07-01T06:22:34.085096Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-disclose-caller
+# [CLIENT-rpc-disclose-caller] [2m2026-07-01T06:22:34.086762Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-disclose-caller established session 4248758813981969 on realm com.compat.test
+# [CLIENT-rpc-disclose-caller] REGISTERED
+# [CLIENT-rpc-disclose-caller] [2m2026-07-01T06:22:34.089999Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-disclose-caller finished
+# [CLIENT-rpc-disclose-caller] [2m2026-07-01T06:22:34.090066Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-disclose-caller was instructed to disconnect from the router
+# [CLIENT-rpc-disclose-caller] [2m2026-07-01T06:22:34.090102Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-disclose-caller failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-disclose-caller] [2m2026-07-01T06:22:34.090117Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-disclose-caller is disconnecting from the router
+    # Subtest: T4.7: Caller Identification (Callee Client Scenario)
+    ok 13 - T4.7: Caller Identification (Callee Client Scenario)
+      ---
+      duration_ms: 65.859917
+      type: 'test'
+      ...
+# [CLIENT-rpc-timeout] [2m2026-07-01T06:22:34.152877Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-timeout
+# [CLIENT-rpc-timeout] [2m2026-07-01T06:22:34.154354Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-timeout established session 224919916935717 on realm com.compat.test
+# [CLIENT-rpc-timeout] CALLING_TIMEOUT
+# [CLIENT-rpc-timeout] TIMEOUT_SUCCESS: Local timeout
+# [CLIENT-rpc-timeout] [2m2026-07-01T06:22:34.658211Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-timeout finished
+# [CLIENT-rpc-timeout] [2m2026-07-01T06:22:34.658237Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-timeout was instructed to disconnect from the router
+# [CLIENT-rpc-timeout] [2m2026-07-01T06:22:34.658248Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-timeout failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-timeout] [2m2026-07-01T06:22:34.658259Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-timeout is disconnecting from the router
+    # Subtest: T4.8: RPC Call Timeout (Caller Client Scenario)
+    ok 14 - T4.8: RPC Call Timeout (Caller Client Scenario)
+      ---
+      duration_ms: 569.172292
+      type: 'test'
+      ...
+# [CLIENT-rpc-cancel] [2m2026-07-01T06:22:34.723119Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-cancel
+# [CLIENT-rpc-cancel] [2m2026-07-01T06:22:34.724913Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-cancel established session 2764172774559809 on realm com.compat.test
+# [CLIENT-rpc-cancel] REGISTERED
+# [CLIENT-rpc-cancel] INVOCATION_RECEIVED
+# [CLIENT-rpc-cancel] CANCEL_RECEIVED
+# [CLIENT-rpc-cancel] CANCEL_RESPONDED
+# [CLIENT-rpc-cancel] [2m2026-07-01T06:22:34.728525Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-cancel finished
+# [CLIENT-rpc-cancel] [2m2026-07-01T06:22:34.728555Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-cancel was instructed to disconnect from the router
+# [CLIENT-rpc-cancel] [2m2026-07-01T06:22:34.728569Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-cancel failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-cancel] [2m2026-07-01T06:22:34.728589Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-cancel is disconnecting from the router
+    # Subtest: T4.9: Caller-Initiated Call Cancellation (Callee Client Scenario)
+    ok 15 - T4.9: Caller-Initiated Call Cancellation (Callee Client Scenario)
+      ---
+      duration_ms: 69.1275
+      type: 'test'
+      ...
+# [CLIENT-rpc-progressive] [2m2026-07-01T06:22:34.792532Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-progressive
+# [CLIENT-rpc-progressive] [2m2026-07-01T06:22:34.794428Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-progressive established session 4650811998835100 on realm com.compat.test
+# [CLIENT-rpc-progressive] CALLING_PROGRESSIVE
+# [CLIENT-rpc-progressive] PROGRESS_RESULT: [Integer(10)] progress: true
+# [CLIENT-rpc-progressive] PROGRESS_RESULT: [Integer(20)] progress: true
+# [CLIENT-rpc-progressive] PROGRESS_RESULT: [Integer(30)] progress: false
+# [CLIENT-rpc-progressive] [2m2026-07-01T06:22:34.796711Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-progressive finished
+# [CLIENT-rpc-progressive] [2m2026-07-01T06:22:34.796768Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-progressive failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-progressive] [2m2026-07-01T06:22:34.796777Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-progressive was instructed to disconnect from the router
+# [CLIENT-rpc-progressive] [2m2026-07-01T06:22:34.796784Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-progressive is disconnecting from the router
+    # Subtest: T4.10: Progressive Call Results (Caller Client Scenario)
+    ok 16 - T4.10: Progressive Call Results (Caller Client Scenario)
+      ---
+      duration_ms: 68.886042
+      type: 'test'
+      ...
+# [CLIENT-pubsub] [2m2026-07-01T06:22:34.858459Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-pubsub
+# [CLIENT-pubsub] [2m2026-07-01T06:22:34.860076Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-pubsub established session 2309685444361686 on realm com.compat.test
+# [CLIENT-pubsub] SUBSCRIBED
+# [CLIENT-pubsub] PUBLISHED
+# [CLIENT-pubsub] EVENT: ReceivedEvent { arguments: [Integer(123), String("test")], arguments_keyword: {"foo": String("bar")}, details: {"publisher_authrole": String("anonymous"), "publisher": Integer(2309685444361686), "publisher_authid": String("5NMQ-Y6AJ-9T3X-HT6G-L96T-PYG4")}, topic: None }
+# [CLIENT-pubsub] UNSUBSCRIBED
+# [CLIENT-pubsub] [2m2026-07-01T06:22:34.862453Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub finished
+# [CLIENT-pubsub] [2m2026-07-01T06:22:34.862480Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-pubsub was instructed to disconnect from the router
+# [CLIENT-pubsub] [2m2026-07-01T06:22:34.862495Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-pubsub] [2m2026-07-01T06:22:34.862510Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub is disconnecting from the router
+    # Subtest: T1.7: MessagePack Serializer Handshake (Client Scenario)
+    ok 17 - T1.7: MessagePack Serializer Handshake (Client Scenario)
+      ---
+      duration_ms: 64.157041
+      type: 'test'
+      ...
+# [CLIENT-rpc-caller-disclose] [2m2026-07-01T06:22:34.924114Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-caller-disclose
+# [CLIENT-rpc-caller-disclose] [2m2026-07-01T06:22:34.926201Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-caller-disclose established session 5516727758748098 on realm com.compat.test
+# [CLIENT-rpc-caller-disclose] RUST_CLIENT_AUTHID: String("QRAH-NM5W-FEQQ-5X9L-Y5C7-Y7T6")
+# [CLIENT-rpc-caller-disclose] CALLING_DISCLOSE
+# [CLIENT-rpc-caller-disclose] DISCLOSE_RESULT: [String("ok")]
+# [CLIENT-rpc-caller-disclose] [2m2026-07-01T06:22:34.928473Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller-disclose finished
+# [CLIENT-rpc-caller-disclose] [2m2026-07-01T06:22:34.928522Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-caller-disclose was instructed to disconnect from the router
+# [CLIENT-rpc-caller-disclose] [2m2026-07-01T06:22:34.928543Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller-disclose failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-caller-disclose] [2m2026-07-01T06:22:34.928558Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-caller-disclose is disconnecting from the router
+    # Subtest: T4.7b: Caller Identification (Caller Client Scenario)
+    ok 18 - T4.7b: Caller Identification (Caller Client Scenario)
+      ---
+      duration_ms: 66.759292
+      type: 'test'
+      ...
+# [CLIENT-rpc-callee-pattern] [2m2026-07-01T06:22:34.989977Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-callee-pattern
+# [CLIENT-rpc-callee-pattern] [2m2026-07-01T06:22:34.992261Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-callee-pattern established session 8503083449869346 on realm com.compat.test
+# [CLIENT-rpc-callee-pattern] REGISTERED_WILDCARD
+# [CLIENT-rpc-callee-pattern] REGISTERED_PREFIX
+# [CLIENT-rpc-callee-pattern] WILDCARD_INVOCATED: com.compat.pattern.foo.match
+# [CLIENT-rpc-callee-pattern] PREFIX_INVOCATED: com.compat.pattern.prefix.bar
+# [CLIENT-rpc-callee-pattern] [2m2026-07-01T06:22:34.998630Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee-pattern finished
+# [CLIENT-rpc-callee-pattern] [2m2026-07-01T06:22:34.998740Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-callee-pattern was instructed to disconnect from the router
+# [CLIENT-rpc-callee-pattern] [2m2026-07-01T06:22:34.998774Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee-pattern failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-callee-pattern] [2m2026-07-01T06:22:34.998801Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-callee-pattern is disconnecting from the router
+    # Subtest: T4.6b: RPC Pattern Matching (Callee Client Scenario)
+    ok 19 - T4.6b: RPC Pattern Matching (Callee Client Scenario)
+      ---
+      duration_ms: 70.572583
+      type: 'test'
+      ...
+# [CLIENT-pubsub-subscriber-pattern] [2m2026-07-01T06:22:35.061099Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-pubsub-subscriber-pattern
+# [CLIENT-pubsub-subscriber-pattern] [2m2026-07-01T06:22:35.063019Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-pubsub-subscriber-pattern established session 864001174097007 on realm com.compat.test
+# [CLIENT-pubsub-subscriber-pattern] SUBSCRIBED_WILDCARD
+# [CLIENT-pubsub-subscriber-pattern] SUBSCRIBED_PREFIX
+# [CLIENT-pubsub-subscriber-pattern] WILDCARD_EVENT: com.compat.pattern.test.topic [String("wildcard-payload")]
+# [CLIENT-pubsub-subscriber-pattern] PREFIX_EVENT: com.compat.pattern.prefix.sub [String("prefix-payload")]
+# [CLIENT-pubsub-subscriber-pattern] UNSUBSCRIBED
+# [CLIENT-pubsub-subscriber-pattern] [2m2026-07-01T06:22:35.067690Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-subscriber-pattern finished
+# [CLIENT-pubsub-subscriber-pattern] [2m2026-07-01T06:22:35.067796Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-pubsub-subscriber-pattern was instructed to disconnect from the router
+# [CLIENT-pubsub-subscriber-pattern] [2m2026-07-01T06:22:35.067835Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-subscriber-pattern failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-pubsub-subscriber-pattern] [2m2026-07-01T06:22:35.067857Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-subscriber-pattern is disconnecting from the router
+    # Subtest: T3.6b: Pattern-Based Pub/Sub (Subscriber Client Scenario)
+    ok 20 - T3.6b: Pattern-Based Pub/Sub (Subscriber Client Scenario)
+      ---
+      duration_ms: 68.849125
+      type: 'test'
+      ...
+# [CLIENT-pubsub-subscriber-disclose] [2m2026-07-01T06:22:35.133957Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-pubsub-subscriber-disclose
+# [CLIENT-pubsub-subscriber-disclose] [2m2026-07-01T06:22:35.135951Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-pubsub-subscriber-disclose established session 2117423987237793 on realm com.compat.test
+# [CLIENT-pubsub-subscriber-disclose] SUBSCRIBED
+# [CLIENT-pubsub-subscriber-disclose] EVENT_RECEIVED: publisher: Integer(6448876305189531) authid: String("LKMT-M476-97XW-CCM9-4Y47-6MMJ") authrole: String("anonymous")
+# [CLIENT-pubsub-subscriber-disclose] [2m2026-07-01T06:22:35.138525Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-subscriber-disclose finished
+# [CLIENT-pubsub-subscriber-disclose] [2m2026-07-01T06:22:35.138566Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-pubsub-subscriber-disclose was instructed to disconnect from the router
+# [CLIENT-pubsub-subscriber-disclose] [2m2026-07-01T06:22:35.138580Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-subscriber-disclose failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-pubsub-subscriber-disclose] [2m2026-07-01T06:22:35.138593Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-pubsub-subscriber-disclose is disconnecting from the router
+    # Subtest: T3.7b: Publisher Identification (Subscriber Client Scenario)
+    ok 21 - T3.7b: Publisher Identification (Subscriber Client Scenario)
+      ---
+      duration_ms: 71.246584
+      type: 'test'
+      ...
+# [CLIENT-rpc-timeout-callee] [2m2026-07-01T06:22:35.202177Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m WAMP connection established with ws://127.0.0.1:9001 for peer rust-client-rpc-timeout-callee
+# [CLIENT-rpc-timeout-callee] [2m2026-07-01T06:22:35.203952Z[0m [32m INFO[0m [2mbattler_wamp::peer::session[0m[2m:[0m Peer rust-client-rpc-timeout-callee established session 5757985851129072 on realm com.compat.test
+# [CLIENT-rpc-timeout-callee] REGISTERED
+# [CLIENT-rpc-timeout-callee] INVOCATION_RECEIVED
+# [CLIENT-rpc-timeout-callee] [2m2026-07-01T06:22:38.209554Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-timeout-callee finished
+# [CLIENT-rpc-timeout-callee] [2m2026-07-01T06:22:38.209643Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer rust-client-rpc-timeout-callee was instructed to disconnect from the router
+# [CLIENT-rpc-timeout-callee] [2m2026-07-01T06:22:38.209662Z[0m [31mERROR[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-timeout-callee failed: failed to receive message from peer channel (channel unexpectedly closed)
+# [CLIENT-rpc-timeout-callee] [2m2026-07-01T06:22:38.209682Z[0m [32m INFO[0m [2mbattler_wamp::peer::peer[0m[2m:[0m Peer session rust-client-rpc-timeout-callee is disconnecting from the router
+    # Subtest: T4.8b: Call Timeout Callee Enforcement (Client Callee Scenario)
+    not ok 22 - T4.8b: Call Timeout Callee Enforcement (Client Callee Scenario)
+      ---
+      duration_ms: 3072.088625
+      type: 'test'
+      location: '/Users/jackson/Code/GitHub/pokemon/wamp-integration-tests/src/client-compat.test.ts:2:16800'
+      failureType: 'testCodeFailure'
+      error: 'Missing expected rejection.'
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      stack: |-
+        process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        async TestContext.<anonymous> (/Users/jackson/Code/GitHub/pokemon/wamp-integration-tests/src/client-compat.test.ts:577:9)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+      ...
+    1..22
+not ok 1 - WAMP Client Compatibility Tests
+  ---
+  duration_ms: 8394.449584
+  type: 'suite'
+  location: '/Users/jackson/Code/GitHub/pokemon/wamp-integration-tests/src/client-compat.test.ts:2:4060'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# [CROSSBAR ERR] 2026-07-01T01:22:38-0500 [Router      52906] Native worker received SIGTERM - shutting down ..
+# connection closed closed {
+#   reason: 'wamp.close.normal',
+#   message: '',
+#   retry_delay: null,
+#   retry_count: null,
+#   will_retry: false
+# }
+# auto-reconnect disabled! false undefined
+# [CROSSBAR] 2026-07-01T01:22:31-0500 [Controller  52905] 
+# 2026-07-01T01:22:31-0500 [Controller  52905]     :::::::::::::::::
+# 2026-07-01T01:22:31-0500 [Controller  52905]           :::::          _____                 __              _
+# 2026-07-01T01:22:31-0500 [Controller  52905]     :::::   :   :::::   / ___/______  ___ ___ / /  ___ _____  (_)__
+# 2026-07-01T01:22:31-0500 [Controller  52905]     :::::::   :::::::  / /__/ __/ _ \\(_-<(_-</ _ \\/ _ `/ __/ / / _ \\
+# 2026-07-01T01:22:31-0500 [Controller  52905]     :::::   :   :::::  \\___/_/  \\___/___/___/_.__/\\_,_/_/ (_)_/\\___/
+# 2026-07-01T01:22:31-0500 [Controller  52905]           :::::
+# 2026-07-01T01:22:31-0500 [Controller  52905]     :::::::::::::::::   Crossbar.io v26.6.1 — Resistance Is Futile [19000101-0000000]
+# 2026-07-01T01:22:31-0500 [Controller  52905] 
+# 2026-07-01T01:22:31-0500 [Controller  52905]     Copyright (c) 2013-2026 typedef int GmbH. Licensed under EUPLv1.2.
+# 2026-07-01T01:22:31-0500 [Controller  52905] 
+# 2026-07-01T01:22:31-0500 [Controller  52905] Booting standalone node .. <crossbar.node.main._run_command_start>
+# 2026-07-01T01:22:31-0500 [Controller  52905] Node configuration loaded [config_source=localfile, config_path=/Users/jackson/Code/GitHub/pokemon/wamp-integration-tests/.crossbar/config.json]
+# 2026-07-01T01:22:31-0500 [Controller  52905] Node key files exist and are valid. Node public key is 0xe8152158937c9ccd58694cd232799ffc26e2e07aa31af5df276875d7f59cc691
+# 2026-07-01T01:22:31-0500 [Controller  52905] Node key loaded from /Users/jackson/Code/GitHub/pokemon/wamp-integration-tests/.crossbar/key.priv
+# 2026-07-01T01:22:31-0500 [Controller  52905] Entering event reactor ...
+# 2026-07-01T01:22:31-0500 [Controller  52905] Starting node .. [<crossbar.node.node.Node.start>]
+# 2026-07-01T01:22:31-0500 [Controller  52905] Node ID jacksons-macbook-pro.local-52905 set from hostname/pid
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.router.router.RouterFactory.start_realm>: realm=<crossbar.worker.types.RouterRealm object at 0x10adcdbe0> with URI "crossbar"
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.router.router.RouterFactory.add_role>: realm="crossbar", config=
+# {'name': 'controller',
+#  'permissions': [{'allow': {'call': True,
+#                             'publish': True,
+#                             'register': True,
+#                             'subscribe': True},
+#                   'cache': True,
+#                   'disclose': {'caller': True, 'publisher': True},
+#                   'match': 'prefix',
+#                   'uri': 'crossbar.'}]}
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.node.node.Node._add_global_roles> node-wide role "controller" added on node management router realm "crossbar"
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.router.router.Router.attach> new session attached for realm="crossbar", session=5636878646393041, authid="serviceagent", authrole="trusted", authmethod="None", authprovider="None", authextra=
+# None
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.router.service.RouterServiceAgent.onJoin>: realm service session attached to realm "crossbar" [session_id=5636878646393041, authid="serviceagent", authrole="trusted", on_ready=None]
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.node.node.Node.start> router service agent session attached [<crossbar.router.service.RouterServiceAgent>]
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.router.router.Router.attach> new session attached for realm="crossbar", session=154100560688081, authid="nodecontroller", authrole="controller", authmethod="None", authprovider="None", authextra=
+# None
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.node.controller.NodeController.onJoin>: joined realm="crossbar" on local node management router [authid="nodecontroller", authrole="controller"]
+# 2026-07-01T01:22:31-0500 [Controller  52905] Native worker ready! (worker=NodeController, node_id="jacksons-macbook-pro.local-52905", worker_id="controller") [<crossbar.node.controller.NodeController.onJoin>]
+# 2026-07-01T01:22:31-0500 [Controller  52905] Signal handler installed on process 52905 thread 8565580480
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.node.node.Node.start> node controller session attached [<crossbar.node.controller.NodeController>]
+# 2026-07-01T01:22:31-0500 [Controller  52905] Using default node shutdown triggers ['shutdown_on_worker_exit']
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.node.node.Node.boot>::NODE_BOOT_BEGIN[node_id="jacksons-macbook-pro.local-52905"]
+# 2026-07-01T01:22:31-0500 [Controller  52905] Booting node <crossbar.node.node.Node.boot>
+# 2026-07-01T01:22:31-0500 [Controller  52905] Booting node from local configuration [parallel_worker_start=False] .. <crossbar.node.node.Node.boot_from_config>
+# 2026-07-01T01:22:31-0500 [Controller  52905] Will start 1 worker ..
+# 2026-07-01T01:22:31-0500 [Controller  52905] Order node to start "Router worker001" ..
+# 2026-07-01T01:22:31-0500 [Controller  52905] Starting router-worker "worker001" .. <crossbar.node.controller.NodeController.start_worker>
+# 2026-07-01T01:22:31-0500 [Controller  52905] <crossbar.router.router.RouterFactory.add_role>: realm="crossbar", config=
+# {'name': 'crossbar.worker.worker001',
+#  'permissions': [{'allow': {'call': True,
+#                             'publish': True,
+#                             'register': True,
+#                             'subscribe': True},
+#                   'cache': True,
+#                   'disclose': {'caller': True, 'publisher': True},
+#                   'match': 'prefix',
+#                   'uri': 'crossbar.worker.worker001'},
+#                  {'allow': {'call': True,
+#                             'publish': False,
+#                             'register': False,
+#                             'subscribe': False},
+#                   'cache': True,
+#                   'disclose': {'caller': True, 'publisher': True},
+#                   'match': 'exact',
+#                   'uri': 'crossbar.get_status'},
+#                  {'allow': {'call': True,
+#                             'publish': False,
+#                             'register': False,
+#                             'subscribe': True},
+#                   'cache': True,
+#                   'disclose': {'caller': True, 'publisher': True},
+#                   'match': 'prefix',
+#                   'uri': 'crossbar.'}]}
+# 2026-07-01T01:22:31-0500 [Controller  52905] worker-specific role "crossbar.worker.worker001" added on node management router realm "crossbar" <crossbar.node.node.Node._add_worker_role>
+# 2026-07-01T01:22:32-0500 [Router      52906] Starting router-worker "worker001" on node "jacksons-macbook-pro.local-52905" (personality "standalone") and local node management realm "crossbar" .. <crossbar.worker.router.RouterController>
+# 2026-07-01T01:22:32-0500 [Router      52906] Running as PID 52906 on CPython-KQueueReactor
+# 2026-07-01T01:22:32-0500 [Router      52906] Entering event reactor ...
+# 2026-07-01T01:22:32-0500 [Controller  52905] <crossbar.router.router.Router.has_role>: uri="crossbar.worker.worker001", exists=True
+# 2026-07-01T01:22:32-0500 [Controller  52905] <crossbar.router.router.Router.attach> new session attached for realm="crossbar", session=3135860585236358, authid="crossbar.process.52906", authrole="crossbar.worker.worker001", authmethod="trusted", authprovider="programcode", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'process:52906',
+#  'x_cb_pid': 52905,
+#  'x_cb_worker': None}
+# 2026-07-01T01:22:32-0500 [Router      52906] Router worker session for "worker001" joined realm "crossbar" on node router <crossbar.worker.router.RouterController.onJoin>
+# 2026-07-01T01:22:32-0500 [Router      52906] Native worker ready! (worker=RouterController, node_id="jacksons-macbook-pro.local-52905", worker_id="worker001") [<crossbar.worker.router.RouterController.onJoin>]
+# 2026-07-01T01:22:32-0500 [Controller  52905] <crossbar.node.controller.NodeController.get_public_key>: return node public key for realm="crossbar", session=3135860585236358, authid="crossbar.process.52906", authrole="crossbar.worker.worker001"
+# 2026-07-01T01:22:32-0500 [Router      52906] <crossbar.worker.router.RouterController.onJoin> worker loaded node key e8152158937c9ccd58694cd232799ffc26e2e07aa31af5df276875d7f59cc691
+# 2026-07-01T01:22:32-0500 [Router      52906] Router worker session for "worker001" ready
+# 2026-07-01T01:22:32-0500 [Controller  52905] Ok, node has started Router worker001
+# 2026-07-01T01:22:32-0500 [Controller  52905] Configuring Router worker001 ..
+# 2026-07-01T01:22:32-0500 [Controller  52905] Order Router worker001 to start Realm realm001
+# 2026-07-01T01:22:32-0500 [Router      52906] Starting router realm realm001 <crossbar.worker.router.RouterController.start_router_realm>
+# 2026-07-01T01:22:32-0500 [Router      52906] <crossbar.worker.router.RouterController.start_router_realm> starting STANDALONE-realm with WAMP realm name "com.compat.test" using router local realm_id realm001
+# 2026-07-01T01:22:32-0500 [Router      52906] <crossbar.router.router.RouterFactory.start_realm>: realm=<crossbar.worker.types.RouterRealm object at 0x10b2cfe00> with URI "com.compat.test"
+# 2026-07-01T01:22:32-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=67665308425433, authid="routerworker-worker001-realm-realm001-serviceagent", authrole="trusted", authmethod="None", authprovider="None", authextra=
+# None
+# 2026-07-01T01:22:32-0500 [Router      52906] <crossbar.router.service.RouterServiceAgent.onJoin>: realm service session attached to realm "com.compat.test" [session_id=67665308425433, authid="routerworker-worker001-realm-realm001-serviceagent", authrole="trusted", on_ready=<Deferred at 0x10e57ac50>]
+# 2026-07-01T01:22:32-0500 [Router      52906] <crossbar.worker.router.RouterController.set_service_session>(session=<crossbar.router.service.RouterServiceAgent object at 0x10e4b1d30>, realm="com.compat.test", authrole="trusted")
+# 2026-07-01T01:22:32-0500 [Router      52906] RouterServiceAgent started on realm="com.compat.test" with authrole="trusted", authid="routerworker-worker001-realm-realm001-serviceagent"
+# 2026-07-01T01:22:32-0500 [Router      52906] Realm "realm001" (category="standalone", name="com.compat.test", authrole="trusted", authid="routerworker-worker001-realm-realm001-serviceagent") started
+# 2026-07-01T01:22:32-0500 [Controller  52905] Ok, Router worker001 has started Realm realm001
+# 2026-07-01T01:22:32-0500 [Controller  52905] Order Realm realm001 to start Role role001
+# 2026-07-01T01:22:32-0500 [Router      52906] <crossbar.router.router.RouterFactory.add_role>: realm="com.compat.test", config=
+# {'id': 'role001',
+#  'name': 'anonymous',
+#  'permissions': [{'allow': {'call': True,
+#                             'publish': True,
+#                             'register': True,
+#                             'subscribe': True},
+#                   'cache': True,
+#                   'disclose': {'caller': True, 'publisher': True},
+#                   'match': 'prefix',
+#                   'uri': ''}]}
+# 2026-07-01T01:22:32-0500 [Controller  52905] Ok, Realm realm001 has started Role role001
+# 2026-07-01T01:22:32-0500 [Controller  52905] Order Router worker001 to start Transport transport001
+# 2026-07-01T01:22:32-0500 [Router      52906] Starting router transport "transport001" <crossbar.worker.router.RouterController.start_router_transport>
+# 2026-07-01T01:22:32-0500 [Router      52906] Creating router transport for "transport001" ..
+# 2026-07-01T01:22:32-0500 [Router      52906] Router transport created for "transport001" [transport_class=<crossbar.worker.transport.RouterWebTransport>]
+# 2026-07-01T01:22:32-0500 [Router      52906] Created "websocket" Web service on root path "/" of Web transport "transport001"
+# 2026-07-01T01:22:32-0500 [Router      52906] Site starting on 9001
+# 2026-07-01T01:22:32-0500 [Router      52906] Router TCP/9001 transport started as transport "transport001" and listening on TCP port 9001
+# 2026-07-01T01:22:32-0500 [Controller  52905] Ok, Router worker001 has started Transport transport001
+# 2026-07-01T01:22:32-0500 [Controller  52905] Ok, worker "Router worker001" configured and ready!
+# 2026-07-01T01:22:32-0500 [Controller  52905] Ok, local node configuration ran successfully.
+# 2026-07-01T01:22:32-0500 [Controller  52905] <crossbar.node.node.Node.boot>::NODE_BOOT_COMPLETE[node_id="jacksons-macbook-pro.local-52905"]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=test-user, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'LKMT-M476-97XW-CCM9-4Y47-6MMJ'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=6448876305189531, authid="LKMT-M476-97XW-CCM9-4Y47-6MMJ", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49896',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'Q3XG-VFQ7-CPUV-ECXS-H6EU-4JWT'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=3127382106222870, authid="Q3XG-VFQ7-CPUV-ECXS-H6EU-4JWT", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49898',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=3127382106222870, detached_session_ids=1, authid="Q3XG-VFQ7-CPUV-ECXS-H6EU-4JWT", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'FTHH-4WMH-CVUY-JM47-3XHT-Q3RX'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=3893578603926846, authid="FTHH-4WMH-CVUY-JM47-3XHT-Q3RX", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49899',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=3893578603926846, detached_session_ids=1, authid="FTHH-4WMH-CVUY-JM47-3XHT-Q3RX", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': '95PV-LPJ7-TEQX-WUCH-6LJE-X3V7'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=4198959429090424, authid="95PV-LPJ7-TEQX-WUCH-6LJE-X3V7", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49900',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=4198959429090424, detached_session_ids=1, authid="95PV-LPJ7-TEQX-WUCH-6LJE-X3V7", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': '5YHK-G6EE-6UVW-QJTC-9HEH-E7FJ'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=2298988714647349, authid="5YHK-G6EE-6UVW-QJTC-9HEH-E7FJ", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49901',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=2298988714647349, detached_session_ids=1, authid="5YHK-G6EE-6UVW-QJTC-9HEH-E7FJ", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': '43KK-EYY5-NFCV-VNFU-G3TF-PS4Y'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=7004543564429648, authid="43KK-EYY5-NFCV-VNFU-G3TF-PS4Y", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49902',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=7004543564429648, detached_session_ids=1, authid="43KK-EYY5-NFCV-VNFU-G3TF-PS4Y", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'PH6L-65AT-KA3K-KKLG-CGCA-L53N'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=6051542437909872, authid="PH6L-65AT-KA3K-KKLG-CGCA-L53N", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49903',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=6051542437909872, detached_session_ids=1, authid="PH6L-65AT-KA3K-KKLG-CGCA-L53N", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'LUHJ-6N73-LHJP-MCAT-FJUF-3ENY'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=4154547630201355, authid="LUHJ-6N73-LHJP-MCAT-FJUF-3ENY", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49904',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=4154547630201355, detached_session_ids=1, authid="LUHJ-6N73-LHJP-MCAT-FJUF-3ENY", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'JPK7-XL9H-E6EJ-CR9J-XE7V-PSWU'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=2193676202774040, authid="JPK7-XL9H-E6EJ-CR9J-XE7V-PSWU", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49905',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=2193676202774040, detached_session_ids=1, authid="JPK7-XL9H-E6EJ-CR9J-XE7V-PSWU", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'FSRP-9P3X-J7L7-P46R-H75R-GH4W'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=7716570161923816, authid="FSRP-9P3X-J7L7-P46R-H75R-GH4W", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49906',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=7716570161923816, detached_session_ids=1, authid="FSRP-9P3X-J7L7-P46R-H75R-GH4W", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'R6JV-HELK-MCVL-R7XP-AM6Q-R6TS'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=7234331239544037, authid="R6JV-HELK-MCVL-R7XP-AM6Q-R6TS", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49907',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': '43XA-VY9U-WJRU-Q943-HJV4-6HEM'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=6561738859638649, authid="43XA-VY9U-WJRU-Q943-HJV4-6HEM", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49908',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=6561738859638649, detached_session_ids=1, authid="43XA-VY9U-WJRU-Q943-HJV4-6HEM", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=7234331239544037, detached_session_ids=1, authid="R6JV-HELK-MCVL-R7XP-AM6Q-R6TS", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': '75JJ-AE7X-MWVC-PFL9-9MXH-996Y'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=2632138472471044, authid="75JJ-AE7X-MWVC-PFL9-9MXH-996Y", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49910',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'TTLQ-L6YU-YHFS-NAWJ-HJ9Q-TNRH'}]
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=4487702746641188, authid="TTLQ-L6YU-YHFS-NAWJ-HJ9Q-TNRH", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49909',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=4487702746641188, detached_session_ids=1, authid="TTLQ-L6YU-YHFS-NAWJ-HJ9Q-TNRH", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:33-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=2632138472471044, detached_session_ids=1, authid="75JJ-AE7X-MWVC-PFL9-9MXH-996Y", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'ETWX-FWGH-C5EX-RJWX-JH6C-X394'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=5614311423316011, authid="ETWX-FWGH-C5EX-RJWX-JH6C-X394", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49911',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=5614311423316011, detached_session_ids=1, authid="ETWX-FWGH-C5EX-RJWX-JH6C-X394", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'JUCS-SSKC-939T-R657-JXTW-5W4M'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=4248758813981969, authid="JUCS-SSKC-939T-R657-JXTW-5W4M", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49912',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=4248758813981969, detached_session_ids=1, authid="JUCS-SSKC-939T-R657-JXTW-5W4M", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': '6W4Q-G6WA-VX9U-XWXA-ENA7-U9SN'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=224919916935717, authid="6W4Q-G6WA-VX9U-XWXA-ENA7-U9SN", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49913',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=224919916935717, detached_session_ids=1, authid="6W4Q-G6WA-VX9U-XWXA-ENA7-U9SN", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'J3PF-KJR7-NNC7-7L97-GJWP-Y4G6'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=2764172774559809, authid="J3PF-KJR7-NNC7-7L97-GJWP-Y4G6", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49914',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=2764172774559809, detached_session_ids=1, authid="J3PF-KJR7-NNC7-7L97-GJWP-Y4G6", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'SYPV-PP79-YGFQ-X7GS-9CJC-97QA'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=4650811998835100, authid="SYPV-PP79-YGFQ-X7GS-9CJC-97QA", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49915',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=4650811998835100, detached_session_ids=1, authid="SYPV-PP79-YGFQ-X7GS-9CJC-97QA", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': '5NMQ-Y6AJ-9T3X-HT6G-L96T-PYG4'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=2309685444361686, authid="5NMQ-Y6AJ-9T3X-HT6G-L96T-PYG4", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49916',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=2309685444361686, detached_session_ids=1, authid="5NMQ-Y6AJ-9T3X-HT6G-L96T-PYG4", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'QRAH-NM5W-FEQQ-5X9L-Y5C7-Y7T6'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=5516727758748098, authid="QRAH-NM5W-FEQQ-5X9L-Y5C7-Y7T6", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49917',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=5516727758748098, detached_session_ids=1, authid="QRAH-NM5W-FEQQ-5X9L-Y5C7-Y7T6", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'ETT7-TPJH-QNXG-JVNL-AXYQ-JXXA'}]
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=8503083449869346, authid="ETT7-TPJH-QNXG-JVNL-AXYQ-JXXA", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49918',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:34-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=8503083449869346, detached_session_ids=1, authid="ETT7-TPJH-QNXG-JVNL-AXYQ-JXXA", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'VY3C-TST7-A4SA-WXFN-R369-74UE'}]
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=864001174097007, authid="VY3C-TST7-A4SA-WXFN-R369-74UE", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49919',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=864001174097007, detached_session_ids=1, authid="VY3C-TST7-A4SA-WXFN-R369-74UE", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'JHRU-JPXR-RSEU-7G6G-C67Y-AYG6'}]
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=2117423987237793, authid="JHRU-JPXR-RSEU-7G6G-C67Y-AYG6", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49920',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=2117423987237793, detached_session_ids=1, authid="JHRU-JPXR-RSEU-7G6G-C67Y-AYG6", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.protocol.WampWebSocketServerProtocol.onConnect> cookie tracking disabled on WebSocket connection
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.auth.anonymous.PendingAuthAnonymous.hello>(realm=com.compat.test, details.realm=com.compat.test, details.authid=None, details.authrole=None) [config={'type': 'static', 'authrole': 'anonymous', 'authid': 'GWQK-X3XN-MRUW-6UQW-EHJC-3QQ6'}]
+# 2026-07-01T01:22:35-0500 [Router      52906] <crossbar.router.router.Router.attach> new session attached for realm="com.compat.test", session=5757985851129072, authid="GWQK-X3XN-MRUW-6UQW-EHJC-3QQ6", authrole="anonymous", authmethod="anonymous", authprovider="static", authextra=
+# {'x_cb_node': 'jacksons-macbook-pro.local-52905',
+#  'x_cb_peer': 'tcp4:127.0.0.1:49921',
+#  'x_cb_pid': 52906,
+#  'x_cb_worker': 'worker001'}
+# 2026-07-01T01:22:38-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=5757985851129072, detached_session_ids=1, authid="GWQK-X3XN-MRUW-6UQW-EHJC-3QQ6", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:38-0500 [Controller  52905] Received SIGTERM, shutting down.
+# 2026-07-01T01:22:38-0500 [Controller  52905] sending TERM to subprocess 52906
+# 2026-07-01T01:22:38-0500 [Controller  52905] waiting for 52906 to exit...
+# 2026-07-01T01:22:38-0500 [Router      52906] Shutdown of worker requested!
+# 2026-07-01T01:22:38-0500 [Router      52906] <crossbar.router.router.Router.detach> router session detached from realm "com.compat.test" (session=6448876305189531, detached_session_ids=1, authid="LKMT-M476-97XW-CCM9-4Y47-6MMJ", authrole="anonymous", authmethod="anonymous", authprovider="static")
+# 2026-07-01T01:22:38-0500 [Controller  52905] <crossbar.router.router.Router.detach> router session detached from realm "crossbar" (session=3135860585236358, detached_session_ids=1, authid="crossbar.process.52906", authrole="crossbar.worker.worker001", authmethod="trusted", authprovider="programcode")
+# 2026-07-01T01:22:38-0500 [Router      52906] Connection to node controller closed cleanly
+# 2026-07-01T01:22:38-0500 [Router      52906] (TCP Port 9001 Closed)
+# 2026-07-01T01:22:38-0500 [Controller  52905] Native worker connection closed cleanly.
+# 2026-07-01T01:22:38-0500 [Controller  52905] Node worker worker001 ended successfully
+# 2026-07-01T01:22:38-0500 [Controller  52905] <crossbar.router.router.RouterFactory.drop_role>: realm="crossbar", role="crossbar.worker.worker001"
+# 2026-07-01T01:22:38-0500 [Controller  52905] Checking for node shutdown: worker_exit_success=True, shutdown_requested=False, node_shutdown_triggers=['shutdown_on_worker_exit']
+# 2026-07-01T01:22:38-0500 [Controller  52905] Node worker ended, and trigger 'shutdown_on_worker_exit' is active: will shutdown node ..
+# 2026-07-01T01:22:38-0500 [Controller  52905] Node shutdown requested (restart=False, mode=None, reactor.running=True) ..
+1..1
+# tests 22
+# suites 1
+# pass 21
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8897.790458
