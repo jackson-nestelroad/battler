@@ -67,23 +67,47 @@ pub fn auth_message(
     let id = escape(id);
     let client_first_bare = format!("n={id},r={client_nonce}");
     let server_first = format!("r={server_nonce},s={salt},i={iterations}");
-    let cbind_flag = match channel_binding {
-        Some(channel_binding) => format!("p={channel_binding}"),
-        None => "n".to_owned(),
-    };
-    let cbind_input = format!(
-        "{cbind_flag},,{}",
-        match cbind_data {
-            Some(cbind_data) => base64::prelude::BASE64_STANDARD
-                .decode(cbind_data)?
-                .into_iter()
-                .map(|c| c as char)
-                .collect(),
-            None => "".to_owned(),
+
+    #[cfg(feature = "crossbar-compat")]
+    let cbind_input = match channel_binding {
+        Some(channel_binding) => {
+            let cbind_flag = format!("p={channel_binding}");
+            format!(
+                "{cbind_flag},,{}",
+                match cbind_data {
+                    Some(cbind_data) => base64::prelude::BASE64_STANDARD
+                        .decode(cbind_data)?
+                        .into_iter()
+                        .map(|c| c as char)
+                        .collect(),
+                    None => "".to_owned(),
+                }
+            )
         }
-    );
+        None => "".to_owned(),
+    };
+
+    #[cfg(not(feature = "crossbar-compat"))]
+    let cbind_input = {
+        let cbind_flag = match channel_binding {
+            Some(channel_binding) => format!("p={channel_binding}"),
+            None => "n".to_owned(),
+        };
+        format!(
+            "{cbind_flag},,{}",
+            match cbind_data {
+                Some(cbind_data) => base64::prelude::BASE64_STANDARD
+                    .decode(cbind_data)?
+                    .into_iter()
+                    .map(|c| c as char)
+                    .collect(),
+                None => "".to_owned(),
+            }
+        )
+    };
+
     let client_final_no_proof = format!(
-        "c={},r={client_nonce}{server_nonce}",
+        "c={},r={server_nonce}",
         base64::prelude::BASE64_STANDARD.encode(cbind_input)
     );
     Ok(format!(

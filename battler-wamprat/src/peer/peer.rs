@@ -460,6 +460,7 @@ where
                     arguments,
                     arguments_keyword,
                     timeout: options.timeout,
+                    ..Default::default()
                 },
             )
             .await?;
@@ -502,6 +503,7 @@ where
                     arguments,
                     arguments_keyword,
                     timeout: options.timeout,
+                    ..Default::default()
                 },
             )
             .await?;
@@ -543,6 +545,7 @@ where
                     arguments,
                     arguments_keyword,
                     timeout: options.timeout,
+                    ..Default::default()
                 },
             )
             .await?;

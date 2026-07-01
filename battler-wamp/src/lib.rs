@@ -286,6 +286,10 @@
 //!                     "foo".to_owned(),
 //!                     Value::String("bar".to_owned())
 //!                 )]),
+//!                 details: Dictionary::from_iter([(
+//!                     "topic".to_owned(),
+//!                     Value::String("com.battler_wamp.topic1".to_owned())
+//!                 )]),
 //!                 topic: Some(Uri::try_from("com.battler_wamp.topic1").unwrap()),
 //!             }
 //!         );
@@ -421,6 +425,10 @@
 //!         subscription.event_rx.recv().await.unwrap(),
 //!         ReceivedEvent {
 //!             arguments: List::from_iter([Value::Integer(123)]),
+//!             details: Dictionary::from_iter([(
+//!                 "topic".to_owned(),
+//!                 Value::String("com.battler_wamp.topics.1".to_owned())
+//!             )]),
 //!             topic: Some(Uri::try_from("com.battler_wamp.topics.1").unwrap()),
 //!             ..Default::default()
 //!         }
@@ -429,6 +437,10 @@
 //!         subscription.event_rx.recv().await.unwrap(),
 //!         ReceivedEvent {
 //!             arguments: List::from_iter([Value::Integer(456)]),
+//!             details: Dictionary::from_iter([(
+//!                 "topic".to_owned(),
+//!                 Value::String("com.battler_wamp.topics.2".to_owned())
+//!             )]),
 //!             topic: Some(Uri::try_from("com.battler_wamp.topics.2").unwrap()),
 //!             ..Default::default()
 //!         }

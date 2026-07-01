@@ -5,7 +5,6 @@ use anyhow::{
 use async_trait::async_trait;
 use base64::Engine;
 use futures_util::lock::Mutex;
-use password_hash::Salt;
 use rand::RngExt;
 
 use crate::{
@@ -55,6 +54,16 @@ use crate::{
 fn generate_nonce() -> Vec<u8> {
     (0..16)
         .map(|_| rand::rng().sample(rand::distr::Alphanumeric))
+        .collect()
+}
+
+fn decode_hex(s: &str) -> Result<Vec<u8>> {
+    if s.len() % 2 != 0 {
+        return Err(anyhow::Error::msg("Odd-length hex string"));
+    }
+    (0..s.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16).map_err(|err| Error::msg(err.to_string())))
         .collect()
 }
 
@@ -127,11 +136,11 @@ impl
         let auth_message = auth_message(
             &user.identity.id,
             client_nonce,
-            &self.nonce,
+            &message.extra.nonce,
             user.salt.as_str(),
             user.iterations,
             message.extra.channel_binding,
-            message.extra.cbind_data.as_ref().map(|s| s.as_str()),
+            message.extra.cbind_data.as_deref(),
         )?;
         let client_signature = client_signature(&user.stored_key, auth_message.as_bytes())?;
         let recovered_client_key = recovered_client_key(&client_signature, &client_proof);
@@ -149,7 +158,10 @@ impl
             identity: user.identity.clone(),
             method: self.auth_method(),
             provider: "static".to_owned(),
-            extra: ServerFinalMessageExtra { verifier },
+            extra: ServerFinalMessageExtra {
+                verifier: Some(verifier),
+                scram_server_signature: None,
+            },
         })
     }
 }
@@ -205,10 +217,23 @@ impl
     }
 
     async fn handle_challenge(&self, message: ServerFirstMessage) -> Result<ClientFinalMessage> {
+        let salt_storage;
+        let salt = if let Ok(salt) = password_hash::Salt::from_b64(&message.extra.salt) {
+            salt
+        } else {
+            let salt_bytes = if let Ok(bytes) = decode_hex(&message.extra.salt) {
+                bytes
+            } else {
+                base64::prelude::BASE64_STANDARD.decode(&message.extra.salt)?
+            };
+            salt_storage = password_hash::SaltString::encode_b64(&salt_bytes)
+                .map_err(|err| Error::msg(format!("invalid salt: {err:?}")))?;
+            salt_storage.as_salt()
+        };
+
         let salted_password = salt_password(
             &self.password,
-            Salt::from_b64(&message.extra.salt)
-                .map_err(|err| Error::msg(format!("invalid salt: {err:?}")))?,
+            salt,
             message.extra.kdf,
             message.extra.iterations.try_into()?,
             message
@@ -219,7 +244,7 @@ impl
         )?;
         let client_key = client_key(salted_password.as_bytes())?;
         let stored_key = stored_key(&client_key)?;
-        let server_nonce = message
+        let _server_nonce = message
             .extra
             .nonce
             .strip_prefix(&self.nonce)
@@ -227,7 +252,7 @@ impl
         let auth_message = auth_message(
             &self.id,
             &self.nonce,
-            server_nonce,
+            &message.extra.nonce,
             &message.extra.salt,
             message.extra.iterations.try_into()?,
             None,
@@ -265,7 +290,15 @@ impl
         let server_key = server_key(salted_password.as_bytes())?;
         let expected_server_signature = server_signature(&server_key, auth_message.as_bytes())?;
 
-        let server_signature = base64::prelude::BASE64_STANDARD.decode(message.extra.verifier)?;
+        let server_verifier = message
+            .extra
+            .verifier
+            .as_ref()
+            .or(message.extra.scram_server_signature.as_ref())
+            .ok_or_else(|| {
+                Error::msg("missing verifier/scram_server_signature from server final message")
+            })?;
+        let server_signature = base64::prelude::BASE64_STANDARD.decode(server_verifier)?;
 
         if server_signature != expected_server_signature {
             return Err(

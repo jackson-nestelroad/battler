@@ -148,7 +148,9 @@ describe('WAMP Client Compatibility Tests', () => {
             'start',
             '--cbdir', cbDir,
             '--config', configPath
-        ]);
+        ], {
+            detached: true
+        });
 
         server.stdout.on('data', (data: any) => {
             console.log(`[CROSSBAR] ${data.toString().trim()}`);
@@ -184,7 +186,23 @@ describe('WAMP Client Compatibility Tests', () => {
             controlClient.close();
         }
         if (server) {
-            server.kill();
+            const exitPromise = new Promise<void>((resolve) => {
+                server.on('exit', () => resolve());
+            });
+            try {
+                process.kill(-server.pid!, 'SIGTERM');
+            } catch (e) {
+                server.kill('SIGTERM');
+            }
+            const timeout = setTimeout(() => {
+                try {
+                    process.kill(-server.pid!, 'SIGKILL');
+                } catch (e) {
+                    server.kill('SIGKILL');
+                }
+            }, 1500);
+            await exitPromise;
+            clearTimeout(timeout);
         }
     });
 
@@ -210,6 +228,16 @@ describe('WAMP Client Compatibility Tests', () => {
         const client = runRustClient(serverPort, 'pubsub', ['--serializer', 'msgpack']);
         const lines = await client.lines;
         assert.ok(lines.includes('SUBSCRIBED'));
+    });
+
+    test('T2.2: WAMP-SCRAM Successful Authentication (Client Scenario)', async () => {
+        const client = runRustClient(serverPort, 'pubsub', [
+            '--auth-id', 'test-user',
+            '--auth-secret', 'password123!'
+        ]);
+        const lines = await client.lines;
+        assert.ok(lines.includes('SUBSCRIBED'));
+        assert.ok(lines.includes('PUBLISHED'));
     });
 
     test('T3.1: Pub/Sub Basic (Client Scenario)', async () => {

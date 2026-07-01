@@ -41,7 +41,27 @@
           "paths": {
             "/": {
               "type": "websocket",
-              "serializers": ["json", "msgpack"]
+              "serializers": ["json", "msgpack"],
+              "auth": {
+                "anonymous": {
+                  "type": "static",
+                  "role": "anonymous"
+                },
+                "scram": {
+                  "type": "static",
+                  "principals": {
+                    "test-user": {
+                      "role": "anonymous",
+                      "kdf": "argon2id-13",
+                      "salt": "44feb296b24fd131b0f7d3b2a40f53c0",
+                      "stored-key": "8a9da0ec83d1af8ab0ce36f799ec0310a4fd8ac28b790f05f4c56e94e6e165e3",
+                      "server-key": "2c056847f24461460f801b25428ba9c53f293db65592dfe99ce968c7716bb771",
+                      "iterations": 2,
+                      "memory": 19456
+                    }
+                  }
+                }
+              }
             }
           }
         }

@@ -84,7 +84,7 @@ impl TryFrom<&str> for KeyDerivationFunction {
     type Error = anyhow::Error;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "argon2id13" => Ok(Self::Argon2Id13),
+            "argon2id13" | "argon2id-13" => Ok(Self::Argon2Id13),
             "pbkdf2" => Ok(Self::Pbkdf2),
             _ => Err(Self::Error::msg(format!(
                 "invalid key derivation function: {value}"
@@ -96,6 +96,9 @@ impl TryFrom<&str> for KeyDerivationFunction {
 impl Into<&'static str> for KeyDerivationFunction {
     fn into(self) -> &'static str {
         match self {
+            #[cfg(feature = "crossbar-compat")]
+            Self::Argon2Id13 => "argon2id-13",
+            #[cfg(not(feature = "crossbar-compat"))]
             Self::Argon2Id13 => "argon2id13",
             Self::Pbkdf2 => "pbkdf2",
         }

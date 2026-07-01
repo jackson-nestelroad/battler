@@ -147,7 +147,10 @@ async fn peer_receives_published_messages_for_topic() {
                     "index".to_owned(),
                     Value::Integer(*i)
                 )]),
-                details: Dictionary::default(),
+                details: Dictionary::from_iter([(
+                    "topic".to_owned(),
+                    Value::String("com.battler.topic1".to_owned())
+                )]),
                 topic: Some(Uri::try_from("com.battler.topic1").unwrap()),
             });
         });

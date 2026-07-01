@@ -22,3 +22,6 @@ node_modules/
 fxlang-ext/out/
 
 .antigravity/
+
+wamp-integration-tests/.crossbar/key.priv
+wamp-integration-tests/.crossbar/key.pub

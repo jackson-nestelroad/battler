@@ -27,6 +27,7 @@ use battler_wamp_uri::{
     WildcardUri,
 };
 use battler_wamp_values::{
+    Dictionary,
     List,
     Value,
     WampList,
@@ -220,6 +221,10 @@ async fn receives_events() {
             ReceivedMessageEvent::Invalid {
                 event: ReceivedEvent {
                     arguments: List::from_iter([Value::Integer(123)]),
+                    details: Dictionary::from_iter([(
+                        "topic".to_owned(),
+                        Value::String("com.battler.message".to_owned())
+                    )]),
                     topic: Some(Uri::try_from("com.battler.message").unwrap()),
                     ..Default::default()
                 },
@@ -607,6 +612,10 @@ async fn receives_pattern_based_events() {
             ReceivedMessageEvent::Invalid {
                 event: ReceivedEvent {
                     arguments: List::from_iter([Value::Integer(123)]),
+                    details: Dictionary::from_iter([(
+                        "topic".to_owned(),
+                        Value::String("com.battler.event.3.ghi".to_owned())
+                    )]),
                     topic: Some(Uri::try_from("com.battler.event.3.ghi").unwrap()),
                     ..Default::default()
                 },

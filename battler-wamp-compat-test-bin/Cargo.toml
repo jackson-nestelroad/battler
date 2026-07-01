@@ -9,7 +9,7 @@ publish = false
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 futures-util = { workspace = true }
-battler-wamp = { workspace = true }
+battler-wamp = { workspace = true, features = ["crossbar-compat"] }
 battler-wamp-uri = { workspace = true }
 battler-wamp-values = { workspace = true }
 clap = { workspace = true }

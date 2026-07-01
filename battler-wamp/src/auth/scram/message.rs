@@ -62,7 +62,11 @@ pub struct ClientFinalMessageExtra {
 #[derive(Debug, WampDictionary)]
 pub struct ServerFinalMessageExtra {
     /// Base64-encoded server signature.
-    pub verifier: String,
+    #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
+    pub verifier: Option<String>,
+    /// Base64-encoded server signature, reported by Crossbar.io.
+    #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
+    pub scram_server_signature: Option<String>,
 }
 
 pub type ClientFirstMessage = GenericClientFirstMessage<ClientFirstMessageExtra>;

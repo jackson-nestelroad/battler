@@ -1,4 +1,4 @@
-import { test, describe, before, after } from 'node:test';
+import { test, describe, before, after, afterEach } from 'node:test';
 import * as assert from 'node:assert';
 import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
@@ -785,9 +785,18 @@ describe('WAMP Router Compatibility Tests', () => {
 });
 
 describe('WAMP Router Authentication Compatibility Tests', () => {
+    let currentRouter: any = null;
+
+    afterEach(() => {
+        if (currentRouter && currentRouter.process) {
+            currentRouter.process.kill();
+            currentRouter = null;
+        }
+    });
+
     test('T2.1: Undisputed Authentication', async () => {
-        const router = await startRouter('undisputed');
-        const connection = await connectClient(router.port, {
+        currentRouter = await startRouter('undisputed');
+        const connection = await connectClient(currentRouter.port, {
             authmethods: ['wamp-battler-undisputed'],
             authid: 'test-user',
             authextra: {
@@ -797,20 +806,19 @@ describe('WAMP Router Authentication Compatibility Tests', () => {
         });
         assert.ok(connection.session);
         connection.close();
-        router.process.kill();
     });
 
     test('T2.2: WAMP-SCRAM Successful Authentication', async () => {
-        const router = await startRouter('scram');
+        currentRouter = await startRouter('scram');
         const clientNonce = 'clientnonce1234567890';
-        const connection = await connectClient(router.port, {
-            authmethods: ['wamp-scram'],
+        const connection = await connectClient(currentRouter.port, {
+            authmethods: ['scram'],
             authid: 'test-user',
             authextra: {
                 nonce: clientNonce
             },
             onchallenge: async (session: any, method: string, extra: any) => {
-                if (method === 'wamp-scram') {
+                if (method === 'scram') {
                     const scramResponse = await generateScramResponse(
                         'test-user',
                         'test-password123!',
@@ -831,15 +839,14 @@ describe('WAMP Router Authentication Compatibility Tests', () => {
         });
         assert.ok(connection.session);
         connection.close();
-        router.process.kill();
     });
 
     test('T2.3: SCRAM Authentication - Incorrect Password', async () => {
-        const router = await startRouter('scram');
+        currentRouter = await startRouter('scram');
         const clientNonce = 'clientnonce1234567890';
         await assert.rejects(
-            connectClient(router.port, {
-                authmethods: ['wamp-scram'],
+            connectClient(currentRouter.port, {
+                authmethods: ['scram'],
                 authid: 'test-user',
                 authextra: {
                     nonce: clientNonce
@@ -863,15 +870,14 @@ describe('WAMP Router Authentication Compatibility Tests', () => {
             }),
             /Connection closed:.*(authfail|authentication_failed|authentication_denied|no_such_principal)/
         );
-        router.process.kill();
     });
 
     test('T2.4: SCRAM Authentication - Invalid User', async () => {
-        const router = await startRouter('scram');
+        currentRouter = await startRouter('scram');
         const clientNonce = 'clientnonce1234567890';
         await assert.rejects(
-            connectClient(router.port, {
-                authmethods: ['wamp-scram'],
+            connectClient(currentRouter.port, {
+                authmethods: ['scram'],
                 authid: 'invalid-user',
                 authextra: {
                     nonce: clientNonce
@@ -880,6 +886,5 @@ describe('WAMP Router Authentication Compatibility Tests', () => {
             }),
             /Connection closed:.*(authfail|authentication_failed|authentication_denied|no_such_principal)/
         );
-        router.process.kill();
     });
 });
