@@ -21,7 +21,7 @@ battler-wamp-values = { workspace = true }
 battler-wamprat = { workspace = true }
 battler-wamprat-schema = { workspace = true }
 
-battler = { path = "../battler" }
+battler = { workspace = true }
 battler-service = { path = "../battler-service" }
 battler-service-schema = { path = "../battler-service/battler-service-schema" }
 

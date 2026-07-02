@@ -11,7 +11,7 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ai
 [dependencies]
 anyhow = { workspace = true }
 
-battler = { path = "../../battler" }
+battler = { workspace = true }
 battler-calc = { path = ".." }
 battler-client = { path = "../../battler-client" }
 battler-state = { path = "../../battler-state" }

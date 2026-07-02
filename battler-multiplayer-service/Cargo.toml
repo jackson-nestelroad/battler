@@ -21,7 +21,7 @@ tokio = { workspace = true }
 unicase = { workspace = true }
 uuid = { workspace = true }
 
-battler = { path = "../battler" }
+battler = { workspace = true }
 battler-ai = { path = "../battler-ai" }
 battler-client = { path = "../battler-client" }
 battler-service = { path = "../battler-service" }

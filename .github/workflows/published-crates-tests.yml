@@ -1,0 +1,25 @@
+name: Published Crates Compatibility Test
+
+on:
+  schedule:
+    - cron: "0 4 * * 6"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  DATA_DIR: ${{ github.workspace }}/battle-data/data
+  CRATE_ROOT: ${{ github.workspace }}
+  TOKIO_WORKER_THREADS: 8
+
+jobs:
+  published-crates-compatibility-tests:
+    name: Run published crates compatibility tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run tests
+        shell: bash
+        run: ./published-crates-test.sh

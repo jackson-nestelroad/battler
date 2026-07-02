@@ -18,7 +18,7 @@ thiserror = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
 
-battler = { path = "../battler" }
+battler = { workspace = true }
 battler-service = { path = "../battler-service" }
 battler-service-client = { path = "../battler-service-client" }
 battler-state = { path = "../battler-state" }

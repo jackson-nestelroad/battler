@@ -20,7 +20,7 @@ anyhow = { version = "1.0", default-features = false }
 hashbrown = { workspace = true }
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
 
-battler = { path = "../battler", default-features = false }
+battler = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

@@ -18,5 +18,5 @@ tracing-subscriber = { workspace = true }
 
 battler-prng = { workspace = true }
 
-battler = { path = "../battler", default-features = false }
-battler-local-data = { path = "../battler-local-data" }
+battler = { workspace = true }
+battler-local-data = { workspace = true }
