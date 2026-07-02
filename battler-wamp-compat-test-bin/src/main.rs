@@ -175,7 +175,8 @@ async fn main() -> Result<()> {
             auth_secret,
             serializer,
         } => {
-            run_client_scenario(&url, &realm, &scenario, &auth_id, &auth_secret, &serializer).await?;
+            run_client_scenario(&url, &realm, &scenario, &auth_id, &auth_secret, &serializer)
+                .await?;
         }
     }
     Ok(())
@@ -237,7 +238,7 @@ async fn run_client_scenario(
     let client_name = format!("rust-client-{}", scenario);
     let mut config = PeerConfig::default();
     config.name = client_name.clone();
-    
+
     let serializer_type = match serializer {
         "msgpack" => SerializerType::MessagePack,
         _ => SerializerType::Json,
@@ -603,7 +604,9 @@ async fn run_client_scenario(
             peer.unregister(procedure.id).await?;
         }
         "rpc-caller-disclose" => {
-            let authid = peer.welcome_details().await
+            let authid = peer
+                .welcome_details()
+                .await
                 .and_then(|details| details.get("authid").cloned())
                 .unwrap_or(Value::Null);
             println!("RUST_CLIENT_AUTHID: {:?}", authid);
@@ -730,9 +733,21 @@ async fn run_client_scenario(
             println!("SUBSCRIBED");
 
             if let Ok(event) = sub.event_rx.recv().await {
-                let publisher = event.details.get("publisher").cloned().unwrap_or(Value::Null);
-                let publisher_authid = event.details.get("publisher_authid").cloned().unwrap_or(Value::Null);
-                let publisher_authrole = event.details.get("publisher_authrole").cloned().unwrap_or(Value::Null);
+                let publisher = event
+                    .details
+                    .get("publisher")
+                    .cloned()
+                    .unwrap_or(Value::Null);
+                let publisher_authid = event
+                    .details
+                    .get("publisher_authid")
+                    .cloned()
+                    .unwrap_or(Value::Null);
+                let publisher_authrole = event
+                    .details
+                    .get("publisher_authrole")
+                    .cloned()
+                    .unwrap_or(Value::Null);
                 println!(
                     "EVENT_RECEIVED: publisher: {:?} authid: {:?} authrole: {:?}",
                     publisher, publisher_authid, publisher_authrole
