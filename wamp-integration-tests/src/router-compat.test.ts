@@ -137,12 +137,12 @@ function connectClient(port: number, options: any = {}): Promise<autobahn.Connec
   });
 }
 
-function makeScramChallenger(clientNonce: string) {
+function makeScramChallenger(clientNonce: string, password?: string) {
   return async (session: any, method: string, extra: any) => {
     if (method === "scram") {
       const scramResponse = await generateScramResponse(
         "test-user",
-        "test-password123!",
+        password || "test-password123!",
         clientNonce,
         {
           nonce: extra.nonce,
@@ -630,7 +630,7 @@ describe("WAMP Router Compatibility Tests", () => {
     });
 
     await assert.rejects(Promise.resolve(caller.session!.call("com.compat.error")), (err: any) => {
-      assert.strictEqual(err.erroresolve, "com.compat.custom_error");
+      assert.strictEqual(err.error, "com.compat.custom_error");
       assert.deepStrictEqual(err.args, ["failed details"]);
       assert.deepStrictEqual(err.kwargs, { extra_key: "extra_val" });
       return true;
@@ -932,7 +932,7 @@ describe("WAMP Router Authentication Compatibility Tests", () => {
         authextra: {
           nonce: clientNonce,
         },
-        onchallenge: makeScramChallenger(clientNonce),
+        onchallenge: makeScramChallenger(clientNonce, "wrong-password"),
       }),
       /Connection closed:.*(authfail|authentication_failed|authentication_denied|no_such_principal)/,
     );
