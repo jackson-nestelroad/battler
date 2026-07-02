@@ -43,7 +43,7 @@ echo "📂 Created temporary test directory at: $TMP_DIR"
 echo "------------------------------------------------"
 
 # Copy environment and configuration of our repository.
-cp -r "$REPO_ROOT/.cargo" "$TMP_DIR/.cargo"
+[[ -f "$REPO_ROOT/.cargo" ]] && cp -r "$REPO_ROOT/.cargo" "$TMP_DIR/.cargo"
 
 # Clone all crates.
 for item in "${crates_config[@]}"; do
