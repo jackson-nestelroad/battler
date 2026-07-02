@@ -20,7 +20,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Build Rust compatibility binary
-        run: carbo build -p battler-wamp-compat-test-bin
+        run: cargo build -p battler-wamp-compat-test-bin
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
