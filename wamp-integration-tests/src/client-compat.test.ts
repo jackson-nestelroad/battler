@@ -149,7 +149,7 @@ describe("WAMP Client Compatibility Tests", () => {
     serverPort = 9001;
 
     // Start Crossbar locally
-    const crossbarBin = path.resolve(__dirname, "../venv/bin/crossbar");
+    const crossbarBin = path.resolve(__dirname, "../.venv/bin/crossbar");
     const cbDir = path.resolve(__dirname, "../.crossbar");
     const configPath = path.resolve(__dirname, "../.crossbar/config.json");
     server = spawn(crossbarBin, ["start", "--cbdir", cbDir, "--config", configPath], {
