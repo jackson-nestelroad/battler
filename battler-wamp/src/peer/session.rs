@@ -669,10 +669,21 @@ impl Session {
                 Ok(())
             }
             Message::Yield(message) => {
-                self.modify_established_session_state(|state| {
-                    state.active_invocations.remove(&message.invocation_request)
-                })
-                .await?;
+                // Only remove the active invocation for a final (non-progress) yield.
+                //
+                // Progress yields keep the invocation alive so that any future INTERRUPT messages
+                // sent by the router can still locate and abort the handler task.
+                let is_progress = message
+                    .options
+                    .get("progress")
+                    .and_then(|v| v.bool())
+                    .unwrap_or(false);
+                if !is_progress {
+                    self.modify_established_session_state(|state| {
+                        state.active_invocations.remove(&message.invocation_request)
+                    })
+                    .await?;
+                }
                 Ok(())
             }
             Message::Error(message) => {

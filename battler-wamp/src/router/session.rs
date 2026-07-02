@@ -1412,6 +1412,9 @@ impl Session {
             let canceled = invocation.state.lock().await.canceled;
 
             if !progress || canceled {
+                if canceled {
+                    return Err(InteractionError::Canceled.into());
+                }
                 break;
             }
         }
