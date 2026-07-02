@@ -2,6 +2,7 @@
   "name": "wamp-integration-tests",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "test": "node --import tsx --test src/**/*.test.ts"
   },
@@ -11,6 +12,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/autobahn": "^20.9.4",
     "@types/node": "^20.0.0",
     "@types/ws": "^8.5.10",
     "tsx": "^4.19.0",
