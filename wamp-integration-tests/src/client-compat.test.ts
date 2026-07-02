@@ -1,11 +1,10 @@
 import { test, describe, before, after, afterEach } from "node:test";
 import * as assert from "node:assert";
-import { spawn, execSync, ChildProcess } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
 import * as readline from "readline";
 import { fileURLToPath } from "url";
 import * as autobahn from "autobahn";
-import * as fs from "fs";
 import * as net from "net";
 
 // Monkeypatch Autobahn's Session prototype to negotiate call_timeout and call_canceling caller features.
