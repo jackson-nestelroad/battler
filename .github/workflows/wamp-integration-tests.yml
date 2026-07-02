@@ -44,5 +44,8 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}/wamp-integration-tests
       - name: Run WAMP integration tests
-        run: npm test
+        shell: bash
+        run: |
+          shopt -s globstar
+          npm test
         working-directory: wamp-integration-tests
