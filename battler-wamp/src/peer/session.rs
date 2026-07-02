@@ -143,7 +143,7 @@ pub struct PublishedEvent {
 pub struct ReceivedEvent {
     pub arguments: List,
     pub arguments_keyword: Dictionary,
-
+    pub details: Dictionary,
     pub topic: Option<Uri>,
 }
 
@@ -394,6 +394,14 @@ impl SessionHandle {
     pub async fn current_session_id(&self) -> Option<Id> {
         match &*self.state.read().await {
             SessionState::Established(state) => Some(state.session_id),
+            _ => None,
+        }
+    }
+
+    /// The welcome message details dictionary from establishing the session.
+    pub async fn welcome_details(&self) -> Option<Dictionary> {
+        match &*self.state.read().await {
+            SessionState::Established(state) => Some(state.welcome_message.details.clone()),
             _ => None,
         }
     }
@@ -877,6 +885,7 @@ impl Session {
                 subscription.event_tx.send(ReceivedEvent {
                     arguments: message.publish_arguments,
                     arguments_keyword: message.publish_arguments_keyword,
+                    details: message.details,
                     topic: reported_topic,
                 })?;
                 Ok(())

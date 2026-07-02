@@ -15,6 +15,7 @@ use battler_wamp_values::{
     Dictionary,
     List,
     Value,
+    WampSerialize,
 };
 use tokio::sync::RwLock;
 
@@ -336,7 +337,8 @@ impl TopicManager {
                 _ => continue,
             }
 
-            if *session == publisher && options.exclude_me {
+            let exclude_me = options.exclude_me.unwrap_or(true);
+            if *session == publisher && exclude_me {
                 continue;
             }
 
@@ -351,6 +353,23 @@ impl TopicManager {
 
             let mut details = Dictionary::default();
             details.insert("topic".to_owned(), Value::String(topic.to_string()));
+
+            if options.disclose_me.unwrap_or(false)
+                && let Some(realm_session) = context.session(publisher).await
+                && let Some(peer_info) = realm_session.session.peer_info().await
+            {
+                if let Ok(val) = realm_session.session.id().wamp_serialize() {
+                    details.insert("publisher".to_owned(), val);
+                }
+                details.insert(
+                    "publisher_authid".to_owned(),
+                    Value::String(peer_info.identity.id.clone()),
+                );
+                details.insert(
+                    "publisher_authrole".to_owned(),
+                    Value::String(peer_info.identity.role.clone()),
+                );
+            }
 
             session
                 .session

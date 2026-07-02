@@ -907,7 +907,10 @@ async fn remote_connection_cannot_publish_battle_log() {
             content: "bad log".to_owned(),
             index: 0,
         }),
-        PublishOptions::default(),
+        PublishOptions {
+            acknowledge: Some(true),
+            ..Default::default()
+        },
     ).await, Err(err) => {
         assert_eq!(err.to_string(), "remote connection cannot publish");
     });

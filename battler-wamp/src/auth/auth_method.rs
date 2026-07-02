@@ -36,7 +36,7 @@ impl TryFrom<&str> for AuthMethod {
     type Error = anyhow::Error;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            "wamp-scram" => Ok(Self::WampScram),
+            "wamp-scram" | "scram" => Ok(Self::WampScram),
             "wamp-battler-undisputed" => Ok(Self::Undisputed),
             _ => Err(Self::Error::msg(format!("invalid auth method: {value}"))),
         }
@@ -53,6 +53,9 @@ impl FromStr for AuthMethod {
 impl Into<&'static str> for AuthMethod {
     fn into(self) -> &'static str {
         match self {
+            #[cfg(feature = "crossbar-compat")]
+            Self::WampScram => "scram",
+            #[cfg(not(feature = "crossbar-compat"))]
             Self::WampScram => "wamp-scram",
             Self::Undisputed => "wamp-battler-undisputed",
         }

@@ -1852,7 +1852,7 @@ async fn shared_registration_fails_with_single_invocation_policy() {
             )
             .await,
         Err(err) => {
-            assert_matches::assert_matches!(err.downcast::<BasicError>(), Ok(BasicError::NotAllowed(_)));
+            assert_matches::assert_matches!(err.downcast::<InteractionError>(), Ok(InteractionError::ProcedureAlreadyExists));
         }
     );
 

@@ -178,7 +178,10 @@
 //!
 //! ```
 //! use battler_wamp::{
-//!     core::hash::HashMap,
+//!     core::{
+//!         hash::HashMap,
+//!         publish_options::PublishOptions,
+//!     },
 //!     peer::{
 //!         Peer,
 //!         PeerConfig,
@@ -240,6 +243,10 @@
 //!                     "foo".to_owned(),
 //!                     Value::String("bar".to_owned()),
 //!                 )]),
+//!                 options: PublishOptions {
+//!                     acknowledge: Some(true),
+//!                     ..Default::default()
+//!                 },
 //!                 ..Default::default()
 //!             },
 //!         )
@@ -279,6 +286,10 @@
 //!                     "foo".to_owned(),
 //!                     Value::String("bar".to_owned())
 //!                 )]),
+//!                 details: Dictionary::from_iter([(
+//!                     "topic".to_owned(),
+//!                     Value::String("com.battler_wamp.topic1".to_owned())
+//!                 )]),
 //!                 topic: Some(Uri::try_from("com.battler_wamp.topic1").unwrap()),
 //!             }
 //!         );
@@ -296,6 +307,7 @@
 //!     core::{
 //!         hash::HashMap,
 //!         match_style::MatchStyle,
+//!         publish_options::PublishOptions,
 //!     },
 //!     peer::{
 //!         Peer,
@@ -357,6 +369,10 @@
 //!             Uri::try_from("com.battler_wamp.topics.1").unwrap(),
 //!             PublishedEvent {
 //!                 arguments: List::from_iter([Value::Integer(123)]),
+//!                 options: PublishOptions {
+//!                     acknowledge: Some(true),
+//!                     ..Default::default()
+//!                 },
 //!                 ..Default::default()
 //!             },
 //!         )
@@ -367,6 +383,10 @@
 //!             Uri::try_from("com.battler_wamp.topics.2").unwrap(),
 //!             PublishedEvent {
 //!                 arguments: List::from_iter([Value::Integer(456)]),
+//!                 options: PublishOptions {
+//!                     acknowledge: Some(true),
+//!                     ..Default::default()
+//!                 },
 //!                 ..Default::default()
 //!             },
 //!         )
@@ -405,6 +425,10 @@
 //!         subscription.event_rx.recv().await.unwrap(),
 //!         ReceivedEvent {
 //!             arguments: List::from_iter([Value::Integer(123)]),
+//!             details: Dictionary::from_iter([(
+//!                 "topic".to_owned(),
+//!                 Value::String("com.battler_wamp.topics.1".to_owned())
+//!             )]),
 //!             topic: Some(Uri::try_from("com.battler_wamp.topics.1").unwrap()),
 //!             ..Default::default()
 //!         }
@@ -413,6 +437,10 @@
 //!         subscription.event_rx.recv().await.unwrap(),
 //!         ReceivedEvent {
 //!             arguments: List::from_iter([Value::Integer(456)]),
+//!             details: Dictionary::from_iter([(
+//!                 "topic".to_owned(),
+//!                 Value::String("com.battler_wamp.topics.2".to_owned())
+//!             )]),
 //!             topic: Some(Uri::try_from("com.battler_wamp.topics.2").unwrap()),
 //!             ..Default::default()
 //!         }

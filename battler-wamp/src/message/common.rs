@@ -1,13 +1,18 @@
 use anyhow::Error;
 use battler_wamp_values::{
     Dictionary,
+    List,
     Value,
 };
 
 use crate::{
     core::{
         close::CloseReason,
-        error::uri_for_error,
+        error::{
+            ChannelTransmittableError,
+            WampError,
+            uri_for_error,
+        },
     },
     message::message::{
         AbortMessage,
@@ -42,11 +47,36 @@ pub fn goodbye_and_out() -> Message {
 
 /// Generates an ERROR message in response to a request.
 pub fn error_for_request(message: &Message, error: &Error) -> Message {
+    let mut details = Dictionary::default();
+
+    let (arguments, arguments_keyword) =
+        if let Some(error) = error.downcast_ref::<ChannelTransmittableError>() {
+            let mut args = error.arguments.clone();
+            if args.is_empty() && !error.error.message().is_empty() {
+                args.push(Value::String(error.error.message().to_owned()));
+            }
+            (args, error.arguments_keyword.clone())
+        } else if let Some(error) = error.downcast_ref::<WampError>() {
+            let mut args = error.arguments().clone();
+            if args.is_empty() && !error.message().is_empty() {
+                args.push(Value::String(error.message().to_owned()));
+            }
+            (args, error.arguments_keyword().clone())
+        } else {
+            let message = error.to_string();
+            details.insert("message".to_owned(), Value::String(message.clone()));
+            (
+                List::from_iter([Value::String(message)]),
+                Dictionary::default(),
+            )
+        };
+
     Message::Error(ErrorMessage {
         request_type: message.tag(),
         request: message.request_id().unwrap_or_default(),
-        details: Dictionary::from_iter([("message".to_owned(), Value::String(error.to_string()))]),
+        details,
         error: uri_for_error(error),
-        ..Default::default()
+        arguments,
+        arguments_keyword,
     })
 }

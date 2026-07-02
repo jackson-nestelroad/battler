@@ -16,9 +16,15 @@ use crate::{
 /// Options for publishing an event.
 #[derive(Debug, Default, Clone, PartialEq, Eq, WampDictionary)]
 pub struct PublishOptions {
+    /// Request acknowledgment of publication.
+    #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
+    pub acknowledge: Option<bool>,
     /// Should the publisher be excluded from receiving the event?
-    #[battler_wamp_values(default)]
-    pub exclude_me: bool,
+    #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
+    pub exclude_me: Option<bool>,
+    /// Request publication details to be disclosed.
+    #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
+    pub disclose_me: Option<bool>,
     /// Blocked session IDs.
     #[battler_wamp_values(default, skip_serializing_if = Option::is_none)]
     pub exclude: Option<HashSet<Id>>,

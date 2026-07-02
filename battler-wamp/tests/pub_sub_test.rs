@@ -147,6 +147,10 @@ async fn peer_receives_published_messages_for_topic() {
                     "index".to_owned(),
                     Value::Integer(*i)
                 )]),
+                details: Dictionary::from_iter([(
+                    "topic".to_owned(),
+                    Value::String("com.battler.topic1".to_owned())
+                )]),
                 topic: Some(Uri::try_from("com.battler.topic1").unwrap()),
             });
         });
@@ -355,13 +359,47 @@ async fn pub_sub_not_allowed_without_broker_role() {
             PublishedEvent {
                 arguments: List::default(),
                 arguments_keyword: Dictionary::default(),
-                ..Default::default()
+                options: PublishOptions {
+                    acknowledge: Some(true),
+                    ..Default::default()
+                },
             }
         )
         .await,
         Err(err) => {
             assert_matches::assert_matches!(err.downcast::<BasicError>(), Ok(BasicError::NotAllowed(_)));
         }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn publish_succeeds_without_acknowledgement() {
+    test_utils::setup::setup_test_environment();
+
+    let mut config = RouterConfig::default();
+    config.roles.remove(&RouterRole::Broker);
+    let (router_handle, _) = start_router_with_config(config).await.unwrap();
+    let peer = create_peer("peer").unwrap();
+
+    assert_matches::assert_matches!(
+        peer.connect(&format!("ws://{}", router_handle.local_addr()))
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(peer.join_realm(REALM).await, Ok(()));
+
+    // Not allowed, but we don't care to wait for the error message about it.
+    assert_matches::assert_matches!(
+        peer.publish(
+            Uri::try_from("com.battler.topic1").unwrap(),
+            PublishedEvent {
+                arguments: List::default(),
+                arguments_keyword: Dictionary::default(),
+                options: PublishOptions::default(),
+            }
+        )
+        .await,
+        Ok(())
     );
 }
 
@@ -389,7 +427,7 @@ async fn publisher_does_not_receive_event() {
             Uri::try_from("com.battler.topic1").unwrap(),
             PublishedEvent {
                 options: PublishOptions {
-                    exclude_me: true,
+                    exclude_me: Some(true),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -836,7 +874,13 @@ async fn publish_matches_subscription_by_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.abcd.start").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -845,7 +889,13 @@ async fn publish_matches_subscription_by_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.abcd.update").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -854,7 +904,13 @@ async fn publish_matches_subscription_by_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.abcd.update").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -863,7 +919,13 @@ async fn publish_matches_subscription_by_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.abcd.update").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -872,7 +934,13 @@ async fn publish_matches_subscription_by_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.abcd.end").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -881,7 +949,13 @@ async fn publish_matches_subscription_by_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.another.update").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -944,7 +1018,13 @@ async fn publish_matches_subscription_by_wildcard() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle1.start").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -953,7 +1033,13 @@ async fn publish_matches_subscription_by_wildcard() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle1.update").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -962,7 +1048,13 @@ async fn publish_matches_subscription_by_wildcard() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle2.start").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -971,7 +1063,13 @@ async fn publish_matches_subscription_by_wildcard() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle3.start").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -980,7 +1078,13 @@ async fn publish_matches_subscription_by_wildcard() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle2.update").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -1041,7 +1145,13 @@ async fn publish_matches_subscription_by_wildcard_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle1.start").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -1050,7 +1160,13 @@ async fn publish_matches_subscription_by_wildcard_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle2.update").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())
@@ -1059,7 +1175,13 @@ async fn publish_matches_subscription_by_wildcard_prefix() {
         publisher
             .publish(
                 Uri::try_from("com.battler.battle.battle3.end").unwrap(),
-                PublishedEvent::default(),
+                PublishedEvent {
+                    options: PublishOptions {
+                        acknowledge: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             )
             .await,
         Ok(())

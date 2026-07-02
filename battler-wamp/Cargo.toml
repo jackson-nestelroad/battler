@@ -44,3 +44,6 @@ assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
 
 test-utils = { path = "test-utils" }
+
+[features]
+crossbar-compat = []
