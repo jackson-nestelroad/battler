@@ -37,15 +37,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: ${{ github.workspace }}/wamp-integration-tests/package-lock.json
       - name: Install npm dependencies
         run: npm ci
         working-directory: ${{ github.workspace }}/wamp-integration-tests
       - name: Run WAMP integration tests
-        shell: bash
-        run: |
-          shopt -s globstar
-          npm test
+        run: npm test
         working-directory: wamp-integration-tests

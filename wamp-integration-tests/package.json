@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --import tsx --test \"src/**/*.test.ts\""
+    "test": "find src -type f -name '*.test.ts' | xargs node --import tsx --test"
   },
   "dependencies": {
     "argon2": "^0.40.1",
