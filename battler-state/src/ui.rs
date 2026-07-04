@@ -116,8 +116,8 @@ pub enum UiLogEntry {
         level: u64,
         stats: HashMap<String, u64>,
     },
-    /// A message is displayed.
-    Message { content: String },
+    /// The battle ended due to a turn limit.
+    TurnLimit,
     /// A Mon used a move.
     Move {
         name: String,
@@ -133,8 +133,8 @@ pub enum UiLogEntry {
         learned: bool,
         forgot: Option<String>,
     },
-    /// A notice is displayed.
-    Notice { content: String },
+    /// A Mon is waiting for another Mon.
+    Waiting { mon: Mon, on: Mon },
     /// A Mon revived.
     Revive { effect: EffectData },
     /// A Mon's health update directly.

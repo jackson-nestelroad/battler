@@ -268,20 +268,25 @@ pub fn mon_types(
     data: &dyn DataStoreByName,
 ) -> Result<Vec<Type>> {
     let volatile_types = &mon_or_else(state, mon)?.volatile_data.types;
-    if !volatile_types.is_empty() {
-        return volatile_types
+    let mut types = if !volatile_types.is_empty() {
+        volatile_types
             .iter()
             .map(|typ| Type::from_str(&typ).map_err(Error::msg))
-            .collect::<Result<Vec<_>>>();
+            .collect::<Result<Vec<_>>>()?
+    } else {
+        let species = data
+            .get_species_by_name(mon_species(state, mon)?)?
+            .ok_or_else(|| Error::msg("species not found"))?;
+        species.types_iter().collect()
+    };
+
+    if let Some(added_type) = &mon_or_else(state, mon)?.volatile_data.added_type {
+        let added_type = Type::from_str(added_type).map_err(Error::msg)?;
+        if !types.contains(&added_type) {
+            types.push(added_type);
+        }
     }
 
-    let species = data
-        .get_species_by_name(mon_species(state, mon)?)?
-        .ok_or_else(|| Error::msg("species not found"))?;
-    let mut types = Vec::from_iter([species.primary_type]);
-    if let Some(typ) = species.secondary_type {
-        types.push(typ);
-    }
     Ok(types)
 }
 
