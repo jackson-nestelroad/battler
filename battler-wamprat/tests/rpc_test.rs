@@ -968,6 +968,7 @@ async fn shared_registration_persists_across_reconnects() {
     // End the unavailable callee, and force the available callee to reconnect.
     callee_1_handle.cancel().unwrap();
     callee_1_join_handle.await.unwrap();
+    let mut callee_2_session_finished_rx = callee_2_handle.session_finished_rx();
     router_handle
         .end_session(
             Uri::try_from(REALM).unwrap(),
@@ -975,6 +976,7 @@ async fn shared_registration_persists_across_reconnects() {
         )
         .await
         .unwrap();
+    callee_2_session_finished_rx.recv().await.unwrap();
     callee_2_handle.wait_until_ready().await.unwrap();
 
     assert_matches::assert_matches!(
