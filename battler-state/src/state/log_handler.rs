@@ -155,6 +155,7 @@ fn effect_from_log_entry(entry: &LogEntry, effect_value_name: Option<&str>) -> R
                 .or_else(|| check_effect_name(entry, "ability"))
                 .or_else(|| check_effect_name(entry, "item"))
                 .or_else(|| check_effect_name(entry, "condition"))
+                .or_else(|| check_effect_name(entry, "volatile"))
                 .or_else(|| check_effect_name(entry, "status"))
                 .or_else(|| check_effect_name(entry, "type"))
                 .or_else(|| check_effect_name(entry, "weather"))
@@ -476,6 +477,16 @@ fn modify_state_from_effect(
                 mon.record_health(health.into(), ambiguity);
             })?;
         }
+        "revive" => {
+            let health = health_from_log_entry(&entry)?;
+            let mon = entry.value_or_else("mon")?;
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.revive();
+            })?;
+            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                mon.record_health(health.into(), ambiguity);
+            })?;
+        }
         "dynamax" => {
             let mon = entry.value_or_else("mon")?;
             let turn = state.turn;
@@ -564,123 +575,6 @@ fn modify_state_from_effect(
                 mon.record_terastallization(String::default().into(), ambiguity);
             })?;
         }
-        "addvolatile" => {
-            let mon = entry.value_or_else("mon")?;
-            let volatile: String = effect_data
-                .additional
-                .get("volatile")
-                .cloned()
-                .ok_or_else(|| Error::msg("missing volatile"))?;
-            let turn = state.turn;
-            apply_for_each_mon(state, &mon, |mon, _| {
-                mon.volatile_data.record_condition(
-                    volatile.clone(),
-                    ConditionData {
-                        since_turn: turn,
-                        data: effect_data.additional.clone(),
-                    },
-                );
-            })?;
-        }
-        "removevolatile" => {
-            let mon = entry.value_or_else("mon")?;
-            let volatile: String = effect_data
-                .additional
-                .get("volatile")
-                .cloned()
-                .ok_or_else(|| Error::msg("missing volatile"))?;
-            apply_for_each_mon(state, &mon, |mon, _| {
-                mon.volatile_data.remove_condition(&volatile);
-            })?;
-        }
-        "addsidecondition" => {
-            let side = entry.value_or_else("side")?;
-            let side = state.field.side_mut_or_else(side)?;
-            let condition: String = effect_data
-                .effect
-                .as_ref()
-                .map(|e| e.name.clone())
-                .or_else(|| effect_data.additional.get("condition").cloned())
-                .ok_or_else(|| Error::msg("missing condition"))?;
-            side.conditions.insert(
-                condition,
-                ConditionData {
-                    since_turn: state.turn,
-                    data: effect_data.additional.clone(),
-                },
-            );
-        }
-        "removesidecondition" => {
-            let side = entry.value_or_else("side")?;
-            let side = state.field.side_mut_or_else(side)?;
-            let condition: String = effect_data
-                .effect
-                .as_ref()
-                .map(|e| e.name.clone())
-                .or_else(|| effect_data.additional.get("condition").cloned())
-                .ok_or_else(|| Error::msg("missing condition"))?;
-            side.conditions.remove(&condition);
-        }
-        "addslotcondition" => {
-            let side_idx = entry.value_or_else("side")?;
-            let slot = entry.value_or_else::<usize>("slot")?;
-            let side = state.field.side_mut_or_else(side_idx)?;
-            let condition: String = effect_data
-                .effect
-                .as_ref()
-                .map(|e| e.name.clone())
-                .or_else(|| effect_data.additional.get("condition").cloned())
-                .ok_or_else(|| Error::msg("missing condition"))?;
-            if slot + 1 > side.slot_conditions.len() {
-                side.slot_conditions
-                    .resize_with(slot + 1, BTreeMap::default);
-            }
-            side.slot_conditions[slot].insert(
-                condition,
-                ConditionData {
-                    since_turn: state.turn,
-                    data: effect_data.additional.clone(),
-                },
-            );
-        }
-        "removeslotcondition" => {
-            let side_idx = entry.value_or_else("side")?;
-            let slot = entry.value_or_else::<usize>("slot")?;
-            let side = state.field.side_mut_or_else(side_idx)?;
-            let condition: String = effect_data
-                .effect
-                .as_ref()
-                .map(|e| e.name.clone())
-                .or_else(|| effect_data.additional.get("condition").cloned())
-                .ok_or_else(|| Error::msg("missing condition"))?;
-            if slot < side.slot_conditions.len() {
-                side.slot_conditions[slot].remove(&condition);
-            }
-        }
-        "addpseudoweather" => {
-            let condition: String = effect_data
-                .effect
-                .as_ref()
-                .map(|e| e.name.clone())
-                .or_else(|| effect_data.additional.get("condition").cloned())
-                .ok_or_else(|| Error::msg("missing condition"))?;
-            state.field.conditions.insert(
-                condition,
-                ConditionData {
-                    since_turn: state.turn,
-                    data: effect_data.additional.clone(),
-                },
-            );
-        }
-        "removepseudoweather" => {
-            let condition: String = effect_data
-                .effect
-                .as_ref()
-                .map(|e| e.name.clone())
-                .or_else(|| effect_data.additional.get("condition").cloned())
-                .ok_or_else(|| Error::msg("missing condition"))?;
-            state.field.conditions.remove(&condition);
-        }
         "addedtype" => {
             let mon = entry.value_or_else("mon")?;
             let typ: String = entry.value_or_else("type")?;
@@ -715,12 +609,12 @@ fn modify_state_from_effect(
                 );
             }
         }
-        "singlemove" => {
+        "singlemove" | "singleturn" => {
             let mon = entry.value_or_else("mon")?;
             if let Some(effect) = &effect_data.effect {
                 let turn = state.turn;
                 let mut data = effect_data.additional.clone();
-                data.insert("singlemove".to_owned(), "".to_owned());
+                data.insert(entry.title().to_owned(), "".to_owned());
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
                         effect.name.clone(),
@@ -886,10 +780,6 @@ fn alter_battle_state_for_entry(
         | "abilityend"
         | "activate"
         | "addedtype"
-        | "addpseudoweather"
-        | "addsidecondition"
-        | "addslotcondition"
-        | "addvolatile"
         | "block"
         | "cant"
         | "catch"
@@ -925,10 +815,6 @@ fn alter_battle_state_for_entry(
         | "prepare"
         | "primal"
         | "protectweaken"
-        | "removepseudoweather"
-        | "removesidecondition"
-        | "removeslotcondition"
-        | "removevolatile"
         | "resettypechange"
         | "resisted"
         | "restorepp"
@@ -1502,6 +1388,16 @@ fn alter_battle_state_for_entry(
                 mon: mon_name_to_mon_for_ui_log(state, &mon)?,
                 on: mon_name_to_mon_for_ui_log(state, &on)?,
             });
+        }
+        "addvolatile"
+        | "removevolatile"
+        | "addsidecondition"
+        | "removesidecondition"
+        | "addslotcondition"
+        | "removeslotcondition"
+        | "addpseudoweather"
+        | "removepseudoweather" => {
+            // Debug only logs, ignore in state tracking.
         }
         title @ _ => {
             let orig_title = entry.title();

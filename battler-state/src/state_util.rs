@@ -171,7 +171,8 @@ pub fn mon_status<'s>(
     Ok(mon_battle_appearance_or_else(state, mon)?
         .status
         .known()
-        .map(|s| s.as_str()))
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
 }
 
 /// The ability of a Mon.
@@ -180,12 +181,13 @@ pub fn mon_ability<'s>(
     mon: &MonBattleAppearanceReference,
 ) -> Result<Option<&'s str>> {
     if let Some(ability) = mon_or_else(state, mon)?.volatile_data.ability.as_ref() {
-        return Ok(Some(ability));
+        return Ok(Some(ability.as_str()).filter(|s| !s.is_empty()));
     }
     Ok(mon_battle_appearance_or_else(state, mon)?
         .ability
         .known()
-        .map(|s| s.as_str()))
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
 }
 
 /// The moves of a Mon.
@@ -241,7 +243,8 @@ pub fn mon_item<'s>(
     Ok(mon_battle_appearance_or_else(state, mon)?
         .item
         .known()
-        .map(|s| s.as_str()))
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
 }
 
 /// The species of a Mon.

@@ -1,3 +1,8 @@
+use alloc::{
+    string::String,
+    vec::Vec,
+};
+
 use anyhow::Result;
 use serde::{
     Deserialize,
