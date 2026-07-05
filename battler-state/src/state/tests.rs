@@ -182,7 +182,9 @@ mod state_test {
 
     #[test]
     fn uses_old_mon_reappeared_from_switch() {
-        let mut logs = vec!["switch|player:player-1|position:1|name:Bulbasaur|health:50/100|species:Bulbasaur|level:5|gender:M"];
+        let mut logs = Vec::from_iter([
+            "switch|player:player-1|position:1|name:Bulbasaur|health:50/100|species:Bulbasaur|level:5|gender:M",
+        ]);
         let state = setup_singles_battle(&logs);
         assert_eq!(
             state.field.sides[0].active[0].as_ref().unwrap().mon_index,
@@ -1028,14 +1030,17 @@ mod state_test {
 
     #[test]
     fn records_stat_boosts() {
-        let mut logs = vec!["boost|mon:Squirtle,player-1,1|stat:atk|by:2"];
+        let mut logs = Vec::from_iter(["boost|mon:Squirtle,player-1,1|stat:atk|by:2"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let boosts = state_util::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(boosts.get(battler::Boost::Def), 0);
 
-        logs.extend_from_slice(&["turn|turn:2", "boost|mon:Squirtle,player-1,1|stat:def|by:-1"]);
+        logs.extend_from_slice(&[
+            "turn|turn:2",
+            "boost|mon:Squirtle,player-1,1|stat:def|by:-1",
+        ]);
         let state = setup_singles_battle(&logs);
         let boosts = state_util::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
@@ -1167,7 +1172,7 @@ mod state_test {
 
     #[test]
     fn records_health_changes() {
-        let mut logs = vec!["damage|mon:Squirtle,player-1,1|health:50/100"];
+        let mut logs = Vec::from_iter(["damage|mon:Squirtle,player-1,1|health:50/100"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         assert_eq!(
@@ -1627,7 +1632,7 @@ mod state_test {
 
     #[test]
     fn records_learned_move() {
-        let mut logs = vec!["move|mon:Squirtle,player-1,1|name:Pound"];
+        let mut logs = Vec::from_iter(["move|mon:Squirtle,player-1,1|name:Pound"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
@@ -1731,7 +1736,7 @@ mod state_test {
 
     #[test]
     fn records_copied_boosts() {
-        let mut logs = vec!["boost|mon:Charmander,player-2,1|stat:atk|by:2"];
+        let mut logs = Vec::from_iter(["boost|mon:Charmander,player-2,1|stat:atk|by:2"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let ch = charmander_ref();
@@ -1783,10 +1788,10 @@ mod state_test {
 
     #[test]
     fn records_swapped_boosts_for_all_stats() {
-        let mut logs = vec![
+        let mut logs = Vec::from_iter([
             "boost|mon:Squirtle,player-1,1|stat:atk|by:2",
             "boost|mon:Charmander,player-2,1|stat:def|by:1",
-        ];
+        ]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let ch = charmander_ref();
@@ -1880,10 +1885,10 @@ mod state_test {
 
     #[test]
     fn records_swapped_boosts_for_some_stats() {
-        let mut logs = vec![
+        let mut logs = Vec::from_iter([
             "boost|mon:Squirtle,player-1,1|stat:atk|by:2",
             "boost|mon:Charmander,player-2,1|stat:def|by:1",
-        ];
+        ]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let ch = charmander_ref();
@@ -2122,10 +2127,10 @@ mod state_test {
 
     #[test]
     fn records_additional_state_mutations() {
-        let mut logs = vec![
+        let mut logs = Vec::from_iter([
             "boost|mon:Squirtle,player-1,1|stat:atk|by:2",
             "boost|mon:Squirtle,player-1,1|stat:def|by:-1",
-        ];
+        ]);
         let state = setup_singles_battle(&logs);
         let squirtle_ref = squirtle_ref();
         let boosts = state_util::mon_boosts(&state, &squirtle_ref).unwrap();
@@ -2242,7 +2247,7 @@ mod state_test {
 
     #[test]
     fn records_clear_boosts() {
-        let mut logs = vec!["boost|mon:Squirtle,player-1,1|stat:atk|by:2"];
+        let mut logs = Vec::from_iter(["boost|mon:Squirtle,player-1,1|stat:atk|by:2"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let boosts = state_util::mon_boosts(&state, &sq).unwrap();
@@ -2279,10 +2284,10 @@ mod state_test {
 
     #[test]
     fn records_clear_negative_boosts() {
-        let mut logs = vec![
+        let mut logs = Vec::from_iter([
             "boost|mon:Squirtle,player-1,1|stat:atk|by:2",
             "boost|mon:Squirtle,player-1,1|stat:def|by:-2",
-        ];
+        ]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let boosts = state_util::mon_boosts(&state, &sq).unwrap();
@@ -2361,10 +2366,10 @@ mod state_test {
 
     #[test]
     fn records_revive() {
-        let mut logs = vec![
+        let mut logs = Vec::from_iter([
             "damage|mon:Squirtle,player-1,1|health:0",
             "faint|mon:Squirtle,player-1,1",
-        ];
+        ]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
@@ -3303,7 +3308,7 @@ mod state_test {
 
     #[test]
     fn records_pp_adjustments() {
-        let mut logs = vec!["deductpp|mon:Squirtle,player-1,1|move:Tackle|pp:1"];
+        let mut logs = Vec::from_iter(["deductpp|mon:Squirtle,player-1,1|move:Tackle|pp:1"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
@@ -3372,7 +3377,9 @@ mod state_test {
 
     #[test]
     fn does_not_record_struggle() {
-        let state = setup_singles_battle(&["move|mon:Squirtle,player-1,1|name:Struggle|target:Charmander,player-2,1"]);
+        let state = setup_singles_battle(&[
+            "move|mon:Squirtle,player-1,1|name:Struggle|target:Charmander,player-2,1",
+        ]);
         let sq = squirtle_ref();
         let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
@@ -3401,7 +3408,7 @@ mod state_test {
         ]);
         let sq = squirtle_ref();
         let ch = charmander_ref();
-        
+
         let sq_moves = state_util::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
@@ -3440,9 +3447,6 @@ mod state_test {
             "faint|mon:Charmander,player-2,1",
         ]);
         let ch = charmander_ref();
-        assert_eq!(
-            state_util::mon_health(&state, &ch).unwrap(),
-            Some((0, 100))
-        );
+        assert_eq!(state_util::mon_health(&state, &ch).unwrap(), Some((0, 100)));
     }
 }

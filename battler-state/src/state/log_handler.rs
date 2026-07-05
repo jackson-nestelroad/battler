@@ -79,7 +79,7 @@ fn mon_name_from_log_entry(entry: &LogEntry) -> Result<MonName> {
     let player = entry
         .value("player")
         .ok_or_else(|| Error::msg("missing player"))?;
-    let position = entry.value::<usize>("position").map(|position| position);
+    let position = entry.value::<usize>("position");
     Ok(MonName {
         name,
         player,
@@ -88,14 +88,13 @@ fn mon_name_from_log_entry(entry: &LogEntry) -> Result<MonName> {
 }
 
 fn health_from_log_entry(entry: &LogEntry) -> Result<(u64, u64)> {
-    entry
-        .value_ref("health")
-        .map(|health| match health.split_once('/') {
-            Some((a, b)) => Ok((a.parse()?, b.parse()?)),
-            None => Ok((health.parse()?, 1)),
-        })
-        .transpose()
-        .map(|health| health.unwrap_or((0, 1)))
+    let Some(health) = entry.value_ref("health") else {
+        return Ok((0, 1));
+    };
+    match health.split_once('/') {
+        Some((a, b)) => Ok((a.parse()?, b.parse()?)),
+        None => Ok((health.parse()?, 1)),
+    }
 }
 
 fn mon_appearance_from_log_entry(
@@ -126,12 +125,15 @@ fn mon_appearance_from_log_entry(
 }
 
 fn mon_name_to_mon_for_ui_log(state: &mut BattleState, mon: &MonName) -> Result<ui::Mon> {
-    match &mon.position {
+    match mon.position {
         Some(position) => {
             let side = state.field.side_for_player(&mon.player)?;
+            let index = position
+                .checked_sub(1)
+                .ok_or_else(|| Error::msg("position must be greater than 0"))?;
             Ok(ui::Mon::Active(ui::FieldPosition {
                 side,
-                position: *position - 1,
+                position: index,
             }))
         }
         None => Ok(ui::Mon::Inactive(ui::MonReference {
@@ -145,23 +147,27 @@ fn effect_from_log_entry(entry: &LogEntry, effect_value_name: Option<&str>) -> R
     match effect_value_name {
         Some(name) => entry.value_or_else(name),
         None => {
-            let check_effect_name = |entry: &LogEntry, name: &str| {
-                entry.value::<String>(name).map(|value| EffectName {
-                    effect_type: Some(name.to_owned()),
-                    name: value,
-                })
-            };
-            check_effect_name(entry, "move")
-                .or_else(|| check_effect_name(entry, "ability"))
-                .or_else(|| check_effect_name(entry, "item"))
-                .or_else(|| check_effect_name(entry, "condition"))
-                .or_else(|| check_effect_name(entry, "volatile"))
-                .or_else(|| check_effect_name(entry, "status"))
-                .or_else(|| check_effect_name(entry, "type"))
-                .or_else(|| check_effect_name(entry, "weather"))
-                .or_else(|| check_effect_name(entry, "clause"))
-                .or_else(|| check_effect_name(entry, "species"))
-                .ok_or_else(|| Error::msg("missing effect"))
+            const EFFECT_KEYS: &[&str] = &[
+                "move",
+                "ability",
+                "item",
+                "condition",
+                "volatile",
+                "status",
+                "type",
+                "weather",
+                "clause",
+                "species",
+            ];
+            for key in EFFECT_KEYS {
+                if let Some(value) = entry.value::<String>(key) {
+                    return Ok(EffectName {
+                        effect_type: Some((*key).to_owned()),
+                        name: value,
+                    });
+                }
+            }
+            Err(Error::msg("missing effect"))
         }
     }
 }

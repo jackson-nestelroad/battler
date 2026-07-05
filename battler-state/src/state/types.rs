@@ -587,7 +587,7 @@ impl Player {
             .map(|mon| mon.physical_appearance.clone())
             .collect::<HashSet<_>>()
             .len()
-            == self.mons.len()
+            != self.mons.len()
     }
 }
 
@@ -856,14 +856,14 @@ impl Side {
         mon: &MonBattleAppearanceReference,
         remove_from_active_position: bool,
     ) -> Result<()> {
-        for (i, active) in self
+        let active_to_switch_out = self
             .active
             .iter()
             .enumerate()
-            .filter_map(|(i, reference)| reference.clone().map(|reference| (i, reference)))
+            .filter_map(|(i, reference)| reference.as_ref().map(|r| (i, r.clone())))
             .filter(|(_, reference)| reference == mon)
-            .collect::<Vec<_>>()
-        {
+            .collect::<Vec<_>>();
+        for (i, active) in active_to_switch_out {
             self.mon_mut_by_reference_or_else(&active)?.switch_out();
 
             if remove_from_active_position {
@@ -1051,7 +1051,7 @@ impl Field {
                 side.active
                     .iter()
                     .enumerate()
-                    .filter_map(|(i, val)| val.clone().map(|val| (i, val))),
+                    .filter_map(|(i, val)| val.as_ref().cloned().map(|val| (i, val))),
             ),
             None => Box::new(core::iter::empty()),
         }
@@ -1060,7 +1060,7 @@ impl Field {
     pub(crate) fn active_mons(&mut self) -> impl Iterator<Item = MonBattleAppearanceReference> {
         self.sides
             .iter()
-            .flat_map(|side| side.active.iter().cloned().filter_map(|val| val))
+            .flat_map(|side| side.active.iter().flatten().cloned())
     }
 
     pub(crate) fn mon_by_reference_or_else(
