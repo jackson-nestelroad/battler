@@ -186,6 +186,10 @@ impl MonBattleAppearance {
         health: DiscoveryRequired<(u64, u64)>,
         ambiguity: Ambiguity,
     ) {
+        let health = match (self.health.known(), health.known()) {
+            (Some((_, max)), Some((0, 1))) => DiscoveryRequired::Known((0, *max)),
+            _ => health,
+        };
         self.health = if ambiguity == Ambiguity::Ambiguous {
             self.health.take().merge(health)
         } else {

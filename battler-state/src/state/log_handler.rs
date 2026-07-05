@@ -216,9 +216,12 @@ fn mons_by_mon_name(
     match mon.position {
         Some(position) => {
             let side = state.field.side_for_player(&mon.player)?;
+            let index = position
+                .checked_sub(1)
+                .ok_or_else(|| Error::msg("position must be greater than 0"))?;
             Ok(state
                 .field
-                .active_mon_reference_by_position(side, position - 1)?
+                .active_mon_reference_by_position(side, index)?
                 .map(|mon| Vec::from_iter([mon]))
                 .unwrap_or_default())
         }
@@ -1173,7 +1176,10 @@ fn alter_battle_state_for_entry(
         "switch" | "drag" | "appear" | "replace" => {
             let (physical_appearance, battle_appearance) = mon_appearance_from_log_entry(entry)?;
             let player: String = entry.value_or_else("player")?;
-            let position = entry.value_or_else::<usize>("position")? - 1;
+            let position = entry
+                .value_or_else::<usize>("position")?
+                .checked_sub(1)
+                .ok_or_else(|| Error::msg("position must be greater than 0"))?;
 
             let side_index = state.field.side_for_player(&player)?;
             let side = state.field.side_mut_or_else(side_index)?;

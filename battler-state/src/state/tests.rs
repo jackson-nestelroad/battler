@@ -3369,4 +3369,80 @@ mod state_test {
             ])
         );
     }
+
+    #[test]
+    fn does_not_record_struggle() {
+        let state = setup_singles_battle(&["move|mon:Squirtle,player-1,1|name:Struggle|target:Charmander,player-2,1"]);
+        let sq = squirtle_ref();
+        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+            .unwrap()
+            .collect::<Vec<_>>();
+        assert!(!moves.contains(&"Struggle"));
+    }
+
+    #[test]
+    fn does_not_record_mimic() {
+        let state = setup_singles_battle(&[
+            "start|mon:Squirtle,player-1,1|move:Mimic|mimic:Thunderbolt",
+            "move|mon:Squirtle,player-1,1|name:Thunderbolt|target:Charmander,player-2,1",
+        ]);
+        let sq = squirtle_ref();
+        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+            .unwrap()
+            .collect::<Vec<_>>();
+        assert!(!moves.contains(&"Thunderbolt"));
+    }
+
+    #[test]
+    fn records_moves_from_transformation() {
+        let state = setup_singles_battle(&[
+            "transform|mon:Squirtle,player-1,1|species:Charmander|into:Charmander,player-2,1",
+            "move|mon:Squirtle,player-1,1|name:Ember|target:Charmander,player-2,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        
+        let sq_moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+            .unwrap()
+            .collect::<Vec<_>>();
+        assert!(!sq_moves.contains(&"Ember"));
+
+        let ch_moves = state_util::mon_known_non_volatile_moves(&state, &ch)
+            .unwrap()
+            .collect::<Vec<_>>();
+        assert!(ch_moves.contains(&"Ember"));
+    }
+
+    #[test]
+    fn records_ability_from_start() {
+        let state = setup_singles_battle(&["start|mon:Squirtle,player-1,1|ability:Flash Fire"]);
+        let sq = squirtle_ref();
+        assert_eq!(
+            state_util::mon_ability(&state, &sq).unwrap(),
+            Some("Flash Fire")
+        );
+    }
+
+    #[test]
+    fn records_item_from_start() {
+        let state = setup_singles_battle(&["start|mon:Squirtle,player-1,1|item:Air Balloon"]);
+        let sq = squirtle_ref();
+        assert_eq!(
+            state_util::mon_item(&state, &sq).unwrap(),
+            Some("Air Balloon")
+        );
+    }
+
+    #[test]
+    fn fainted_mon_preserves_max_health() {
+        let state = setup_singles_battle(&[
+            "damage|mon:Charmander,player-2,1|health:0",
+            "faint|mon:Charmander,player-2,1",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(
+            state_util::mon_health(&state, &ch).unwrap(),
+            Some((0, 100))
+        );
+    }
 }
