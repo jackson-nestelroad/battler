@@ -11,5 +11,8 @@
     "battler-state/js-tests",
     "fxlang-ext",
     "wamp-integration-tests"
-  ]
+  ],
+  "devDependencies": {
+    "wasm-pack": "^0.13.1"
+  }
 }
