@@ -38,13 +38,21 @@ pub(crate) enum Ambiguity {
 
 /// Data about some condition.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ConditionData {
     pub since_turn: usize,
+    #[cfg_attr(
+        feature = "typescript",
+        ts(as = "std::collections::BTreeMap<String, String>")
+    )]
     pub data: HashMap<String, String>,
 }
 
 /// Volatile data for a Mon, which applies only when the Mon is active.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonVolatileData {
     pub moves: BTreeSet<String>,
     pub ability: Option<String>,
@@ -102,6 +110,8 @@ impl MonVolatileData {
 ///
 /// When a Mon creates an illusion, it is expected to mimic this physical appearance.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonPhysicalAppearance {
     pub name: String,
     pub species: String,
@@ -133,6 +143,8 @@ pub struct MonBattleAppearanceFromSwitchIn {
 /// Some data, like `level` and `health`, are discovered on switch in. Other data, like `moves` and
 /// `ability`, are discovered when used or activated.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonBattleAppearance {
     pub level: DiscoveryRequired<u64>,
     pub health: DiscoveryRequired<(u64, u64)>,
@@ -143,6 +155,7 @@ pub struct MonBattleAppearance {
 
     pub moves: DiscoveryRequiredSet<String>,
 
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub move_history: VecDeque<String>,
 }
 
@@ -300,6 +313,8 @@ impl From<&MonBattleAppearanceFromSwitchIn> for MonBattleAppearance {
 /// A version of [`MonBattleAppearance`] that supports recovery when a Mon is discovered to be an
 /// illusion of another Mon.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum MonBattleAppearanceWithRecovery {
     /// Mon is inactive, so it contains a single battle appearance.
     #[serde(rename = "inactive")]
@@ -491,8 +506,14 @@ impl From<MonBattleAppearance> for MonBattleAppearanceWithRecovery {
 
 /// A single Mon in a battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct Mon {
     pub physical_appearance: MonPhysicalAppearance,
+    #[cfg_attr(
+        feature = "typescript",
+        ts(as = "Vec<MonBattleAppearanceWithRecovery>")
+    )]
     pub battle_appearances: VecDeque<MonBattleAppearanceWithRecovery>,
     pub fainted: bool,
     pub volatile_data: MonVolatileData,
@@ -558,6 +579,8 @@ impl Mon {
 
 /// A reference to a [`MonBattleAppearance`].
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonBattleAppearanceReference {
     pub player: String,
     pub mon_index: usize,
@@ -566,6 +589,8 @@ pub struct MonBattleAppearanceReference {
 
 /// A player participating in a battle, which consists of one or more Mons.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct Player {
     pub name: String,
     pub id: String,
@@ -593,6 +618,8 @@ impl Player {
 
 /// A side of the battle, which consists of one or more players and a list of active Mons.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct Side {
     pub name: String,
     pub id: usize,
@@ -989,6 +1016,8 @@ impl Side {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct Field {
     pub sides: Vec<Side>,
     pub environment: Option<String>,
@@ -1121,6 +1150,8 @@ impl Field {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum BattlePhase {
     #[default]
     #[serde(rename = "pre_battle")]

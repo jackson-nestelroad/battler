@@ -18,7 +18,7 @@ mod state_test {
             MonBattleAppearanceReference,
             alter_battle_state,
         },
-        state_util,
+        state_selectors,
         ui,
     };
 
@@ -116,11 +116,11 @@ mod state_test {
         ]);
         let ch = charmander_ref();
         assert_eq!(
-            state_util::mon_health(&state, &ch).unwrap(),
+            state_selectors::mon_health(&state, &ch).unwrap(),
             Some((75, 100))
         );
         let sq = squirtle_ref();
-        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(moves.contains(&"Pound"));
@@ -774,7 +774,7 @@ mod state_test {
         ]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_ability(&state, &sq).unwrap(),
+            state_selectors::mon_ability(&state, &sq).unwrap(),
             Some("Drizzle")
         );
         assert_eq!(
@@ -811,7 +811,7 @@ mod state_test {
         ]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_item(&state, &sq).unwrap(),
+            state_selectors::mon_item(&state, &sq).unwrap(),
             Some("Leftovers")
         );
         assert_eq!(
@@ -845,7 +845,7 @@ mod state_test {
     fn records_ability() {
         let state = setup_singles_battle(&["ability|mon:Charmander,player-2,1|ability:Blaze"]);
         let ch = charmander_ref();
-        assert_eq!(state_util::mon_ability(&state, &ch).unwrap(), Some("Blaze"));
+        assert_eq!(state_selectors::mon_ability(&state, &ch).unwrap(), Some("Blaze"));
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::Effect {
@@ -909,7 +909,7 @@ mod state_test {
         let state = setup_singles_battle(&["activate|mon:Squirtle,player-1,1|ability:Intimidate"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_ability(&state, &sq).unwrap(),
+            state_selectors::mon_ability(&state, &sq).unwrap(),
             Some("Intimidate")
         );
         assert_eq!(
@@ -936,7 +936,7 @@ mod state_test {
         let state = setup_singles_battle(&["activate|mon:Squirtle,player-1,1|item:Quick Claw"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_item(&state, &sq).unwrap(),
+            state_selectors::mon_item(&state, &sq).unwrap(),
             Some("Quick Claw")
         );
         assert_eq!(
@@ -965,7 +965,7 @@ mod state_test {
             "itemend|mon:Squirtle,player-1,1|item:Leftovers",
         ]);
         let sq = squirtle_ref();
-        assert_eq!(state_util::mon_item(&state, &sq).unwrap(), None);
+        assert_eq!(state_selectors::mon_item(&state, &sq).unwrap(), None);
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([
@@ -1033,7 +1033,7 @@ mod state_test {
         let mut logs = Vec::from_iter(["boost|mon:Squirtle,player-1,1|stat:atk|by:2"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(boosts.get(battler::Boost::Def), 0);
 
@@ -1042,13 +1042,13 @@ mod state_test {
             "boost|mon:Squirtle,player-1,1|stat:def|by:-1",
         ]);
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(boosts.get(battler::Boost::Def), -1);
 
         logs.extend_from_slice(&["turn|turn:3", "clearallboosts", "turn|turn:4"]);
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 0);
         assert_eq!(boosts.get(battler::Boost::Def), 0);
         assert_eq!(
@@ -1088,11 +1088,11 @@ mod state_test {
     fn records_weather() {
         let mut logs = Vec::from_iter(["weather|weather:Rain"]);
         let state = setup_singles_battle(&logs);
-        assert_eq!(state_util::field_weather(&state), Some("Rain"));
+        assert_eq!(state_selectors::field_weather(&state), Some("Rain"));
 
         logs.extend_from_slice(&["turn|turn:2", "clearweather", "turn|turn:3"]);
         let state = setup_singles_battle(&logs);
-        assert_eq!(state_util::field_weather(&state), None);
+        assert_eq!(state_selectors::field_weather(&state), None);
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::Effect {
@@ -1123,7 +1123,7 @@ mod state_test {
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_status(&state, &sq).unwrap(),
+            state_selectors::mon_status(&state, &sq).unwrap(),
             Some("Paralysis")
         );
 
@@ -1133,7 +1133,7 @@ mod state_test {
             "turn|turn:3",
         ]);
         let state = setup_singles_battle(&logs);
-        assert_eq!(state_util::mon_status(&state, &sq).unwrap(), None);
+        assert_eq!(state_selectors::mon_status(&state, &sq).unwrap(), None);
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::Effect {
@@ -1176,14 +1176,14 @@ mod state_test {
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_health(&state, &sq).unwrap(),
+            state_selectors::mon_health(&state, &sq).unwrap(),
             Some((50, 100))
         );
 
         logs.push("heal|mon:Squirtle,player-1,1|health:75/100");
         let state = setup_singles_battle(&logs);
         assert_eq!(
-            state_util::mon_health(&state, &sq).unwrap(),
+            state_selectors::mon_health(&state, &sq).unwrap(),
             Some((75, 100))
         );
         assert_eq!(
@@ -1226,7 +1226,7 @@ mod state_test {
         let mut logs = Vec::from_iter(["start|mon:Squirtle,player-1,1|volatile:Substitute"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
-        let conds = state_util::mon_conditions(&state, &sq)
+        let conds = state_selectors::mon_conditions(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(conds.contains(&"Substitute"));
@@ -1237,7 +1237,7 @@ mod state_test {
             "turn|turn:3",
         ]);
         let state = setup_singles_battle(&logs);
-        let conds = state_util::mon_conditions(&state, &sq)
+        let conds = state_selectors::mon_conditions(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!conds.contains(&"Substitute"));
@@ -1281,7 +1281,7 @@ mod state_test {
     fn records_field_condition() {
         let mut logs = Vec::from_iter(["fieldstart|condition:Trick Room"]);
         let state = setup_singles_battle(&logs);
-        let conds = state_util::field_conditions(&state).collect::<Vec<_>>();
+        let conds = state_selectors::field_conditions(&state).collect::<Vec<_>>();
         assert!(conds.contains(&"Trick Room"));
 
         logs.extend_from_slice(&[
@@ -1290,7 +1290,7 @@ mod state_test {
             "turn|turn:3",
         ]);
         let state = setup_singles_battle(&logs);
-        let conds = state_util::field_conditions(&state).collect::<Vec<_>>();
+        let conds = state_selectors::field_conditions(&state).collect::<Vec<_>>();
         assert!(!conds.contains(&"Trick Room"));
         assert_eq!(
             state.ui_log[1],
@@ -1326,7 +1326,7 @@ mod state_test {
             setup_singles_battle(&["formechange|mon:Squirtle,player-1,1|species:Squirtle-Mega"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_species(&state, &sq).unwrap(),
+            state_selectors::mon_species(&state, &sq).unwrap(),
             "Squirtle-Mega"
         );
         assert_eq!(
@@ -1355,13 +1355,13 @@ mod state_test {
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_item(&state, &sq).unwrap(),
+            state_selectors::mon_item(&state, &sq).unwrap(),
             Some("Leftovers")
         );
 
         logs.push("itemend|mon:Squirtle,player-1,1|item:Leftovers");
         let state = setup_singles_battle(&logs);
-        assert_eq!(state_util::mon_item(&state, &sq).unwrap(), None);
+        assert_eq!(state_selectors::mon_item(&state, &sq).unwrap(), None);
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([
@@ -1454,7 +1454,7 @@ mod state_test {
             "move|mon:Squirtle,player-1,1|name:Ice Beam|target:Charmander,player-2,1|from:move:Metronome",
         ]);
         let sq = squirtle_ref();
-        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!moves.contains(&"Ice Beam"));
@@ -1465,7 +1465,7 @@ mod state_test {
     fn records_side_condition() {
         let mut logs = Vec::from_iter(["sidestart|side:0|condition:Spikes"]);
         let state = setup_singles_battle(&logs);
-        let conds = state_util::side_conditions(&state, 0)
+        let conds = state_selectors::side_conditions(&state, 0)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(conds.contains(&"Spikes"));
@@ -1476,7 +1476,7 @@ mod state_test {
             "turn|turn:3",
         ]);
         let state = setup_singles_battle(&logs);
-        let conds = state_util::side_conditions(&state, 0)
+        let conds = state_selectors::side_conditions(&state, 0)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!conds.contains(&"Spikes"));
@@ -1635,7 +1635,7 @@ mod state_test {
         let mut logs = Vec::from_iter(["move|mon:Squirtle,player-1,1|name:Pound"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
-        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(moves.contains(&"Pound"));
@@ -1646,7 +1646,7 @@ mod state_test {
             "learnedmove|mon:Squirtle,player-1,1|move:Water Gun|forgot:Pound",
         ]);
         let state = setup_singles_battle(&logs);
-        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(moves.contains(&"Water Gun"));
@@ -1675,7 +1675,7 @@ mod state_test {
         ]);
         let ch = charmander_ref();
         assert_eq!(
-            state_util::mon_health(&state, &ch).unwrap(),
+            state_selectors::mon_health(&state, &ch).unwrap(),
             Some((80, 100))
         );
         assert_eq!(
@@ -1741,13 +1741,13 @@ mod state_test {
         let sq = squirtle_ref();
         let ch = charmander_ref();
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Atk),
             0
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Atk),
             2
@@ -1755,7 +1755,7 @@ mod state_test {
 
         logs.push("copyboosts|mon:Squirtle,player-1,1|of:Charmander,player-2,1");
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(
             state.ui_log[1],
@@ -1796,25 +1796,25 @@ mod state_test {
         let sq = squirtle_ref();
         let ch = charmander_ref();
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Atk),
             2
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Def),
             0
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Def),
             1
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Atk),
             0
@@ -1823,25 +1823,25 @@ mod state_test {
         logs.push("swapboosts|mon:Squirtle,player-1,1|of:Charmander,player-2,1");
         let state = setup_singles_battle(&logs);
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Atk),
             0
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Def),
             1
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Atk),
             2
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Def),
             0
@@ -1893,25 +1893,25 @@ mod state_test {
         let sq = squirtle_ref();
         let ch = charmander_ref();
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Atk),
             2
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Def),
             0
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Def),
             1
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Atk),
             0
@@ -1920,25 +1920,25 @@ mod state_test {
         logs.push("swapboosts|mon:Squirtle,player-1,1|of:Charmander,player-2,1|stats:atk");
         let state = setup_singles_battle(&logs);
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Atk),
             0
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &sq)
+            state_selectors::mon_boosts(&state, &sq)
                 .unwrap()
                 .get(battler::Boost::Def),
             0
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Atk),
             2
         );
         assert_eq!(
-            state_util::mon_boosts(&state, &ch)
+            state_selectors::mon_boosts(&state, &ch)
                 .unwrap()
                 .get(battler::Boost::Def),
             1
@@ -1988,7 +1988,7 @@ mod state_test {
         ]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_species(&state, &sq).unwrap(),
+            state_selectors::mon_species(&state, &sq).unwrap(),
             "Squirtle-Mega"
         );
         assert_eq!(
@@ -2042,7 +2042,7 @@ mod state_test {
             setup_singles_battle(&["gigantamax|mon:Squirtle,player-1,1|species:Squirtle-Gmax"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_species(&state, &sq).unwrap(),
+            state_selectors::mon_species(&state, &sq).unwrap(),
             "Squirtle-Gmax"
         );
         assert_eq!(
@@ -2069,7 +2069,7 @@ mod state_test {
     fn records_terastallization() {
         let state = setup_singles_battle(&["tera|mon:Squirtle,player-1,1|type:Fire"]);
         let sq = squirtle_ref();
-        let sq_app = state_util::mon_battle_appearance_or_else(&state, &sq).unwrap();
+        let sq_app = state_selectors::mon_battle_appearance_or_else(&state, &sq).unwrap();
         assert_eq!(
             sq_app.terastallization.known().map(|s| s.as_str()),
             Some("Fire")
@@ -2133,19 +2133,19 @@ mod state_test {
         ]);
         let state = setup_singles_battle(&logs);
         let squirtle_ref = squirtle_ref();
-        let boosts = state_util::mon_boosts(&state, &squirtle_ref).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &squirtle_ref).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(boosts.get(battler::Boost::Def), -1);
 
         logs.push("invertboosts|mon:Squirtle,player-1,1");
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &squirtle_ref).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &squirtle_ref).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), -2);
         assert_eq!(boosts.get(battler::Boost::Def), 1);
 
         logs.push("clearpositiveboosts|mon:Squirtle,player-1,1");
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &squirtle_ref).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &squirtle_ref).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), -2);
         assert_eq!(boosts.get(battler::Boost::Def), 0);
 
@@ -2155,12 +2155,12 @@ mod state_test {
             "turn|turn:2",
         ]);
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &squirtle_ref).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &squirtle_ref).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), -2);
         assert_eq!(boosts.get(battler::Boost::Def), 0);
 
         let data = battler_test_utils::static_local_data_store();
-        let types = state_util::mon_types(&state, &squirtle_ref, data).unwrap();
+        let types = state_selectors::mon_types(&state, &squirtle_ref, data).unwrap();
         assert!(types.contains(&battler::Type::Water));
         assert!(types.contains(&battler::Type::Grass));
 
@@ -2250,12 +2250,12 @@ mod state_test {
         let mut logs = Vec::from_iter(["boost|mon:Squirtle,player-1,1|stat:atk|by:2"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
 
         logs.push("clearboosts|mon:Squirtle,player-1,1");
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 0);
         assert_eq!(
             state.ui_log[1],
@@ -2290,13 +2290,13 @@ mod state_test {
         ]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(boosts.get(battler::Boost::Def), -2);
 
         logs.push("clearnegativeboosts|mon:Squirtle,player-1,1");
         let state = setup_singles_battle(&logs);
-        let boosts = state_util::mon_boosts(&state, &sq).unwrap();
+        let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(boosts.get(battler::Boost::Def), 0);
         assert_eq!(
@@ -2336,11 +2336,11 @@ mod state_test {
     fn records_clear_weather() {
         let mut logs = Vec::from_iter(["weather|weather:RainDance"]);
         let state = setup_singles_battle(&logs);
-        assert_eq!(state_util::field_weather(&state), Some("RainDance"));
+        assert_eq!(state_selectors::field_weather(&state), Some("RainDance"));
 
         logs.push("clearweather");
         let state = setup_singles_battle(&logs);
-        assert_eq!(state_util::field_weather(&state), None);
+        assert_eq!(state_selectors::field_weather(&state), None);
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([
@@ -2380,7 +2380,7 @@ mod state_test {
         let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
         assert!(!sq_mon.fainted);
         assert_eq!(
-            state_util::mon_health(&state, &sq).unwrap(),
+            state_selectors::mon_health(&state, &sq).unwrap(),
             Some((50, 100))
         );
         assert_eq!(
@@ -2430,7 +2430,7 @@ mod state_test {
         let state = setup_singles_battle(&["sethp|mon:Squirtle,player-1,1|health:42/100"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_health(&state, &sq).unwrap(),
+            state_selectors::mon_health(&state, &sq).unwrap(),
             Some((42, 100))
         );
         assert_eq!(
@@ -2457,7 +2457,7 @@ mod state_test {
             setup_singles_battle(&["primal|mon:Squirtle,player-1,1|species:Squirtle-Primal"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_species(&state, &sq).unwrap(),
+            state_selectors::mon_species(&state, &sq).unwrap(),
             "Squirtle-Primal"
         );
         assert_eq!(
@@ -2486,7 +2486,7 @@ mod state_test {
         let state = setup_singles_battle(&["ultra|mon:Squirtle,player-1,1|species:Squirtle-Ultra"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_species(&state, &sq).unwrap(),
+            state_selectors::mon_species(&state, &sq).unwrap(),
             "Squirtle-Ultra"
         );
         assert_eq!(
@@ -2554,7 +2554,7 @@ mod state_test {
         let state =
             setup_singles_battle(&["revertgigantamax|mon:Squirtle,player-1,1|species:Squirtle"]);
         let sq = squirtle_ref();
-        assert_eq!(state_util::mon_species(&state, &sq).unwrap(), "Squirtle");
+        assert_eq!(state_selectors::mon_species(&state, &sq).unwrap(), "Squirtle");
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
@@ -2579,7 +2579,7 @@ mod state_test {
     fn records_mega_reversion() {
         let state = setup_singles_battle(&["revertmega|mon:Squirtle,player-1,1|species:Squirtle"]);
         let sq = squirtle_ref();
-        assert_eq!(state_util::mon_species(&state, &sq).unwrap(), "Squirtle");
+        assert_eq!(state_selectors::mon_species(&state, &sq).unwrap(), "Squirtle");
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
@@ -2605,7 +2605,7 @@ mod state_test {
         let mut logs = Vec::from_iter(["tera|mon:Squirtle,player-1,1|type:Fire"]);
         let state = setup_singles_battle(&logs);
         let sq = squirtle_ref();
-        let sq_app = state_util::mon_battle_appearance_or_else(&state, &sq).unwrap();
+        let sq_app = state_selectors::mon_battle_appearance_or_else(&state, &sq).unwrap();
         assert_eq!(
             sq_app.terastallization.known().map(|s| s.as_str()),
             Some("Fire")
@@ -2613,7 +2613,7 @@ mod state_test {
 
         logs.push("reverttera|mon:Squirtle,player-1,1");
         let state = setup_singles_battle(&logs);
-        let sq_app = state_util::mon_battle_appearance_or_else(&state, &sq).unwrap();
+        let sq_app = state_selectors::mon_battle_appearance_or_else(&state, &sq).unwrap();
         assert_eq!(
             sq_app.terastallization.known().map(|s| s.as_str()),
             Some("")
@@ -2655,7 +2655,7 @@ mod state_test {
             "specieschange|player:player-1|position:1|name:Squirtle|health:100/100|species:Wartortle|level:5|gender:M",
         ]);
         let sq = squirtle_ref();
-        assert_eq!(state_util::mon_species(&state, &sq).unwrap(), "Wartortle");
+        assert_eq!(state_selectors::mon_species(&state, &sq).unwrap(), "Wartortle");
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
@@ -2766,10 +2766,10 @@ mod state_test {
             "sidestart|side:0|condition:Spikes",
             "swapsideconditions|side:0|with:1",
         ]);
-        let side0_conds = state_util::side_conditions(&state, 0)
+        let side0_conds = state_selectors::side_conditions(&state, 0)
             .unwrap()
             .collect::<Vec<_>>();
-        let side1_conds = state_util::side_conditions(&state, 1)
+        let side1_conds = state_selectors::side_conditions(&state, 1)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(side0_conds.is_empty());
@@ -2783,10 +2783,10 @@ mod state_test {
             "sidestart|side:0|condition:Spikes",
             "swapsidecondition|side:1|source:0|condition:Spikes",
         ]);
-        let side0_conds = state_util::side_conditions(&state, 0)
+        let side0_conds = state_selectors::side_conditions(&state, 0)
             .unwrap()
             .collect::<Vec<_>>();
-        let side1_conds = state_util::side_conditions(&state, 1)
+        let side1_conds = state_selectors::side_conditions(&state, 1)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(side0_conds.is_empty());
@@ -2915,7 +2915,7 @@ mod state_test {
     fn records_experience() {
         let state = setup_singles_battle(&["exp|mon:Squirtle,player-1,1|exp:100"]);
         let sq = squirtle_ref();
-        assert_eq!(state_util::mon_level(&state, &sq).unwrap(), Some(5));
+        assert_eq!(state_selectors::mon_level(&state, &sq).unwrap(), Some(5));
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::Experience {
@@ -2933,7 +2933,7 @@ mod state_test {
         let state =
             setup_singles_battle(&["levelup|mon:Squirtle,player-1,1|level:6|hp:20|atk:12|def:12"]);
         let sq = squirtle_ref();
-        assert_eq!(state_util::mon_level(&state, &sq).unwrap(), Some(6));
+        assert_eq!(state_selectors::mon_level(&state, &sq).unwrap(), Some(6));
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::LevelUp {
@@ -3002,7 +3002,7 @@ mod state_test {
     fn records_animate_move() {
         let state = setup_singles_battle(&["animatemove|mon:Squirtle,player-1,1|name:Tackle"]);
         let sq = squirtle_ref();
-        let known_moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let known_moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!known_moves.contains(&"Tackle"));
@@ -3381,7 +3381,7 @@ mod state_test {
             "move|mon:Squirtle,player-1,1|name:Struggle|target:Charmander,player-2,1",
         ]);
         let sq = squirtle_ref();
-        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!moves.contains(&"Struggle"));
@@ -3394,7 +3394,7 @@ mod state_test {
             "move|mon:Squirtle,player-1,1|name:Thunderbolt|target:Charmander,player-2,1",
         ]);
         let sq = squirtle_ref();
-        let moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!moves.contains(&"Thunderbolt"));
@@ -3409,12 +3409,12 @@ mod state_test {
         let sq = squirtle_ref();
         let ch = charmander_ref();
 
-        let sq_moves = state_util::mon_known_non_volatile_moves(&state, &sq)
+        let sq_moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!sq_moves.contains(&"Ember"));
 
-        let ch_moves = state_util::mon_known_non_volatile_moves(&state, &ch)
+        let ch_moves = state_selectors::mon_known_non_volatile_moves(&state, &ch)
             .unwrap()
             .collect::<Vec<_>>();
         assert!(ch_moves.contains(&"Ember"));
@@ -3425,7 +3425,7 @@ mod state_test {
         let state = setup_singles_battle(&["start|mon:Squirtle,player-1,1|ability:Flash Fire"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_ability(&state, &sq).unwrap(),
+            state_selectors::mon_ability(&state, &sq).unwrap(),
             Some("Flash Fire")
         );
     }
@@ -3435,7 +3435,7 @@ mod state_test {
         let state = setup_singles_battle(&["start|mon:Squirtle,player-1,1|item:Air Balloon"]);
         let sq = squirtle_ref();
         assert_eq!(
-            state_util::mon_item(&state, &sq).unwrap(),
+            state_selectors::mon_item(&state, &sq).unwrap(),
             Some("Air Balloon")
         );
     }
@@ -3447,6 +3447,6 @@ mod state_test {
             "faint|mon:Charmander,player-2,1",
         ]);
         let ch = charmander_ref();
-        assert_eq!(state_util::mon_health(&state, &ch).unwrap(), Some((0, 100)));
+        assert_eq!(state_selectors::mon_health(&state, &ch).unwrap(), Some((0, 100)));
     }
 }

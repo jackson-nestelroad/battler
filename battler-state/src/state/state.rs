@@ -19,6 +19,8 @@ use crate::{
 
 /// The state of a battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct BattleState {
     pub phase: BattlePhase,
     pub turn: usize,

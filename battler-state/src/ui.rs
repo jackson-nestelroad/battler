@@ -11,6 +11,8 @@ use serde::{
 
 /// A position on the field.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct FieldPosition {
     pub side: usize,
     pub position: usize,
@@ -18,6 +20,8 @@ pub struct FieldPosition {
 
 /// A reference to a Mon that is likely not active on the field.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonReference {
     pub player: String,
     pub name: String,
@@ -28,6 +32,8 @@ pub struct MonReference {
 /// The Mon may be active or inactive. Active Mons can be seen on the field; inactive Mons can only
 /// be referred to by name.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Mon {
     Active(FieldPosition),
     Inactive(MonReference),
@@ -35,15 +41,22 @@ pub enum Mon {
 
 /// The target of a move.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum MoveTarget {
     #[serde(untagged)]
     Single(Mon),
     #[serde(untagged)]
-    Spread(HashSet<Mon>),
+    Spread(
+        #[cfg_attr(feature = "typescript", ts(as = "std::collections::BTreeSet<Mon>"))]
+        HashSet<Mon>,
+    ),
 }
 
 /// A generic effect.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct Effect {
     pub effect_type: Option<String>,
     pub name: String,
@@ -51,6 +64,8 @@ pub struct Effect {
 
 /// Data for an activated effect in a battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct EffectData {
     /// The effect that activated.
     pub effect: Option<Effect>,
@@ -67,11 +82,17 @@ pub struct EffectData {
     /// The effect that triggered the effect.
     pub source_effect: Option<Effect>,
     /// Any additional data from the battle log.
+    #[cfg_attr(
+        feature = "typescript",
+        ts(as = "std::collections::BTreeMap<String, String>")
+    )]
     pub additional: HashMap<String, String>,
 }
 
 /// A battle log entry specifically for the battle UI.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum UiLogEntry {
     /// A player attempted to escape but failed.
     CannotEscape { player: String },
@@ -85,6 +106,10 @@ pub enum UiLogEntry {
     /// A debug log that should be shown to clients.
     Debug {
         title: String,
+        #[cfg_attr(
+            feature = "typescript",
+            ts(as = "std::collections::BTreeMap<String, String>")
+        )]
         values: HashMap<String, String>,
     },
     /// A generic effect activated.
@@ -95,6 +120,10 @@ pub enum UiLogEntry {
     Extension {
         source: String,
         title: String,
+        #[cfg_attr(
+            feature = "typescript",
+            ts(as = "std::collections::BTreeMap<String, String>")
+        )]
         values: HashMap<String, String>,
     },
     /// A Mon fainted.
@@ -108,12 +137,20 @@ pub enum UiLogEntry {
     Leave {
         title: String,
         player: String,
+        #[cfg_attr(
+            feature = "typescript",
+            ts(as = "std::collections::BTreeSet<FieldPosition>")
+        )]
         positions: HashSet<FieldPosition>,
     },
     /// A Mon leveled up.
     LevelUp {
         mon: Mon,
         level: u64,
+        #[cfg_attr(
+            feature = "typescript",
+            ts(as = "std::collections::BTreeMap<String, u64>")
+        )]
         stats: HashMap<String, u64>,
     },
     /// The battle ended due to a turn limit.
