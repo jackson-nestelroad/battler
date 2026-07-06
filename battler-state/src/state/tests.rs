@@ -845,7 +845,10 @@ mod state_test {
     fn records_ability() {
         let state = setup_singles_battle(&["ability|mon:Charmander,player-2,1|ability:Blaze"]);
         let ch = charmander_ref();
-        assert_eq!(state_selectors::mon_ability(&state, &ch).unwrap(), Some("Blaze"));
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Blaze")
+        );
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::Effect {
@@ -2554,7 +2557,10 @@ mod state_test {
         let state =
             setup_singles_battle(&["revertgigantamax|mon:Squirtle,player-1,1|species:Squirtle"]);
         let sq = squirtle_ref();
-        assert_eq!(state_selectors::mon_species(&state, &sq).unwrap(), "Squirtle");
+        assert_eq!(
+            state_selectors::mon_species(&state, &sq).unwrap(),
+            "Squirtle"
+        );
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
@@ -2579,7 +2585,10 @@ mod state_test {
     fn records_mega_reversion() {
         let state = setup_singles_battle(&["revertmega|mon:Squirtle,player-1,1|species:Squirtle"]);
         let sq = squirtle_ref();
-        assert_eq!(state_selectors::mon_species(&state, &sq).unwrap(), "Squirtle");
+        assert_eq!(
+            state_selectors::mon_species(&state, &sq).unwrap(),
+            "Squirtle"
+        );
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
@@ -2655,7 +2664,10 @@ mod state_test {
             "specieschange|player:player-1|position:1|name:Squirtle|health:100/100|species:Wartortle|level:5|gender:M",
         ]);
         let sq = squirtle_ref();
-        assert_eq!(state_selectors::mon_species(&state, &sq).unwrap(), "Wartortle");
+        assert_eq!(
+            state_selectors::mon_species(&state, &sq).unwrap(),
+            "Wartortle"
+        );
         assert_eq!(
             state.ui_log[1],
             Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
@@ -3447,6 +3459,9 @@ mod state_test {
             "faint|mon:Charmander,player-2,1",
         ]);
         let ch = charmander_ref();
-        assert_eq!(state_selectors::mon_health(&state, &ch).unwrap(), Some((0, 100)));
+        assert_eq!(
+            state_selectors::mon_health(&state, &ch).unwrap(),
+            Some((0, 100))
+        );
     }
 }
