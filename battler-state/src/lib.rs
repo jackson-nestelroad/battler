@@ -28,6 +28,8 @@ mod export_ts_bindings {
         BattlePhase,
         BattleState,
         ConditionData,
+        DiscoveryRequired,
+        DiscoveryRequiredSet,
         Field,
         Mon,
         MonBattleAppearance,
@@ -42,6 +44,8 @@ mod export_ts_bindings {
 
     #[test]
     fn export_types() {
+        DiscoveryRequired::<u64>::export().unwrap();
+        DiscoveryRequiredSet::<String>::export().unwrap();
         BattleState::export().unwrap();
         BattlePhase::export().unwrap();
         ConditionData::export().unwrap();

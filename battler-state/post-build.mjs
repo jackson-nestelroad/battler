@@ -19,6 +19,9 @@ execSync("cargo test -p battler-state --features typescript export_types", {
 
 // 2. Copy bindings directory if it exists
 if (fs.existsSync(bindingsSrcDir)) {
+  if (fs.existsSync(bindingsDestDir)) {
+    fs.rmSync(bindingsDestDir, { recursive: true, force: true });
+  }
   fs.cpSync(bindingsSrcDir, bindingsDestDir, { recursive: true });
 }
 
