@@ -13,6 +13,6 @@
     "wamp-integration-tests"
   ],
   "devDependencies": {
-    "wasm-pack": "^0.13.1"
+    "wasm-pack": "^0.15.0"
   }
 }
