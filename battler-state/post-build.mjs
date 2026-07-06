@@ -22,16 +22,26 @@ if (fs.existsSync(bindingsSrcDir)) {
   if (fs.existsSync(bindingsDestDir)) {
     fs.rmSync(bindingsDestDir, { recursive: true, force: true });
   }
-  fs.cpSync(bindingsSrcDir, bindingsDestDir, { recursive: true });
+  fs.mkdirSync(bindingsDestDir, { recursive: true });
+  const files = fs.readdirSync(bindingsSrcDir);
+  for (const f of files) {
+    if (f.endsWith(".ts")) {
+      const name = path.basename(f, ".ts");
+      fs.copyFileSync(
+        path.resolve(bindingsSrcDir, f),
+        path.resolve(bindingsDestDir, `${name}.d.ts`),
+      );
+    }
+  }
 }
 
 // 3. Scan the copied bindings directory
 if (fs.existsSync(bindingsDestDir)) {
   const files = fs.readdirSync(bindingsDestDir);
   const reExports = files
-    .filter((f) => f.endsWith(".ts"))
+    .filter((f) => f.endsWith(".d.ts"))
     .map((f) => {
-      const name = path.basename(f, ".ts");
+      const name = path.basename(f, ".d.ts");
       return `export type { ${name} } from "./bindings/${name}.js";`;
     })
     .join("\n");
