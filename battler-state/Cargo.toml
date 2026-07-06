@@ -8,22 +8,36 @@ keywords = ["pokemon", "battle"]
 license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-state"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [features]
 default = ["std"]
 
 std = [
     "battler/std",
 ]
+typescript = ["dep:ts-rs"]
 
 [dependencies]
 anyhow = { version = "1.0", default-features = false }
 hashbrown = { workspace = true }
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
+ts-rs = { version = "10.0", features = ["serde-compat"], optional = true }
 
 battler = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+serde-wasm-bindgen = "0.6"
+getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
+getrandom = { version = "0.4", features = ["wasm_js"] }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
 
 battler-test-utils = { path = "../battler-test-utils" }
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3"

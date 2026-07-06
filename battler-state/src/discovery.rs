@@ -12,6 +12,8 @@ use serde::{
 /// will be stored. Values can be "recorded" (in which the new value takes precedence) or "merged"
 /// (in which the two values take equal precedence).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum DiscoveryRequired<T>
 where
     T: Ord,
@@ -152,6 +154,8 @@ where
 /// possible values. It keeps the semantics of [`DiscoveryRequired`] in terms of recording and
 /// merging.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct DiscoveryRequiredSet<T>
 where
     T: Ord,

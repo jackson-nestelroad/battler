@@ -1,0 +1,35 @@
+name: battler-state-wasm
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-battler-state-wasm:
+    name: Build and test battler-state WASM
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: ${{ github.workspace }}/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build WASM Package
+        run: npm run build:battler-state
+      - name: Run WASM Unit Tests
+        run: npm run test:battler-state:wasm
+      - name: Run JS/TS Integration Tests
+        run: npm run test:battler-state:js

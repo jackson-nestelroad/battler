@@ -1,0 +1,18 @@
+{
+  "name": "battler",
+  "private": true,
+  "scripts": {
+    "build:battler-state": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-state -- --features typescript && node battler-state/post-build.mjs",
+    "test:battler-state:wasm": "npx wasm-pack test --node battler-state",
+    "test:battler-state:js": "npm run --workspace=battler-state-js-tests test"
+  },
+  "workspaces": [
+    "battler-state/pkg/node",
+    "battler-state/js-tests",
+    "fxlang-ext",
+    "wamp-integration-tests"
+  ],
+  "devDependencies": {
+    "wasm-pack": "^0.15.0"
+  }
+}

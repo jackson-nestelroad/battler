@@ -20,6 +20,7 @@ use crate::{
     Mon,
     MonBattleAppearance,
     MonBattleAppearanceReference,
+    MonPhysicalAppearance,
     Player,
     Side,
 };
@@ -171,7 +172,8 @@ pub fn mon_status<'s>(
     Ok(mon_battle_appearance_or_else(state, mon)?
         .status
         .known()
-        .map(|s| s.as_str()))
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
 }
 
 /// The ability of a Mon.
@@ -180,12 +182,13 @@ pub fn mon_ability<'s>(
     mon: &MonBattleAppearanceReference,
 ) -> Result<Option<&'s str>> {
     if let Some(ability) = mon_or_else(state, mon)?.volatile_data.ability.as_ref() {
-        return Ok(Some(ability));
+        return Ok(Some(ability.as_str()).filter(|s| !s.is_empty()));
     }
     Ok(mon_battle_appearance_or_else(state, mon)?
         .ability
         .known()
-        .map(|s| s.as_str()))
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
 }
 
 /// The moves of a Mon.
@@ -241,7 +244,8 @@ pub fn mon_item<'s>(
     Ok(mon_battle_appearance_or_else(state, mon)?
         .item
         .known()
-        .map(|s| s.as_str()))
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
 }
 
 /// The species of a Mon.
@@ -268,20 +272,25 @@ pub fn mon_types(
     data: &dyn DataStoreByName,
 ) -> Result<Vec<Type>> {
     let volatile_types = &mon_or_else(state, mon)?.volatile_data.types;
-    if !volatile_types.is_empty() {
-        return volatile_types
+    let mut types = if !volatile_types.is_empty() {
+        volatile_types
             .iter()
             .map(|typ| Type::from_str(&typ).map_err(Error::msg))
-            .collect::<Result<Vec<_>>>();
+            .collect::<Result<Vec<_>>>()?
+    } else {
+        let species = data
+            .get_species_by_name(mon_species(state, mon)?)?
+            .ok_or_else(|| Error::msg("species not found"))?;
+        species.types_iter().collect()
+    };
+
+    if let Some(added_type) = &mon_or_else(state, mon)?.volatile_data.added_type {
+        let added_type = Type::from_str(added_type).map_err(Error::msg)?;
+        if !types.contains(&added_type) {
+            types.push(added_type);
+        }
     }
 
-    let species = data
-        .get_species_by_name(mon_species(state, mon)?)?
-        .ok_or_else(|| Error::msg("species not found"))?;
-    let mut types = Vec::from_iter([species.primary_type]);
-    if let Some(typ) = species.secondary_type {
-        types.push(typ);
-    }
     Ok(types)
 }
 
@@ -324,8 +333,52 @@ pub fn mon_active_position<'s>(
         .position(|active| active.as_ref().is_some_and(|active| active == mon)))
 }
 
+/// Checks if a Mon is fainted.
+pub fn mon_is_fainted(state: &BattleState, mon: &MonBattleAppearanceReference) -> Result<bool> {
+    Ok(mon_or_else(state, mon)?.fainted)
+}
+
+/// Resolves the physical appearance of a Mon.
+pub fn mon_physical_appearance<'s>(
+    state: &'s BattleState,
+    mon: &MonBattleAppearanceReference,
+) -> Result<&'s MonPhysicalAppearance> {
+    Ok(&mon_or_else(state, mon)?.physical_appearance)
+}
+
+/// Checks if a Mon is currently active on the field.
+pub fn mon_is_active(state: &BattleState, mon: &MonBattleAppearanceReference) -> Result<bool> {
+    Ok(mon_active_position(state, mon)?.is_some())
+}
+
+/// Resolves a side and slot position to a Mon reference.
+pub fn active_mon_by_position(
+    state: &BattleState,
+    side: usize,
+    position: usize,
+) -> Result<Option<MonBattleAppearanceReference>> {
+    let side = side_or_else(state, side)?;
+    Ok(side.active.get(position).cloned().flatten())
+}
+
+/// Returns an iterator of all Mons owned by a player.
+pub fn player_mons<'s>(
+    state: &'s BattleState,
+    player: &str,
+) -> Result<impl Iterator<Item = &'s Mon> + 's> {
+    Ok(player_or_else(state, player)?.mons.iter())
+}
+
+/// Returns an iterator of all players on a side.
+pub fn side_players<'s>(
+    state: &'s BattleState,
+    side: usize,
+) -> Result<impl Iterator<Item = &'s Player> + 's> {
+    Ok(side_or_else(state, side)?.players.values())
+}
+
 #[cfg(test)]
-mod state_util_test {
+mod state_selectors_test {
     use alloc::{
         borrow::ToOwned,
         collections::{
@@ -356,25 +409,7 @@ mod state_util_test {
             Player,
             Side,
         },
-        state_util::{
-            field_conditions,
-            field_terrain,
-            field_weather,
-            mon_ability,
-            mon_active_position,
-            mon_all_possible_non_volatile_moves,
-            mon_boosts,
-            mon_conditions,
-            mon_health,
-            mon_item,
-            mon_known_non_volatile_moves,
-            mon_level,
-            mon_moves,
-            mon_species,
-            mon_status,
-            mon_types,
-            side_conditions,
-        },
+        state_selectors::*,
     };
 
     #[test]
@@ -1187,5 +1222,196 @@ mod state_util_test {
             ),
             Ok(None)
         );
+    }
+
+    #[test]
+    fn returns_mon_is_fainted() {
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([(
+                        "player-1".to_owned(),
+                        Player {
+                            mons: Vec::from_iter([
+                                Mon {
+                                    fainted: true,
+                                    ..Default::default()
+                                },
+                                Mon {
+                                    fainted: false,
+                                    ..Default::default()
+                                },
+                            ]),
+                            ..Default::default()
+                        },
+                    )]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert_eq!(
+            mon_is_fainted(
+                &state,
+                &MonBattleAppearanceReference {
+                    player: "player-1".to_owned(),
+                    mon_index: 0,
+                    battle_appearance_index: 0,
+                }
+            )
+            .unwrap(),
+            true
+        );
+        assert_eq!(
+            mon_is_fainted(
+                &state,
+                &MonBattleAppearanceReference {
+                    player: "player-1".to_owned(),
+                    mon_index: 1,
+                    battle_appearance_index: 0,
+                }
+            )
+            .unwrap(),
+            false
+        );
+    }
+
+    #[test]
+    fn returns_mon_physical_appearance() {
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([(
+                        "player-1".to_owned(),
+                        Player {
+                            mons: Vec::from_iter([Mon {
+                                physical_appearance: MonPhysicalAppearance {
+                                    name: "Pikachu".to_owned(),
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            }]),
+                            ..Default::default()
+                        },
+                    )]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert_eq!(
+            mon_physical_appearance(
+                &state,
+                &MonBattleAppearanceReference {
+                    player: "player-1".to_owned(),
+                    mon_index: 0,
+                    battle_appearance_index: 0,
+                }
+            )
+            .unwrap()
+            .name,
+            "Pikachu"
+        );
+    }
+
+    #[test]
+    fn returns_mon_is_active() {
+        let mon = MonBattleAppearanceReference {
+            player: "player-1".to_owned(),
+            mon_index: 0,
+            battle_appearance_index: 0,
+        };
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([(
+                        "player-1".to_owned(),
+                        Player {
+                            mons: Vec::from_iter([Mon::default()]),
+                            ..Default::default()
+                        },
+                    )]),
+                    active: Vec::from_iter([None, Some(mon.clone())]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert_eq!(mon_is_active(&state, &mon).unwrap(), true);
+    }
+
+    #[test]
+    fn returns_active_mon_by_position() {
+        let mon = MonBattleAppearanceReference {
+            player: "player-1".to_owned(),
+            mon_index: 0,
+            battle_appearance_index: 0,
+        };
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    active: Vec::from_iter([None, Some(mon.clone())]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert_eq!(active_mon_by_position(&state, 0, 0).unwrap(), None);
+        assert_eq!(active_mon_by_position(&state, 0, 1).unwrap(), Some(mon));
+    }
+
+    #[test]
+    fn returns_player_mons() {
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([(
+                        "player-1".to_owned(),
+                        Player {
+                            mons: Vec::from_iter([
+                                Mon::default(),
+                                Mon {
+                                    physical_appearance: MonPhysicalAppearance {
+                                        name: "Charmander".to_owned(),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                },
+                            ]),
+                            ..Default::default()
+                        },
+                    )]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let mons: Vec<&Mon> = player_mons(&state, "player-1").unwrap().collect();
+        assert_eq!(mons.len(), 2);
+        assert_eq!(mons[1].physical_appearance.name, "Charmander");
+    }
+
+    #[test]
+    fn returns_side_players() {
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([
+                        ("player-1".to_owned(), Player::default()),
+                        ("player-2".to_owned(), Player::default()),
+                    ]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let players: Vec<&Player> = side_players(&state, 0).unwrap().collect();
+        assert_eq!(players.len(), 2);
     }
 }

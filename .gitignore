@@ -25,3 +25,6 @@ fxlang-ext/out/
 
 wamp-integration-tests/.crossbar/key.priv
 wamp-integration-tests/.crossbar/key.pub
+
+battler-state/bindings/
+battler-state/pkg/
