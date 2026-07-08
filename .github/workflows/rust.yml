@@ -134,6 +134,8 @@ jobs:
     name: Run battler-multiplayer-client tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
