@@ -1,18 +1,11 @@
 use std::{
     sync::Arc,
-    time::{
-        Duration,
-        SystemTime,
-    },
+    time::Duration,
 };
 
 use ahash::{
     HashMap,
     HashSet,
-};
-use anyhow::{
-    Error,
-    Result,
 };
 use battler::{
     BattleType,
@@ -28,15 +21,16 @@ use battler_client::{
     BattleClientEvent,
     BattlerClient,
 };
+use battler_multiplayer_client::BattlerMultiplayerClient;
 use battler_multiplayer_service::{
     AiPlayerOptions,
     AiPlayerType,
     AiPlayers,
     BattlerMultiplayerService,
     ProposedBattleOptions,
-    ProposedBattleUpdate,
     RandomOptions,
 };
+use battler_multiplayer_service_client::DirectBattlerMultiplayerServiceClient;
 use battler_service::{
     BattleServiceOptions,
     BattleState,
@@ -46,8 +40,6 @@ use battler_service::{
 };
 use battler_service_client::battler_service_client_over_direct_service;
 use battler_test_utils::static_local_data_store;
-use tokio::sync::broadcast;
-use uuid::Uuid;
 
 fn battler_service() -> Arc<BattlerService<'static>> {
     Arc::new(BattlerService::new(static_local_data_store()))
@@ -184,28 +176,6 @@ where
     }
 }
 
-async fn wait_for_battle_from_proposed_battle(
-    proposed_battle: Uuid,
-    proposed_battle_update_rx: &mut broadcast::Receiver<ProposedBattleUpdate>,
-) -> Result<Uuid> {
-    let deadline = SystemTime::now() + Duration::from_secs(10);
-    loop {
-        tokio::select! {
-            update = proposed_battle_update_rx.recv() => {
-                let update = update?;
-                if update.proposed_battle.uuid == proposed_battle
-                    && let Some(battle) = update.proposed_battle.battle
-                {
-                    return Ok(battle);
-                }
-            }
-            _ = tokio::time::sleep(deadline.duration_since(SystemTime::now()).unwrap_or_default()) => {
-                return Err(Error::msg("deadline exceeded"));
-            }
-        }
-    }
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn hosts_singles_battle_against_random_ai() {
     battler_test_utils::collect_logs();
@@ -228,30 +198,33 @@ async fn hosts_singles_battle_against_random_ai() {
         Ok(())
     );
 
-    let mut proposed_battle_update_rx = service.proposed_battle_updates("trainer").await.unwrap();
+    let client = BattlerMultiplayerClient::new(
+        "trainer".to_owned(),
+        Arc::new(Box::new(DirectBattlerMultiplayerServiceClient::new(
+            service.clone(),
+        ))),
+        Arc::new(battler_service_client_over_direct_service(
+            battler_service.clone(),
+        )),
+    );
 
-    let proposed_battle = service
-        .propose_battle(proposed_battle_options("trainer", battle_options_singles()))
+    let battler_client = client
+        .propose_and_wait_for_battle_start(proposed_battle_options(
+            "trainer",
+            battle_options_singles(),
+        ))
         .await
         .unwrap();
-    let battle =
-        wait_for_battle_from_proposed_battle(proposed_battle.uuid, &mut proposed_battle_update_rx)
-            .await
-            .unwrap();
-    let battle = battler_service.battle(battle).await.unwrap();
+
+    let battle = battler_service
+        .battle(battler_client.battle())
+        .await
+        .unwrap();
     assert_eq!(battle.state, BattleState::Active);
 
-    let client = BattlerClient::new(
-        battle.uuid,
-        "trainer".to_owned(),
-        Arc::new(battler_service_client_over_direct_service(battler_service)),
-    )
-    .await
-    .unwrap();
-
-    let mut battle_event_rx = client.battle_event_rx();
+    let mut battle_event_rx = battler_client.battle_event_rx();
     while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
-        assert_matches::assert_matches!(client.make_choice("move 0").await, Ok(()));
+        assert_matches::assert_matches!(battler_client.make_choice("move 0").await, Ok(()));
     }
 
     assert_matches::assert_matches!(
@@ -259,7 +232,7 @@ async fn hosts_singles_battle_against_random_ai() {
         Ok(())
     );
     assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
-    assert_matches::assert_matches!(client.state().await.winning_side, Some(_));
+    assert_matches::assert_matches!(battler_client.state().await.winning_side, Some(_));
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -288,30 +261,33 @@ async fn hosts_multi_battle_against_random_ai() {
         Ok(())
     );
 
-    let mut proposed_battle_update_rx = service.proposed_battle_updates("trainer").await.unwrap();
+    let client = BattlerMultiplayerClient::new(
+        "trainer".to_owned(),
+        Arc::new(Box::new(DirectBattlerMultiplayerServiceClient::new(
+            service.clone(),
+        ))),
+        Arc::new(battler_service_client_over_direct_service(
+            battler_service.clone(),
+        )),
+    );
 
-    let proposed_battle = service
-        .propose_battle(proposed_battle_options("trainer", battle_options_multi()))
+    let battler_client = client
+        .propose_and_wait_for_battle_start(proposed_battle_options(
+            "trainer",
+            battle_options_multi(),
+        ))
         .await
         .unwrap();
-    let battle =
-        wait_for_battle_from_proposed_battle(proposed_battle.uuid, &mut proposed_battle_update_rx)
-            .await
-            .unwrap();
-    let battle = battler_service.battle(battle).await.unwrap();
+
+    let battle = battler_service
+        .battle(battler_client.battle())
+        .await
+        .unwrap();
     assert_eq!(battle.state, BattleState::Active);
 
-    let client = BattlerClient::new(
-        battle.uuid,
-        "trainer".to_owned(),
-        Arc::new(battler_service_client_over_direct_service(battler_service)),
-    )
-    .await
-    .unwrap();
-
-    let mut battle_event_rx = client.battle_event_rx();
+    let mut battle_event_rx = battler_client.battle_event_rx();
     while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
-        assert_matches::assert_matches!(client.make_choice("move 0,1").await, Ok(()));
+        assert_matches::assert_matches!(battler_client.make_choice("move 0,1").await, Ok(()));
     }
 
     assert_matches::assert_matches!(
@@ -319,5 +295,5 @@ async fn hosts_multi_battle_against_random_ai() {
         Ok(())
     );
     assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
-    assert_matches::assert_matches!(client.state().await.winning_side, Some(_));
+    assert_matches::assert_matches!(battler_client.state().await.winning_side, Some(_));
 }

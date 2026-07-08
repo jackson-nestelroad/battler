@@ -31,4 +31,6 @@ battler-service-client = { path = "../battler-service-client" }
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
 
+battler-multiplayer-client = { path = "../battler-multiplayer-client" }
+battler-multiplayer-service-client = { path = "../battler-multiplayer-service-client" }
 battler-test-utils = { path = "../battler-test-utils" }

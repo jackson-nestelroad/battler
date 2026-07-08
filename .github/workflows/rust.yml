@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Rust
         uses: ./.github/actions/rust
-      - name: Run battler-client tests
+      - name: Run battler-state tests
         run: cargo test -p battler-state
 
   test-battler-state-no-std:
@@ -129,6 +129,17 @@ jobs:
         uses: ./.github/actions/rust
       - name: Run battler-multiplayer-service tests
         run: cargo test -p "battler-multiplayer-service*"
+
+  test-battler-multiplayer-client:
+    name: Run battler-multiplayer-client tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-multiplayer-client tests
+        run: cargo test -p "battler-multiplayer-client*"
 
   test-battler-wamp:
     name: Run battler-wamp tests

@@ -1,0 +1,20 @@
+[package]
+name = "battler-multiplayer-client"
+version = "0.1.0"
+edition = "2024"
+description = "Multiplayer client for battles managed via battler."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-client"
+
+[dependencies]
+anyhow = { workspace = true }
+futures-util = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+
+battler-multiplayer-service-client = { path = "../battler-multiplayer-service-client" }
+battler-multiplayer-service = { path = "../battler-multiplayer-service" }
+battler-service-client = { path = "../battler-service-client" }
+battler-client = { path = "../battler-client" }

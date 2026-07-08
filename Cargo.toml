@@ -9,6 +9,7 @@ members = [
     "battler-client",
     "battler-data",
     "battler-local-data",
+    "battler-multiplayer-client",
     "battler-multiplayer-service",
     "battler-multiplayer-service/battler-multiplayer-service-schema",
     "battler-multiplayer-service-client",
