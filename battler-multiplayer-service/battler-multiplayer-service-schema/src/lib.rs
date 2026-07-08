@@ -98,7 +98,7 @@ pub struct ProposedBattleUpdatesPattern {
 }
 
 /// An update to a proposed battle.
-#[derive(Debug, Clone, WampDictionary)]
+#[derive(Debug, Clone, WampList)]
 pub struct ProposedBattleUpdate {
     /// JSON-serialized [`battler_multiplayer_service::ProposedBattleUpdate`].
     pub proposed_battle_update_json: String,

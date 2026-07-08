@@ -13,4 +13,5 @@ pub use common::auth::{
 pub use producer::{
     Modules,
     run_battler_service_producer,
+    run_battler_service_producer_over_service,
 };

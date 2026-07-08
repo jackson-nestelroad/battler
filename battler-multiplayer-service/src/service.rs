@@ -25,7 +25,10 @@ use battler::{
 use battler_service_client::BattlerServiceClient;
 use futures_util::lock::Mutex;
 use tokio::{
-    sync::broadcast,
+    sync::{
+        broadcast,
+        mpsc,
+    },
     task::JoinSet,
 };
 use uuid::Uuid;
@@ -270,6 +273,12 @@ impl ActiveProposedBattleManager {
             "Publishing update for proposed battle {}: {update:?}",
             self.uuid
         );
+        self.battler_multiplayer_service_state
+            .lock()
+            .await
+            .global_update_tx
+            .send(update.clone())
+            .ok();
         for player in self.players().await {
             self.publish_update_to_player(&player, update.clone()).await;
         }
@@ -529,14 +538,26 @@ impl PlayerState {
     }
 }
 
-#[derive(Default)]
 struct BattlerMultiplayerServiceState {
     proposed_battles: BTreeMap<Uuid, Arc<ActiveProposedBattleManager>>,
     players: HashMap<String, Arc<Mutex<PlayerState>>>,
     join_set: JoinSet<()>,
+    global_update_tx: mpsc::UnboundedSender<ProposedBattleUpdate>,
+    global_update_rx: Option<mpsc::UnboundedReceiver<ProposedBattleUpdate>>,
 }
 
 impl BattlerMultiplayerServiceState {
+    fn new() -> Self {
+        let (global_update_tx, global_update_rx) = mpsc::unbounded_channel();
+        Self {
+            proposed_battles: BTreeMap::default(),
+            players: HashMap::default(),
+            join_set: JoinSet::default(),
+            global_update_tx,
+            global_update_rx: Some(global_update_rx),
+        }
+    }
+
     fn proposed_battle(&self, uuid: Uuid) -> Result<Arc<ActiveProposedBattleManager>> {
         self.proposed_battles
             .get(&uuid)
@@ -584,7 +605,7 @@ impl<'d> BattlerMultiplayerService<'d> {
         data: &'d dyn DataStoreByName,
         battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
     ) -> Self {
-        let state = Arc::new(Mutex::new(BattlerMultiplayerServiceState::default()));
+        let state = Arc::new(Mutex::new(BattlerMultiplayerServiceState::new()));
         let ai_player_registry = Mutex::new(AiPlayerRegistry::default());
 
         state
@@ -834,5 +855,12 @@ impl<'d> BattlerMultiplayerService<'d> {
     ) -> Result<broadcast::Receiver<ProposedBattleUpdate>> {
         let player_state = self.state.lock().await.player_state(player);
         Ok(player_state.lock().await.update_tx.subscribe())
+    }
+
+    /// Takes the global update receiver.
+    pub async fn take_global_update_rx(
+        &self,
+    ) -> Option<mpsc::UnboundedReceiver<ProposedBattleUpdate>> {
+        self.state.lock().await.global_update_rx.take()
     }
 }

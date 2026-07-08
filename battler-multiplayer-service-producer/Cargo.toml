@@ -17,6 +17,7 @@ tokio = { workspace = true }
 uuid = { workspace = true }
 
 battler-wamp = { workspace = true }
+battler-wamp-uri = { workspace = true }
 battler-wamp-values = { workspace = true }
 battler-wamprat = { workspace = true }
 battler-wamprat-schema = { workspace = true }
@@ -24,6 +25,8 @@ battler-wamprat-schema = { workspace = true }
 battler = { workspace = true }
 battler-multiplayer-service = { path = "../battler-multiplayer-service" }
 battler-multiplayer-service-schema = { path = "../battler-multiplayer-service/battler-multiplayer-service-schema" }
+battler-service = { path = "../battler-service" }
+battler-service-client = { path = "../battler-service-client" }
 battler-service-producer = { path = "../battler-service-producer" }
 
 [dev-dependencies]
@@ -31,4 +34,5 @@ assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
 
 battler-multiplayer-service-client = { path = "../battler-multiplayer-service-client" }
+battler-service-schema = { path = "../battler-service/battler-service-schema" }
 battler-test-utils = { path = "../battler-test-utils" }
