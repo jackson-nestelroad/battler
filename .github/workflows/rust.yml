@@ -136,6 +136,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler-multiplayer-client tests
