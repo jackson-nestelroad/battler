@@ -1,0 +1,39 @@
+[package]
+name = "battler-server"
+version = "0.1.0"
+edition = "2024"
+description = "A server binary starting a WAMP router and direct-connected battler service producers."
+publish = false
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+futures-util = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing-subscriber = { workspace = true }
+tracing-core = { workspace = true }
+log = { workspace = true }
+uuid = { workspace = true }
+
+battler-wamp = { workspace = true }
+battler-wamp-uri = { workspace = true }
+battler-wamp-values = { workspace = true }
+battler-wamprat = { workspace = true }
+battler-wamprat-schema = { workspace = true }
+
+battler = { workspace = true }
+battler-local-data = { path = "../battler-local-data" }
+battler-service = { path = "../battler-service" }
+battler-service-producer = { path = "../battler-service-producer" }
+battler-multiplayer-service = { path = "../battler-multiplayer-service" }
+battler-multiplayer-service-producer = { path = "../battler-multiplayer-service-producer" }
+battler-service-client = { path = "../battler-service-client" }
+
+[dev-dependencies]
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+battler-test-utils = { path = "../battler-test-utils" }
+battler-service-schema = { path = "../battler-service/battler-service-schema" }
+battler-multiplayer-service-client = { path = "../battler-multiplayer-service-client" }
+battler-multiplayer-service-schema = { path = "../battler-multiplayer-service/battler-multiplayer-service-schema" }

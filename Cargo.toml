@@ -15,6 +15,7 @@ members = [
     "battler-multiplayer-service-client",
     "battler-multiplayer-service-producer",
     "battler-prng",
+    "battler-server",
     "battler-service",
     "battler-service/battler-service-schema",
     "battler-service-client",

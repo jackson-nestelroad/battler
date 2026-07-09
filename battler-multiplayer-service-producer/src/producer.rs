@@ -3,6 +3,7 @@ use std::{
     sync::Arc,
 };
 
+use ahash::HashSet;
 use anyhow::{
     Error,
     Result,
@@ -177,7 +178,10 @@ where
             .publish_proposed_battle_updates(
                 pattern,
                 event.clone(),
-                battler_wamprat::peer::PublishOptions::default(),
+                battler_wamprat::peer::PublishOptions {
+                    eligible_authid: Some(HashSet::from_iter([player.clone()])),
+                    ..Default::default()
+                },
             )
             .await?;
     }

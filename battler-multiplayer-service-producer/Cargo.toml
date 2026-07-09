@@ -9,6 +9,7 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-service-producer"
 
 [dependencies]
+ahash = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 futures-util = { workspace = true }
