@@ -300,7 +300,7 @@ fn battle_options() -> CoreBattleOptions {
                         name: "Meowth".to_owned(),
                         species: "Meowth".to_owned(),
                         ability: "Pickup".to_owned(),
-                        moves: Vec::from_iter(["Scratch".to_owned()]),
+                        moves: Vec::from_iter(["Return".to_owned()]),
                         level: 5,
                         ..Default::default()
                     }]),
@@ -801,8 +801,8 @@ async fn publishes_battle_logs() {
             "continue",
             "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
             "damage|mon:Meowth,player-2,1|health:74/100",
-            "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:12/18",
+            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
+            "damage|mon:Pikachu,player-1,1|health:17/18",
             "residual",
         ]
     );
@@ -838,8 +838,8 @@ async fn publishes_battle_logs() {
             "continue",
             "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
             "damage|mon:Meowth,player-2,1|health:14/19",
-            "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:67/100",
+            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
+            "damage|mon:Pikachu,player-1,1|health:95/100",
             "residual",
         ]
     );
@@ -875,8 +875,8 @@ async fn publishes_battle_logs() {
             "continue",
             "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
             "damage|mon:Meowth,player-2,1|health:74/100",
-            "move|mon:Meowth,player-2,1|name:Scratch|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:67/100",
+            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
+            "damage|mon:Pikachu,player-1,1|health:95/100",
             "residual",
         ]
     );
