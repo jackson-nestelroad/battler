@@ -5,7 +5,6 @@
     "build:battler-choice": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-choice/battler-choice-wasm -- --features typescript && node battler-choice/post-build.mjs",
     "build:battler-state": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-state -- --features typescript && node battler-state/post-build.mjs",
     "build:bindings": "node scripts/build-bindings.mjs",
-    "prepare": "npm run build:bindings",
     "test:battler-state:wasm": "npx wasm-pack test --node battler-state",
     "test:battler-state:js": "npm run --workspace=battler-state-js-tests test",
     "test:js-clients": "npm test --workspace=js-clients-integration-tests"
