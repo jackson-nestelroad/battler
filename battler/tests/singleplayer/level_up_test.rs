@@ -112,8 +112,8 @@ fn massive_level_up_before_battle_ends() {
                 "type": "learnmove",
                 "can_learn_move": {
                     "team_position": 0,
-                    "id": "confuseray",
-                    "name": "Confuse Ray"
+                    "id": "curse",
+                    "name": "Curse"
                 }
             }"#
         )
@@ -126,16 +126,15 @@ fn massive_level_up_before_battle_ends() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
         assert_eq!(request.active.first().map(|mon| mon.moves.iter().map(|move_slot| move_slot.name.clone()).collect()), Some(vec![
-            "Dark Pulse".to_owned(),
             "Shadow Ball".to_owned(),
-            "Confuse Ray".to_owned(),
-            "Night Shade".to_owned(),
+            "Sucker Punch".to_owned(),
+            "Curse".to_owned(),
+            "Spite".to_owned(),
         ]));
     });
 
@@ -147,7 +146,7 @@ fn massive_level_up_before_battle_ends() {
             "move|mon:Blissey,player-2,1|name:Self-Destruct|noanim",
             "immune|mon:Gastly,player-1,1",
             "faint|mon:Blissey,player-2,1",
-            "exp|mon:Gastly,player-1,1|exp:59290",
+            "exp|mon:Gastly,player-1,1|exp:56769",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:19/19",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -177,7 +176,7 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:29/29",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:12|hp:29|atk:13|def:12|spa:29|spd:13|spe:24",
-            "learnedmove|mon:Gastly,player-1,1|move:Curse",
+            "learnedmove|mon:Gastly,player-1,1|move:Payback",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:30/30",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -190,11 +189,11 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:34/34",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:15|hp:34|atk:15|def:14|spa:35|spd:15|spe:29",
-            "learnedmove|mon:Gastly,player-1,1|move:Night Shade",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:35/35",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:16|hp:35|atk:16|def:14|spa:37|spd:16|spe:30",
+            "learnedmove|mon:Gastly,player-1,1|move:Spite",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:37/37",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -207,12 +206,12 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:40/40",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:19|hp:40|atk:18|def:16|spa:43|spd:18|spe:35",
-            "continue",
-            "learnedmove|mon:Gastly,player-1,1|move:Confuse Ray|forgot:Curse",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:42/42",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:20|hp:42|atk:19|def:17|spa:45|spd:19|spe:37",
+            "continue",
+            "learnedmove|mon:Gastly,player-1,1|move:Curse|forgot:Payback",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:43/43",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -221,8 +220,6 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:45/45",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:22|hp:45|atk:20|def:18|spa:49|spd:20|spe:40",
-            "continue",
-            "learnedmove|mon:Gastly,player-1,1|move:Sucker Punch|forgot:Lick",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:46/46",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -231,6 +228,8 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:48/48",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:24|hp:48|atk:21|def:19|spa:53|spd:21|spe:43",
+            "continue",
+            "learnedmove|mon:Gastly,player-1,1|move:Hex|forgot:Lick",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:50/50",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -239,8 +238,6 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:51/51",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:26|hp:51|atk:23|def:20|spa:57|spd:23|spe:46",
-            "continue",
-            "didnotlearnmove|mon:Gastly,player-1,1|move:Payback",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:53/53",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -249,12 +246,12 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:54/54",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:28|hp:54|atk:24|def:21|spa:61|spd:24|spe:49",
+            "continue",
+            "didnotlearnmove|mon:Gastly,player-1,1|move:Night Shade",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:56/56",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:29|hp:56|atk:25|def:22|spa:63|spd:25|spe:51",
-            "continue",
-            "learnedmove|mon:Gastly,player-1,1|move:Shadow Ball|forgot:Mean Look",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:58/58",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -267,12 +264,12 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:61/61",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:32|hp:61|atk:27|def:24|spa:69|spd:27|spe:56",
+            "continue",
+            "learnedmove|mon:Gastly,player-1,1|move:Sucker Punch|forgot:Mean Look",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:62/62",
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:33|hp:62|atk:28|def:24|spa:71|spd:28|spe:57",
-            "continue",
-            "didnotlearnmove|mon:Gastly,player-1,1|move:Dream Eater",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:64/64",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -286,7 +283,7 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:36|hp:67|atk:30|def:26|spa:77|spd:30|spe:62",
             "continue",
-            "learnedmove|mon:Gastly,player-1,1|move:Dark Pulse|forgot:Sucker Punch",
+            "didnotlearnmove|mon:Gastly,player-1,1|move:Dark Pulse",
             "split|side:0",
             "sethp|mon:Gastly,player-1,1|health:69/69",
             "sethp|mon:Gastly,player-1,1|health:100/100",
@@ -304,7 +301,7 @@ fn massive_level_up_before_battle_ends() {
             "sethp|mon:Gastly,player-1,1|health:100/100",
             "levelup|mon:Gastly,player-1,1|level:40|hp:74|atk:33|def:29|spa:85|spd:33|spe:69",
             "continue",
-            "didnotlearnmove|mon:Gastly,player-1,1|move:Destiny Bond",
+            "learnedmove|mon:Gastly,player-1,1|move:Shadow Ball|forgot:Hex",
             "residual",
             "continue",
             "split|side:1",
@@ -312,7 +309,7 @@ fn massive_level_up_before_battle_ends() {
             ["switch", "player-2", "Pikachu"],
             "turn|turn:2",
             "continue",
-            "move|mon:Gastly,player-1,1|name:Shadow Ball|target:Pikachu,player-2,1",
+            "move|mon:Gastly,player-1,1|name:Sucker Punch|target:Pikachu,player-2,1",
             "split|side:1",
             "damage|mon:Pikachu,player-2,1|health:0",
             "damage|mon:Pikachu,player-2,1|health:0",
@@ -344,7 +341,6 @@ fn inactive_mon_levels_up_directly_to_level() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 0"), Ok(()));
-    assert_matches::assert_matches!(battle.set_player_choice("player-1", "learnmove 4"), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "switch 1"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
@@ -352,10 +348,10 @@ fn inactive_mon_levels_up_directly_to_level() {
 
     assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
         assert_eq!(request.active.first().map(|mon| mon.moves.iter().map(|move_slot| move_slot.name.clone()).collect()), Some(vec![
-            "Shadow Ball".to_owned(),
-            "Dream Eater".to_owned(),
-            "Confuse Ray".to_owned(),
+            "Sucker Punch".to_owned(),
             "Night Shade".to_owned(),
+            "Curse".to_owned(),
+            "Spite".to_owned(),
         ]));
     });
 
@@ -370,28 +366,26 @@ fn inactive_mon_levels_up_directly_to_level() {
             "move|mon:Blissey,player-2,1|name:Self-Destruct|noanim",
             "immune|mon:Gengar,player-1,1",
             "faint|mon:Blissey,player-2,1",
-            "exp|mon:Gastly,player-1|exp:59290",
+            "exp|mon:Gastly,player-1|exp:56769",
             "split|side:0",
             "sethp|mon:Gastly,player-1|health:74/74",
             "sethp|mon:Gastly,player-1|health:100/100",
             "levelup|mon:Gastly,player-1|level:40|hp:74|atk:33|def:29|spa:85|spd:33|spe:69",
             "learnedmove|mon:Gastly,player-1|move:Mean Look",
-            "learnedmove|mon:Gastly,player-1|move:Curse",
-            "learnedmove|mon:Gastly,player-1|move:Night Shade",
+            "learnedmove|mon:Gastly,player-1|move:Payback",
+            "learnedmove|mon:Gastly,player-1|move:Spite",
             "continue",
-            "learnedmove|mon:Gastly,player-1|move:Confuse Ray|forgot:Curse",
+            "learnedmove|mon:Gastly,player-1|move:Curse|forgot:Payback",
             "continue",
             "learnedmove|mon:Gastly,player-1|move:Dark Pulse|forgot:Lick",
             "continue",
-            "didnotlearnmove|mon:Gastly,player-1|move:Destiny Bond",
+            "didnotlearnmove|mon:Gastly,player-1|move:Hex",
             "continue",
-            "learnedmove|mon:Gastly,player-1|move:Dream Eater|forgot:Mean Look",
+            "learnedmove|mon:Gastly,player-1|move:Night Shade|forgot:Mean Look",
             "continue",
-            "didnotlearnmove|mon:Gastly,player-1|move:Payback",
+            "didnotlearnmove|mon:Gastly,player-1|move:Shadow Ball",
             "continue",
-            "learnedmove|mon:Gastly,player-1|move:Shadow Ball|forgot:Dark Pulse",
-            "continue",
-            "didnotlearnmove|mon:Gastly,player-1|move:Sucker Punch",
+            "learnedmove|mon:Gastly,player-1|move:Sucker Punch|forgot:Dark Pulse",
             "residual",
             "continue",
             "split|side:1",
@@ -405,7 +399,7 @@ fn inactive_mon_levels_up_directly_to_level() {
             "residual",
             "turn|turn:3",
             "continue",
-            "move|mon:Gastly,player-1,1|name:Shadow Ball|target:Pikachu,player-2,1",
+            "move|mon:Gastly,player-1,1|name:Sucker Punch|target:Pikachu,player-2,1",
             "split|side:1",
             "damage|mon:Pikachu,player-2,1|health:0",
             "damage|mon:Pikachu,player-2,1|health:0",

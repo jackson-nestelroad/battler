@@ -863,7 +863,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_try_hit": ["return [psn,    tox] has $target.status"]
+        "on_try_hit": ["return [psn, tox] has $target.status"]
       }
     }
   },

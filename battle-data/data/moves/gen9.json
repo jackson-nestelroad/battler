@@ -547,11 +547,11 @@
     "target": "User",
     "user_switch": "copysubstitute",
     "flags": ["NoMetronome"],
-    "z_move": {
-      "effect": "zpowerclearnegativeboosts"
-    },
     "hit_effect": {
       "volatile_status": "substitute"
+    },
+    "z_move": {
+      "effect": "zpowerclearnegativeboosts"
     },
     "effect": {
       "callbacks": {

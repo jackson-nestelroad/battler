@@ -1198,14 +1198,14 @@
     "target": "Normal",
     "multihit": [2, 5],
     "flags": ["Mirror", "Protect"],
-    "max_move": {
-      "base_power": 130
-    },
     "user_effect": {
       "boosts": {
         "def": -1,
         "spe": 1
       }
+    },
+    "max_move": {
+      "base_power": 130
     }
   },
   "meteorbeam": {
