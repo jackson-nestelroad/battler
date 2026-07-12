@@ -1,4 +1,4 @@
-import { serializeChoice } from "battler-choice";
+import { serializeChoice } from "battler-choice-wasm";
 import { Choice } from "battler-types";
 
 export class ChoiceBuilder {
