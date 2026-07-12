@@ -60,6 +60,17 @@ jobs:
       - name: Run battler module tests
         run: cargo test -p battler-choice -p battler-data -p battler-prng
 
+  test-battler-fuzz-test-generator:
+    name: Run battler-fuzz-test-generator tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler module tests
+        run: cargo test -p battler-fuzz-test-generator
+
   test-battler-service:
     name: Run battler-service tests
     runs-on: ubuntu-latest
