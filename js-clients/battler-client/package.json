@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "autobahn": "^26.3.1",
-    "battler-choice": "^0.3.0",
+    "battler-choice-wasm": "^0.1.0",
     "battler-service-client": "^0.1.0",
     "battler-state": "^0.1.0"
   },
