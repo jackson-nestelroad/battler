@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Build Rust server binary
