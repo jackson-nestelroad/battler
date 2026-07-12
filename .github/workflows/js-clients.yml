@@ -36,6 +36,7 @@ jobs:
         run: |
           npm run build:battler-choice
           npm run build:battler-state
+          npm run build:bindings
       - name: Build TypeScript workspaces
         run: npm run build --workspaces --if-present
       - name: Run JS client integration tests
