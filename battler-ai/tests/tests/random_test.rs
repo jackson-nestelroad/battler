@@ -34,11 +34,11 @@ async fn participates_in_fuzz_test_battle() {
     );
     let scenario = Scenario::from_options(options, store).await.unwrap();
     let join_handle_1 = scenario
-        .run_ai_for_requests("player-1", Random::default(), 5)
+        .run_ai("player-1", Random::default())
         .await
         .unwrap();
     let join_handle_2 = scenario
-        .run_ai_for_requests("player-2", Random::default(), 5)
+        .run_ai("player-2", Random::default())
         .await
         .unwrap();
 

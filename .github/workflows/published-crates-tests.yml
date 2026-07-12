@@ -24,4 +24,4 @@ jobs:
         shell: bash
         env:
           RUSTUP_TOOLCHAIN: nightly
-        run: ./published-crates-test.sh
+        run: ./scripts/published-crates-test.sh

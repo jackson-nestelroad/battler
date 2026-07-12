@@ -9,6 +9,9 @@ async fn picks_valid_move() {
         .await
         .unwrap();
     let mut gemini = Gemini::default();
+    scenario
+        .record_explanations("player-2", gemini.explanations())
+        .await;
     assert_matches::assert_matches!(scenario.validate_expected_result(&mut gemini).await, Ok(()));
 }
 
@@ -19,6 +22,9 @@ async fn picks_valid_move_for_double_battle() {
         .await
         .unwrap();
     let mut gemini = Gemini::default();
+    scenario
+        .record_explanations("player-2", gemini.explanations())
+        .await;
     assert_matches::assert_matches!(scenario.validate_expected_result(&mut gemini).await, Ok(()));
 }
 
@@ -35,13 +41,24 @@ async fn competes_in_fuzz_test_battle() {
             .unwrap_or("fuzz_test")
             .to_string()
     );
-    let scenario = Scenario::from_options(options, store).await.unwrap();
+    let scenario = Scenario::from_options(options, store)
+        .await
+        .unwrap()
+        .with_error_on_exceeded_attempts(true);
+    let gemini_1 = Gemini::default();
+    let gemini_2 = Gemini::default();
+    scenario
+        .record_explanations("player-1", gemini_1.explanations())
+        .await;
+    scenario
+        .record_explanations("player-2", gemini_2.explanations())
+        .await;
     let join_handle_1 = scenario
-        .run_ai_for_requests("player-1", Gemini::default(), 2)
+        .run_ai_for_requests("player-1", gemini_1, 2)
         .await
         .unwrap();
     let join_handle_2 = scenario
-        .run_ai_for_requests("player-2", Gemini::default(), 2)
+        .run_ai_for_requests("player-2", gemini_2, 2)
         .await
         .unwrap();
 

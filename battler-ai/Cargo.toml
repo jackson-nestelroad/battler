@@ -34,6 +34,7 @@ battler-state = { path = "../battler-state" }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
+futures = { workspace = true }
 pretty_assertions = { workspace = true }
 
 battler-fuzz-test-generator = { path = "../battler-fuzz-test-generator" }

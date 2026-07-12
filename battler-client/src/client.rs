@@ -207,7 +207,11 @@ impl<'b> BattlerClientInternal<'b> {
         // Ensure the log is filled and update the state accordingly.
         self.backfill_log(&mut log).await?;
         self.update_battle_state(&log).await?;
-        self.battle_event_tx.send(BattleClientEvent::Update)?;
+        if self.state.lock().await.phase == BattlePhase::Finished {
+            self.battle_event_tx.send(BattleClientEvent::End)?;
+        } else {
+            self.battle_event_tx.send(BattleClientEvent::Update)?;
+        }
         Ok(())
     }
 

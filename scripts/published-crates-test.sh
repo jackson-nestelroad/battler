@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_ROOT=$(pwd)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
 
 # Ensure cargo-clone is installed.
 if ! command -v cargo-clone &> /dev/null; then
