@@ -1,0 +1,37 @@
+name: js-clients
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+
+jobs:
+  test-js-clients:
+    name: Build and test JS/TS clients
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Build Rust server binary
+        run: cargo build --bin battler-server
+      - name: Set up Node.js
+        uses: ./.github/actions/nodejs
+      - name: Build dependency WASM packages
+        run: |
+          npm run build:battler-choice
+          npm run build:battler-state
+          npm run build:bindings
+      - name: Build TypeScript workspaces
+        run: npm run build --workspaces --if-present
+      - name: Run JS client integration tests
+        run: npm run test:js-clients

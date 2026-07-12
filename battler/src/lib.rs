@@ -110,3 +110,58 @@ pub use teams::{
     MonPersistentBattleData,
     TeamData,
 };
+
+#[cfg(all(test, feature = "typescript"))]
+mod typescript_tests {
+    use ts_rs::TS;
+
+    use super::*;
+
+    #[test]
+    fn export_types() {
+        CoreBattleOptions::export().unwrap();
+        FieldData::export().unwrap();
+        FieldEnvironment::export().unwrap();
+        TimeOfDay::export().unwrap();
+        SideData::export().unwrap();
+        PlayerData::export().unwrap();
+        PlayerType::export().unwrap();
+        WildPlayerOptions::export().unwrap();
+        WildEncounterType::export().unwrap();
+        PlayerOptions::export().unwrap();
+        ExperienceOptions::export().unwrap();
+        ExperienceShareOptions::export().unwrap();
+        PlayerDex::export().unwrap();
+        FormatData::export().unwrap();
+        BattleType::export().unwrap();
+        TeamData::export().unwrap();
+        BagData::export().unwrap();
+        MonData::export().unwrap();
+        MonPersistentBattleData::export().unwrap();
+        Type::export().unwrap();
+        Nature::export().unwrap();
+        Gender::export().unwrap();
+        StatTable::export().unwrap();
+        Stat::export().unwrap();
+        Boost::export().unwrap();
+        BoostTable::export().unwrap();
+        MoveTarget::export().unwrap();
+        Request::export().unwrap();
+        RequestType::export().unwrap();
+        TeamPreviewRequest::export().unwrap();
+        TurnRequest::export().unwrap();
+        SwitchRequest::export().unwrap();
+        LearnMoveRequest::export().unwrap();
+        SelectReason::export().unwrap();
+        SelectPosition::export().unwrap();
+        SelectRequest::export().unwrap();
+        MonMoveSlotData::export().unwrap();
+        MonPersistentMoveData::export().unwrap();
+        MonSummaryData::export().unwrap();
+        MonBattleData::export().unwrap();
+        MonMoveRequest::export().unwrap();
+        MonLearnMoveRequest::export().unwrap();
+        PlayerBattleData::export().unwrap();
+        Id::export().unwrap();
+    }
+}

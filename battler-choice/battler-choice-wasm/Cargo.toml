@@ -1,0 +1,17 @@
+[package]
+name = "battler-choice-wasm"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = ["typescript"]
+typescript = ["battler-choice/typescript"]
+
+[dependencies]
+battler-choice = { path = ".." }
+
+serde-wasm-bindgen = { workspace = true }
+wasm-bindgen = { workspace = true }

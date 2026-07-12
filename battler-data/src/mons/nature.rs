@@ -17,6 +17,8 @@ use crate::Stat;
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Nature {
     #[string = "Hardy"]
     #[default]

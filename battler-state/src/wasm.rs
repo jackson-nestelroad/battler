@@ -4,6 +4,7 @@ use alloc::{
     vec::Vec,
 };
 
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
 use crate::{
@@ -25,7 +26,9 @@ extern "C" {
 /// Returns a new, default BattleState object.
 #[wasm_bindgen(js_name = newBattleState)]
 pub fn new_battle_state() -> Result<BattleStateWasm, JsValue> {
-    let state_js = serde_wasm_bindgen::to_value(&BattleState::default())
+    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+    let state_js = BattleState::default()
+        .serialize(&serializer)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
     Ok(state_js.unchecked_into())
 }
@@ -46,8 +49,10 @@ pub fn alter_battle_state(
     let new_state =
         crate::alter_battle_state(state, &log).map_err(|e| JsValue::from_str(&e.to_string()))?;
 
-    let new_state_js =
-        serde_wasm_bindgen::to_value(&new_state).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+    let new_state_js = new_state
+        .serialize(&serializer)
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
     Ok(new_state_js.unchecked_into())
 }
 

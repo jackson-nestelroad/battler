@@ -57,7 +57,7 @@ pub struct RespondToProposedBattleInputArgs {
 pub struct RespondToProposedBattleInput(#[arguments] pub RespondToProposedBattleInputArgs);
 
 /// Arguments for listing proposed battles for a player.
-#[derive(Debug, Clone, WampDictionary)]
+#[derive(Debug, Clone, WampList)]
 pub struct ProposedBattlesForPlayerInputArgs {
     /// Player.
     pub player: String,

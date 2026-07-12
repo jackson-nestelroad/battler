@@ -239,6 +239,8 @@ impl Default for CoreBattleEngineOptions {
 
 /// Core options for a new battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct CoreBattleOptions {
     /// The initial seed for random number generation.
     ///

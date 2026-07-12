@@ -11,33 +11,6 @@ import type {
   DiscoveryRequiredSet,
 } from "battler-state";
 
-// Helper to get value from a Map or Object (serde_wasm_bindgen maps default to ES6 Maps)
-function getMapValue<K, V>(map: any, key: K): V | null {
-  if (!map) return null;
-  if (map instanceof Map) {
-    return map.get(key) || null;
-  }
-  return map[key as any] || null;
-}
-
-// Helper to get keys from a Map or Object
-function getMapKeys(map: any): string[] {
-  if (!map) return [];
-  if (map instanceof Map) {
-    return Array.from(map.keys()) as string[];
-  }
-  return Object.keys(map);
-}
-
-// Helper to get values from a Map or Object
-function getMapValues<V>(map: any): V[] {
-  if (!map) return [];
-  if (map instanceof Map) {
-    return Array.from(map.values()) as V[];
-  }
-  return Object.values(map);
-}
-
 // Helper to extract known value from DiscoveryRequired
 function knownValue<T>(discovery: DiscoveryRequired<T> | null | undefined): T | null {
   if (discovery && "known" in discovery) {
@@ -72,12 +45,12 @@ export function fieldWeather(state: BattleState): string | null {
 }
 
 export function fieldTerrain(state: BattleState): string | null {
-  const keys = getMapKeys(state.field.conditions);
+  const keys = Object.keys(state.field.conditions || {});
   return keys.find((name) => name.endsWith("Terrain")) || null;
 }
 
 export function fieldConditions(state: BattleState): string[] {
-  const keys = getMapKeys(state.field.conditions);
+  const keys = Object.keys(state.field.conditions || {});
   return keys.filter((name) => !name.endsWith("Terrain"));
 }
 
@@ -99,7 +72,7 @@ export function side(state: BattleState, sideIndex: number): Side | null {
 
 export function sideConditions(state: BattleState, sideIndex: number): string[] {
   const s = sideOrElse(state, sideIndex);
-  return getMapKeys(s.conditions);
+  return Object.keys(s.conditions || {});
 }
 
 export function sideForMon(state: BattleState, monRef: MonBattleAppearanceReference): number {
@@ -289,7 +262,7 @@ export function monBoosts(
 
 export function monConditions(state: BattleState, monRef: MonBattleAppearanceReference): string[] {
   const m = monOrElse(state, monRef);
-  return getMapKeys(m.volatile_data.conditions);
+  return Object.keys(m.volatile_data.conditions || {});
 }
 
 export function monActivePosition(
@@ -342,7 +315,7 @@ export function playerMons(state: BattleState, playerName: string): Mon[] {
 
 export function sidePlayers(state: BattleState, sideIndex: number): Player[] {
   const s = sideOrElse(state, sideIndex);
-  return getMapValues<Player>(s.players);
+  return Object.values(s.players || {}).filter((p): p is Player => p !== undefined);
 }
 
 // Internal helper
@@ -352,7 +325,7 @@ function sideAndPlayerOrElse(
 ): { sideIndex: number; playerObj: Player } {
   for (let i = 0; i < state.field.sides.length; i++) {
     const s = state.field.sides[i];
-    const p = getMapValue<string, Player>(s.players, player);
+    const p = s.players ? s.players[player] || null : null;
     if (p) {
       return { sideIndex: i, playerObj: p };
     }

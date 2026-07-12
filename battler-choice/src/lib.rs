@@ -3,6 +3,9 @@
 
 extern crate alloc;
 
+#[cfg(feature = "typescript")]
+extern crate std;
+
 use alloc::{
     borrow::ToOwned,
     collections::VecDeque,
@@ -27,6 +30,10 @@ use anyhow::{
     Result,
 };
 use itertools::Itertools;
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -34,7 +41,9 @@ use thiserror::Error;
 pub struct InvalidChoiceError(String);
 
 /// A choice to use a move.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MoveChoice {
     /// The move slot to use.
     pub slot: usize,
@@ -145,7 +154,9 @@ impl FromStr for MoveChoice {
 }
 
 /// A choice to use an item.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ItemChoice {
     /// The item to use.
     pub item: String,
@@ -154,6 +165,7 @@ pub struct ItemChoice {
     /// Any additional input.
     ///
     /// For example, when using a PP-healing move, the target move must be specified.
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub additional_input: VecDeque<String>,
 }
 
@@ -189,7 +201,9 @@ impl FromStr for ItemChoice {
 }
 
 /// A team selection choice.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct TeamSelectionChoice {
     /// The Mons to select for the team, in order.
     pub mons: Vec<usize>,
@@ -226,7 +240,9 @@ impl FromStr for TeamSelectionChoice {
 }
 
 /// A choice to switch in.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SwitchChoice {
     /// The Mon to switch in.
     ///
@@ -252,7 +268,9 @@ impl FromStr for SwitchChoice {
 }
 
 /// A choice to learn a move.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct LearnMoveChoice {
     /// The index of the move slot to forget.
     pub forget_move_slot: usize,
@@ -273,7 +291,9 @@ impl FromStr for LearnMoveChoice {
 }
 
 /// A choice to select a Mon.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SelectChoice {
     /// The Mon to switch in.
     ///
@@ -299,7 +319,10 @@ impl FromStr for SelectChoice {
 }
 
 /// A choice, which controls how a player responds to a request in a battle.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Choice {
     /// Do nothing.
     #[default]
@@ -307,6 +330,7 @@ pub enum Choice {
     /// Make a random choice, depending on the type of request.
     Random,
     /// Make as many random choices as required.
+    #[serde(rename = "randomall")]
     RandomAll,
     /// Attempt to escape from the battle.
     Escape,
@@ -323,6 +347,7 @@ pub enum Choice {
     /// Use an item.
     Item(ItemChoice),
     /// Learn a move.
+    #[serde(rename = "learnmove")]
     LearnMove(LearnMoveChoice),
     /// Select a Mon.
     Select(SelectChoice),
@@ -732,5 +757,18 @@ mod battler_choice_test {
             }));
         });
         assert_matches::assert_matches!(&choices[1], Err(_));
+    }
+
+    #[cfg(feature = "typescript")]
+    #[test]
+    fn export_types() {
+        use ts_rs::TS;
+        super::MoveChoice::export().unwrap();
+        super::ItemChoice::export().unwrap();
+        super::TeamSelectionChoice::export().unwrap();
+        super::SwitchChoice::export().unwrap();
+        super::LearnMoveChoice::export().unwrap();
+        super::SelectChoice::export().unwrap();
+        super::Choice::export().unwrap();
     }
 }

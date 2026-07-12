@@ -15,6 +15,7 @@ std = [
     "battler-data/std",
     "battler-prng/std",
 ]
+typescript = ["dep:ts-rs", "battler-data/typescript", "battler-choice/typescript", "std"]
 
 [dependencies]
 anyhow = { version = "1.0", default-features = false }
@@ -28,6 +29,7 @@ serde = { version = "1.0", default-features = false, features = ["alloc", "deriv
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 serde_string_enum = { workspace = true }
 thiserror = { version = "2.0", default-features = false }
+ts-rs = { workspace = true, optional = true }
 unicase = { workspace = true }
 zone-alloc = { version = "0.4.4", default-features = false, features = ["may-dangle"] }
 zone-alloc-strong-handle-derive = "0.1"

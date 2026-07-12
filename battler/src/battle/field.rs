@@ -30,6 +30,8 @@ use crate::{
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum FieldEnvironment {
     #[default]
     #[string = "Normal"]
@@ -61,6 +63,8 @@ pub enum FieldEnvironment {
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum TimeOfDay {
     #[default]
     #[string = "Day"]
@@ -75,6 +79,8 @@ pub enum TimeOfDay {
 
 /// Data for the field of a battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct FieldData {
     /// The default weather on the field.
     pub weather: Option<String>,

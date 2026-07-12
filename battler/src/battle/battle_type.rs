@@ -7,6 +7,8 @@ use serde_string_enum::{
 #[derive(
     Debug, Default, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum BattleType {
     /// One Mon from one player battles at a time.
     #[string = "Singles"]

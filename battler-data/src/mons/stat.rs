@@ -21,6 +21,8 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Stat {
     #[string = "hp"]
     HP,
@@ -142,6 +144,8 @@ where
 ///
 /// Similar to [`PartialStatTable`], but all values must be defined.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct StatTable {
     #[serde(default)]
     pub hp: u16,

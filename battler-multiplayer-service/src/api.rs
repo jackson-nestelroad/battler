@@ -17,14 +17,20 @@ use uuid::Uuid;
 
 /// An AI player using random choices.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct RandomOptions {}
 
 /// An AI player using Gemini.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct GeminiOptions {}
 
 /// The type of an AI player.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum AiPlayerType {
     #[serde(rename = "random")]
     Random(RandomOptions),
@@ -34,6 +40,8 @@ pub enum AiPlayerType {
 
 /// Options for an AI player.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct AiPlayerOptions {
     /// AI type.
     pub ai_type: AiPlayerType,
@@ -43,6 +51,8 @@ pub struct AiPlayerOptions {
 
 /// A set of AI players.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct AiPlayers {
     /// Players by ID.
     pub players: HashMap<String, AiPlayerOptions>,
@@ -50,17 +60,22 @@ pub struct AiPlayers {
 
 /// Options for a proposed battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ProposedBattleOptions {
     /// Battle options.
     pub battle_options: CoreBattleOptions,
     /// Service options.
     pub service_options: BattleServiceOptions,
     /// Timeout, after which the proposed battle will be deleted.
+    #[cfg_attr(feature = "typescript", ts(type = "{ secs: number; nanos: number }"))]
     pub timeout: Duration,
 }
 
 /// The status of a player with respect to a proposed battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum PlayerStatus {
     #[serde(rename = "rejected")]
     Rejected,
@@ -70,6 +85,8 @@ pub enum PlayerStatus {
 
 /// A player in a proposed battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct Player {
     /// Player ID.
     pub id: String,
@@ -81,6 +98,8 @@ pub struct Player {
 
 /// A side in a proposed battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct Side {
     /// Side name.
     pub name: String,
@@ -90,20 +109,31 @@ pub struct Side {
 
 /// A proposed battle, which has not yet started because all players have not accepted.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ProposedBattle {
     /// Unique identifier.
+    #[cfg_attr(feature = "typescript", ts(as = "String"))]
     pub uuid: Uuid,
     /// Sides of the battle.
     pub sides: Vec<Side>,
     /// Deadline in which the battle must start.
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "{ secs_since_epoch: number; nanos_since_epoch: number }")
+    )]
     pub deadline: SystemTime,
     /// The underlying battle, set only if the battle was fully accepted and created.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(as = "Option<String>", optional))]
     pub battle: Option<Uuid>,
 }
 
 /// A player's response to a proposed battle.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ProposedBattleResponse {
     /// Battle accepted?
     pub accept: bool,
@@ -111,6 +141,8 @@ pub struct ProposedBattleResponse {
 
 /// A rejection of a proposed battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ProposedBattleRejection {
     /// Players who rejected.
     pub players: Vec<String>,
@@ -118,13 +150,19 @@ pub struct ProposedBattleRejection {
 
 /// An update to a proposed battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ProposedBattleUpdate {
     /// The proposed battle.
     pub proposed_battle: ProposedBattle,
     /// The rejection, set only if the battle was rejected and deleted.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
     pub rejection: Option<ProposedBattleRejection>,
     /// The reason the proposed battle was deleted, if any.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
     pub deletion_reason: Option<String>,
 }

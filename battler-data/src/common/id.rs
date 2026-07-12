@@ -30,6 +30,8 @@ use serde::{
 ///
 /// A further optimization would be to allocate strings in an arena for memory proximity.
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(as = "String"))]
 pub struct Id(Cow<'static, str>);
 
 impl Id {

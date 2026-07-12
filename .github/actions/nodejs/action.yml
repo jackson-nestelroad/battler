@@ -1,0 +1,14 @@
+name: Set up Node.js
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: "24"
+        cache: "npm"
+        cache-dependency-path: ${{ github.workspace }}/package-lock.json
+    - name: Install NPM dependencies
+      shell: bash
+      run: npm ci

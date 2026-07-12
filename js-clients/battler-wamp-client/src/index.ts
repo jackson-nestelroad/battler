@@ -1,0 +1,69 @@
+import autobahn from "autobahn";
+import { EventEmitter } from "events";
+
+export function uuidForUri(uuid: string): string {
+  return uuid.replace(/-/g, "").toLowerCase();
+}
+
+export class WampSessionProvider extends EventEmitter {
+  private connection: autobahn.Connection;
+  private currentSession: autobahn.Session | null = null;
+  private connectionPromise: Promise<autobahn.Session> | null = null;
+
+  constructor(options: autobahn.IConnectionOptions) {
+    super();
+    this.connection = new autobahn.Connection(options);
+
+    this.connection.onopen = (session) => {
+      this.currentSession = session;
+      this.emit("connect", session);
+    };
+
+    this.connection.onclose = (reason, details) => {
+      this.currentSession = null;
+      this.connectionPromise = null;
+      this.emit("disconnect", reason, details);
+      return false;
+    };
+  }
+
+  get session(): autobahn.Session | null {
+    return this.currentSession;
+  }
+
+  async connect(): Promise<autobahn.Session> {
+    if (this.currentSession) {
+      return this.currentSession;
+    }
+    if (this.connectionPromise) {
+      return this.connectionPromise;
+    }
+
+    this.connectionPromise = new Promise<autobahn.Session>((resolve, reject) => {
+      const onConnect = (session: autobahn.Session) => {
+        this.off("error", onError);
+        resolve(session);
+      };
+      const onError = (err: any) => {
+        this.off("connect", onConnect);
+        reject(err);
+      };
+      this.once("connect", onConnect);
+      this.once("error", onError);
+    });
+
+    try {
+      this.connection.open();
+    } catch (err) {
+      this.emit("error", err);
+    }
+
+    return this.connectionPromise;
+  }
+
+  async disconnect(): Promise<void> {
+    this.connection.close();
+    this.currentSession = null;
+    this.connectionPromise = null;
+  }
+}
