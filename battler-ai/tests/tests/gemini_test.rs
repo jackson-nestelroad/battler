@@ -21,3 +21,30 @@ async fn picks_valid_move_for_double_battle() {
     let mut gemini = Gemini::default();
     assert_matches::assert_matches!(scenario.validate_expected_result(&mut gemini).await, Ok(()));
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn competes_in_fuzz_test_battle() {
+    battler_test_utils::collect_logs();
+    let store = battler_test_utils::static_local_data_store();
+    let options = battler_fuzz_test_generator::generate_random_battle(store, None).unwrap();
+    let seed = options.seed.unwrap_or(0);
+    log::info!(
+        "Fuzz test {} started with seed: {seed}",
+        std::thread::current()
+            .name()
+            .unwrap_or("fuzz_test")
+            .to_string()
+    );
+    let scenario = Scenario::from_options(options, store).await.unwrap();
+    let join_handle_1 = scenario
+        .run_ai_for_requests("player-1", Gemini::default(), 2)
+        .await
+        .unwrap();
+    let join_handle_2 = scenario
+        .run_ai_for_requests("player-2", Gemini::default(), 2)
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(join_handle_1.await, Ok(Ok(())));
+    assert_matches::assert_matches!(join_handle_2.await, Ok(Ok(())));
+}

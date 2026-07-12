@@ -26,6 +26,7 @@ pub struct BattlerAiClient<'data, 'battle> {
     data: &'data dyn DataStoreByName,
     client: BattlerClient<'battle>,
     ai: Box<dyn BattlerAi>,
+    error_on_exceeded_attempts: bool,
 }
 
 impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
@@ -35,7 +36,19 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
         client: BattlerClient<'battle>,
         ai: Box<dyn BattlerAi>,
     ) -> Self {
-        Self { data, client, ai }
+        Self {
+            data,
+            client,
+            ai,
+            error_on_exceeded_attempts: false,
+        }
+    }
+
+    /// Configures whether the client should return an error instead of forfeiting when attempts are
+    /// exceeded.
+    pub fn with_error_on_exceeded_attempts(mut self, value: bool) -> Self {
+        self.error_on_exceeded_attempts = value;
+        self
     }
 
     /// Runs the client.
@@ -99,7 +112,7 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
                     );
                     ai_context.make_choice_failures.push(MakeChoiceFailure {
                         choice: choice.clone(),
-                        reason: err.to_string(),
+                        reason: format!("{err:#}"),
                     });
                     // Parse choice failure if possible.
                     if let Ok(choices) = choices_from_string(choice)
@@ -109,6 +122,12 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
                     }
                 }
             }
+        }
+
+        if self.error_on_exceeded_attempts {
+            return Err(anyhow::anyhow!(
+                "AI client exceeded {MAX_ATTEMPTS} attempts for request {request:?}"
+            ));
         }
 
         // If we continually fail to make a move, just forfeit the battle.

@@ -69,6 +69,10 @@ impl BattlerAi for Gemini {
             "GEMINI_API_KEY",
             env::var("GEMINI_API_KEY").unwrap_or_default(),
         );
+        cmd.env(
+            "GEMINI_PYTHON_DEBUG_DIR",
+            env::var("GEMINI_PYTHON_DEBUG_DIR").unwrap_or_default(),
+        );
         cmd.arg("--use_cache=false")
             .arg("--player")
             .arg(&context.player_data.id)

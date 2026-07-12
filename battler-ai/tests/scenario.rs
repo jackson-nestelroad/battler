@@ -19,7 +19,6 @@ use battler::{
 use battler_ai::{
     AiContext,
     BattlerAi,
-    run_battler_ai_client,
 };
 use battler_client::{
     BattleClientEvent,
@@ -103,6 +102,30 @@ impl<'d> Scenario<'d> {
             service,
             battle,
             expected_result: data.expected,
+        })
+    }
+
+    pub async fn from_options(
+        options: CoreBattleOptions,
+        data_store: &'d dyn DataStoreByName,
+    ) -> Result<Self> {
+        let service = Arc::new(BattlerService::new(data_store));
+        let battle = service
+            .create(
+                options,
+                CoreBattleEngineOptions::default(),
+                BattleServiceOptions::default(),
+            )
+            .await?;
+        service.start(battle.uuid).await?;
+        Ok(Self {
+            data_store,
+            service,
+            battle,
+            expected_result: ScenarioExpectedResultData {
+                player: "player-1".to_string(),
+                choice: None,
+            },
         })
     }
 
@@ -191,10 +214,31 @@ impl Scenario<'static> {
         S: Into<String>,
         A: BattlerAi + 'static,
     {
-        Ok(tokio::spawn(run_battler_ai_client(
-            self.data_store,
-            self.client(player).await?,
-            Box::new(ai),
-        )))
+        let data_store = self.data_store;
+        let client = self.client(player).await?;
+        Ok(tokio::spawn(async move {
+            let client = battler_ai::BattlerAiClient::new(data_store, client, Box::new(ai))
+                .with_error_on_exceeded_attempts(true);
+            client.run().await
+        }))
+    }
+
+    pub async fn run_ai_for_requests<S, A>(
+        &self,
+        player: S,
+        ai: A,
+        requests: usize,
+    ) -> Result<JoinHandle<Result<()>>>
+    where
+        S: Into<String>,
+        A: BattlerAi + 'static,
+    {
+        let data_store = self.data_store;
+        let client = self.client(player).await?;
+        Ok(tokio::spawn(async move {
+            let client = battler_ai::BattlerAiClient::new(data_store, client, Box::new(ai))
+                .with_error_on_exceeded_attempts(true);
+            client.run_for_requests(requests).await
+        }))
     }
 }
