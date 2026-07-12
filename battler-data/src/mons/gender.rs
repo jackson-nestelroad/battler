@@ -15,16 +15,21 @@ use serde_string_enum::{
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Gender {
     #[string = "U"]
     #[alias = "Unknown"]
     #[default]
+    #[cfg_attr(feature = "typescript", ts(rename = "U"))]
     Unknown,
     #[string = "F"]
     #[alias = "Female"]
+    #[cfg_attr(feature = "typescript", ts(rename = "F"))]
     Female,
     #[string = "M"]
     #[alias = "Male"]
+    #[cfg_attr(feature = "typescript", ts(rename = "M"))]
     Male,
 }
 

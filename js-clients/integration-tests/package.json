@@ -1,0 +1,27 @@
+{
+  "name": "js-clients-integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --import tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "autobahn": "^26.3.1",
+    "ws": "^8.18.0",
+    "battler-service-client": "^0.1.0",
+    "battler-client": "^0.1.0",
+    "battler-multiplayer-service-client": "^0.1.0",
+    "battler-multiplayer-client": "^0.1.0",
+    "battler-types": "^0.1.0",
+    "battler-wamp-client": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/autobahn": "^20.9.4",
+    "@types/node": "^20.12.7",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5"
+  }
+}

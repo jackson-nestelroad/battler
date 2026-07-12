@@ -106,5 +106,9 @@ if (fs.existsSync(dtsPath)) {
 }
 
 // 9. Re-link npm workspaces to expose the newly built package and its types
-console.log("Re-linking npm workspaces...");
-execSync("npm install", { cwd: path.resolve(__dirname, ".."), stdio: "inherit" });
+if (!process.env.npm_lifecycle_event) {
+  console.log("Re-linking npm workspaces...");
+  execSync("npm install", { cwd: path.resolve(__dirname, ".."), stdio: "inherit" });
+} else {
+  console.log("Skipping npm install in post-build (already running inside npm lifecycle event).");
+}

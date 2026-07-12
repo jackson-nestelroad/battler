@@ -72,6 +72,8 @@ use crate::{
 
 /// Options for configuring how [`BattlerService`] manages an individual battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct BattleServiceOptions {
     /// Player who created the battle.
     #[serde(default)]

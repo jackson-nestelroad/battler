@@ -23,15 +23,15 @@ typescript = ["dep:ts-rs"]
 anyhow = { version = "1.0", default-features = false }
 hashbrown = { workspace = true }
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
-ts-rs = { version = "10.0", features = ["serde-compat"], optional = true }
+ts-rs = { workspace = true, optional = true }
 
 battler = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2"
-serde-wasm-bindgen = "0.6"
 getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
 getrandom = { version = "0.4", features = ["wasm_js"] }
+serde-wasm-bindgen = "0.6"
+wasm-bindgen = "0.2"
 
 [dev-dependencies]
 assert_matches = { workspace = true }

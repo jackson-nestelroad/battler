@@ -17,6 +17,8 @@ use crate::battle::{
 
 /// Type type of [`Request`] that should be requested from a player.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum RequestType {
     /// A request for a team order to be chosen during team preview.
     TeamPreview,
@@ -34,12 +36,16 @@ pub enum RequestType {
 
 /// A request for a team to be chosen in Team Preview.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct TeamPreviewRequest {
     pub max_team_size: Option<usize>,
 }
 
 /// A request for a player to command their Mons for the next turn.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct TurnRequest {
     pub active: Vec<MonMoveRequest>,
     #[serde(default)]
@@ -49,6 +55,8 @@ pub struct TurnRequest {
 
 /// A request for a Mon to be switched in.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SwitchRequest {
     /// Active positions that need to be switched out.
     pub needs_switch: Vec<usize>,
@@ -56,12 +64,16 @@ pub struct SwitchRequest {
 
 /// A request for a Mon to learn one or more moves.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct LearnMoveRequest {
     pub can_learn_move: MonLearnMoveRequest,
 }
 
 /// The reason a Mon must be selected.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum SelectReason {
     #[string = "Revive"]
     Revive,
@@ -69,6 +81,8 @@ pub enum SelectReason {
 
 /// A position that triggered a Mon to be selected.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SelectPosition {
     pub position: usize,
     pub reason: SelectReason,
@@ -79,6 +93,8 @@ pub struct SelectPosition {
 /// Conceptually similar to a [`SwitchRequest`], except something else happens with the selected
 /// Mons (indicated by [`SelectReason`]).
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SelectRequest {
     /// Active positions that you must select a Mon for.
     pub positions: Vec<SelectPosition>,
@@ -88,6 +104,8 @@ pub struct SelectRequest {
 /// can continue.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Request {
     /// A request for a team order to be chosen during team preview.
     #[serde(rename = "team")]

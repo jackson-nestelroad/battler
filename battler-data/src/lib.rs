@@ -2,6 +2,9 @@
 
 extern crate alloc;
 
+#[cfg(feature = "typescript")]
+extern crate std;
+
 mod abilities;
 mod clauses;
 mod common;

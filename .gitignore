@@ -1,6 +1,7 @@
 Cargo.lock
 
 target/
+dist/
 /.ignore
 /dev
 
@@ -18,6 +19,7 @@ target/
 /data-filler
 
 .npm_cache/
+.npm-cache/
 node_modules/
 fxlang-ext/out/
 
@@ -26,5 +28,5 @@ fxlang-ext/out/
 wamp-integration-tests/.crossbar/key.priv
 wamp-integration-tests/.crossbar/key.pub
 
-battler-state/bindings/
+bindings/
 battler-state/pkg/

@@ -43,6 +43,7 @@ impl Role {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BattleClientEvent {
     Request(Option<battler::Request>),
+    Update,
     End,
     Error(String),
 }
@@ -166,8 +167,11 @@ impl<'b> BattlerClientInternal<'b> {
             if *self.battle_event_rx.borrow() == BattleClientEvent::End {
                 break;
             }
-            // If we are caught up, propagate a request.
-            if self.caught_up().await? && self.last_log_index().await > 0 {
+            // If we are caught up and are a player, propagate a request.
+            if let Role::Player { .. } = self.role
+                && self.caught_up().await?
+                && self.last_log_index().await > 0
+            {
                 let request = self.service.request(self.battle, &self.player).await?;
                 log::debug!(
                     "Propagating request for {} in battle {}: has_request = {:?}",
@@ -182,6 +186,13 @@ impl<'b> BattlerClientInternal<'b> {
             tokio::select! {
                 log_entry = log_entry_rx.recv() => {
                     self.process_log_entry(log_entry?).await?;
+                    // Consume any other buffered logs in this tick (batching)
+                    while let Ok(next_entry) = log_entry_rx.try_recv() {
+                        self.process_log_entry(next_entry).await?;
+                    }
+                    if *self.battle_event_rx.borrow() != BattleClientEvent::End {
+                        self.battle_event_tx.send(BattleClientEvent::Update)?;
+                    }
                 }
                 _ = cancel_rx.recv() => {
                     break;
@@ -196,6 +207,7 @@ impl<'b> BattlerClientInternal<'b> {
         // Ensure the log is filled and update the state accordingly.
         self.backfill_log(&mut log).await?;
         self.update_battle_state(&log).await?;
+        self.battle_event_tx.send(BattleClientEvent::Update)?;
         Ok(())
     }
 
@@ -420,6 +432,7 @@ impl<'b> BattlerClient<'b> {
                 BattleClientEvent::Request(None) => (),
                 BattleClientEvent::Error(err) => return Err(Error::msg(err)),
                 BattleClientEvent::End => return Err(BattleEndedError.into()),
+                BattleClientEvent::Update => (),
             }
         }
     }

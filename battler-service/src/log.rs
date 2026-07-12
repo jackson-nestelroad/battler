@@ -6,6 +6,8 @@ use uuid::Uuid;
 
 /// A single entry of a [`Log`].
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct LogEntry {
     /// Index of the entry.
     pub index: usize,

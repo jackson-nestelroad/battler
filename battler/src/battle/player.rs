@@ -112,6 +112,8 @@ use crate::{
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum WildEncounterType {
     #[default]
     #[string = "Normal"]
@@ -124,6 +126,8 @@ pub enum WildEncounterType {
 ///
 /// For use on [`PlayerType`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct WildPlayerOptions {
     /// Are the Mons catchable?
     pub catchable: bool,
@@ -152,6 +156,8 @@ impl Default for WildPlayerOptions {
 /// battle.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum PlayerType {
     /// A trainer in a competitive battle.
     #[default]
@@ -228,14 +234,22 @@ impl PlayerType {
 
 /// Options for an Exp. Share activated for a player.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ExperienceShareOptions {
     /// The modifier applied to experience given to Mons that did not participate in an
     /// experience-generating event.
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "string | number | [number, number]")
+    )]
     pub modifier: Fraction<u32>,
 }
 
 /// Options for how the player gains experience points.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ExperienceOptions {
     /// Options for an Exp. Share, if activated.
     #[serde(default)]
@@ -243,11 +257,17 @@ pub struct ExperienceOptions {
 
     /// Any custom modifier applied to experience calculation.
     #[serde(default)]
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "string | number | [number, number] | null")
+    )]
     pub custom_modifier: Option<Fraction<u32>>,
 }
 
 /// Options for the player that are not specific to any player type.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct PlayerOptions {
     /// If the player has affection mechanics enabled.
     #[serde(default)]
@@ -285,11 +305,14 @@ pub struct PlayerOptions {
 
 /// A player's dex, noting what has previously been caught by the player.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct PlayerDex {
     /// Species registered in the dex.
     ///
     /// Only base species involved in the battle really need to be added, if you want things like
     /// "Repeat Ball" to work.
+    #[cfg_attr(feature = "typescript", ts(type = "string[]"))]
     pub species: HashSet<String>,
 }
 
@@ -298,6 +321,8 @@ pub struct PlayerDex {
 /// A player is exactly what it sounds like: a single participant in a battle. A player brings their
 /// own team of Mons to the battle and is responsible for controlling their Mons.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct PlayerData {
     /// Unique identifier.
     pub id: String,
@@ -381,6 +406,8 @@ impl ChoiceState {
 ///
 /// Contains all information for a player in a battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct PlayerBattleData {
     pub name: String,
     pub id: String,

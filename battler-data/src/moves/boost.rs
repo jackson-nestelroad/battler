@@ -29,6 +29,8 @@ use crate::Stat;
     SerializeLabeledStringEnum,
     DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Boost {
     #[string = "atk"]
     #[alias = "Attack"]
@@ -78,6 +80,8 @@ pub trait ContainsOptionalBoosts<T> {
 
 /// A full boost table.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct BoostTable {
     #[serde(default)]
     pub atk: i8,

@@ -241,6 +241,8 @@ pub struct AbilitySlot {
 ///
 /// Makes a copy of underlying data so that it can be stored on move requests.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonMoveSlotData {
     pub id: Id,
     pub name: String,
@@ -296,6 +298,8 @@ impl MonMoveSlotData {
 
 /// Persistent battle state for a single [`Move`] on a [`Mon`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonPersistentMoveData {
     pub name: String,
     pub pp: u8,
@@ -303,6 +307,8 @@ pub struct MonPersistentMoveData {
 
 /// Data about a single [`Mon`]'s summary, which is its out-of-battle state.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonSummaryData {
     pub name: String,
     pub species: String,
@@ -326,6 +332,8 @@ pub struct MonSummaryData {
 
 /// Data about a single [`Mon`]'s battle state.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonBattleData {
     pub summary: MonSummaryData,
     pub species: String,
@@ -338,6 +346,7 @@ pub struct MonBattleData {
     pub player_effective_team_position: usize,
     pub player_active_position: Option<usize>,
     pub side_position: Option<usize>,
+    #[cfg_attr(feature = "typescript", ts(type = "Record<Stat, number>"))]
     pub stats: PartialStatTable,
     pub boosts: BoostTable,
     pub moves: Vec<MonMoveSlotData>,
@@ -348,6 +357,8 @@ pub struct MonBattleData {
 
 /// Request for a single [`Mon`] to move.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonMoveRequest {
     pub team_position: usize,
     pub moves: Vec<MonMoveSlotData>,
@@ -373,6 +384,8 @@ pub struct MonMoveRequest {
 
 /// Request for a single [`Mon`] to learn a move.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonLearnMoveRequest {
     pub team_position: usize,
     pub id: Id,

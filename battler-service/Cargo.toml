@@ -8,6 +8,9 @@ keywords = ["pokemon", "battle"]
 license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-service"
 
+[features]
+typescript = ["dep:ts-rs", "battler/typescript"]
+
 [dependencies]
 ahash = { workspace = true }
 anyhow = { workspace = true }
@@ -15,6 +18,7 @@ futures-util = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }
+ts-rs = { workspace = true, optional = true }
 unicase = { workspace = true }
 uuid = { workspace = true }
 

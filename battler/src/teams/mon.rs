@@ -19,6 +19,8 @@ use serde::{
 /// Data here is meant to carry from battle to battle and is cleared when a Mon is healed. In
 /// competitive battles, this data would be completely unused.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonPersistentBattleData {
     pub hp: Option<u16>,
     #[serde(default)]
@@ -32,6 +34,8 @@ pub struct MonPersistentBattleData {
 /// example, if a Mon changes its ability in a battle, the `ability` field here should not be
 /// updated.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MonData {
     /// Nickname.
     ///

@@ -8,9 +8,13 @@ keywords = ["pokemon", "battle"]
 license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-service-schema"
 
+[features]
+typescript = ["dep:ts-rs", "battler-service-schema/typescript"]
+
 [dependencies]
 anyhow = { workspace = true }
 tokio = { workspace = true }
+ts-rs = { workspace = true, optional = true }
 
 battler-wamp = { workspace = true }
 battler-wamp-uri = { workspace = true }

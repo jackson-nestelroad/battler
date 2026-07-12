@@ -2,12 +2,24 @@
   "name": "battler",
   "private": true,
   "scripts": {
+    "build:battler-choice": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-choice -- --features typescript && node battler-choice/post-build.mjs",
     "build:battler-state": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-state -- --features typescript && node battler-state/post-build.mjs",
+    "build:bindings": "node scripts/build-bindings.mjs",
+    "prepare": "npm run build:bindings",
     "test:battler-state:wasm": "npx wasm-pack test --node battler-state",
-    "test:battler-state:js": "npm run --workspace=battler-state-js-tests test"
+    "test:battler-state:js": "npm run --workspace=battler-state-js-tests test",
+    "test:js-clients": "npm test --workspace=js-clients-integration-tests"
   },
   "workspaces": [
+    "battler-choice/pkg/node",
     "battler-state/pkg/node",
+    "js-clients/battler-types",
+    "js-clients/battler-wamp-client",
+    "js-clients/battler-service-client",
+    "js-clients/battler-client",
+    "js-clients/battler-multiplayer-service-client",
+    "js-clients/battler-multiplayer-client",
+    "js-clients/integration-tests",
     "battler-state/js-tests",
     "fxlang-ext",
     "wamp-integration-tests"

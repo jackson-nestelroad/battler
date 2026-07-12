@@ -12,6 +12,7 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-da
 default = ["std"]
 
 std = []
+typescript = ["dep:ts-rs", "std"]
 
 [dependencies]
 anyhow = { version = "1.0", default-features = false }
@@ -22,6 +23,7 @@ regex = { version = "1.11", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 serde_string_enum = { workspace = true }
+ts-rs = { workspace = true, optional = true }
 unicase = { workspace = true }
 
 [dev-dependencies]

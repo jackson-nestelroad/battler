@@ -34,6 +34,8 @@ use crate::{
 /// Effects can be applied to an entire side of the battle, which impacts all Mons on all players on
 /// that side of the battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SideData {
     /// Side name.
     pub name: String,
