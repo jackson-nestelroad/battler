@@ -1,12 +1,15 @@
+#![no_std]
+
+extern crate alloc;
+
 use alloc::string::{
     String,
     ToString,
 };
 use core::str::FromStr;
 
+use battler_choice::Choice;
 use wasm_bindgen::prelude::*;
-
-use crate::Choice;
 
 #[wasm_bindgen(js_name = parseChoice)]
 pub fn parse_choice(choice_str: &str) -> Result<JsValue, JsValue> {

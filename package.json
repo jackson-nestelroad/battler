@@ -2,7 +2,7 @@
   "name": "battler",
   "private": true,
   "scripts": {
-    "build:battler-choice": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-choice -- --features typescript && node battler-choice/post-build.mjs",
+    "build:battler-choice": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-choice/battler-choice-wasm -- --features typescript && node battler-choice/post-build.mjs",
     "build:battler-state": "npx wasm-pack build --target nodejs --out-dir pkg/node battler-state -- --features typescript && node battler-state/post-build.mjs",
     "build:bindings": "node scripts/build-bindings.mjs",
     "prepare": "npm run build:bindings",
@@ -11,7 +11,7 @@
     "test:js-clients": "npm test --workspace=js-clients-integration-tests"
   },
   "workspaces": [
-    "battler-choice/pkg/node",
+    "battler-choice/battler-choice-wasm/pkg/node",
     "battler-state/pkg/node",
     "js-clients/battler-types",
     "js-clients/battler-wamp-client",

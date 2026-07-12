@@ -6,9 +6,6 @@ extern crate alloc;
 #[cfg(feature = "typescript")]
 extern crate std;
 
-#[cfg(target_arch = "wasm32")]
-mod wasm;
-
 use alloc::{
     borrow::ToOwned,
     collections::VecDeque,

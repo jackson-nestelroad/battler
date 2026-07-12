@@ -9,7 +9,7 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-choice"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [features]
 typescript = ["dep:ts-rs"]
