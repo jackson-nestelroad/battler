@@ -12,7 +12,7 @@ env:
 
 jobs:
   detect-changes:
-    name: Detect Changes
+    name: WAMP Integration Detect Changes
     runs-on: ubuntu-latest
     outputs:
       run_wamp_integration: ${{ steps.detector.outputs.run_wamp_integration }}

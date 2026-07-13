@@ -12,7 +12,7 @@ env:
 
 jobs:
   detect-changes:
-    name: Detect Changes
+    name: State WASM Detect Changes
     runs-on: ubuntu-latest
     outputs:
       run_core: ${{ steps.detector.outputs.run_core }}
