@@ -13,7 +13,7 @@ env:
 
 jobs:
   detect-changes:
-    name: JS Clients Detect Changes
+    name: Detect Changes
     runs-on: ubuntu-latest
     outputs:
       run_js_clients: ${{ steps.detector.outputs.run_js_clients }}

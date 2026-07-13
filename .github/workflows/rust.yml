@@ -15,7 +15,7 @@ env:
 
 jobs:
   detect-changes:
-    name: Rust Detect Changes
+    name: Detect Changes
     runs-on: ubuntu-latest
     outputs:
       run_core: ${{ steps.detector.outputs.run_core }}
