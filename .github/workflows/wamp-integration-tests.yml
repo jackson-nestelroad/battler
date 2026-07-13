@@ -11,8 +11,21 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_wamp_integration: ${{ steps.detector.outputs.run_wamp_integration }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect Changes
+        uses: ./.github/actions/detect-changes
+        id: detector
+
   wamp-integration-tests:
     name: Run WAMP integration tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_wamp_integration == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

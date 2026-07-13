@@ -1,0 +1,131 @@
+name: Detect Changes
+description: Detects changed paths across different modules in the workspace and evaluates dependency routing rules.
+
+outputs:
+  run_core:
+    description: "Whether to run core engine and state tests"
+    value: ${{ steps.eval.outputs.run_core }}
+  run_wamp:
+    description: "Whether to run WAMP tests"
+    value: ${{ steps.eval.outputs.run_wamp }}
+  run_ai:
+    description: "Whether to run AI tests"
+    value: ${{ steps.eval.outputs.run_ai }}
+  run_battler_service:
+    description: "Whether to run single-player service and client tests"
+    value: ${{ steps.eval.outputs.run_battler_service }}
+  run_battler_multiplayer_service:
+    description: "Whether to run multiplayer service and client tests"
+    value: ${{ steps.eval.outputs.run_battler_multiplayer_service }}
+  run_battler_server:
+    description: "Whether to run server host binary tests"
+    value: ${{ steps.eval.outputs.run_battler_server }}
+  run_js_clients:
+    description: "Whether to run JS/TS client integration tests"
+    value: ${{ steps.eval.outputs.run_js_clients }}
+  run_wamp_integration:
+    description: "Whether to run WAMP integration tests"
+    value: ${{ steps.eval.outputs.run_wamp_integration }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run paths-filter
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          ci:
+            - '.github/workflows/**'
+            - '.github/actions/**'
+            - 'rustfmt.toml'
+            - 'Cargo.lock'
+            - 'Cargo.toml'
+            - 'scripts/**'
+          core:
+            - 'battler/**'
+            - 'battler-choice/**'
+            - 'battler-prng/**'
+            - 'battler-data/**'
+            - 'battle-data/**'
+            - '**/test_cases/**'
+            - 'battler-state/**'
+            - 'battler-calc/**'
+            - 'battler-fuzz-test-generator/**'
+            - 'battler-local-data/**'
+            - 'battler-test-utils/**'
+          wamp:
+            - 'battler-wamp/**'
+            - 'battler-wamprat/**'
+            - 'battler-wamprat-schema/**'
+            - 'battler-wamp-compat-test-bin/**'
+          battler_service:
+            - 'battler-service/**'
+            - 'battler-service-client/**'
+            - 'battler-service-producer/**'
+            - 'battler-client/**'
+          battler_multiplayer_service:
+            - 'battler-multiplayer-service/**'
+            - 'battler-multiplayer-service-client/**'
+            - 'battler-multiplayer-service-producer/**'
+            - 'battler-multiplayer-client/**'
+          battler_server:
+            - 'battler-server/**'
+          ai:
+            - 'battler-ai/**'
+            - 'battler-ai-gemini-py/**'
+          js_clients:
+            - 'js-clients/**'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'tsconfig.base.json'
+          wamp_integration:
+            - 'wamp-integration-tests/**'
+
+    - name: Evaluate combined rules
+      id: eval
+      shell: bash
+      run: |
+        CI="${{ steps.filter.outputs.ci }}"
+        CORE="${{ steps.filter.outputs.core }}"
+        WAMP="${{ steps.filter.outputs.wamp }}"
+        SERVICE="${{ steps.filter.outputs.battler_service }}"
+        MULTIPLAYER="${{ steps.filter.outputs.battler_multiplayer_service }}"
+        SERVER="${{ steps.filter.outputs.battler_server }}"
+        AI="${{ steps.filter.outputs.ai }}"
+        JS_CLIENTS="${{ steps.filter.outputs.js_clients }}"
+        WAMP_INT="${{ steps.filter.outputs.wamp_integration }}"
+
+        # Run logic with sequential dependency checks
+        RUN_CORE="false"
+        if [ "$CI" = "true" ] || [ "$CORE" = "true" ]; then RUN_CORE="true"; fi
+
+        RUN_WAMP="false"
+        if [ "$CI" = "true" ] || [ "$WAMP" = "true" ]; then RUN_WAMP="true"; fi
+
+        RUN_SERVICE="false"
+        if [ "$RUN_CORE" = "true" ] || [ "$RUN_WAMP" = "true" ] || [ "$SERVICE" = "true" ]; then RUN_SERVICE="true"; fi
+
+        RUN_AI="false"
+        if [ "$RUN_SERVICE" = "true" ] || [ "$AI" = "true" ]; then RUN_AI="true"; fi
+
+        RUN_MULTIPLAYER="false"
+        if [ "$RUN_SERVICE" = "true" ] || [ "$RUN_AI" = "true" ] || [ "$MULTIPLAYER" = "true" ]; then RUN_MULTIPLAYER="true"; fi
+
+        RUN_SERVER="false"
+        if [ "$RUN_MULTIPLAYER" = "true" ] || [ "$SERVER" = "true" ]; then RUN_SERVER="true"; fi
+
+        RUN_JS_CLIENTS="false"
+        if [ "$RUN_SERVER" = "true" ] || [ "$JS_CLIENTS" = "true" ]; then RUN_JS_CLIENTS="true"; fi
+
+        RUN_WAMP_INTEGRATION="false"
+        if [ "$RUN_WAMP" = "true" ] || [ "$WAMP_INT" = "true" ]; then RUN_WAMP_INTEGRATION="true"; fi
+
+        echo "run_core=$RUN_CORE" >> $GITHUB_OUTPUT
+        echo "run_wamp=$RUN_WAMP" >> $GITHUB_OUTPUT
+        echo "run_ai=$RUN_AI" >> $GITHUB_OUTPUT
+        echo "run_battler_service=$RUN_SERVICE" >> $GITHUB_OUTPUT
+        echo "run_battler_multiplayer_service=$RUN_MULTIPLAYER" >> $GITHUB_OUTPUT
+        echo "run_battler_server=$RUN_SERVER" >> $GITHUB_OUTPUT
+        echo "run_js_clients=$RUN_JS_CLIENTS" >> $GITHUB_OUTPUT
+        echo "run_wamp_integration=$RUN_WAMP_INTEGRATION" >> $GITHUB_OUTPUT

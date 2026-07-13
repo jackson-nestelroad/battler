@@ -12,8 +12,21 @@ env:
   GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
 
 jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_js_clients: ${{ steps.detector.outputs.run_js_clients }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect Changes
+        uses: ./.github/actions/detect-changes
+        id: detector
+
   test-js-clients:
     name: Build and test JS/TS clients
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_js_clients == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
