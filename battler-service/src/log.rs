@@ -38,7 +38,7 @@ impl Log {
         side: Option<usize>,
         global_log_tx: mpsc::UnboundedSender<GlobalLogEntry>,
     ) -> Self {
-        let (entry_tx, _) = broadcast::channel(128);
+        let (entry_tx, _) = broadcast::channel(1024);
         Self {
             battle,
             side,
