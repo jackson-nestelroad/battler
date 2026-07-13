@@ -5712,22 +5712,42 @@ pub fn take_item(
         .clone()
         .non_condition_handle()
         .wrap_expectation("expected item to have non-condition handle")?;
-    let take_item_result = core_battle_effects::run_effect_event_with_input::<_, _, EventResult>(
-        &mut context.forward_applying_effect_context(item_handle.clone())?,
-        fxlang::BattleEvent::TakeItem,
-        item_handle.clone(),
-    )
-    .and_then(|| {
-        core_battle_effects::run_event_with_input::<_, _, EventResult>(
+
+    // Check if item can be taken.
+    try_event!(
+        core_battle_effects::run_effect_event_with_input::<_, _, EventResult>(
+            &mut context.forward_applying_effect_context(item_handle.clone())?,
+            fxlang::BattleEvent::TakeItem,
+            item_handle.clone(),
+        ),
+        result => EventResultOutput::no_output(result)
+    );
+
+    // Check if item could be taken from the source.
+    if let Some(source) = context.source_handle() {
+        let target = context.target_handle();
+        try_event!(
+            core_battle_effects::run_effect_event_with_input::<_, _, EventResult>(
+                &mut context
+                    .as_effect_context_mut()
+                    .forward_effect_context(item_handle.clone())?
+                    .applying_effect_context(Some(target), source)?,
+                fxlang::BattleEvent::TakeItem,
+                item_handle.clone(),
+            ),
+            result => EventResultOutput::no_output(result)
+        );
+    }
+
+    // Check if Mon can have item taken.
+    try_event!(
+       core_battle_effects::run_event_with_input::<_, _, EventResult>(
             context,
             fxlang::BattleEvent::TakeItem,
             item_handle.clone(),
-        )
-    });
-
-    if !take_item_result.advance() {
-        return EventResultOutput::no_output(take_item_result);
-    }
+        ),
+        result => EventResultOutput::no_output(result)
+    );
 
     if dry_run {
         return Ok(EventResultOutput::with_output(item_id));

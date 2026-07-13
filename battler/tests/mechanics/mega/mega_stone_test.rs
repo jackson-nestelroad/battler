@@ -126,7 +126,11 @@ fn can_fling_mega_stone_for_different_species() {
 
 #[test]
 fn cannot_take_mega_stone_before_mega_evolution() {
-    let mut battle = make_battle(0, gengar().unwrap(), gengar().unwrap()).unwrap();
+    let mut team = gengar().unwrap();
+    team.members[0].species = "Pikachu".to_owned();
+    team.members[0].name = "Pikachu".to_owned();
+    team.members[0].item = None;
+    let mut battle = make_battle(0, gengar().unwrap(), team).unwrap();
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
@@ -134,11 +138,38 @@ fn cannot_take_mega_stone_before_mega_evolution() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Gengar,player-2,1|name:Thief|target:Gengar,player-1,1",
+            "move|mon:Pikachu,player-2,1|name:Thief|target:Gengar,player-1,1",
             "supereffective|mon:Gengar,player-1,1",
             "split|side:0",
-            "damage|mon:Gengar,player-1,1|health:62/120",
-            "damage|mon:Gengar,player-1,1|health:52/100",
+            "damage|mon:Gengar,player-1,1|health:70/120",
+            "damage|mon:Gengar,player-1,1|health:59/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn cannot_take_mega_stone_that_user_could_use_to_mega_evolve() {
+    let mut team_1 = gengar().unwrap();
+    team_1.members[0].species = "Pikachu".to_owned();
+    team_1.members[0].name = "Pikachu".to_owned();
+    let mut team_2 = gengar().unwrap();
+    team_2.members[0].item = None;
+    let mut battle = make_battle(0, team_1, team_2).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Gengar,player-2,1|name:Thief|target:Pikachu,player-1,1",
+            "split|side:0",
+            "damage|mon:Pikachu,player-1,1|health:54/95",
+            "damage|mon:Pikachu,player-1,1|health:57/100",
             "residual",
             "turn|turn:2"
         ]"#,
