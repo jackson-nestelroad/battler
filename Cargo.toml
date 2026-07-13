@@ -42,6 +42,7 @@ members = [
     "battler-wamprat-schema",
     "battler-wamprat-schema/battler-wamprat-schema-proc-macro",
     "battler-wamp-compat-test-bin",
+    "battler-fuzz-test-generator",
 ]
 
 [workspace.dependencies]
@@ -76,6 +77,7 @@ wasm-bindgen = { version = "0.2" }
 
 # Async.
 async-scoped = { version = "0.9", features = ["use-tokio"] }
+futures = "0.3"
 futures-channel = "0.3"
 futures-util = "0.3"
 tokio = { version = "1.45", features = ["full"] }

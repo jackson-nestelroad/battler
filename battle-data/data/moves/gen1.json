@@ -764,7 +764,7 @@
           "if $source_effect.is_ability:",
           ["log_start: with_source_effect str('disabledmove:{}', $target.last_move.name)"],
           "else:",
-          ["log_start: str('disabledmove:{}',    $target.last_move.name)"],
+          ["log_start: str('disabledmove:{}', $target.last_move.name)"],
           "$effect_state.move = $target.last_move.id"
         ],
         "on_end": ["log_end"],

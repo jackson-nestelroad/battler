@@ -182,9 +182,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Nickname \"Bulba|saur\" contains illegal characters."
-    ]
+    "expected_problems": ["Nickname \"Bulba|saur\" contains illegal characters."]
   },
   "default_level": {
     "format": { "battle_type": "Singles", "rules": ["Default Level = 25"] },
@@ -361,9 +359,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Bulba Fett (level 1) is below the minimum level of 50."
-    ]
+    "expected_problems": ["Bulba Fett (level 1) is below the minimum level of 50."]
   },
   "max_level": {
     "format": { "battle_type": "Singles", "rules": ["Max Level = 50"] },
@@ -381,9 +377,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Bulba Fett (level 100) is above the maximum level of 50."
-    ]
+    "expected_problems": ["Bulba Fett (level 100) is above the maximum level of 50."]
   },
   "level_from_experience": {
     "format": { "battle_type": "Singles", "rules": ["Default Level = 25"] },
@@ -454,9 +448,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Bulba Fett has 150 EVs, which exceeds the limit of 100."
-    ]
+    "expected_problems": ["Bulba Fett has 150 EVs, which exceeds the limit of 100."]
   },
   "valid_evs": {
     "format": { "battle_type": "Singles", "rules": [] },
@@ -630,9 +622,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Bulba Fett has 5 moves, which is more than the limit of 3."
-    ]
+    "expected_problems": ["Bulba Fett has 5 moves, which is more than the limit of 3."]
   },
   "invalid_move": {
     "format": { "battle_type": "Singles", "rules": [] },
@@ -803,7 +793,7 @@
       ]
     },
     "expected_problems": [
-      "Bulba Fett cannot learn Synthesis, because Synthesis is learned at level 33."
+      "Bulba Fett cannot learn Synthesis, because Synthesis is learned at level 27."
     ]
   },
   "too_many_pp_boosts": {
@@ -935,9 +925,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Bulba Fett cannot have the ability Torrent because it is unobtainable."
-    ]
+    "expected_problems": ["Bulba Fett cannot have the ability Torrent because it is unobtainable."]
   },
   "forme_moves": {
     "format": { "battle_type": "Singles", "rules": [] },
@@ -1106,9 +1094,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Charmander is unobtainable (no matching giveaway event)."
-    ]
+    "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_shiny_for_non_shiny_event": {
     "format": { "battle_type": "Singles", "rules": [] },
@@ -1126,9 +1112,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Charmander is unobtainable (no matching giveaway event)."
-    ]
+    "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_ivs_for_event": {
     "format": { "battle_type": "Singles", "rules": [] },
@@ -1146,9 +1130,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Charmander is unobtainable (no matching giveaway event)."
-    ]
+    "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_shiny_for_shiny_only_event": {
     "format": { "battle_type": "Singles", "rules": [] },
@@ -1165,9 +1147,7 @@
         }
       ]
     },
-    "expected_problems": [
-      "Charmander is unobtainable (no matching giveaway event)."
-    ]
+    "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "evolved_from_event": {
     "format": { "battle_type": "Singles", "rules": [] },
@@ -1223,7 +1203,7 @@
           "name": "Venusaur",
           "species": "Venusaur",
           "ability": "Chlorophyll",
-          "moves": ["Growth", "Sludge Bomb", "Giga Drain", "Weather Ball"],
+          "moves": ["Growth", "Sludge Bomb", "Giga Drain", "Surf"],
           "nature": "Modest",
           "gender": "F",
           "ball": "Normal",
@@ -1279,7 +1259,7 @@
       ]
     },
     "expected_problems": [
-      "Venusaur cannot learn Weather Ball, because Weather Ball is unobtainable on Venusaur.",
+      "Venusaur cannot learn Surf, because Surf is unobtainable on Venusaur.",
       "Charizard is not allowed.",
       "Blastoise has 756 EVs, which exceeds the limit of 510."
     ]

@@ -1,0 +1,23 @@
+[package]
+name = "battler-fuzz-test-generator"
+version = "0.1.0"
+edition = "2024"
+description = "Random battle and team generator for Pokémon battle fuzz testing."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "battle", "fuzz"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-fuzz-test-generator"
+
+[dependencies]
+ahash = { workspace = true }
+anyhow = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+battler = { workspace = true }
+battler-data = { workspace = true }
+battler-local-data = { workspace = true }
+
+[dev-dependencies]
+assert_matches = { workspace = true }

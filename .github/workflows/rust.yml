@@ -14,8 +14,25 @@ env:
   TOKIO_WORKER_THREADS: 8
 
 jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_core: ${{ steps.detector.outputs.run_core }}
+      run_wamp: ${{ steps.detector.outputs.run_wamp }}
+      run_battler_service: ${{ steps.detector.outputs.run_battler_service }}
+      run_battler_multiplayer_service: ${{ steps.detector.outputs.run_battler_multiplayer_service }}
+      run_battler_server: ${{ steps.detector.outputs.run_battler_server }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect Changes
+        uses: ./.github/actions/detect-changes
+        id: detector
+
   build-no-std:
     name: Build battler no_std
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -29,6 +46,8 @@ jobs:
 
   test-battler:
     name: Run battler tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -40,6 +59,8 @@ jobs:
 
   test-battler-no-std:
     name: Run battler no_std tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -51,6 +72,8 @@ jobs:
 
   test-battler-modules:
     name: Run battler module tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -60,8 +83,23 @@ jobs:
       - name: Run battler module tests
         run: cargo test -p battler-choice -p battler-data -p battler-prng
 
+  test-battler-fuzz-test-generator:
+    name: Run battler-fuzz-test-generator tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler module tests
+        run: cargo test -p battler-fuzz-test-generator
+
   test-battler-service:
     name: Run battler-service tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_service == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -73,6 +111,8 @@ jobs:
 
   test-battler-state:
     name: Run battler-state tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -84,6 +124,8 @@ jobs:
 
   test-battler-state-no-std:
     name: Run battler-state no_std tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -95,6 +137,8 @@ jobs:
 
   test-battler-client:
     name: Run battler-client tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_service == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -106,6 +150,8 @@ jobs:
 
   test-battler-calc:
     name: Run battler-calc tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -117,6 +163,8 @@ jobs:
 
   test-battler-multiplayer-service:
     name: Run battler-multiplayer-service tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_multiplayer_service == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -132,6 +180,8 @@ jobs:
 
   test-battler-multiplayer-client:
     name: Run battler-multiplayer-client tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_multiplayer_service == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -147,6 +197,8 @@ jobs:
 
   test-battler-server:
     name: Run battler-server tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_server == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -162,6 +214,8 @@ jobs:
 
   test-battler-wamp:
     name: Run battler-wamp tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_wamp == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

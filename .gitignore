@@ -13,6 +13,8 @@ dist/
 
 .env
 .debug
+.gemini-battler-debug
+.battler-debug-test-runs
 
 /.gemini/work
 

@@ -14,8 +14,21 @@ env:
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_ai: ${{ steps.detector.outputs.run_ai }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect Changes
+        uses: ./.github/actions/detect-changes
+        id: detector
+
   test-battler-ai:
     name: Run battler-ai tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_ai == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:

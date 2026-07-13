@@ -1588,6 +1588,7 @@ where
                     value = match *member {
                         "atk" => ValueRefMut::U16(&mut stats.atk),
                         "def" => ValueRefMut::U16(&mut stats.def),
+                        "hp" => ValueRefMut::U16(&mut stats.hp),
                         "spa" => ValueRefMut::U16(&mut stats.spa),
                         "spd" => ValueRefMut::U16(&mut stats.spd),
                         "spe" => ValueRefMut::U16(&mut stats.spe),

@@ -17,6 +17,9 @@ class Options:
     def __init__(self, args: dict):
         self.working_dir = pathlib.Path(os.getcwd())
         self.binary_dir = pathlib.Path(__file__).parent
+        self.debug_dir = pathlib.Path(
+            os.getenv("GEMINI_PYTHON_DEBUG_DIR") or self.binary_dir / ".debug"
+        )
 
         self.player = validate_player(args.player)
         self.input = validate_input(args.input)
@@ -28,6 +31,7 @@ class Options:
 
     working_dir: pathlib.Path
     binary_dir: pathlib.Path
+    debug_dir: pathlib.Path
 
     player: str
     input: str
@@ -154,7 +158,7 @@ def ensure_cache(
 
 def write_debug_file(options: Options, name: str, content: str):
     try:
-        debug_dir = options.binary_dir / ".debug"
+        debug_dir = options.debug_dir
         os.makedirs(debug_dir, exist_ok=True)
         with (debug_dir / name).open("w") as file:
             file.write(content)
@@ -165,7 +169,7 @@ def write_debug_file(options: Options, name: str, content: str):
 def gemini_battler(options: Options, context: str, prompt: str):
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-    model = client.models.get(model="models/gemini-2.5-flash")
+    model = client.models.get(model="models/gemini-3.1-flash-lite")
 
     print(
         f"Starting Gemini x battler on {model.name} (input token limit = {model.input_token_limit})"

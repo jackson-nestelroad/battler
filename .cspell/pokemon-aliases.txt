@@ -253,6 +253,8 @@ nlunarizer
 nlunarizermerge
 nsolarizer
 nsolarizermerge
+ogerpon
+ogerpontealmask
 oinkologne
 oinkolognemale
 oricorio
