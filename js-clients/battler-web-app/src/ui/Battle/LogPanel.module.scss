@@ -10,13 +10,15 @@
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   min-height: 0; // Ensure parent flex container doesn't overflow
-  transition: height 0.2s ease, flex 0.2s ease;
+  transition:
+    height 0.2s ease,
+    flex 0.2s ease;
 
   @include tablet {
     &.collapsed {
       height: var(--mobile-header-height) !important; /* Force minimum height matching header */
       flex: 0 0 auto !important; /* Prevent expansion */
-      
+
       .header {
         border-bottom: none; /* Hide border when closed */
       }

@@ -1,6 +1,6 @@
 @use "./styles/breakpoints" as *;
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap");
 
 :root {
   /* Colors */
@@ -8,14 +8,14 @@
   --bg-sidebar: #10141f;
   --bg-card: #161c2b;
   --bg-input: #1b2234;
-  
+
   --border-color: #242c3f;
   --border-glow: color-mix(in srgb, var(--color-primary) 15%, transparent);
-  
+
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  
+
   --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
   --color-accent: #8b5cf6;
@@ -52,7 +52,7 @@
   --color-success-text: color-mix(in srgb, var(--color-success) 20%, var(--text-primary));
   --color-warning-text: color-mix(in srgb, var(--color-warning) 20%, var(--text-primary));
   --color-info-text: color-mix(in srgb, var(--color-info) 20%, var(--text-primary));
-  
+
   /* Overlays & Gradient Backgrounds */
   --bg-overlay: rgba(0, 0, 0, 0.4);
   --bg-modal-overlay: color-mix(in srgb, var(--bg-primary) 85%, transparent);
@@ -86,31 +86,31 @@
   --color-status-frz: #98d8d8;
   --color-status-psn: #a040a0;
   --color-status-tox: #a040a0;
-  
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'Courier New', Courier, monospace;
-  
+
+  --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-glow: 0 0 15px 0 color-mix(in srgb, var(--color-primary) 30%, transparent);
 
   /* Font Sizes */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-s: 0.875rem;    /* 14px */
-  --font-size-m: 1rem;        /* 16px */
-  --font-size-l: 1.125rem;    /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-xxl: 1.75rem;   /* 28px */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-s: 0.875rem; /* 14px */
+  --font-size-m: 1rem; /* 16px */
+  --font-size-l: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-xxl: 1.75rem; /* 28px */
 
   /* Spacing Tokens (rem-based) */
-  --spacing-xxs: 0.125rem;    /* 2px */
-  --spacing-xs: 0.25rem;      /* 4px */
-  --spacing-s: 0.5rem;        /* 8px */
-  --spacing-m: 1rem;          /* 16px */
-  --spacing-l: 1.25rem;       /* 20px */
-  --spacing-xl: 1.5rem;       /* 24px */
-  --spacing-xxl: 2rem;        /* 32px */
+  --spacing-xxs: 0.125rem; /* 2px */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-s: 0.5rem; /* 8px */
+  --spacing-m: 1rem; /* 16px */
+  --spacing-l: 1.25rem; /* 20px */
+  --spacing-xl: 1.5rem; /* 24px */
+  --spacing-xxl: 2rem; /* 32px */
 
   /* Border Radius Tokens */
   --border-radius-xs: 0.25rem;
@@ -132,12 +132,12 @@
 
 @include mobile {
   :root {
-    --font-size-xs: 0.7rem;     /* 11.2px */
-    --font-size-s: 0.8rem;      /* 12.8px */
-    --font-size-m: 0.9rem;      /* 14.4px */
-    --font-size-l: 1.0rem;      /* 16px */
-    --font-size-xl: 1.15rem;    /* 18.4px */
-    --font-size-xxl: 1.5rem;    /* 24px */
+    --font-size-xs: 0.7rem; /* 11.2px */
+    --font-size-s: 0.8rem; /* 12.8px */
+    --font-size-m: 0.9rem; /* 14.4px */
+    --font-size-l: 1rem; /* 16px */
+    --font-size-xl: 1.15rem; /* 18.4px */
+    --font-size-xxl: 1.5rem; /* 24px */
   }
 }
 
@@ -166,7 +166,9 @@ button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-input:not([type="checkbox"]):not([type="radio"]), textarea, select {
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
   font-family: var(--font-sans);
   border: 1px solid var(--border-color);
   background-color: var(--bg-input);
@@ -177,7 +179,9 @@ input:not([type="checkbox"]):not([type="radio"]), textarea, select {
   font-size: var(--font-size-s);
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--border-glow);
@@ -468,8 +472,6 @@ input[type="checkbox"] {
   color: var(--color-info-text);
 }
 
-
-
 .alert-message {
   flex-grow: 1;
   line-height: 1.4;
@@ -535,11 +537,24 @@ input[type="checkbox"] {
   line-height: 1;
 }
 
-.status-badge.brn { background-color: var(--color-status-brn); }
-.status-badge.psn, .status-badge.tox { background-color: var(--color-status-psn); }
-.status-badge.par { background-color: var(--color-status-par); color: var(--color-black); }
-.status-badge.slp { background-color: var(--color-status-slp); }
-.status-badge.frz { background-color: var(--color-status-frz); color: var(--color-black); }
+.status-badge.brn {
+  background-color: var(--color-status-brn);
+}
+.status-badge.psn,
+.status-badge.tox {
+  background-color: var(--color-status-psn);
+}
+.status-badge.par {
+  background-color: var(--color-status-par);
+  color: var(--color-black);
+}
+.status-badge.slp {
+  background-color: var(--color-status-slp);
+}
+.status-badge.frz {
+  background-color: var(--color-status-frz);
+  color: var(--color-black);
+}
 
 /* 8. Layout Utilities */
 .flex-col {
@@ -550,15 +565,33 @@ input[type="checkbox"] {
   display: flex;
   flex-direction: row;
 }
-.gap-xs { gap: var(--spacing-xs); }
-.gap-s { gap: var(--spacing-s); }
-.gap-m { gap: var(--spacing-m); }
-.gap-l { gap: var(--spacing-l); }
-.gap-xl { gap: var(--spacing-xl); }
-.align-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.w-full { width: 100%; }
-.flex-1 { flex: 1; }
+.gap-xs {
+  gap: var(--spacing-xs);
+}
+.gap-s {
+  gap: var(--spacing-s);
+}
+.gap-m {
+  gap: var(--spacing-m);
+}
+.gap-l {
+  gap: var(--spacing-l);
+}
+.gap-xl {
+  gap: var(--spacing-xl);
+}
+.align-center {
+  align-items: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.w-full {
+  width: 100%;
+}
+.flex-1 {
+  flex: 1;
+}
 
 @include tablet {
   .flex-tablet-col {

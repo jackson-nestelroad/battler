@@ -16,7 +16,6 @@
   }
 }
 
-
 .cardHeader {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: var(--spacing-m);
@@ -71,7 +70,7 @@
 
   @include mobile {
     flex-direction: column;
-    
+
     button {
       width: 100%;
     }
@@ -81,7 +80,6 @@
     flex: 1;
   }
 }
-
 
 .errorSection {
   margin-top: var(--spacing-xs);

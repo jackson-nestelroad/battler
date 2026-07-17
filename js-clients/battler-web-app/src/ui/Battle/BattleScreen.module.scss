@@ -55,7 +55,7 @@
 
 .headerControls {
   flex-wrap: wrap; /* natural wrapping on ultra-narrow viewports */
- 
+
   @include tablet {
     width: 100%;
   }
@@ -209,7 +209,7 @@
 .proposalHeader {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: var(--spacing-m);
-  
+
   h3 {
     font-size: var(--font-size-xl);
     font-weight: 700;

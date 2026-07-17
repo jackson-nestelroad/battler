@@ -18,12 +18,13 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-s);
-  
+
   h2 {
     font-size: var(--font-size-xl);
     font-weight: 700;
     letter-spacing: -0.025em;
     background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     overflow: hidden;
@@ -134,7 +135,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 
 .nav {
   display: flex;
@@ -292,7 +292,7 @@
     padding: var(--spacing-m) var(--spacing-s);
     flex-direction: column-reverse;
     justify-content: center;
-    
+
     h2 {
       font-size: var(--font-size-xs);
     }
@@ -331,7 +331,7 @@
   .battleItem {
     justify-content: center;
     padding: var(--spacing-s) 0;
-    
+
     .battleMeta {
       align-items: center;
     }
@@ -348,19 +348,19 @@
     width: var(--sidebar-width) !important;
     transform: translateX(-100%);
     box-shadow: rem(4px) 0 rem(24px) var(--bg-overlay);
-    
+
     &.collapsed {
       transform: translateX(-100%);
     }
 
     &:not(.collapsed) {
       transform: translateX(0);
-      
+
       .brand {
         padding: var(--spacing-l) var(--spacing-m);
         flex-direction: row;
         justify-content: space-between;
-        
+
         h2 {
           font-size: var(--font-size-xl);
         }
@@ -394,7 +394,8 @@
 }
 
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {

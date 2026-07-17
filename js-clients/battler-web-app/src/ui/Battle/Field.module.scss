@@ -7,7 +7,11 @@
   padding: var(--spacing-l);
   box-shadow: var(--shadow-sm);
   gap: var(--spacing-m);
-  background: radial-gradient(circle at center, var(--bg-arena-gradient-start) 0%, var(--bg-arena-gradient-end) 100%);
+  background: radial-gradient(
+    circle at center,
+    var(--bg-arena-gradient-start) 0%,
+    var(--bg-arena-gradient-end) 100%
+  );
 }
 
 .fieldConditions {

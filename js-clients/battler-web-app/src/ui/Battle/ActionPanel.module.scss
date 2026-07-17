@@ -32,7 +32,6 @@
   animation: dotPulse 1.5s infinite linear;
 }
 
-
 .movesColumn {
   display: flex;
   flex-direction: column;
@@ -170,13 +169,22 @@
 
 @keyframes dotPulse {
   0% {
-    box-shadow: -0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0.9375rem 0 0 0 transparent;
+    box-shadow:
+      -0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent),
+      0.9375rem 0 0 0 transparent;
   }
   50% {
-    box-shadow: -0.9375rem 0 0 0 transparent, 0 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent);
+    box-shadow:
+      -0.9375rem 0 0 0 transparent,
+      0 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent),
+      0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent);
   }
   100% {
-    box-shadow: -0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0 0 0 0 transparent, 0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent);
+    box-shadow:
+      -0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent),
+      0 0 0 0 transparent,
+      0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent);
   }
 }
 
@@ -203,6 +211,3 @@
   grid-template-columns: repeat(auto-fill, minmax(rem(130px), 1fr));
   gap: var(--spacing-s);
 }
-
-
-
