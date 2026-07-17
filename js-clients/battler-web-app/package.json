@@ -21,6 +21,7 @@
     "battler-state": "^0.1.0",
     "battler-types": "^0.1.0",
     "battler-wamp-client": "^0.1.0",
+    "team-converter": "^0.1.0",
     "fast-deep-equal": "^3.1.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

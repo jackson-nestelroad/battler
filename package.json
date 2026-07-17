@@ -13,6 +13,7 @@
     "battler-choice/battler-choice-wasm/pkg/node",
     "battler-state/pkg/node",
     "js-clients/battler-types",
+    "js-clients/team-converter",
     "js-clients/battler-wamp-client",
     "js-clients/battler-service-client",
     "js-clients/battler-client",

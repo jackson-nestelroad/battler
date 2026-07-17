@@ -1,8 +1,16 @@
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { saveTeam, deleteTeam, setDefaultTeam, moveTeamUp, moveTeamDown } from "../../store/teamsSlice";
+import {
+  saveTeam,
+  deleteTeam,
+  setDefaultTeam,
+  moveTeamUp,
+  moveTeamDown,
+} from "../../store/teamsSlice";
 import type { MonData } from "battler-types";
 import JsonEditor from "../Common/JsonEditor";
+import Tabs from "../Common/Tabs";
+import { parseShowdown, exportToShowdown } from "team-converter";
 
 import styles from "./Teams.module.scss";
 
@@ -13,30 +21,30 @@ const SAMPLE_TEAMS: Record<string, Partial<MonData>[]> = {
       species: "Bulbasaur",
       ability: "Overgrow",
       moves: ["Tackle", "Vine Whip", "Growl"],
-      level: 50
+      level: 50,
     },
     {
       name: "Charmander",
       species: "Charmander",
       ability: "Blaze",
       moves: ["Scratch", "Ember", "Growl"],
-      level: 50
+      level: 50,
     },
     {
       name: "Squirtle",
       species: "Squirtle",
       ability: "Torrent",
       moves: ["Tackle", "Water Gun", "Tail Whip"],
-      level: 50
+      level: 50,
     },
     {
       name: "Pikachu",
       species: "Pikachu",
       ability: "Static",
       moves: ["Thunder Shock", "Thunderbolt", "Quick Attack", "Growl"],
-      level: 50
-    }
-  ]
+      level: 50,
+    },
+  ],
 };
 
 export default function Teams() {
@@ -44,7 +52,8 @@ export default function Teams() {
   const teams = useAppSelector((state) => state.teams.teams);
   const defaultTeam = useAppSelector((state) => state.teams.defaultTeam);
   const teamOrder = useAppSelector((state) => state.teams.teamOrder);
-  const teamNames = teamOrder.length > 0 ? teamOrder.filter(name => teams[name]) : Object.keys(teams);
+  const teamNames =
+    teamOrder.length > 0 ? teamOrder.filter((name) => teams[name]) : Object.keys(teams);
 
   const [activeTeamName, setActiveTeamName] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -52,11 +61,13 @@ export default function Teams() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [editorFormat, setEditorFormat] = useState<"json" | "showdown">("json");
 
   const handleSelectTeam = (name: string) => {
     setActiveTeamName(name);
     setEditName(name);
     setJsonText(JSON.stringify(teams[name], null, 2));
+    setEditorFormat("json");
     setErrorMsg(null);
     setSuccessMsg(null);
     setIsEditing(true);
@@ -65,15 +76,22 @@ export default function Teams() {
   const handleCreateNew = () => {
     setActiveTeamName(null);
     setEditName("New Team");
-    setJsonText(JSON.stringify([
-      {
-        name: "Pikachu",
-        species: "Pikachu",
-        ability: "Static",
-        moves: ["Tackle"],
-        level: 50
-      }
-    ], null, 2));
+    setJsonText(
+      JSON.stringify(
+        [
+          {
+            name: "Pikachu",
+            species: "Pikachu",
+            ability: "Static",
+            moves: ["Tackle"],
+            level: 50,
+          },
+        ],
+        null,
+        2,
+      ),
+    );
+    setEditorFormat("json");
     setErrorMsg(null);
     setSuccessMsg(null);
     setIsEditing(true);
@@ -83,6 +101,7 @@ export default function Teams() {
     setActiveTeamName(null);
     setEditName(sampleName);
     setJsonText(JSON.stringify(SAMPLE_TEAMS[sampleName], null, 2));
+    setEditorFormat("json");
     setErrorMsg(null);
     setSuccessMsg(null);
     setIsEditing(true);
@@ -93,8 +112,48 @@ export default function Teams() {
     setActiveTeamName(null);
     setEditName("");
     setJsonText("");
+    setEditorFormat("json");
     setErrorMsg(null);
     setSuccessMsg(null);
+  };
+
+  const handleSwitchFormat = (newFormat: "json" | "showdown") => {
+    if (editorFormat === newFormat) return;
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (newFormat === "showdown") {
+      try {
+        const parsed = JSON.parse(jsonText);
+        if (!Array.isArray(parsed)) {
+          throw new Error("JSON must be an array of Pokémon.");
+        }
+        for (const mon of parsed) {
+          if (!mon || typeof mon !== "object" || !mon.species) {
+            throw new Error("Each Pokémon must have a species defined.");
+          }
+        }
+        const showdownText = exportToShowdown(parsed as MonData[]);
+        setJsonText(showdownText);
+        setEditorFormat("showdown");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setErrorMsg(`Failed to convert to Showdown format: ${msg}`);
+      }
+    } else {
+      try {
+        const parsed = parseShowdown(jsonText);
+        if (parsed.length === 0) {
+          throw new Error("No Pokémon found in Showdown text.");
+        }
+        const jsonStr = JSON.stringify(parsed, null, 2);
+        setJsonText(jsonStr);
+        setEditorFormat("json");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setErrorMsg(`Failed to convert to JSON: ${msg}`);
+      }
+    }
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -108,53 +167,67 @@ export default function Teams() {
       return;
     }
 
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(jsonText);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMsg(`Invalid JSON structure: ${msg}`);
-      return;
-    }
-
-    if (!Array.isArray(parsed)) {
-      setErrorMsg("Team data must be a JSON array of Pokémon objects.");
-      return;
-    }
-
-    if (parsed.length === 0) {
-      setErrorMsg("Team must contain at least one Pokémon.");
-      return;
-    }
-
-    // Schema validation
-    const pokemonArray = parsed as Array<Record<string, unknown>>;
-    for (let i = 0; i < pokemonArray.length; i++) {
-      const mon = pokemonArray[i];
-      if (!mon || typeof mon !== "object") {
-        setErrorMsg(`Index ${i}: Pokémon data must be a JSON object.`);
+    let parsed: MonData[];
+    if (editorFormat === "json") {
+      try {
+        const jsonParsed = JSON.parse(jsonText);
+        if (!Array.isArray(jsonParsed)) {
+          setErrorMsg("Team data must be a JSON array of Pokémon objects.");
+          return;
+        }
+        if (jsonParsed.length === 0) {
+          setErrorMsg("Team must contain at least one Pokémon.");
+          return;
+        }
+        // Schema validation
+        for (let i = 0; i < jsonParsed.length; i++) {
+          const mon = jsonParsed[i];
+          if (!mon || typeof mon !== "object") {
+            setErrorMsg(`Index ${i}: Pokémon data must be a JSON object.`);
+            return;
+          }
+          if (typeof mon.species !== "string" || !mon.species.trim()) {
+            setErrorMsg(`Index ${i}: Missing or invalid "species" (string required).`);
+            return;
+          }
+          if (!Array.isArray(mon.moves) || mon.moves.some((m: unknown) => typeof m !== "string")) {
+            setErrorMsg(`Index ${i}: Missing or invalid "moves" (array of strings required).`);
+            return;
+          }
+          if (
+            mon.level !== undefined &&
+            (typeof mon.level !== "number" || mon.level < 1 || mon.level > 100)
+          ) {
+            setErrorMsg(`Index ${i}: "level" must be a number between 1 and 100.`);
+            return;
+          }
+          if (mon.shiny !== undefined && typeof mon.shiny !== "boolean") {
+            setErrorMsg(`Index ${i}: "shiny" must be a boolean.`);
+            return;
+          }
+        }
+        parsed = jsonParsed as MonData[];
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setErrorMsg(`Invalid JSON structure: ${msg}`);
         return;
       }
-      if (typeof mon.species !== "string" || !mon.species.trim()) {
-        setErrorMsg(`Index ${i}: Missing or invalid "species" (string required).`);
-        return;
-      }
-      if (!Array.isArray(mon.moves) || mon.moves.some((m: unknown) => typeof m !== "string")) {
-        setErrorMsg(`Index ${i}: Missing or invalid "moves" (array of strings required).`);
-        return;
-      }
-      if (mon.level !== undefined && (typeof mon.level !== "number" || mon.level < 1 || mon.level > 100)) {
-        setErrorMsg(`Index ${i}: "level" must be a number between 1 and 100.`);
-        return;
-      }
-      if (mon.shiny !== undefined && typeof mon.shiny !== "boolean") {
-        setErrorMsg(`Index ${i}: "shiny" must be a boolean.`);
+    } else {
+      try {
+        parsed = parseShowdown(jsonText);
+        if (parsed.length === 0) {
+          setErrorMsg("Showdown text must contain at least one Pokémon.");
+          return;
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setErrorMsg(`Invalid Showdown structure: ${msg}`);
         return;
       }
     }
 
     // Save
-    dispatch(saveTeam({ name, members: parsed as MonData[] }));
+    dispatch(saveTeam({ name, members: parsed }));
     setActiveTeamName(name);
     setSuccessMsg(`Team "${name}" successfully saved!`);
   };
@@ -197,14 +270,19 @@ export default function Teams() {
                     >
                       <span className={styles.teamNameLabel}>
                         {name}
-                        {defaultTeam === name && <span className={styles.defaultBadge}>Default</span>}
+                        {defaultTeam === name && (
+                          <span className={styles.defaultBadge}>Default</span>
+                        )}
                       </span>
                       <span className={styles.teamSizeBadge}>{teams[name]?.length || 0} Mons</span>
                     </button>
                     <div className={styles.orderControls}>
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); dispatch(moveTeamUp(name)); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(moveTeamUp(name));
+                        }}
                         className={styles.orderBtn}
                         title="Move Up"
                       >
@@ -212,7 +290,10 @@ export default function Teams() {
                       </button>
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); dispatch(moveTeamDown(name)); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(moveTeamDown(name));
+                        }}
                         className={styles.orderBtn}
                         title="Move Down"
                       >
@@ -245,7 +326,11 @@ export default function Teams() {
             <form onSubmit={handleSave} className={styles.editorForm}>
               <div className={styles.editorHeader}>
                 <div className={styles.headerLeft}>
-                  <button type="button" className={`btn btn-secondary ${styles.backBtn}`} onClick={handleBack}>
+                  <button
+                    type="button"
+                    className={`btn btn-secondary ${styles.backBtn}`}
+                    onClick={handleBack}
+                  >
                     ← Back to Teams
                   </button>
                   <input
@@ -281,10 +366,23 @@ export default function Teams() {
                 </div>
               </div>
 
+              <Tabs
+                options={[
+                  { value: "json", label: "JSON" },
+                  { value: "showdown", label: "Showdown" },
+                ]}
+                active={editorFormat}
+                onChange={handleSwitchFormat}
+              />
+
               <JsonEditor
                 value={jsonText}
                 onChange={setJsonText}
-                placeholder="[{ 'species': 'Pikachu', 'moves': ['Tackle'] }]"
+                placeholder={
+                  editorFormat === "json"
+                    ? `[\n  {\n    "name": "Pikachu",\n    "species": "Pikachu",\n    "moves": ["Tackle"]\n  }\n]`
+                    : "Pikachu\nAbility: Static\nLevel: 50\n- Tackle"
+                }
                 error={errorMsg}
                 success={successMsg}
                 required
