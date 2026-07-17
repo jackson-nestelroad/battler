@@ -19,10 +19,12 @@ export interface SerializedBattleSession {
   serviceBattle: Battle | null;
 }
 
+export type ActiveView = "lobby" | "teams" | "battle";
+
 export interface BattlesState {
   battles: Record<string, SerializedBattleSession>;
   activeBattleId: string | null;
-  currentView: "lobby" | "teams" | "battle";
+  currentView: ActiveView;
 }
 
 const initialState: BattlesState = {
@@ -120,13 +122,32 @@ const battlesSlice = createSlice({
       }
     },
 
+    battleSessionRestored(state, action: PayloadAction<string>) {
+      if (!state.battles[action.payload]) {
+        state.battles[action.payload] = {
+          battleId: action.payload,
+          battleState: null,
+          activeRequest: null,
+          playerData: null,
+          uiLogs: [],
+          engineLogs: [],
+          choiceSubmitted: false,
+          error: null,
+          isLoading: false,
+          serviceBattle: null,
+        };
+      }
+    },
+
     switchActiveBattle(state, action: PayloadAction<string | null>) {
       state.activeBattleId = action.payload;
       if (action.payload) {
         state.currentView = "battle";
+      } else if (state.currentView === "battle") {
+        state.currentView = "lobby";
       }
     },
-    setCurrentView(state, action: PayloadAction<"lobby" | "teams" | "battle">) {
+    setCurrentView(state, action: PayloadAction<ActiveView>) {
       state.currentView = action.payload;
     },
 
@@ -155,6 +176,7 @@ export const {
   setBattleError,
   setBattleLoading,
   battleSessionEnded,
+  battleSessionRestored,
   switchActiveBattle,
   setCurrentView,
   serviceBattleUpdated,

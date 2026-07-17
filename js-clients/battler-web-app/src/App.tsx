@@ -5,10 +5,12 @@ import Lobby from "./ui/Lobby/Lobby";
 import Teams from "./ui/Teams/Teams";
 import BattleScreen from "./ui/Battle/BattleScreen";
 import { BREAKPOINT_TABLET_PX } from "./utils/constants";
+import { useHistorySync } from "./hooks/useHistorySync";
 
 import styles from "./App.module.scss";
 
 export default function App() {
+  useHistorySync();
   const connection = useAppSelector((state) => state.connection);
   const isHydrated = connection.isHydrated;
   const currentView = useAppSelector((state) => state.battles.currentView);

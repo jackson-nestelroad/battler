@@ -1,0 +1,42 @@
+@use "../../styles/breakpoints" as *;
+
+.connectContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--spacing-l);
+  min-height: 100%;
+  width: 100%;
+  background: radial-gradient(circle at top right, var(--color-primary-bg), transparent 60%);
+}
+
+.connectCard {
+  width: 100%;
+  max-width: rem(480px);
+  padding: var(--spacing-xl);
+  margin: auto;
+
+  h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-s);
+    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-size-s);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-xl);
+}
+
+.connectForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}

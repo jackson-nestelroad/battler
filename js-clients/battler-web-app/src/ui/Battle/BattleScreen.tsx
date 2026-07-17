@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { formatUiLogEntry } from "../../utils/logFormatter";
-import { setBattleError } from "../../store/battlesSlice";
+import { setBattleError, switchActiveBattle } from "../../store/battlesSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import Field from "./Field";
 import ActionPanel from "./ActionPanel";
@@ -9,6 +9,7 @@ import LogPanel from "./LogPanel";
 import BattlePreparationPanel from "./BattlePreparationPanel";
 import BattleProposalView from "./BattleProposalView";
 import Tabs from "../Common/Tabs";
+import ConnectForm from "../Common/ConnectForm";
 
 import styles from "./BattleScreen.module.scss";
 
@@ -34,6 +35,13 @@ export default function BattleScreen() {
       .filter((formatted): formatted is string => formatted !== null);
   }, [battleSession]);
 
+  if (
+    connection.status === "disconnected" ||
+    (connection.status === "connecting" && !connection.playerId)
+  ) {
+    return <ConnectForm />;
+  }
+
   // If activeProposal exists, but actual battleSession does not, render the proposal wait state
   if (battleId && activeProposal && !battleSession) {
     return (
@@ -46,9 +54,22 @@ export default function BattleScreen() {
   }
 
   if (!battleId || !battleSession) {
+    const isProposalRoute = window.location.pathname.includes("/proposal/");
     return (
       <div className={styles.placeholder}>
-        <p>Select or join a battle session from the sidebar to play.</p>
+        {isProposalRoute ? (
+          <div className="flex-col align-center gap-m">
+            <p>
+              This challenge proposal is no longer active (it may have started, expired, or been
+              declined).
+            </p>
+            <button onClick={() => dispatch(switchActiveBattle(null))} className="btn btn-primary">
+              Return to Lobby
+            </button>
+          </div>
+        ) : (
+          <p>Select or join a battle session from the sidebar to play.</p>
+        )}
       </div>
     );
   }

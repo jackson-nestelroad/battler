@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Dispatch } from "@reduxjs/toolkit";
+import type { RootState } from "../store/store";
 import { WampSessionProvider } from "battler-wamp-client";
 import { BattlerMultiplayerClient } from "battler-multiplayer-client";
 import { BattlerClient } from "battler-client";
@@ -16,10 +17,11 @@ import {
   setSavedConnectionDetails,
   setAutoconnect,
 } from "../store/connectionSlice";
-import { setProposals, updateProposal, clearProposals } from "../store/proposalsSlice";
+import { updateProposal, addProposals, clearProposals } from "../store/proposalsSlice";
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
 import {
   battleSessionCreated,
+  battleSessionRestored,
   battleStateUpdated,
   setBattleRequest,
   setBattleError,
@@ -195,6 +197,14 @@ export async function initializeBattleClient(
   }
 }
 
+// Helper to restore an active/historical battle session in the background
+export function restoreBattleSession(battleId: string, playerId: string, dispatch: Dispatch) {
+  dispatch(battleSessionRestored(battleId));
+  initializeBattleClient(battleId, playerId, dispatch).catch((err) => {
+    console.error(`[WAMP] Failed to restore battle client for ${battleId}:`, err);
+  });
+}
+
 // Connect thunk
 export const connectWamp = createAsyncThunk(
   "wamp/connect",
@@ -204,7 +214,7 @@ export const connectWamp = createAsyncThunk(
       playerId,
       autoconnect = false,
     }: { url: string; playerId: string; autoconnect?: boolean },
-    { dispatch },
+    { dispatch, getState },
   ) => {
     dispatch(setConnectionStatus("connecting"));
     dispatch(setConnectionError(null));
@@ -252,8 +262,57 @@ export const connectWamp = createAsyncThunk(
       setCookie("battler_autoconnect", autoconnect ? "true" : "false");
 
       // Sync active proposals
-      const activeProposals = await connectionManager.multiplayerClient.proposedBattles(20, 0);
-      dispatch(setProposals(activeProposals));
+      dispatch(clearProposals());
+      let proposalsOffset = 0;
+      const proposalsLimit = 50;
+      while (true) {
+        const page = await connectionManager.multiplayerClient.proposedBattles(
+          proposalsLimit,
+          proposalsOffset,
+        );
+        if (page.length > 0) {
+          dispatch(addProposals(page));
+        }
+        if (page.length < proposalsLimit) {
+          break;
+        }
+        proposalsOffset += proposalsLimit;
+      }
+
+      // Restore active battles for the player
+      try {
+        let battlesOffset = 0;
+        const battlesLimit = 50;
+        const restoredIds = new Set<string>();
+        while (true) {
+          const page = await connectionManager.serviceClient.battlesForPlayer(
+            playerId,
+            battlesLimit,
+            battlesOffset,
+          );
+          for (const b of page) {
+            restoredIds.add(b.uuid);
+            restoreBattleSession(b.uuid, playerId, dispatch);
+          }
+          if (page.length < battlesLimit) {
+            break;
+          }
+          battlesOffset += battlesLimit;
+        }
+
+        // Also check if the user loaded a specific battle URL directly (e.g. spectating or not in active list)
+        const state = getState() as RootState;
+        const activeBattleId = state.battles.activeBattleId;
+        const currentView = state.battles.currentView;
+        if (currentView === "battle" && activeBattleId && !restoredIds.has(activeBattleId)) {
+          const isProposalRoute = window.location.pathname.includes("/proposal/");
+          if (!isProposalRoute) {
+            restoreBattleSession(activeBattleId, playerId, dispatch);
+          }
+        }
+      } catch (err: unknown) {
+        console.error("[WAMP] Failed to fetch active battles for player:", err);
+      }
 
       // Subscribe to proposal updates
       connectionManager.proposalSubscription =

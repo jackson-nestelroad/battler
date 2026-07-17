@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { setCurrentView, switchActiveBattle } from "../../store/battlesSlice";
+import type { ActiveView } from "../../store/battlesSlice";
 import { disconnectWamp } from "../../core/wamp";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
 
@@ -17,7 +18,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
   const activeBattlesList = Object.values(battles);
 
-  const handleNav = (view: "lobby" | "teams" | "battle", battleId: string | null = null) => {
+  const handleNav = (view: ActiveView, battleId: string | null = null) => {
     dispatch(setCurrentView(view));
     dispatch(switchActiveBattle(battleId));
 

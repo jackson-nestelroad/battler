@@ -21,15 +21,13 @@ const proposalsSlice = createSlice({
   name: "proposals",
   initialState,
   reducers: {
-    setProposals(state, action: PayloadAction<ProposedBattle[]>) {
-      const newProposals: Record<string, ProposedBattleWithDetails> = {};
-      for (const p of action.payload) {
-        newProposals[p.uuid] = p;
-      }
-      state.proposals = newProposals;
-    },
     updateProposal(state, action: PayloadAction<ProposedBattleWithDetails>) {
       state.proposals[action.payload.uuid] = action.payload;
+    },
+    addProposals(state, action: PayloadAction<ProposedBattle[]>) {
+      for (const p of action.payload) {
+        state.proposals[p.uuid] = p;
+      }
     },
     removeProposal(state, action: PayloadAction<string>) {
       delete state.proposals[action.payload];
@@ -40,6 +38,6 @@ const proposalsSlice = createSlice({
   },
 });
 
-export const { setProposals, updateProposal, removeProposal, clearProposals } =
+export const { updateProposal, addProposals, removeProposal, clearProposals } =
   proposalsSlice.actions;
 export default proposalsSlice.reducer;
