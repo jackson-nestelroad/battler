@@ -15,8 +15,17 @@ const teamsPersistenceMiddleware: Middleware = (storeApi) => {
   let lastSavedTeams: ReturnType<typeof teamsReducer> | null = null;
   return (next) => (action: any) => {
     const result = next(action);
-    const state = storeApi.getState() as { teams: ReturnType<typeof teamsReducer> };
-    if (action.type !== teamsLoaded.type && state.teams !== lastSavedTeams) {
+    const state = storeApi.getState() as {
+      teams: ReturnType<typeof teamsReducer>;
+      connection: ReturnType<typeof connectionReducer>;
+    };
+
+    if (action.type === teamsLoaded.type) {
+      lastSavedTeams = state.teams;
+    } else if (
+      state.connection.isHydrated &&
+      state.teams !== lastSavedTeams
+    ) {
       lastSavedTeams = state.teams;
       Promise.all([
         storage.setItem("battler_teams", state.teams.teams),
