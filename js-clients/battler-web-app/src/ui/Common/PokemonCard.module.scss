@@ -1,0 +1,82 @@
+@use "../../styles/breakpoints" as *;
+
+.teamSummaryCard {
+  background-color: var(--bg-subtle-neutral);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-s) var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  position: relative;
+  transition: var(--transition-fast);
+  min-height: rem(84px);
+
+  &.summaryActive {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-bg);
+    box-shadow: inset 0 0 0 1px var(--color-primary), 0 0 rem(12px) var(--color-primary-border);
+  }
+
+  &.summaryFainted {
+    opacity: 0.45;
+  }
+
+  &.clickableSummaryCard {
+    cursor: pointer;
+    border: 1px dashed var(--color-primary-border);
+    background-color: color-mix(in srgb, var(--color-primary) 1%, transparent);
+
+    &:hover {
+      background-color: var(--color-primary-bg);
+      border-color: var(--color-primary);
+      border-style: solid;
+      transform: translateY(rem(-2px));
+      box-shadow: 0 var(--spacing-xs) rem(10px) var(--color-primary-border);
+    }
+  }
+}
+
+.summaryCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+
+  .summaryMonName {
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .summaryMonLevel {
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+  }
+}
+
+.summaryCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+}
+
+.summaryCardMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: var(--spacing-xs);
+}
+
+.summaryHpText {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  line-height: 1;
+}

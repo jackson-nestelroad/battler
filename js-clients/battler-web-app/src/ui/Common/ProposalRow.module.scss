@@ -1,0 +1,54 @@
+@use "../../styles/breakpoints" as *;
+
+.proposalItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-m);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  gap: var(--spacing-m);
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.proposalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.challengerName {
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.challengeMeta {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.proposalActions {
+  display: flex;
+  gap: var(--spacing-s);
+  flex-shrink: 0;
+
+  @include mobile {
+    width: 100%;
+
+    button {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+}
+
+.declinedText {
+  color: var(--color-danger);
+}

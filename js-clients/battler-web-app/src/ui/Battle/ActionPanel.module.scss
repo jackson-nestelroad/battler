@@ -1,0 +1,208 @@
+@use "../../styles/breakpoints" as *;
+
+.panelPlaceholder {
+  padding: var(--spacing-l);
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: rem(120px);
+
+  &.reset {
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+.playbackLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-m);
+}
+
+.dotPulse {
+  width: rem(10px);
+  height: rem(10px);
+  border-radius: var(--border-radius-round);
+  background-color: var(--color-primary);
+  color: var(--color-primary);
+  animation: dotPulse 1.5s infinite linear;
+}
+
+
+.movesColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+
+  h4 {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+}
+
+.modifiersRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+  background-color: var(--bg-panel);
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--border-radius-s);
+  border: 1px solid var(--border-color);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+    width: rem(14px);
+    height: rem(14px);
+  }
+}
+
+.movesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-s);
+}
+
+.moveBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--spacing-xs) var(--spacing-m);
+  border-radius: var(--border-radius-s);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-subtle-neutral);
+  text-align: left;
+  gap: var(--spacing-xs);
+  min-height: 3rem;
+
+  .moveName {
+    font-size: var(--font-size-s);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .moveMeta {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--text-muted);
+    background-color: var(--bg-subtle-hover);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.trappedMessage {
+  font-size: var(--font-size-s);
+  color: var(--color-warning);
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--border-radius-s);
+  text-align: center;
+}
+
+.targetCard {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+
+  h4 {
+    font-size: var(--font-size-s);
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+.targetDesc {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.targetButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.targetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-s);
+}
+
+.navigationRow {
+  display: flex;
+  justify-content: flex-start;
+  flex-shrink: 0;
+}
+
+.actionsRow {
+  display: flex;
+  gap: var(--spacing-s);
+  align-items: center;
+}
+
+@keyframes dotPulse {
+  0% {
+    box-shadow: -0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0.9375rem 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: -0.9375rem 0 0 0 transparent, 0 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent);
+  }
+  100% {
+    box-shadow: -0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent), 0 0 0 0 transparent, 0.9375rem 0 0 0 color-mix(in srgb, var(--color-primary) 70%, transparent);
+  }
+}
+
+.teamSummarySection {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-m);
+  margin-top: var(--spacing-s);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+
+  .summaryTitle {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.teamSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(rem(130px), 1fr));
+  gap: var(--spacing-s);
+}
+
+
+

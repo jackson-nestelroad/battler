@@ -7,7 +7,13 @@ import {
   BattleServiceOptions,
 } from "./bindings/index.js";
 
-import { WampSessionProvider, uuidForUri } from "battler-wamp-client";
+import {
+  WampSessionProvider,
+  uuidForUri,
+  getWampResultString,
+  getWampResultArray,
+  safeJsonStringify,
+} from "battler-wamp-client";
 
 export * from "battler-types";
 export * from "./bindings/index.js";
@@ -26,10 +32,11 @@ export class BattlerServiceClient {
 
   async create(options: CoreBattleOptions, serviceOptions: BattleServiceOptions): Promise<Battle> {
     const res = await this.session.call<any>("com.battler.battler_service.battles.create", [
-      JSON.stringify(options),
-      JSON.stringify(serviceOptions),
+      safeJsonStringify(options),
+      safeJsonStringify(serviceOptions),
     ]);
-    const json = typeof res === "string" ? res : res[0];
+    const json = getWampResultString(res);
+    if (!json) throw new Error("Failed to get create response string");
     return JSON.parse(json);
   }
 
@@ -38,11 +45,13 @@ export class BattlerServiceClient {
       count,
       offset,
     ]);
-    const arr = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
-    return arr.map((item: any) => {
-      const json = Array.isArray(item) ? item[0] : item;
-      return JSON.parse(json);
-    });
+    const arr = getWampResultArray(res);
+    return arr
+      .map((item: any) => {
+        const json = getWampResultString(item);
+        return json ? JSON.parse(json) : null;
+      })
+      .filter(Boolean);
   }
 
   async battlesForPlayer(player: string, count: number, offset: number): Promise<BattlePreview[]> {
@@ -51,25 +60,28 @@ export class BattlerServiceClient {
       count,
       offset,
     ]);
-    const arr = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
-    return arr.map((item: any) => {
-      const json = Array.isArray(item) ? item[0] : item;
-      return JSON.parse(json);
-    });
+    const arr = getWampResultArray(res);
+    return arr
+      .map((item: any) => {
+        const json = getWampResultString(item);
+        return json ? JSON.parse(json) : null;
+      })
+      .filter(Boolean);
   }
 
   async battle(battleId: string): Promise<Battle> {
     const res = await this.session.call<any>(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}`,
     );
-    const json = typeof res === "string" ? res : res[0];
+    const json = getWampResultString(res);
+    if (!json) throw new Error("Failed to get battle response string");
     return JSON.parse(json);
   }
 
   async updateTeam(battleId: string, player: string, team: TeamData): Promise<void> {
     await this.session.call(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.update_team`,
-      [player, JSON.stringify(team)],
+      [player, safeJsonStringify(team)],
     );
   }
 
@@ -78,7 +90,7 @@ export class BattlerServiceClient {
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.validate_player`,
       [player],
     );
-    const problems = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
+    const problems = getWampResultArray(res);
     return { problems };
   }
 
@@ -91,7 +103,8 @@ export class BattlerServiceClient {
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.player_data`,
       [player],
     );
-    const json = typeof res === "string" ? res : res[0];
+    const json = getWampResultString(res);
+    if (!json) throw new Error("Failed to get player data response string");
     return JSON.parse(json);
   }
 
@@ -100,7 +113,7 @@ export class BattlerServiceClient {
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.request`,
       [player],
     );
-    const json = typeof res === "string" ? res : res && res[0] ? res[0] : null;
+    const json = getWampResultString(res);
     return json ? JSON.parse(json) : null;
   }
 
@@ -120,8 +133,7 @@ export class BattlerServiceClient {
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.full_log`,
       [side !== undefined ? side : null],
     );
-    const log = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
-    return log;
+    return getWampResultArray(res);
   }
 
   async lastLogEntry(battleId: string, side?: number): Promise<[number, string] | null> {
@@ -129,16 +141,9 @@ export class BattlerServiceClient {
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.last_log_entry`,
       [side !== undefined ? side : null],
     );
-    if (!res) return null;
-    if (Array.isArray(res)) {
-      if (Array.isArray(res[0])) {
-        if (res[0].length < 2) return null;
-        return [Number(res[0][0]), String(res[0][1])];
-      }
-      if (res.length < 2) return null;
-      return [Number(res[0]), String(res[1])];
-    }
-    return null;
+    const arr = getWampResultArray(res);
+    if (arr.length < 2 || arr[0] === null || arr[0] === undefined) return null;
+    return [Number(arr[0]), String(arr[1])];
   }
 
   async subscribe(
@@ -150,16 +155,11 @@ export class BattlerServiceClient {
     const topic = `com.battler.battler_service.battles.${uuidForUri(battleId)}.log.${selector}`;
 
     const handler = (args?: any[] | null) => {
-      if (!args || args.length === 0) return;
-      if (Array.isArray(args[0]) && args[0].length >= 2) {
+      const arr = getWampResultArray(args);
+      if (arr.length >= 2) {
         onLogEntry({
-          index: Number(args[0][0]),
-          content: String(args[0][1]),
-        });
-      } else if (args.length >= 2) {
-        onLogEntry({
-          index: Number(args[0]),
-          content: String(args[1]),
+          index: Number(arr[0]),
+          content: String(arr[1]),
         });
       }
     };

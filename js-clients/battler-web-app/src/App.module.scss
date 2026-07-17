@@ -1,0 +1,120 @@
+@use "./styles/breakpoints" as *;
+
+.appContainer {
+  display: flex;
+  width: 100vw;
+  min-width: rem(320px); /* Enforces industry-standard mobile minimum width */
+  height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-y: hidden;
+  overflow-x: auto; /* Enable horizontal scrolling if viewport shrinks below 320px */
+}
+
+.mainContent {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0; /* Prevents layout squeezing inside flex row */
+}
+
+.viewWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+.mobileTopBar {
+  display: none;
+
+  @include mobile {
+    display: flex;
+    align-items: center;
+    height: var(--mobile-header-height);
+    background-color: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 var(--spacing-m);
+    gap: var(--spacing-m);
+    flex-shrink: 0;
+    width: 100%;
+  }
+}
+
+.menuTrigger {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  line-height: 1;
+}
+
+.viewTitle {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.backdrop {
+  display: none;
+
+  @include mobile {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-overlay);
+    backdrop-filter: blur(var(--spacing-xxs));
+    z-index: 999;
+    animation: fadeIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.loadingScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: var(--font-size-l);
+  gap: var(--spacing-xl);
+
+  p {
+    animation: pulse 2s infinite ease-in-out;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+

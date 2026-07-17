@@ -1,0 +1,94 @@
+@use "../../styles/breakpoints" as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+
+  :global(.card) {
+    margin: auto 0;
+    width: 100%;
+    max-width: rem(512px);
+  }
+}
+
+
+.cardHeader {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  position: relative;
+
+  h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+  }
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  line-height: 1.4;
+}
+
+.readinessSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+
+  h4 {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.teamSelectionSection {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+
+  label {
+    font-size: var(--font-size-s);
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+}
+
+.selectionRow {
+  display: flex;
+  gap: var(--spacing-s);
+
+  @include mobile {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+
+  select {
+    flex: 1;
+  }
+}
+
+
+.errorSection {
+  margin-top: var(--spacing-xs);
+}
+
+.expiredCard {
+  max-width: rem(480px);
+  text-align: center;
+  align-items: center;
+}

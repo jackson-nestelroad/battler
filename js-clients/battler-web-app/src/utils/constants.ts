@@ -1,0 +1,2 @@
+export const BREAKPOINT_MOBILE_PX = 768;
+export const BREAKPOINT_TABLET_PX = 1024;

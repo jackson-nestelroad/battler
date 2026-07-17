@@ -1,0 +1,237 @@
+@use "../../styles/breakpoints" as *;
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.directoryView {
+  width: 100%;
+  max-width: rem(800px); /* Bounded width so list directory is balanced on wide screens */
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+.editorView {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-m) 0;
+}
+
+.teamsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.teamListItemContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  width: 100%;
+  position: relative;
+
+  .orderControls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    flex-shrink: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover {
+    .orderControls {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}
+
+.teamListItem {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--border-radius-s);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  min-width: 0;
+
+  &:hover {
+    border-color: var(--text-muted);
+  }
+}
+
+.teamNameLabel {
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamSizeBadge {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background-color: var(--border-color);
+  padding: var(--spacing-xxs) var(--spacing-s);
+  border-radius: var(--border-radius-l);
+  flex-shrink: 0;
+}
+
+.defaultBadge {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  margin-left: var(--spacing-s);
+  font-weight: 700;
+}
+
+.orderBtn {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--border-radius-xs);
+  padding: var(--spacing-xxs);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: rem(20px);
+  height: rem(20px);
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--text-primary);
+  }
+}
+
+.samplesHeader {
+  margin-top: var(--spacing-m);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-s);
+
+  h3 {
+    font-size: var(--font-size-s);
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+}
+
+.samplesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.sampleItem {
+  width: 100%;
+}
+
+.editorForm {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-m);
+  gap: var(--spacing-m);
+  min-height: 0;
+}
+
+.editorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-l);
+  flex-shrink: 0;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-m);
+  }
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-m);
+  flex: 1;
+  min-width: 0;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-s);
+    width: 100%;
+  }
+}
+
+.backBtn {
+  @include mobile {
+    align-self: flex-start;
+  }
+}
+
+.teamNameInput {
+  flex: 1;
+  font-size: var(--font-size-l);
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  padding: var(--spacing-s) 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  min-width: rem(128px);
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: none;
+  }
+
+  @include mobile {
+    width: 100%;
+    font-size: var(--font-size-xl);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-xs);
+  }
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--spacing-s);
+  flex-wrap: wrap;
+
+  @include mobile {
+    width: 100%;
+    justify-content: flex-start;
+
+    button {
+      flex: 1;
+      min-width: rem(100px);
+      justify-content: center;
+    }
+  }
+}
+
+
+

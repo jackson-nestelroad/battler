@@ -1,0 +1,409 @@
+@use "../../styles/breakpoints" as *;
+
+.sidebar {
+  width: var(--sidebar-width); /* 260px */
+  height: 100%;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width var(--transition-duration) var(--transition-timing);
+}
+
+.brand {
+  padding: var(--spacing-l) var(--spacing-m);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+  
+  h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+}
+
+.toggleBtn {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  flex-shrink: 0;
+  width: rem(24px);
+  height: rem(24px);
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+}
+
+.statusSection {
+  padding: var(--spacing-m) var(--spacing-l);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  transition: all 0.2s ease;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  font-size: var(--font-size-s);
+}
+
+.dot {
+  width: rem(8px);
+  height: rem(8px);
+  border-radius: var(--border-radius-round);
+  display: inline-block;
+  flex-shrink: 0;
+
+  &.disconnected {
+    background-color: var(--color-danger);
+    box-shadow: 0 0 rem(8px) var(--color-danger);
+  }
+
+  &.connecting {
+    background-color: var(--color-warning);
+    box-shadow: 0 0 rem(8px) var(--color-warning);
+    animation: pulse 1s infinite alternate;
+  }
+
+  &.connected {
+    background-color: var(--color-success);
+    box-shadow: 0 0 rem(8px) var(--color-success);
+  }
+}
+
+.statusLabel {
+  font-weight: 500;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+}
+
+.playerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  min-width: 0;
+  flex: 1;
+}
+
+.username {
+  font-size: var(--font-size-s);
+  color: var(--color-primary);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.serverUrl {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-m) var(--spacing-s);
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.navItem {
+  width: 100%;
+  text-align: left;
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--border-radius-s);
+  font-size: var(--font-size-s);
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  border-left: rem(3px) solid transparent;
+
+  .navIcon {
+    font-size: var(--font-size-m);
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .navLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  &.active {
+    background-color: var(--bg-primary);
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    border-radius: 0 var(--border-radius-s) var(--border-radius-s) 0;
+  }
+}
+
+.battlesSection {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-m) var(--spacing-s);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  transition: all 0.2s ease;
+
+  h3 {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding-left: var(--spacing-s);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.emptyBattles {
+  font-size: var(--font-size-s);
+  color: var(--text-muted);
+  font-style: italic;
+  padding-left: var(--spacing-s);
+}
+
+.battlesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.battleItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--border-radius-s);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  text-align: left;
+  overflow: hidden;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--text-muted);
+  }
+
+  &.selected {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-bg);
+  }
+}
+
+.battleMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  min-width: 0;
+}
+
+.opponentName {
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.turnLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.actionBadge {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  background-color: var(--color-danger);
+  color: var(--text-primary);
+  width: rem(18px);
+  height: rem(18px);
+  border-radius: var(--border-radius-round);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: bounce 1.5s infinite;
+}
+
+/* Collapsed Sidebar Styles */
+.collapsed {
+  width: var(--sidebar-collapsed-width); /* 72px */
+
+  @include mobile {
+    transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
+  }
+
+  .brand {
+    padding: var(--spacing-m) var(--spacing-s);
+    flex-direction: column-reverse;
+    justify-content: center;
+    
+    h2 {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  .statusSection {
+    padding: var(--spacing-m) 0;
+    align-items: center;
+  }
+
+  .statusIndicator {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .nav {
+    padding: var(--spacing-m) var(--spacing-xs);
+  }
+
+  .navItem {
+    justify-content: center;
+    padding: var(--spacing-s) 0;
+    border-left: none;
+
+    &.active {
+      border-left: none;
+      background-color: var(--color-primary-bg);
+      color: var(--color-primary);
+    }
+  }
+
+  .battlesSection {
+    padding: var(--spacing-m) var(--spacing-xs);
+  }
+
+  .battleItem {
+    justify-content: center;
+    padding: var(--spacing-s) 0;
+    
+    .battleMeta {
+      align-items: center;
+    }
+  }
+}
+
+.sidebar {
+  @include mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    width: var(--sidebar-width) !important;
+    transform: translateX(-100%);
+    box-shadow: rem(4px) 0 rem(24px) var(--bg-overlay);
+    
+    &.collapsed {
+      transform: translateX(-100%);
+    }
+
+    &:not(.collapsed) {
+      transform: translateX(0);
+      
+      .brand {
+        padding: var(--spacing-l) var(--spacing-m);
+        flex-direction: row;
+        justify-content: space-between;
+        
+        h2 {
+          font-size: var(--font-size-xl);
+        }
+      }
+      .statusSection {
+        padding: var(--spacing-m) var(--spacing-l);
+        align-items: stretch;
+      }
+      .statusIndicator {
+        justify-content: flex-start;
+      }
+      .nav {
+        padding: var(--spacing-m) var(--spacing-s);
+      }
+      .navItem {
+        justify-content: flex-start;
+        padding: var(--spacing-s) var(--spacing-m);
+      }
+      .battlesSection {
+        padding: var(--spacing-m) var(--spacing-s);
+      }
+      .battleItem {
+        justify-content: space-between;
+        padding: var(--spacing-s) var(--spacing-m);
+        .battleMeta {
+          align-items: flex-start;
+        }
+      }
+    }
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(rem(-3px));
+  }
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.4;
+  }
+}

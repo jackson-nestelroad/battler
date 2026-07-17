@@ -67,3 +67,46 @@ export class WampSessionProvider extends EventEmitter {
     this.connectionPromise = null;
   }
 }
+
+export function getWampResultString(res: any): string | null {
+  if (res === null || res === undefined) return null;
+  if (typeof res === "string") return res;
+  if (typeof res === "object") {
+    if (res.battle_json && typeof res.battle_json === "string") {
+      return res.battle_json;
+    }
+    if (res.json && typeof res.json === "string") {
+      return res.json;
+    }
+    if (Array.isArray(res)) {
+      return res.length > 0 ? getWampResultString(res[0]) : null;
+    }
+    if (res.args && Array.isArray(res.args) && res.args.length > 0) {
+      return getWampResultString(res.args[0]);
+    }
+  }
+  return null;
+}
+
+export function getWampResultArray(res: any): any[] {
+  if (!res) return [];
+  if (Array.isArray(res)) {
+    return Array.isArray(res[0]) ? res[0] : res;
+  }
+  if (typeof res === "object") {
+    if (res.args && Array.isArray(res.args)) {
+      return getWampResultArray(res.args[0]);
+    }
+  }
+  return [];
+}
+
+export function safeJsonStringify(value: any): string {
+  return JSON.stringify(value, (_, v) => {
+    if (typeof v === "bigint") {
+      return Number(v);
+    }
+    return v;
+  });
+}
+

@@ -1,0 +1,67 @@
+@use "../../styles/breakpoints" as *;
+
+.editorContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: var(--spacing-m);
+}
+
+.textareaWrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  background-color: var(--bg-primary);
+  display: flex;
+}
+
+.lineNumbers {
+  width: rem(44px);
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  padding: var(--spacing-m) 0;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-s);
+  line-height: 1.5;
+  text-align: right;
+  padding-right: var(--spacing-s);
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.lineNumber {
+  height: calc(var(--font-size-s) * 1.5);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.jsonTextarea {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-s);
+  padding: var(--spacing-m);
+  resize: none;
+  overflow-y: auto;
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.5;
+  outline: none;
+
+  &:focus {
+    box-shadow: none;
+    outline: none;
+  }
+}

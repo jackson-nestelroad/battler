@@ -41,9 +41,14 @@ pub(crate) fn alter_battle_state_from_log(
     log: &Log,
     up_to_turn: usize,
 ) -> Result<()> {
+    let min_index = if state.battle_type.is_empty() {
+        0
+    } else {
+        state.last_log_index + 1
+    };
     let last_turn_in_state = state.turn.saturating_sub(1);
     for turn in last_turn_in_state..=up_to_turn {
-        alter_battle_state_for_turn(state, log, turn, state.last_log_index)?;
+        alter_battle_state_for_turn(state, log, turn, min_index)?;
     }
     state.turn = up_to_turn;
     state.last_log_index = log.len().saturating_sub(1);
@@ -67,7 +72,7 @@ fn alter_battle_state_for_turn(
         state.ui_log.resize_with(turn + 1, Vec::default);
     }
     // SAFETY: Resized above.
-    *state.ui_log.get_mut(turn).unwrap() = ui_log;
+    state.ui_log.get_mut(turn).unwrap().append(&mut ui_log);
 
     Ok(())
 }

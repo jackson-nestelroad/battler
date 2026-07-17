@@ -18,6 +18,7 @@
     "js-clients/battler-client",
     "js-clients/battler-multiplayer-service-client",
     "js-clients/battler-multiplayer-client",
+    "js-clients/battler-web-app",
     "js-clients/integration-tests",
     "battler-state/js-tests",
     "fxlang-ext",

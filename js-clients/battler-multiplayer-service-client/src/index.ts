@@ -6,7 +6,13 @@ import {
   ProposedBattleUpdate,
 } from "./bindings/index.js";
 
-import { WampSessionProvider, uuidForUri } from "battler-wamp-client";
+import {
+  WampSessionProvider,
+  uuidForUri,
+  getWampResultString,
+  getWampResultArray,
+  safeJsonStringify,
+} from "battler-wamp-client";
 
 export * from "battler-types";
 export * from "./bindings/index.js";
@@ -23,9 +29,10 @@ export class BattlerMultiplayerServiceClient {
   async proposeBattle(options: ProposedBattleOptions): Promise<ProposedBattle> {
     const res = await this.session.call<any>(
       "com.battler.battler_multiplayer_service.proposed_battles.create",
-      [JSON.stringify(options)],
+      [safeJsonStringify(options)],
     );
-    const json = typeof res === "string" ? res : res[0];
+    const json = getWampResultString(res);
+    if (!json) throw new Error("Invalid WAMP response");
     return JSON.parse(json);
   }
 
@@ -33,7 +40,8 @@ export class BattlerMultiplayerServiceClient {
     const res = await this.session.call<any>(
       `com.battler.battler_multiplayer_service.proposed_battles.${uuidForUri(proposedBattleId)}`,
     );
-    const json = typeof res === "string" ? res : res[0];
+    const json = getWampResultString(res);
+    if (!json) throw new Error("Invalid WAMP response");
     return JSON.parse(json);
   }
 
@@ -44,9 +52,10 @@ export class BattlerMultiplayerServiceClient {
   ): Promise<ProposedBattle> {
     const res = await this.session.call<any>(
       `com.battler.battler_multiplayer_service.proposed_battles.${uuidForUri(proposedBattleId)}.respond`,
-      [player, JSON.stringify(response)],
+      [player, safeJsonStringify(response)],
     );
-    const json = typeof res === "string" ? res : res[0];
+    const json = getWampResultString(res);
+    if (!json) throw new Error("Invalid WAMP response");
     return JSON.parse(json);
   }
 
@@ -59,11 +68,13 @@ export class BattlerMultiplayerServiceClient {
       "com.battler.battler_multiplayer_service.proposed_battles_for_player",
       [player, count, offset],
     );
-    const arr = Array.isArray(res) ? (Array.isArray(res[0]) ? res[0] : res) : [];
-    return arr.map((item: any) => {
-      const json = Array.isArray(item) ? item[0] : item;
-      return JSON.parse(json);
-    });
+    const arr = getWampResultArray(res);
+    return arr
+      .map((item: any) => {
+        const json = getWampResultString(item);
+        return json ? JSON.parse(json) : null;
+      })
+      .filter(Boolean);
   }
 
   async proposedBattleUpdates(
@@ -72,8 +83,7 @@ export class BattlerMultiplayerServiceClient {
   ): Promise<autobahn.Subscription> {
     const topic = `com.battler.battler_multiplayer_service.proposed_battle_updates.${player}`;
     const handler = (args?: any[] | null) => {
-      if (!args || args.length === 0) return;
-      const json = Array.isArray(args[0]) ? args[0][0] : args[0];
+      const json = getWampResultString(args);
       if (json) {
         onUpdate(JSON.parse(json));
       }

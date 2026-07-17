@@ -1,0 +1,257 @@
+@use "../../styles/breakpoints" as *;
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: var(--font-size-l);
+}
+
+.screenHeader {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-m);
+  margin-bottom: var(--spacing-l);
+  flex-shrink: 0;
+}
+
+.titleInfo {
+  h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+  }
+}
+
+.battleId {
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.vsBadge {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 0 var(--spacing-m);
+  border-radius: var(--border-radius-s);
+  font-weight: 700;
+  font-size: var(--font-size-s);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: rem(36px);
+  line-height: 1;
+}
+
+.vsText {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  margin: 0 var(--spacing-xs);
+}
+
+.headerControls {
+  flex-wrap: wrap; /* natural wrapping on ultra-narrow viewports */
+ 
+  @include tablet {
+    width: 100%;
+  }
+}
+
+.devToolsPanel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--bg-subtle-neutral);
+  border: 1px dashed var(--border-color);
+  padding: 0 var(--spacing-s);
+  border-radius: var(--border-radius-s);
+  height: rem(36px);
+}
+
+.devBtn {
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xs);
+  padding: 0 var(--spacing-s);
+  height: rem(26px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+
+  &.devBtnActive {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--text-primary);
+  }
+}
+
+.debugJsonContainer {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  overflow: auto;
+  min-height: 0;
+}
+
+.debugJson {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-info);
+  white-space: pre;
+  margin: 0;
+}
+
+.debugContainer {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Note: debugTabs and debugTabBtn styles have been removed in favor of global .tabs-row and .tab-btn */
+
+.workspaceGrid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--spacing-l);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  @include tablet {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+}
+
+.leftColumn {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--spacing-xs);
+}
+
+.rightColumn {
+  height: 100%;
+  min-height: 0;
+}
+
+/* Modal Overlay for Reconnecting Blockers */
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-modal-overlay);
+  backdrop-filter: blur(var(--spacing-xs));
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalCard {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-l);
+  padding: var(--spacing-xl);
+  max-width: rem(400px);
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-m);
+
+  h3 {
+    font-size: var(--font-size-l);
+    font-weight: 700;
+    color: var(--color-warning);
+  }
+
+  p {
+    font-size: var(--font-size-s);
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+}
+
+.proposalStatusContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--spacing-l);
+  overflow-y: auto;
+  gap: var(--spacing-m);
+}
+
+.proposalHeader {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-m);
+  
+  h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+  }
+}
+
+.proposalFormat {
+  font-size: var(--font-size-s);
+  color: var(--color-primary);
+  font-weight: 600;
+  display: inline-block;
+  margin-right: var(--spacing-m);
+}
+
+.proposalTimer {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.actionRow {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.actionButtons {
+  display: flex;
+  gap: var(--spacing-s);
+}
+
+.waitingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--spacing-m);
+  gap: var(--spacing-m);
+
+  button {
+    margin-top: var(--spacing-xl);
+  }
+}

@@ -291,8 +291,23 @@ impl<'d> LiveBattle<'d> {
         Ok(())
     }
 
-    fn update_log(&mut self) {
+    fn update_log(&mut self) -> Result<()> {
         self.logs.append(self.battle.new_log_entries());
+        let players = self
+            .sides
+            .iter()
+            .flat_map(|side| side.players.iter().map(|player| &player.id));
+        let mut has_request = false;
+        for player in players {
+            if self.battle.request_for_player(player)?.is_some() {
+                has_request = true;
+                break;
+            }
+        }
+        if has_request {
+            self.inject_log_entries(["request"]);
+        }
+        Ok(())
     }
 
     fn continue_battle(&mut self) -> Result<bool> {
@@ -303,7 +318,7 @@ impl<'d> LiveBattle<'d> {
         } else {
             false
         };
-        self.update_log();
+        self.update_log()?;
         if self.battle.ended() {
             self.state = BattleState::Finished;
         }
@@ -476,7 +491,7 @@ impl<'d> LiveBattleManager<'d> {
             let mut live_battle = self.live_battle.lock().await;
             live_battle.battle.start()?;
             live_battle.inject_log_entries(["started"]);
-            live_battle.update_log();
+            live_battle.update_log()?;
             live_battle.state = BattleState::Active;
         }
         Self::proceed(

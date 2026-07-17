@@ -1,0 +1,154 @@
+@use "../../styles/breakpoints" as *;
+
+.logPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  min-height: 0; // Ensure parent flex container doesn't overflow
+  transition: height 0.2s ease, flex 0.2s ease;
+
+  @include tablet {
+    &.collapsed {
+      height: var(--mobile-header-height) !important; /* Force minimum height matching header */
+      flex: 0 0 auto !important; /* Prevent expansion */
+      
+      .header {
+        border-bottom: none; /* Hide border when closed */
+      }
+
+      // Hide nested content components from rendering inside minimized container
+      :global(.modeTabs),
+      .modeTabs,
+      .scrollArea {
+        display: none !important;
+      }
+    }
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-s) var(--spacing-m);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-subtle-neutral);
+  flex-shrink: 0;
+
+  h3 {
+    font-size: var(--font-size-s);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+.headerTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-m);
+}
+
+.collapseToggle {
+  display: none; /* Hidden on desktop */
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: var(--spacing-xxs) var(--spacing-s);
+  border-radius: var(--border-radius-xs);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    background-color: var(--bg-primary);
+  }
+
+  @include tablet {
+    display: inline-block; /* Show on mobile viewports */
+  }
+}
+
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-m);
+  background-color: var(--bg-panel);
+}
+
+.jsonLogs {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-info);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.logsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.logLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  line-height: 1.5;
+  font-size: var(--font-size-s);
+}
+
+.indicator {
+  color: var(--color-primary);
+  font-weight: bold;
+  user-select: none;
+}
+
+.text {
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.emptyLogs {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+}
+
+.engineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.engineLogLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+
+  .indicator {
+    color: var(--text-muted);
+    font-weight: normal;
+  }
+
+  .text {
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}

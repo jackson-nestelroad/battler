@@ -1,0 +1,101 @@
+@use "../../styles/breakpoints" as *;
+
+.lobbyContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--spacing-l);
+  background: radial-gradient(circle at top right, var(--color-primary-bg), transparent 60%);
+}
+
+.connectCard {
+  width: 100%;
+  max-width: rem(480px);
+  padding: var(--spacing-xl);
+  
+  h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin-bottom: var(--spacing-s);
+    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.challengeForm {
+  width: 100%;
+}
+
+.formFields {
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.challengeField {
+  flex: 1;
+  min-width: rem(192px);
+  max-width: rem(320px);
+}
+
+.formatField {
+  flex: 1;
+  min-width: rem(160px);
+  max-width: rem(240px);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--spacing-s);
+  width: 100%;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-size-s);
+  line-height: 1.5;
+  margin-bottom: var(--spacing-xl);
+}
+
+.connectForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-l);
+  align-items: stretch; /* Stretch children to equal heights */
+
+  @include tablet {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  & > :global(.card) {
+    display: flex;
+    flex-direction: column;
+    min-height: rem(160px);
+  }
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-l) 0;
+  margin: auto 0; /* Center vertically if space allows */
+}
+
+.proposalsList {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: var(--spacing-xs); /* Scrollbar padding */
+}
+
+

@@ -40,8 +40,10 @@ pub fn alter_battle_state(
     log_lines: Box<[String]>,
 ) -> Result<BattleStateWasm, JsValue> {
     let state_js = JsValue::from(state);
-    let state: BattleState =
+    let mut state: BattleState =
         serde_wasm_bindgen::from_value(state_js).map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+
 
     let log_lines_refs: Vec<&str> = log_lines.iter().map(|s| s.as_str()).collect();
     let log = Log::new(log_lines_refs).map_err(|e| JsValue::from_str(&e.to_string()))?;

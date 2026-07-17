@@ -110,7 +110,8 @@ export class BattlerClient extends EventEmitter {
   }
 
   private async init(): Promise<void> {
-    this.subscription = await this.service.subscribe(this.battleId, this.role.side, (entry) => {
+    const side = this.role.side;
+    this.subscription = await this.service.subscribe(this.battleId, side, (entry) => {
       this.processLogEntry(entry).catch((err) => {
         this.emit("error", err);
       });
@@ -152,8 +153,10 @@ export class BattlerClient extends EventEmitter {
       return;
     }
 
-    const caughtUp = await this.caughtUp();
-    if (caughtUp && this.lastLogIndex() > 0) {
+    const lastLogIndex = this.lastLogIndex();
+    const lastEntry = await this.service.lastLogEntry(this.battleId, this.role.side);
+    const caughtUp = lastLogIndex === (lastEntry ? lastEntry[0] : 0);
+    if (caughtUp && lastLogIndex > 0) {
       await this.checkAndEmitRequest();
     }
   }
@@ -172,6 +175,15 @@ export class BattlerClient extends EventEmitter {
       this.lastEmittedRequest = requestStr;
       this.emit("request", request);
     }
+  }
+
+  async sync(): Promise<void> {
+    await this.ensureCaughtUp();
+    await this.checkAndEmitRequest();
+  }
+
+  getLogs(): string[] {
+    return [...this.logLines];
   }
 
   async caughtUp(): Promise<boolean> {
@@ -195,6 +207,7 @@ export class BattlerClient extends EventEmitter {
 
   async makeChoice(choice: string): Promise<void> {
     await this.service.makeChoice(this.battleId, this.player, choice);
+    this.lastEmittedRequest = null;
   }
 
   async playerData(): Promise<PlayerBattleData> {
@@ -203,6 +216,10 @@ export class BattlerClient extends EventEmitter {
 
   state(): BattleState {
     return this.currentBattleState;
+  }
+
+  getRole(): Role {
+    return this.role;
   }
 
   lastLogIndex(): number {

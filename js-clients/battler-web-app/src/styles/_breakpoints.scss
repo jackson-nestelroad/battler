@@ -1,0 +1,31 @@
+@use "sass:math";
+
+// Breakpoint size variables
+$breakpoint-mobile-sm: 40rem; // 640px
+$breakpoint-mobile: 48rem;    // 768px
+$breakpoint-tablet: 64rem;    // 1024px
+
+// Convert pixels to rems based on 16px base font size
+@function rem($px-value) {
+  @return math.div($px-value, 16px) * 1rem;
+}
+
+
+// Media query utility mixins
+@mixin mobile-sm {
+  @media (max-width: #{$breakpoint-mobile-sm}) {
+    @content;
+  }
+}
+
+@mixin mobile {
+  @media (max-width: #{$breakpoint-mobile}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: #{$breakpoint-tablet}) {
+    @content;
+  }
+}
