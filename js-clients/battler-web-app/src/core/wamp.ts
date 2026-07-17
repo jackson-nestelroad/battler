@@ -117,6 +117,7 @@ export async function initializeBattleClient(
 
     // Initial setup dispatch
     dispatch(battleStateUpdated({ battleId, state: client.state(), engineLogs: client.getLogs() }));
+    dispatch(setBattleRequest({ battleId, request: client.request() }));
 
     // Fetch initial service battle state
     if (connectionManager.serviceClient) {
@@ -126,7 +127,7 @@ export async function initializeBattleClient(
       } catch (e) {
         handleBattleError(dispatch, battleId, "Failed to fetch initial service battle state", e);
       }
-      if (client.getRole().type === "player") {
+      if (client.role().type === "player") {
         try {
           const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
           dispatch(setBattlePlayerData({ battleId, playerData }));
@@ -148,7 +149,7 @@ export async function initializeBattleClient(
         } catch (e) {
           handleBattleError(dispatch, battleId, "Failed to fetch service battle update", e);
         }
-        if (client.getRole().type === "player") {
+        if (client.role().type === "player") {
           try {
             const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
             dispatch(setBattlePlayerData({ battleId, playerData }));
@@ -161,7 +162,7 @@ export async function initializeBattleClient(
 
     client.on("request", async (req) => {
       dispatch(setBattleRequest({ battleId, request: req }));
-      if (connectionManager.serviceClient && client.getRole().type === "player") {
+      if (connectionManager.serviceClient && client.role().type === "player") {
         try {
           const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
           dispatch(setBattlePlayerData({ battleId, playerData }));

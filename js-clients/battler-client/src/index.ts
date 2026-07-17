@@ -76,9 +76,10 @@ export class BattlerClient extends EventEmitter {
   private subscription?: autobahn.Subscription;
   private logLines: string[] = [];
   private currentBattleState: BattleState;
-  private role: Role;
+  private _role: Role;
   private isCanceled = false;
   private lastEmittedRequest: string | null = null;
+  private currentRequest: Request | null = null;
   private stateUpdatePromise: Promise<void> | null = null;
 
   private constructor(
@@ -89,7 +90,7 @@ export class BattlerClient extends EventEmitter {
     initialLogLines: string[],
   ) {
     super();
-    this.role = role;
+    this._role = role;
     this.logLines = initialLogLines;
     this.currentBattleState = newBattleState();
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
@@ -110,7 +111,7 @@ export class BattlerClient extends EventEmitter {
   }
 
   private async init(): Promise<void> {
-    const side = this.role.side;
+    const side = this._role.side;
     this.subscription = await this.service.subscribe(this.battleId, side, (entry) => {
       this.processLogEntry(entry).catch((err) => {
         this.emit("error", err);
@@ -141,7 +142,7 @@ export class BattlerClient extends EventEmitter {
     if (this.isCanceled) return;
 
     if (!isLogFilled(this.logLines)) {
-      await backfillLog(this.logLines, this.service, this.battleId, this.role.side);
+      await backfillLog(this.logLines, this.service, this.battleId, this._role.side);
     }
 
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
@@ -154,7 +155,7 @@ export class BattlerClient extends EventEmitter {
     }
 
     const lastLogIndex = this.lastLogIndex();
-    const lastEntry = await this.service.lastLogEntry(this.battleId, this.role.side);
+    const lastEntry = await this.service.lastLogEntry(this.battleId, this._role.side);
     const caughtUp = lastLogIndex === (lastEntry ? lastEntry[0] : 0);
     if (caughtUp && lastLogIndex > 0) {
       await this.checkAndEmitRequest();
@@ -162,14 +163,15 @@ export class BattlerClient extends EventEmitter {
   }
 
   private async ensureCaughtUp(): Promise<void> {
-    await backfillLog(this.logLines, this.service, this.battleId, this.role.side);
+    await backfillLog(this.logLines, this.service, this.battleId, this._role.side);
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
     this.emit("update");
   }
 
   private async checkAndEmitRequest(): Promise<void> {
-    if (this.role.type === "spectator") return;
+    if (this._role.type === "spectator") return;
     const request = await this.service.request(this.battleId, this.player);
+    this.currentRequest = request;
     const requestStr = JSON.stringify(request);
     if (requestStr !== this.lastEmittedRequest) {
       this.lastEmittedRequest = requestStr;
@@ -179,6 +181,7 @@ export class BattlerClient extends EventEmitter {
 
   async sync(): Promise<void> {
     await this.ensureCaughtUp();
+    this.lastEmittedRequest = null;
     await this.checkAndEmitRequest();
   }
 
@@ -207,12 +210,16 @@ export class BattlerClient extends EventEmitter {
     return this.service.playerData(this.battleId, this.player);
   }
 
+  request(): Request | null {
+    return this.currentRequest;
+  }
+
   state(): BattleState {
     return this.currentBattleState;
   }
 
-  getRole(): Role {
-    return this.role;
+  role(): Role {
+    return this._role;
   }
 
   lastLogIndex(): number {
