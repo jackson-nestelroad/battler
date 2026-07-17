@@ -31,8 +31,10 @@ import {
   setChoiceSubmitted,
   setBattlePlayerData,
   clearBattles,
+  resetBattlesState,
 } from "../store/battlesSlice";
 import { setCookie } from "../utils/cookie";
+import { formatUuid } from "../utils/uuid";
 
 function formatWampError(err: unknown): string {
   if (!err) return "Unknown error";
@@ -99,10 +101,11 @@ export const connectionManager = new WampConnectionManager();
 
 // Helper to initialize active battle client
 export async function initializeBattleClient(
-  battleId: string,
+  rawBattleId: string,
   playerId: string,
   dispatch: Dispatch,
 ) {
+  const battleId = formatUuid(rawBattleId);
   if (connectionManager.clientsRegistry.has(battleId)) {
     return connectionManager.clientsRegistry.get(battleId)!;
   }
@@ -199,7 +202,8 @@ export async function initializeBattleClient(
 }
 
 // Helper to restore an active/historical battle session in the background
-export function restoreBattleSession(battleId: string, playerId: string, dispatch: Dispatch) {
+export function restoreBattleSession(rawBattleId: string, playerId: string, dispatch: Dispatch) {
+  const battleId = formatUuid(rawBattleId);
   dispatch(battleSessionRestored(battleId));
   initializeBattleClient(battleId, playerId, dispatch).catch((err) => {
     console.error(`[WAMP] Failed to restore battle client for ${battleId}:`, err);
@@ -219,6 +223,7 @@ export const connectWamp = createAsyncThunk(
   ) => {
     dispatch(setConnectionStatus("connecting"));
     dispatch(setConnectionError(null));
+    dispatch(clearBattles());
 
     try {
       // Disconnect existing session if any
@@ -274,7 +279,7 @@ export const connectWamp = createAsyncThunk(
         if (page.length > 0) {
           dispatch(addProposals(page));
         }
-        if (page.length < proposalsLimit) {
+        if (page.length === 0) {
           break;
         }
         proposalsOffset += proposalsLimit;
@@ -295,7 +300,7 @@ export const connectWamp = createAsyncThunk(
             restoredIds.add(b.uuid);
             restoreBattleSession(b.uuid, playerId, dispatch);
           }
-          if (page.length < battlesLimit) {
+          if (page.length === 0) {
             break;
           }
           battlesOffset += battlesLimit;
@@ -404,7 +409,7 @@ export const disconnectWamp = createAsyncThunk("wamp/disconnect", async (_, { di
   dispatch(setConnectionError(null));
   dispatch(setAutoconnect(false));
   dispatch(clearProposals());
-  dispatch(clearBattles());
+  dispatch(resetBattlesState());
 
   // Disable autoconnect on next visit since user manually disconnected
   setCookie("battler_autoconnect", "false");
@@ -450,9 +455,10 @@ export const respondToProposal = createAsyncThunk(
 export const submitChoice = createAsyncThunk(
   "wamp/submitChoice",
   async (
-    { battleId, choice }: { battleId: string; choice: string },
+    { battleId: rawId, choice }: { battleId: string; choice: string },
     { dispatch, rejectWithValue },
   ) => {
+    const battleId = formatUuid(rawId);
     const client = connectionManager.clientsRegistry.get(battleId);
     if (!client) return rejectWithValue(`No client found for battle ${battleId}`);
 
@@ -482,9 +488,10 @@ export const submitChoice = createAsyncThunk(
 export const submitBattleTeam = createAsyncThunk(
   "wamp/submitBattleTeam",
   async (
-    { battleId, team }: { battleId: string; team: MonData[] },
+    { battleId: rawId, team }: { battleId: string; team: MonData[] },
     { dispatch, rejectWithValue },
   ) => {
+    const battleId = formatUuid(rawId);
     const client = connectionManager.clientsRegistry.get(battleId);
     if (!client) return rejectWithValue(`No client found for battle ${battleId}`);
     try {

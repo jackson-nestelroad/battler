@@ -91,7 +91,10 @@ export function getWampResultString(res: any): string | null {
 export function getWampResultArray(res: any): any[] {
   if (!res) return [];
   if (Array.isArray(res)) {
-    return Array.isArray(res[0]) ? res[0] : res;
+    if (res.length === 1 && Array.isArray(res[0])) {
+      return res[0];
+    }
+    return res;
   }
   if (typeof res === "object") {
     if (res.args && Array.isArray(res.args)) {
@@ -118,4 +121,3 @@ export function safeJsonStringify(value: any): string {
     return v;
   });
 }
-

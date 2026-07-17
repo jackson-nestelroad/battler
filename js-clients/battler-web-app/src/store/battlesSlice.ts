@@ -4,6 +4,7 @@ import isEqual from "fast-deep-equal";
 import type { BattleState } from "battler-state";
 import type { Request, PlayerBattleData } from "battler-types";
 import type { UiLogEntry } from "battler-state";
+import { formatUuid } from "../utils/uuid";
 import type { Battle } from "battler-service-client";
 
 export interface SerializedBattleSession {
@@ -33,14 +34,17 @@ const initialState: BattlesState = {
   currentView: "lobby",
 };
 
+const normalizeId = (id: string): string => formatUuid(id);
+
 const battlesSlice = createSlice({
   name: "battles",
   initialState,
   reducers: {
     battleSessionCreated(state, action: PayloadAction<string>) {
-      if (!state.battles[action.payload]) {
-        state.battles[action.payload] = {
-          battleId: action.payload,
+      const battleId = normalizeId(action.payload);
+      if (!state.battles[battleId]) {
+        state.battles[battleId] = {
+          battleId,
           battleState: null,
           activeRequest: null,
           playerData: null,
@@ -52,14 +56,15 @@ const battlesSlice = createSlice({
           serviceBattle: null,
         };
       }
-      state.activeBattleId = action.payload;
+      state.activeBattleId = battleId;
       state.currentView = "battle";
     },
     battleStateUpdated(
       state,
       action: PayloadAction<{ battleId: string; state: BattleState; engineLogs?: string[] }>,
     ) {
-      const { battleId, state: battleState, engineLogs } = action.payload;
+      const { battleId: rawId, state: battleState, engineLogs } = action.payload;
+      const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         const prevTurn = battle.battleState?.turn || 0;
@@ -75,7 +80,8 @@ const battlesSlice = createSlice({
       }
     },
     setBattleRequest(state, action: PayloadAction<{ battleId: string; request: Request | null }>) {
-      const { battleId, request } = action.payload;
+      const { battleId: rawId, request } = action.payload;
+      const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         if (!isEqual(battle.activeRequest, request)) {
@@ -88,44 +94,50 @@ const battlesSlice = createSlice({
       state,
       action: PayloadAction<{ battleId: string; playerData: PlayerBattleData | null }>,
     ) {
-      const { battleId, playerData } = action.payload;
+      const { battleId: rawId, playerData } = action.payload;
+      const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.playerData = playerData;
       }
     },
     setChoiceSubmitted(state, action: PayloadAction<{ battleId: string; submitted: boolean }>) {
-      const { battleId, submitted } = action.payload;
+      const { battleId: rawId, submitted } = action.payload;
+      const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.choiceSubmitted = submitted;
       }
     },
     setBattleError(state, action: PayloadAction<{ battleId: string; error: string | null }>) {
-      const { battleId, error } = action.payload;
+      const { battleId: rawId, error } = action.payload;
+      const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.error = error;
       }
     },
     setBattleLoading(state, action: PayloadAction<{ battleId: string; isLoading: boolean }>) {
-      const { battleId, isLoading } = action.payload;
+      const { battleId: rawId, isLoading } = action.payload;
+      const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.isLoading = isLoading;
       }
     },
     battleSessionEnded(state, action: PayloadAction<string>) {
-      const battle = state.battles[action.payload];
+      const battleId = normalizeId(action.payload);
+      const battle = state.battles[battleId];
       if (battle && battle.battleState) {
         battle.battleState.phase = "finished";
       }
     },
 
     battleSessionRestored(state, action: PayloadAction<string>) {
-      if (!state.battles[action.payload]) {
-        state.battles[action.payload] = {
-          battleId: action.payload,
+      const battleId = normalizeId(action.payload);
+      if (!state.battles[battleId]) {
+        state.battles[battleId] = {
+          battleId,
           battleState: null,
           activeRequest: null,
           playerData: null,
@@ -140,8 +152,9 @@ const battlesSlice = createSlice({
     },
 
     switchActiveBattle(state, action: PayloadAction<string | null>) {
-      state.activeBattleId = action.payload;
-      if (action.payload) {
+      const battleId = action.payload ? normalizeId(action.payload) : null;
+      state.activeBattleId = battleId;
+      if (battleId) {
         state.currentView = "battle";
       } else if (state.currentView === "battle") {
         state.currentView = "lobby";
@@ -155,13 +168,17 @@ const battlesSlice = createSlice({
       state,
       action: PayloadAction<{ battleId: string; serviceBattle: Battle }>,
     ) {
-      const { battleId, serviceBattle } = action.payload;
+      const { battleId: rawId, serviceBattle } = action.payload;
+      const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.serviceBattle = serviceBattle;
       }
     },
     clearBattles(state) {
+      state.battles = {};
+    },
+    resetBattlesState(state) {
       state.battles = {};
       state.activeBattleId = null;
       state.currentView = "lobby";
@@ -183,6 +200,7 @@ export const {
   setChoiceSubmitted,
   setBattlePlayerData,
   clearBattles,
+  resetBattlesState,
 } = battlesSlice.actions;
 
 export default battlesSlice.reducer;
