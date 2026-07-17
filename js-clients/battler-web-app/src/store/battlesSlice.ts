@@ -140,6 +140,11 @@ const battlesSlice = createSlice({
         battle.serviceBattle = serviceBattle;
       }
     },
+    clearBattles(state) {
+      state.battles = {};
+      state.activeBattleId = null;
+      state.currentView = "lobby";
+    },
   },
 });
 
@@ -155,6 +160,7 @@ export const {
   serviceBattleUpdated,
   setChoiceSubmitted,
   setBattlePlayerData,
+  clearBattles,
 } = battlesSlice.actions;
 
 export default battlesSlice.reducer;

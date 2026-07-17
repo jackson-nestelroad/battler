@@ -19,8 +19,9 @@ export default function Lobby() {
   const proposals = Object.values(proposalsMap);
 
   // Connection form state
-  const [playerName, setPlayerName] = useState("");
-  const [serverUrl, setServerUrl] = useState("ws://localhost:8080/ws");
+  const [playerName, setPlayerName] = useState(connection.savedPlayerId || "");
+  const [serverUrl, setServerUrl] = useState(connection.savedServerUrl || "ws://localhost:8080/ws");
+  const [autoconnect, setAutoconnect] = useState(connection.autoconnect);
 
   // Challenge form state
   const [opponentName, setOpponentName] = useState("");
@@ -29,7 +30,13 @@ export default function Lobby() {
   const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
     if (!playerName.trim()) return;
-    dispatch(connectWamp({ url: serverUrl, playerId: playerName.trim().toLowerCase() }));
+    dispatch(
+      connectWamp({
+        url: serverUrl,
+        playerId: playerName.trim().toLowerCase(),
+        autoconnect,
+      }),
+    );
   };
 
   const handleSendChallenge = (e: React.FormEvent) => {
@@ -144,6 +151,16 @@ export default function Lobby() {
                 disabled={isConnecting}
                 required
               />
+            </div>
+            <div className="checkbox-group">
+              <input
+                id="autoconnect"
+                type="checkbox"
+                checked={autoconnect}
+                onChange={(e) => setAutoconnect(e.target.checked)}
+                disabled={isConnecting}
+              />
+              <label htmlFor="autoconnect">Auto-connect on next visit</label>
             </div>
             <ErrorBanner
               message={connection.error}

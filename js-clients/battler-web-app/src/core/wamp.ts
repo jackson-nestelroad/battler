@@ -13,6 +13,8 @@ import {
   setPlayerId,
   setServerUrl,
   setConnectionError,
+  setSavedConnectionDetails,
+  setAutoconnect,
 } from "../store/connectionSlice";
 import { setProposals, updateProposal, clearProposals } from "../store/proposalsSlice";
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
@@ -26,7 +28,9 @@ import {
   serviceBattleUpdated,
   setChoiceSubmitted,
   setBattlePlayerData,
+  clearBattles,
 } from "../store/battlesSlice";
+import { setCookie } from "../utils/cookie";
 
 function formatWampError(err: unknown): string {
   if (!err) return "Unknown error";
@@ -194,7 +198,14 @@ export async function initializeBattleClient(
 // Connect thunk
 export const connectWamp = createAsyncThunk(
   "wamp/connect",
-  async ({ url, playerId }: { url: string; playerId: string }, { dispatch }) => {
+  async (
+    {
+      url,
+      playerId,
+      autoconnect = false,
+    }: { url: string; playerId: string; autoconnect?: boolean },
+    { dispatch },
+  ) => {
     dispatch(setConnectionStatus("connecting"));
     dispatch(setConnectionError(null));
 
@@ -233,6 +244,12 @@ export const connectWamp = createAsyncThunk(
       dispatch(setPlayerId(playerId));
       dispatch(setServerUrl(url));
       dispatch(setConnectionStatus("connected"));
+      dispatch(setSavedConnectionDetails({ playerId, serverUrl: url, autoconnect }));
+
+      // Save settings to cookies
+      setCookie("battler_username", playerId);
+      setCookie("battler_server_url", url);
+      setCookie("battler_autoconnect", autoconnect ? "true" : "false");
 
       // Sync active proposals
       const activeProposals = await connectionManager.multiplayerClient.proposedBattles(20, 0);
@@ -314,6 +331,7 @@ export const disconnectWamp = createAsyncThunk("wamp/disconnect", async (_, { di
   }
   if (connectionManager.sessionProvider) {
     try {
+      connectionManager.sessionProvider.removeAllListeners();
       await connectionManager.sessionProvider.disconnect();
     } catch (err: unknown) {
       console.error("[WAMP] Failed to disconnect session:", err);
@@ -323,7 +341,13 @@ export const disconnectWamp = createAsyncThunk("wamp/disconnect", async (_, { di
 
   dispatch(setConnectionStatus("disconnected"));
   dispatch(setPlayerId(null));
+  dispatch(setConnectionError(null));
+  dispatch(setAutoconnect(false));
   dispatch(clearProposals());
+  dispatch(clearBattles());
+
+  // Disable autoconnect on next visit since user manually disconnected
+  setCookie("battler_autoconnect", "false");
 });
 
 // Propose Battle thunk

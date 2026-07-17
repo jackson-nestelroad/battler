@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction, Dispatch } from "@reduxjs/toolkit";
+import { getCookie } from "../utils/cookie";
 
 export interface ConnectionState {
   status: "disconnected" | "connecting" | "connected";
@@ -7,14 +8,24 @@ export interface ConnectionState {
   serverUrl: string | null;
   isHydrated: boolean;
   error: string | null;
+  savedPlayerId: string | null;
+  savedServerUrl: string | null;
+  autoconnect: boolean;
 }
 
+const initialAutoconnect = getCookie("battler_autoconnect") === "true";
+const initialSavedPlayerId = getCookie("battler_username");
+const initialSavedServerUrl = getCookie("battler_server_url") || "ws://localhost:8080/ws";
+
 const initialState: ConnectionState = {
-  status: "disconnected",
+  status: initialAutoconnect && initialSavedPlayerId ? "connecting" : "disconnected",
   playerId: null,
   serverUrl: null,
   isHydrated: false,
   error: null,
+  savedPlayerId: initialSavedPlayerId,
+  savedServerUrl: initialSavedServerUrl,
+  autoconnect: initialAutoconnect,
 };
 
 const connectionSlice = createSlice({
@@ -36,11 +47,30 @@ const connectionSlice = createSlice({
     setError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
     },
+    setSavedConnectionDetails(
+      state,
+      action: PayloadAction<{ playerId: string; serverUrl: string; autoconnect: boolean }>,
+    ) {
+      const { playerId, serverUrl, autoconnect } = action.payload;
+      state.savedPlayerId = playerId;
+      state.savedServerUrl = serverUrl;
+      state.autoconnect = autoconnect;
+    },
+    setAutoconnect(state, action: PayloadAction<boolean>) {
+      state.autoconnect = action.payload;
+    },
   },
 });
 
-export const { setConnectionStatus, setPlayerId, setServerUrl, setIsHydrated, setError } =
-  connectionSlice.actions;
+export const {
+  setConnectionStatus,
+  setPlayerId,
+  setServerUrl,
+  setIsHydrated,
+  setError,
+  setSavedConnectionDetails,
+  setAutoconnect,
+} = connectionSlice.actions;
 
 export const setConnectionError =
   (message: string | null, originalError?: unknown) => (dispatch: Dispatch) => {

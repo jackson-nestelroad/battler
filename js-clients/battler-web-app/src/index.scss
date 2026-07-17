@@ -183,6 +183,51 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px var(--border-glow);
 }
 
+/* Custom Checkbox Styles */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: rem(16px);
+  height: rem(16px);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xs);
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  transition: all 0.2s ease-in-out;
+  margin: 0;
+
+  &:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &:checked {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    border-color: transparent;
+
+    &::before {
+      transform: scale(1);
+    }
+  }
+
+  &::before {
+    content: "";
+    width: rem(9px);
+    height: rem(9px);
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    background-color: var(--color-white);
+    clip-path: polygon(14% 44%, 0 58%, 38% 95%, 100% 16%, 84% 0%, 38% 70%);
+  }
+}
+
 /* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 0.5rem;
@@ -364,7 +409,24 @@ input:focus, textarea:focus, select:focus {
   letter-spacing: 0.05em;
 }
 
+.checkbox-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-s);
+  cursor: pointer;
+  user-select: none;
+}
 
+.checkbox-group label {
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+}
 
 /* 5. Alert/Error Banners */
 .alert {

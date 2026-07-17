@@ -9,18 +9,23 @@ import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 import styles from "./App.module.scss";
 
 export default function App() {
-  const isHydrated = useAppSelector((state) => state.connection.isHydrated);
+  const connection = useAppSelector((state) => state.connection);
+  const isHydrated = connection.isHydrated;
   const currentView = useAppSelector((state) => state.battles.currentView);
 
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false,
   );
 
-  if (!isHydrated) {
+  const showAutoconnectLoader = connection.autoconnect && connection.status === "connecting";
+
+  if (!isHydrated || showAutoconnectLoader) {
     return (
       <div className={styles.loadingScreen}>
         <div className="spinner"></div>
-        <p>Initializing Battler App...</p>
+        <p>
+          {showAutoconnectLoader ? "Connecting to Battle Server..." : "Initializing Battler App..."}
+        </p>
       </div>
     );
   }
