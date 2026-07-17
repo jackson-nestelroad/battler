@@ -9,9 +9,15 @@ use std::{
     },
     time::{
         Duration,
+        Instant,
         SystemTime,
     },
 };
+
+const MAX_OUTGOING_PROPOSALS: usize = 3;
+const MAX_INCOMING_PROPOSALS: usize = 5;
+const PROPOSAL_COOLDOWN: Duration = Duration::from_secs(3);
+const HOUSEKEEPING_INTERVAL: Duration = Duration::from_secs(2);
 
 use ahash::HashMap;
 use anyhow::{
@@ -524,7 +530,9 @@ impl ActiveProposedBattleManager {
 }
 
 struct PlayerState {
-    proposed_battles: BTreeSet<Uuid>,
+    outgoing_proposals: BTreeSet<Uuid>,
+    incoming_proposals: BTreeSet<Uuid>,
+    last_proposed_at: Option<Instant>,
     update_tx: broadcast::Sender<ProposedBattleUpdate>,
 }
 
@@ -532,7 +540,9 @@ impl PlayerState {
     fn new() -> Self {
         let (update_tx, _) = broadcast::channel(48);
         Self {
-            proposed_battles: BTreeSet::default(),
+            outgoing_proposals: BTreeSet::default(),
+            incoming_proposals: BTreeSet::default(),
+            last_proposed_at: None,
             update_tx,
         }
     }
@@ -580,11 +590,10 @@ impl BattlerMultiplayerServiceState {
         let players = proposed_battle.players().await;
 
         for player in players {
-            self.player_state(&player)
-                .lock()
-                .await
-                .proposed_battles
-                .remove(&uuid);
+            let player_state = self.player_state(&player);
+            let mut player_state = player_state.lock().await;
+            player_state.outgoing_proposals.remove(&uuid);
+            player_state.incoming_proposals.remove(&uuid);
         }
         Some(proposed_battle)
     }
@@ -608,13 +617,19 @@ impl<'d> BattlerMultiplayerService<'d> {
         let state = Arc::new(Mutex::new(BattlerMultiplayerServiceState::new()));
         let ai_player_registry = Mutex::new(AiPlayerRegistry::default());
 
-        state
-            .lock()
-            .await
-            .join_set
-            .spawn(BattlerMultiplayerService::clean_up_completed_tasks(
-                Arc::downgrade(&state),
-            ));
+        {
+            let mut state_lock = state.lock().await;
+            state_lock
+                .join_set
+                .spawn(BattlerMultiplayerService::clean_up_completed_tasks(
+                    Arc::downgrade(&state),
+                ));
+            state_lock.join_set.spawn(
+                BattlerMultiplayerService::proposed_battle_housekeeping_loop(Arc::downgrade(
+                    &state,
+                )),
+            );
+        }
 
         Self {
             data,
@@ -713,6 +728,40 @@ impl<'d> BattlerMultiplayerService<'d> {
             return Err(Error::msg("you must participate in the battle"));
         }
 
+        // Validate quotas and cooldown
+        {
+            let mut state = self.state.lock().await;
+
+            // 1. Check cooldown and quota.
+            let creator_state = state.player_state(&creator);
+            let mut creator_state = creator_state.lock().await;
+
+            if let Some(last_proposed_at) = creator_state.last_proposed_at {
+                if last_proposed_at.elapsed() < PROPOSAL_COOLDOWN {
+                    return Err(Error::msg("you are proposing battles too quickly"));
+                }
+            }
+            if creator_state.outgoing_proposals.len() >= MAX_OUTGOING_PROPOSALS {
+                return Err(Error::msg("you have too many active proposed battles"));
+            }
+
+            // 2. Check recipient incoming quota.
+            for player in &players {
+                if player != &creator {
+                    let player_state = state.player_state(player);
+                    let player_state = player_state.lock().await;
+                    if player_state.incoming_proposals.len() >= MAX_INCOMING_PROPOSALS {
+                        return Err(Error::msg(format!(
+                            "opponent {player} has too many pending incoming challenges"
+                        )));
+                    }
+                }
+            }
+
+            // Record validation approval and timestamp.
+            creator_state.last_proposed_at = Some(Instant::now());
+        }
+
         let active_proposed_battle_manager = ActiveProposedBattleManager::new(
             active_proposed_battle,
             self.battler_service_client.clone(),
@@ -720,20 +769,25 @@ impl<'d> BattlerMultiplayerService<'d> {
         );
         let active_proposed_battle_manager = Arc::new(active_proposed_battle_manager);
 
-        let players = {
+        let players_with_states = {
             let mut state = self.state.lock().await;
             state
                 .proposed_battles
                 .insert(uuid, active_proposed_battle_manager.clone());
             let mut player_states = Vec::default();
             for player in players {
-                player_states.push(state.player_state(&player));
+                player_states.push((player.clone(), state.player_state(&player)));
             }
             player_states
         };
 
-        for player in players {
-            player.lock().await.proposed_battles.insert(uuid);
+        for (player_id, player_state) in players_with_states {
+            let mut player_lock = player_state.lock().await;
+            if player_id == creator {
+                player_lock.outgoing_proposals.insert(uuid);
+            } else {
+                player_lock.incoming_proposals.insert(uuid);
+            }
         }
 
         active_proposed_battle_manager.start().await;
@@ -742,13 +796,6 @@ impl<'d> BattlerMultiplayerService<'d> {
         active_proposed_battle_manager
             .respond(&creator, &ProposedBattleResponse { accept: true })
             .await?;
-
-        self.state.lock().await.join_set.spawn(
-            BattlerMultiplayerService::proposed_battle_housekeeping(
-                Arc::downgrade(&self.state),
-                Arc::downgrade(&active_proposed_battle_manager),
-            ),
-        );
 
         Ok(active_proposed_battle_manager.proposed_battle().await)
     }
@@ -769,27 +816,29 @@ impl<'d> BattlerMultiplayerService<'d> {
         }
     }
 
-    async fn proposed_battle_housekeeping(
+    async fn proposed_battle_housekeeping_loop(
         battler_multiplayer_service_state: Weak<Mutex<BattlerMultiplayerServiceState>>,
-        active_proposed_battle_manager: Weak<ActiveProposedBattleManager>,
     ) {
-        while let Some(battler_multiplayer_service_state) =
-            battler_multiplayer_service_state.upgrade()
-            && let Some(active_proposed_battle_manager) = active_proposed_battle_manager.upgrade()
-        {
-            if let Some(deletion_reason) = active_proposed_battle_manager.deletion_reason().await {
-                Self::delete_proposed_battle(
-                    battler_multiplayer_service_state.clone(),
-                    active_proposed_battle_manager.uuid(),
-                    deletion_reason,
-                )
-                .await;
-                break;
+        while let Some(state_mutex) = battler_multiplayer_service_state.upgrade() {
+            let managers = {
+                let state = state_mutex.lock().await;
+                state.proposed_battles.values().cloned().collect::<Vec<_>>()
+            };
+
+            for manager in managers {
+                if let Some(deletion_reason) = manager.deletion_reason().await {
+                    Self::delete_proposed_battle(
+                        state_mutex.clone(),
+                        manager.uuid(),
+                        deletion_reason,
+                    )
+                    .await;
+                } else if manager.needs_to_watch_battle().await {
+                    manager.clone().watch_battle().await;
+                }
             }
-            if active_proposed_battle_manager.needs_to_watch_battle().await {
-                active_proposed_battle_manager.watch_battle().await;
-            }
-            tokio::time::sleep(Duration::from_secs(1)).await;
+
+            tokio::time::sleep(HOUSEKEEPING_INTERVAL).await;
         }
     }
 
@@ -811,15 +860,21 @@ impl<'d> BattlerMultiplayerService<'d> {
     ) -> Vec<ProposedBattle> {
         let count = count.min(100);
         let player_state = self.state.lock().await.player_state(player);
-        let uuids = player_state
-            .lock()
-            .await
-            .proposed_battles
-            .iter()
-            .skip(offset)
-            .take(count)
-            .cloned()
-            .collect::<Vec<_>>();
+        let uuids = {
+            let player_lock = player_state.lock().await;
+            let mut all_uuids = player_lock
+                .outgoing_proposals
+                .iter()
+                .chain(player_lock.incoming_proposals.iter())
+                .cloned()
+                .collect::<Vec<_>>();
+            all_uuids.sort();
+            all_uuids
+                .into_iter()
+                .skip(offset)
+                .take(count)
+                .collect::<Vec<_>>()
+        };
         let mut proposed_battles = Vec::with_capacity(count);
         for uuid in uuids {
             // Battle could be deleted while we are reading.

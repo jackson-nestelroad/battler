@@ -637,3 +637,76 @@ async fn lists_proposed_battles_for_player() {
         HashSet::default()
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_rate_limit_cooldown() {
+    let service = battler_multiplayer_service().await;
+
+    // Propose first battle.
+    assert_matches::assert_matches!(
+        service
+            .clone()
+            .propose_battle(proposed_battle_options("player-1"))
+            .await,
+        Ok(_)
+    );
+
+    // Immediately propose second battle (cooldown is 3 seconds, so this must fail).
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(proposed_battle_options("player-1")).await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "you are proposing battles too quickly");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_outgoing_quota_limit() {
+    let service = battler_multiplayer_service().await;
+
+    // Propose 3 battles, waiting 3.1 seconds between each to bypass the rate limit.
+    for i in 1..=3 {
+        let mut options = proposed_battle_options("player-1");
+        options.battle_options.side_2.players[0].id = format!("player-{}", i + 1);
+
+        assert_matches::assert_matches!(service.clone().propose_battle(options).await, Ok(_));
+        tokio::time::sleep(Duration::from_millis(3100)).await;
+    }
+
+    // 4th proposal should fail because MAX_OUTGOING_PROPOSALS is 3.
+    let mut options = proposed_battle_options("player-1");
+    options.battle_options.side_2.players[0].id = "player-5".to_owned();
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(options).await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "you have too many active proposed battles");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_incoming_quota_limit() {
+    let service = battler_multiplayer_service().await;
+
+    // Have player-1, player-2, player-3, player-4, player-5 all propose battles to player-6
+    // (recipient).
+    for i in 1..=5 {
+        let mut options = proposed_battle_options(format!("player-{}", i));
+        options.battle_options.side_1.players[0].id = format!("player-{}", i);
+        options.battle_options.side_2.players[0].id = "player-6".to_owned();
+
+        assert_matches::assert_matches!(service.clone().propose_battle(options).await, Ok(_));
+    }
+
+    // 6th proposal from player-7 to player-6 should fail because MAX_INCOMING_PROPOSALS is 5
+    let mut options = proposed_battle_options("player-7");
+    options.battle_options.side_1.players[0].id = "player-7".to_owned();
+    options.battle_options.side_2.players[0].id = "player-6".to_owned();
+
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(options).await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "opponent player-6 has too many pending incoming challenges");
+        }
+    );
+}
