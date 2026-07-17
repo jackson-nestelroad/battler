@@ -101,6 +101,15 @@ export function getWampResultArray(res: any): any[] {
   return [];
 }
 
+export function getWampResultArguments(res: any): any[] {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (typeof res === "object" && res.args && Array.isArray(res.args)) {
+    return res.args;
+  }
+  return [];
+}
+
 export function safeJsonStringify(value: any): string {
   return JSON.stringify(value, (_, v) => {
     if (typeof v === "bigint") {

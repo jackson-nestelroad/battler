@@ -12,6 +12,7 @@ import {
   uuidForUri,
   getWampResultString,
   getWampResultArray,
+  getWampResultArguments,
   safeJsonStringify,
 } from "battler-wamp-client";
 
@@ -141,7 +142,7 @@ export class BattlerServiceClient {
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.last_log_entry`,
       [side !== undefined ? side : null],
     );
-    const arr = getWampResultArray(res);
+    const arr = getWampResultArguments(res);
     if (arr.length < 2 || arr[0] === null || arr[0] === undefined) return null;
     return [Number(arr[0]), String(arr[1])];
   }

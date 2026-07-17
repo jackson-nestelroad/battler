@@ -6,7 +6,6 @@ import { BattlerClient } from "battler-client";
 import { BattlerServiceClient } from "battler-service-client";
 import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
 import type { ProposedBattleOptions } from "battler-multiplayer-service-client";
-import type { RootState } from "../store/store";
 import type { Subscription, IConnectionOptions } from "autobahn";
 import type { MonData } from "battler-types";
 import {
@@ -174,6 +173,9 @@ export async function initializeBattleClient(
       dispatch(battleSessionEnded(battleId));
     });
 
+    // Sync the client now that listeners are registered to fetch initial request/state
+    await client.sync();
+
     return client;
   } catch (err: unknown) {
     handleBattleError(
@@ -279,7 +281,7 @@ export const connectWamp = createAsyncThunk(
         // Catch up on reconnection
         for (const [battleId, client] of connectionManager.clientsRegistry.entries()) {
           try {
-            await client.caughtUp();
+            await client.sync();
           } catch (e: unknown) {
             handleBattleError(
               dispatch,
@@ -365,20 +367,16 @@ export const submitChoice = createAsyncThunk(
   "wamp/submitChoice",
   async (
     { battleId, choice }: { battleId: string; choice: string },
-    { dispatch, getState, rejectWithValue },
+    { dispatch, rejectWithValue },
   ) => {
     const client = connectionManager.clientsRegistry.get(battleId);
     if (!client) return rejectWithValue(`No client found for battle ${battleId}`);
 
-    const state = getState() as RootState;
-    const previousRequest = state.battles.battles[battleId]?.activeRequest;
-
     try {
       dispatch(setBattleLoading({ battleId, isLoading: true }));
       dispatch(setBattleError({ battleId, error: null }));
-      dispatch(setBattleRequest({ battleId, request: null }));
-      await client.makeChoice(choice);
       dispatch(setChoiceSubmitted({ battleId, submitted: true }));
+      await client.makeChoice(choice);
     } catch (err: unknown) {
       const formatted = handleBattleError(
         dispatch,
@@ -388,9 +386,7 @@ export const submitChoice = createAsyncThunk(
         "error",
         false,
       );
-      if (previousRequest) {
-        dispatch(setBattleRequest({ battleId, request: previousRequest }));
-      }
+      dispatch(setChoiceSubmitted({ battleId, submitted: false }));
       return rejectWithValue(formatted);
     } finally {
       dispatch(setBattleLoading({ battleId, isLoading: false }));

@@ -45,7 +45,7 @@ export function getRoleForPlayer(battle: Battle, player: string): Role {
 function isLogFilled(logLines: string[]): boolean {
   if (logLines.length === 0) return true;
   for (let i = 0; i < logLines.length; i++) {
-    if (logLines[i] === undefined || logLines[i] === "") {
+    if (logLines[i] === undefined) {
       return false;
     }
   }
@@ -184,13 +184,6 @@ export class BattlerClient extends EventEmitter {
 
   getLogs(): string[] {
     return [...this.logLines];
-  }
-
-  async caughtUp(): Promise<boolean> {
-    const lastLogIndex = this.lastLogIndex();
-    const lastEntry = await this.service.lastLogEntry(this.battleId, this.role.side);
-    const lastPossibleLogIndex = lastEntry ? lastEntry[0] : 0;
-    return lastLogIndex === lastPossibleLogIndex;
   }
 
   async readyForBattle(): Promise<PlayerValidation> {
