@@ -16,15 +16,15 @@ export default function BattleScreen() {
   const dispatch = useAppDispatch();
   const [showDebug, setShowDebug] = useState(false);
   const [debugTab, setDebugTab] = useState<"state" | "request" | "player">("state");
-  
+
   const battleId = useAppSelector((state) => state.battles.activeBattleId);
   const connection = useAppSelector((state) => state.connection);
-  const battleSession = useAppSelector(
-    (state) => (battleId ? state.battles.battles[battleId] : null)
+  const battleSession = useAppSelector((state) =>
+    battleId ? state.battles.battles[battleId] : null,
   );
 
-  const activeProposal = useAppSelector(
-    (state) => (battleId ? state.proposals.proposals[battleId] : null)
+  const activeProposal = useAppSelector((state) =>
+    battleId ? state.proposals.proposals[battleId] : null,
   );
 
   const visibleLogs = useMemo(() => {
@@ -54,11 +54,12 @@ export default function BattleScreen() {
   }
 
   const isReconnecting = connection.status === "connecting";
-  const isPreparing = battleSession.serviceBattle?.state === "preparing" ||
-                      battleSession.battleState?.phase === "pre_battle";
+  const isPreparing =
+    battleSession.serviceBattle?.state === "preparing" ||
+    battleSession.battleState?.phase === "pre_battle";
 
   const opposingSide = battleSession.battleState?.field?.sides?.find(
-    (side) => side.name !== connection.playerId
+    (side) => side.name !== connection.playerId,
   );
   const opponentName = opposingSide?.name || "Opponent";
 
@@ -75,7 +76,9 @@ export default function BattleScreen() {
         </div>
       )}
 
-      <header className={`${styles.screenHeader} flex-row justify-between align-center flex-tablet-col gap-l`}>
+      <header
+        className={`${styles.screenHeader} flex-row justify-between align-center flex-tablet-col gap-l`}
+      >
         <div className={`${styles.titleInfo} flex-col gap-xs`}>
           <h2>Battle</h2>
           <span className={styles.battleId}>ID: {battleId}</span>
@@ -97,8 +100,8 @@ export default function BattleScreen() {
       </header>
 
       {battleSession.error && !isPreparing && (
-        <ErrorBanner 
-          message={battleSession.error} 
+        <ErrorBanner
+          message={battleSession.error}
           onClear={() => dispatch(setBattleError({ battleId, error: null }))}
         />
       )}

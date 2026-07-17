@@ -17,4 +17,3 @@ export default function ErrorBanner({ message, onClear }: ErrorBannerProps) {
     </div>
   );
 }
-

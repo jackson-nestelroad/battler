@@ -20,7 +20,8 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
   const defaultTeam = useAppSelector((state) => state.teams.defaultTeam);
   const teamOrder = useAppSelector((state) => state.teams.teamOrder);
 
-  const teamNames = teamOrder.length > 0 ? teamOrder.filter((name) => teams[name]) : Object.keys(teams);
+  const teamNames =
+    teamOrder.length > 0 ? teamOrder.filter((name) => teams[name]) : Object.keys(teams);
 
   const [selectedTeam, setSelectedTeam] = useState("");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);

@@ -178,7 +178,11 @@ export default function ActionPanel({
           <h3>Team Preview Phase</h3>
           <p>Confirm your team order to begin the match.</p>
           <div className={styles.actionsRow}>
-            <button className="btn btn-primary" onClick={handleTeamPreviewSubmit} disabled={isLoading}>
+            <button
+              className="btn btn-primary"
+              onClick={handleTeamPreviewSubmit}
+              disabled={isLoading}
+            >
               Submit Team Order (Default)
             </button>
             <button className="btn btn-danger" onClick={handleForfeit} disabled={isLoading}>
@@ -202,16 +206,20 @@ export default function ActionPanel({
         );
       }
 
-      const monToReplace = playerData?.mons?.find((m) => m.player_active_position === activeSwitchSlot);
-      const replaceMonName = monToReplace?.summary?.name || monToReplace?.species || `Slot ${activeSwitchSlot + 1}`;
+      const monToReplace = playerData?.mons?.find(
+        (m) => m.player_active_position === activeSwitchSlot,
+      );
+      const replaceMonName =
+        monToReplace?.summary?.name || monToReplace?.species || `Slot ${activeSwitchSlot + 1}`;
 
       return (
         <div className="flex-col gap-m">
           <h3>
-            Force Switch Required for <strong>{replaceMonName}</strong> (Slot {activeSwitchSlot + 1})
+            Force Switch Required for <strong>{replaceMonName}</strong> (Slot {activeSwitchSlot + 1}
+            )
           </h3>
           <p>One of your Pokémon fainted. Select a replacement from your team below.</p>
-          
+
           <div className={styles.actionsRow}>
             {currentSlotIndex > 0 && (
               <button
@@ -246,8 +254,11 @@ export default function ActionPanel({
         );
       }
 
-      const activeMon = playerData?.mons?.find((m) => m.player_team_position === activeReq.team_position);
-      const activeMonName = activeMon?.summary?.name || activeMon?.species || `Pokémon #${currentSlotIndex + 1}`;
+      const activeMon = playerData?.mons?.find(
+        (m) => m.player_team_position === activeReq.team_position,
+      );
+      const activeMonName =
+        activeMon?.summary?.name || activeMon?.species || `Pokémon #${currentSlotIndex + 1}`;
 
       const handleSelectMove = (move: MonMoveSlotData, index: number) => {
         setSelectedMove(move);
@@ -256,12 +267,12 @@ export default function ActionPanel({
 
       const handleConfirmMove = (targetVal: number | null) => {
         if (selectedMoveIndex === null) return;
-        
+
         let moveStr = `move ${selectedMoveIndex}`;
         if (targetVal !== null) {
           moveStr += `,${targetVal}`;
         }
-        
+
         if (mega) moveStr += ",mega";
         if (zmove) moveStr += ",zmove";
         if (ultra) moveStr += ",ultra";
@@ -299,7 +310,8 @@ export default function ActionPanel({
         <div className="flex-col gap-m">
           <div className="card-header">
             <h3>
-              Commands for <strong>{activeMonName}</strong> (Slot {currentSlotIndex + 1}/{activeRequests.length})
+              Commands for <strong>{activeMonName}</strong> (Slot {currentSlotIndex + 1}/
+              {activeRequests.length})
             </h3>
             <div className={styles.headerActions}>
               <button className="btn btn-danger" onClick={handleForfeit} disabled={isLoading}>
@@ -312,20 +324,57 @@ export default function ActionPanel({
             <div className="flex-col gap-m">
               <div className={styles.movesColumn}>
                 <h4>Select Move (Or click a team member below to Switch)</h4>
-                
+
                 <div className={styles.modifiersRow}>
                   {[
-                    { key: "mega", label: "Mega Evolve", flag: activeReq.can_mega_evolve, value: mega, setter: setMega },
-                    { key: "tera", label: "Terastallize", flag: activeReq.can_terastallize, value: tera, setter: setTera },
-                    { key: "zmove", label: "Z-Move", flag: activeReq.can_z_move, value: zmove, setter: setZmove },
-                    { key: "dyna", label: "Dynamax", flag: activeReq.can_dynamax, value: dyna, setter: setDyna },
-                    { key: "ultra", label: "Ultra Burst", flag: activeReq.can_ultra_burst, value: ultra, setter: setUltra },
-                  ].map(({ key, label, flag, value, setter }) => flag && (
-                    <label key={key} className={styles.checkboxLabel}>
-                      <input type="checkbox" checked={value} onChange={(e) => setter(e.target.checked)} />
-                      {label}
-                    </label>
-                  ))}
+                    {
+                      key: "mega",
+                      label: "Mega Evolve",
+                      flag: activeReq.can_mega_evolve,
+                      value: mega,
+                      setter: setMega,
+                    },
+                    {
+                      key: "tera",
+                      label: "Terastallize",
+                      flag: activeReq.can_terastallize,
+                      value: tera,
+                      setter: setTera,
+                    },
+                    {
+                      key: "zmove",
+                      label: "Z-Move",
+                      flag: activeReq.can_z_move,
+                      value: zmove,
+                      setter: setZmove,
+                    },
+                    {
+                      key: "dyna",
+                      label: "Dynamax",
+                      flag: activeReq.can_dynamax,
+                      value: dyna,
+                      setter: setDyna,
+                    },
+                    {
+                      key: "ultra",
+                      label: "Ultra Burst",
+                      flag: activeReq.can_ultra_burst,
+                      value: ultra,
+                      setter: setUltra,
+                    },
+                  ].map(
+                    ({ key, label, flag, value, setter }) =>
+                      flag && (
+                        <label key={key} className={styles.checkboxLabel}>
+                          <input
+                            type="checkbox"
+                            checked={value}
+                            onChange={(e) => setter(e.target.checked)}
+                          />
+                          {label}
+                        </label>
+                      ),
+                  )}
                 </div>
 
                 <div className={styles.movesGrid}>
@@ -336,7 +385,11 @@ export default function ActionPanel({
                         key={move.id}
                         onClick={() => handleSelectMove(move, index)}
                         className={`${styles.moveBtn} type-border`}
-                        style={{ "--type-color": `var(--color-type-${move.type.toLowerCase()})` } as React.CSSProperties}
+                        style={
+                          {
+                            "--type-color": `var(--color-type-${move.type.toLowerCase()})`,
+                          } as React.CSSProperties
+                        }
                         disabled={isMoveDisabled || isLoading}
                       >
                         <span className={styles.moveName}>{move.name}</span>
@@ -412,9 +465,7 @@ export default function ActionPanel({
 
   return (
     <div className="flex-col gap-xl">
-      <div className="card">
-        {renderChoiceBody()}
-      </div>
+      <div className="card">{renderChoiceBody()}</div>
       {renderTeamSummary()}
     </div>
   );

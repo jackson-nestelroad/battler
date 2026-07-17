@@ -21,12 +21,8 @@ export default function Field({ battleState }: FieldProps) {
   return (
     <div className={styles.arena}>
       <div className={styles.fieldConditions}>
-        <span className="badge badge-warning">
-          Weather: {weather}
-        </span>
-        <span className="badge badge-info">
-          Terrain: {terrain}
-        </span>
+        <span className="badge badge-warning">Weather: {weather}</span>
+        <span className="badge badge-info">Terrain: {terrain}</span>
         <span className={styles.turnLabel}>Turn {battleState.turn}</span>
       </div>
 

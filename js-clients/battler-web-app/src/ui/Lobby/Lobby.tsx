@@ -13,7 +13,7 @@ import styles from "./Lobby.module.scss";
 
 export default function Lobby() {
   const dispatch = useAppDispatch();
-  
+
   const connection = useAppSelector((state) => state.connection);
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
   const proposals = Object.values(proposalsMap);
@@ -116,8 +116,10 @@ export default function Lobby() {
       <div className={styles.lobbyContainer}>
         <div className={`card ${styles.connectCard}`}>
           <h2>Connect to Battle Server</h2>
-          <p className={styles.subtitle}>Enter your profile name and server address to join the matchmaking lobby.</p>
-          
+          <p className={styles.subtitle}>
+            Enter your profile name and server address to join the matchmaking lobby.
+          </p>
+
           <form onSubmit={handleConnect} className={styles.connectForm}>
             <div className="form-group">
               <label htmlFor="playerName">Player Name</label>
@@ -143,7 +145,10 @@ export default function Lobby() {
                 required
               />
             </div>
-            <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />
+            <ErrorBanner
+              message={connection.error}
+              onClear={() => dispatch(setConnectionError(null))}
+            />
             <button type="submit" className="btn btn-primary" disabled={isConnecting}>
               {isConnecting ? "Connecting..." : "Connect"}
             </button>
@@ -174,10 +179,7 @@ export default function Lobby() {
         <p>Propose direct challenges or respond to pending invitations from other trainers.</p>
       </div>
 
-      <ErrorBanner 
-        message={connection.error} 
-        onClear={() => dispatch(setConnectionError(null))} 
-      />
+      <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />
 
       {/* Propose Challenge Form */}
       <section className="card">
@@ -197,10 +199,14 @@ export default function Lobby() {
                 required
               />
             </div>
-            
+
             <div className={`form-group ${styles.formatField}`}>
               <label htmlFor="format">Battle Format</label>
-              <select id="format" value={format} onChange={(e) => setFormat(e.target.value as "Singles" | "Doubles")}>
+              <select
+                id="format"
+                value={format}
+                onChange={(e) => setFormat(e.target.value as "Singles" | "Doubles")}
+              >
                 <option value="Singles">Singles (1v1 Active)</option>
                 <option value="Doubles">Doubles (2v2 Active)</option>
               </select>
@@ -208,11 +214,7 @@ export default function Lobby() {
           </div>
 
           <div className={styles.formActions}>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={!opponentName.trim()}
-            >
+            <button type="submit" className="btn btn-primary" disabled={!opponentName.trim()}>
               Challenge Trainer
             </button>
           </div>

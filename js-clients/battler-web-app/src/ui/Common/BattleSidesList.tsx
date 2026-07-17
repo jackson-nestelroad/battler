@@ -36,8 +36,8 @@ export default function BattleSidesList({ sides, isProposal = false }: BattleSid
                     p.status === "accepted"
                       ? "badge-success"
                       : p.status === "rejected"
-                      ? "badge-danger"
-                      : "badge-warning";
+                        ? "badge-danger"
+                        : "badge-warning";
                 } else {
                   const isReady = p.state === "ready";
                   statusText = isReady ? "Ready" : "Preparing";

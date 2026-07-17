@@ -20,7 +20,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const handleNav = (view: "lobby" | "teams" | "battle", battleId: string | null = null) => {
     dispatch(setCurrentView(view));
     dispatch(switchActiveBattle(battleId));
-    
+
     // Automatically close sidebar drawer on navigation clicks on mobile
     if (typeof window !== "undefined" && window.innerWidth <= BREAKPOINT_MOBILE_PX) {
       setIsCollapsed(true);
@@ -31,8 +31,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
     <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}>
       <div className={styles.brand}>
         <h2>{isCollapsed ? "BC" : "Battler Console"}</h2>
-        <button 
-          className={styles.toggleBtn} 
+        <button
+          className={styles.toggleBtn}
           onClick={() => setIsCollapsed(!isCollapsed)}
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
@@ -45,7 +45,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           <span className={`${styles.dot} ${styles[connection.status]}`} />
           {!isCollapsed && (
             <span className={styles.statusLabel}>
-              {connection.status === "connected" ? "Connected" : connection.status === "connecting" ? "Connecting..." : "Offline"}
+              {connection.status === "connected"
+                ? "Connected"
+                : connection.status === "connecting"
+                  ? "Connecting..."
+                  : "Offline"}
             </span>
           )}
         </div>
@@ -100,9 +104,10 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <div className={styles.battlesList}>
               {activeBattlesList.map((battle) => {
                 const isSelected = currentView === "battle" && activeBattleId === battle.battleId;
-                const hasPendingAction = battle.activeRequest !== null && battle.battleState?.phase !== "finished";
+                const hasPendingAction =
+                  battle.activeRequest !== null && battle.battleState?.phase !== "finished";
                 const opposingSide = battle.battleState?.field?.sides?.find(
-                  (side) => side.name !== connection.playerId
+                  (side) => side.name !== connection.playerId,
                 );
                 const opponentName = opposingSide?.name || "Opponent";
                 const turnNumber = battle.battleState?.turn || 0;

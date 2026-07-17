@@ -29,16 +29,10 @@ export default function ProposalRow({
           <span className={styles.challengeMeta}>challenges you to a match</span>
         </div>
         <div className={styles.proposalActions}>
-          <button
-            onClick={() => onAccept(proposal.uuid)}
-            className="btn btn-success"
-          >
+          <button onClick={() => onAccept(proposal.uuid)} className="btn btn-success">
             Accept
           </button>
-          <button
-            onClick={() => onDecline(proposal.uuid)}
-            className="btn btn-danger"
-          >
+          <button onClick={() => onDecline(proposal.uuid)} className="btn btn-danger">
             Decline
           </button>
         </div>
@@ -64,17 +58,11 @@ export default function ProposalRow({
         </div>
         <div className={styles.proposalActions}>
           {isDeclined ? (
-            <button
-              onClick={() => onDismiss(proposal.uuid)}
-              className="btn btn-secondary"
-            >
+            <button onClick={() => onDismiss(proposal.uuid)} className="btn btn-secondary">
               Dismiss
             </button>
           ) : (
-            <button
-              onClick={() => onDecline(proposal.uuid)}
-              className="btn btn-secondary"
-            >
+            <button onClick={() => onDecline(proposal.uuid)} className="btn btn-secondary">
               Cancel
             </button>
           )}

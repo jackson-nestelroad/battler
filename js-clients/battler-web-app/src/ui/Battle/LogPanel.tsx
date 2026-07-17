@@ -49,9 +49,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
 
       <div className={styles.scrollArea} ref={scrollRef}>
         {mode === "json" && (
-          <pre className={styles.jsonLogs}>
-            {JSON.stringify(uiLogs, null, 2)}
-          </pre>
+          <pre className={styles.jsonLogs}>{JSON.stringify(uiLogs, null, 2)}</pre>
         )}
 
         {mode === "engine" && (
@@ -62,9 +60,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                 <span className={styles.text}>{log}</span>
               </div>
             ))}
-            {engineLogs.length === 0 && (
-              <p className={styles.emptyLogs}>No logs.</p>
-            )}
+            {engineLogs.length === 0 && <p className={styles.emptyLogs}>No logs.</p>}
           </div>
         )}
 
@@ -76,9 +72,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                 <span className={styles.text}>{log}</span>
               </div>
             ))}
-            {visibleLogs.length === 0 && (
-              <p className={styles.emptyLogs}>Waiting...</p>
-            )}
+            {visibleLogs.length === 0 && <p className={styles.emptyLogs}>Waiting...</p>}
           </div>
         )}
       </div>

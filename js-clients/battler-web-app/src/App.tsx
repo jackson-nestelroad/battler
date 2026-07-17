@@ -13,7 +13,7 @@ export default function App() {
   const currentView = useAppSelector((state) => state.battles.currentView);
 
   const [isCollapsed, setIsCollapsed] = useState(
-    typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false
+    typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false,
   );
 
   if (!isHydrated) {
@@ -28,10 +28,8 @@ export default function App() {
   return (
     <div className={styles.appContainer}>
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      
-      {!isCollapsed && (
-        <div className={styles.backdrop} onClick={() => setIsCollapsed(true)} />
-      )}
+
+      {!isCollapsed && <div className={styles.backdrop} onClick={() => setIsCollapsed(true)} />}
 
       <main className={styles.mainContent}>
         <header className={styles.mobileTopBar}>

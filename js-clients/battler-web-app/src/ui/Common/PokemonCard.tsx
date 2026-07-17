@@ -37,9 +37,7 @@ export default function PokemonCard({
       <div className={styles.summaryCardMetaRow}>
         <div className={styles.summaryCardMeta}>
           {status ? (
-            <span className={`status-badge ${status.toLowerCase()}`}>
-              {status}
-            </span>
+            <span className={`status-badge ${status.toLowerCase()}`}>{status}</span>
           ) : hp === 0 ? (
             <span className="badge badge-danger">FAINTED</span>
           ) : (
