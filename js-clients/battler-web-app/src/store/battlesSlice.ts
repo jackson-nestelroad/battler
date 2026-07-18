@@ -6,8 +6,10 @@ import type { Request, PlayerBattleData } from "battler-types";
 import type { UiLogEntry } from "battler-state";
 import { formatUuid } from "../utils/uuid";
 import type { Battle } from "battler-service-client";
+import { resolveReplayTurnState } from "../utils/replay";
+import type { ReplayKeyframe } from "../utils/replay";
 
-export interface SerializedBattleSession {
+export interface BaseBattleSession {
   battleId: string;
   battleState: BattleState | null;
   activeRequest: Request | null;
@@ -20,7 +22,27 @@ export interface SerializedBattleSession {
   serviceBattle: Battle | null;
 }
 
-export type ActiveView = "lobby" | "teams" | "battle";
+export interface LiveBattleSession extends BaseBattleSession {
+  isReplay?: false;
+}
+
+export interface ReplayBattleSession extends BaseBattleSession {
+  isReplay: true;
+  replayCurrentTurn: number;
+  replayStates: (BattleState | undefined)[];
+  replayEngineLogs: string[];
+  replayKeyframes: ReplayKeyframe[];
+}
+
+export type SerializedBattleSession = LiveBattleSession | ReplayBattleSession;
+
+export function isReplaySession(
+  session: SerializedBattleSession | undefined,
+): session is ReplayBattleSession {
+  return !!session?.isReplay;
+}
+
+export type ActiveView = "lobby" | "teams" | "battle" | "replays";
 
 export interface BattlesState {
   battles: Record<string, SerializedBattleSession>;
@@ -183,6 +205,80 @@ const battlesSlice = createSlice({
       state.activeBattleId = null;
       state.currentView = "lobby";
     },
+    battleReplayLoaded(
+      state,
+      action: PayloadAction<{
+        battleId: string;
+        engineLogs: string[];
+        keyframes: ReplayKeyframe[];
+        maxTurn: number;
+      }>,
+    ) {
+      const { battleId, engineLogs, keyframes, maxTurn } = action.payload;
+      const firstState = keyframes.find((k) => k.turn === 0)?.state || null;
+
+      // Initialize sparse array for replayStates matching size of maxTurn + 1
+      const replayStates = new Array(maxTurn + 1);
+      // Pre-fill keyframes into the cache
+      for (const kf of keyframes) {
+        replayStates[kf.turn] = kf.state;
+      }
+
+      state.battles[battleId] = {
+        battleId,
+        battleState: firstState,
+        activeRequest: null,
+        playerData: null,
+        uiLogs: firstState ? firstState.ui_log.flat() : [],
+        engineLogs: [],
+        choiceSubmitted: false,
+        error: null,
+        isLoading: false,
+        serviceBattle: null,
+        isReplay: true,
+        replayCurrentTurn: 0,
+        replayStates,
+        replayEngineLogs: engineLogs,
+        replayKeyframes: keyframes,
+      };
+      state.activeBattleId = battleId;
+      state.currentView = "battle";
+    },
+    setReplayTurn(state, action: PayloadAction<{ battleId: string; turn: number }>) {
+      const { battleId: rawId, turn } = action.payload;
+      const battleId = normalizeId(rawId);
+      const battle = state.battles[battleId];
+      if (isReplaySession(battle)) {
+        const maxTurn = battle.replayStates.length - 1;
+        const turnIndex = Math.max(0, Math.min(turn, maxTurn));
+        battle.replayCurrentTurn = turnIndex;
+
+        // Resolve target state using keyframe hybrid lookup (processes max 9 turns incrementally)
+        const targetState = resolveReplayTurnState(battle, turnIndex);
+        battle.battleState = targetState;
+        battle.uiLogs = targetState ? targetState.ui_log.flat() : [];
+
+        // Set engineLogs up to this turn
+        let boundaryIdx = battle.replayEngineLogs.length;
+        const targetHeader = `turn|turn:${turnIndex + 1}`;
+        for (let i = 0; i < battle.replayEngineLogs.length; i++) {
+          if (battle.replayEngineLogs[i] && battle.replayEngineLogs[i].startsWith(targetHeader)) {
+            boundaryIdx = i;
+            break;
+          }
+        }
+        battle.engineLogs = battle.replayEngineLogs.slice(0, boundaryIdx);
+      }
+    },
+    removeBattle(state, action: PayloadAction<string>) {
+      const battleId = normalizeId(action.payload);
+      const isReplay = state.battles[battleId]?.isReplay;
+      delete state.battles[battleId];
+      if (state.activeBattleId === battleId) {
+        state.activeBattleId = null;
+        state.currentView = isReplay ? "replays" : "lobby";
+      }
+    },
   },
 });
 
@@ -201,6 +297,9 @@ export const {
   setBattlePlayerData,
   clearBattles,
   resetBattlesState,
+  battleReplayLoaded,
+  setReplayTurn,
+  removeBattle,
 } = battlesSlice.actions;
 
 export default battlesSlice.reducer;

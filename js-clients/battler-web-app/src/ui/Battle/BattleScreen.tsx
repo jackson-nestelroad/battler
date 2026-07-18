@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { formatUiLogEntry } from "../../utils/logFormatter";
-import { setBattleError, switchActiveBattle } from "../../store/battlesSlice";
+import { setBattleError, switchActiveBattle, removeBattle } from "../../store/battlesSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import Field from "./Field";
 import ActionPanel from "./ActionPanel";
+import ReplayPanel from "./ReplayPanel";
+import BattleFinishedPanel from "./BattleFinishedPanel";
 import LogPanel from "./LogPanel";
 import BattlePreparationPanel from "./BattlePreparationPanel";
 import BattleProposalView from "./BattleProposalView";
@@ -35,9 +37,12 @@ export default function BattleScreen() {
       .filter((formatted): formatted is string => formatted !== null);
   }, [battleSession]);
 
+  const isReplay = !!battleSession?.isReplay;
+
   if (
-    connection.status === "disconnected" ||
-    (connection.status === "connecting" && !connection.playerId)
+    !isReplay &&
+    (connection.status === "disconnected" ||
+      (connection.status === "connecting" && !connection.playerId))
   ) {
     return <ConnectForm />;
   }
@@ -78,11 +83,20 @@ export default function BattleScreen() {
   const isPreparing =
     battleSession.serviceBattle?.state === "preparing" ||
     battleSession.battleState?.phase === "pre_battle";
+  const isFinished = battleSession.battleState?.phase === "finished";
+
+  const side0 = battleSession.battleState?.field?.sides?.[0];
+  const side1 = battleSession.battleState?.field?.sides?.[1];
+  const player0Name = side0?.name || "Player 1";
+  const player1Name = side1?.name || "Player 2";
 
   const opposingSide = battleSession.battleState?.field?.sides?.find(
     (side) => side.name !== connection.playerId,
   );
   const opponentName = opposingSide?.name || "Opponent";
+
+  const p0 = isReplay ? player0Name : connection.playerId || "Player 1";
+  const p1 = isReplay ? player1Name : opponentName;
 
   return (
     <div className="page-container">
@@ -115,8 +129,17 @@ export default function BattleScreen() {
             </button>
           </div>
           <div className={styles.vsBadge}>
-            @{connection.playerId} <span className={styles.vsText}>VS</span> @{opponentName}
+            @{p0} <span className={styles.vsText}>VS</span> @{p1}
           </div>
+          {(isReplay || isFinished) && (
+            <button
+              className={`${styles.closeBtn} btn btn-danger`}
+              onClick={() => dispatch(removeBattle(battleId))}
+              title={isReplay ? "Close Replay" : "Close Battle"}
+            >
+              ✕ {isReplay ? "Close Replay" : "Close Battle"}
+            </button>
+          )}
         </div>
       </header>
 
@@ -186,14 +209,24 @@ export default function BattleScreen() {
           {/* Left Arena half */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
             <Field battleState={battleSession.battleState} />
-            <ActionPanel
-              battleId={battleId}
-              request={battleSession.activeRequest}
-              playerData={battleSession.playerData}
-              playbackPending={false}
-              isLoading={battleSession.isLoading}
-              errorMessage={battleSession.error}
-            />
+            {isReplay ? (
+              <div className="card">
+                <ReplayPanel battleId={battleId} />
+              </div>
+            ) : isFinished ? (
+              <div className="card">
+                <BattleFinishedPanel battleId={battleId} />
+              </div>
+            ) : (
+              <ActionPanel
+                battleId={battleId}
+                request={battleSession.activeRequest}
+                playerData={battleSession.playerData}
+                playbackPending={false}
+                isLoading={battleSession.isLoading}
+                errorMessage={battleSession.error}
+              />
+            )}
           </section>
 
           {/* Right Dashboard column */}

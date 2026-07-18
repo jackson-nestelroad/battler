@@ -264,6 +264,11 @@
   color: var(--text-muted);
 }
 
+.finishedLabel {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
 .actionBadge {
   font-size: var(--font-size-xs);
   font-weight: 800;
@@ -406,5 +411,54 @@
 @keyframes pulse {
   to {
     opacity: 0.4;
+  }
+}
+
+.replaysSection {
+  border-top: 1px solid var(--border-color);
+  flex: 0 0 auto;
+  max-height: 40%;
+
+  h3 {
+    margin-bottom: var(--spacing-xs);
+  }
+}
+
+.battleItemWrapper {
+  position: relative;
+}
+
+.closeableBattleItem {
+  flex-grow: 1;
+  padding-right: rem(32px);
+
+  :global(.collapsed) & {
+    padding-right: 0;
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  right: var(--spacing-s);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-m);
+  cursor: pointer;
+  opacity: 0.6;
+  z-index: 10;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--color-danger);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
   }
 }

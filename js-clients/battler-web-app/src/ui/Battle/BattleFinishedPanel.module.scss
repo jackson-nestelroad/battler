@@ -1,0 +1,15 @@
+@use "../../styles/breakpoints" as *;
+
+.finishedPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-m);
+  padding: var(--spacing-m);
+  text-align: center;
+  width: 100%;
+
+  h3 {
+    margin: 0;
+  }
+}

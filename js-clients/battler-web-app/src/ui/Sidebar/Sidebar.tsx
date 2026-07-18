@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { setCurrentView, switchActiveBattle } from "../../store/battlesSlice";
+import { setCurrentView, switchActiveBattle, removeBattle } from "../../store/battlesSlice";
 import type { ActiveView } from "../../store/battlesSlice";
 import { disconnectWamp } from "../../core/wamp";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
@@ -16,7 +16,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const connection = useAppSelector((state) => state.connection);
   const { battles, activeBattleId, currentView } = useAppSelector((state) => state.battles);
 
-  const activeBattlesList = Object.values(battles);
+  const activeBattlesList = Object.values(battles).filter((b) => !b.isReplay);
+  const replayBattlesList = Object.values(battles).filter((b) => b.isReplay);
 
   const handleNav = (view: ActiveView, battleId: string | null = null) => {
     dispatch(setCurrentView(view));
@@ -94,6 +95,17 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <span className={styles.navLabel}>Teams Editor</span>
           )}
         </button>
+        <button
+          className={`${styles.navItem} ${currentView === "replays" ? styles.active : ""}`}
+          onClick={() => handleNav("replays")}
+          title="Battle Replays"
+        >
+          {isCollapsed ? (
+            <span className={styles.navIcon}>🎬</span>
+          ) : (
+            <span className={styles.navLabel}>Battle Replays</span>
+          )}
+        </button>
       </nav>
 
       {connection.status === "connected" && (
@@ -112,34 +124,110 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 );
                 const opponentName = opposingSide?.name || "Opponent";
                 const turnNumber = battle.battleState?.turn || 0;
+                const isFinished = battle.battleState?.phase === "finished";
 
                 return (
-                  <button
+                  <div
                     key={battle.battleId}
-                    className={`${styles.battleItem} ${isSelected ? styles.selected : ""}`}
-                    onClick={() => handleNav("battle", battle.battleId)}
-                    title={`Battle vs ${opponentName}`}
+                    className={`${styles.battleItemWrapper} flex-row align-center justify-between w-full`}
                   >
-                    <div className={styles.battleMeta}>
-                      {isCollapsed ? (
-                        <span className={styles.navIcon}>🎮</span>
-                      ) : (
-                        <>
-                          <span className={styles.opponentName}>vs {opponentName}</span>
-                          <span className={styles.turnLabel}>Turn {turnNumber}</span>
-                        </>
+                    <button
+                      className={`${styles.battleItem} ${isFinished ? styles.closeableBattleItem : ""} ${isSelected ? styles.selected : ""}`}
+                      onClick={() => handleNav("battle", battle.battleId)}
+                      title={`Battle vs ${opponentName}`}
+                    >
+                      <div className={styles.battleMeta}>
+                        {isCollapsed ? (
+                          <span className={styles.navIcon}>🎮</span>
+                        ) : (
+                          <>
+                            <span className={styles.opponentName}>vs {opponentName}</span>
+                            <span className={`${styles.turnLabel} ${isFinished ? styles.finishedLabel : ""}`}>
+                              {isFinished ? "Finished" : `Turn ${turnNumber}`}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {hasPendingAction && (
+                        <span className={styles.actionBadge} title="Your turn to act!">
+                          !
+                        </span>
                       )}
-                    </div>
-                    {hasPendingAction && (
-                      <span className={styles.actionBadge} title="Your turn to act!">
-                        !
-                      </span>
+                    </button>
+                    {!isCollapsed && isFinished && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(removeBattle(battle.battleId));
+                        }}
+                        className={styles.closeBtn}
+                        title="Close Battle"
+                      >
+                        ✕
+                      </button>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Replays section */}
+      {replayBattlesList.length > 0 && (
+        <div className={`${styles.battlesSection} ${styles.replaysSection}`}>
+          {!isCollapsed && <h3>Replays (Session)</h3>}
+          <div className={styles.battlesList}>
+            {replayBattlesList.map((battle) => {
+              const isSelected = currentView === "battle" && activeBattleId === battle.battleId;
+              const side0 = battle.battleState?.field?.sides?.[0];
+              const side1 = battle.battleState?.field?.sides?.[1];
+              const p0 = side0?.name || "Player 1";
+              const p1 = side1?.name || "Player 2";
+              const turnNumber = battle.battleState?.turn || 0;
+
+              return (
+                <div
+                  key={battle.battleId}
+                  className={`${styles.battleItemWrapper} flex-row align-center justify-between w-full`}
+                >
+                  <button
+                    className={`${styles.battleItem} ${styles.closeableBattleItem} ${isSelected ? styles.selected : ""}`}
+                    onClick={() => handleNav("battle", battle.battleId)}
+                    title={`Replay: ${p0} vs ${p1}`}
+                  >
+                    <div className={styles.battleMeta}>
+                      {isCollapsed ? (
+                        <span className={styles.navIcon} title="Replay">
+                          🎬
+                        </span>
+                      ) : (
+                        <>
+                          <span className={styles.opponentName}>
+                            {p0} vs {p1}
+                          </span>
+                          <span className={styles.turnLabel}>Turn {turnNumber}</span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                  {!isCollapsed && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dispatch(removeBattle(battle.battleId));
+                      }}
+                      className={styles.closeBtn}
+                      title="Close Replay"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </aside>

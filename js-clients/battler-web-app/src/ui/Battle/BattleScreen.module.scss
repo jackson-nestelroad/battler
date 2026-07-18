@@ -255,3 +255,13 @@
     margin-top: var(--spacing-xl);
   }
 }
+
+.closeBtn {
+  height: rem(36px);
+  padding: 0 var(--spacing-m);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+

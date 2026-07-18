@@ -586,11 +586,17 @@ input[type="checkbox"] {
 .justify-between {
   justify-content: space-between;
 }
+.justify-center {
+  justify-content: center;
+}
 .w-full {
   width: 100%;
 }
 .flex-1 {
   flex: 1;
+}
+.flex-wrap {
+  flex-wrap: wrap;
 }
 
 @include tablet {

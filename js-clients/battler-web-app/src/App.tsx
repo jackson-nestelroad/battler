@@ -4,6 +4,7 @@ import Sidebar from "./ui/Sidebar/Sidebar";
 import Lobby from "./ui/Lobby/Lobby";
 import Teams from "./ui/Teams/Teams";
 import BattleScreen from "./ui/Battle/BattleScreen";
+import ReplaysHome from "./ui/Replays/ReplaysHome";
 import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 import { useHistorySync } from "./hooks/useHistorySync";
 
@@ -46,7 +47,8 @@ export default function App() {
           <span className={styles.viewTitle}>
             {currentView === "lobby" && "Matchmaking Lobby"}
             {currentView === "teams" && "Teams Editor"}
-            {currentView === "battle" && "Battle Workspace"}
+            {currentView === "battle" && "Battles"}
+            {currentView === "replays" && "Battle Replays"}
           </span>
         </header>
 
@@ -54,6 +56,7 @@ export default function App() {
           {currentView === "lobby" && <Lobby />}
           {currentView === "teams" && <Teams />}
           {currentView === "battle" && <BattleScreen />}
+          {currentView === "replays" && <ReplaysHome />}
         </div>
       </main>
     </div>

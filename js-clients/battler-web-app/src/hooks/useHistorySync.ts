@@ -23,6 +23,12 @@ export function useHistorySync() {
   const battles = useAppSelector((state) => state.battles.battles);
 
   const isHandlingPopState = useRef(false);
+  const battlesRef = useRef(battles);
+
+  // Keep battlesRef up-to-date
+  useEffect(() => {
+    battlesRef.current = battles;
+  }, [battles]);
 
   // 1. Sync URL -> Redux (on load and back/forward navigation)
   useEffect(() => {
@@ -36,6 +42,16 @@ export function useHistorySync() {
       if (path.startsWith("/battle/")) {
         view = "battle";
         activeId = path.slice(8) || null;
+      } else if (path.startsWith("/replay/")) {
+        activeId = path.slice(8) || null;
+        if (activeId && battlesRef.current[activeId]) {
+          view = "battle";
+        } else {
+          view = "replays";
+          activeId = null;
+        }
+      } else if (path === "/replays") {
+        view = "replays";
       } else if (path.startsWith("/proposal/")) {
         view = "battle";
         activeId = path.slice(10) || null;
@@ -63,10 +79,17 @@ export function useHistorySync() {
     let targetPath = "/";
     if (currentView === "teams") {
       targetPath = "/teams";
+    } else if (currentView === "replays") {
+      targetPath = "/replays";
     } else if (currentView === "battle" && activeBattleId) {
-      targetPath = battles[activeBattleId]
-        ? `/battle/${activeBattleId}`
-        : `/proposal/${activeBattleId}`;
+      const battle = battles[activeBattleId];
+      if (battle?.isReplay) {
+        targetPath = `/replay/${activeBattleId}`;
+      } else if (battle) {
+        targetPath = `/battle/${activeBattleId}`;
+      } else {
+        targetPath = `/proposal/${activeBattleId}`;
+      }
     }
 
     if (getCleanPathname() !== targetPath) {
