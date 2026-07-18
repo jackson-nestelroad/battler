@@ -24,17 +24,15 @@ export default function ProposalRow({
 
   if (isPlayer2) {
     // Incoming Challenge
-    const challenger = proposal.sides[0]?.players[0]?.name || "Unknown Trainer";
+    const challenger = proposal.sides[0]?.players[0]?.name || "Unknown Player";
     return (
       <div className={styles.proposalItem}>
         <div className={styles.proposalInfo}>
           <span className={styles.challengerName}>@{challenger}</span>
-          {isDeclined ? (
+          {isDeclined && (
             <span className={`${styles.challengeMeta} ${styles.declinedText}`}>
-              Challenge expired or declined: {proposal.deletionReason || "declined"}
+              Failed: {proposal.deletionReason || "declined"}
             </span>
-          ) : (
-            <span className={styles.challengeMeta}>challenges you to a match</span>
           )}
         </div>
         <div className={styles.proposalActions}>
@@ -62,17 +60,17 @@ export default function ProposalRow({
 
   if (isPlayer1) {
     // Outgoing Challenge
-    const opponent = proposal.sides[1]?.players[0]?.name || "Unknown Trainer";
+    const opponent = proposal.sides[1]?.players[0]?.name || "Unknown Player";
     return (
       <div className={styles.proposalItem}>
         <div className={styles.proposalInfo}>
           <span className={styles.challengerName}>to @{opponent}</span>
           {isDeclined ? (
             <span className={`${styles.challengeMeta} ${styles.declinedText}`}>
-              Declined: {proposal.deletionReason || "Opponent rejected challenge"}
+              Failed: {proposal.deletionReason || "declined"}
             </span>
           ) : (
-            <span className={styles.challengeMeta}>Waiting for acceptance...</span>
+            <span className={styles.challengeMeta}>Waiting...</span>
           )}
         </div>
         <div className={styles.proposalActions}>
@@ -86,7 +84,7 @@ export default function ProposalRow({
                 View
               </button>
               <button onClick={() => onDecline(proposal.uuid)} className="btn btn-danger">
-                Reject
+                Cancel
               </button>
             </>
           )}

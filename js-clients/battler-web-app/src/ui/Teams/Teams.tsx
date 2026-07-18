@@ -229,7 +229,7 @@ export default function Teams() {
     // Save
     dispatch(saveTeam({ name, members: parsed }));
     setActiveTeamName(name);
-    setSuccessMsg(`Team "${name}" successfully saved!`);
+    setSuccessMsg("Saved!");
   };
 
   const handleDelete = () => {
@@ -243,8 +243,7 @@ export default function Teams() {
   return (
     <div className="page-container">
       <div className="dashboard-header">
-        <h1>Teams Editor</h1>
-        <p>Define custom Pokémon teams in JSON format to use in matchmaking challenges.</p>
+        <h1>Teams</h1>
       </div>
 
       <div className={styles.layout}>
@@ -252,13 +251,13 @@ export default function Teams() {
           /* Directory list view page */
           <section className={`card ${styles.directoryView}`}>
             <div className="card-header">
-              <h3>Your Teams</h3>
+              <h3>Teams</h3>
               <button className="btn btn-success" onClick={handleCreateNew}>
-                + Create New
+                + New
               </button>
             </div>
             {teamNames.length === 0 ? (
-              <p className={styles.emptyText}>No teams configured</p>
+              <p className={styles.emptyText}>None</p>
             ) : (
               <div className={styles.teamsList}>
                 {teamNames.map((name) => (
@@ -306,7 +305,7 @@ export default function Teams() {
             )}
 
             <div className={styles.samplesHeader}>
-              <h3>Load Sample Templates</h3>
+              <h3>Sample Teams</h3>
             </div>
             <div className={styles.samplesList}>
               {Object.keys(SAMPLE_TEAMS).map((sampleName) => (
@@ -331,13 +330,13 @@ export default function Teams() {
                     className={`btn btn-secondary ${styles.backBtn}`}
                     onClick={handleBack}
                   >
-                    ← Back to Teams
+                    ← Back
                   </button>
                   <input
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    placeholder="Enter team name"
+                    placeholder="Team name"
                     className={styles.teamNameInput}
                     required
                   />
@@ -345,7 +344,7 @@ export default function Teams() {
                 <div className={styles.headerActions}>
                   {activeTeamName && (
                     <button type="button" className="btn btn-danger" onClick={handleDelete}>
-                      Delete Team
+                      Delete
                     </button>
                   )}
                   {activeTeamName && defaultTeam !== activeTeamName && (
@@ -354,14 +353,14 @@ export default function Teams() {
                       className="btn btn-secondary"
                       onClick={() => {
                         dispatch(setDefaultTeam(activeTeamName));
-                        setSuccessMsg(`"${activeTeamName}" successfully marked as default.`);
+                        setSuccessMsg("Set as default!");
                       }}
                     >
-                      Set as Default
+                      Set Default
                     </button>
                   )}
                   <button type="submit" className="btn btn-primary">
-                    Save Team
+                    Save
                   </button>
                 </div>
               </div>

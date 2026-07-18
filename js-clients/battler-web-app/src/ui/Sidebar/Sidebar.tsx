@@ -33,7 +33,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   return (
     <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}>
       <div className={styles.brand}>
-        <h2>{isCollapsed ? "BC" : "Battler Console"}</h2>
+        <h2>{isCollapsed ? "B" : "Battler"}</h2>
         <button
           className={styles.toggleBtn}
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -77,43 +77,43 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         <button
           className={`${styles.navItem} ${currentView === "lobby" ? styles.active : ""}`}
           onClick={() => handleNav("lobby")}
-          title="Matchmaking Lobby"
+          title="Lobby"
         >
           {isCollapsed ? (
             <span className={styles.navIcon}>🌐</span>
           ) : (
-            <span className={styles.navLabel}>Matchmaking Lobby</span>
+            <span className={styles.navLabel}>Lobby</span>
           )}
         </button>
         <button
           className={`${styles.navItem} ${currentView === "teams" ? styles.active : ""}`}
           onClick={() => handleNav("teams")}
-          title="Teams Editor"
+          title="Teams"
         >
           {isCollapsed ? (
             <span className={styles.navIcon}>📝</span>
           ) : (
-            <span className={styles.navLabel}>Teams Editor</span>
+            <span className={styles.navLabel}>Teams</span>
           )}
         </button>
         <button
           className={`${styles.navItem} ${currentView === "replays" ? styles.active : ""}`}
           onClick={() => handleNav("replays")}
-          title="Battle Replays"
+          title="Replays"
         >
           {isCollapsed ? (
             <span className={styles.navIcon}>🎬</span>
           ) : (
-            <span className={styles.navLabel}>Battle Replays</span>
+            <span className={styles.navLabel}>Replays</span>
           )}
         </button>
       </nav>
 
       {connection.status === "connected" && (
         <div className={styles.battlesSection}>
-          {!isCollapsed && <h3>Active Battles</h3>}
+          {!isCollapsed && <h3>Battles</h3>}
           {activeBattlesList.length === 0 ? (
-            !isCollapsed && <p className={styles.emptyBattles}>No active battles</p>
+            !isCollapsed && <p className={styles.emptyBattles}>None</p>
           ) : (
             <div className={styles.battlesList}>
               {activeBattlesList.map((battle) => {
@@ -151,7 +151,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                           <span className={styles.navIcon}>🎮</span>
                         ) : (
                           <>
-                            <span className={styles.opponentName}>vs {opponentName}</span>
+                            <span className={styles.opponentName}>vs @{opponentName}</span>
                             <span
                               className={`${styles.turnLabel} ${isFinished ? styles.finishedLabel : isDeleted ? styles.errorLabel : ""}`}
                             >
@@ -195,7 +195,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       {/* Replays section */}
       {replayBattlesList.length > 0 && (
         <div className={`${styles.battlesSection} ${styles.replaysSection}`}>
-          {!isCollapsed && <h3>Replays (Session)</h3>}
+          {!isCollapsed && <h3>Replays</h3>}
           <div className={styles.battlesList}>
             {replayBattlesList.map((battle) => {
               const isSelected = currentView === "battle" && activeBattleId === battle.battleId;

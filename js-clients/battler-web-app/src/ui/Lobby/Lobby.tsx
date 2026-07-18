@@ -93,7 +93,7 @@ export default function Lobby() {
         dispatch(selectBattle({ view: "proposal", battleId: proposal.uuid }));
       })
       .catch((err) => {
-        dispatch(setConnectionError("Failed to send challenge: " + (err.message || err), err));
+        dispatch(setConnectionError("Failed to send proposal: " + (err.message || err), err));
       });
   };
 
@@ -101,7 +101,7 @@ export default function Lobby() {
     dispatch(respondToProposal({ proposedBattleId: uuid, accept: true }))
       .unwrap()
       .catch((err) => {
-        dispatch(setConnectionError("Failed to accept challenge: " + (err.message || err), err));
+        dispatch(setConnectionError("Failed to accept proposal: " + (err.message || err), err));
       });
     dispatch(selectBattle({ view: "proposal", battleId: uuid }));
   };
@@ -110,7 +110,7 @@ export default function Lobby() {
     dispatch(respondToProposal({ proposedBattleId: uuid, accept: false }))
       .unwrap()
       .catch((err) => {
-        dispatch(setConnectionError("Failed to decline challenge: " + (err.message || err), err));
+        dispatch(setConnectionError("Failed to decline proposal: " + (err.message || err), err));
       });
   };
 
@@ -136,8 +136,7 @@ export default function Lobby() {
     <div className="page-container scroll-y">
       <div className={`dashboard-header ${styles.lobbyHeader}`}>
         <div className="flex-col gap-xs">
-          <h1>Matchmaking Lobby</h1>
-          <p>Propose direct challenges or respond to pending invitations from other trainers.</p>
+          <h1>Lobby</h1>
         </div>
         <button
           onClick={handleRefresh}
@@ -154,38 +153,38 @@ export default function Lobby() {
       {/* Propose Challenge Form */}
       <section className="card">
         <div className="card-header">
-          <h3>Send Direct Challenge</h3>
+          <h3>New Battle Proposal</h3>
         </div>
         <form onSubmit={handleSendChallenge} className={`${styles.challengeForm} flex-col gap-m`}>
           <div className={`${styles.formFields} flex-row gap-m`}>
             <div className={`form-group ${styles.challengeField}`}>
-              <label htmlFor="opponentName">Opponent Username</label>
+              <label htmlFor="opponentName">Opponent</label>
               <input
                 id="opponentName"
                 type="text"
                 value={opponentName}
                 onChange={(e) => setOpponentName(e.target.value)}
-                placeholder="Enter exact trainer name"
+                placeholder="Player name"
                 required
               />
             </div>
 
             <div className={`form-group ${styles.formatField}`}>
-              <label htmlFor="format">Battle Format</label>
+              <label htmlFor="format">Format</label>
               <select
                 id="format"
                 value={format}
                 onChange={(e) => setFormat(e.target.value as "Singles" | "Doubles")}
               >
-                <option value="Singles">Singles (1v1 Active)</option>
-                <option value="Doubles">Doubles (2v2 Active)</option>
+                <option value="Singles">Singles</option>
+                <option value="Doubles">Doubles</option>
               </select>
             </div>
           </div>
 
           <div className={styles.formActions}>
             <button type="submit" className="btn btn-primary" disabled={!opponentName.trim()}>
-              Challenge Trainer
+              Propose
             </button>
           </div>
         </form>
@@ -194,10 +193,10 @@ export default function Lobby() {
       <div className={styles.dashboardGrid}>
         {/* Incoming Challenges */}
         <ProposalList
-          title="Incoming Challenges"
+          title="Incoming"
           proposals={incomingChallenges}
           playerId={connection.playerId || ""}
-          emptyText="No pending incoming challenges"
+          emptyText="None"
           onAccept={handleAcceptProposal}
           onDecline={handleDeclineProposal}
           onDismiss={(uuid) => dispatch(removeProposal(uuid))}
@@ -206,10 +205,10 @@ export default function Lobby() {
 
         {/* Outgoing Challenges */}
         <ProposalList
-          title="Your Sent Challenges"
+          title="Sent"
           proposals={outgoingChallenges}
           playerId={connection.playerId || ""}
-          emptyText="No active sent challenges"
+          emptyText="None"
           onAccept={handleAcceptProposal}
           onDecline={handleDeclineProposal}
           onDismiss={(uuid) => dispatch(removeProposal(uuid))}

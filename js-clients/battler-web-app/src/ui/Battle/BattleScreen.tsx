@@ -72,7 +72,7 @@ export default function BattleScreen() {
   if (!battleId) {
     return (
       <div className={styles.placeholder}>
-        <p>Select or join a battle session from the sidebar to play.</p>
+        <p>Select a battle from the sidebar.</p>
       </div>
     );
   }
@@ -97,12 +97,11 @@ export default function BattleScreen() {
         />
       );
     }
-    const isConnecting = connection.status === "connecting";
     return (
       <div className={styles.placeholder}>
         <div className="flex-col align-center gap-m">
           <div className="spinner" />
-          <p>{isConnecting ? "Connecting and loading details..." : "Loading details..."}</p>
+          <p>Loading...</p>
         </div>
       </div>
     );
@@ -114,7 +113,7 @@ export default function BattleScreen() {
       <div className={styles.placeholder}>
         <div className="flex-col align-center gap-m">
           <div className="spinner" />
-          <p>Loading battle session...</p>
+          <p>Loading...</p>
         </div>
       </div>
     );
@@ -124,15 +123,15 @@ export default function BattleScreen() {
     const isDeleted = battleSession.isDeleted;
     const isProposalRoute = currentView === "proposal";
     const headerText = isProposalRoute
-      ? "Proposal Not Found"
+      ? "Not Found"
       : isDeleted
-        ? "Battle Deleted"
-        : "Battle Not Found";
+        ? "Deleted"
+        : "Not Found";
     const descText = isProposalRoute
-      ? "This challenge proposal is no longer active (it may have started, expired, or been declined)."
+      ? "Proposal no longer active."
       : isDeleted
-        ? "This battle has been deleted (it may have finished, expired, or been cleaned up)."
-        : "This battle could not be found (it may have finished, expired, or been auto-cleaned up).";
+        ? "Battle no longer exists."
+        : "Battle not found.";
     return (
       <div className={styles.placeholder}>
         <div className={`flex-col align-center gap-m text-center ${styles.errorCard}`}>
@@ -144,7 +143,7 @@ export default function BattleScreen() {
           </div>
           <p>{descText}</p>
           <button onClick={() => dispatch(removeBattle(battleId))} className="btn btn-primary">
-            Return to Lobby
+            ← Lobby
           </button>
         </div>
       </div>
@@ -185,8 +184,8 @@ export default function BattleScreen() {
         <div className={styles.modalOverlay}>
           <div className={styles.modalCard}>
             <div className="spinner" />
-            <h3>Connection Lost</h3>
-            <p>Re-establishing connection...</p>
+            <h3>Offline</h3>
+            <p>Reconnecting...</p>
           </div>
         </div>
       )}
@@ -213,7 +212,7 @@ export default function BattleScreen() {
               onClick={() => setShowDebug(!showDebug)}
               title="Toggle Debug JSON View"
             >
-              Debug JSON {showDebug ? "ON" : "OFF"}
+              Debug
             </button>
           </div>
           <div className={styles.vsBadge}>
@@ -235,9 +234,9 @@ export default function BattleScreen() {
             active={debugTab}
             onChange={setDebugTab}
             options={[
-              { value: "state", label: "Battle State" },
-              { value: "request", label: "Active Request" },
-              { value: "player", label: "Player Data" },
+              { value: "state", label: "State" },
+              { value: "request", label: "Request" },
+              { value: "player", label: "Player" },
             ]}
           />
           <div className={styles.debugJsonContainer}>

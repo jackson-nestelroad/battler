@@ -113,7 +113,7 @@ export default function ActionPanel({
       return (
         <div className="flex-row gap-xs align-center">
           <button className="btn btn-danger" onClick={handleForfeitConfirm} disabled={isLoading}>
-            Confirm Forfeit
+            Confirm
           </button>
           <button className="btn btn-secondary" onClick={handleForfeitCancel} disabled={isLoading}>
             Cancel
@@ -136,7 +136,7 @@ export default function ActionPanel({
     if (!playerData || !playerData.mons) return null;
     return (
       <div className={styles.teamSummarySection}>
-        <h4 className={styles.summaryTitle}>Your Team</h4>
+        <h4 className={styles.summaryTitle}>Team</h4>
         <div className={styles.teamSummaryGrid}>
           {playerData.mons.map((mon, idx) => {
             const name = mon.summary?.name || mon.species;
@@ -205,7 +205,7 @@ export default function ActionPanel({
     if (!request || isMeReady) {
       return (
         <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-          <p>Waiting for opponent's choice or server turn resolution...</p>
+          <p>Waiting for opponent...</p>
         </div>
       );
     }
@@ -215,7 +215,7 @@ export default function ActionPanel({
         <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
           <div className="flex-col align-center gap-m">
             <div className={styles.dotPulse} />
-            <p>Processing turn logs playback... controls are locked.</p>
+            <p>Playing turn...</p>
           </div>
         </div>
       );
@@ -230,16 +230,15 @@ export default function ActionPanel({
 
       return (
         <div className="flex-col gap-m">
-          <h3>Team Preview Phase</h3>
+          <h3>Team Preview</h3>
           <ErrorBanner message={errorMessage} />
-          <p>Confirm your team order to begin the match.</p>
           <div className="flex-row gap-s align-center">
             <button
               className="btn btn-primary"
               onClick={handleTeamPreviewSubmit}
               disabled={isLoading}
             >
-              Submit Team Order (Default)
+              Confirm
             </button>
             {renderForfeitButton()}
           </div>
@@ -254,7 +253,7 @@ export default function ActionPanel({
       if (activeSwitchSlot === undefined) {
         return (
           <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-            <p>Submitting choices...</p>
+            <p>Submitting...</p>
           </div>
         );
       }
@@ -268,11 +267,9 @@ export default function ActionPanel({
       return (
         <div className="flex-col gap-m">
           <h3>
-            Force Switch Required for <strong>{replaceMonName}</strong> (Slot {activeSwitchSlot + 1}
-            )
+            Switch: <strong>{replaceMonName}</strong>
           </h3>
           <ErrorBanner message={errorMessage} />
-          <p>One of your Mons fainted. Select a replacement from your team below.</p>
 
           <div className="flex-row gap-s align-center">
             {currentSlotIndex > 0 && (
@@ -284,7 +281,7 @@ export default function ActionPanel({
                 className="btn btn-secondary"
                 disabled={isLoading}
               >
-                Back
+                ← Back
               </button>
             )}
             {renderForfeitButton()}
@@ -300,7 +297,7 @@ export default function ActionPanel({
       if (!activeReq) {
         return (
           <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-            <p>Submitting choices...</p>
+            <p>Submitting...</p>
           </div>
         );
       }
@@ -374,8 +371,7 @@ export default function ActionPanel({
         <div className="flex-col gap-m">
           <div className="card-header">
             <h3>
-              Commands for <strong>{activeMonName}</strong> (Slot {currentSlotIndex + 1}/
-              {activeRequests.length})
+              {activeMonName} ({currentSlotIndex + 1}/{activeRequests.length})
             </h3>
             <div className={styles.headerActions}>{renderForfeitButton()}</div>
           </div>
@@ -384,21 +380,21 @@ export default function ActionPanel({
           {selectedMove === null ? (
             <div className="flex-col gap-m">
               <div className={styles.movesColumn}>
-                <h4>Select Move (Or click a team member below to Switch)</h4>
+                <h4>Select Move</h4>
 
                 {hasModifiers && (
                   <div className={styles.modifiersRow}>
                     {[
                       {
                         key: "mega",
-                        label: "Mega Evolve",
+                        label: "Mega",
                         flag: activeReq.can_mega_evolve,
                         value: mega,
                         setter: setMega,
                       },
                       {
                         key: "tera",
-                        label: "Terastallize",
+                        label: "Tera",
                         flag: activeReq.can_terastallize,
                         value: tera,
                         setter: setTera,
@@ -419,7 +415,7 @@ export default function ActionPanel({
                       },
                       {
                         key: "ultra",
-                        label: "Ultra Burst",
+                        label: "Ultra",
                         flag: activeReq.can_ultra_burst,
                         value: ultra,
                         setter: setUltra,
@@ -467,14 +463,13 @@ export default function ActionPanel({
                   })}
                 </div>
                 {activeReq.trapped && (
-                  <p className={styles.trappedMessage}>Trapped! Cannot switch out.</p>
+                  <p className={styles.trappedMessage}>Trapped</p>
                 )}
               </div>
             </div>
           ) : (
             <div className={styles.targetCard}>
-              <h4>Select Target for {selectedMove.name}</h4>
-              <p className={styles.targetDesc}>Target criteria: {selectedMove.target}</p>
+              <h4>Select Target</h4>
 
               <div className="flex-col gap-s">
                 {!TARGET_REQUIRING_SELECT.includes(selectedMove.target) ? (
@@ -483,7 +478,7 @@ export default function ActionPanel({
                     className="btn btn-primary w-full"
                     disabled={isLoading}
                   >
-                    Confirm (Auto-aim target)
+                    Confirm
                   </button>
                 ) : (
                   <div className={styles.targetGrid}>
@@ -492,21 +487,21 @@ export default function ActionPanel({
                       className="btn btn-secondary"
                       disabled={isLoading}
                     >
-                      Opponent Left (Position 0)
+                      Opponent Left
                     </button>
                     <button
                       onClick={() => handleConfirmMove(2)}
                       className="btn btn-secondary"
                       disabled={isLoading}
                     >
-                      Opponent Right (Position 1)
+                      Opponent Right
                     </button>
                     <button
                       onClick={() => handleConfirmMove(-1)}
                       className="btn btn-secondary"
                       disabled={isLoading}
                     >
-                      Adjacent Ally (Position 0)
+                      Ally
                     </button>
                   </div>
                 )}
@@ -517,7 +512,7 @@ export default function ActionPanel({
           <div className="flex-row">
             {(currentSlotIndex > 0 || selectedMove !== null) && (
               <button onClick={handleBack} className="btn btn-secondary" disabled={isLoading}>
-                Back
+                ← Back
               </button>
             )}
           </div>

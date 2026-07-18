@@ -71,24 +71,23 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
     <div className={styles.container}>
       <div className="card">
         <div className={styles.cardHeader}>
-          <h3>Battle Preparation</h3>
-          <p className={styles.subtitle}>Select your team.</p>
+          <h3>Preparation</h3>
           {timeLeft !== null && (
             <div className={`badge ${timeLeft < 15 ? "badge-danger" : "badge-warning"}`}>
-              Time Remaining: {timeLeft}s
+              Remaining: {timeLeft}s
             </div>
           )}
         </div>
 
         {/* Player readiness checklist */}
         <div className="flex-col gap-m">
-          <h4 className={styles.sectionHeader}>Player Readiness Status</h4>
+          <h4 className={styles.sectionHeader}>Players</h4>
           <BattleSidesList sides={sides} isProposal={false} />
         </div>
 
         {/* Team Selection Section */}
         <div className={styles.teamSelectionSection}>
-          <label htmlFor="battle-team-select">Choose Your Battle Team:</label>
+          <label htmlFor="battle-team-select">Team:</label>
           {teamNames.length > 0 ? (
             <div className="flex-row flex-mobile-col gap-s">
               <select
@@ -100,7 +99,7 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
               >
                 {teamNames.map((name) => (
                   <option key={name} value={name}>
-                    {name} ({teams[name].length} Mons)
+                    {name} ({teams[name].length})
                   </option>
                 ))}
               </select>
@@ -109,12 +108,12 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
                 className="btn btn-success"
                 disabled={!selectedTeam || battleSession?.isLoading}
               >
-                {battleSession?.isLoading ? "Confirming..." : "Confirm Team"}
+                {battleSession?.isLoading ? "Confirming..." : "Confirm"}
               </button>
             </div>
           ) : (
             <p className="alert alert-warning">
-              You have no teams! Please go to the <strong>Teams Editor</strong> first.
+              No teams configured. Go to <strong>Teams Editor</strong>.
             </p>
           )}
         </div>

@@ -9,7 +9,7 @@ export default function Field({ battleState }: FieldProps) {
   if (!battleState) {
     return (
       <div className={styles.fieldPlaceholder}>
-        <p>No battle state loaded.</p>
+        <p>No battle.</p>
       </div>
     );
   }
@@ -28,8 +28,7 @@ export default function Field({ battleState }: FieldProps) {
 
       <div className={styles.battleground}>
         <div className={styles.placeholderText}>
-          <h4>Battle Field</h4>
-          <p>(Renderer placeholder)</p>
+          <h4>Arena</h4>
         </div>
       </div>
     </div>

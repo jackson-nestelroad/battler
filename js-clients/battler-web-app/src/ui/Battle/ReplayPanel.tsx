@@ -40,12 +40,12 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
 
   return (
     <div className={styles.replayPanel}>
-      <h3>Replay Viewer</h3>
+      <h3>Replay</h3>
 
       <div className={styles.turnScrubber}>
         <div className={`${styles.scrubberHeader} flex-row justify-between w-full`}>
           <span>Turn {turnNumber}</span>
-          <span className={styles.replaySubtitle}>Max Turn: {maxTurn}</span>
+          <span className={styles.replaySubtitle}>/ {maxTurn}</span>
         </div>
         <input
           type="range"

@@ -32,17 +32,17 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
             onClick={() => setIsCollapsed(!isCollapsed)}
             title={isCollapsed ? "Expand Log Panel" : "Collapse Log Panel"}
           >
-            {isCollapsed ? "▲ Expand Logs" : "▼ Collapse Logs"}
+            {isCollapsed ? "▲ Logs" : "▼ Logs"}
           </button>
-          <h3>Battle Logs</h3>
+          <h3>Logs</h3>
         </div>
         <Tabs
           active={mode}
           onChange={setMode}
           options={[
             { value: "text", label: "Text" },
-            { value: "json", label: "UI JSON" },
-            { value: "engine", label: "Engine Log" },
+            { value: "json", label: "JSON" },
+            { value: "engine", label: "Engine" },
           ]}
         />
       </header>
@@ -60,7 +60,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                 <span className={styles.text}>{log}</span>
               </div>
             ))}
-            {engineLogs.length === 0 && <p className={styles.emptyLogs}>No logs.</p>}
+            {engineLogs.length === 0 && <p className={styles.emptyLogs}>None</p>}
           </div>
         )}
 
@@ -72,7 +72,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                 <span className={styles.text}>{log}</span>
               </div>
             ))}
-            {visibleLogs.length === 0 && <p className={styles.emptyLogs}>Waiting...</p>}
+            {visibleLogs.length === 0 && <p className={styles.emptyLogs}>Waiting</p>}
           </div>
         )}
       </div>

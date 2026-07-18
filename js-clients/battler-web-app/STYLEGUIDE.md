@@ -65,3 +65,34 @@ Leverage global classes from [index.scss](src/index.scss) to keep components sta
 
 ## 4. Maintenance Rule: Dead Code Elimination
 Never leave unused stylesheets, class declarations, or old variables behind when refactoring. Clean them up proactively to prevent styling bloat.
+
+---
+
+## 5. UI Text Simplicity & Consistency
+
+To keep the application layout modern, clean, and responsive, all user-facing text, headers, placeholders, and status labels must adhere to the following principles:
+
+### A. Conciseness & Low Noise
+*   **Avoid Redundant Adjectives:** Do not include extra qualifying descriptors if the layout context makes them obvious.
+    *   *Correct:* `Lobby`, `Teams`, `Replays`, `Finished`
+    *   *Incorrect:* `Matchmaking Lobby`, `Teams Editor`, `Battle Replays`, `Battle Finished`
+*   **No Subtitle Explanations:** Avoid helper paragraphs under card/view headers when inputs or lists are self-explanatory.
+
+### B. Standard Ecosystem Terminology
+*   **Proposals over Challenges:** Always use standard terminology aligned with backend/state variables. Use "Proposal" or "Battle Proposal" instead of "Challenge" globally.
+*   **Players over Trainers:** Use "Player" (e.g., `Player name`, `Unknown Player`) instead of "Trainer" as it is the ecosystem's standard naming convention.
+
+### C. Consistent Back Navigation Formatting
+*   All back/lobby navigation buttons must use the `← ` arrow prefix followed by a single-word target destination:
+    *   *Examples:* `← Back`, `← Lobby`
+
+### D. Unified Empty State Text
+*   Empty panels, logs, or lists must use a clean, sentence-cased **"None"** string without trailing punctuation.
+    *   *Examples:* Active battles list, configured teams list, incoming/sent proposals, logs list.
+
+### E. Standard Casing
+*   Use standard **Sentence case** with no trailing punctuation for button labels, checkboxes, placeholders, and forms.
+    *   *Examples:* `Auto-connect`, `Server`, `Trainer name`, `Set default`, `Choose file`, `Saved!`, `Set as default!`
+
+### F. Uniform Loading Screen Messages
+*   Standardize all connecting, initialization, or loading screens to use `Loading...` or `Reconnecting...` alongside the loading spinner. Avoid custom verbose descriptions.

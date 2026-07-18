@@ -58,20 +58,19 @@ export default function ReplaysHome() {
   return (
     <div className="page-container scroll-y">
       <header className="dashboard-header">
-        <h1>Battle Replays</h1>
-        <p>Load and review past battle logs turn-by-turn.</p>
+        <h1>Replays</h1>
       </header>
 
       <div className={styles.replaysHome}>
         <section className="card">
           <div className="card-header">
-            <h3>Load Battle Replay</h3>
+            <h3>Load Replay</h3>
           </div>
           <div className="flex-col gap-s w-full">
-            <p className={styles.replayHelpText}>Upload a saved battle replay .battler file.</p>
+            <p className={styles.replayHelpText}>Upload a .battler replay file.</p>
             <div className="flex-row align-center gap-m">
               <label className={`${styles.fileInputLabel} btn btn-secondary`}>
-                Choose Replay File
+                Choose File
                 <input type="file" accept=".battler" onChange={handleFileChange} />
               </label>
               {replayError && <div className={styles.replayErrorText}>{replayError}</div>}

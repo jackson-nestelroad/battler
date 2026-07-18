@@ -27,7 +27,7 @@ export default function App() {
       <div className={styles.loadingScreen}>
         <div className="spinner"></div>
         <p>
-          {showAutoconnectLoader ? "Connecting to Battle Server..." : "Initializing Battler App..."}
+          {showAutoconnectLoader ? "Connecting..." : "Initializing..."}
         </p>
       </div>
     );
@@ -45,10 +45,10 @@ export default function App() {
             ☰
           </button>
           <span className={styles.viewTitle}>
-            {currentView === "lobby" && "Matchmaking Lobby"}
-            {currentView === "teams" && "Teams Editor"}
+            {currentView === "lobby" && "Lobby"}
+            {currentView === "teams" && "Teams"}
             {(currentView === "battle" || currentView === "proposal") && "Battles"}
-            {currentView === "replays" && "Battle Replays"}
+            {currentView === "replays" && "Replays"}
           </span>
         </header>
 

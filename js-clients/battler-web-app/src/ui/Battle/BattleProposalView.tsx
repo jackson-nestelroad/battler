@@ -46,7 +46,7 @@ export default function BattleProposalView({
     dispatch(respondToProposal({ proposedBattleId: battleId, accept: true }))
       .unwrap()
       .catch((err) => {
-        dispatch(setConnectionError("Failed to accept challenge: " + (err.message || err), err));
+        dispatch(setConnectionError("Failed to accept proposal: " + (err.message || err), err));
       });
   };
 
@@ -54,7 +54,7 @@ export default function BattleProposalView({
     dispatch(respondToProposal({ proposedBattleId: battleId, accept: false }))
       .unwrap()
       .catch((err) => {
-        dispatch(setConnectionError("Failed to decline challenge: " + (err.message || err), err));
+        dispatch(setConnectionError("Failed to decline proposal: " + (err.message || err), err));
       });
   };
 
@@ -74,7 +74,7 @@ export default function BattleProposalView({
           className={`${styles.proposalHeader} flex-row justify-between align-start gap-m w-full`}
         >
           <div className="flex-col">
-            <h3>Battle Challenge Proposal</h3>
+            <h3>Battle Proposal</h3>
             <div>
               <span className={styles.proposalFormat}>
                 Format: {activeProposal.battle_options?.format?.battle_type}
@@ -98,21 +98,21 @@ export default function BattleProposalView({
 
         {isDeclined && (
           <ErrorBanner
-            message={`Proposal failed. Reason: ${activeProposal.deletionReason || "unknown reason"}`}
+            message={`Failed: ${activeProposal.deletionReason || "unknown reason"}`}
           />
         )}
 
         <div className={`${styles.actionRow} flex-col gap-m`}>
           {isDeclined ? (
             <button onClick={handleDismiss} className="btn btn-primary">
-              Dismiss & Return to Lobby
+              Dismiss
             </button>
           ) : (
             <>
               {isPlayer2 && !hasPlayer2Accepted && (
                 <div className="flex-row gap-s">
                   <button onClick={handleAccept} className="btn btn-success flex-1">
-                    Accept Challenge
+                    Accept
                   </button>
                   <button onClick={handleDecline} className="btn btn-danger">
                     Reject
@@ -122,16 +122,16 @@ export default function BattleProposalView({
 
               {(!isPlayer2 || hasPlayer2Accepted) && (
                 <div className={`${styles.waitingState} flex-col align-center gap-m`}>
-                  <p>Waiting for opponent...</p>
+                  <p>Waiting...</p>
                   <div className={styles.waitingActions}>
                     <button
                       onClick={() => dispatch(selectBattle({ view: "lobby", battleId: null }))}
                       className="btn btn-primary"
                     >
-                      Back to Matchmaking Lobby
+                      ← Lobby
                     </button>
                     <button onClick={handleDecline} className="btn btn-danger">
-                      Reject
+                      Cancel
                     </button>
                   </div>
                 </div>

@@ -31,14 +31,11 @@ export default function ConnectForm() {
   return (
     <div className={styles.connectContainer}>
       <div className={`card ${styles.connectCard}`}>
-        <h2>Connect to Battle Server</h2>
-        <p className={styles.subtitle}>
-          Enter your profile name and server address to join the matchmaking lobby.
-        </p>
+        <h2>Connect</h2>
 
         <form onSubmit={handleConnect} className={styles.connectForm}>
           <div className="form-group">
-            <label htmlFor="playerName">Player Name</label>
+            <label htmlFor="playerName">Player</label>
             <input
               id="playerName"
               type="text"
@@ -50,7 +47,7 @@ export default function ConnectForm() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="serverUrl">Server URL</label>
+            <label htmlFor="serverUrl">Server</label>
             <input
               id="serverUrl"
               type="text"
@@ -69,7 +66,7 @@ export default function ConnectForm() {
               onChange={(e) => setAutoconnect(e.target.checked)}
               disabled={isConnecting}
             />
-            <label htmlFor="autoconnect">Auto-connect on next visit</label>
+            <label htmlFor="autoconnect">Auto-connect</label>
           </div>
           <ErrorBanner
             message={connection.error}

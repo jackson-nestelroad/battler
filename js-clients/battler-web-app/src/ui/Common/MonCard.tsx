@@ -39,7 +39,7 @@ export default function MonCard({
           {status ? (
             <span className={`status-badge ${status.toLowerCase()}`}>{status}</span>
           ) : hp === 0 ? (
-            <span className="badge badge-danger">FAINTED</span>
+            <span className="badge badge-danger">Fainted</span>
           ) : (
             <span className="badge badge-success">OK</span>
           )}
