@@ -476,15 +476,12 @@ async fn returns_filtered_logs_by_side() {
         .await
         .unwrap();
 
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+    let mut start_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
 
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
-
-    // Read all logs from the battle starting; we only care to verify the first turn.
-    while let Ok(_) = public_log_rx.try_recv() {}
+    read_all_entries_from_log_rx_stopping_at(&mut start_log_rx, "turn|turn:1").await;
 
     let mut side_1_log_rx = battler_service
         .subscribe(battle.uuid, Some(0))
@@ -494,6 +491,7 @@ async fn returns_filtered_logs_by_side() {
         .subscribe(battle.uuid, Some(1))
         .await
         .unwrap();
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
 
     assert_matches::assert_matches!(
         battler_service
@@ -813,9 +811,10 @@ async fn auto_ends_battle_on_battle_timer() {
 
     assert_matches::assert_matches!(battler_service.full_log(battle.uuid, None).await, Ok(log) => {
         pretty_assertions::assert_eq!(
-            log[(log.len() - 7)..],
+            log[(log.len() - 8)..],
             [
                 "turn|turn:1",
+                "-battlerservice:request",
                 "-battlerservice:timer|battle|remainingsecs:5",
                 "-battlerservice:timer|battle|warning|remainingsecs:4",
                 "-battlerservice:timer|battle|warning|remainingsecs:2",
@@ -1042,7 +1041,7 @@ async fn only_activates_player_timer_if_request_is_active() {
     // Wait for battle to end.
     let log = read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "win|side:0").await;
 
-    assert_eq!(log.len(), 8);
+    assert_eq!(log.len(), 9);
     assert_eq!(
         log[0],
         "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1"
@@ -1050,15 +1049,16 @@ async fn only_activates_player_timer_if_request_is_active() {
     assert_eq!(log[1], "damage|mon:Bulbasaur,player-2,1|health:0");
     assert_eq!(log[2], "faint|mon:Bulbasaur,player-2,1");
     assert_eq!(log[3], "residual");
+    assert_eq!(log[4], "-battlerservice:request");
     assert!(
-        log[4].starts_with("-battlerservice:timer|player:player-2|remainingsecs:"),
+        log[5].starts_with("-battlerservice:timer|player:player-2|remainingsecs:"),
         "expected timer log with remaining seconds, got: {}",
-        log[4]
+        log[5]
     );
     assert_eq!(
-        log[5],
+        log[6],
         "-battlerservice:timer|player:player-2|done|remainingsecs:0"
     );
-    assert_eq!(log[6], "continue");
-    assert_eq!(log[7], "forfeited|player:player-2");
+    assert_eq!(log[7], "continue");
+    assert_eq!(log[8], "forfeited|player:player-2");
 }

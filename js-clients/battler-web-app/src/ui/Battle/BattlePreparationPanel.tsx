@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { submitBattleTeam } from "../../core/wamp";
 import ErrorBanner from "../Common/ErrorBanner";
 import BattleSidesList from "../Common/BattleSidesList";
+import CountdownTimer from "../Common/CountdownTimer";
 import styles from "./BattlePreparationPanel.module.scss";
 
 interface BattlePreparationPanelProps {
@@ -30,7 +31,6 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
   }, [teamOrder, teams]);
 
   const [selectedTeam, setSelectedTeam] = useState("");
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   // Sync selectedTeam to default on load or if the currently selected team is no longer available/empty
   useEffect(() => {
@@ -42,22 +42,6 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
       }
     }
   }, [defaultTeam, teams, teamNames, selectedTeam]);
-
-  // Countdown timer logic
-  useEffect(() => {
-    if (!activeProposal) return;
-    const deadlineSecs = activeProposal.deadline.secs_since_epoch;
-
-    const updateTimer = () => {
-      const now = Math.floor(Date.now() / 1000);
-      const diff = deadlineSecs - now;
-      setTimeLeft(Math.max(0, diff));
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [activeProposal]);
 
   const handleSubmitTeam = () => {
     if (!selectedTeam) return;
@@ -72,10 +56,12 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
       <div className="card">
         <div className={styles.cardHeader}>
           <h3>Preparation</h3>
-          {timeLeft !== null && (
-            <div className={`badge ${timeLeft < 15 ? "badge-danger" : "badge-warning"}`}>
-              Remaining: {timeLeft}s
-            </div>
+          {activeProposal && (
+            <CountdownTimer
+              deadlineSecs={activeProposal.deadline.secs_since_epoch}
+              prefix="Remaining: "
+              badgeMode={true}
+            />
           )}
         </div>
 
@@ -113,7 +99,7 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
             </div>
           ) : (
             <p className="alert alert-warning">
-              No teams configured. Go to <strong>Teams Editor</strong>.
+              No teams configured. Go to <strong>Teams</strong>.
             </p>
           )}
         </div>

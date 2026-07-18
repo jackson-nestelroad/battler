@@ -25,17 +25,17 @@ export default function ProposalRow({
   const title = getBattleTitle(null, null, proposal);
 
   if (isPlayer2) {
-    // Incoming Challenge
+    // Incoming Proposal
     return (
       <div className={styles.proposalItem}>
         <div className={styles.proposalInfo}>
-          <span className={styles.challengerName}>{title}</span>
+          <span className={styles.proposerName}>{title}</span>
           {isDeclined ? (
-            <span className={`${styles.challengeMeta} ${styles.declinedText}`}>
+            <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
               Failed: {proposal.deletionReason || "declined"}
             </span>
           ) : (
-            <span className={styles.challengeMeta}>Incoming • Waiting...</span>
+            <span className={styles.proposalMeta}>Incoming • Waiting...</span>
           )}
         </div>
         <div className={styles.proposalActions}>
@@ -62,17 +62,17 @@ export default function ProposalRow({
   }
 
   if (isPlayer1) {
-    // Outgoing Challenge
+    // Sent Proposal
     return (
       <div className={styles.proposalItem}>
         <div className={styles.proposalInfo}>
-          <span className={styles.challengerName}>{title}</span>
+          <span className={styles.proposerName}>{title}</span>
           {isDeclined ? (
-            <span className={`${styles.challengeMeta} ${styles.declinedText}`}>
+            <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
               Failed: {proposal.deletionReason || "declined"}
             </span>
           ) : (
-            <span className={styles.challengeMeta}>Waiting...</span>
+            <span className={styles.proposalMeta}>Waiting...</span>
           )}
         </div>
         <div className={styles.proposalActions}>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { formatUiLogEntry } from "../../utils/logFormatter";
 import { setBattleError, removeBattle } from "../../store/battlesSlice";
@@ -13,6 +13,8 @@ import BattlePreparationPanel from "./BattlePreparationPanel";
 import BattleProposalView from "./BattleProposalView";
 import Tabs from "../Common/Tabs";
 import ConnectForm from "../Common/ConnectForm";
+import CopyableId from "../Common/CopyableId";
+import RefreshButton from "../Common/RefreshButton";
 import { getBattleTitle } from "../../utils/battle";
 
 import styles from "./BattleScreen.module.scss";
@@ -51,6 +53,24 @@ export default function BattleScreen() {
       null
     );
   });
+
+  const title = useMemo(() => {
+    if (!battleSession) return "";
+    return getBattleTitle(
+      battleSession.battleState,
+      battleSession.serviceBattle,
+      battleSession.isProposal ? activeProposal : null,
+    );
+  }, [battleSession, activeProposal]);
+
+  useEffect(() => {
+    if (title) {
+      document.title = `${title} | Battler`;
+    }
+    return () => {
+      document.title = "Battler";
+    };
+  }, [title]);
 
   const visibleLogs = useMemo(() => {
     if (!battleSession || !battleSession.battleState) return [];
@@ -152,12 +172,6 @@ export default function BattleScreen() {
     battleSession.battleState?.phase === "pre_battle";
   const isFinished = battleSession.battleState?.phase === "finished";
 
-  const title = getBattleTitle(
-    battleSession.battleState,
-    battleSession.serviceBattle,
-    battleSession.isProposal ? activeProposal : null,
-  );
-
   return (
     <div className="page-container">
       {/* Network Lost Overlays */}
@@ -171,36 +185,29 @@ export default function BattleScreen() {
         </div>
       )}
 
-      <header
-        className={`${styles.screenHeader} flex-row justify-between align-center flex-mobile-col gap-l`}
-      >
+      <header className={`${styles.screenHeader} flex-row justify-between align-center gap-m`}>
         <div className={`${styles.titleInfo} flex-col gap-xs`}>
           <h2>{title}</h2>
           <span className={styles.battleId}>
-            {isReplay ? "Replay" : "Battle"} • ID:{" "}
-            <span className={styles.idValue}>{battleId}</span>
+            <span className={styles.battleFormat}>{isReplay ? "Replay" : "Battle"}</span> •{" "}
+            <CopyableId id={battleId} type={isReplay ? "replay" : "battle"} />
           </span>
         </div>
-        <div className={`${styles.headerControls} flex-row align-center gap-m`}>
+        <div className={`${styles.headerControls} flex-row align-center`}>
           {!isReplay && (
-            <button
+            <RefreshButton
               onClick={handleRefresh}
-              className="btn btn-secondary flex-row align-center gap-xs btn-sm"
-              disabled={battleSession?.isLoading || isRefreshing}
-              title="Refresh Battle State"
-            >
-              <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
-            </button>
+              isRefreshing={battleSession?.isLoading || isRefreshing}
+            />
           )}
-          <div className={styles.devToolsPanel}>
-            <button
-              className={`${styles.devBtn} ${showDebug ? styles.devBtnActive : ""}`}
-              onClick={() => setShowDebug(!showDebug)}
-              title="Toggle Debug JSON View"
-            >
-              Debug
-            </button>
-          </div>
+          <button
+            className={`btn btn-sm ${showDebug ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => setShowDebug(!showDebug)}
+            title="Toggle Debug JSON View"
+          >
+            <span className="btn-icon-mobile">🐞</span>
+            <span className="btn-text-desktop">Debug</span>
+          </button>
         </div>
       </header>
 

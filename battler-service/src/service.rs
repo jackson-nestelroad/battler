@@ -294,7 +294,13 @@ impl<'d> LiveBattle<'d> {
     }
 
     fn update_log(&mut self) -> Result<()> {
-        self.logs.append(self.battle.new_log_entries());
+        let new_entries: Vec<String> = self
+            .battle
+            .new_log_entries()
+            .map(|s| s.to_owned())
+            .collect();
+        let has_new_entries = !new_entries.is_empty();
+        self.logs.append(new_entries);
         let players = self
             .sides
             .iter()
@@ -306,7 +312,7 @@ impl<'d> LiveBattle<'d> {
                 break;
             }
         }
-        if has_request {
+        if has_request && has_new_entries {
             self.inject_log_entries(["request"]);
         }
         Ok(())

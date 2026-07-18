@@ -1,6 +1,6 @@
 @use "../../styles/breakpoints" as *;
 
-.challengeForm {
+.proposalForm {
   width: 100%;
 }
 
@@ -9,7 +9,7 @@
   flex-wrap: wrap;
 }
 
-.challengeField {
+.proposalField {
   flex: 1;
   min-width: rem(192px);
   max-width: rem(320px);

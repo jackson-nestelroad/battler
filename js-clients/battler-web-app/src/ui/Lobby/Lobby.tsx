@@ -9,6 +9,7 @@ import { setConnectionError } from "../../store/connectionSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import ProposalList from "./ProposalList";
 import ConnectForm from "../Common/ConnectForm";
+import RefreshButton from "../Common/RefreshButton";
 
 import styles from "./Lobby.module.scss";
 
@@ -31,11 +32,11 @@ export default function Lobby() {
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
   const proposals = Object.values(proposalsMap);
 
-  // Challenge form state
+  // Proposal form state
   const [opponentName, setOpponentName] = useState("");
   const [format, setFormat] = useState<"Singles" | "Doubles">("Singles");
 
-  const handleSendChallenge = (e: React.FormEvent) => {
+  const handleSendProposal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!opponentName.trim()) return;
 
@@ -55,7 +56,7 @@ export default function Lobby() {
         time: "Day",
       },
       side_1: {
-        name: connection.playerId || "Challenger",
+        name: connection.playerId || "Player",
         players: [
           {
             id: connection.playerId || "",
@@ -118,15 +119,15 @@ export default function Lobby() {
     return <ConnectForm />;
   }
 
-  // Split proposals into incoming challenges and outgoing challenges
-  const incomingChallenges = proposals.filter((p) => {
+  // Split proposals into incoming proposals and outgoing proposals
+  const incomingProposals = proposals.filter((p) => {
     const isPlayer2 = p.sides[1]?.players[0]?.id === connection.playerId;
     const isResolved = !!p.battle;
     const isDeclined = !!p.rejection || !!p.deletionReason;
     return isPlayer2 && !isResolved && !isDeclined;
   });
 
-  const outgoingChallenges = proposals.filter((p) => {
+  const outgoingProposals = proposals.filter((p) => {
     const isPlayer1 = p.sides[0]?.players[0]?.id === connection.playerId;
     const isResolved = !!p.battle;
     return isPlayer1 && !isResolved;
@@ -138,26 +139,19 @@ export default function Lobby() {
         <div className="flex-col gap-xs">
           <h1>Lobby</h1>
         </div>
-        <button
-          onClick={handleRefresh}
-          className="btn btn-secondary flex-row align-center gap-xs btn-sm"
-          disabled={isRefreshing}
-          title="Refresh Lobby"
-        >
-          <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
-        </button>
+        <RefreshButton onClick={handleRefresh} isRefreshing={isRefreshing} title="Refresh Lobby" />
       </div>
 
       <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />
 
-      {/* Propose Challenge Form */}
+      {/* Propose Battle Form */}
       <section className="card">
         <div className="card-header">
           <h3>New Battle Proposal</h3>
         </div>
-        <form onSubmit={handleSendChallenge} className={`${styles.challengeForm} flex-col gap-m`}>
+        <form onSubmit={handleSendProposal} className={`${styles.proposalForm} flex-col gap-m`}>
           <div className={`${styles.formFields} flex-row gap-m`}>
-            <div className={`form-group ${styles.challengeField}`}>
+            <div className={`form-group ${styles.proposalField}`}>
               <label htmlFor="opponentName">Opponent</label>
               <input
                 id="opponentName"
@@ -191,10 +185,10 @@ export default function Lobby() {
       </section>
 
       <div className={styles.dashboardGrid}>
-        {/* Incoming Challenges */}
+        {/* Incoming Proposals */}
         <ProposalList
           title="Incoming"
-          proposals={incomingChallenges}
+          proposals={incomingProposals}
           playerId={connection.playerId || ""}
           emptyText="None"
           onAccept={handleAcceptProposal}
@@ -203,10 +197,10 @@ export default function Lobby() {
           onView={(uuid) => dispatch(selectBattle({ view: "proposal", battleId: uuid }))}
         />
 
-        {/* Outgoing Challenges */}
+        {/* Outgoing Proposals */}
         <ProposalList
           title="Sent"
-          proposals={outgoingChallenges}
+          proposals={outgoingProposals}
           playerId={connection.playerId || ""}
           emptyText="None"
           onAccept={handleAcceptProposal}

@@ -362,6 +362,11 @@ input[type="checkbox"] {
   line-height: 1;
 }
 
+.badge-timer {
+  text-transform: none !important;
+  font-variant-numeric: tabular-nums;
+}
+
 .badge-success {
   background-color: var(--color-success-bg);
   color: var(--color-success);
@@ -616,7 +621,17 @@ input[type="checkbox"] {
   }
 }
 
+.btn-icon-mobile {
+  display: none;
+}
+
 @include mobile {
+  .btn-icon-mobile {
+    display: inline-block !important;
+  }
+  .btn-text-desktop {
+    display: none !important;
+  }
   .flex-mobile-col {
     flex-direction: column !important;
   }

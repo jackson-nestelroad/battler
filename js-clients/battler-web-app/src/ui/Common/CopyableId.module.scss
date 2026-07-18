@@ -1,0 +1,56 @@
+@use "../../styles/breakpoints" as *;
+
+.container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.idLink {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.15s ease;
+
+  &.copied {
+    color: var(--color-success) !important;
+  }
+
+  &:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+}
+
+.idText {
+  @include mobile {
+    display: inline-block;
+    max-width: rem(80px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: text-bottom;
+  }
+}
+
+.checkmark {
+  margin-left: var(--spacing-xs);
+  font-weight: 700;
+  color: var(--color-success);
+  display: inline-block;
+  animation: scaleIn 0.15s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppDispatch } from "../../store/store";
 import { respondToProposal, refreshProposalSession } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
@@ -9,6 +9,9 @@ import type { ConnectionState } from "../../store/connectionSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import BattleSidesList from "../Common/BattleSidesList";
 import { getBattleTitle } from "../../utils/battle";
+import CopyableId from "../Common/CopyableId";
+import RefreshButton from "../Common/RefreshButton";
+import CountdownTimer from "../Common/CountdownTimer";
 
 import styles from "./BattleScreen.module.scss";
 
@@ -27,6 +30,15 @@ export default function BattleProposalView({
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const title = getBattleTitle(null, null, activeProposal);
+
+  useEffect(() => {
+    if (title) {
+      document.title = `${title} | Proposal`;
+    }
+    return () => {
+      document.title = "Battler";
+    };
+  }, [title]);
 
   const handleRefresh = async () => {
     if (!connection.playerId) return;
@@ -66,77 +78,80 @@ export default function BattleProposalView({
     dispatch(selectBattle({ view: "lobby", battleId: null }));
   };
 
-  const secs = activeProposal.deadline.secs_since_epoch;
-  const deadlineDate = new Date(secs * 1000);
-
   return (
-    <div className={styles.proposalStatusContainer}>
-      <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />
-      <div className="card">
-        <div
-          className={`${styles.proposalHeader} flex-row justify-between align-start gap-m w-full`}
-        >
-          <div className="flex-col">
-            <h3>{title}</h3>
-            <div>
-              <span className={styles.proposalFormat}>Battle Proposal</span>
-              <span className={styles.proposalTimer}>
-                Expires: {deadlineDate.toLocaleTimeString()}
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={handleRefresh}
-            className="btn btn-secondary flex-row align-center gap-xs btn-sm"
-            disabled={isRefreshing}
-            title="Refresh Proposal Details"
-          >
-            <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
-          </button>
+    <div className="page-container">
+      <header className={`${styles.screenHeader} flex-row justify-between align-center gap-m`}>
+        <div className={`${styles.titleInfo} flex-col gap-xs`}>
+          <h2>{title}</h2>
+          <span className={styles.battleId}>
+            <span className={styles.battleFormat}>Battle Proposal</span> •{" "}
+            <CopyableId id={battleId} type="proposal" />
+          </span>
         </div>
+        <RefreshButton
+          onClick={handleRefresh}
+          isRefreshing={isRefreshing}
+          title="Refresh Proposal Details"
+        />
+      </header>
 
-        <BattleSidesList sides={activeProposal.sides} isProposal={true} />
+      <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />
 
-        {isDeclined && (
-          <ErrorBanner message={`Failed: ${activeProposal.deletionReason || "unknown reason"}`} />
-        )}
+      <div className={styles.proposalCardWrapper}>
+        <div className="card">
+          <BattleSidesList sides={activeProposal.sides} isProposal={true} />
 
-        <div className={`${styles.actionRow} flex-col gap-m`}>
-          {isDeclined ? (
-            <button onClick={handleDismiss} className="btn btn-primary">
-              Dismiss
-            </button>
-          ) : (
-            <>
-              {isPlayer2 && !hasPlayer2Accepted && (
-                <div className="flex-row gap-s">
-                  <button onClick={handleAccept} className="btn btn-success flex-1">
-                    Accept
-                  </button>
-                  <button onClick={handleDecline} className="btn btn-danger">
-                    Reject
-                  </button>
-                </div>
-              )}
+          {!isDeclined && (
+            <div className="flex-row justify-center">
+              <CountdownTimer
+                deadlineSecs={activeProposal.deadline.secs_since_epoch}
+                prefix="Expires: "
+                badgeMode={true}
+              />
+            </div>
+          )}
 
-              {(!isPlayer2 || hasPlayer2Accepted) && (
-                <div className={`${styles.waitingState} flex-col align-center gap-m`}>
-                  <p>Waiting...</p>
-                  <div className={styles.waitingActions}>
-                    <button
-                      onClick={() => dispatch(selectBattle({ view: "lobby", battleId: null }))}
-                      className="btn btn-primary"
-                    >
-                      ← Lobby
+          {isDeclined && (
+            <ErrorBanner message={`Failed: ${activeProposal.deletionReason || "unknown reason"}`} />
+          )}
+
+          <div className={`${styles.actionRow} flex-col gap-m`}>
+            {isDeclined ? (
+              <button onClick={handleDismiss} className="btn btn-primary">
+                Dismiss
+              </button>
+            ) : (
+              <>
+                {isPlayer2 && !hasPlayer2Accepted && (
+                  <div className="flex-row gap-s">
+                    <button onClick={handleAccept} className="btn btn-success flex-1">
+                      Accept
                     </button>
                     <button onClick={handleDecline} className="btn btn-danger">
-                      Cancel
+                      Reject
                     </button>
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                )}
+
+                {(!isPlayer2 || hasPlayer2Accepted) && (
+                  <div className={`${styles.waitingState} flex-col align-center gap-m`}>
+                    <p>Waiting...</p>
+                    <div className={styles.waitingActions}>
+                      <button
+                        onClick={() => dispatch(selectBattle({ view: "lobby", battleId: null }))}
+                        className="btn btn-primary"
+                      >
+                        ← Lobby
+                      </button>
+                      <button onClick={handleDecline} className="btn btn-danger">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
