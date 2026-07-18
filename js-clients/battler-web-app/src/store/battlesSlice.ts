@@ -6,7 +6,7 @@ import type { Request, PlayerBattleData } from "battler-types";
 import type { UiLogEntry } from "battler-state";
 import { formatUuid } from "../utils/uuid";
 import type { Battle } from "battler-service-client";
-import { resolveReplayTurnState } from "../utils/replay";
+import { resolveReplayTurnState, getReplayStepBoundary } from "../utils/replay";
 import type { ReplayKeyframe } from "../utils/replay";
 
 export interface BaseBattleSession {
@@ -256,12 +256,14 @@ const battlesSlice = createSlice({
       const { battleId, engineLogs, keyframes, maxTurn } = action.payload;
       const firstState = keyframes.find((k) => k.turn === 0)?.state || null;
 
-      // Initialize sparse array for replayStates matching size of maxTurn + 1
-      const replayStates = new Array(maxTurn + 1);
+      // Initialize sparse array for replayStates matching size of maxTurn + 2
+      const replayStates = new Array(maxTurn + 2);
       // Pre-fill keyframes into the cache
       for (const kf of keyframes) {
         replayStates[kf.turn] = kf.state;
       }
+
+      const initialBoundaryIdx = getReplayStepBoundary(engineLogs, 0, maxTurn);
 
       state.battles[battleId] = {
         battleId,
@@ -269,7 +271,7 @@ const battlesSlice = createSlice({
         activeRequest: null,
         playerData: null,
         uiLogs: firstState ? firstState.ui_log.flat() : [],
-        engineLogs: [],
+        engineLogs: engineLogs.slice(0, initialBoundaryIdx),
         choiceSubmitted: false,
         error: null,
         choiceError: null,
@@ -289,8 +291,9 @@ const battlesSlice = createSlice({
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (isReplaySession(battle)) {
-        const maxTurn = battle.replayStates.length - 1;
-        const turnIndex = Math.max(0, Math.min(turn, maxTurn));
+        const maxTurn = battle.replayStates.length - 2;
+        const maxStep = maxTurn + 1;
+        const turnIndex = Math.max(0, Math.min(turn, maxStep));
         battle.replayCurrentTurn = turnIndex;
 
         // Resolve target state using keyframe hybrid lookup (processes max 9 turns incrementally)
@@ -299,14 +302,7 @@ const battlesSlice = createSlice({
         battle.uiLogs = targetState ? targetState.ui_log.flat() : [];
 
         // Set engineLogs up to this turn
-        let boundaryIdx = battle.replayEngineLogs.length;
-        const targetHeader = `turn|turn:${turnIndex + 1}`;
-        for (let i = 0; i < battle.replayEngineLogs.length; i++) {
-          if (battle.replayEngineLogs[i] && battle.replayEngineLogs[i].startsWith(targetHeader)) {
-            boundaryIdx = i;
-            break;
-          }
-        }
+        const boundaryIdx = getReplayStepBoundary(battle.replayEngineLogs, turnIndex, maxTurn);
         battle.engineLogs = battle.replayEngineLogs.slice(0, boundaryIdx);
       }
     },

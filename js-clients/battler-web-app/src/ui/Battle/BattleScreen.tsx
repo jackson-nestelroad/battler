@@ -146,7 +146,7 @@ export default function BattleScreen() {
     );
   }
 
-  const isReconnecting = connection.status === "connecting";
+  const isReconnecting = connection.status === "connecting" && !isReplay;
   const isPreparing =
     battleSession.serviceBattle?.state === "preparing" ||
     battleSession.battleState?.phase === "pre_battle";
@@ -181,14 +181,16 @@ export default function BattleScreen() {
           </span>
         </div>
         <div className={`${styles.headerControls} flex-row align-center gap-m`}>
-          <button
-            onClick={handleRefresh}
-            className="btn btn-secondary flex-row align-center gap-xs btn-sm"
-            disabled={battleSession?.isLoading || isRefreshing}
-            title="Refresh Battle State"
-          >
-            <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
-          </button>
+          {!isReplay && (
+            <button
+              onClick={handleRefresh}
+              className="btn btn-secondary flex-row align-center gap-xs btn-sm"
+              disabled={battleSession?.isLoading || isRefreshing}
+              title="Refresh Battle State"
+            >
+              <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
+            </button>
+          )}
           <div className={styles.devToolsPanel}>
             <button
               className={`${styles.devBtn} ${showDebug ? styles.devBtnActive : ""}`}

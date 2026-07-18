@@ -32,7 +32,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
             onClick={() => setIsCollapsed(!isCollapsed)}
             title={isCollapsed ? "Expand Log Panel" : "Collapse Log Panel"}
           >
-            {isCollapsed ? "▲ Logs" : "▼ Logs"}
+            {isCollapsed ? "▲" : "▼"}
           </button>
           <h3>Logs</h3>
         </div>

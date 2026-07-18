@@ -25,6 +25,22 @@ export function findTurnBoundary(engineLogs: string[], turn: number): number {
 }
 
 /**
+ * Computes the log index boundary for a given step/turn in a replay.
+ */
+export function getReplayStepBoundary(engineLogs: string[], step: number, maxTurn: number): number {
+  if (step === 0) {
+    const battlestartIdx = engineLogs.findIndex(
+      (log) => log === "battlestart" || log?.startsWith("battlestart|")
+    );
+    return battlestartIdx !== -1 ? battlestartIdx + 1 : findTurnBoundary(engineLogs, 1);
+  }
+  if (step > maxTurn) {
+    return engineLogs.length;
+  }
+  return findTurnBoundary(engineLogs, step);
+}
+
+/**
  * Parses the engine logs and precomputes keyframe states at turn 0 and every 10 turns.
  * This runs in O(N) linear time because alterBattleState is called incrementally.
  */
@@ -44,19 +60,26 @@ export function precomputeReplayKeyframes(engineLogs: string[]): {
 
   const keyframes: ReplayKeyframe[] = [];
 
-  // Always compute turn 0 keyframe
-  const turn1Boundary = findTurnBoundary(engineLogs, 1);
-  let currentState = alterBattleState(newBattleState(), engineLogs.slice(0, turn1Boundary));
+  // Compute keyframe for step 0
+  const turn0Boundary = getReplayStepBoundary(engineLogs, 0, maxTurn);
+  let currentState = alterBattleState(newBattleState(), engineLogs.slice(0, turn0Boundary));
   keyframes.push({ turn: 0, state: currentState });
 
-  // Compute keyframes every 10 turns
+  // Compute keyframes every 10 turns (steps 10, 20, ...)
   for (let t = 10; t <= maxTurn; t += 10) {
-    const boundary = findTurnBoundary(engineLogs, t + 1);
+    const boundary = getReplayStepBoundary(engineLogs, t, maxTurn);
     const slice = engineLogs.slice(0, boundary);
     // alterBattleState is incremental when state has last_log_index set
     currentState = alterBattleState(currentState, slice);
     keyframes.push({ turn: t, state: currentState });
   }
+
+  // Also precompute the final keyframe at step maxTurn + 1 to avoid computing it from scratch
+  const finalStep = maxTurn + 1;
+  const finalBoundary = getReplayStepBoundary(engineLogs, finalStep, maxTurn);
+  const finalSlice = engineLogs.slice(0, finalBoundary);
+  currentState = alterBattleState(currentState, finalSlice);
+  keyframes.push({ turn: finalStep, state: currentState });
 
   return { keyframes, maxTurn };
 }
@@ -79,6 +102,8 @@ export function resolveReplayTurnState(
     return cached;
   }
 
+  const maxTurn = session.replayStates.length - 2;
+
   // 2. Find nearest keyframe <= turn
   let nearestKeyframe = session.replayKeyframes[0];
   for (const kf of session.replayKeyframes) {
@@ -88,7 +113,7 @@ export function resolveReplayTurnState(
   }
 
   // 3. Compute target turn state incrementally from keyframe
-  const boundaryIdx = findTurnBoundary(session.replayEngineLogs, turn + 1);
+  const boundaryIdx = getReplayStepBoundary(session.replayEngineLogs, turn, maxTurn);
   const slice = session.replayEngineLogs.slice(0, boundaryIdx);
   const state = alterBattleState(nearestKeyframe.state, slice);
 

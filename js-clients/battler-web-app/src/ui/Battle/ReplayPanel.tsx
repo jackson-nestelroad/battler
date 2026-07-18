@@ -12,7 +12,7 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
   const battleSession = useAppSelector((state) => state.battles.battles[battleId]);
   const replaySession = isReplaySession(battleSession) ? battleSession : null;
 
-  const turnNumber = replaySession?.battleState?.turn || 0;
+  const turnNumber = replaySession?.replayCurrentTurn || 0;
   const maxTurn = (replaySession?.replayStates.length || 1) - 1;
   // Replay play state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -44,8 +44,10 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
 
       <div className={styles.turnScrubber}>
         <div className={`${styles.scrubberHeader} flex-row justify-between w-full`}>
-          <span>Turn {turnNumber}</span>
-          <span className={styles.replaySubtitle}>/ {maxTurn}</span>
+          <span>
+            {turnNumber === 0 ? "Start" : turnNumber === maxTurn ? "End" : `Turn ${turnNumber}`}
+          </span>
+          <span className={styles.replaySubtitle}>End (Turn {maxTurn - 1})</span>
         </div>
         <input
           type="range"
