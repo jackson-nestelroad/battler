@@ -60,3 +60,9 @@
   overflow-y: auto;
   padding-right: var(--spacing-xs); /* Scrollbar padding */
 }
+
+.lobbyHeader {
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: center;
+}

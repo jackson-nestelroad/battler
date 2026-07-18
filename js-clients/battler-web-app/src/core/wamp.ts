@@ -247,6 +247,42 @@ export function restoreProposalSession(rawBattleId: string, playerId: string, di
     });
 }
 
+function getProposalUpdateHandler(playerId: string, dispatch: Dispatch) {
+  return async (update: any) => {
+    const proposalWithDetails: ProposedBattleWithDetails = {
+      ...update.proposed_battle,
+      rejection: update.rejection || null,
+      deletionReason: update.deletion_reason || null,
+    };
+    dispatch(updateProposal(proposalWithDetails));
+    if (update.proposed_battle.battle) {
+      const battleId = update.proposed_battle.battle;
+      dispatch(battleSessionCreated(battleId));
+      if (update.deletion_reason && update.deletion_reason !== "fulfilled") {
+        dispatch(clearBattleState(battleId));
+        dispatch(
+          setBattleError({
+            battleId,
+            error: `Battle proposal failed: ${update.deletion_reason}`,
+          }),
+        );
+      } else {
+        const client = await initializeBattleClient(battleId, playerId, dispatch);
+        if (client && update.deletion_reason === "fulfilled") {
+          client.sync().catch((err: unknown) => {
+            handleBattleError(
+              dispatch,
+              battleId,
+              "Failed to sync battle client on fulfillment",
+              err,
+            );
+          });
+        }
+      }
+    }
+  };
+}
+
 // Connect thunk
 export const connectWamp = createAsyncThunk(
   "wamp/connect",
@@ -348,39 +384,9 @@ export const connectWamp = createAsyncThunk(
 
       // Subscribe to proposal updates
       connectionManager.proposalSubscription =
-        await connectionManager.multiplayerClient.proposedBattleUpdates(async (update) => {
-          const proposalWithDetails: ProposedBattleWithDetails = {
-            ...update.proposed_battle,
-            rejection: update.rejection || null,
-            deletionReason: update.deletion_reason || null,
-          };
-          dispatch(updateProposal(proposalWithDetails));
-          if (update.proposed_battle.battle) {
-            const battleId = update.proposed_battle.battle;
-            dispatch(battleSessionCreated(battleId));
-            if (update.deletion_reason && update.deletion_reason !== "fulfilled") {
-              dispatch(clearBattleState(battleId));
-              dispatch(
-                setBattleError({
-                  battleId,
-                  error: `Battle proposal failed: ${update.deletion_reason}`,
-                }),
-              );
-            } else {
-              const client = await initializeBattleClient(battleId, playerId, dispatch);
-              if (client && update.deletion_reason === "fulfilled") {
-                client.sync().catch((err: unknown) => {
-                  handleBattleError(
-                    dispatch,
-                    battleId,
-                    "Failed to sync battle client on fulfillment",
-                    err,
-                  );
-                });
-              }
-            }
-          }
-        });
+        await connectionManager.multiplayerClient.proposedBattleUpdates(
+          getProposalUpdateHandler(playerId, dispatch),
+        );
 
       interface EventEmitterLike {
         on(event: string, listener: (...args: unknown[]) => void): void;
@@ -554,6 +560,158 @@ export const submitBattleTeam = createAsyncThunk(
         false,
       );
       return rejectWithValue(formatted);
+    } finally {
+      dispatch(setBattleLoading({ battleId, isLoading: false }));
+    }
+  },
+);
+
+// Refresh Lobby thunk
+export const refreshLobby = createAsyncThunk(
+  "wamp/refreshLobby",
+  async (playerId: string, { dispatch }) => {
+    if (!connectionManager.multiplayerClient) return;
+
+    // Restart subscription if active
+    if (connectionManager.proposalSubscription) {
+      try {
+        await connectionManager.mpServiceClient?.unsubscribe(
+          connectionManager.proposalSubscription,
+        );
+      } catch (err) {
+        console.warn("[WAMP] Failed to unsubscribe from proposals during refresh:", err);
+      }
+      connectionManager.proposalSubscription = null;
+    }
+
+    dispatch(clearProposals());
+
+    // Re-subscribe
+    try {
+      connectionManager.proposalSubscription =
+        await connectionManager.multiplayerClient.proposedBattleUpdates(
+          getProposalUpdateHandler(playerId, dispatch),
+        );
+    } catch (err) {
+      console.error("[WAMP] Failed to re-subscribe to proposal updates during refresh:", err);
+    }
+
+    // Fetch proposed battles
+    try {
+      let proposalsOffset = 0;
+      const proposalsLimit = 50;
+      while (true) {
+        const page = await connectionManager.multiplayerClient.proposedBattles(
+          proposalsLimit,
+          proposalsOffset,
+        );
+        if (page.length > 0) {
+          dispatch(addProposals(page));
+        }
+        if (page.length === 0) {
+          break;
+        }
+        proposalsOffset += proposalsLimit;
+      }
+    } catch (err) {
+      console.error("[WAMP] Failed to fetch proposed battles during refresh:", err);
+    }
+
+    // Fetch active battles for the player to refresh sidebar/battles list
+    try {
+      let battlesOffset = 0;
+      const battlesLimit = 50;
+      while (true) {
+        if (!connectionManager.serviceClient) break;
+        const page = await connectionManager.serviceClient.battlesForPlayer(
+          playerId,
+          battlesLimit,
+          battlesOffset,
+        );
+        for (const b of page) {
+          const existingClient = connectionManager.clientsRegistry.get(b.uuid);
+          if (existingClient) {
+            try {
+              await existingClient.cancel();
+            } catch (e) {
+              console.warn(
+                `[WAMP] Failed to cancel existing battle client for ${b.uuid} during lobby refresh:`,
+                e,
+              );
+            }
+            connectionManager.clientsRegistry.delete(b.uuid);
+          }
+          restoreBattleSession(b.uuid, playerId, dispatch);
+        }
+        if (page.length === 0) {
+          break;
+        }
+        battlesOffset += battlesLimit;
+      }
+    } catch (err) {
+      console.error("[WAMP] Failed to fetch active battles during lobby refresh:", err);
+    }
+  },
+);
+
+// Refresh Proposal Session thunk
+export const refreshProposalSession = createAsyncThunk(
+  "wamp/refreshProposalSession",
+  async ({ battleId: rawId, playerId }: { battleId: string; playerId: string }, { dispatch }) => {
+    const battleId = formatUuid(rawId);
+    if (!connectionManager.multiplayerClient) return;
+
+    dispatch(setBattleLoading({ battleId, isLoading: true }));
+    try {
+      const proposal = await connectionManager.multiplayerClient.proposedBattle(battleId);
+      dispatch(updateProposal(proposal));
+      if (proposal.battle) {
+        const actualBattleId = proposal.battle;
+        dispatch(battleSessionCreated(actualBattleId));
+        // If there's already a client, cancel it first to refresh it too
+        const existingClient = connectionManager.clientsRegistry.get(actualBattleId);
+        if (existingClient) {
+          try {
+            await existingClient.cancel();
+          } catch (e) {
+            console.warn(
+              `[WAMP] Failed to cancel existing battle client for ${actualBattleId}:`,
+              e,
+            );
+          }
+          connectionManager.clientsRegistry.delete(actualBattleId);
+        }
+        await initializeBattleClient(actualBattleId, playerId, dispatch);
+      }
+    } catch (err: unknown) {
+      console.error(`[WAMP] Failed to refresh proposal for ${battleId}:`, err);
+      dispatch(setBattleError({ battleId, error: formatWampError(err) }));
+    } finally {
+      dispatch(setBattleLoading({ battleId, isLoading: false }));
+    }
+  },
+);
+
+// Refresh Battle Session thunk
+export const refreshBattleSession = createAsyncThunk(
+  "wamp/refreshBattleSession",
+  async ({ battleId: rawId, playerId }: { battleId: string; playerId: string }, { dispatch }) => {
+    const battleId = formatUuid(rawId);
+    const client = connectionManager.clientsRegistry.get(battleId);
+    if (client) {
+      try {
+        await client.cancel();
+      } catch (err) {
+        console.warn(`[WAMP] Failed to cancel existing battle client for ${battleId}:`, err);
+      }
+      connectionManager.clientsRegistry.delete(battleId);
+    }
+
+    dispatch(setBattleLoading({ battleId, isLoading: true }));
+    try {
+      await initializeBattleClient(battleId, playerId, dispatch);
+    } catch (err) {
+      console.error(`[WAMP] Failed to refresh battle client for ${battleId}:`, err);
     } finally {
       dispatch(setBattleLoading({ battleId, isLoading: false }));
     }

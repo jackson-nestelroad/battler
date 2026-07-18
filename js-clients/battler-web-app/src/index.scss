@@ -517,6 +517,11 @@ input[type="checkbox"] {
   display: inline-block;
 }
 
+.spin-icon {
+  display: inline-block;
+  animation: spinnerSpin 1s linear infinite;
+}
+
 @keyframes spinnerSpin {
   to {
     transform: rotate(360deg);
@@ -582,6 +587,9 @@ input[type="checkbox"] {
 }
 .align-center {
   align-items: center;
+}
+.align-start {
+  align-items: flex-start;
 }
 .justify-between {
   justify-content: space-between;

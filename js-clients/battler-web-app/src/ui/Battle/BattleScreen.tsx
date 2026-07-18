@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { formatUiLogEntry } from "../../utils/logFormatter";
 import { setBattleError, removeBattle } from "../../store/battlesSlice";
+import { refreshBattleSession } from "../../core/wamp";
 import ErrorBanner from "../Common/ErrorBanner";
 import Field from "./Field";
 import ActionPanel from "./ActionPanel";
@@ -27,6 +28,20 @@ export default function BattleScreen() {
   const battleSession = useAppSelector((state) =>
     battleId ? state.battles.battles[battleId] : null,
   );
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!battleId || !connection.playerId) return;
+    setIsRefreshing(true);
+    try {
+      await dispatch(refreshBattleSession({ battleId, playerId: connection.playerId })).unwrap();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const activeProposal = useAppSelector((state) => {
     if (!battleId) return null;
@@ -184,6 +199,14 @@ export default function BattleScreen() {
           <span className={styles.battleId}>ID: {battleId}</span>
         </div>
         <div className={`${styles.headerControls} flex-row align-center gap-m`}>
+          <button
+            onClick={handleRefresh}
+            className="btn btn-secondary flex-row align-center gap-xs btn-sm"
+            disabled={battleSession?.isLoading || isRefreshing}
+            title="Refresh Battle State"
+          >
+            <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
+          </button>
           <div className={styles.devToolsPanel}>
             <button
               className={`${styles.devBtn} ${showDebug ? styles.devBtnActive : ""}`}

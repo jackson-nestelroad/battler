@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { proposeBattle, respondToProposal } from "../../core/wamp";
+import { proposeBattle, respondToProposal, refreshLobby } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
 import { removeProposal, updateProposal } from "../../store/proposalsSlice";
 import type { CoreBattleOptions } from "battler-types";
@@ -14,6 +14,18 @@ import styles from "./Lobby.module.scss";
 
 export default function Lobby() {
   const dispatch = useAppDispatch();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await dispatch(refreshLobby(connection.playerId || "")).unwrap();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const connection = useAppSelector((state) => state.connection);
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
@@ -122,9 +134,19 @@ export default function Lobby() {
 
   return (
     <div className="page-container scroll-y">
-      <div className="dashboard-header">
-        <h1>Matchmaking Lobby</h1>
-        <p>Propose direct challenges or respond to pending invitations from other trainers.</p>
+      <div className={`dashboard-header ${styles.lobbyHeader}`}>
+        <div className="flex-col gap-xs">
+          <h1>Matchmaking Lobby</h1>
+          <p>Propose direct challenges or respond to pending invitations from other trainers.</p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          className="btn btn-secondary flex-row align-center gap-xs btn-sm"
+          disabled={isRefreshing}
+          title="Refresh Lobby"
+        >
+          <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
+        </button>
       </div>
 
       <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />

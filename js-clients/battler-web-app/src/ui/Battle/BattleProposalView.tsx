@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useAppDispatch } from "../../store/store";
-import { respondToProposal } from "../../core/wamp";
+import { respondToProposal, refreshProposalSession } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
 import { removeProposal } from "../../store/proposalsSlice";
 import type { ProposedBattleWithDetails } from "../../store/proposalsSlice";
@@ -22,6 +23,19 @@ export default function BattleProposalView({
   connection,
 }: BattleProposalViewProps) {
   const dispatch = useAppDispatch();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!connection.playerId) return;
+    setIsRefreshing(true);
+    try {
+      await dispatch(refreshProposalSession({ battleId, playerId: connection.playerId })).unwrap();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const isPlayer2 = activeProposal.sides[1]?.players[0]?.id === connection.playerId;
   const player2Status = activeProposal.sides[1]?.players[0]?.status;
@@ -56,12 +70,28 @@ export default function BattleProposalView({
     <div className={styles.proposalStatusContainer}>
       <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />
       <div className="card">
-        <div className={styles.proposalHeader}>
-          <h3>Battle Challenge Proposal</h3>
-          <span className={styles.proposalFormat}>
-            Format: {activeProposal.battle_options?.format?.battle_type}
-          </span>
-          <span className={styles.proposalTimer}>Expires: {deadlineDate.toLocaleTimeString()}</span>
+        <div
+          className={`${styles.proposalHeader} flex-row justify-between align-start gap-m w-full`}
+        >
+          <div className="flex-col">
+            <h3>Battle Challenge Proposal</h3>
+            <div>
+              <span className={styles.proposalFormat}>
+                Format: {activeProposal.battle_options?.format?.battle_type}
+              </span>
+              <span className={styles.proposalTimer}>
+                Expires: {deadlineDate.toLocaleTimeString()}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="btn btn-secondary flex-row align-center gap-xs btn-sm"
+            disabled={isRefreshing}
+            title="Refresh Proposal Details"
+          >
+            <span className={isRefreshing ? "spin-icon" : ""}>↻</span> Refresh
+          </button>
         </div>
 
         <BattleSidesList sides={activeProposal.sides} isProposal={true} />
