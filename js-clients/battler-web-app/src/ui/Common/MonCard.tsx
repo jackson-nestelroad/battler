@@ -1,7 +1,7 @@
 import HpBar from "./HpBar";
-import styles from "./PokemonCard.module.scss";
+import styles from "./MonCard.module.scss";
 
-interface PokemonCardProps {
+interface MonCardProps {
   name: string;
   level: number;
   hp: number;
@@ -12,7 +12,7 @@ interface PokemonCardProps {
   onClick?: () => void;
 }
 
-export default function PokemonCard({
+export default function MonCard({
   name,
   level,
   hp,
@@ -21,7 +21,7 @@ export default function PokemonCard({
   active,
   isClickable,
   onClick,
-}: PokemonCardProps) {
+}: MonCardProps) {
   return (
     <div
       onClick={isClickable ? onClick : undefined}

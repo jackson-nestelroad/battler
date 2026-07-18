@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { submitChoice } from "../../core/wamp";
 import type { Request, MonMoveSlotData, PlayerBattleData } from "battler-types";
 import ErrorBanner from "../Common/ErrorBanner";
-import PokemonCard from "../Common/PokemonCard";
+import MonCard from "../Common/MonCard";
 
 import styles from "./ActionPanel.module.scss";
 
@@ -130,7 +130,7 @@ export default function ActionPanel({
             }
 
             return (
-              <PokemonCard
+              <MonCard
                 key={idx}
                 name={name}
                 level={mon.summary?.level || 50}

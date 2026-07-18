@@ -6,7 +6,7 @@ This guide establishes the rules and conventions for styling the `battler-web-ap
 
 ## 1. Variable-Driven Styling (No Hardcoding)
 
-*   **No Hex Colors in Modules**: Never hardcode colors (e.g., `#ffffff`, `#0a0d14`, `red`) inside component modules (`*.module.scss`). All colors must use global custom properties defined in [index.scss](file:///Users/jackson/Code/GitHub/pokemon/js-clients/battler-web-app/src/index.scss):
+*   **No Hex Colors in Modules**: Never hardcode colors (e.g., `#ffffff`, `#0a0d14`, `red`) inside component modules (`*.module.scss`). All colors must use global custom properties defined in [index.scss](src/index.scss):
     *   *Correct*: `background-color: var(--bg-card);`
     *   *Incorrect*: `background-color: #161c2b;`
 *   **Spacing and Padding**: Use the unified rem-based tokens for all margins, padding, and layout offsets:
@@ -23,11 +23,11 @@ This guide establishes the rules and conventions for styling the `battler-web-ap
 To keep styles DRY (Don't Repeat Yourself) and KISS (Keep It Simple, Stupid), balance local stylesheets and global utility classes:
 
 ### Reusable/Self-Contained Components
-For standalone UI widgets (like `PokemonCard`, `HpBar`, or `JsonEditor`), all interior structure (gaps, flex alignment, borders) must live inside the component's `.module.scss` file:
+For standalone UI widgets (like `MonCard`, `HpBar`, or `JsonEditor`), all interior structure (gaps, flex alignment, borders) must live inside the component's `.module.scss` file:
 *   This makes components "plug-and-play" without requiring class list concatenation in parent views.
 *   Example:
     ```scss
-    /* PokemonCard.module.scss */
+    /* MonCard.module.scss */
     .teamSummaryCard {
       display: flex;
       flex-direction: column;
@@ -55,11 +55,11 @@ To avoid duplicate media query blocks, use responsive layout utilities:
 
 ## 3. Standard Design Elements
 
-Leverage global classes from [index.scss](file:///Users/jackson/Code/GitHub/pokemon/js-clients/battler-web-app/src/index.scss) to keep components standardized:
+Leverage global classes from [index.scss](src/index.scss) to keep components standardized:
 *   **Containers**: Wrap panels in `.card` and use `.card-header` for standard header layouts.
 *   **Buttons**: Always use `.btn` paired with modifiers (`.btn-primary`, `.btn-secondary`, `.btn-success`, `.btn-danger`, `.btn-sm`).
 *   **Banners**: Standard alert states use `.alert` paired with types (`.alert-danger`, `.alert-warning`, `.alert-success`, `.alert-info`).
-*   **Status Badges**: Pokemon status conditions (SLP, BRN, PSN, etc.) should use `.status-badge` coupled with status classes (`.brn`, `.par`, `.psn`).
+*   **Status Badges**: Mon status conditions (SLP, BRN, PSN, etc.) should use `.status-badge` coupled with status classes (`.brn`, `.par`, `.psn`).
 
 ---
 
