@@ -47,7 +47,7 @@ export default function App() {
           <span className={styles.viewTitle}>
             {currentView === "lobby" && "Matchmaking Lobby"}
             {currentView === "teams" && "Teams Editor"}
-            {currentView === "battle" && "Battles"}
+            {(currentView === "battle" || currentView === "proposal") && "Battles"}
             {currentView === "replays" && "Battle Replays"}
           </span>
         </header>
@@ -55,7 +55,7 @@ export default function App() {
         <div className={styles.viewWrapper}>
           {currentView === "lobby" && <Lobby />}
           {currentView === "teams" && <Teams />}
-          {currentView === "battle" && <BattleScreen />}
+          {(currentView === "battle" || currentView === "proposal") && <BattleScreen />}
           {currentView === "replays" && <ReplaysHome />}
         </div>
       </main>

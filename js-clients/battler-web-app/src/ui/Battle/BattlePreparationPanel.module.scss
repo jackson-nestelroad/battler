@@ -36,18 +36,12 @@
   line-height: 1.4;
 }
 
-.readinessSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-m);
-
-  h4 {
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+.sectionHeader {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .teamSelectionSection {
@@ -62,31 +56,4 @@
     font-weight: 600;
     color: var(--text-secondary);
   }
-}
-
-.selectionRow {
-  display: flex;
-  gap: var(--spacing-s);
-
-  @include mobile {
-    flex-direction: column;
-
-    button {
-      width: 100%;
-    }
-  }
-
-  select {
-    flex: 1;
-  }
-}
-
-.errorSection {
-  margin-top: var(--spacing-xs);
-}
-
-.expiredCard {
-  max-width: rem(480px);
-  text-align: center;
-  align-items: center;
 }

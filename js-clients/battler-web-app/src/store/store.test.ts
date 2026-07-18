@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { store, hydrateStore } from "./store";
 import { saveTeam } from "./teamsSlice";
+import type { MonData } from "battler-types";
 
 describe("teams persistence", () => {
   let localStorageMock: Record<string, string> = {};
@@ -55,7 +56,9 @@ describe("teams persistence", () => {
         level: 50,
       },
     ];
-    store.dispatch(saveTeam({ name: "My Test Team", members: updatedTeam as any }));
+    store.dispatch(
+      saveTeam({ name: "My Test Team", members: updatedTeam as unknown as MonData[] }),
+    );
 
     // Wait a brief moment for promises in middleware to resolve
     await new Promise((resolve) => setTimeout(resolve, 0));

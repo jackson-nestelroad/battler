@@ -10,6 +10,7 @@ interface ProposalListProps {
   onAccept: (uuid: string) => void;
   onDecline: (uuid: string) => void;
   onDismiss: (uuid: string) => void;
+  onView: (uuid: string) => void;
 }
 
 export default function ProposalList({
@@ -20,6 +21,7 @@ export default function ProposalList({
   onAccept,
   onDecline,
   onDismiss,
+  onView,
 }: ProposalListProps) {
   return (
     <section className="card">
@@ -38,6 +40,7 @@ export default function ProposalList({
               onAccept={onAccept}
               onDecline={onDecline}
               onDismiss={onDismiss}
+              onView={onView}
             />
           ))}
         </div>

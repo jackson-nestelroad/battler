@@ -19,6 +19,10 @@ export class BattlerMultiplayerClient {
     return this.multiplayerService.proposeBattle(options);
   }
 
+  async proposedBattle(proposedBattleId: string): Promise<ProposedBattle> {
+    return this.multiplayerService.proposedBattle(proposedBattleId);
+  }
+
   async respondToProposal(proposedBattleId: string, accept: boolean): Promise<ProposedBattle> {
     return this.multiplayerService.respondToProposedBattle(proposedBattleId, this.player, {
       accept,

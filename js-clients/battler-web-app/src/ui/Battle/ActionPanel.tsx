@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { submitChoice } from "../../core/wamp";
+import { setChoiceError } from "../../store/battlesSlice";
 import type { Request, MonMoveSlotData, PlayerBattleData } from "battler-types";
 import ErrorBanner from "../Common/ErrorBanner";
 import MonCard from "../Common/MonCard";
@@ -49,15 +50,6 @@ export default function ActionPanel({
   const [dyna, setDyna] = useState(false);
   const [tera, setTera] = useState(false);
 
-  // Reset when request or turn changes
-  useEffect(() => {
-    setCurrentSlotIndex(0);
-    setChoices([]);
-    setSelectedMove(null);
-    setSelectedMoveIndex(null);
-    resetModifiers();
-  }, [request, turn]);
-
   const resetModifiers = () => {
     setMega(false);
     setZmove(false);
@@ -66,8 +58,29 @@ export default function ActionPanel({
     setTera(false);
   };
 
+  const submittingRef = useRef(false);
+
+  // Reset when request or turn changes
+  useEffect(() => {
+    setCurrentSlotIndex(0);
+    setChoices([]);
+    setSelectedMove(null);
+    setSelectedMoveIndex(null);
+    resetModifiers();
+    submittingRef.current = false;
+  }, [request, turn]);
+
+  // Reset submitting ref when loading finishes
+  useEffect(() => {
+    if (!isLoading) {
+      submittingRef.current = false;
+    }
+  }, [isLoading]);
+
   const handleForfeit = () => {
+    if (submittingRef.current) return;
     if (window.confirm("Are you sure you want to forfeit the match?")) {
+      submittingRef.current = true;
       dispatch(submitChoice({ battleId, choice: "forfeit" }));
     }
   };
@@ -89,42 +102,38 @@ export default function ActionPanel({
             let handleClick: (() => void) | undefined = undefined;
 
             if (request && !isMeReady && !playbackPending && !isLoading) {
+              let totalSlots = 0;
+              let canSwitch = false;
+
               if (request.type === "switch") {
                 const needsSwitch = request.needs_switch || [];
-                const activeSwitchSlot = needsSwitch[currentSlotIndex];
-                if (activeSwitchSlot !== undefined) {
-                  isClickable = !mon.active && mon.hp > 0;
-                  if (isClickable) {
-                    handleClick = () => {
-                      const newChoices = [...choices, `switch ${mon.player_team_position}`];
-                      if (currentSlotIndex + 1 < needsSwitch.length) {
-                        setChoices(newChoices);
-                        setCurrentSlotIndex(currentSlotIndex + 1);
-                      } else {
-                        dispatch(submitChoice({ battleId, choice: newChoices.join("; ") }));
-                      }
-                    };
-                  }
-                }
+                totalSlots = needsSwitch.length;
+                canSwitch = needsSwitch[currentSlotIndex] !== undefined;
               } else if (request.type === "turn" && selectedMove === null) {
                 const activeRequests = request.active || [];
+                totalSlots = activeRequests.length;
                 const activeReq = activeRequests[currentSlotIndex];
-                if (activeReq && !activeReq.trapped) {
-                  isClickable = !mon.active && mon.hp > 0;
-                  if (isClickable) {
-                    handleClick = () => {
-                      const newChoices = [...choices, `switch ${mon.player_team_position}`];
-                      if (currentSlotIndex + 1 < activeRequests.length) {
-                        setChoices(newChoices);
-                        setCurrentSlotIndex(currentSlotIndex + 1);
-                        setSelectedMove(null);
-                        setSelectedMoveIndex(null);
-                        resetModifiers();
-                      } else {
-                        dispatch(submitChoice({ battleId, choice: newChoices.join("; ") }));
-                      }
-                    };
-                  }
+                canSwitch = !!(activeReq && !activeReq.trapped);
+              }
+
+              if (canSwitch) {
+                isClickable = !mon.active && mon.hp > 0;
+                if (isClickable) {
+                  handleClick = () => {
+                    if (submittingRef.current) return;
+                    dispatch(setChoiceError({ battleId, error: null }));
+                    const newChoices = [...choices, `switch ${mon.player_team_position}`];
+                    if (currentSlotIndex + 1 < totalSlots) {
+                      setChoices(newChoices);
+                      setCurrentSlotIndex(currentSlotIndex + 1);
+                      setSelectedMove(null);
+                      setSelectedMoveIndex(null);
+                      resetModifiers();
+                    } else {
+                      submittingRef.current = true;
+                      dispatch(submitChoice({ battleId, choice: newChoices.join("; ") }));
+                    }
+                  };
                 }
               }
             }
@@ -160,7 +169,7 @@ export default function ActionPanel({
     if (playbackPending) {
       return (
         <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-          <div className={styles.playbackLoading}>
+          <div className="flex-col align-center gap-m">
             <div className={styles.dotPulse} />
             <p>Processing turn logs playback... controls are locked.</p>
           </div>
@@ -170,14 +179,17 @@ export default function ActionPanel({
 
     if (request.type === "team") {
       const handleTeamPreviewSubmit = () => {
+        if (submittingRef.current) return;
+        submittingRef.current = true;
         dispatch(submitChoice({ battleId, choice: "team 0 1 2 3 4 5" }));
       };
 
       return (
         <div className="flex-col gap-m">
           <h3>Team Preview Phase</h3>
+          <ErrorBanner message={errorMessage} />
           <p>Confirm your team order to begin the match.</p>
-          <div className={styles.actionsRow}>
+          <div className="flex-row gap-s align-center">
             <button
               className="btn btn-primary"
               onClick={handleTeamPreviewSubmit}
@@ -189,7 +201,6 @@ export default function ActionPanel({
               Forfeit
             </button>
           </div>
-          <ErrorBanner message={errorMessage} />
         </div>
       );
     }
@@ -218,9 +229,10 @@ export default function ActionPanel({
             Force Switch Required for <strong>{replaceMonName}</strong> (Slot {activeSwitchSlot + 1}
             )
           </h3>
-          <p>One of your Pokémon fainted. Select a replacement from your team below.</p>
+          <ErrorBanner message={errorMessage} />
+          <p>One of your Mons fainted. Select a replacement from your team below.</p>
 
-          <div className={styles.actionsRow}>
+          <div className="flex-row gap-s align-center">
             {currentSlotIndex > 0 && (
               <button
                 onClick={() => {
@@ -237,7 +249,6 @@ export default function ActionPanel({
               Forfeit
             </button>
           </div>
-          <ErrorBanner message={errorMessage} />
         </div>
       );
     }
@@ -258,15 +269,25 @@ export default function ActionPanel({
         (m) => m.player_team_position === activeReq.team_position,
       );
       const activeMonName =
-        activeMon?.summary?.name || activeMon?.species || `Pokémon #${currentSlotIndex + 1}`;
+        activeMon?.summary?.name || activeMon?.species || `Mon #${currentSlotIndex + 1}`;
+
+      const hasModifiers = !!(
+        activeReq.can_mega_evolve ||
+        activeReq.can_terastallize ||
+        activeReq.can_z_move ||
+        activeReq.can_dynamax ||
+        activeReq.can_ultra_burst
+      );
 
       const handleSelectMove = (move: MonMoveSlotData, index: number) => {
+        if (submittingRef.current) return;
+        dispatch(setChoiceError({ battleId, error: null }));
         setSelectedMove(move);
         setSelectedMoveIndex(index);
       };
 
       const handleConfirmMove = (targetVal: number | null) => {
-        if (selectedMoveIndex === null) return;
+        if (submittingRef.current || selectedMoveIndex === null) return;
 
         let moveStr = `move ${selectedMoveIndex}`;
         if (targetVal !== null) {
@@ -291,11 +312,14 @@ export default function ActionPanel({
           setSelectedMoveIndex(null);
           resetModifiers();
         } else {
+          submittingRef.current = true;
           dispatch(submitChoice({ battleId, choice: nextChoices.join("; ") }));
         }
       };
 
       const handleBack = () => {
+        if (submittingRef.current) return;
+        dispatch(setChoiceError({ battleId, error: null }));
         if (selectedMove) {
           setSelectedMove(null);
           setSelectedMoveIndex(null);
@@ -319,63 +343,69 @@ export default function ActionPanel({
               </button>
             </div>
           </div>
+          <ErrorBanner message={errorMessage} />
 
           {selectedMove === null ? (
             <div className="flex-col gap-m">
               <div className={styles.movesColumn}>
                 <h4>Select Move (Or click a team member below to Switch)</h4>
 
-                <div className={styles.modifiersRow}>
-                  {[
-                    {
-                      key: "mega",
-                      label: "Mega Evolve",
-                      flag: activeReq.can_mega_evolve,
-                      value: mega,
-                      setter: setMega,
-                    },
-                    {
-                      key: "tera",
-                      label: "Terastallize",
-                      flag: activeReq.can_terastallize,
-                      value: tera,
-                      setter: setTera,
-                    },
-                    {
-                      key: "zmove",
-                      label: "Z-Move",
-                      flag: activeReq.can_z_move,
-                      value: zmove,
-                      setter: setZmove,
-                    },
-                    {
-                      key: "dyna",
-                      label: "Dynamax",
-                      flag: activeReq.can_dynamax,
-                      value: dyna,
-                      setter: setDyna,
-                    },
-                    {
-                      key: "ultra",
-                      label: "Ultra Burst",
-                      flag: activeReq.can_ultra_burst,
-                      value: ultra,
-                      setter: setUltra,
-                    },
-                  ].map(
-                    ({ key, label, flag, value, setter }) =>
-                      flag && (
-                        <label key={key} className={styles.checkboxLabel}>
-                          <input
-                            type="checkbox"
-                            checked={value}
-                            onChange={(e) => setter(e.target.checked)}
-                          />
-                          {label}
-                        </label>
-                      ),
-                  )}
-                </div>
+                {hasModifiers && (
+                  <div className={styles.modifiersRow}>
+                    {[
+                      {
+                        key: "mega",
+                        label: "Mega Evolve",
+                        flag: activeReq.can_mega_evolve,
+                        value: mega,
+                        setter: setMega,
+                      },
+                      {
+                        key: "tera",
+                        label: "Terastallize",
+                        flag: activeReq.can_terastallize,
+                        value: tera,
+                        setter: setTera,
+                      },
+                      {
+                        key: "zmove",
+                        label: "Z-Move",
+                        flag: activeReq.can_z_move,
+                        value: zmove,
+                        setter: setZmove,
+                      },
+                      {
+                        key: "dyna",
+                        label: "Dynamax",
+                        flag: activeReq.can_dynamax,
+                        value: dyna,
+                        setter: setDyna,
+                      },
+                      {
+                        key: "ultra",
+                        label: "Ultra Burst",
+                        flag: activeReq.can_ultra_burst,
+                        value: ultra,
+                        setter: setUltra,
+                      },
+                    ].map(
+                      ({ key, label, flag, value, setter }) =>
+                        flag && (
+                          <label key={key} className={styles.checkboxLabel}>
+                            <input
+                              type="checkbox"
+                              checked={value}
+                              onChange={(e) => {
+                                dispatch(setChoiceError({ battleId, error: null }));
+                                setter(e.target.checked);
+                              }}
+                            />
+                            {label}
+                          </label>
+                        ),
+                    )}
+                  </div>
+                )}
 
                 <div className={styles.movesGrid}>
                   {activeReq.moves.map((move, index) => {
@@ -410,7 +440,7 @@ export default function ActionPanel({
               <h4>Select Target for {selectedMove.name}</h4>
               <p className={styles.targetDesc}>Target criteria: {selectedMove.target}</p>
 
-              <div className={styles.targetButtons}>
+              <div className="flex-col gap-s">
                 {!TARGET_REQUIRING_SELECT.includes(selectedMove.target) ? (
                   <button
                     onClick={() => handleConfirmMove(null)}
@@ -448,14 +478,13 @@ export default function ActionPanel({
             </div>
           )}
 
-          <div className={styles.navigationRow}>
+          <div className="flex-row">
             {(currentSlotIndex > 0 || selectedMove !== null) && (
               <button onClick={handleBack} className="btn btn-secondary" disabled={isLoading}>
                 Back
               </button>
             )}
           </div>
-          <ErrorBanner message={errorMessage} />
         </div>
       );
     }

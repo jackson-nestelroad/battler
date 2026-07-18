@@ -7,6 +7,7 @@ interface ProposalRowProps {
   onAccept: (uuid: string) => void;
   onDecline: (uuid: string) => void;
   onDismiss: (uuid: string) => void;
+  onView: (uuid: string) => void;
 }
 
 export default function ProposalRow({
@@ -15,9 +16,11 @@ export default function ProposalRow({
   onAccept,
   onDecline,
   onDismiss,
+  onView,
 }: ProposalRowProps) {
   const isPlayer2 = proposal.sides[1]?.players[0]?.id === playerId;
   const isPlayer1 = proposal.sides[0]?.players[0]?.id === playerId;
+  const isDeclined = !!proposal.rejection || !!proposal.deletionReason;
 
   if (isPlayer2) {
     // Incoming Challenge
@@ -26,15 +29,32 @@ export default function ProposalRow({
       <div className={styles.proposalItem}>
         <div className={styles.proposalInfo}>
           <span className={styles.challengerName}>@{challenger}</span>
-          <span className={styles.challengeMeta}>challenges you to a match</span>
+          {isDeclined ? (
+            <span className={`${styles.challengeMeta} ${styles.declinedText}`}>
+              Challenge expired or declined: {proposal.deletionReason || "declined"}
+            </span>
+          ) : (
+            <span className={styles.challengeMeta}>challenges you to a match</span>
+          )}
         </div>
         <div className={styles.proposalActions}>
-          <button onClick={() => onAccept(proposal.uuid)} className="btn btn-success">
-            Accept
-          </button>
-          <button onClick={() => onDecline(proposal.uuid)} className="btn btn-danger">
-            Decline
-          </button>
+          {isDeclined ? (
+            <button onClick={() => onDismiss(proposal.uuid)} className="btn btn-secondary">
+              Dismiss
+            </button>
+          ) : (
+            <>
+              <button onClick={() => onView(proposal.uuid)} className="btn btn-primary">
+                View
+              </button>
+              <button onClick={() => onAccept(proposal.uuid)} className="btn btn-success">
+                Accept
+              </button>
+              <button onClick={() => onDecline(proposal.uuid)} className="btn btn-danger">
+                Reject
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -43,7 +63,6 @@ export default function ProposalRow({
   if (isPlayer1) {
     // Outgoing Challenge
     const opponent = proposal.sides[1]?.players[0]?.name || "Unknown Trainer";
-    const isDeclined = !!proposal.rejection || !!proposal.deletionReason;
     return (
       <div className={styles.proposalItem}>
         <div className={styles.proposalInfo}>
@@ -62,9 +81,14 @@ export default function ProposalRow({
               Dismiss
             </button>
           ) : (
-            <button onClick={() => onDecline(proposal.uuid)} className="btn btn-secondary">
-              Cancel
-            </button>
+            <>
+              <button onClick={() => onView(proposal.uuid)} className="btn btn-primary">
+                View
+              </button>
+              <button onClick={() => onDecline(proposal.uuid)} className="btn btn-danger">
+                Reject
+              </button>
+            </>
           )}
         </div>
       </div>

@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { submitBattleTeam } from "../../core/wamp";
-import { removeProposal } from "../../store/proposalsSlice";
-import { switchActiveBattle } from "../../store/battlesSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import BattleSidesList from "../Common/BattleSidesList";
 import styles from "./BattlePreparationPanel.module.scss";
@@ -15,25 +13,35 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
   const dispatch = useAppDispatch();
 
   const battleSession = useAppSelector((state) => state.battles.battles[battleId]);
-  const activeProposal = useAppSelector((state) => state.proposals.proposals[battleId]);
+  const activeProposal = useAppSelector((state) => {
+    if (!battleId) return null;
+    return (
+      state.proposals.proposals[battleId] ||
+      Object.values(state.proposals.proposals).find((p) => p.battle === battleId) ||
+      null
+    );
+  });
   const teams = useAppSelector((state) => state.teams.teams);
   const defaultTeam = useAppSelector((state) => state.teams.defaultTeam);
   const teamOrder = useAppSelector((state) => state.teams.teamOrder);
 
-  const teamNames =
-    teamOrder.length > 0 ? teamOrder.filter((name) => teams[name]) : Object.keys(teams);
+  const teamNames = useMemo(() => {
+    return teamOrder.length > 0 ? teamOrder.filter((name) => teams[name]) : Object.keys(teams);
+  }, [teamOrder, teams]);
 
   const [selectedTeam, setSelectedTeam] = useState("");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
-  // Sync selectedTeam to default on load
+  // Sync selectedTeam to default on load or if the currently selected team is no longer available/empty
   useEffect(() => {
-    if (defaultTeam && teams[defaultTeam]) {
-      setSelectedTeam(defaultTeam);
-    } else if (teamNames.length > 0) {
-      setSelectedTeam(teamNames[0]);
+    if (!selectedTeam || !teams[selectedTeam]) {
+      if (defaultTeam && teams[defaultTeam]) {
+        setSelectedTeam(defaultTeam);
+      } else if (teamNames.length > 0) {
+        setSelectedTeam(teamNames[0]);
+      }
     }
-  }, [defaultTeam, teams, teamNames]);
+  }, [defaultTeam, teams, teamNames, selectedTeam]);
 
   // Countdown timer logic
   useEffect(() => {
@@ -57,28 +65,6 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
     dispatch(submitBattleTeam({ battleId, team: teamMembers }));
   };
 
-  const handleDismiss = () => {
-    dispatch(removeProposal(battleId));
-    dispatch(switchActiveBattle(null));
-  };
-
-  const isExpired = timeLeft === 0 || activeProposal?.deletionReason;
-
-  if (isExpired) {
-    const reason = activeProposal?.deletionReason || "Deadline exceeded";
-    return (
-      <div className={styles.container}>
-        <div className={`card ${styles.expiredCard}`}>
-          <h3>Proposal Failed</h3>
-          <p className="alert alert-danger">Reason: {reason}</p>
-          <button onClick={handleDismiss} className="btn btn-primary">
-            Return to Lobby
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const sides = battleSession?.serviceBattle?.sides || [];
 
   return (
@@ -95,8 +81,8 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
         </div>
 
         {/* Player readiness checklist */}
-        <div className={styles.readinessSection}>
-          <h4>Player Readiness Status</h4>
+        <div className="flex-col gap-m">
+          <h4 className={styles.sectionHeader}>Player Readiness Status</h4>
           <BattleSidesList sides={sides} isProposal={false} />
         </div>
 
@@ -104,16 +90,17 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
         <div className={styles.teamSelectionSection}>
           <label htmlFor="battle-team-select">Choose Your Battle Team:</label>
           {teamNames.length > 0 ? (
-            <div className={styles.selectionRow}>
+            <div className="flex-row flex-mobile-col gap-s">
               <select
                 id="battle-team-select"
+                className="flex-1"
                 value={selectedTeam}
                 onChange={(e) => setSelectedTeam(e.target.value)}
                 disabled={battleSession?.isLoading}
               >
                 {teamNames.map((name) => (
                   <option key={name} value={name}>
-                    {name} ({teams[name].length} Pokémon)
+                    {name} ({teams[name].length} Mons)
                   </option>
                 ))}
               </select>
@@ -133,11 +120,7 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
         </div>
 
         {/* Validation / error reporting */}
-        {battleSession?.error && (
-          <div className={styles.errorSection}>
-            <ErrorBanner message={battleSession.error} />
-          </div>
-        )}
+        {battleSession?.error && <ErrorBanner message={battleSession.error} />}
       </div>
     </div>
   );

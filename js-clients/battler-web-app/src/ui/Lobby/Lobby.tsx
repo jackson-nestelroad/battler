@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { proposeBattle, respondToProposal } from "../../core/wamp";
-import { switchActiveBattle } from "../../store/battlesSlice";
-import { removeProposal } from "../../store/proposalsSlice";
+import { selectBattle } from "../../store/battlesSlice";
+import { removeProposal, updateProposal } from "../../store/proposalsSlice";
 import type { CoreBattleOptions } from "battler-types";
 
 import { setConnectionError } from "../../store/connectionSlice";
@@ -77,7 +77,8 @@ export default function Lobby() {
       .unwrap()
       .then((proposal) => {
         setOpponentName("");
-        dispatch(switchActiveBattle(proposal.uuid));
+        dispatch(updateProposal(proposal));
+        dispatch(selectBattle({ view: "proposal", battleId: proposal.uuid }));
       })
       .catch((err) => {
         dispatch(setConnectionError("Failed to send challenge: " + (err.message || err), err));
@@ -90,7 +91,7 @@ export default function Lobby() {
       .catch((err) => {
         dispatch(setConnectionError("Failed to accept challenge: " + (err.message || err), err));
       });
-    dispatch(switchActiveBattle(uuid));
+    dispatch(selectBattle({ view: "proposal", battleId: uuid }));
   };
 
   const handleDeclineProposal = (uuid: string) => {
@@ -178,6 +179,7 @@ export default function Lobby() {
           onAccept={handleAcceptProposal}
           onDecline={handleDeclineProposal}
           onDismiss={(uuid) => dispatch(removeProposal(uuid))}
+          onView={(uuid) => dispatch(selectBattle({ view: "proposal", battleId: uuid }))}
         />
 
         {/* Outgoing Challenges */}
@@ -189,6 +191,7 @@ export default function Lobby() {
           onAccept={handleAcceptProposal}
           onDecline={handleDeclineProposal}
           onDismiss={(uuid) => dispatch(removeProposal(uuid))}
+          onView={(uuid) => dispatch(selectBattle({ view: "proposal", battleId: uuid }))}
         />
       </div>
     </div>

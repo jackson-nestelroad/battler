@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { formatUiLogEntry } from "../../utils/logFormatter";
-import { setBattleError, switchActiveBattle, removeBattle } from "../../store/battlesSlice";
+import { setBattleError, removeBattle } from "../../store/battlesSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import Field from "./Field";
 import ActionPanel from "./ActionPanel";
@@ -12,6 +12,7 @@ import BattlePreparationPanel from "./BattlePreparationPanel";
 import BattleProposalView from "./BattleProposalView";
 import Tabs from "../Common/Tabs";
 import ConnectForm from "../Common/ConnectForm";
+import { getOpponentName } from "../../utils/battle";
 
 import styles from "./BattleScreen.module.scss";
 
@@ -21,14 +22,20 @@ export default function BattleScreen() {
   const [debugTab, setDebugTab] = useState<"state" | "request" | "player">("state");
 
   const battleId = useAppSelector((state) => state.battles.activeBattleId);
+  const currentView = useAppSelector((state) => state.battles.currentView);
   const connection = useAppSelector((state) => state.connection);
   const battleSession = useAppSelector((state) =>
     battleId ? state.battles.battles[battleId] : null,
   );
 
-  const activeProposal = useAppSelector((state) =>
-    battleId ? state.proposals.proposals[battleId] : null,
-  );
+  const activeProposal = useAppSelector((state) => {
+    if (!battleId) return null;
+    return (
+      state.proposals.proposals[battleId] ||
+      Object.values(state.proposals.proposals).find((p) => p.battle === battleId) ||
+      null
+    );
+  });
 
   const visibleLogs = useMemo(() => {
     if (!battleSession || !battleSession.battleState) return [];
@@ -47,8 +54,15 @@ export default function BattleScreen() {
     return <ConnectForm />;
   }
 
-  // If activeProposal exists, but actual battleSession does not, render the proposal wait state
-  if (battleId && activeProposal && !battleSession) {
+  if (!battleId) {
+    return (
+      <div className={styles.placeholder}>
+        <p>Select or join a battle session from the sidebar to play.</p>
+      </div>
+    );
+  }
+
+  if (currentView === "proposal" && activeProposal) {
     return (
       <BattleProposalView
         battleId={battleId}
@@ -58,23 +72,66 @@ export default function BattleScreen() {
     );
   }
 
-  if (!battleId || !battleSession) {
-    const isProposalRoute = window.location.pathname.includes("/proposal/");
+  if (!battleSession) {
+    if (activeProposal) {
+      return (
+        <BattleProposalView
+          battleId={battleId}
+          activeProposal={activeProposal}
+          connection={connection}
+        />
+      );
+    }
+    const isConnecting = connection.status === "connecting";
     return (
       <div className={styles.placeholder}>
-        {isProposalRoute ? (
-          <div className="flex-col align-center gap-m">
-            <p>
-              This challenge proposal is no longer active (it may have started, expired, or been
-              declined).
-            </p>
-            <button onClick={() => dispatch(switchActiveBattle(null))} className="btn btn-primary">
-              Return to Lobby
-            </button>
+        <div className="flex-col align-center gap-m">
+          <div className="spinner" />
+          <p>{isConnecting ? "Connecting and loading details..." : "Loading details..."}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If battle session is loading, display loading spinner
+  if (!battleSession.battleState && battleSession.isLoading) {
+    return (
+      <div className={styles.placeholder}>
+        <div className="flex-col align-center gap-m">
+          <div className="spinner" />
+          <p>Loading battle session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!battleSession.battleState && battleSession.error) {
+    const isDeleted = battleSession.isDeleted;
+    const isProposalRoute = currentView === "proposal";
+    const headerText = isProposalRoute
+      ? "Proposal Not Found"
+      : isDeleted
+        ? "Battle Deleted"
+        : "Battle Not Found";
+    const descText = isProposalRoute
+      ? "This challenge proposal is no longer active (it may have started, expired, or been declined)."
+      : isDeleted
+        ? "This battle has been deleted (it may have finished, expired, or been cleaned up)."
+        : "This battle could not be found (it may have finished, expired, or been auto-cleaned up).";
+    return (
+      <div className={styles.placeholder}>
+        <div className={`flex-col align-center gap-m text-center ${styles.errorCard}`}>
+          <div className="alert alert-danger w-full">
+            <div className="flex-col align-start gap-xs text-left">
+              <h4>{headerText}</h4>
+              <p>{battleSession.error}</p>
+            </div>
           </div>
-        ) : (
-          <p>Select or join a battle session from the sidebar to play.</p>
-        )}
+          <p>{descText}</p>
+          <button onClick={() => dispatch(removeBattle(battleId))} className="btn btn-primary">
+            Return to Lobby
+          </button>
+        </div>
       </div>
     );
   }
@@ -85,17 +142,25 @@ export default function BattleScreen() {
     battleSession.battleState?.phase === "pre_battle";
   const isFinished = battleSession.battleState?.phase === "finished";
 
-  const side0 = battleSession.battleState?.field?.sides?.[0];
-  const side1 = battleSession.battleState?.field?.sides?.[1];
+  const side0 =
+    battleSession.battleState?.field?.sides?.[0] ||
+    battleSession.serviceBattle?.sides?.[0] ||
+    activeProposal?.sides?.[0];
+  const side1 =
+    battleSession.battleState?.field?.sides?.[1] ||
+    battleSession.serviceBattle?.sides?.[1] ||
+    activeProposal?.sides?.[1];
   const player0Name = side0?.name || "Player 1";
   const player1Name = side1?.name || "Player 2";
 
-  const opposingSide = battleSession.battleState?.field?.sides?.find(
-    (side) => side.name !== connection.playerId,
+  const opponentName = getOpponentName(
+    connection.playerId,
+    battleSession.battleState,
+    battleSession.serviceBattle,
+    activeProposal,
   );
-  const opponentName = opposingSide?.name || "Opponent";
 
-  const p0 = isReplay ? player0Name : connection.playerId || "Player 1";
+  const p0 = isReplay ? player0Name : connection.playerId || player0Name;
   const p1 = isReplay ? player1Name : opponentName;
 
   return (
@@ -131,15 +196,6 @@ export default function BattleScreen() {
           <div className={styles.vsBadge}>
             @{p0} <span className={styles.vsText}>VS</span> @{p1}
           </div>
-          {(isReplay || isFinished) && (
-            <button
-              className={`${styles.closeBtn} btn btn-danger`}
-              onClick={() => dispatch(removeBattle(battleId))}
-              title={isReplay ? "Close Replay" : "Close Battle"}
-            >
-              ✕ {isReplay ? "Close Replay" : "Close Battle"}
-            </button>
-          )}
         </div>
       </header>
 
@@ -224,7 +280,7 @@ export default function BattleScreen() {
                 playerData={battleSession.playerData}
                 playbackPending={false}
                 isLoading={battleSession.isLoading}
-                errorMessage={battleSession.error}
+                errorMessage={battleSession.choiceError}
               />
             )}
           </section>

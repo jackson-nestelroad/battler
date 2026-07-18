@@ -16,13 +16,6 @@
   }
 }
 
-.playbackLoading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-m);
-}
-
 .dotPulse {
   width: rem(10px);
   height: rem(10px);
@@ -33,16 +26,18 @@
 }
 
 .movesColumn {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-s);
 
   h4 {
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    font-weight: 700;
+    font-size: var(--font-size-s);
+    color: var(--color-primary);
+    font-weight: 600;
   }
 }
 
@@ -143,28 +138,10 @@
   color: var(--text-muted);
 }
 
-.targetButtons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-s);
-}
-
 .targetGrid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: var(--spacing-s);
-}
-
-.navigationRow {
-  display: flex;
-  justify-content: flex-start;
-  flex-shrink: 0;
-}
-
-.actionsRow {
-  display: flex;
-  gap: var(--spacing-s);
-  align-items: center;
 }
 
 @keyframes dotPulse {

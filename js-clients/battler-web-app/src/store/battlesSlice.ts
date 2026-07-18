@@ -18,8 +18,11 @@ export interface BaseBattleSession {
   engineLogs: string[];
   choiceSubmitted?: boolean;
   error: string | null;
+  choiceError: string | null;
   isLoading: boolean;
   serviceBattle: Battle | null;
+  isDeleted?: boolean;
+  isProposal?: boolean;
 }
 
 export interface LiveBattleSession extends BaseBattleSession {
@@ -42,7 +45,7 @@ export function isReplaySession(
   return !!session?.isReplay;
 }
 
-export type ActiveView = "lobby" | "teams" | "battle" | "replays";
+export type ActiveView = "lobby" | "teams" | "battle" | "replays" | "proposal";
 
 export interface BattlesState {
   battles: Record<string, SerializedBattleSession>;
@@ -74,6 +77,7 @@ const battlesSlice = createSlice({
           engineLogs: [],
           choiceSubmitted: false,
           error: null,
+          choiceError: null,
           isLoading: false,
           serviceBattle: null,
         };
@@ -98,6 +102,7 @@ const battlesSlice = createSlice({
 
         if (battleState.turn > prevTurn) {
           battle.choiceSubmitted = false;
+          battle.choiceError = null;
         }
       }
     },
@@ -108,6 +113,7 @@ const battlesSlice = createSlice({
       if (battle) {
         if (!isEqual(battle.activeRequest, request)) {
           battle.choiceSubmitted = false;
+          battle.choiceError = null;
         }
         battle.activeRequest = request;
       }
@@ -139,6 +145,14 @@ const battlesSlice = createSlice({
         battle.error = error;
       }
     },
+    setChoiceError(state, action: PayloadAction<{ battleId: string; error: string | null }>) {
+      const { battleId: rawId, error } = action.payload;
+      const battleId = normalizeId(rawId);
+      const battle = state.battles[battleId];
+      if (battle) {
+        battle.choiceError = error;
+      }
+    },
     setBattleLoading(state, action: PayloadAction<{ battleId: string; isLoading: boolean }>) {
       const { battleId: rawId, isLoading } = action.payload;
       const battleId = normalizeId(rawId);
@@ -155,8 +169,15 @@ const battlesSlice = createSlice({
       }
     },
 
-    battleSessionRestored(state, action: PayloadAction<string>) {
-      const battleId = normalizeId(action.payload);
+    battleSessionRestored(
+      state,
+      action: PayloadAction<string | { battleId: string; isProposal?: boolean }>,
+    ) {
+      const payload = action.payload;
+      const battleId =
+        typeof payload === "string" ? normalizeId(payload) : normalizeId(payload.battleId);
+      const isProposal = typeof payload === "string" ? false : !!payload.isProposal;
+
       if (!state.battles[battleId]) {
         state.battles[battleId] = {
           battleId,
@@ -167,9 +188,20 @@ const battlesSlice = createSlice({
           engineLogs: [],
           choiceSubmitted: false,
           error: null,
+          choiceError: null,
           isLoading: false,
           serviceBattle: null,
+          isProposal,
         };
+      }
+    },
+
+    clearBattleState(state, action: PayloadAction<string>) {
+      const battleId = normalizeId(action.payload);
+      const battle = state.battles[battleId];
+      if (battle) {
+        battle.battleState = null;
+        battle.isDeleted = true;
       }
     },
 
@@ -177,13 +209,20 @@ const battlesSlice = createSlice({
       const battleId = action.payload ? normalizeId(action.payload) : null;
       state.activeBattleId = battleId;
       if (battleId) {
-        state.currentView = "battle";
-      } else if (state.currentView === "battle") {
+        if (state.currentView !== "proposal" && state.currentView !== "battle") {
+          state.currentView = "battle";
+        }
+      } else if (state.currentView === "battle" || state.currentView === "proposal") {
         state.currentView = "lobby";
       }
     },
     setCurrentView(state, action: PayloadAction<ActiveView>) {
       state.currentView = action.payload;
+    },
+    selectBattle(state, action: PayloadAction<{ view: ActiveView; battleId: string | null }>) {
+      const { view, battleId } = action.payload;
+      state.currentView = view;
+      state.activeBattleId = battleId ? normalizeId(battleId) : null;
     },
 
     serviceBattleUpdated(
@@ -233,6 +272,7 @@ const battlesSlice = createSlice({
         engineLogs: [],
         choiceSubmitted: false,
         error: null,
+        choiceError: null,
         isLoading: false,
         serviceBattle: null,
         isReplay: true,
@@ -287,11 +327,14 @@ export const {
   battleStateUpdated,
   setBattleRequest,
   setBattleError,
+  setChoiceError,
   setBattleLoading,
   battleSessionEnded,
   battleSessionRestored,
+  clearBattleState,
   switchActiveBattle,
   setCurrentView,
+  selectBattle,
   serviceBattleUpdated,
   setChoiceSubmitted,
   setBattlePlayerData,

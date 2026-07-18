@@ -1,8 +1,9 @@
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { setCurrentView, switchActiveBattle, removeBattle } from "../../store/battlesSlice";
+import { selectBattle, removeBattle } from "../../store/battlesSlice";
 import type { ActiveView } from "../../store/battlesSlice";
 import { disconnectWamp } from "../../core/wamp";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
+import { getOpponentName } from "../../utils/battle";
 
 import styles from "./Sidebar.module.scss";
 
@@ -15,13 +16,13 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const dispatch = useAppDispatch();
   const connection = useAppSelector((state) => state.connection);
   const { battles, activeBattleId, currentView } = useAppSelector((state) => state.battles);
+  const proposalsMap = useAppSelector((state) => state.proposals.proposals);
 
-  const activeBattlesList = Object.values(battles).filter((b) => !b.isReplay);
+  const activeBattlesList = Object.values(battles).filter((b) => !b.isReplay && !b.isProposal);
   const replayBattlesList = Object.values(battles).filter((b) => b.isReplay);
 
   const handleNav = (view: ActiveView, battleId: string | null = null) => {
-    dispatch(setCurrentView(view));
-    dispatch(switchActiveBattle(battleId));
+    dispatch(selectBattle({ view, battleId }));
 
     // Automatically close sidebar drawer on navigation clicks on mobile
     if (typeof window !== "undefined" && window.innerWidth <= BREAKPOINT_MOBILE_PX) {
@@ -116,15 +117,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           ) : (
             <div className={styles.battlesList}>
               {activeBattlesList.map((battle) => {
-                const isSelected = currentView === "battle" && activeBattleId === battle.battleId;
+                const isSelected =
+                  (currentView === "battle" || currentView === "proposal") &&
+                  activeBattleId === battle.battleId;
                 const hasPendingAction =
                   battle.activeRequest !== null && battle.battleState?.phase !== "finished";
-                const opposingSide = battle.battleState?.field?.sides?.find(
-                  (side) => side.name !== connection.playerId,
+                const opponentName = getOpponentName(
+                  connection.playerId,
+                  battle.battleState,
+                  battle.serviceBattle,
+                  proposalsMap[battle.battleId],
                 );
-                const opponentName = opposingSide?.name || "Opponent";
                 const turnNumber = battle.battleState?.turn || 0;
                 const isFinished = battle.battleState?.phase === "finished";
+                const isPreparing =
+                  battle.serviceBattle?.state === "preparing" ||
+                  battle.battleState?.phase === "pre_battle";
+                const isDeleted = !battle.battleState && !!battle.error;
+                const isCloseable = isFinished || isDeleted;
 
                 return (
                   <div
@@ -132,7 +142,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                     className={`${styles.battleItemWrapper} flex-row align-center justify-between w-full`}
                   >
                     <button
-                      className={`${styles.battleItem} ${isFinished ? styles.closeableBattleItem : ""} ${isSelected ? styles.selected : ""}`}
+                      className={`${styles.battleItem} ${isCloseable ? styles.closeableBattleItem : ""} ${isSelected ? styles.selected : ""}`}
                       onClick={() => handleNav("battle", battle.battleId)}
                       title={`Battle vs ${opponentName}`}
                     >
@@ -142,8 +152,16 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                         ) : (
                           <>
                             <span className={styles.opponentName}>vs {opponentName}</span>
-                            <span className={`${styles.turnLabel} ${isFinished ? styles.finishedLabel : ""}`}>
-                              {isFinished ? "Finished" : `Turn ${turnNumber}`}
+                            <span
+                              className={`${styles.turnLabel} ${isFinished ? styles.finishedLabel : isDeleted ? styles.errorLabel : ""}`}
+                            >
+                              {isFinished
+                                ? "Finished"
+                                : isDeleted
+                                  ? "Deleted"
+                                  : isPreparing
+                                    ? "Preparing"
+                                    : `Turn ${turnNumber}`}
                             </span>
                           </>
                         )}
@@ -154,7 +172,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                         </span>
                       )}
                     </button>
-                    {!isCollapsed && isFinished && (
+                    {!isCollapsed && isCloseable && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

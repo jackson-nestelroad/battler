@@ -1,23 +1,45 @@
 import type { UiLogEntry, BattleState } from "battler-state";
 
 function resolveMonName(monRef: unknown, state?: BattleState): string {
-  if (!monRef || typeof monRef !== "object") return "Pokémon";
-  const ref = monRef as Record<string, any>;
-  if ("Active" in ref) {
-    if (!state) return "Pokémon";
+  if (!monRef || typeof monRef !== "object") return "Mon";
+  const ref = monRef as Partial<{
+    Active: { side: number; position: number };
+    Inactive: { name?: string };
+  }>;
+  if ("Active" in ref && ref.Active) {
+    if (!state) return "Mon";
     const { side: sideIdx, position } = ref.Active;
     const side = state.field?.sides?.[sideIdx];
-    if (!side) return "Pokémon";
+    if (!side) return "Mon";
     const activeRef = side.active?.[position];
-    if (!activeRef) return "Pokémon";
+    if (!activeRef) return "Mon";
     const player = side.players?.[activeRef.player];
-    if (!player) return "Pokémon";
+    if (!player) return "Mon";
     const mon = player.mons?.[activeRef.mon_index];
-    return mon?.physical_appearance?.name || "Pokémon";
-  } else if ("Inactive" in ref) {
-    return ref.Inactive.name || "Pokémon";
+    return mon?.physical_appearance?.name || "Mon";
+  } else if ("Inactive" in ref && ref.Inactive) {
+    return ref.Inactive.name || "Mon";
   }
-  return "Pokémon";
+  return "Mon";
+}
+
+interface LogEntryData {
+  mon?: unknown;
+  name?: string;
+  effect?: {
+    target?: unknown;
+    source?: unknown;
+    source_effect?: {
+      name?: string;
+    } | null;
+  } | null;
+  stat?: string;
+  by?: number | bigint;
+  player?: string;
+  item?: string;
+  target?: unknown;
+  side?: number;
+  title?: string;
 }
 
 export function formatUiLogEntry(
@@ -32,7 +54,7 @@ export function formatUiLogEntry(
   }
 
   const key = Object.keys(entry)[0];
-  const data = (entry as Record<string, any>)[key];
+  const data = (entry as Record<string, LogEntryData>)[key];
 
   // Simple translations mapping (English only to start)
   switch (key) {
@@ -66,7 +88,7 @@ export function formatUiLogEntry(
       return `${monName}'s ${stat} rose!`;
     }
     case "Switch": {
-      return `${data.player} switched in Pokémon index ${data.mon}!`;
+      return `${data.player} switched in Mon index ${data.mon}!`;
     }
     case "SwitchOut": {
       const monName = resolveMonName(data.mon, state);
@@ -86,7 +108,7 @@ export function formatUiLogEntry(
       return `${data.player} cannot escape!`;
     }
     case "Caught": {
-      return "The Pokémon was caught!";
+      return "The Mon was caught!";
     }
     case "Revive": {
       const targetName = resolveMonName(data.effect?.target, state);

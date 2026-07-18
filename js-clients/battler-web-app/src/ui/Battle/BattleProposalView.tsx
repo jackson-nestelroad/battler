@@ -1,6 +1,6 @@
 import { useAppDispatch } from "../../store/store";
 import { respondToProposal } from "../../core/wamp";
-import { switchActiveBattle } from "../../store/battlesSlice";
+import { selectBattle } from "../../store/battlesSlice";
 import { removeProposal } from "../../store/proposalsSlice";
 import type { ProposedBattleWithDetails } from "../../store/proposalsSlice";
 import { setConnectionError } from "../../store/connectionSlice";
@@ -46,7 +46,7 @@ export default function BattleProposalView({
 
   const handleDismiss = () => {
     dispatch(removeProposal(battleId));
-    dispatch(switchActiveBattle(null));
+    dispatch(selectBattle({ view: "lobby", battleId: null }));
   };
 
   const secs = activeProposal.deadline.secs_since_epoch;
@@ -72,7 +72,7 @@ export default function BattleProposalView({
           />
         )}
 
-        <div className={styles.actionRow}>
+        <div className={`${styles.actionRow} flex-col gap-m`}>
           {isDeclined ? (
             <button onClick={handleDismiss} className="btn btn-primary">
               Dismiss & Return to Lobby
@@ -80,25 +80,30 @@ export default function BattleProposalView({
           ) : (
             <>
               {isPlayer2 && !hasPlayer2Accepted && (
-                <div className={styles.actionButtons}>
+                <div className="flex-row gap-s">
                   <button onClick={handleAccept} className="btn btn-success flex-1">
                     Accept Challenge
                   </button>
                   <button onClick={handleDecline} className="btn btn-danger">
-                    Decline
+                    Reject
                   </button>
                 </div>
               )}
 
               {(!isPlayer2 || hasPlayer2Accepted) && (
-                <div className={styles.waitingState}>
+                <div className={`${styles.waitingState} flex-col align-center gap-m`}>
                   <p>Waiting for opponent...</p>
-                  <button
-                    onClick={() => dispatch(switchActiveBattle(null))}
-                    className="btn btn-primary"
-                  >
-                    Back to Matchmaking Lobby
-                  </button>
+                  <div className={styles.waitingActions}>
+                    <button
+                      onClick={() => dispatch(selectBattle({ view: "lobby", battleId: null }))}
+                      className="btn btn-primary"
+                    >
+                      Back to Matchmaking Lobby
+                    </button>
+                    <button onClick={handleDecline} className="btn btn-danger">
+                      Reject
+                    </button>
+                  </div>
                 </div>
               )}
             </>

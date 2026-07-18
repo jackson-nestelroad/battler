@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Dispatch } from "@reduxjs/toolkit";
-import type { RootState } from "../store/store";
+
 import { WampSessionProvider } from "battler-wamp-client";
 import { BattlerMultiplayerClient } from "battler-multiplayer-client";
 import { BattlerClient } from "battler-client";
@@ -25,9 +25,11 @@ import {
   battleStateUpdated,
   setBattleRequest,
   setBattleError,
+  setChoiceError,
   setBattleLoading,
   battleSessionEnded,
   serviceBattleUpdated,
+  clearBattleState,
   setChoiceSubmitted,
   setBattlePlayerData,
   clearBattles,
@@ -145,7 +147,7 @@ export async function initializeBattleClient(
       dispatch(battleStateUpdated({ battleId, state, engineLogs: client.getLogs() }));
 
       // Fetch the service battle state to update player Ready/Waiting status!
-      if (connectionManager.serviceClient) {
+      if (connectionManager.serviceClient && state.phase === "pre_battle") {
         try {
           const serviceBattle = await connectionManager.serviceClient.battle(battleId);
           dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
@@ -210,6 +212,41 @@ export function restoreBattleSession(rawBattleId: string, playerId: string, disp
   });
 }
 
+// Helper to restore/fetch a proposed battle session in the background
+export function restoreProposalSession(rawBattleId: string, playerId: string, dispatch: Dispatch) {
+  const battleId = formatUuid(rawBattleId);
+  if (!connectionManager.multiplayerClient) return;
+
+  dispatch(battleSessionRestored({ battleId, isProposal: true }));
+  dispatch(setBattleLoading({ battleId, isLoading: true }));
+  connectionManager.multiplayerClient
+    .proposedBattle(battleId)
+    .then(async (proposal) => {
+      dispatch(updateProposal(proposal));
+      dispatch(setBattleLoading({ battleId, isLoading: false }));
+      if (proposal.battle) {
+        const actualBattleId = proposal.battle;
+        dispatch(battleSessionCreated(actualBattleId));
+        const client = await initializeBattleClient(actualBattleId, playerId, dispatch);
+        if (client) {
+          client.sync().catch((err: unknown) => {
+            handleBattleError(
+              dispatch,
+              actualBattleId,
+              "Failed to sync battle client on fulfillment during restore",
+              err,
+            );
+          });
+        }
+      }
+    })
+    .catch((err: unknown) => {
+      console.error("[WAMP] Failed to fetch proposal:", err);
+      dispatch(setBattleLoading({ battleId, isLoading: false }));
+      dispatch(setBattleError({ battleId, error: formatWampError(err) }));
+    });
+}
+
 // Connect thunk
 export const connectWamp = createAsyncThunk(
   "wamp/connect",
@@ -219,7 +256,7 @@ export const connectWamp = createAsyncThunk(
       playerId,
       autoconnect = false,
     }: { url: string; playerId: string; autoconnect?: boolean },
-    { dispatch, getState },
+    { dispatch },
   ) => {
     dispatch(setConnectionStatus("connecting"));
     dispatch(setConnectionError(null));
@@ -305,17 +342,6 @@ export const connectWamp = createAsyncThunk(
           }
           battlesOffset += battlesLimit;
         }
-
-        // Also check if the user loaded a specific battle URL directly (e.g. spectating or not in active list)
-        const state = getState() as RootState;
-        const activeBattleId = state.battles.activeBattleId;
-        const currentView = state.battles.currentView;
-        if (currentView === "battle" && activeBattleId && !restoredIds.has(activeBattleId)) {
-          const isProposalRoute = window.location.pathname.includes("/proposal/");
-          if (!isProposalRoute) {
-            restoreBattleSession(activeBattleId, playerId, dispatch);
-          }
-        }
       } catch (err: unknown) {
         console.error("[WAMP] Failed to fetch active battles for player:", err);
       }
@@ -332,16 +358,26 @@ export const connectWamp = createAsyncThunk(
           if (update.proposed_battle.battle) {
             const battleId = update.proposed_battle.battle;
             dispatch(battleSessionCreated(battleId));
-            const client = await initializeBattleClient(battleId, playerId, dispatch);
-            if (client && update.deletion_reason === "fulfilled") {
-              client.sync().catch((err: unknown) => {
-                handleBattleError(
-                  dispatch,
+            if (update.deletion_reason && update.deletion_reason !== "fulfilled") {
+              dispatch(clearBattleState(battleId));
+              dispatch(
+                setBattleError({
                   battleId,
-                  "Failed to sync battle client on fulfillment",
-                  err,
-                );
-              });
+                  error: `Battle proposal failed: ${update.deletion_reason}`,
+                }),
+              );
+            } else {
+              const client = await initializeBattleClient(battleId, playerId, dispatch);
+              if (client && update.deletion_reason === "fulfilled") {
+                client.sync().catch((err: unknown) => {
+                  handleBattleError(
+                    dispatch,
+                    battleId,
+                    "Failed to sync battle client on fulfillment",
+                    err,
+                  );
+                });
+              }
             }
           }
         });
@@ -464,18 +500,12 @@ export const submitChoice = createAsyncThunk(
 
     try {
       dispatch(setBattleLoading({ battleId, isLoading: true }));
-      dispatch(setBattleError({ battleId, error: null }));
-      dispatch(setChoiceSubmitted({ battleId, submitted: true }));
       await client.makeChoice(choice);
+      dispatch(setChoiceError({ battleId, error: null }));
+      dispatch(setChoiceSubmitted({ battleId, submitted: true }));
     } catch (err: unknown) {
-      const formatted = handleBattleError(
-        dispatch,
-        battleId,
-        "Submit choice failed",
-        err,
-        "error",
-        false,
-      );
+      const formatted = formatWampError(err);
+      dispatch(setChoiceError({ battleId, error: formatted }));
       dispatch(setChoiceSubmitted({ battleId, submitted: false }));
       return rejectWithValue(formatted);
     } finally {

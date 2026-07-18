@@ -233,35 +233,27 @@
 .actionRow {
   border-top: 1px solid var(--border-color);
   padding-top: var(--spacing-m);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-m);
-}
-
-.actionButtons {
-  display: flex;
-  gap: var(--spacing-s);
 }
 
 .waitingState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
   padding: var(--spacing-m);
-  gap: var(--spacing-m);
+}
 
-  button {
-    margin-top: var(--spacing-xl);
+.waitingActions {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-s);
+  margin-top: var(--spacing-xl);
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
   }
 }
 
-.closeBtn {
-  height: rem(36px);
-  padding: 0 var(--spacing-m);
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
+.errorCard {
+  max-width: rem(480px);
+  width: 100%;
 }
-

@@ -402,6 +402,66 @@ async fn plays_battle_and_finishes_and_deletes() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn auto_cleans_up_finished_battles() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    // Wait for battle to start.
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
+
+    // Forfeit to end battle.
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "forfeit")
+            .await,
+        Ok(())
+    );
+
+    // Wait for battle to end.
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "win|side:0").await;
+
+    assert_matches::assert_matches!(battler_service.battle(battle.uuid).await, Ok(battle) => {
+        assert_eq!(battle.state, BattleState::Finished);
+    });
+
+    // Make sure it is not deleted yet (duration since end is 0, TTL is 60 secs).
+    let deleted = battler_service
+        .clean_up_finished_battles(Duration::from_secs(60))
+        .await
+        .unwrap();
+    assert_eq!(deleted.len(), 0);
+
+    // Clean up with Duration::ZERO (instantly expired).
+    let deleted = battler_service
+        .clean_up_finished_battles(Duration::ZERO)
+        .await
+        .unwrap();
+    assert_eq!(deleted, vec![battle.uuid]);
+
+    // Verify it is gone from the service.
+    assert_matches::assert_matches!(battler_service.battle(battle.uuid).await, Err(err) => {
+        assert_eq!(err.to_string(), "battle does not exist");
+    });
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn returns_filtered_logs_by_side() {
     let battler_service = BattlerService::new(static_local_data_store());
     let battle = battler_service

@@ -109,6 +109,7 @@ struct LiveBattle<'d> {
 
     choice_made_tx: broadcast::Sender<String>,
     cancel_timers_tx: broadcast::Sender<()>,
+    finished_at: Option<Instant>,
 }
 
 impl<'d> LiveBattle<'d> {
@@ -151,6 +152,7 @@ impl<'d> LiveBattle<'d> {
             timers,
             choice_made_tx,
             cancel_timers_tx,
+            finished_at: None,
         }
         .initialize()
     }
@@ -321,6 +323,9 @@ impl<'d> LiveBattle<'d> {
         self.update_log()?;
         if self.battle.ended() {
             self.state = BattleState::Finished;
+            if self.finished_at.is_none() {
+                self.finished_at = Some(Instant::now());
+            }
         }
         Ok(continued)
     }
@@ -451,6 +456,10 @@ impl<'d> LiveBattleManager<'d> {
 
     async fn battle_preview(&self) -> BattlePreview {
         self.live_battle.lock().await.battle_preview()
+    }
+
+    async fn finished_at(&self) -> Option<Instant> {
+        self.live_battle.lock().await.finished_at
     }
 
     async fn log_for_side<F, R>(&self, side: Option<usize>, f: F) -> R
@@ -1236,6 +1245,31 @@ impl<'d> BattlerService<'d> {
             }
         }
         previews
+    }
+
+    /// Cleans up finished battles that are older than the specified duration.
+    pub async fn clean_up_finished_battles(&self, max_age: Duration) -> Result<Vec<Uuid>> {
+        let mut to_delete = Vec::new();
+        {
+            let battles = self.battles.lock().await;
+            for (uuid, battle) in battles.iter() {
+                if let Some(finished_at) = battle.finished_at().await {
+                    if finished_at.elapsed() >= max_age {
+                        to_delete.push(*uuid);
+                    }
+                }
+            }
+        }
+
+        let mut deleted = Vec::new();
+        for uuid in to_delete {
+            if let Err(err) = self.delete(uuid).await {
+                log::error!("Failed to auto-delete expired finished battle {uuid}: {err:?}");
+            } else {
+                deleted.push(uuid);
+            }
+        }
+        Ok(deleted)
     }
 }
 

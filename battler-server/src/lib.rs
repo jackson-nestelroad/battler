@@ -1,6 +1,7 @@
 use std::{
     net::IpAddr,
     sync::Arc,
+    time::Duration,
 };
 
 use anyhow::{
@@ -259,6 +260,20 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     let mut battler_service_local = battler_service::BattlerService::new(data_store);
     let global_log_rx = battler_service_local.take_global_log_rx().unwrap();
     let battler_service = Arc::new(battler_service_local);
+
+    // Spawn housekeeping task for finished battles
+    let battler_service_cleanup = battler_service.clone();
+    tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(Duration::from_secs(30)).await;
+            if let Err(err) = battler_service_cleanup
+                .clean_up_finished_battles(Duration::from_secs(60))
+                .await
+            {
+                log::error!("Error cleaning up finished battles: {err:?}");
+            }
+        }
+    });
 
     // Multiplayer Service setup
     let battler_service_client = Arc::new(

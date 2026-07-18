@@ -269,6 +269,11 @@
   font-weight: 600;
 }
 
+.errorLabel {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
 .actionBadge {
   font-size: var(--font-size-xs);
   font-weight: 800;
@@ -336,9 +341,20 @@
   .battleItem {
     justify-content: center;
     padding: var(--spacing-s) 0;
+    position: relative;
 
     .battleMeta {
       align-items: center;
+    }
+
+    .actionBadge {
+      position: absolute;
+      top: var(--spacing-xs);
+      right: var(--spacing-m);
+      width: var(--spacing-s);
+      height: var(--spacing-s);
+      font-size: 0;
+      animation: pulse 1.5s infinite alternate;
     }
   }
 }
