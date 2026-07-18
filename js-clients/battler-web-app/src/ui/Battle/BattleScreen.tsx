@@ -13,7 +13,7 @@ import BattlePreparationPanel from "./BattlePreparationPanel";
 import BattleProposalView from "./BattleProposalView";
 import Tabs from "../Common/Tabs";
 import ConnectForm from "../Common/ConnectForm";
-import { getOpponentName } from "../../utils/battle";
+import { getBattleTitle } from "../../utils/battle";
 
 import styles from "./BattleScreen.module.scss";
 
@@ -122,11 +122,7 @@ export default function BattleScreen() {
   if (!battleSession.battleState && battleSession.error) {
     const isDeleted = battleSession.isDeleted;
     const isProposalRoute = currentView === "proposal";
-    const headerText = isProposalRoute
-      ? "Not Found"
-      : isDeleted
-        ? "Deleted"
-        : "Not Found";
+    const headerText = isProposalRoute ? "Not Found" : isDeleted ? "Deleted" : "Not Found";
     const descText = isProposalRoute
       ? "Proposal no longer active."
       : isDeleted
@@ -156,26 +152,11 @@ export default function BattleScreen() {
     battleSession.battleState?.phase === "pre_battle";
   const isFinished = battleSession.battleState?.phase === "finished";
 
-  const side0 =
-    battleSession.battleState?.field?.sides?.[0] ||
-    battleSession.serviceBattle?.sides?.[0] ||
-    activeProposal?.sides?.[0];
-  const side1 =
-    battleSession.battleState?.field?.sides?.[1] ||
-    battleSession.serviceBattle?.sides?.[1] ||
-    activeProposal?.sides?.[1];
-  const player0Name = side0?.name || "Player 1";
-  const player1Name = side1?.name || "Player 2";
-
-  const opponentName = getOpponentName(
-    connection.playerId,
+  const title = getBattleTitle(
     battleSession.battleState,
     battleSession.serviceBattle,
-    activeProposal,
+    battleSession.isProposal ? activeProposal : null,
   );
-
-  const p0 = isReplay ? player0Name : connection.playerId || player0Name;
-  const p1 = isReplay ? player1Name : opponentName;
 
   return (
     <div className="page-container">
@@ -194,8 +175,10 @@ export default function BattleScreen() {
         className={`${styles.screenHeader} flex-row justify-between align-center flex-tablet-col gap-l`}
       >
         <div className={`${styles.titleInfo} flex-col gap-xs`}>
-          <h2>Battle</h2>
-          <span className={styles.battleId}>ID: {battleId}</span>
+          <h2>{title}</h2>
+          <span className={styles.battleId}>
+            {isReplay ? "Replay" : "Battle"} • ID: {battleId}
+          </span>
         </div>
         <div className={`${styles.headerControls} flex-row align-center gap-m`}>
           <button
@@ -214,9 +197,6 @@ export default function BattleScreen() {
             >
               Debug
             </button>
-          </div>
-          <div className={styles.vsBadge}>
-            @{p0} <span className={styles.vsText}>VS</span> @{p1}
           </div>
         </div>
       </header>

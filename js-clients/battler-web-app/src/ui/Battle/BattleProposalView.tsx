@@ -8,6 +8,7 @@ import { setConnectionError } from "../../store/connectionSlice";
 import type { ConnectionState } from "../../store/connectionSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import BattleSidesList from "../Common/BattleSidesList";
+import { getBattleTitle } from "../../utils/battle";
 
 import styles from "./BattleScreen.module.scss";
 
@@ -24,6 +25,8 @@ export default function BattleProposalView({
 }: BattleProposalViewProps) {
   const dispatch = useAppDispatch();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const title = getBattleTitle(null, null, activeProposal);
 
   const handleRefresh = async () => {
     if (!connection.playerId) return;
@@ -74,11 +77,9 @@ export default function BattleProposalView({
           className={`${styles.proposalHeader} flex-row justify-between align-start gap-m w-full`}
         >
           <div className="flex-col">
-            <h3>Battle Proposal</h3>
+            <h3>{title}</h3>
             <div>
-              <span className={styles.proposalFormat}>
-                Format: {activeProposal.battle_options?.format?.battle_type}
-              </span>
+              <span className={styles.proposalFormat}>Battle Proposal</span>
               <span className={styles.proposalTimer}>
                 Expires: {deadlineDate.toLocaleTimeString()}
               </span>
@@ -97,9 +98,7 @@ export default function BattleProposalView({
         <BattleSidesList sides={activeProposal.sides} isProposal={true} />
 
         {isDeclined && (
-          <ErrorBanner
-            message={`Failed: ${activeProposal.deletionReason || "unknown reason"}`}
-          />
+          <ErrorBanner message={`Failed: ${activeProposal.deletionReason || "unknown reason"}`} />
         )}
 
         <div className={`${styles.actionRow} flex-col gap-m`}>

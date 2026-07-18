@@ -2,19 +2,22 @@ import type { BattleState } from "battler-state";
 import type { Battle } from "battler-service-client";
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
 
-export function getOpponentName(
-  playerId: string | null,
+export function getBattleTitle(
   battleState?: BattleState | null,
   serviceBattle?: Battle | null,
   proposal?: ProposedBattleWithDetails | null,
 ): string {
-  if (!playerId) return "Opponent";
-  const playerLower = playerId.toLowerCase();
+  const side0Name =
+    battleState?.field?.sides?.[0]?.name ||
+    serviceBattle?.sides?.[0]?.name ||
+    proposal?.sides?.[0]?.name ||
+    "Side 1";
 
-  const opposingSide =
-    battleState?.field?.sides?.find((side) => side.name?.toLowerCase() !== playerLower) ||
-    serviceBattle?.sides?.find((side) => side.name?.toLowerCase() !== playerLower) ||
-    proposal?.sides?.find((side) => side.name?.toLowerCase() !== playerLower);
+  const side1Name =
+    battleState?.field?.sides?.[1]?.name ||
+    serviceBattle?.sides?.[1]?.name ||
+    proposal?.sides?.[1]?.name ||
+    "Side 2";
 
-  return opposingSide?.name || "Opponent";
+  return `${side0Name} vs ${side1Name}`;
 }

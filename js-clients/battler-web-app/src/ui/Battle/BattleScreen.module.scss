@@ -30,28 +30,6 @@
   word-break: break-all;
 }
 
-.vsBadge {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding: 0 var(--spacing-m);
-  border-radius: var(--border-radius-s);
-  font-weight: 700;
-  font-size: var(--font-size-s);
-  color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: rem(36px);
-  line-height: 1;
-}
-
-.vsText {
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  margin: 0 var(--spacing-xs);
-}
 
 .headerControls {
   flex-wrap: wrap; /* natural wrapping on ultra-narrow viewports */

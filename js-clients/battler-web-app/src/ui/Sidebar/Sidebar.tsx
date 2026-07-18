@@ -3,7 +3,7 @@ import { selectBattle, removeBattle } from "../../store/battlesSlice";
 import type { ActiveView } from "../../store/battlesSlice";
 import { disconnectWamp } from "../../core/wamp";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
-import { getOpponentName } from "../../utils/battle";
+import { getBattleTitle } from "../../utils/battle";
 
 import styles from "./Sidebar.module.scss";
 
@@ -122,8 +122,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                   activeBattleId === battle.battleId;
                 const hasPendingAction =
                   battle.activeRequest !== null && battle.battleState?.phase !== "finished";
-                const opponentName = getOpponentName(
-                  connection.playerId,
+                const title = getBattleTitle(
                   battle.battleState,
                   battle.serviceBattle,
                   proposalsMap[battle.battleId],
@@ -144,14 +143,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                     <button
                       className={`${styles.battleItem} ${isCloseable ? styles.closeableBattleItem : ""} ${isSelected ? styles.selected : ""}`}
                       onClick={() => handleNav("battle", battle.battleId)}
-                      title={`Battle vs ${opponentName}`}
+                      title={title}
                     >
                       <div className={styles.battleMeta}>
                         {isCollapsed ? (
                           <span className={styles.navIcon}>🎮</span>
                         ) : (
                           <>
-                            <span className={styles.opponentName}>vs @{opponentName}</span>
+                            <span className={styles.opponentName}>{title}</span>
                             <span
                               className={`${styles.turnLabel} ${isFinished ? styles.finishedLabel : isDeleted ? styles.errorLabel : ""}`}
                             >
@@ -199,10 +198,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           <div className={styles.battlesList}>
             {replayBattlesList.map((battle) => {
               const isSelected = currentView === "battle" && activeBattleId === battle.battleId;
-              const side0 = battle.battleState?.field?.sides?.[0];
-              const side1 = battle.battleState?.field?.sides?.[1];
-              const p0 = side0?.name || "Player 1";
-              const p1 = side1?.name || "Player 2";
+              const title = getBattleTitle(battle.battleState);
               const turnNumber = battle.battleState?.turn || 0;
 
               return (
@@ -213,7 +209,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                   <button
                     className={`${styles.battleItem} ${styles.closeableBattleItem} ${isSelected ? styles.selected : ""}`}
                     onClick={() => handleNav("battle", battle.battleId)}
-                    title={`Replay: ${p0} vs ${p1}`}
+                    title={`Replay: ${title}`}
                   >
                     <div className={styles.battleMeta}>
                       {isCollapsed ? (
@@ -223,7 +219,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                       ) : (
                         <>
                           <span className={styles.opponentName}>
-                            {p0} vs {p1}
+                            {title}
                           </span>
                           <span className={styles.turnLabel}>Turn {turnNumber}</span>
                         </>
