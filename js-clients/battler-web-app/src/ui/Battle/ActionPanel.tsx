@@ -50,6 +50,8 @@ export default function ActionPanel({
   const [dyna, setDyna] = useState(false);
   const [tera, setTera] = useState(false);
 
+  const [showForfeitConfirm, setShowForfeitConfirm] = useState(false);
+
   const resetModifiers = () => {
     setMega(false);
     setZmove(false);
@@ -68,21 +70,63 @@ export default function ActionPanel({
     setSelectedMoveIndex(null);
     resetModifiers();
     submittingRef.current = false;
+    setShowForfeitConfirm(false);
   }, [request, turn]);
 
-  // Reset submitting ref when loading finishes
+  // Reset submitting ref and forfeit confirm when loading finishes
   useEffect(() => {
     if (!isLoading) {
       submittingRef.current = false;
+      setShowForfeitConfirm(false);
     }
   }, [isLoading]);
 
-  const handleForfeit = () => {
-    if (submittingRef.current) return;
-    if (window.confirm("Are you sure you want to forfeit the match?")) {
-      submittingRef.current = true;
-      dispatch(submitChoice({ battleId, choice: "forfeit" }));
+  // Reset forfeit confirmation after 4 seconds of inactivity
+  useEffect(() => {
+    if (showForfeitConfirm) {
+      const timer = setTimeout(() => {
+        setShowForfeitConfirm(false);
+      }, 4000);
+      return () => clearTimeout(timer);
     }
+  }, [showForfeitConfirm]);
+
+  const handleForfeitClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowForfeitConfirm(true);
+  };
+
+  const handleForfeitCancel = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowForfeitConfirm(false);
+  };
+
+  const handleForfeitConfirm = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    dispatch(submitChoice({ battleId, choice: "forfeit" }));
+  };
+
+  const renderForfeitButton = () => {
+    if (showForfeitConfirm) {
+      return (
+        <div className="flex-row gap-xs align-center">
+          <button className="btn btn-danger" onClick={handleForfeitConfirm} disabled={isLoading}>
+            Confirm Forfeit
+          </button>
+          <button className="btn btn-secondary" onClick={handleForfeitCancel} disabled={isLoading}>
+            Cancel
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <button className="btn btn-danger" onClick={handleForfeitClick} disabled={isLoading}>
+        Forfeit
+      </button>
+    );
   };
 
   // Check if player has already submitted their choice for the current turn
@@ -197,9 +241,7 @@ export default function ActionPanel({
             >
               Submit Team Order (Default)
             </button>
-            <button className="btn btn-danger" onClick={handleForfeit} disabled={isLoading}>
-              Forfeit
-            </button>
+            {renderForfeitButton()}
           </div>
         </div>
       );
@@ -245,9 +287,7 @@ export default function ActionPanel({
                 Back
               </button>
             )}
-            <button className="btn btn-danger" onClick={handleForfeit} disabled={isLoading}>
-              Forfeit
-            </button>
+            {renderForfeitButton()}
           </div>
         </div>
       );
@@ -337,11 +377,7 @@ export default function ActionPanel({
               Commands for <strong>{activeMonName}</strong> (Slot {currentSlotIndex + 1}/
               {activeRequests.length})
             </h3>
-            <div className={styles.headerActions}>
-              <button className="btn btn-danger" onClick={handleForfeit} disabled={isLoading}>
-                Forfeit
-              </button>
-            </div>
+            <div className={styles.headerActions}>{renderForfeitButton()}</div>
           </div>
           <ErrorBanner message={errorMessage} />
 
