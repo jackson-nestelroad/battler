@@ -172,12 +172,13 @@ export default function BattleScreen() {
       )}
 
       <header
-        className={`${styles.screenHeader} flex-row justify-between align-center flex-tablet-col gap-l`}
+        className={`${styles.screenHeader} flex-row justify-between align-center flex-mobile-col gap-l`}
       >
         <div className={`${styles.titleInfo} flex-col gap-xs`}>
           <h2>{title}</h2>
           <span className={styles.battleId}>
-            {isReplay ? "Replay" : "Battle"} • ID: {battleId}
+            {isReplay ? "Replay" : "Battle"} • ID:{" "}
+            <span className={styles.idValue}>{battleId}</span>
           </span>
         </div>
         <div className={`${styles.headerControls} flex-row align-center gap-m`}>

@@ -14,12 +14,26 @@
   padding-bottom: var(--spacing-m);
   margin-bottom: var(--spacing-l);
   flex-shrink: 0;
+
+  @include mobile {
+    padding-bottom: var(--spacing-s);
+    margin-bottom: var(--spacing-m);
+    gap: var(--spacing-m) !important;
+  }
 }
 
 .titleInfo {
   h2 {
     font-size: var(--font-size-xl);
     font-weight: 700;
+
+    @include mobile {
+      font-size: var(--font-size-l);
+    }
+  }
+
+  @include mobile {
+    text-align: center;
   }
 }
 
@@ -28,14 +42,33 @@
   font-family: monospace;
   color: var(--text-muted);
   word-break: break-all;
+
+  @include mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xxs);
+    word-break: normal;
+  }
 }
 
+.idValue {
+  @include mobile {
+    display: inline-block;
+    max-width: rem(80px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: text-bottom;
+  }
+}
 
 .headerControls {
   flex-wrap: wrap; /* natural wrapping on ultra-narrow viewports */
 
-  @include tablet {
+  @include mobile {
     width: 100%;
+    justify-content: center;
   }
 }
 
