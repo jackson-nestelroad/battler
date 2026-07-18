@@ -43,8 +43,6 @@ pub fn alter_battle_state(
     let mut state: BattleState =
         serde_wasm_bindgen::from_value(state_js).map_err(|e| JsValue::from_str(&e.to_string()))?;
 
-
-
     let log_lines_refs: Vec<&str> = log_lines.iter().map(|s| s.as_str()).collect();
     let log = Log::new(log_lines_refs).map_err(|e| JsValue::from_str(&e.to_string()))?;
 
