@@ -728,6 +728,13 @@ impl<'d> BattlerMultiplayerService<'d> {
             return Err(Error::msg("you must participate in the battle"));
         }
 
+        let mut unique_players = BTreeSet::new();
+        for player in &players {
+            if !unique_players.insert(player) {
+                return Err(Error::msg("duplicate players are not allowed"));
+            }
+        }
+
         // Validate quotas and cooldown
         {
             let mut state = self.state.lock().await;
