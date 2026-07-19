@@ -11,7 +11,7 @@ export interface TimerSettingsState {
 
 export const TIMER_PRESETS = {
   blitz: {
-    actionTimer: "15",
+    actionTimer: "10",
     teamPreviewTimer: "15",
     playerTimer: "",
     battleTimer: "",
