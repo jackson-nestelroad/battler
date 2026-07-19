@@ -70,7 +70,7 @@
   min-height: 0;
 }
 
-.rulesToggle {
+.detailsToggle {
   cursor: pointer;
   color: var(--color-primary);
   font-weight: 600;
@@ -84,7 +84,7 @@
   }
 }
 
-.rulesDropdown {
+.detailsDropdown {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-m);

@@ -114,6 +114,7 @@ struct LiveBattle<'d> {
     logs: SplitLogs,
 
     timers: BTreeMap<TimerType, TimerState>,
+    timers_config: Timers,
 
     choice_made_tx: broadcast::Sender<String>,
     cancel_timers_tx: broadcast::Sender<()>,
@@ -144,7 +145,7 @@ impl<'d> LiveBattle<'d> {
             .iter()
             .flat_map(|side| side.players.iter().map(|player| player.id.clone()))
             .collect::<Vec<_>>();
-        let timers = service_options.timers.to_state(&players);
+        let timers = service_options.timers.clone().to_state(&players);
         LiveBattle {
             uuid,
             state: BattleState::Preparing,
@@ -154,6 +155,7 @@ impl<'d> LiveBattle<'d> {
             error: None,
             logs,
             timers,
+            timers_config: service_options.timers,
             choice_made_tx,
             cancel_timers_tx,
             finished_at: None,
@@ -223,6 +225,7 @@ impl<'d> LiveBattle<'d> {
                 creator: self.creator.clone(),
                 battle_type: self.battle.battle_type(),
                 rules: self.battle.rules(),
+                timers: self.timers_config.clone(),
             },
         }
     }

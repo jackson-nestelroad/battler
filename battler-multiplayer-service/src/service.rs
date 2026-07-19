@@ -76,6 +76,7 @@ impl ActiveProposedBattle {
             battle: None,
             battle_type: options.battle_options.format.battle_type,
             rules: options.battle_options.format.rules.clone(),
+            timers: options.service_options.timers.clone(),
         };
         Self {
             options,

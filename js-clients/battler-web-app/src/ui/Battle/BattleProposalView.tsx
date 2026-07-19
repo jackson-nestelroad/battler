@@ -12,7 +12,7 @@ import { getBattleTitle, formatDeletionReason } from "../../utils/battle";
 import CopyableId from "../Common/CopyableId";
 import RefreshButton from "../Common/RefreshButton";
 import CountdownTimer from "../Common/CountdownTimer";
-import RulesList from "../Common/RulesList";
+import BattleDetailsGrid from "../Common/BattleDetailsGrid";
 
 import styles from "./BattleProposalView.module.scss";
 
@@ -104,19 +104,11 @@ export default function BattleProposalView({
 
           <div className={styles.detailsSection}>
             <h4 className="details-header">Battle Details</h4>
-            <div className="details-grid">
-              <span className="details-label">Format</span>
-              <div>
-                <span className="badge badge-secondary">{activeProposal.battle_type}</span>
-              </div>
-
-              {activeProposal.rules && activeProposal.rules.length > 0 && (
-                <>
-                  <span className="details-label">Rules</span>
-                  <RulesList rules={activeProposal.rules} />
-                </>
-              )}
-            </div>
+            <BattleDetailsGrid
+              battleType={activeProposal.battle_type}
+              rules={activeProposal.rules}
+              timers={activeProposal.timers}
+            />
           </div>
 
           {!isDeclined && (

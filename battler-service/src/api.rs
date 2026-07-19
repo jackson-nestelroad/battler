@@ -4,6 +4,8 @@ use serde::{
 };
 use uuid::Uuid;
 
+use crate::timer::Timers;
+
 /// The state of a [`Player`] in a [`Battle`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -88,6 +90,8 @@ pub struct BattleMetadata {
     pub battle_type: battler::battle::BattleType,
     /// The rules of the battle.
     pub rules: Vec<String>,
+    /// Timer configuration.
+    pub timers: Timers,
 }
 
 /// A battle.

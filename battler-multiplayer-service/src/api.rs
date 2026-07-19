@@ -11,7 +11,10 @@ use battler::{
     BattleType,
     CoreBattleOptions,
 };
-use battler_service::BattleServiceOptions;
+use battler_service::{
+    BattleServiceOptions,
+    Timers,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -135,6 +138,8 @@ pub struct ProposedBattle {
     pub battle_type: BattleType,
     /// The rules of the battle.
     pub rules: Vec<String>,
+    /// Timer configuration.
+    pub timers: Timers,
 }
 
 /// A player's response to a proposed battle.

@@ -15,7 +15,7 @@ import Tabs from "../Common/Tabs";
 import CopyableId from "../Common/CopyableId";
 import RefreshButton from "../Common/RefreshButton";
 import { getBattleTitle } from "../../utils/battle";
-import RulesList from "../Common/RulesList";
+import BattleDetailsGrid from "../Common/BattleDetailsGrid";
 import BattleTimers from "./BattleTimers";
 import styles from "./BattleScreen.module.scss";
 
@@ -32,10 +32,10 @@ export default function BattleScreen() {
   );
 
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showRules, setShowRules] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    setShowRules(false);
+    setShowDetails(false);
   }, [battleId]);
 
   const handleRefresh = async () => {
@@ -188,13 +188,12 @@ export default function BattleScreen() {
               <>
                 {" "}
                 • <span className="screen-header-format">{metadata.battle_type}</span>
-                {metadata.rules && metadata.rules.length > 0 && (
+                {((metadata.rules && metadata.rules.length > 0) || metadata.timers) && (
                   <>
                     {" "}
                     •{" "}
-                    <span className={styles.rulesToggle} onClick={() => setShowRules(!showRules)}>
-                      {metadata.rules.length} Rule{metadata.rules.length > 1 ? "s" : ""}{" "}
-                      {showRules ? "▲" : "▼"}
+                    <span className={styles.detailsToggle} onClick={() => setShowDetails(!showDetails)}>
+                      Details {showDetails ? "▲" : "▼"}
                     </span>
                   </>
                 )}
@@ -221,10 +220,14 @@ export default function BattleScreen() {
         </div>
       </header>
 
-      {showRules && metadata && metadata.rules && metadata.rules.length > 0 && (
-        <div className={`${styles.rulesDropdown} flex-col gap-s`}>
-          <h4 className="details-header">Active Rules</h4>
-          <RulesList rules={metadata.rules} />
+      {showDetails && metadata && (
+        <div className={`${styles.detailsDropdown} flex-col gap-s`}>
+          <h4 className="details-header">Battle Details</h4>
+          <BattleDetailsGrid
+            battleType={metadata.battle_type}
+            rules={metadata.rules}
+            timers={metadata.timers}
+          />
         </div>
       )}
 
