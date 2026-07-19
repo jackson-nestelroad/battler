@@ -320,7 +320,7 @@ pub struct CoreBattle<'d> {
 // Block for constructors.
 impl<'d> CoreBattle<'d> {
     fn new(
-        options: CoreBattleOptions,
+        mut options: CoreBattleOptions,
         data: &'d dyn DataStore,
         engine_options: CoreBattleEngineOptions,
     ) -> Result<Self> {
@@ -330,6 +330,30 @@ impl<'d> CoreBattle<'d> {
 
         let dex = Dex::new(data)?;
         let format = Format::new(options.format, &dex)?;
+
+        for player in options.side_1.players.iter_mut() {
+            if !player.team.members.is_empty() {
+                Self::validate_and_modify_team_static(
+                    &format,
+                    &dex,
+                    &mut player.team,
+                    engine_options.validate_teams,
+                )
+                .wrap_error_with_format(format_args!("validation failed for {}", player.name))?;
+            }
+        }
+        for player in options.side_2.players.iter_mut() {
+            if !player.team.members.is_empty() {
+                Self::validate_and_modify_team_static(
+                    &format,
+                    &dex,
+                    &mut player.team,
+                    engine_options.validate_teams,
+                )
+                .wrap_error_with_format(format_args!("validation failed for {}", player.name))?;
+            }
+        }
+
         let prng = (engine_options.rng_factory)(options.seed);
         let clock = engine_options
             .clock_factory
@@ -716,13 +740,22 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
-    fn validate_and_modify_team(&self, team: &mut TeamData) -> Result<()> {
-        let validator = TeamValidator::new(&self.format, &self.dex);
+    fn validate_and_modify_team_static(
+        format: &Format,
+        dex: &Dex,
+        team: &mut TeamData,
+        validate: bool,
+    ) -> Result<()> {
+        let validator = TeamValidator::new(format, dex);
         let problems = validator.validate_team(team);
-        if !problems.is_empty() {
+        if validate && !problems.is_empty() {
             return Err(ValidationError::from_iter(problems).wrap_error());
         }
         Ok(())
+    }
+
+    fn validate_and_modify_team(&self, team: &mut TeamData) -> Result<()> {
+        Self::validate_and_modify_team_static(&self.format, &self.dex, team, true)
     }
 
     pub fn log_private_public(

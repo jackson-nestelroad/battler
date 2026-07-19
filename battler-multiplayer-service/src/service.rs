@@ -257,7 +257,7 @@ impl ActiveProposedBattleManager {
         } else if rejected {
             Some("rejected".to_owned())
         } else if let Some(err) = error {
-            Some(format!("internal error: {err}"))
+            Some(format!("internal error: {err:#}"))
         } else if SystemTime::now() >= deadline {
             Some("deadline exceeded".to_owned())
         } else {
@@ -331,7 +331,7 @@ impl ActiveProposedBattleManager {
     async fn update(&self) {
         if let Err(err) = self.update_internal().await {
             log::error!("Update for proposed battle {} failed: {err:?}", self.uuid);
-            self.state.lock().await.error = Some(err.to_string());
+            self.state.lock().await.error = Some(format!("{err:#}"));
         }
         self.publish_update().await;
     }
@@ -431,7 +431,7 @@ impl ActiveProposedBattleManager {
                     "Watching battle for proposed battle {} failed: {err:?}",
                     active_proposed_battle_manager.uuid
                 );
-                active_proposed_battle_manager.state.lock().await.error = Some(err.to_string());
+                active_proposed_battle_manager.state.lock().await.error = Some(format!("{err:#}"));
             }
         }
     }
@@ -706,7 +706,7 @@ impl<'d> BattlerMultiplayerService<'d> {
             Self::delete_proposed_battle(
                 self.state.clone(),
                 uuid,
-                format!("creation failed: {err}"),
+                format!("creation failed: {err:#}"),
             )
             .await;
         }
@@ -723,7 +723,7 @@ impl<'d> BattlerMultiplayerService<'d> {
         options
             .battle_options
             .validate()
-            .map_err(|err| Error::msg(format!("invalid battle options: {err}")))?;
+            .map_err(|err| Error::msg(format!("invalid battle options: {err:#}")))?;
 
         let creator = options.service_options.creator.clone();
 
