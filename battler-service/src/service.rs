@@ -12,6 +12,7 @@ use std::{
     time::{
         Duration,
         Instant,
+        SystemTime,
     },
 };
 
@@ -84,12 +85,17 @@ pub struct BattleServiceOptions {
     /// Battle timers.
     #[serde(default)]
     pub timers: Timers,
+
+    /// Log absolute deadlines for timers.
+    #[serde(default)]
+    pub log_timer_deadlines: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
 enum TimerLogType {
     Warning,
     Done,
+    Inactive,
 }
 
 /// An ongoing battle, managed by [`BattlerService`].
@@ -112,6 +118,7 @@ struct LiveBattle<'d> {
     choice_made_tx: broadcast::Sender<String>,
     cancel_timers_tx: broadcast::Sender<()>,
     finished_at: Option<Instant>,
+    log_timer_deadlines: bool,
 }
 
 impl<'d> LiveBattle<'d> {
@@ -150,6 +157,7 @@ impl<'d> LiveBattle<'d> {
             choice_made_tx,
             cancel_timers_tx,
             finished_at: None,
+            log_timer_deadlines: service_options.log_timer_deadlines,
         }
         .initialize()
     }
@@ -291,6 +299,7 @@ impl<'d> LiveBattle<'d> {
 
         self.battle.set_player_choice(player, choice)?;
         self.choice_made_tx.send(player.to_owned()).ok();
+
         Ok(())
     }
 
@@ -348,6 +357,7 @@ impl<'d> LiveBattle<'d> {
         timer_type: &TimerType,
         remaining: Duration,
         timer_log_type: Option<TimerLogType>,
+        log_timer_deadlines: bool,
     ) -> String {
         let timer_type = match timer_type {
             TimerType::Battle => "battle".to_owned(),
@@ -355,15 +365,28 @@ impl<'d> LiveBattle<'d> {
             TimerType::Action(player) => format!("action:{player}"),
             TimerType::TeamPreview(player) => format!("teampreview:{player}"),
         };
-        format!(
-            "timer|{timer_type}{}|remainingsecs:{}",
-            match timer_log_type {
-                Some(TimerLogType::Warning) => "|warning",
-                Some(TimerLogType::Done) => "|done",
-                None => "",
-            },
-            remaining.as_secs()
-        )
+        let log_type = match timer_log_type {
+            Some(TimerLogType::Warning) => "|warning",
+            Some(TimerLogType::Done) => "|done",
+            Some(TimerLogType::Inactive) => "|inactive",
+            None => "",
+        };
+        if log_timer_deadlines {
+            let deadline = SystemTime::now() + remaining;
+            let deadline_secs = deadline
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs();
+            format!(
+                "timer|{timer_type}{log_type}|remainingsecs:{}|deadline:{deadline_secs}",
+                remaining.as_secs()
+            )
+        } else {
+            format!(
+                "timer|{timer_type}{log_type}|remainingsecs:{}",
+                remaining.as_secs()
+            )
+        }
     }
 
     fn inject_log_entries<I, S>(&mut self, entries: I)
@@ -393,10 +416,12 @@ impl<'d> LiveBattle<'d> {
             return Ok(());
         }
 
+        let log_timer_deadlines = self.log_timer_deadlines;
         self.inject_log_entries([Self::timer_log(
             timer_type,
             Duration::ZERO,
             Some(TimerLogType::Done),
+            log_timer_deadlines,
         )]);
 
         match timer_type {
@@ -406,6 +431,28 @@ impl<'d> LiveBattle<'d> {
                 self.battle.set_player_choice(player, "randomall")
             }
         }
+    }
+
+    fn active_timer_types(&self) -> Result<BTreeSet<TimerType>> {
+        let mut timers = BTreeSet::default();
+        for timer_type in self.timers.keys() {
+            let active = match timer_type {
+                TimerType::Battle => true,
+                TimerType::Player(player) => self.battle.request_for_player(player)?.is_some(),
+                TimerType::Action(player) => match self.battle.request_for_player(player)? {
+                    Some(request) => request.request_type() != RequestType::TeamPreview,
+                    None => false,
+                },
+                TimerType::TeamPreview(player) => match self.battle.request_for_player(player)? {
+                    Some(request) => request.request_type() == RequestType::TeamPreview,
+                    None => false,
+                },
+            };
+            if active {
+                timers.insert(timer_type.clone());
+            }
+        }
+        Ok(timers)
     }
 }
 
@@ -608,10 +655,15 @@ impl<'d> LiveBattleManager<'d> {
         task_tx: mpsc::Sender<()>,
     ) -> Result<()> {
         log::info!("Live battle {uuid} is proceeding");
-        let (continued, ended) = {
+        let (continued, ended, active_timers) = {
             let mut battle = battle.lock().await;
             battle.error = None;
-            (battle.continue_battle()?, battle.battle.ended())
+            let active_timers = battle.active_timer_types()?;
+            (
+                battle.continue_battle()?,
+                battle.battle.ended(),
+                active_timers,
+            )
         };
 
         let is_empty = live_battle_manager_state
@@ -621,6 +673,25 @@ impl<'d> LiveBattleManager<'d> {
             .is_empty();
         if (continued || is_empty) && !ended {
             Self::resume_timers(uuid, battle, live_battle_manager_state, task_tx).await?;
+        } else if ended {
+            Self::join_all_timer_tasks(&battle, &live_battle_manager_state).await;
+            let mut battle = battle.lock().await;
+            let log_timer_deadlines = battle.log_timer_deadlines;
+            let timer_logs = active_timers
+                .iter()
+                .filter_map(|timer_type| {
+                    battle.timers.get(timer_type).map(|state| {
+                        LiveBattle::timer_log(
+                            timer_type,
+                            state.remaining,
+                            Some(TimerLogType::Inactive),
+                            log_timer_deadlines,
+                        )
+                    })
+                })
+                .collect::<Vec<_>>();
+            battle.inject_log_entries(timer_logs);
+            battle.inject_log_entries(["done"]);
         }
 
         Ok(())
@@ -673,30 +744,7 @@ impl<'d> LiveBattleManager<'d> {
                 }
 
                 // Filter timers that should be active.
-                let mut timers = BTreeSet::default();
-                for timer_type in battle.timers.keys() {
-                    let active = match timer_type {
-                        TimerType::Battle => true,
-                        TimerType::Player(player) => {
-                            battle.battle.request_for_player(player)?.is_some()
-                        }
-                        TimerType::Action(player) => {
-                            match battle.battle.request_for_player(player)? {
-                                Some(request) => request.request_type() != RequestType::TeamPreview,
-                                None => false,
-                            }
-                        }
-                        TimerType::TeamPreview(player) => {
-                            match battle.battle.request_for_player(player)? {
-                                Some(request) => request.request_type() == RequestType::TeamPreview,
-                                None => false,
-                            }
-                        }
-                    };
-                    if active {
-                        timers.insert(timer_type.clone());
-                    }
-                }
+                let timers = battle.active_timer_types()?;
 
                 let timer_logs = timers
                     .iter()
@@ -707,6 +755,7 @@ impl<'d> LiveBattleManager<'d> {
                             // `battle.timers`.
                             battle.timers.get(timer_type).unwrap().remaining,
                             None,
+                            battle.log_timer_deadlines,
                         )
                     })
                     .collect::<Vec<_>>();
@@ -896,10 +945,12 @@ impl<'d> LiveBattleManager<'d> {
                 _ = next_warning_future => {
                     // Issue a warning.
                     let mut battle = battle.lock().await;
+                    let log_timer_deadlines = battle.log_timer_deadlines;
                     battle.inject_log_entries([LiveBattle::timer_log(
                         timer_type,
                         next_warning.unwrap_or_default(),
                         Some(TimerLogType::Warning),
+                        log_timer_deadlines,
                     )]);
                 }
                 choice_made = choice_made_rx.recv() => {
@@ -918,6 +969,17 @@ impl<'d> LiveBattleManager<'d> {
         };
 
         recalculate_remaining(&mut now, &mut remaining);
+
+        if !proceed {
+            let mut battle = battle.lock().await;
+            let log_timer_deadlines = battle.log_timer_deadlines;
+            battle.inject_log_entries([LiveBattle::timer_log(
+                timer_type,
+                remaining,
+                Some(TimerLogType::Inactive),
+                log_timer_deadlines,
+            )]);
+        }
 
         // Save the timer state, even if the duration is zero.
         //

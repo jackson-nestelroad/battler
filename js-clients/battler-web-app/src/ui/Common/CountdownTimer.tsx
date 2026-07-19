@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatSeconds } from "../../utils/battle";
 
 interface CountdownTimerProps {
   deadlineSecs: number;
@@ -6,6 +7,7 @@ interface CountdownTimerProps {
   prefix?: string;
   className?: string;
   badgeMode?: boolean;
+  badgeClassOverride?: string;
 }
 
 export default function CountdownTimer({
@@ -14,6 +16,7 @@ export default function CountdownTimer({
   prefix = "",
   className = "",
   badgeMode = false,
+  badgeClassOverride,
 }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
@@ -43,20 +46,10 @@ export default function CountdownTimer({
 
   if (timeLeft === null) return null;
 
-  const formatTimeLeft = (secs: number) => {
-    if (secs < 60) {
-      return `${secs}s`;
-    }
-    const minutes = Math.floor(secs / 60);
-    const seconds = secs % 60;
-    const paddedSeconds = seconds.toString().padStart(2, "0");
-    return `${minutes}:${paddedSeconds}`;
-  };
-
-  const formattedTime = formatTimeLeft(timeLeft);
+  const formattedTime = formatSeconds(timeLeft);
 
   if (badgeMode) {
-    const badgeClass = timeLeft < 15 ? "badge-danger" : "badge-warning";
+    const badgeClass = timeLeft < 15 ? "badge-danger" : badgeClassOverride || "badge-warning";
     return (
       <div className={`badge ${badgeClass} badge-timer ${className}`}>
         {prefix}

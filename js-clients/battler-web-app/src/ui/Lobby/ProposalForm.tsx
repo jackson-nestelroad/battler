@@ -81,7 +81,7 @@ export default function ProposalForm() {
 
   // Grouped timer settings state
   const [timerSettings, setTimerSettings] = useState<TimerSettingsState>({
-    preset: "none",
+    preset: "standard",
     battleTimer: "",
     playerTimer: "",
     actionTimer: "",
@@ -260,7 +260,10 @@ export default function ProposalForm() {
       if (timerSettings.actionTimer)
         actionTimerVal = { secs: parseBigIntSafe(timerSettings.actionTimer), warnings: [] };
       if (timerSettings.teamPreviewTimer)
-        teamPreviewTimerVal = { secs: parseBigIntSafe(timerSettings.teamPreviewTimer), warnings: [] };
+        teamPreviewTimerVal = {
+          secs: parseBigIntSafe(timerSettings.teamPreviewTimer),
+          warnings: [],
+        };
     } else if (timerSettings.preset !== "none") {
       const preset = TIMER_PRESETS[timerSettings.preset];
       if (preset.battleTimer)
@@ -353,6 +356,7 @@ export default function ProposalForm() {
       service_options: {
         creator: connection.playerId || "",
         timers: timers,
+        log_timer_deadlines: true,
       },
       timeout: { secs: timerSettings.proposalTimeout, nanos: 0 },
     };

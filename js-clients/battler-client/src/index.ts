@@ -81,6 +81,8 @@ export class BattlerClient extends EventEmitter {
   private lastEmittedRequest: string | null = null;
   private currentRequest: Request | null = null;
   private stateUpdatePromise: Promise<void> | null = null;
+  private hasDoneSignal = false;
+  private safetyEndTimeout: any = null;
 
   private constructor(
     public readonly battleId: string,
@@ -126,6 +128,10 @@ export class BattlerClient extends EventEmitter {
 
     this.logLines[entry.index] = entry.content;
 
+    if (entry.content === "-battlerservice:done") {
+      this.hasDoneSignal = true;
+    }
+
     if (!this.stateUpdatePromise) {
       this.stateUpdatePromise = Promise.resolve().then(async () => {
         this.stateUpdatePromise = null;
@@ -148,10 +154,20 @@ export class BattlerClient extends EventEmitter {
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
     this.emit("update");
 
-    if (this.currentBattleState.phase === "finished") {
+    if (this.hasDoneSignal) {
       this.emit("end");
       await this.cancel();
       return;
+    }
+
+    if (this.currentBattleState.phase === "finished" && !this.safetyEndTimeout) {
+      this.safetyEndTimeout = setTimeout(() => {
+        if (!this.isCanceled) {
+          console.warn("[BattlerClient] Safety timeout triggered: forcing end unsubscription");
+          this.emit("end");
+          this.cancel().catch((err) => this.emit("error", err));
+        }
+      }, 5000);
     }
 
     const lastLogIndex = this.lastLogIndex();
@@ -228,6 +244,10 @@ export class BattlerClient extends EventEmitter {
 
   async cancel(): Promise<void> {
     this.isCanceled = true;
+    if (this.safetyEndTimeout) {
+      clearTimeout(this.safetyEndTimeout);
+      this.safetyEndTimeout = null;
+    }
     if (this.subscription) {
       await this.service.unsubscribe(this.subscription);
       this.subscription = undefined;

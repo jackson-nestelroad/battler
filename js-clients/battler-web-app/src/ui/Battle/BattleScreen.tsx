@@ -16,7 +16,7 @@ import CopyableId from "../Common/CopyableId";
 import RefreshButton from "../Common/RefreshButton";
 import { getBattleTitle } from "../../utils/battle";
 import RulesList from "../Common/RulesList";
-
+import BattleTimers from "./BattleTimers";
 import styles from "./BattleScreen.module.scss";
 
 export default function BattleScreen() {
@@ -202,6 +202,7 @@ export default function BattleScreen() {
             )}
           </span>
         </div>
+
         <div className={`${styles.headerControls} flex-row align-center`}>
           {!isReplay && (
             <RefreshButton
@@ -288,6 +289,13 @@ export default function BattleScreen() {
         <div className={styles.workspaceGrid}>
           {/* Left Column: Team selection panel */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
+            <BattleTimers
+              activeTimers={battleSession.activeTimers}
+              playerId={connection.playerId || undefined}
+              battleState={battleSession.battleState}
+              serviceBattle={battleSession.serviceBattle}
+              isReplay={isReplay}
+            />
             <BattlePreparationPanel battleId={battleId} />
           </section>
 
@@ -305,6 +313,13 @@ export default function BattleScreen() {
           {/* Left Arena half */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
             <Field battleState={battleSession.battleState} />
+            <BattleTimers
+              activeTimers={battleSession.activeTimers}
+              playerId={connection.playerId || undefined}
+              battleState={battleSession.battleState}
+              serviceBattle={battleSession.serviceBattle}
+              isReplay={isReplay}
+            />
             {isReplay ? (
               <div className="card">
                 <ReplayPanel battleId={battleId} />

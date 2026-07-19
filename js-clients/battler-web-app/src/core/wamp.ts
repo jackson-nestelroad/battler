@@ -83,11 +83,7 @@ function getWampErrorUri(error: unknown): string {
   return "";
 }
 
-function handleProposalNotFound(
-  dispatch: Dispatch,
-  proposedBattleId: string,
-  state?: RootState,
-) {
+function handleProposalNotFound(dispatch: Dispatch, proposedBattleId: string, state?: RootState) {
   dispatch(clearBattleState(proposedBattleId));
   if (state) {
     const existing = state.proposals.proposals[proposedBattleId];
@@ -649,6 +645,8 @@ export const submitBattleTeam = createAsyncThunk(
       dispatch(setBattleLoading({ battleId, isLoading: true }));
       dispatch(setBattleError({ battleId, error: null }));
       await client.updateTeam({ members: team, bag: { items: {} } });
+
+      dispatch(setChoiceSubmitted({ battleId, submitted: true }));
 
       // Fetch latest service battle state to refresh ready status!
       if (connectionManager.serviceClient) {

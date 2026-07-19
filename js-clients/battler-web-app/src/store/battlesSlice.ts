@@ -8,6 +8,17 @@ import { formatUuid } from "../utils/uuid";
 import type { Battle, BattleMetadata } from "battler-service-client";
 import { resolveReplayTurnState, getReplayStepBoundary } from "../utils/replay";
 import type { ReplayKeyframe } from "../utils/replay";
+import { parseTimerLog } from "../utils/battle";
+import type { ParsedTimerLog } from "../utils/battle";
+
+export interface ActiveTimerState {
+  type: "battle" | "player" | "action" | "teampreview";
+  playerId?: string;
+  remainingSecs: number;
+  deadlineSecs: number; // unix timestamp in seconds
+  isDone: boolean;
+  isInactive?: boolean;
+}
 
 export interface BaseBattleSession {
   battleId: string;
@@ -24,6 +35,7 @@ export interface BaseBattleSession {
   isDeleted?: boolean;
   isProposal?: boolean;
   metadata?: BattleMetadata;
+  activeTimers?: Record<string, ActiveTimerState>;
 }
 
 export interface LiveBattleSession extends BaseBattleSession {
@@ -44,6 +56,44 @@ export function isReplaySession(
   session: SerializedBattleSession | undefined,
 ): session is ReplayBattleSession {
   return !!session?.isReplay;
+}
+
+function updateTimerState(activeTimers: Record<string, ActiveTimerState>, parsed: ParsedTimerLog) {
+  const key = parsed.playerId ? `${parsed.type}:${parsed.playerId}` : parsed.type;
+  activeTimers[key] = {
+    type: parsed.type,
+    playerId: parsed.playerId,
+    remainingSecs: parsed.remainingSecs,
+    deadlineSecs: parsed.deadlineSecs || Math.floor(Date.now() / 1000) + parsed.remainingSecs,
+    isDone: parsed.isDone,
+    isInactive: !!parsed.isInactive,
+  };
+}
+
+function rebuildActiveTimers(battle: SerializedBattleSession) {
+  const activeTimers: Record<string, ActiveTimerState> = {};
+  if (!battle.battleState?.ui_log) return;
+
+  const uiLog = battle.battleState.ui_log;
+  uiLog.forEach((turnLogs, turnIndex) => {
+    if (turnIndex > 0) {
+      for (const key of Object.keys(activeTimers)) {
+        const timer = activeTimers[key];
+        if (timer.type === "action" || timer.type === "teampreview") {
+          delete activeTimers[key];
+        }
+      }
+    }
+
+    for (const entry of turnLogs) {
+      const parsed = parseTimerLog(entry);
+      if (parsed) {
+        updateTimerState(activeTimers, parsed);
+      }
+    }
+  });
+
+  battle.activeTimers = activeTimers;
 }
 
 export type ActiveView = "lobby" | "teams" | "battle" | "replays" | "proposal";
@@ -105,6 +155,8 @@ const battlesSlice = createSlice({
           battle.choiceSubmitted = false;
           battle.choiceError = null;
         }
+
+        rebuildActiveTimers(battle);
       }
     },
     setBattleRequest(state, action: PayloadAction<{ battleId: string; request: Request | null }>) {
@@ -112,22 +164,31 @@ const battlesSlice = createSlice({
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
+        let changed = false;
         if (!isEqual(battle.activeRequest, request)) {
           battle.choiceSubmitted = false;
           battle.choiceError = null;
+          changed = true;
         }
         battle.activeRequest = request;
+        if (changed) {
+          rebuildActiveTimers(battle);
+        }
       }
     },
     setBattlePlayerData(
       state,
-      action: PayloadAction<{ battleId: string; playerData: PlayerBattleData | null }>,
+      action: PayloadAction<{
+        battleId: string;
+        playerData: PlayerBattleData | null;
+      }>,
     ) {
       const { battleId: rawId, playerData } = action.payload;
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.playerData = playerData;
+        rebuildActiveTimers(battle);
       }
     },
     setChoiceSubmitted(state, action: PayloadAction<{ battleId: string; submitted: boolean }>) {
@@ -136,6 +197,7 @@ const battlesSlice = createSlice({
       const battle = state.battles[battleId];
       if (battle) {
         battle.choiceSubmitted = submitted;
+        rebuildActiveTimers(battle);
       }
     },
     setBattleError(state, action: PayloadAction<{ battleId: string; error: string | null }>) {
@@ -165,8 +227,11 @@ const battlesSlice = createSlice({
     battleSessionEnded(state, action: PayloadAction<string>) {
       const battleId = normalizeId(action.payload);
       const battle = state.battles[battleId];
-      if (battle && battle.battleState) {
-        battle.battleState.phase = "finished";
+      if (battle) {
+        if (battle.battleState) {
+          battle.battleState.phase = "finished";
+        }
+        rebuildActiveTimers(battle);
       }
     },
 
@@ -285,6 +350,7 @@ const battlesSlice = createSlice({
         replayKeyframes: keyframes,
         metadata,
       };
+      rebuildActiveTimers(state.battles[battleId]);
       state.activeBattleId = battleId;
       state.currentView = "battle";
     },
@@ -306,6 +372,7 @@ const battlesSlice = createSlice({
         // Set engineLogs up to this turn
         const boundaryIdx = getReplayStepBoundary(battle.replayEngineLogs, turnIndex, maxTurn);
         battle.engineLogs = battle.replayEngineLogs.slice(0, boundaryIdx);
+        rebuildActiveTimers(battle);
       }
     },
     removeBattle(state, action: PayloadAction<string>) {

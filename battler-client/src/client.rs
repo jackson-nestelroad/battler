@@ -1,4 +1,8 @@
-use std::sync::Arc;
+use std::{
+    pin::Pin,
+    sync::Arc,
+    time::Duration,
+};
 
 use anyhow::{
     Context,
@@ -85,6 +89,7 @@ struct BattlerClientInternal<'b> {
 
     log: Mutex<Log>,
     state: Mutex<BattleState>,
+    has_done_signal: Mutex<bool>,
 
     service: Arc<Box<dyn BattlerServiceClient + 'b>>,
 
@@ -108,6 +113,7 @@ impl<'b> BattlerClientInternal<'b> {
         let (cancel_tx, _) = broadcast::channel(1);
 
         let log = service.full_log(battle.uuid, role.side()).await?;
+        let has_done_signal = log.iter().any(|entry| entry == "-battlerservice:done");
         let log = Log::new(log)?;
 
         // Start with an empty battle state and request.
@@ -123,6 +129,7 @@ impl<'b> BattlerClientInternal<'b> {
             role,
             log: Mutex::new(log),
             state: Mutex::new(state),
+            has_done_signal: Mutex::new(has_done_signal),
             service,
             cancel_tx,
             battle_event_tx,
@@ -163,10 +170,17 @@ impl<'b> BattlerClientInternal<'b> {
         // Ensure the log and battle state are caught up.
         self.ensure_caught_up().await?;
 
+        let mut safety_timeout: Option<Pin<Box<tokio::time::Sleep>>> = None;
+
         loop {
             if *self.battle_event_rx.borrow() == BattleClientEvent::End {
                 break;
             }
+            if *self.has_done_signal.lock().await {
+                self.battle_event_tx.send(BattleClientEvent::End)?;
+                break;
+            }
+
             // If we are caught up and are a player, propagate a request.
             if let Role::Player { .. } = self.role
                 && self.caught_up().await?
@@ -183,6 +197,10 @@ impl<'b> BattlerClientInternal<'b> {
                     .send(BattleClientEvent::Request(request))?;
             }
 
+            if self.state.lock().await.phase == BattlePhase::Finished && safety_timeout.is_none() {
+                safety_timeout = Some(Box::pin(tokio::time::sleep(Duration::from_secs(5))));
+            }
+
             tokio::select! {
                 log_entry = log_entry_rx.recv() => {
                     self.process_log_entry(log_entry?).await?;
@@ -190,9 +208,24 @@ impl<'b> BattlerClientInternal<'b> {
                     while let Ok(next_entry) = log_entry_rx.try_recv() {
                         self.process_log_entry(next_entry).await?;
                     }
+                    if *self.has_done_signal.lock().await {
+                        self.battle_event_tx.send(BattleClientEvent::End)?;
+                        break;
+                    }
                     if *self.battle_event_rx.borrow() != BattleClientEvent::End {
                         self.battle_event_tx.send(BattleClientEvent::Update)?;
                     }
+                }
+                _ = async {
+                    if let Some(sleep) = safety_timeout.as_mut() {
+                        sleep.await;
+                    } else {
+                        futures_util::future::pending::<()>().await;
+                    }
+                } => {
+                    log::warn!("Client safety timeout triggered: forcing end event");
+                    self.battle_event_tx.send(BattleClientEvent::End)?;
+                    break;
                 }
                 _ = cancel_rx.recv() => {
                     break;
@@ -207,11 +240,7 @@ impl<'b> BattlerClientInternal<'b> {
         // Ensure the log is filled and update the state accordingly.
         self.backfill_log(&mut log).await?;
         self.update_battle_state(&log).await?;
-        if self.state.lock().await.phase == BattlePhase::Finished {
-            self.battle_event_tx.send(BattleClientEvent::End)?;
-        } else {
-            self.battle_event_tx.send(BattleClientEvent::Update)?;
-        }
+        self.battle_event_tx.send(BattleClientEvent::Update)?;
         Ok(())
     }
 
@@ -221,18 +250,10 @@ impl<'b> BattlerClientInternal<'b> {
             self.player,
             self.battle
         );
-        self.update_battle_state_for_log_entry(log_entry).await?;
-
-        // Check if the battle ended.
-        if self.state.lock().await.phase == BattlePhase::Finished {
-            log::info!(
-                "Client {} in battle {} detected battle finished",
-                self.player,
-                self.battle
-            );
-            self.battle_event_tx.send(BattleClientEvent::End)?;
-            return Ok(());
+        if log_entry.content == "-battlerservice:done" {
+            *self.has_done_signal.lock().await = true;
         }
+        self.update_battle_state_for_log_entry(log_entry).await?;
 
         Ok(())
     }

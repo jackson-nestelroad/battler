@@ -97,3 +97,10 @@
   max-width: rem(480px);
   width: 100%;
 }
+
+.toggleOthersBtn {
+  padding: var(--spacing-xxs) var(--spacing-s);
+  font-size: var(--font-size-xs);
+  height: auto;
+  min-height: auto;
+}
