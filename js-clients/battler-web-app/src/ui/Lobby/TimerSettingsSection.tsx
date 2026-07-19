@@ -128,7 +128,7 @@ export default function TimerSettingsSection({
             id="customPlayerTimer"
             type="number"
             min="10"
-            placeholder={timerSettings.preset === "custom" ? "e.g., 300" : "None"}
+            placeholder={timerSettings.preset === "custom" ? "e.g., 420" : "None"}
             value={getPlayerTimerValue()}
             onChange={
               timerSettings.preset === "custom"
