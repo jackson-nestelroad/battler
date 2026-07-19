@@ -12,6 +12,9 @@ use battler_wamprat_message::WampApplicationMessage;
 use battler_wamprat_schema::WampSchema;
 use battler_wamprat_uri::WampUriMatcher;
 
+mod error;
+pub use error::BattlerServiceError;
+
 /// An active battle.
 #[derive(Debug, Clone, WampList)]
 pub struct Battle {

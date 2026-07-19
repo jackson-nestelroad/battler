@@ -4,6 +4,10 @@ use std::{
     time::Duration,
 };
 
+use ahash::{
+    HashMap,
+    HashSet,
+};
 use anyhow::{
     Error,
     Result,
@@ -15,8 +19,12 @@ use battler::{
 };
 use battler_local_data::LocalDataStore;
 use battler_multiplayer_service::{
+    AiPlayerOptions,
+    AiPlayerType,
+    AiPlayers,
     BattlerMultiplayerService,
     ProposedBattleOptions,
+    RandomOptions,
 };
 use battler_multiplayer_service_producer::MultiplayerBattleAuthorizer;
 use battler_service::Battle;
@@ -38,6 +46,7 @@ use battler_wamp::{
     },
     peer::new_web_socket_peer,
     router::{
+        ConnectionPolicies,
         PubSubPolicies,
         RealmAuthenticationConfig,
         RealmConfig,
@@ -64,6 +73,30 @@ use tokio::{
     },
     task::JoinHandle,
 };
+
+#[derive(Default)]
+struct BattlerConnectionPolicies;
+
+#[async_trait]
+impl<S> ConnectionPolicies<S> for BattlerConnectionPolicies {
+    async fn validate_connection(
+        &self,
+        _session: &SessionHandle,
+        peer_info: &PeerInfo,
+    ) -> Result<()> {
+        if let ConnectionType::Direct = peer_info.connection_type {
+            return Ok(());
+        }
+        let id = &peer_info.identity.id;
+        if id.starts_with("ai-") {
+            return Err(BasicError::PermissionDenied(
+                "player id prefix is reserved for AI players".to_owned(),
+            )
+            .into());
+        }
+        Ok(())
+    }
+}
 
 #[derive(Default)]
 struct BattlerPubSubPolicies;
@@ -246,6 +279,7 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
 
     let router = new_web_socket_router(
         router_config,
+        Box::new(BattlerConnectionPolicies::default()),
         Box::new(BattlerPubSubPolicies::default()),
         Box::new(BattlerRpcPolicies::default()),
     )?;
@@ -282,6 +316,23 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     let multiplayer_service =
         Arc::new(BattlerMultiplayerService::new(data_store, battler_service_client).await);
     let global_update_rx = multiplayer_service.take_global_update_rx().await.unwrap();
+
+    // Register AI players.
+    let ai_ids = (1..=10)
+        .map(|i| format!("ai-random-{i}"))
+        .collect::<HashSet<_>>();
+    multiplayer_service
+        .clone()
+        .create_ai_players(AiPlayers {
+            players: HashMap::from_iter([(
+                "ai-random".to_owned(),
+                AiPlayerOptions {
+                    ai_type: AiPlayerType::Random(RandomOptions::default()),
+                    players: ai_ids,
+                },
+            )]),
+        })
+        .await?;
 
     // 4. Spin up Battle Service Producer
     let battle_peer = new_web_socket_peer(battler_wamp::peer::PeerConfig {

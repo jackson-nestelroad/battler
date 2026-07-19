@@ -609,6 +609,19 @@ impl Session {
         modify_welcome_message: Box<dyn FnOnce(&mut WelcomeMessage) -> Result<()> + Send>,
     ) -> Result<()> {
         let context = context.realm_context(&message.realm)?;
+
+        let peer_info = PeerInfo {
+            connection_type: self.connection_type.clone(),
+            identity: identity.clone().unwrap_or_default(),
+        };
+
+        let session_handle = self.session_handle();
+        context
+            .router()
+            .connection_policies
+            .validate_connection(&session_handle, &peer_info)
+            .await?;
+
         context.realm().sessions.write().await.insert(
             self.id,
             Arc::new(RealmSession {
@@ -642,10 +655,7 @@ impl Session {
         );
 
         self.shared_state.write().await.roles = Self::read_peer_roles(&message);
-        self.shared_state.write().await.peer_info = Some(PeerInfo {
-            connection_type: self.connection_type.clone(),
-            identity: identity.clone().unwrap_or_default(),
-        });
+        self.shared_state.write().await.peer_info = Some(peer_info);
 
         self.transition_state(SessionState::Established(EstablishedSessionState {
             realm: context.realm().uri().clone(),

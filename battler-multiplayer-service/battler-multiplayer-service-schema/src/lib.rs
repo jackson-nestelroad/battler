@@ -89,13 +89,10 @@ pub struct ProposedBattleRejectionOutputArgs {
     pub proposed_battle_rejection_json: String,
 }
 
-/// URI pattern for proposed battle updates for a player.
+/// URI pattern for proposed battle updates.
 #[derive(Debug, Clone, WampUriMatcher)]
-#[uri("com.battler.battler_multiplayer_service.proposed_battle_updates.{player}")]
-pub struct ProposedBattleUpdatesPattern {
-    /// Player ID.
-    pub player: String,
-}
+#[uri("com.battler.battler_multiplayer_service.proposed_battle_updates")]
+pub struct ProposedBattleUpdatesPattern;
 
 /// An update to a proposed battle.
 #[derive(Debug, Clone, WampList)]

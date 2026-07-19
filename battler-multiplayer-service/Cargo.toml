@@ -30,6 +30,8 @@ battler-ai = { path = "../battler-ai" }
 battler-client = { path = "../battler-client" }
 battler-service = { path = "../battler-service" }
 battler-service-client = { path = "../battler-service-client" }
+battler-service-schema = { path = "../battler-service/battler-service-schema" }
+battler-wamp = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

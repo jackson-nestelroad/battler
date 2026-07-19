@@ -1,9 +1,11 @@
 mod api;
+mod error;
 mod log;
 mod service;
 mod timer;
 
 pub use api::*;
+pub use error::BattleError;
 pub use log::{
     GlobalLogEntry,
     Log,

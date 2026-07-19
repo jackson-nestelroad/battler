@@ -777,14 +777,15 @@ mod rule_set_test {
         let want = serde_json::from_str(
             r#"[
                 "Team Preview",
-                "Sleep Clause",
                 "Species Clause",
+                "Item Clause",
                 "Nickname Clause",
+                "- Move Tag: OHKO",
                 "Endless Battle Clause",
+                "- Move Tag: Evasion Raising",
                 "- Ability Tag: Evasion Raising",
                 "- Item Tag: Evasion Raising",
-                "- Move Tag: Evasion Raising",
-                "- Move Tag: OHKO"
+                "Sleep Clause"
             ]"#,
         )
         .unwrap();

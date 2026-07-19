@@ -13,6 +13,7 @@ use battler_wamp::{
         new_web_socket_peer,
     },
     router::{
+        EmptyConnectionPolicies,
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
         RealmAuthenticationConfig,
@@ -67,6 +68,7 @@ async fn start_router(port: u16) -> Result<(RouterHandle, JoinHandle<()>)> {
     });
     let router = new_web_socket_router(
         config,
+        Box::new(EmptyConnectionPolicies::default()),
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;

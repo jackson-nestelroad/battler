@@ -4,6 +4,7 @@ use std::{
         Arc,
         Weak,
     },
+    time::Duration,
 };
 
 use ahash::HashSet;
@@ -422,6 +423,22 @@ impl<'d> AiPlayer<'d> {
         }
     }
 
+    fn is_battle_not_found(err: &Error) -> bool {
+        if let Some(err) = err.downcast_ref::<battler_wamp::core::error::WampError>() {
+            if let Ok(err) = battler_service_schema::BattlerServiceError::try_from(err.clone()) {
+                match err {
+                    battler_service_schema::BattlerServiceError::BattleNotFound => return true,
+                }
+            }
+        }
+        if let Some(err) = err.downcast_ref::<battler_service::BattleError>() {
+            match err {
+                battler_service::BattleError::NotFound => return true,
+            }
+        }
+        false
+    }
+
     async fn watch_battle(
         id: String,
         battle: Uuid,
@@ -451,6 +468,10 @@ impl<'d> AiPlayer<'d> {
                     "Error watching battle {battle} for {player}: {err}"
                 ))
                 .ok();
+            if Self::is_battle_not_found(&err) {
+                break;
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
         }
         log::info!("AI {id} finished watching battle {battle} for {player}");
         if let Some(state) = state.upgrade() {

@@ -6,6 +6,7 @@ description = "A server binary starting a WAMP router and direct-connected battl
 publish = false
 
 [dependencies]
+ahash = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 clap = { workspace = true, features = ["derive"] }

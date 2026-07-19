@@ -136,12 +136,10 @@ where
 
     async fn proposed_battle_updates(
         &self,
-        player: &str,
+        _player: &str,
     ) -> Result<broadcast::Receiver<ProposedBattleUpdate>> {
         let (update_tx, update_rx) = broadcast::channel(48);
-        let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern {
-            player: player.to_owned(),
-        };
+        let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern;
 
         struct Subscription<S> {
             update_tx: broadcast::Sender<ProposedBattleUpdate>,

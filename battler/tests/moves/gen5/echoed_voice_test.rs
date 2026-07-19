@@ -225,7 +225,7 @@ fn echoed_voice_resets_power_if_different_move_is_used() {
 }
 
 #[test]
-fn echoed_voice_powers_up_when_used_by_different_pokemon() {
+fn echoed_voice_powers_up_when_used_by_different_mons() {
     let mut battle = make_battle(BattleType::Doubles, 0, team(), team()).unwrap();
 
     assert_matches::assert_matches!(battle.start(), Ok(()));

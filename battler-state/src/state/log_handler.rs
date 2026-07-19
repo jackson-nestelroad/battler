@@ -1291,7 +1291,7 @@ fn alter_battle_state_for_entry(
             state.phase = BattlePhase::PreTeamPreview;
         }
         "teampreview" => {
-            let pick = entry.value_or_else("pick")?;
+            let pick = entry.value("pick").unwrap_or_default();
             state.phase = BattlePhase::TeamPreview(pick);
         }
         "teamsize" => {

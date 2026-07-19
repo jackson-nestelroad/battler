@@ -47,6 +47,7 @@ use uuid::Uuid;
 
 use crate::{
     Battle,
+    BattleError,
     BattleMetadata,
     BattlePreview,
     BattleState,
@@ -1032,10 +1033,11 @@ impl<'d> BattlerService<'d> {
         self.battles.lock().await.get(&uuid).cloned()
     }
 
-    async fn find_battle_or_error(&self, uuid: Uuid) -> Result<Arc<LiveBattleManager<'d>>> {
-        self.find_battle(uuid)
-            .await
-            .ok_or_else(|| Error::msg("battle does not exist"))
+    async fn find_battle_or_error(
+        &self,
+        uuid: Uuid,
+    ) -> Result<Arc<LiveBattleManager<'d>>, BattleError> {
+        self.find_battle(uuid).await.ok_or(BattleError::NotFound)
     }
 
     /// Generates the status of an existing battle.

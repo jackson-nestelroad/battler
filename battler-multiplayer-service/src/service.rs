@@ -719,7 +719,35 @@ impl<'d> BattlerMultiplayerService<'d> {
         uuid: Uuid,
         options: ProposedBattleOptions,
     ) -> Result<ProposedBattle> {
+        // Validate battle options early.
+        options
+            .battle_options
+            .validate()
+            .map_err(|err| Error::msg(format!("invalid battle options: {err}")))?;
+
         let creator = options.service_options.creator.clone();
+
+        // Ensure that human players other than the creator do not have pre-specified teams in the
+        // proposal.
+        {
+            let ai_registry = self.ai_player_registry.lock().await;
+            for side in &[
+                &options.battle_options.side_1,
+                &options.battle_options.side_2,
+            ] {
+                for player in &side.players {
+                    if player.id != creator
+                        && !ai_registry.is_ai_player(&player.id)
+                        && !player.team.members.is_empty()
+                    {
+                        return Err(Error::msg(format!(
+                            "cannot pre-specify team for player {}",
+                            player.id
+                        )));
+                    }
+                }
+            }
+        }
         let active_proposed_battle = ActiveProposedBattle::new(uuid, options);
 
         let players = active_proposed_battle.players();

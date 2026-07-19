@@ -4,13 +4,14 @@
     "description": "The standard ruleset for all official singles battles.",
     "rules": [
       "Team Preview",
-      "Sleep Clause",
       "Species Clause",
+      "Item Clause",
       "Nickname Clause",
       "OHKO Clause",
-      "Evasion Items Clause",
+      "Endless Battle Clause",
       "Evasion Moves Clause",
-      "Endless Battle Clause"
+      "Evasion Items Clause",
+      "Sleep Clause"
     ]
   },
   "standarddoubles": {
@@ -19,11 +20,12 @@
     "rules": [
       "Team Preview",
       "Species Clause",
+      "Item Clause",
       "Nickname Clause",
       "OHKO Clause",
+      "Endless Battle Clause",
       "Evasion Moves Clause",
-      "Gravity Sleep Clause",
-      "Endless Battle Clause"
+      "Gravity Sleep Clause"
     ]
   },
   "flatrules": {
@@ -32,8 +34,8 @@
     "rules": [
       "Team Preview",
       "Species Clause",
-      "Nickname Clause",
       "Item Clause",
+      "Nickname Clause",
       "Adjust Level Down = 50",
       "Picked Team Size = Auto",
       "- Restricted Legendary",

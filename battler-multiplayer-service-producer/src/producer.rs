@@ -169,21 +169,17 @@ where
         .iter()
         .flat_map(|side| side.players.iter())
         .map(|player| player.id.clone())
-        .collect::<Vec<_>>();
-    for player in players {
-        let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern {
-            player: player.clone(),
-        };
-        producer
-            .publish_proposed_battle_updates(
-                pattern,
-                event.clone(),
-                battler_wamprat::peer::PublishOptions {
-                    eligible_authid: Some(HashSet::from_iter([player.clone()])),
-                    ..Default::default()
-                },
-            )
-            .await?;
-    }
+        .collect::<HashSet<_>>();
+    let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern;
+    producer
+        .publish_proposed_battle_updates(
+            pattern,
+            event,
+            battler_wamprat::peer::PublishOptions {
+                eligible_authid: Some(players),
+                ..Default::default()
+            },
+        )
+        .await?;
     Ok(())
 }

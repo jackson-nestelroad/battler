@@ -10,6 +10,10 @@ mod topic;
 mod web_socket_router;
 
 pub use app::{
+    connection::{
+        ConnectionPolicies,
+        EmptyConnectionPolicies,
+    },
     pub_sub::{
         EmptyPubSubPolicies,
         PubSubPolicies,

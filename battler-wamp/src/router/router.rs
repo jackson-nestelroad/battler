@@ -52,6 +52,7 @@ use crate::{
     router::{
         acceptor::acceptor::AcceptorFactory,
         app::{
+            connection::ConnectionPolicies,
             pub_sub::PubSubPolicies,
             rpc::RpcPolicies,
         },
@@ -175,6 +176,9 @@ pub struct Router<S> {
     /// The router configuration when created.
     pub(crate) config: RouterConfig,
 
+    /// Policies for connection functionality.
+    pub(crate) connection_policies: Box<dyn ConnectionPolicies<S>>,
+
     /// Policies for pub/sub functionality.
     pub(crate) pub_sub_policies: Box<dyn PubSubPolicies<S>>,
 
@@ -212,6 +216,7 @@ where
     /// Creates a new [`Router`].
     pub fn new(
         config: RouterConfig,
+        connection_policies: Box<dyn ConnectionPolicies<S>>,
         pub_sub_policies: Box<dyn PubSubPolicies<S>>,
         rpc_policies: Box<dyn RpcPolicies<S>>,
         acceptor_factory: Box<dyn AcceptorFactory<S>>,
@@ -225,6 +230,7 @@ where
         let (end_tx, end_rx) = broadcast::channel(1);
         Ok(Self {
             config,
+            connection_policies,
             pub_sub_policies,
             rpc_policies,
             realm_manager,

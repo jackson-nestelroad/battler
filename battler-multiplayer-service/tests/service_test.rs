@@ -231,6 +231,22 @@ async fn cannot_create_proposed_battle_if_not_participating() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn cannot_create_proposed_battle_with_pre_specified_human_team() {
+    let service = battler_multiplayer_service().await;
+    let mut options = proposed_battle_options("player-1");
+    options.battle_options.side_2.players[0].team = team_data();
+    assert_matches::assert_matches!(
+        service
+            .clone()
+            .propose_battle(options)
+            .await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "cannot pre-specify team for player player-2");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn creates_proposed_battle() {
     let service = battler_multiplayer_service().await;
     let proposed_battle = service
@@ -723,6 +739,30 @@ async fn proposed_battle_rejects_self_challenge() {
         service.clone().propose_battle(options).await,
         Err(err) => {
             assert_eq!(err.to_string(), "duplicate players are not allowed");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_rejects_invalid_options() {
+    let service = battler_multiplayer_service().await;
+
+    // Create options where Side 2 has no players (empty players array).
+    let mut options = proposed_battle_options("player-1");
+    options.battle_options.side_1.players[0].id = "player-1".to_owned();
+    options.battle_options.side_2.players.clear();
+
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(options).await,
+        Err(err) => {
+            assert!(
+                err.to_string().contains("invalid battle options:"),
+                "{err:#}"
+            );
+            assert!(
+                err.to_string().contains("Side 2 has no players"),
+                "{err:#}"
+            );
         }
     );
 }

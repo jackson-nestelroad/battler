@@ -267,7 +267,7 @@ impl CoreBattleOptions {
             BattleType::Singles => {
                 if players_on_side > 1 {
                     return Err(general_error(format!(
-                        "{} has too many players for a singles battle",
+                        "side {} has too many players for a singles battle",
                         side.name
                     )));
                 }
@@ -275,12 +275,27 @@ impl CoreBattleOptions {
             BattleType::Doubles => {
                 if players_on_side > 1 {
                     return Err(general_error(format!(
-                        "{} has too many players for a doubles battle (did you mean to start a multi battle?)",
+                        "side {} has too many players for a doubles battle (did you mean to start a multi battle?)",
                         side.name
                     )));
                 }
             }
-            _ => (),
+            BattleType::Triples => {
+                if players_on_side > 1 {
+                    return Err(general_error(format!(
+                        "side {} has too many players for a triples battle",
+                        side.name
+                    )));
+                }
+            }
+            _ => {
+                if players_on_side > 5 {
+                    return Err(general_error(format!(
+                        "side {} has too many players (maximum 5)",
+                        side.name
+                    )));
+                }
+            }
         }
         for player in &side.players {
             self.validate_player(side, player)?;
