@@ -202,3 +202,15 @@
     align-items: stretch;
   }
 }
+
+.timerInputsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(rem(120px), 1fr));
+  gap: var(--spacing-m);
+  width: 100%;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+

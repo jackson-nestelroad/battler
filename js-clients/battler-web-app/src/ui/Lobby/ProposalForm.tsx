@@ -14,7 +14,7 @@ import AdvancedRulesSection from "./AdvancedRulesSection";
 import type { CustomRulesState } from "./AdvancedRulesSection";
 import FieldSettingsSection from "./FieldSettingsSection";
 import type { FieldSettingsState } from "./FieldSettingsSection";
-import TimerSettingsSection from "./TimerSettingsSection";
+import TimerSettingsSection, { TIMER_PRESETS } from "./TimerSettingsSection";
 import type { TimerSettingsState } from "./TimerSettingsSection";
 
 import styles from "./ProposalForm.module.scss";
@@ -45,11 +45,7 @@ export default function ProposalForm() {
   ]);
 
   // Side 2 Players (starts with 1 slot)
-  const [side2Players, setSide2Players] = useState<FormPlayer[]>([
-    createDefaultPlayer(),
-  ]);
-
-
+  const [side2Players, setSide2Players] = useState<FormPlayer[]>([createDefaultPlayer()]);
 
   // Grouped advanced custom rules state
   const [customRules, setCustomRules] = useState<CustomRulesState>({
@@ -89,6 +85,7 @@ export default function ProposalForm() {
     battleTimer: "",
     playerTimer: "",
     actionTimer: "",
+    teamPreviewTimer: "",
     proposalTimeout: 60,
   });
 
@@ -148,8 +145,6 @@ export default function ProposalForm() {
     }
   };
 
-
-
   const handleSendProposal = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -198,7 +193,9 @@ export default function ProposalForm() {
 
     // Check if any AI player does not have a selected team or if the selected team does not exist
     const hasEmptyAiTeam =
-      finalSide1.some((p) => p.controlType === "ai" && (!p.selectedTeam || !teams[p.selectedTeam])) ||
+      finalSide1.some(
+        (p) => p.controlType === "ai" && (!p.selectedTeam || !teams[p.selectedTeam]),
+      ) ||
       finalSide2.some((p) => p.controlType === "ai" && (!p.selectedTeam || !teams[p.selectedTeam]));
 
     if (hasEmptyAiTeam) {
@@ -253,26 +250,34 @@ export default function ProposalForm() {
     let battleTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
     let playerTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
     let actionTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
+    let teamPreviewTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
 
-    if (timerSettings.preset === "blitz") {
-      actionTimerVal = { secs: 15n, warnings: [] };
-    } else if (timerSettings.preset === "standard") {
-      actionTimerVal = { secs: 45n, warnings: [] };
-      playerTimerVal = { secs: 420n, warnings: [] };
-      battleTimerVal = { secs: 1200n, warnings: [] };
-    } else if (timerSettings.preset === "custom") {
+    if (timerSettings.preset === "custom") {
       if (timerSettings.battleTimer)
         battleTimerVal = { secs: parseBigIntSafe(timerSettings.battleTimer), warnings: [] };
       if (timerSettings.playerTimer)
         playerTimerVal = { secs: parseBigIntSafe(timerSettings.playerTimer), warnings: [] };
       if (timerSettings.actionTimer)
         actionTimerVal = { secs: parseBigIntSafe(timerSettings.actionTimer), warnings: [] };
+      if (timerSettings.teamPreviewTimer)
+        teamPreviewTimerVal = { secs: parseBigIntSafe(timerSettings.teamPreviewTimer), warnings: [] };
+    } else if (timerSettings.preset !== "none") {
+      const preset = TIMER_PRESETS[timerSettings.preset];
+      if (preset.battleTimer)
+        battleTimerVal = { secs: parseBigIntSafe(preset.battleTimer), warnings: [] };
+      if (preset.playerTimer)
+        playerTimerVal = { secs: parseBigIntSafe(preset.playerTimer), warnings: [] };
+      if (preset.actionTimer)
+        actionTimerVal = { secs: parseBigIntSafe(preset.actionTimer), warnings: [] };
+      if (preset.teamPreviewTimer)
+        teamPreviewTimerVal = { secs: parseBigIntSafe(preset.teamPreviewTimer), warnings: [] };
     }
 
     const timers = {
       battle: battleTimerVal,
       player: playerTimerVal,
       action: actionTimerVal,
+      team_preview: teamPreviewTimerVal,
     };
 
     // Helper to map FormPlayer to PlayerData bindings format

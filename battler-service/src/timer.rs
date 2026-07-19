@@ -20,13 +20,15 @@ pub(crate) enum TimerType {
     Player(String),
     /// Timer per player per action.
     Action(String),
+    /// Timer per player during team preview.
+    TeamPreview(String),
 }
 
 impl TimerType {
     /// Should the timer be reset when resumed?
     pub(crate) fn reset_on_resume(&self) -> bool {
         match self {
-            Self::Action(_) => true,
+            Self::Action(_) | Self::TeamPreview(_) => true,
             _ => false,
         }
     }
@@ -34,7 +36,9 @@ impl TimerType {
     /// The player the timer corresponds to.
     pub(crate) fn player(&self) -> Option<&str> {
         match self {
-            Self::Player(player) | Self::Action(player) => Some(&player),
+            Self::Player(player) | Self::Action(player) | Self::TeamPreview(player) => {
+                Some(&player)
+            }
             _ => None,
         }
     }
@@ -96,6 +100,10 @@ pub struct Timers {
     ///
     /// When this timer runs out, the player is forced to make a random action.
     pub action: Option<Timer>,
+    /// Timer for each player during team preview.
+    ///
+    /// When this timer runs out, the player is forced to make a random selection.
+    pub team_preview: Option<Timer>,
 }
 
 impl Timers {
@@ -124,6 +132,14 @@ impl Timers {
                     .iter()
                     .map(|player| (TimerType::Action(player.to_string()), timer.clone().into())),
             );
+        }
+        if let Some(timer) = self.team_preview {
+            state.extend(players.iter().map(|player| {
+                (
+                    TimerType::TeamPreview(player.to_string()),
+                    timer.clone().into(),
+                )
+            }));
         }
         state
     }

@@ -27,6 +27,7 @@ use battler::{
     PlayerBattleData,
     PublicCoreBattle,
     Request,
+    RequestType,
     SideData,
     TeamData,
     ValidationError,
@@ -353,6 +354,7 @@ impl<'d> LiveBattle<'d> {
             TimerType::Battle => "battle".to_owned(),
             TimerType::Player(player) => format!("player:{player}"),
             TimerType::Action(player) => format!("action:{player}"),
+            TimerType::TeamPreview(player) => format!("teampreview:{player}"),
         };
         format!(
             "timer|{timer_type}{}|remainingsecs:{}",
@@ -401,7 +403,9 @@ impl<'d> LiveBattle<'d> {
         match timer_type {
             TimerType::Battle => self.battle.auto_end(),
             TimerType::Player(player) => self.battle.set_player_choice(player, "forfeit"),
-            TimerType::Action(player) => self.battle.set_player_choice(player, "randomall"),
+            TimerType::Action(player) | TimerType::TeamPreview(player) => {
+                self.battle.set_player_choice(player, "randomall")
+            }
         }
     }
 }
@@ -611,7 +615,12 @@ impl<'d> LiveBattleManager<'d> {
             (battle.continue_battle()?, battle.battle.ended())
         };
 
-        if continued && !ended {
+        let is_empty = live_battle_manager_state
+            .lock()
+            .await
+            .current_timer_tasks
+            .is_empty();
+        if (continued || is_empty) && !ended {
             Self::resume_timers(uuid, battle, live_battle_manager_state, task_tx).await?;
         }
 
@@ -669,8 +678,20 @@ impl<'d> LiveBattleManager<'d> {
                 for timer_type in battle.timers.keys() {
                     let active = match timer_type {
                         TimerType::Battle => true,
-                        TimerType::Player(player) | TimerType::Action(player) => {
+                        TimerType::Player(player) => {
                             battle.battle.request_for_player(player)?.is_some()
+                        }
+                        TimerType::Action(player) => {
+                            match battle.battle.request_for_player(player)? {
+                                Some(request) => request.request_type() != RequestType::TeamPreview,
+                                None => false,
+                            }
+                        }
+                        TimerType::TeamPreview(player) => {
+                            match battle.battle.request_for_player(player)? {
+                                Some(request) => request.request_type() == RequestType::TeamPreview,
+                                None => false,
+                            }
                         }
                     };
                     if active {

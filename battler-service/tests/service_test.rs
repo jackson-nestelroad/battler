@@ -1062,3 +1062,50 @@ async fn only_activates_player_timer_if_request_is_active() {
     assert_eq!(log[7], "continue");
     assert_eq!(log[8], "forfeited|player:player-2");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn selects_random_leads_on_team_preview_timer() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let mut options = core_battle_options(BattleType::Singles, team(5));
+    // Enable Team Preview clause.
+    options
+        .format
+        .rules
+        .insert(Rule::value_name("Team Preview"));
+    let battle = battler_service
+        .create(
+            options,
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                log_time: false,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    team_preview: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::default(),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    // Wait for the team preview timer to start.
+    read_all_entries_from_log_rx_stopping_at(
+        &mut public_log_rx,
+        "-battlerservice:timer|teampreview:player-1|remainingsecs:5",
+    )
+    .await;
+
+    // Do NOT make any choices. The team preview timer should fire and make choice "randomall",
+    // causing the battle to start.
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "battlestart").await;
+}

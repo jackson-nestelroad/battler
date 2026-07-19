@@ -5,8 +5,24 @@ export interface TimerSettingsState {
   battleTimer: string;
   playerTimer: string;
   actionTimer: string;
+  teamPreviewTimer: string;
   proposalTimeout: number;
 }
+
+export const TIMER_PRESETS = {
+  blitz: {
+    actionTimer: "15",
+    teamPreviewTimer: "15",
+    playerTimer: "",
+    battleTimer: "",
+  },
+  standard: {
+    actionTimer: "45",
+    teamPreviewTimer: "60",
+    playerTimer: "420",
+    battleTimer: "1200",
+  },
+} as const;
 
 interface TimerSettingsSectionProps {
   timerSettings: TimerSettingsState;
@@ -19,21 +35,26 @@ export default function TimerSettingsSection({
 }: TimerSettingsSectionProps) {
   const getActionTimerValue = () => {
     if (timerSettings.preset === "custom") return timerSettings.actionTimer;
-    if (timerSettings.preset === "blitz") return "15";
-    if (timerSettings.preset === "standard") return "45";
-    return "";
+    if (timerSettings.preset === "none") return "";
+    return TIMER_PRESETS[timerSettings.preset].actionTimer;
   };
 
   const getPlayerTimerValue = () => {
     if (timerSettings.preset === "custom") return timerSettings.playerTimer;
-    if (timerSettings.preset === "standard") return "420";
-    return "";
+    if (timerSettings.preset === "none") return "";
+    return TIMER_PRESETS[timerSettings.preset].playerTimer;
   };
 
   const getBattleTimerValue = () => {
     if (timerSettings.preset === "custom") return timerSettings.battleTimer;
-    if (timerSettings.preset === "standard") return "1200";
-    return "";
+    if (timerSettings.preset === "none") return "";
+    return TIMER_PRESETS[timerSettings.preset].battleTimer;
+  };
+
+  const getTeamPreviewTimerValue = () => {
+    if (timerSettings.preset === "custom") return timerSettings.teamPreviewTimer;
+    if (timerSettings.preset === "none") return "";
+    return TIMER_PRESETS[timerSettings.preset].teamPreviewTimer;
   };
 
   return (
@@ -55,7 +76,7 @@ export default function TimerSettingsSection({
         </div>
 
         <div className="form-group flex-1">
-          <label htmlFor="proposalTimeout">Proposal timeout (seconds)</label>
+          <label htmlFor="proposalTimeout">Proposal timeout (secs)</label>
           <input
             id="proposalTimeout"
             type="number"
@@ -66,9 +87,9 @@ export default function TimerSettingsSection({
         </div>
       </div>
 
-      <div className="flex-row flex-mobile-col gap-m mt-m">
-        <div className="form-group flex-1">
-          <label htmlFor="customActionTimer">Action timer (seconds)</label>
+      <div className={`${styles.timerInputsGrid} mt-m`}>
+        <div className="form-group">
+          <label htmlFor="customActionTimer">Action (secs)</label>
           <input
             id="customActionTimer"
             type="number"
@@ -84,8 +105,25 @@ export default function TimerSettingsSection({
           />
         </div>
 
-        <div className="form-group flex-1">
-          <label htmlFor="customPlayerTimer">Player timer (seconds)</label>
+        <div className="form-group">
+          <label htmlFor="customTeamPreviewTimer">Team preview (secs)</label>
+          <input
+            id="customTeamPreviewTimer"
+            type="number"
+            min="5"
+            placeholder={timerSettings.preset === "custom" ? "e.g., 60" : "None"}
+            value={getTeamPreviewTimerValue()}
+            onChange={
+              timerSettings.preset === "custom"
+                ? (e) => onChange({ teamPreviewTimer: e.target.value })
+                : undefined
+            }
+            disabled={timerSettings.preset !== "custom"}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="customPlayerTimer">Player (secs)</label>
           <input
             id="customPlayerTimer"
             type="number"
@@ -101,8 +139,8 @@ export default function TimerSettingsSection({
           />
         </div>
 
-        <div className="form-group flex-1">
-          <label htmlFor="customBattleTimer">Overall match timer (seconds)</label>
+        <div className="form-group">
+          <label htmlFor="customBattleTimer">Battle (secs)</label>
           <input
             id="customBattleTimer"
             type="number"
