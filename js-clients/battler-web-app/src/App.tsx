@@ -7,6 +7,7 @@ import BattleScreen from "./ui/Battle/BattleScreen";
 import ReplaysHome from "./ui/Replays/ReplaysHome";
 import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 import { useHistorySync } from "./hooks/useHistorySync";
+import { useConnectionCountdown } from "./hooks/useConnectionCountdown";
 import ConnectionRequired from "./ui/Common/ConnectionRequired";
 
 import styles from "./App.module.scss";
@@ -14,6 +15,7 @@ import styles from "./App.module.scss";
 export default function App() {
   useHistorySync();
   const connection = useAppSelector((state) => state.connection);
+  const { connectionMessage } = useConnectionCountdown();
   const isHydrated = connection.isHydrated;
   const currentView = useAppSelector((state) => state.battles.currentView);
   const battleId = useAppSelector((state) => state.battles.activeBattleId);
@@ -33,7 +35,7 @@ export default function App() {
       <div className={styles.loadingScreen}>
         <div className="spinner"></div>
         <p>
-          {showAutoconnectLoader ? "Reconnecting..." : "Loading..."}
+          {showAutoconnectLoader ? connectionMessage : "Loading..."}
         </p>
       </div>
     );
