@@ -1,33 +1,5 @@
 @use "../../styles/breakpoints" as *;
 
-.proposalForm {
-  width: 100%;
-}
-
-.formFields {
-  width: 100%;
-  flex-wrap: wrap;
-}
-
-.proposalField {
-  flex: 1;
-  min-width: rem(192px);
-  max-width: rem(320px);
-}
-
-.formatField {
-  flex: 1;
-  min-width: rem(160px);
-  max-width: rem(240px);
-}
-
-.formActions {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: var(--spacing-s);
-  width: 100%;
-}
-
 .dashboardGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;

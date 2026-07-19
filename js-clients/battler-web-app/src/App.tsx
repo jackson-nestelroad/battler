@@ -7,6 +7,8 @@ import BattleScreen from "./ui/Battle/BattleScreen";
 import ReplaysHome from "./ui/Replays/ReplaysHome";
 import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 import { useHistorySync } from "./hooks/useHistorySync";
+import ConnectionRequired from "./ui/Common/ConnectionRequired";
+import { useConnectionCountdown } from "./hooks/useConnectionCountdown";
 
 import styles from "./App.module.scss";
 
@@ -15,6 +17,11 @@ export default function App() {
   const connection = useAppSelector((state) => state.connection);
   const isHydrated = connection.isHydrated;
   const currentView = useAppSelector((state) => state.battles.currentView);
+  const battleId = useAppSelector((state) => state.battles.activeBattleId);
+  const isReplay = useAppSelector((state) =>
+    battleId ? !!state.battles.battles[battleId]?.isReplay : false,
+  );
+  const { connectionMessage } = useConnectionCountdown();
 
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false,
@@ -27,7 +34,7 @@ export default function App() {
       <div className={styles.loadingScreen}>
         <div className="spinner"></div>
         <p>
-          {showAutoconnectLoader ? "Connecting..." : "Initializing..."}
+          {showAutoconnectLoader ? connectionMessage : "Initializing..."}
         </p>
       </div>
     );
@@ -53,9 +60,17 @@ export default function App() {
         </header>
 
         <div className={styles.viewWrapper}>
-          {currentView === "lobby" && <Lobby />}
+          {currentView === "lobby" && (
+            <ConnectionRequired>
+              <Lobby />
+            </ConnectionRequired>
+          )}
           {currentView === "teams" && <Teams />}
-          {(currentView === "battle" || currentView === "proposal") && <BattleScreen />}
+          {(currentView === "battle" || currentView === "proposal") && (
+            <ConnectionRequired bypass={isReplay}>
+              <BattleScreen />
+            </ConnectionRequired>
+          )}
           {currentView === "replays" && <ReplaysHome />}
         </div>
       </main>

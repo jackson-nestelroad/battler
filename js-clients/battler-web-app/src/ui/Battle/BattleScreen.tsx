@@ -12,7 +12,6 @@ import LogPanel from "./LogPanel";
 import BattlePreparationPanel from "./BattlePreparationPanel";
 import BattleProposalView from "./BattleProposalView";
 import Tabs from "../Common/Tabs";
-import ConnectForm from "../Common/ConnectForm";
 import CopyableId from "../Common/CopyableId";
 import RefreshButton from "../Common/RefreshButton";
 import { getBattleTitle } from "../../utils/battle";
@@ -81,13 +80,7 @@ export default function BattleScreen() {
 
   const isReplay = !!battleSession?.isReplay;
 
-  if (
-    !isReplay &&
-    (connection.status === "disconnected" ||
-      (connection.status === "connecting" && !connection.playerId))
-  ) {
-    return <ConnectForm />;
-  }
+
 
   if (!battleId) {
     return (
@@ -166,7 +159,6 @@ export default function BattleScreen() {
     );
   }
 
-  const isReconnecting = connection.status === "connecting" && !isReplay;
   const isPreparing =
     battleSession.serviceBattle?.state === "preparing" ||
     battleSession.battleState?.phase === "pre_battle";
@@ -174,16 +166,6 @@ export default function BattleScreen() {
 
   return (
     <div className="page-container">
-      {/* Network Lost Overlays */}
-      {isReconnecting && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalCard}>
-            <div className="spinner" />
-            <h3>Offline</h3>
-            <p>Reconnecting...</p>
-          </div>
-        </div>
-      )}
 
       <header className={`${styles.screenHeader} flex-row justify-between align-center gap-m`}>
         <div className={`${styles.titleInfo} flex-col gap-xs`}>

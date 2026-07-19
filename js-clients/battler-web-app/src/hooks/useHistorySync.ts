@@ -4,7 +4,7 @@ import { selectBattle } from "../store/battlesSlice";
 import type { ActiveView } from "../store/battlesSlice";
 import { restoreBattleSession, restoreProposalSession } from "../core/wamp";
 
-// Helper to get path relative to Vite's BASE_URL (e.g. /my-app/teams -> /teams)
+// Helper to get path relative to Vite's BASE_URL (e.g., /my-app/teams -> /teams)
 const getCleanPathname = () => {
   const base = import.meta.env.BASE_URL || "/";
   const baseNoTrailing = base.endsWith("/") ? base.slice(0, -1) : base;

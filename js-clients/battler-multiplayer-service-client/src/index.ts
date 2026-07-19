@@ -81,7 +81,7 @@ export class BattlerMultiplayerServiceClient {
     player: string,
     onUpdate: (update: ProposedBattleUpdate) => void,
   ): Promise<autobahn.Subscription> {
-    const topic = `com.battler.battler_multiplayer_service.proposed_battle_updates.${player}`;
+    const topic = `com.battler.battler_multiplayer_service.proposed_battle_updates`;
     const handler = (args?: any[] | null) => {
       const json = getWampResultString(args);
       if (json) {

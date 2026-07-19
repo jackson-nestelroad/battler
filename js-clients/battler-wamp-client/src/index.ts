@@ -9,6 +9,7 @@ export class WampSessionProvider extends EventEmitter {
   private connection: autobahn.Connection;
   private currentSession: autobahn.Session | null = null;
   private connectionPromise: Promise<autobahn.Session> | null = null;
+  private isManualDisconnect = false;
 
   constructor(options: autobahn.IConnectionOptions) {
     super();
@@ -16,6 +17,14 @@ export class WampSessionProvider extends EventEmitter {
 
     this.connection.onopen = (session) => {
       this.currentSession = session;
+      session.onleave = (reason, details) => {
+        (this.connection as any)._session_close_reason = reason;
+        (this.connection as any)._session_close_message = details?.message || "";
+        (this.connection as any)._retry = !this.isManualDisconnect;
+        if ((this.connection as any)._transport) {
+          (this.connection as any)._transport.close();
+        }
+      };
       this.emit("connect", session);
     };
 
@@ -23,7 +32,7 @@ export class WampSessionProvider extends EventEmitter {
       this.currentSession = null;
       this.connectionPromise = null;
       this.emit("disconnect", reason, details);
-      return false;
+      return this.isManualDisconnect;
     };
   }
 
@@ -32,6 +41,7 @@ export class WampSessionProvider extends EventEmitter {
   }
 
   async connect(): Promise<autobahn.Session> {
+    this.isManualDisconnect = false;
     if (this.currentSession) {
       return this.currentSession;
     }
@@ -62,6 +72,7 @@ export class WampSessionProvider extends EventEmitter {
   }
 
   async disconnect(): Promise<void> {
+    this.isManualDisconnect = true;
     this.connection.close();
     this.currentSession = null;
     this.connectionPromise = null;

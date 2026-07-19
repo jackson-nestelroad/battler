@@ -16,6 +16,7 @@ import {
   setConnectionError,
   setSavedConnectionDetails,
   setAutoconnect,
+  setRetryDetails,
 } from "../store/connectionSlice";
 import { updateProposal, addProposals, clearProposals } from "../store/proposalsSlice";
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
@@ -316,6 +317,39 @@ export const connectWamp = createAsyncThunk(
         onchallenge: () => "role:user",
       } as IConnectionOptions);
 
+      interface EventEmitterLike {
+        on(event: string, listener: (...args: unknown[]) => void): void;
+      }
+      const provider = connectionManager.sessionProvider as unknown as EventEmitterLike;
+
+      // Register reconnection handlers
+      provider.on("disconnect", (_reason: any, details: any) => {
+        dispatch(setConnectionStatus("connecting"));
+        const retryDelay = details?.retry_delay ?? null;
+        const retryCount = details?.retry_count ?? null;
+        dispatch(setRetryDetails({ retryDelay, retryCount }));
+      });
+
+      provider.on("connect", async () => {
+        dispatch(setConnectionStatus("connected"));
+        dispatch(setConnectionError(null));
+        // Catch up on reconnection
+        for (const [battleId, client] of connectionManager.clientsRegistry.entries()) {
+          try {
+            await client.sync();
+          } catch (e: unknown) {
+            handleBattleError(
+              dispatch,
+              battleId,
+              `Failed to sync battle ${battleId} on reconnect`,
+              e,
+              "error",
+              false,
+            );
+          }
+        }
+      });
+
       // Connect
       await connectionManager.sessionProvider.connect();
 
@@ -388,36 +422,7 @@ export const connectWamp = createAsyncThunk(
           getProposalUpdateHandler(playerId, dispatch),
         );
 
-      interface EventEmitterLike {
-        on(event: string, listener: (...args: unknown[]) => void): void;
-      }
-      const provider = connectionManager.sessionProvider as unknown as EventEmitterLike;
 
-      // Register reconnection handlers
-      provider.on("disconnect", () => {
-        dispatch(setConnectionStatus("connecting"));
-        dispatch(setConnectionError("Connection lost. Reconnecting..."));
-      });
-
-      provider.on("connect", async () => {
-        dispatch(setConnectionStatus("connected"));
-        dispatch(setConnectionError(null));
-        // Catch up on reconnection
-        for (const [battleId, client] of connectionManager.clientsRegistry.entries()) {
-          try {
-            await client.sync();
-          } catch (e: unknown) {
-            handleBattleError(
-              dispatch,
-              battleId,
-              `Failed to sync battle ${battleId} on reconnect`,
-              e,
-              "error",
-              false,
-            );
-          }
-        }
-      });
     } catch (err: unknown) {
       dispatch(setConnectionStatus("disconnected"));
       const errorMsg = formatWampError(err);

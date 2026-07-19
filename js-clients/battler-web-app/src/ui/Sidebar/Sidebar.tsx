@@ -56,7 +56,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             </span>
           )}
         </div>
-        {!isCollapsed && connection.status === "connected" && (
+        {!isCollapsed &&
+          (connection.status === "connected" ||
+            (connection.status === "connecting" && !!connection.playerId)) && (
           <div className={styles.userInfo}>
             <div className={styles.playerMeta}>
               <span className={styles.username}>@{connection.playerId}</span>
@@ -109,7 +111,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         </button>
       </nav>
 
-      {connection.status === "connected" && (
+      {(connection.status === "connected" ||
+        (connection.status === "connecting" && !!connection.playerId)) && (
         <div className={styles.battlesSection}>
           {!isCollapsed && <h3>Battles</h3>}
           {activeBattlesList.length === 0 ? (

@@ -1,0 +1,229 @@
+@use "../../styles/breakpoints" as *;
+
+.proposalForm {
+  width: 100%;
+}
+
+.formFields {
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.proposalField {
+  flex: 1;
+  min-width: rem(192px);
+  max-width: rem(320px);
+}
+
+.formatField {
+  flex: 1;
+  min-width: rem(160px);
+  max-width: rem(240px);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--spacing-s);
+  width: 100%;
+}
+
+/* Advanced Battle Proposal Styles */
+
+.sideHeaderLabel {
+  font-weight: 600;
+  font-size: var(--font-size-m);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.playerSlotCard {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  width: 100%;
+}
+
+.playerInputsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(rem(140px), 1fr));
+  gap: var(--spacing-s);
+  width: 100%;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.playerSlotLabel {
+  font-weight: 500;
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+}
+
+.advancedSettingsToggle {
+  font-size: var(--font-size-xs) !important;
+  padding: var(--spacing-xs) var(--spacing-s) !important;
+  min-height: auto !important;
+  height: auto !important;
+}
+
+.advancedPlayerSettings {
+  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-s);
+  padding-top: var(--spacing-s);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(rem(160px), 1fr));
+  gap: var(--spacing-s);
+  width: 100%;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-size-s) !important;
+  font-weight: normal !important;
+  color: var(--text-primary) !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  transition: color 0.15s ease;
+
+  &:has(input:disabled) {
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  input[type="checkbox"] {
+    cursor: pointer;
+    width: rem(16px);
+    height: rem(16px);
+    margin: 0;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+}
+
+.advancedToggle {
+  margin-top: var(--spacing-s);
+}
+
+.advancedSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  padding: var(--spacing-m) 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  h4 {
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-m);
+    color: var(--text-primary);
+  }
+}
+
+.ruleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-xs) var(--spacing-s);
+  border-radius: var(--border-radius-xs);
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.removeRuleBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: var(--font-size-m);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 14px;
+  height: 14px;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--color-danger);
+  }
+}
+
+.rulesBuilderRow {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-s);
+  align-items: flex-end;
+  width: 100%;
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-m);
+  margin-top: var(--spacing-m);
+
+  :global(.form-group) {
+    margin-bottom: 0;
+  }
+
+  .actionField {
+    flex: 0 0 rem(160px);
+  }
+
+  .categoryField {
+    flex: 0 0 rem(130px);
+  }
+
+  .valueField {
+    flex: 1;
+  }
+
+  .addBtnField {
+    flex: 0 0 auto;
+    height: rem(40px);
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .actionField,
+    .categoryField,
+    .valueField,
+    .addBtnField {
+      flex: 1 1 auto;
+      width: 100%;
+    }
+  }
+}
+
+.sidesContainer {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-l);
+  width: 100%;
+  align-items: flex-start;
+
+  @media (max-width: 1200px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

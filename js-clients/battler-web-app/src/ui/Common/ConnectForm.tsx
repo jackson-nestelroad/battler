@@ -3,12 +3,14 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { connectWamp } from "../../core/wamp";
 import { setConnectionError } from "../../store/connectionSlice";
 import ErrorBanner from "./ErrorBanner";
+import { useConnectionCountdown } from "../../hooks/useConnectionCountdown";
 
 import styles from "./ConnectForm.module.scss";
 
 export default function ConnectForm() {
   const dispatch = useAppDispatch();
   const connection = useAppSelector((state) => state.connection);
+  const { connectionMessage } = useConnectionCountdown();
 
   const [playerName, setPlayerName] = useState(connection.savedPlayerId || "");
   const [serverUrl, setServerUrl] = useState(connection.savedServerUrl || "ws://localhost:8080/ws");
@@ -17,10 +19,15 @@ export default function ConnectForm() {
   const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
     if (!playerName.trim()) return;
+    const cleanPlayerName = playerName.trim().toLowerCase();
+    if (cleanPlayerName.startsWith("ai-")) {
+      dispatch(setConnectionError("Player IDs starting with 'ai-' are reserved.", null));
+      return;
+    }
     dispatch(
       connectWamp({
         url: serverUrl,
-        playerId: playerName.trim().toLowerCase(),
+        playerId: cleanPlayerName,
         autoconnect,
       }),
     );
@@ -73,7 +80,7 @@ export default function ConnectForm() {
             onClear={() => dispatch(setConnectionError(null))}
           />
           <button type="submit" className="btn btn-primary" disabled={isConnecting}>
-            {isConnecting ? "Connecting..." : "Connect"}
+            {isConnecting ? connectionMessage : "Connect"}
           </button>
         </form>
       </div>

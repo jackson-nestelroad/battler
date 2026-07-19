@@ -11,6 +11,8 @@ export interface ConnectionState {
   savedPlayerId: string | null;
   savedServerUrl: string | null;
   autoconnect: boolean;
+  retryDelay: number | null;
+  retryCount: number | null;
 }
 
 const initialAutoconnect = getCookie("battler_autoconnect") === "true";
@@ -26,6 +28,8 @@ const initialState: ConnectionState = {
   savedPlayerId: initialSavedPlayerId,
   savedServerUrl: initialSavedServerUrl,
   autoconnect: initialAutoconnect,
+  retryDelay: null,
+  retryCount: null,
 };
 
 const connectionSlice = createSlice({
@@ -34,6 +38,10 @@ const connectionSlice = createSlice({
   reducers: {
     setConnectionStatus(state, action: PayloadAction<ConnectionState["status"]>) {
       state.status = action.payload;
+      if (action.payload === "connected" || action.payload === "disconnected") {
+        state.retryDelay = null;
+        state.retryCount = null;
+      }
     },
     setPlayerId(state, action: PayloadAction<string | null>) {
       state.playerId = action.payload;
@@ -59,6 +67,18 @@ const connectionSlice = createSlice({
     setAutoconnect(state, action: PayloadAction<boolean>) {
       state.autoconnect = action.payload;
     },
+    setRetryDetails(
+      state,
+      action: PayloadAction<{ retryDelay: number | null; retryCount: number | null } | null>,
+    ) {
+      if (action.payload) {
+        state.retryDelay = action.payload.retryDelay;
+        state.retryCount = action.payload.retryCount;
+      } else {
+        state.retryDelay = null;
+        state.retryCount = null;
+      }
+    },
   },
 });
 
@@ -70,6 +90,7 @@ export const {
   setError,
   setSavedConnectionDetails,
   setAutoconnect,
+  setRetryDetails,
 } = connectionSlice.actions;
 
 export const setConnectionError =

@@ -108,47 +108,6 @@
   min-height: 0;
 }
 
-/* Modal Overlay for Reconnecting Blockers */
-.modalOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--bg-modal-overlay);
-  backdrop-filter: blur(var(--spacing-xs));
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modalCard {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-l);
-  padding: var(--spacing-xl);
-  max-width: rem(400px);
-  width: 100%;
-  text-align: center;
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-m);
-
-  h3 {
-    font-size: var(--font-size-l);
-    font-weight: 700;
-    color: var(--color-warning);
-  }
-
-  p {
-    font-size: var(--font-size-s);
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
-}
 
 .proposalCardWrapper {
   display: flex;

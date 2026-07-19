@@ -7,9 +7,10 @@
   --bg-primary: #0a0d14;
   --bg-sidebar: #10141f;
   --bg-card: #161c2b;
-  --bg-input: #1b2234;
+  --bg-input: #0c0f17;
 
   --border-color: #242c3f;
+  --border-input: #4e5d7c;
   --border-glow: color-mix(in srgb, var(--color-primary) 15%, transparent);
 
   --text-primary: #f1f5f9;
@@ -170,7 +171,7 @@ input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
   font-family: var(--font-sans);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-input);
   background-color: var(--bg-input);
   color: var(--text-primary);
   padding: var(--spacing-s) var(--spacing-m);
@@ -179,12 +180,40 @@ select {
   font-size: var(--font-size-s);
 }
 
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-m) center;
+  background-size: 1rem;
+  padding-right: var(--spacing-xl);
+}
+
 input:focus,
+select:focus,
 textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--border-glow);
+button:focus,
+a:focus,
+input[type="checkbox"]:focus {
+  outline: 2px solid var(--color-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+  border-color: var(--color-primary) !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):disabled,
+textarea:disabled,
+select:disabled {
+  background-color: var(--bg-primary);
+  color: var(--text-muted);
+  border-color: #2c3547;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+select:disabled {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
 }
 
 /* Custom Checkbox Styles */
@@ -194,7 +223,7 @@ input[type="checkbox"] {
   width: rem(16px);
   height: rem(16px);
   background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-input);
   border-radius: var(--border-radius-xs);
   cursor: pointer;
   display: inline-grid;
@@ -218,6 +247,27 @@ input[type="checkbox"] {
 
     &::before {
       transform: scale(1);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: var(--bg-primary);
+    border-color: #2c3547;
+    opacity: 0.5;
+
+    &:hover {
+      border-color: #2c3547;
+      box-shadow: none;
+    }
+  }
+
+  &:checked:disabled {
+    background: color-mix(in srgb, var(--color-primary) 25%, var(--bg-input));
+    border-color: transparent;
+
+    &::before {
+      background-color: var(--text-primary);
     }
   }
 
@@ -410,7 +460,7 @@ input[type="checkbox"] {
   gap: var(--spacing-s);
 }
 
-.form-group label {
+.form-group > label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
@@ -425,16 +475,25 @@ input[type="checkbox"] {
   gap: var(--spacing-s);
   cursor: pointer;
   user-select: none;
+
+  &:has(input:disabled) {
+    cursor: not-allowed;
+
+    label {
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+  }
 }
 
 .checkbox-group label {
   font-size: var(--font-size-s);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
   margin: 0;
   text-transform: none;
   letter-spacing: normal;
-  font-weight: 500;
+  font-weight: normal;
 }
 
 /* 5. Alert/Error Banners */
@@ -612,6 +671,34 @@ input[type="checkbox"] {
   flex-wrap: wrap;
 }
 
+/* Margin and Padding Utilities */
+.mt-xs { margin-top: var(--spacing-xs) !important; }
+.mt-s { margin-top: var(--spacing-s) !important; }
+.mt-m { margin-top: var(--spacing-m) !important; }
+.mt-l { margin-top: var(--spacing-l) !important; }
+.mt-xl { margin-top: var(--spacing-xl) !important; }
+
+.mb-xs { margin-bottom: var(--spacing-xs) !important; }
+.mb-s { margin-bottom: var(--spacing-s) !important; }
+.mb-m { margin-bottom: var(--spacing-m) !important; }
+.mb-l { margin-bottom: var(--spacing-l) !important; }
+.mb-xl { margin-bottom: var(--spacing-xl) !important; }
+
+.pt-xs { padding-top: var(--spacing-xs) !important; }
+.pt-s { padding-top: var(--spacing-s) !important; }
+.pt-m { padding-top: var(--spacing-m) !important; }
+.pt-l { padding-top: var(--spacing-l) !important; }
+.pt-xl { padding-top: var(--spacing-xl) !important; }
+
+.pb-xs { padding-bottom: var(--spacing-xs) !important; }
+.pb-s { padding-bottom: var(--spacing-s) !important; }
+.pb-m { padding-bottom: var(--spacing-m) !important; }
+.pb-l { padding-bottom: var(--spacing-l) !important; }
+.pb-xl { padding-bottom: var(--spacing-xl) !important; }
+
+.border-top { border-top: 1px solid var(--border-color) !important; }
+.border-bottom { border-bottom: 1px solid var(--border-color) !important; }
+
 @include tablet {
   .flex-tablet-col {
     flex-direction: column !important;
@@ -623,6 +710,15 @@ input[type="checkbox"] {
 
 .btn-icon-mobile {
   display: none;
+}
+
+@include tablet {
+  .flex-tablet-col {
+    flex-direction: column !important;
+  }
+  .flex-tablet-row {
+    flex-direction: row !important;
+  }
 }
 
 @include mobile {
