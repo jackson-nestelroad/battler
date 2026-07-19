@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { selectBattle, removeBattle } from "../../store/battlesSlice";
+import { selectBattle } from "../../store/battlesSlice";
 import type { ActiveView } from "../../store/battlesSlice";
-import { disconnectWamp } from "../../core/wamp";
+import { disconnectWamp, closeBattleSession } from "../../core/wamp";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
 import { getBattleTitle } from "../../utils/battle";
 
@@ -178,7 +178,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          dispatch(removeBattle(battle.battleId));
+                          dispatch(closeBattleSession(battle.battleId));
                         }}
                         className={styles.closeBtn}
                         title="Close Battle"
@@ -233,7 +233,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        dispatch(removeBattle(battle.battleId));
+                        dispatch(closeBattleSession(battle.battleId));
                       }}
                       className={styles.closeBtn}
                       title="Close Replay"

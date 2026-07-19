@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction, Dispatch } from "@reduxjs/toolkit";
-import { getCookie } from "../utils/cookie";
 
 export interface ConnectionState {
   status: "disconnected" | "connecting" | "connected";
@@ -15,9 +14,14 @@ export interface ConnectionState {
   retryCount: number | null;
 }
 
-const initialAutoconnect = getCookie("battler_autoconnect") === "true";
-const initialSavedPlayerId = getCookie("battler_username");
-const initialSavedServerUrl = getCookie("battler_server_url") || "ws://localhost:8080/ws";
+const getSavedItem = (key: string): string | null => {
+  if (typeof window === "undefined" || !window.localStorage) return null;
+  return window.localStorage.getItem(key);
+};
+
+const initialAutoconnect = getSavedItem("battler_autoconnect") === "true";
+const initialSavedPlayerId = getSavedItem("battler_username");
+const initialSavedServerUrl = getSavedItem("battler_server_url") || "ws://localhost:8080/ws";
 
 const initialState: ConnectionState = {
   status: initialAutoconnect && initialSavedPlayerId ? "connecting" : "disconnected",

@@ -1,14 +1,14 @@
 import type { UiLogEntry, BattleState } from "battler-state";
 
-function resolveMonName(monRef: unknown, state?: BattleState): string {
-  if (!monRef || typeof monRef !== "object") return "Mon";
-  const ref = monRef as Partial<{
-    Active: { side: number; position: number };
-    Inactive: { name?: string };
-  }>;
-  if ("Active" in ref && ref.Active) {
+type MonRef =
+  | { Active: { side: number; position: number } }
+  | { Inactive: { name?: string } };
+
+function resolveMonName(monRef: MonRef | undefined, state?: BattleState): string {
+  if (!monRef) return "Mon";
+  if ("Active" in monRef && monRef.Active) {
     if (!state) return "Mon";
-    const { side: sideIdx, position } = ref.Active;
+    const { side: sideIdx, position } = monRef.Active;
     const side = state.field?.sides?.[sideIdx];
     if (!side) return "Mon";
     const activeRef = side.active?.[position];
@@ -17,18 +17,18 @@ function resolveMonName(monRef: unknown, state?: BattleState): string {
     if (!player) return "Mon";
     const mon = player.mons?.[activeRef.mon_index];
     return mon?.physical_appearance?.name || "Mon";
-  } else if ("Inactive" in ref && ref.Inactive) {
-    return ref.Inactive.name || "Mon";
+  } else if ("Inactive" in monRef && monRef.Inactive) {
+    return monRef.Inactive.name || "Mon";
   }
   return "Mon";
 }
 
 interface LogEntryData {
-  mon?: unknown;
+  mon?: MonRef;
   name?: string;
   effect?: {
-    target?: unknown;
-    source?: unknown;
+    target?: MonRef;
+    source?: MonRef;
     source_effect?: {
       name?: string;
     } | null;
@@ -37,7 +37,7 @@ interface LogEntryData {
   by?: number | bigint;
   player?: string;
   item?: string;
-  target?: unknown;
+  target?: MonRef;
   side?: number;
   title?: string;
 }

@@ -70,7 +70,7 @@ export default function Lobby() {
         <div className="flex-col gap-xs">
           <h1>Lobby</h1>
         </div>
-        <RefreshButton onClick={handleRefresh} isRefreshing={isRefreshing} title="Refresh Lobby" />
+        <RefreshButton onClick={handleRefresh} isRefreshing={isRefreshing} title="Refresh lobby" />
       </div>
 
       <ErrorBanner message={connection.error} onClear={() => dispatch(setConnectionError(null))} />

@@ -4,7 +4,9 @@ import { submitChoice } from "../../core/wamp";
 import { setChoiceError } from "../../store/battlesSlice";
 import type { Request, MonMoveSlotData, PlayerBattleData } from "battler-types";
 import ErrorBanner from "../Common/ErrorBanner";
-import MonCard from "../Common/MonCard";
+import MoveSelector from "./MoveSelector";
+import TargetSelector from "./TargetSelector";
+import TeamSummary from "./TeamSummary";
 
 import styles from "./ActionPanel.module.scss";
 
@@ -16,14 +18,6 @@ interface ActionPanelProps {
   isLoading: boolean;
   errorMessage: string | null;
 }
-
-const TARGET_REQUIRING_SELECT = [
-  "Normal",
-  "AdjacentFoe",
-  "AdjacentAlly",
-  "Any",
-  "AdjacentAllyOrUser",
-];
 
 export default function ActionPanel({
   battleId,
@@ -132,72 +126,39 @@ export default function ActionPanel({
   // Check if player has already submitted their choice for the current turn
   const isMeReady = !!battleSession?.choiceSubmitted;
 
+  // Unified choice progression logic (DRY)
+  const advanceSlotOrSubmit = (nextChoices: string[], totalSlots: number) => {
+    if (currentSlotIndex + 1 < totalSlots) {
+      setChoices(nextChoices);
+      setCurrentSlotIndex(currentSlotIndex + 1);
+      setSelectedMove(null);
+      setSelectedMoveIndex(null);
+      resetModifiers();
+    } else {
+      submittingRef.current = true;
+      dispatch(submitChoice({ battleId, choice: nextChoices.join("; ") }));
+    }
+  };
+
+  const handleSwitch = (playerTeamPosition: number, totalSlots: number) => {
+    if (submittingRef.current) return;
+    dispatch(setChoiceError({ battleId, error: null }));
+    const newChoices = [...choices, `switch ${playerTeamPosition}`];
+    advanceSlotOrSubmit(newChoices, totalSlots);
+  };
+
   const renderTeamSummary = () => {
-    if (!playerData || !playerData.mons) return null;
     return (
-      <div className={styles.teamSummarySection}>
-        <h4 className={styles.summaryTitle}>Team</h4>
-        <div className={styles.teamSummaryGrid}>
-          {playerData.mons.map((mon, idx) => {
-            const name = mon.summary?.name || mon.species;
-
-            // Check if card is clickable for switching
-            let isClickable = false;
-            let handleClick: (() => void) | undefined = undefined;
-
-            if (request && !isMeReady && !playbackPending && !isLoading) {
-              let totalSlots = 0;
-              let canSwitch = false;
-
-              if (request.type === "switch") {
-                const needsSwitch = request.needs_switch || [];
-                totalSlots = needsSwitch.length;
-                canSwitch = needsSwitch[currentSlotIndex] !== undefined;
-              } else if (request.type === "turn" && selectedMove === null) {
-                const activeRequests = request.active || [];
-                totalSlots = activeRequests.length;
-                const activeReq = activeRequests[currentSlotIndex];
-                canSwitch = !!(activeReq && !activeReq.trapped);
-              }
-
-              if (canSwitch) {
-                isClickable = !mon.active && mon.hp > 0;
-                if (isClickable) {
-                  handleClick = () => {
-                    if (submittingRef.current) return;
-                    dispatch(setChoiceError({ battleId, error: null }));
-                    const newChoices = [...choices, `switch ${mon.player_team_position}`];
-                    if (currentSlotIndex + 1 < totalSlots) {
-                      setChoices(newChoices);
-                      setCurrentSlotIndex(currentSlotIndex + 1);
-                      setSelectedMove(null);
-                      setSelectedMoveIndex(null);
-                      resetModifiers();
-                    } else {
-                      submittingRef.current = true;
-                      dispatch(submitChoice({ battleId, choice: newChoices.join("; ") }));
-                    }
-                  };
-                }
-              }
-            }
-
-            return (
-              <MonCard
-                key={idx}
-                name={name}
-                level={mon.summary?.level || 50}
-                hp={mon.hp}
-                maxHp={mon.max_hp}
-                status={mon.status}
-                active={!!mon.active}
-                isClickable={isClickable}
-                onClick={handleClick}
-              />
-            );
-          })}
-        </div>
-      </div>
+      <TeamSummary
+        playerData={playerData}
+        request={request}
+        currentSlotIndex={currentSlotIndex}
+        selectedMove={selectedMove}
+        isMeReady={isMeReady}
+        playbackPending={playbackPending}
+        isLoading={isLoading}
+        onSwitch={handleSwitch}
+      />
     );
   };
 
@@ -308,14 +269,6 @@ export default function ActionPanel({
       const activeMonName =
         activeMon?.summary?.name || activeMon?.species || `Mon #${currentSlotIndex + 1}`;
 
-      const hasModifiers = !!(
-        activeReq.can_mega_evolve ||
-        activeReq.can_terastallize ||
-        activeReq.can_z_move ||
-        activeReq.can_dynamax ||
-        activeReq.can_ultra_burst
-      );
-
       const handleSelectMove = (move: MonMoveSlotData, index: number) => {
         if (submittingRef.current) return;
         dispatch(setChoiceError({ battleId, error: null }));
@@ -338,20 +291,7 @@ export default function ActionPanel({
         if (tera) moveStr += ",tera";
 
         const newChoices = [...choices, moveStr];
-        submitOrNextSlot(newChoices);
-      };
-
-      const submitOrNextSlot = (nextChoices: string[]) => {
-        if (currentSlotIndex + 1 < activeRequests.length) {
-          setChoices(nextChoices);
-          setCurrentSlotIndex(currentSlotIndex + 1);
-          setSelectedMove(null);
-          setSelectedMoveIndex(null);
-          resetModifiers();
-        } else {
-          submittingRef.current = true;
-          dispatch(submitChoice({ battleId, choice: nextChoices.join("; ") }));
-        }
+        advanceSlotOrSubmit(newChoices, activeRequests.length);
       };
 
       const handleBack = () => {
@@ -378,135 +318,28 @@ export default function ActionPanel({
           <ErrorBanner message={errorMessage} />
 
           {selectedMove === null ? (
-            <div className="flex-col gap-m">
-              <div className={styles.movesColumn}>
-                <h4>Select Move</h4>
-
-                {hasModifiers && (
-                  <div className={styles.modifiersRow}>
-                    {[
-                      {
-                        key: "mega",
-                        label: "Mega",
-                        flag: activeReq.can_mega_evolve,
-                        value: mega,
-                        setter: setMega,
-                      },
-                      {
-                        key: "tera",
-                        label: "Tera",
-                        flag: activeReq.can_terastallize,
-                        value: tera,
-                        setter: setTera,
-                      },
-                      {
-                        key: "zmove",
-                        label: "Z-Move",
-                        flag: activeReq.can_z_move,
-                        value: zmove,
-                        setter: setZmove,
-                      },
-                      {
-                        key: "dyna",
-                        label: "Dynamax",
-                        flag: activeReq.can_dynamax,
-                        value: dyna,
-                        setter: setDyna,
-                      },
-                      {
-                        key: "ultra",
-                        label: "Ultra",
-                        flag: activeReq.can_ultra_burst,
-                        value: ultra,
-                        setter: setUltra,
-                      },
-                    ].map(
-                      ({ key, label, flag, value, setter }) =>
-                        flag && (
-                          <label key={key} className={styles.checkboxLabel}>
-                            <input
-                              type="checkbox"
-                              checked={value}
-                              onChange={(e) => {
-                                dispatch(setChoiceError({ battleId, error: null }));
-                                setter(e.target.checked);
-                              }}
-                            />
-                            {label}
-                          </label>
-                        ),
-                    )}
-                  </div>
-                )}
-
-                <div className={styles.movesGrid}>
-                  {activeReq.moves.map((move, index) => {
-                    const isMoveDisabled = move.disabled || move.pp === 0;
-                    return (
-                      <button
-                        key={move.id}
-                        onClick={() => handleSelectMove(move, index)}
-                        className={`${styles.moveBtn} type-border`}
-                        style={
-                          {
-                            "--type-color": `var(--color-type-${move.type.toLowerCase()})`,
-                          } as React.CSSProperties
-                        }
-                        disabled={isMoveDisabled || isLoading}
-                      >
-                        <span className={styles.moveName}>{move.name}</span>
-                        <span className={styles.moveMeta}>
-                          {move.type} | PP: {move.pp}/{move.max_pp}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {activeReq.trapped && (
-                  <p className={styles.trappedMessage}>Trapped</p>
-                )}
-              </div>
-            </div>
+            <MoveSelector
+              activeReq={activeReq}
+              isLoading={isLoading}
+              mega={mega}
+              setMega={setMega}
+              tera={tera}
+              setTera={setTera}
+              zmove={zmove}
+              setZmove={setZmove}
+              dyna={dyna}
+              setDyna={setDyna}
+              ultra={ultra}
+              setUltra={setUltra}
+              onSelectMove={handleSelectMove}
+              onClearError={() => dispatch(setChoiceError({ battleId, error: null }))}
+            />
           ) : (
-            <div className={styles.targetCard}>
-              <h4>Select Target</h4>
-
-              <div className="flex-col gap-s">
-                {!TARGET_REQUIRING_SELECT.includes(selectedMove.target) ? (
-                  <button
-                    onClick={() => handleConfirmMove(null)}
-                    className="btn btn-primary w-full"
-                    disabled={isLoading}
-                  >
-                    Confirm
-                  </button>
-                ) : (
-                  <div className={styles.targetGrid}>
-                    <button
-                      onClick={() => handleConfirmMove(1)}
-                      className="btn btn-secondary"
-                      disabled={isLoading}
-                    >
-                      Opponent Left
-                    </button>
-                    <button
-                      onClick={() => handleConfirmMove(2)}
-                      className="btn btn-secondary"
-                      disabled={isLoading}
-                    >
-                      Opponent Right
-                    </button>
-                    <button
-                      onClick={() => handleConfirmMove(-1)}
-                      className="btn btn-secondary"
-                      disabled={isLoading}
-                    >
-                      Ally
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <TargetSelector
+              selectedMoveTarget={selectedMove.target}
+              isLoading={isLoading}
+              onConfirmMove={handleConfirmMove}
+            />
           )}
 
           <div className="flex-row">

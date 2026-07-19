@@ -8,43 +8,10 @@ export interface TeamsState {
   teamOrder: string[];
 }
 
-const DEFAULT_TEAM: Partial<MonData>[] = [
-  {
-    name: "Bulbasaur",
-    species: "Bulbasaur",
-    ability: "Overgrow",
-    moves: ["Tackle", "Vine Whip", "Growl"],
-    level: 50,
-  },
-  {
-    name: "Charmander",
-    species: "Charmander",
-    ability: "Blaze",
-    moves: ["Scratch", "Ember", "Growl"],
-    level: 50,
-  },
-  {
-    name: "Squirtle",
-    species: "Squirtle",
-    ability: "Torrent",
-    moves: ["Tackle", "Water Gun", "Tail Whip"],
-    level: 50,
-  },
-  {
-    name: "Pikachu",
-    species: "Pikachu",
-    ability: "Static",
-    moves: ["Thunder Shock", "Thunderbolt", "Quick Attack", "Growl"],
-    level: 50,
-  },
-];
-
 const initialState: TeamsState = {
-  teams: {
-    "Kanto Starters": DEFAULT_TEAM as MonData[],
-  },
-  defaultTeam: "Kanto Starters",
-  teamOrder: ["Kanto Starters"],
+  teams: {},
+  defaultTeam: null,
+  teamOrder: [],
 };
 
 const teamsSlice = createSlice({

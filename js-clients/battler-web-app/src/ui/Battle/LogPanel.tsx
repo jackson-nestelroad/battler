@@ -30,7 +30,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
             type="button"
             className={styles.collapseToggle}
             onClick={() => setIsCollapsed(!isCollapsed)}
-            title={isCollapsed ? "Expand Log Panel" : "Collapse Log Panel"}
+            title={isCollapsed ? "Expand log panel" : "Collapse log panel"}
           >
             {isCollapsed ? "▲" : "▼"}
           </button>
@@ -72,7 +72,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                 <span className={styles.text}>{log}</span>
               </div>
             ))}
-            {visibleLogs.length === 0 && <p className={styles.emptyLogs}>Waiting</p>}
+            {visibleLogs.length === 0 && <p className={styles.emptyLogs}>None</p>}
           </div>
         )}
       </div>

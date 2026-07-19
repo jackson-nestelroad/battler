@@ -19,8 +19,8 @@ export default function ProposalRow({
   onDismiss,
   onView,
 }: ProposalRowProps) {
-  const isPlayer2 = proposal.sides[1]?.players[0]?.id === playerId;
-  const isPlayer1 = proposal.sides[0]?.players[0]?.id === playerId;
+  const isPlayer2 = proposal.sides[1]?.players.some((pl) => pl.id === playerId);
+  const isPlayer1 = proposal.sides[0]?.players.some((pl) => pl.id === playerId);
   const isDeclined = !!proposal.rejection || !!proposal.deletionReason;
   const title = getBattleTitle(null, null, proposal);
 

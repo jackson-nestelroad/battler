@@ -4,6 +4,7 @@ import { submitBattleTeam } from "../../core/wamp";
 import ErrorBanner from "../Common/ErrorBanner";
 import BattleSidesList from "../Common/BattleSidesList";
 import CountdownTimer from "../Common/CountdownTimer";
+import TeamSelect from "../Common/TeamSelect";
 import styles from "./BattlePreparationPanel.module.scss";
 
 interface BattlePreparationPanelProps {
@@ -73,22 +74,18 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
 
         {/* Team Selection Section */}
         <div className={styles.teamSelectionSection}>
-          <label htmlFor="battle-team-select">Team:</label>
+          <label htmlFor="battle-team-select">Team</label>
           {teamNames.length > 0 ? (
             <div className="flex-row flex-mobile-col gap-s">
-              <select
+              <TeamSelect
                 id="battle-team-select"
                 className="flex-1"
                 value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
+                onChange={setSelectedTeam}
+                teamNames={teamNames}
+                teams={teams}
                 disabled={battleSession?.isLoading}
-              >
-                {teamNames.map((name) => (
-                  <option key={name} value={name}>
-                    {name} ({teams[name].length})
-                  </option>
-                ))}
-              </select>
+              />
               <button
                 onClick={handleSubmitTeam}
                 className="btn btn-success"

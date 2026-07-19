@@ -9,10 +9,7 @@ use crate::{
     router::{
         acceptor::web_socket_acceptor::WebSocketAcceptorFactory,
         app::{
-            connection::{
-                ConnectionPolicies,
-                EmptyConnectionPolicies,
-            },
+            connection::ConnectionPolicies,
             pub_sub::PubSubPolicies,
             rpc::RpcPolicies,
         },

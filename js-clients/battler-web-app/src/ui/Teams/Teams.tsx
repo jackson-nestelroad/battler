@@ -356,7 +356,7 @@ export default function Teams() {
                         setSuccessMsg("Set as default!");
                       }}
                     >
-                      Set Default
+                      Set default
                     </button>
                   )}
                   <button type="submit" className="btn btn-primary">

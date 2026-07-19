@@ -8,7 +8,6 @@ import ReplaysHome from "./ui/Replays/ReplaysHome";
 import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 import { useHistorySync } from "./hooks/useHistorySync";
 import ConnectionRequired from "./ui/Common/ConnectionRequired";
-import { useConnectionCountdown } from "./hooks/useConnectionCountdown";
 
 import styles from "./App.module.scss";
 
@@ -21,7 +20,7 @@ export default function App() {
   const isReplay = useAppSelector((state) =>
     battleId ? !!state.battles.battles[battleId]?.isReplay : false,
   );
-  const { connectionMessage } = useConnectionCountdown();
+
 
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false,
@@ -34,7 +33,7 @@ export default function App() {
       <div className={styles.loadingScreen}>
         <div className="spinner"></div>
         <p>
-          {showAutoconnectLoader ? connectionMessage : "Initializing..."}
+          {showAutoconnectLoader ? "Reconnecting..." : "Loading..."}
         </p>
       </div>
     );

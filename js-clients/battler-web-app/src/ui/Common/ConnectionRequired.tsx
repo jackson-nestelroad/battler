@@ -1,7 +1,6 @@
 import React from "react";
 import { useAppSelector } from "../../store/store";
 import ConnectForm from "./ConnectForm";
-import { useConnectionCountdown } from "../../hooks/useConnectionCountdown";
 import styles from "./ConnectionRequired.module.scss";
 
 interface ConnectionRequiredProps {
@@ -14,7 +13,6 @@ export default function ConnectionRequired({
   bypass = false,
 }: ConnectionRequiredProps) {
   const connection = useAppSelector((state) => state.connection);
-  const { status, connectionMessage } = useConnectionCountdown();
 
   if (bypass) {
     return <>{children}</>;
@@ -28,7 +26,7 @@ export default function ConnectionRequired({
     return <ConnectForm />;
   }
 
-  const isReconnecting = status === "connecting";
+  const isReconnecting = connection.status === "connecting";
 
   return (
     <div className={styles.wrapper}>
@@ -38,7 +36,7 @@ export default function ConnectionRequired({
           <div className={styles.modalCard}>
             <div className="spinner" />
             <h3>Offline</h3>
-            <p>{connectionMessage}</p>
+            <p>Reconnecting...</p>
           </div>
         </div>
       )}

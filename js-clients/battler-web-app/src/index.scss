@@ -11,6 +11,7 @@
 
   --border-color: #242c3f;
   --border-input: #4e5d7c;
+  --border-disabled: #2c3547;
   --border-glow: color-mix(in srgb, var(--color-primary) 15%, transparent);
 
   --text-primary: #f1f5f9;
@@ -167,7 +168,7 @@ button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-input:not([type="checkbox"]):not([type="radio"]),
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 textarea,
 select {
   font-family: var(--font-sans);
@@ -190,7 +191,7 @@ select {
   padding-right: var(--spacing-xl);
 }
 
-input:focus,
+input:not([type="range"]):focus,
 select:focus,
 textarea:focus,
 button:focus,
@@ -202,12 +203,12 @@ input[type="checkbox"]:focus {
   border-color: var(--color-primary) !important;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):disabled,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):disabled,
 textarea:disabled,
 select:disabled {
   background-color: var(--bg-primary);
   color: var(--text-muted);
-  border-color: #2c3547;
+  border-color: var(--border-disabled);
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -253,11 +254,11 @@ input[type="checkbox"] {
   &:disabled {
     cursor: not-allowed;
     background-color: var(--bg-primary);
-    border-color: #2c3547;
+    border-color: var(--border-disabled);
     opacity: 0.5;
 
     &:hover {
-      border-color: #2c3547;
+      border-color: var(--border-disabled);
       box-shadow: none;
     }
   }
@@ -712,14 +713,6 @@ input[type="checkbox"] {
   display: none;
 }
 
-@include tablet {
-  .flex-tablet-col {
-    flex-direction: column !important;
-  }
-  .flex-tablet-row {
-    flex-direction: row !important;
-  }
-}
 
 @include mobile {
   .btn-icon-mobile {

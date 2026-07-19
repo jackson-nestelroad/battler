@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { formatUiLogEntry } from "../../utils/logFormatter";
-import { setBattleError, removeBattle } from "../../store/battlesSlice";
-import { refreshBattleSession } from "../../core/wamp";
+import { setBattleError } from "../../store/battlesSlice";
+import { refreshBattleSession, closeBattleSession } from "../../core/wamp";
 import ErrorBanner from "../Common/ErrorBanner";
 import Field from "./Field";
 import ActionPanel from "./ActionPanel";
@@ -135,7 +135,7 @@ export default function BattleScreen() {
   if (!battleSession.battleState && battleSession.error) {
     const isDeleted = battleSession.isDeleted;
     const isProposalRoute = currentView === "proposal";
-    const headerText = isProposalRoute ? "Not Found" : isDeleted ? "Deleted" : "Not Found";
+    const headerText = isProposalRoute ? "Not found" : isDeleted ? "Deleted" : "Not found";
     const descText = isProposalRoute
       ? "Proposal no longer active."
       : isDeleted
@@ -151,7 +151,7 @@ export default function BattleScreen() {
             </div>
           </div>
           <p>{descText}</p>
-          <button onClick={() => dispatch(removeBattle(battleId))} className="btn btn-primary">
+          <button onClick={() => dispatch(closeBattleSession(battleId))} className="btn btn-primary">
             ← Lobby
           </button>
         </div>

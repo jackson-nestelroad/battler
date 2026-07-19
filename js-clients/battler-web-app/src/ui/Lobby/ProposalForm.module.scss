@@ -1,31 +1,9 @@
 @use "../../styles/breakpoints" as *;
 
-.proposalForm {
-  width: 100%;
-}
-
-.formFields {
-  width: 100%;
-  flex-wrap: wrap;
-}
-
-.proposalField {
-  flex: 1;
-  min-width: rem(192px);
-  max-width: rem(320px);
-}
-
 .formatField {
   flex: 1;
   min-width: rem(160px);
   max-width: rem(240px);
-}
-
-.formActions {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: var(--spacing-s);
-  width: 100%;
 }
 
 /* Advanced Battle Proposal Styles */
@@ -116,9 +94,6 @@
   }
 }
 
-.advancedToggle {
-  margin-top: var(--spacing-s);
-}
 
 .advancedSection {
   display: flex;
@@ -161,8 +136,8 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  width: 14px;
-  height: 14px;
+  width: rem(14px);
+  height: rem(14px);
   transition: color 0.15s ease;
 
   &:hover {
@@ -201,7 +176,7 @@
     height: rem(40px);
   }
 
-  @media (max-width: 768px) {
+  @include mobile {
     flex-direction: column;
     align-items: stretch;
 
@@ -222,7 +197,7 @@
   width: 100%;
   align-items: flex-start;
 
-  @media (max-width: 1200px) {
+  @media (max-width: rem(1200px)) {
     flex-direction: column;
     align-items: stretch;
   }

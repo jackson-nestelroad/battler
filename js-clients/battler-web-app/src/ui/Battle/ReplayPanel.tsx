@@ -69,7 +69,7 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
           className="btn btn-secondary btn-sm"
           onClick={() => handleStep(0)}
           disabled={turnNumber === 0}
-          title="Go to Start"
+          title="Go to start"
         >
           ⏮ First
         </button>
@@ -77,7 +77,7 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
           className="btn btn-secondary btn-sm"
           onClick={() => handleStep(turnNumber - 1)}
           disabled={turnNumber === 0}
-          title="Previous Turn"
+          title="Previous turn"
         >
           ◀ Prev
         </button>
@@ -85,7 +85,7 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
           className={`btn ${isPlaying ? "btn-warning" : "btn-primary"} btn-sm`}
           onClick={() => setIsPlaying(!isPlaying)}
           disabled={turnNumber === maxTurn && !isPlaying}
-          title={isPlaying ? "Pause Playback" : "Play Playback"}
+          title={isPlaying ? "Pause playback" : "Play playback"}
         >
           {isPlaying ? "⏸ Pause" : "▶ Play"}
         </button>
@@ -93,7 +93,7 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
           className="btn btn-secondary btn-sm"
           onClick={() => handleStep(turnNumber + 1)}
           disabled={turnNumber === maxTurn}
-          title="Next Turn"
+          title="Next turn"
         >
           Next ▶
         </button>
@@ -101,7 +101,7 @@ export default function ReplayPanel({ battleId }: ReplayPanelProps) {
           className="btn btn-secondary btn-sm"
           onClick={() => handleStep(maxTurn)}
           disabled={turnNumber === maxTurn}
-          title="Go to End"
+          title="Go to end"
         >
           Last ⏭
         </button>

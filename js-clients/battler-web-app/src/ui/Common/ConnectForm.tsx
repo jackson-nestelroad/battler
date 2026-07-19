@@ -3,14 +3,13 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { connectWamp } from "../../core/wamp";
 import { setConnectionError } from "../../store/connectionSlice";
 import ErrorBanner from "./ErrorBanner";
-import { useConnectionCountdown } from "../../hooks/useConnectionCountdown";
 
 import styles from "./ConnectForm.module.scss";
 
 export default function ConnectForm() {
   const dispatch = useAppDispatch();
   const connection = useAppSelector((state) => state.connection);
-  const { connectionMessage } = useConnectionCountdown();
+
 
   const [playerName, setPlayerName] = useState(connection.savedPlayerId || "");
   const [serverUrl, setServerUrl] = useState(connection.savedServerUrl || "ws://localhost:8080/ws");
@@ -80,7 +79,7 @@ export default function ConnectForm() {
             onClear={() => dispatch(setConnectionError(null))}
           />
           <button type="submit" className="btn btn-primary" disabled={isConnecting}>
-            {isConnecting ? connectionMessage : "Connect"}
+            {isConnecting ? "Connecting..." : "Connect"}
           </button>
         </form>
       </div>

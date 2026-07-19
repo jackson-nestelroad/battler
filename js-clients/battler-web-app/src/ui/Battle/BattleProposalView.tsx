@@ -91,7 +91,7 @@ export default function BattleProposalView({
         <RefreshButton
           onClick={handleRefresh}
           isRefreshing={isRefreshing}
-          title="Refresh Proposal Details"
+          title="Refresh proposal details"
         />
       </header>
 

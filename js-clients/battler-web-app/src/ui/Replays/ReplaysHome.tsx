@@ -70,7 +70,7 @@ export default function ReplaysHome() {
             <p className={styles.replayHelpText}>Upload a .battler replay file.</p>
             <div className="flex-row align-center gap-m">
               <label className={`${styles.fileInputLabel} btn btn-secondary`}>
-                Choose File
+                Choose file
                 <input type="file" accept=".battler" onChange={handleFileChange} />
               </label>
               {replayError && <div className={styles.replayErrorText}>{replayError}</div>}
