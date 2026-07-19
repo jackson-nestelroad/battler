@@ -201,7 +201,6 @@ const battlesSlice = createSlice({
       const battleId = normalizeId(action.payload);
       const battle = state.battles[battleId];
       if (battle) {
-        battle.battleState = null;
         battle.isDeleted = true;
       }
     },

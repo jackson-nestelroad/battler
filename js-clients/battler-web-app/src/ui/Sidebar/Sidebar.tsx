@@ -155,12 +155,12 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                           <>
                             <span className={styles.opponentName}>{title}</span>
                             <span
-                              className={`${styles.turnLabel} ${isFinished ? styles.finishedLabel : isDeleted ? styles.errorLabel : ""}`}
+                              className={`${styles.turnLabel} ${isDeleted ? styles.errorLabel : isFinished ? styles.finishedLabel : ""}`}
                             >
-                              {isFinished
-                                ? "Finished"
-                                : isDeleted
-                                  ? "Deleted"
+                              {isDeleted
+                                ? "Deleted"
+                                : isFinished
+                                  ? "Finished"
                                   : isPreparing
                                     ? "Preparing"
                                     : `Turn ${turnNumber}`}

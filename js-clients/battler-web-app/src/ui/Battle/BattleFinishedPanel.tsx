@@ -29,7 +29,7 @@ export default function BattleFinishedPanel({ battleId }: BattleFinishedPanelPro
 
   return (
     <div className={styles.finishedPanel}>
-      <h3>Finished</h3>
+      <h3>{battleSession?.isDeleted ? "Deleted" : "Finished"}</h3>
       <div className="flex-row gap-s align-center justify-center">
         <button className="btn btn-primary" onClick={handleExport}>
           Export

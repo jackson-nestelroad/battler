@@ -169,8 +169,9 @@ export default function BattleScreen() {
   }
 
   const isPreparing =
-    battleSession.serviceBattle?.state === "preparing" ||
-    battleSession.battleState?.phase === "pre_battle";
+    !battleSession.isDeleted &&
+    (battleSession.serviceBattle?.state === "preparing" ||
+      battleSession.battleState?.phase === "pre_battle");
   const isFinished = battleSession.battleState?.phase === "finished";
 
   const metadata = battleSession?.serviceBattle?.metadata || battleSession?.metadata;
@@ -226,11 +227,16 @@ export default function BattleScreen() {
         </div>
       )}
 
-      {battleSession.error && !isPreparing && (
-        <ErrorBanner
-          message={battleSession.error}
-          onClear={() => dispatch(setBattleError({ battleId, error: null }))}
-        />
+      {battleSession.isDeleted ? (
+        <ErrorBanner message={battleSession.error || "Battle no longer exists."} />
+      ) : (
+        battleSession.error &&
+        !isPreparing && (
+          <ErrorBanner
+            message={battleSession.error}
+            onClear={() => dispatch(setBattleError({ battleId, error: null }))}
+          />
+        )
       )}
 
       {showDebug ? (
@@ -303,7 +309,7 @@ export default function BattleScreen() {
               <div className="card">
                 <ReplayPanel battleId={battleId} />
               </div>
-            ) : isFinished ? (
+            ) : isFinished || battleSession.isDeleted ? (
               <div className="card">
                 <BattleFinishedPanel battleId={battleId} />
               </div>
