@@ -12,8 +12,9 @@ import { getBattleTitle, formatDeletionReason } from "../../utils/battle";
 import CopyableId from "../Common/CopyableId";
 import RefreshButton from "../Common/RefreshButton";
 import CountdownTimer from "../Common/CountdownTimer";
+import RulesList from "../Common/RulesList";
 
-import styles from "./BattleScreen.module.scss";
+import styles from "./BattleProposalView.module.scss";
 
 interface BattleProposalViewProps {
   battleId: string;
@@ -80,11 +81,11 @@ export default function BattleProposalView({
 
   return (
     <div className="page-container">
-      <header className={`${styles.screenHeader} flex-row justify-between align-center gap-m`}>
-        <div className={`${styles.titleInfo} flex-col gap-xs`}>
+      <header className="screen-header flex-row justify-between align-center gap-m">
+        <div className="screen-header-title flex-col gap-xs">
           <h2>{title}</h2>
-          <span className={styles.battleId}>
-            <span className={styles.battleFormat}>Battle Proposal</span> •{" "}
+          <span className="screen-header-subtitle">
+            <span className="screen-header-format">Battle Proposal</span> •{" "}
             <CopyableId id={battleId} type="proposal" />
           </span>
         </div>
@@ -100,6 +101,23 @@ export default function BattleProposalView({
       <div className={styles.proposalCardWrapper}>
         <div className="card">
           <BattleSidesList sides={activeProposal.sides} isProposal={true} />
+
+          <div className={styles.detailsSection}>
+            <h4 className="details-header">Battle Details</h4>
+            <div className="details-grid">
+              <span className="details-label">Format</span>
+              <div>
+                <span className="badge badge-secondary">{activeProposal.battle_type}</span>
+              </div>
+
+              {activeProposal.rules && activeProposal.rules.length > 0 && (
+                <>
+                  <span className="details-label">Rules</span>
+                  <RulesList rules={activeProposal.rules} />
+                </>
+              )}
+            </div>
+          </div>
 
           {!isDeclined && (
             <div className="flex-row justify-center">
@@ -136,9 +154,9 @@ export default function BattleProposalView({
                 )}
 
                 {(!isPlayer2 || hasPlayer2Accepted) && (
-                  <div className={`${styles.waitingState} flex-col align-center gap-m`}>
+                  <div className="flex-col align-center gap-m text-center">
                     <p>Waiting...</p>
-                    <div className={styles.waitingActions}>
+                    <div className="flex-row flex-mobile-col justify-center gap-s w-full">
                       <button
                         onClick={() => dispatch(selectBattle({ view: "lobby", battleId: null }))}
                         className="btn btn-primary"

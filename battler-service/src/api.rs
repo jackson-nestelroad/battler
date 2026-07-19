@@ -84,6 +84,10 @@ pub struct BattleStatus {
 pub struct BattleMetadata {
     /// Player who created the battle.
     pub creator: String,
+    /// The type of the battle format.
+    pub battle_type: battler::battle::BattleType,
+    /// The rules of the battle.
+    pub rules: Vec<String>,
 }
 
 /// A battle.

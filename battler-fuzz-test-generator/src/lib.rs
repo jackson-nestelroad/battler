@@ -23,8 +23,6 @@ use battler::{
     PlayerDex,
     PlayerOptions,
     PlayerType,
-    Rule,
-    SerializedRuleSet,
     SideData,
     Stat,
     StatTable,
@@ -140,9 +138,9 @@ pub fn generate_random_battle(
     }
 
     // 2. Select format rules and mechanics.
-    let mut rules = SerializedRuleSet::new();
-    rules.insert(Rule::value_name("Species Clause"));
-    rules.insert(Rule::value_name("Item Clause"));
+    let mut rules = Vec::new();
+    rules.push("Species Clause".to_owned());
+    rules.push("Item Clause".to_owned());
 
     let mut enable_mega = false;
     let mut enable_z_moves = false;
@@ -154,19 +152,19 @@ pub fn generate_random_battle(
     match rng.random_range(0..5) {
         1 => {
             enable_mega = true;
-            rules.insert(Rule::value_name("Mega Evolution"));
+            rules.push("Mega Evolution".to_owned());
         }
         2 => {
             enable_z_moves = true;
-            rules.insert(Rule::value_name("Z-Moves"));
+            rules.push("Z-Moves".to_owned());
         }
         3 => {
             enable_dynamax = true;
-            rules.insert(Rule::value_name("Dynamax"));
+            rules.push("Dynamax".to_owned());
         }
         4 => {
             enable_tera = true;
-            rules.insert(Rule::value_name("Terastallization"));
+            rules.push("Terastallization".to_owned());
         }
         _ => {}
     }

@@ -27,3 +27,11 @@ export function formatDeletionReason(reason: string | null | undefined): string 
   if (reason === "deleted") return "Deleted";
   return reason.charAt(0).toUpperCase() + reason.slice(1);
 }
+
+export function getRuleBadgeClass(rule: string): string {
+  if (rule.startsWith("-")) return "badge-danger";
+  if (rule.startsWith("+")) return "badge-success";
+  if (rule.startsWith("!")) return "badge-warning";
+  if (rule.includes("=")) return "badge-secondary";
+  return "badge-primary";
+}

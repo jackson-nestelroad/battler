@@ -5,7 +5,7 @@ import type { BattleState } from "battler-state";
 import type { Request, PlayerBattleData } from "battler-types";
 import type { UiLogEntry } from "battler-state";
 import { formatUuid } from "../utils/uuid";
-import type { Battle } from "battler-service-client";
+import type { Battle, BattleMetadata } from "battler-service-client";
 import { resolveReplayTurnState, getReplayStepBoundary } from "../utils/replay";
 import type { ReplayKeyframe } from "../utils/replay";
 
@@ -23,6 +23,7 @@ export interface BaseBattleSession {
   serviceBattle: Battle | null;
   isDeleted?: boolean;
   isProposal?: boolean;
+  metadata?: BattleMetadata;
 }
 
 export interface LiveBattleSession extends BaseBattleSession {
@@ -251,9 +252,10 @@ const battlesSlice = createSlice({
         engineLogs: string[];
         keyframes: ReplayKeyframe[];
         maxTurn: number;
+        metadata?: BattleMetadata;
       }>,
     ) {
-      const { battleId, engineLogs, keyframes, maxTurn } = action.payload;
+      const { battleId, engineLogs, keyframes, maxTurn, metadata } = action.payload;
       const firstState = keyframes.find((k) => k.turn === 0)?.state || null;
 
       // Initialize sparse array for replayStates matching size of maxTurn + 2
@@ -282,6 +284,7 @@ const battlesSlice = createSlice({
         replayStates,
         replayEngineLogs: engineLogs,
         replayKeyframes: keyframes,
+        metadata,
       };
       state.activeBattleId = battleId;
       state.currentView = "battle";

@@ -1,5 +1,6 @@
 import { newBattleState, alterBattleState } from "battler-state";
 import type { BattleState } from "battler-state";
+import type { BattleMetadata } from "battler-service-client";
 
 export interface ReplayKeyframe {
   turn: number;
@@ -9,6 +10,7 @@ export interface ReplayKeyframe {
 export interface SavedReplay {
   battleId: string;
   engineLogs: string[];
+  metadata?: BattleMetadata;
 }
 
 /**
@@ -30,7 +32,7 @@ export function findTurnBoundary(engineLogs: string[], turn: number): number {
 export function getReplayStepBoundary(engineLogs: string[], step: number, maxTurn: number): number {
   if (step === 0) {
     const battlestartIdx = engineLogs.findIndex(
-      (log) => log === "battlestart" || log?.startsWith("battlestart|")
+      (log) => log === "battlestart" || log?.startsWith("battlestart|"),
     );
     return battlestartIdx !== -1 ? battlestartIdx + 1 : findTurnBoundary(engineLogs, 1);
   }

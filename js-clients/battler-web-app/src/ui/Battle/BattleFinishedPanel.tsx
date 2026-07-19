@@ -14,6 +14,7 @@ export default function BattleFinishedPanel({ battleId }: BattleFinishedPanelPro
     const replayData = {
       battleId,
       engineLogs: battleSession.engineLogs,
+      metadata: battleSession.serviceBattle?.metadata || battleSession.metadata,
     };
     const jsonStr = JSON.stringify(replayData);
     const base64Str = encodeBase64Utf8(jsonStr);

@@ -9,44 +9,6 @@
   font-size: var(--font-size-l);
 }
 
-.screenHeader {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: var(--spacing-m);
-  margin-bottom: var(--spacing-l);
-  flex-shrink: 0;
-
-  @include mobile {
-    padding-bottom: var(--spacing-s);
-    margin-bottom: var(--spacing-m);
-  }
-}
-
-.titleInfo {
-  h2 {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-
-    @include mobile {
-      font-size: var(--font-size-l);
-    }
-  }
-}
-
-.battleId {
-  font-size: var(--font-size-xs);
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-  word-break: break-all;
-
-  @include mobile {
-    word-break: normal;
-  }
-}
-.battleFormat {
-  color: var(--color-primary);
-  font-weight: 600;
-  font-family: var(--font-sans);
-}
 .headerControls {
   flex-wrap: wrap; /* natural wrapping on ultra-narrow viewports */
   gap: var(--spacing-s);
@@ -108,43 +70,27 @@
   min-height: 0;
 }
 
+.rulesToggle {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  text-decoration: none;
+  transition: color 0.15s ease;
 
-.proposalCardWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  width: 100%;
-  padding: var(--spacing-l) 0;
-
-  & > :global(.card) {
-    max-width: rem(640px);
-    width: 100%;
+  &:hover {
+    color: var(--color-primary-hover);
+    text-decoration: none;
   }
 }
 
-.actionRow {
-  border-top: 1px solid var(--border-color);
-  padding-top: var(--spacing-m);
-}
-
-.waitingState {
-  text-align: center;
-}
-
-.waitingActions {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-s);
-
-  @include mobile {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-  }
+.rulesDropdown {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  margin-bottom: var(--spacing-m);
+  box-shadow: var(--shadow-md);
 }
 
 .errorCard {

@@ -7,7 +7,10 @@ use ahash::{
     HashMap,
     HashSet,
 };
-use battler::CoreBattleOptions;
+use battler::{
+    BattleType,
+    CoreBattleOptions,
+};
 use battler_service::BattleServiceOptions;
 use serde::{
     Deserialize,
@@ -128,6 +131,10 @@ pub struct ProposedBattle {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>", optional))]
     pub battle: Option<Uuid>,
+    /// The type of the battle format.
+    pub battle_type: BattleType,
+    /// The rules of the battle.
+    pub rules: Vec<String>,
 }
 
 /// A player's response to a proposed battle.

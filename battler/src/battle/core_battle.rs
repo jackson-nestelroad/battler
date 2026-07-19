@@ -49,6 +49,7 @@ use crate::{
         Action,
         BattleQueue,
         BattleRegistry,
+        BattleType,
         Context,
         CoreBattleEngineOptions,
         CoreBattleEngineRandomizeBaseDamage,
@@ -162,6 +163,16 @@ impl<'d> PublicCoreBattle<'d> {
     /// The current turn.
     pub fn turn(&self) -> u64 {
         self.internal.turn
+    }
+
+    /// Returns the battle type of the format.
+    pub fn battle_type(&self) -> BattleType {
+        self.internal.format.battle_type
+    }
+
+    /// Returns the rules of the battle format as strings.
+    pub fn rules(&self) -> Vec<String> {
+        self.internal.format.rules()
     }
 
     /// Does the battle have new battle log entries since the last call to

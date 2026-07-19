@@ -102,7 +102,7 @@ struct LiveBattle<'d> {
     uuid: Uuid,
     state: BattleState,
     battle: PublicCoreBattle<'d>,
-    metadata: BattleMetadata,
+    creator: String,
     sides: Vec<Side>,
     error: Option<String>,
     logs: SplitLogs,
@@ -138,16 +138,11 @@ impl<'d> LiveBattle<'d> {
             .flat_map(|side| side.players.iter().map(|player| player.id.clone()))
             .collect::<Vec<_>>();
         let timers = service_options.timers.to_state(&players);
-
-        let metadata = BattleMetadata {
-            creator: service_options.creator,
-        };
-
         LiveBattle {
             uuid,
             state: BattleState::Preparing,
             battle,
-            metadata,
+            creator: service_options.creator,
             sides,
             error: None,
             logs,
@@ -216,7 +211,11 @@ impl<'d> LiveBattle<'d> {
             status: self.battle_status(),
             sides: self.sides.clone(),
             error: self.error.clone(),
-            metadata: self.metadata.clone(),
+            metadata: BattleMetadata {
+                creator: self.creator.clone(),
+                battle_type: self.battle.battle_type(),
+                rules: self.battle.rules(),
+            },
         }
     }
 

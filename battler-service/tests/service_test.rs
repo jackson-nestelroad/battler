@@ -23,7 +23,6 @@ use battler::{
     PlayerOptions,
     PlayerType,
     RequestType,
-    Rule,
     SideData,
     StatTable,
     TeamData,
@@ -45,7 +44,6 @@ use battler_service::{
     Timers,
 };
 use battler_test_utils::static_local_data_store;
-use hashbrown::HashSet;
 use itertools::Itertools;
 use tokio::{
     sync::broadcast,
@@ -113,7 +111,7 @@ fn core_battle_options(battle_type: BattleType, team: TeamData) -> CoreBattleOpt
         seed: Some(0),
         format: FormatData {
             battle_type: battle_type,
-            rules: HashSet::from_iter([Rule::value_name("Item Clause")]),
+            rules: Vec::from_iter(["Item Clause".to_owned()]),
         },
         field: FieldData::default(),
         side_1: SideData {
@@ -1068,10 +1066,7 @@ async fn selects_random_leads_on_team_preview_timer() {
     let battler_service = BattlerService::new(static_local_data_store());
     let mut options = core_battle_options(BattleType::Singles, team(5));
     // Enable Team Preview clause.
-    options
-        .format
-        .rules
-        .insert(Rule::value_name("Team Preview"));
+    options.format.rules.push("Team Preview".to_owned());
     let battle = battler_service
         .create(
             options,

@@ -671,34 +671,87 @@ input[type="checkbox"] {
 .flex-wrap {
   flex-wrap: wrap;
 }
+.text-center {
+  text-align: center !important;
+}
+.text-left {
+  text-align: left !important;
+}
+.text-right {
+  text-align: right !important;
+}
 
 /* Margin and Padding Utilities */
-.mt-xs { margin-top: var(--spacing-xs) !important; }
-.mt-s { margin-top: var(--spacing-s) !important; }
-.mt-m { margin-top: var(--spacing-m) !important; }
-.mt-l { margin-top: var(--spacing-l) !important; }
-.mt-xl { margin-top: var(--spacing-xl) !important; }
+.mt-xs {
+  margin-top: var(--spacing-xs) !important;
+}
+.mt-s {
+  margin-top: var(--spacing-s) !important;
+}
+.mt-m {
+  margin-top: var(--spacing-m) !important;
+}
+.mt-l {
+  margin-top: var(--spacing-l) !important;
+}
+.mt-xl {
+  margin-top: var(--spacing-xl) !important;
+}
 
-.mb-xs { margin-bottom: var(--spacing-xs) !important; }
-.mb-s { margin-bottom: var(--spacing-s) !important; }
-.mb-m { margin-bottom: var(--spacing-m) !important; }
-.mb-l { margin-bottom: var(--spacing-l) !important; }
-.mb-xl { margin-bottom: var(--spacing-xl) !important; }
+.mb-xs {
+  margin-bottom: var(--spacing-xs) !important;
+}
+.mb-s {
+  margin-bottom: var(--spacing-s) !important;
+}
+.mb-m {
+  margin-bottom: var(--spacing-m) !important;
+}
+.mb-l {
+  margin-bottom: var(--spacing-l) !important;
+}
+.mb-xl {
+  margin-bottom: var(--spacing-xl) !important;
+}
 
-.pt-xs { padding-top: var(--spacing-xs) !important; }
-.pt-s { padding-top: var(--spacing-s) !important; }
-.pt-m { padding-top: var(--spacing-m) !important; }
-.pt-l { padding-top: var(--spacing-l) !important; }
-.pt-xl { padding-top: var(--spacing-xl) !important; }
+.pt-xs {
+  padding-top: var(--spacing-xs) !important;
+}
+.pt-s {
+  padding-top: var(--spacing-s) !important;
+}
+.pt-m {
+  padding-top: var(--spacing-m) !important;
+}
+.pt-l {
+  padding-top: var(--spacing-l) !important;
+}
+.pt-xl {
+  padding-top: var(--spacing-xl) !important;
+}
 
-.pb-xs { padding-bottom: var(--spacing-xs) !important; }
-.pb-s { padding-bottom: var(--spacing-s) !important; }
-.pb-m { padding-bottom: var(--spacing-m) !important; }
-.pb-l { padding-bottom: var(--spacing-l) !important; }
-.pb-xl { padding-bottom: var(--spacing-xl) !important; }
+.pb-xs {
+  padding-bottom: var(--spacing-xs) !important;
+}
+.pb-s {
+  padding-bottom: var(--spacing-s) !important;
+}
+.pb-m {
+  padding-bottom: var(--spacing-m) !important;
+}
+.pb-l {
+  padding-bottom: var(--spacing-l) !important;
+}
+.pb-xl {
+  padding-bottom: var(--spacing-xl) !important;
+}
 
-.border-top { border-top: 1px solid var(--border-color) !important; }
-.border-bottom { border-bottom: 1px solid var(--border-color) !important; }
+.border-top {
+  border-top: 1px solid var(--border-color) !important;
+}
+.border-bottom {
+  border-bottom: 1px solid var(--border-color) !important;
+}
 
 @include tablet {
   .flex-tablet-col {
@@ -712,7 +765,6 @@ input[type="checkbox"] {
 .btn-icon-mobile {
   display: none;
 }
-
 
 @include mobile {
   .btn-icon-mobile {
@@ -869,4 +921,69 @@ input[type="checkbox"] {
     border-color: var(--color-primary);
     color: var(--text-primary);
   }
+}
+
+/* 16. Screen Header (for detailed screens like Battle and Proposal) */
+.screen-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-m);
+  margin-bottom: var(--spacing-l);
+  flex-shrink: 0;
+
+  @include mobile {
+    padding-bottom: var(--spacing-s);
+    margin-bottom: var(--spacing-m);
+  }
+}
+
+.screen-header-title {
+  h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+
+    @include mobile {
+      font-size: var(--font-size-l);
+    }
+  }
+}
+
+.screen-header-subtitle {
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  word-break: break-all;
+
+  @include mobile {
+    word-break: normal;
+  }
+}
+
+.screen-header-format {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+/* 17. Details Block (for card meta grids and detailed lists) */
+.details-header {
+  margin: 0;
+  margin-bottom: var(--spacing-s);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-s) var(--spacing-m);
+  align-items: baseline;
+  font-size: var(--font-size-s);
+}
+
+.details-label {
+  font-weight: 600;
+  color: var(--text-muted);
 }

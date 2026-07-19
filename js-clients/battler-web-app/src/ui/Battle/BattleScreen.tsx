@@ -15,13 +15,14 @@ import Tabs from "../Common/Tabs";
 import CopyableId from "../Common/CopyableId";
 import RefreshButton from "../Common/RefreshButton";
 import { getBattleTitle } from "../../utils/battle";
+import RulesList from "../Common/RulesList";
 
 import styles from "./BattleScreen.module.scss";
 
 export default function BattleScreen() {
   const dispatch = useAppDispatch();
   const [showDebug, setShowDebug] = useState(false);
-  const [debugTab, setDebugTab] = useState<"state" | "request" | "player">("state");
+  const [debugTab, setDebugTab] = useState<"state" | "request" | "player" | "metadata">("state");
 
   const battleId = useAppSelector((state) => state.battles.activeBattleId);
   const currentView = useAppSelector((state) => state.battles.currentView);
@@ -31,6 +32,11 @@ export default function BattleScreen() {
   );
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showRules, setShowRules] = useState(false);
+
+  useEffect(() => {
+    setShowRules(false);
+  }, [battleId]);
 
   const handleRefresh = async () => {
     if (!battleId || !connection.playerId) return;
@@ -167,14 +173,32 @@ export default function BattleScreen() {
     battleSession.battleState?.phase === "pre_battle";
   const isFinished = battleSession.battleState?.phase === "finished";
 
+  const metadata = battleSession?.serviceBattle?.metadata || battleSession?.metadata;
+
   return (
     <div className="page-container">
-      <header className={`${styles.screenHeader} flex-row justify-between align-center gap-m`}>
-        <div className={`${styles.titleInfo} flex-col gap-xs`}>
+      <header className="screen-header flex-row justify-between align-center gap-m">
+        <div className="screen-header-title flex-col gap-xs">
           <h2>{title}</h2>
-          <span className={styles.battleId}>
-            <span className={styles.battleFormat}>{isReplay ? "Replay" : "Battle"}</span> •{" "}
+          <span className="screen-header-subtitle">
+            <span className="screen-header-format">{isReplay ? "Replay" : "Battle"}</span> •{" "}
             <CopyableId id={battleId} type={isReplay ? "replay" : "battle"} />
+            {metadata && (
+              <>
+                {" "}
+                • <span className="screen-header-format">{metadata.battle_type}</span>
+                {metadata.rules && metadata.rules.length > 0 && (
+                  <>
+                    {" "}
+                    •{" "}
+                    <span className={styles.rulesToggle} onClick={() => setShowRules(!showRules)}>
+                      {metadata.rules.length} Rule{metadata.rules.length > 1 ? "s" : ""}{" "}
+                      {showRules ? "▲" : "▼"}
+                    </span>
+                  </>
+                )}
+              </>
+            )}
           </span>
         </div>
         <div className={`${styles.headerControls} flex-row align-center`}>
@@ -195,6 +219,13 @@ export default function BattleScreen() {
         </div>
       </header>
 
+      {showRules && metadata && metadata.rules && metadata.rules.length > 0 && (
+        <div className={`${styles.rulesDropdown} flex-col gap-s`}>
+          <h4 className="details-header">Active Rules</h4>
+          <RulesList rules={metadata.rules} />
+        </div>
+      )}
+
       {battleSession.error && !isPreparing && (
         <ErrorBanner
           message={battleSession.error}
@@ -211,6 +242,7 @@ export default function BattleScreen() {
               { value: "state", label: "State" },
               { value: "request", label: "Request" },
               { value: "player", label: "Player" },
+              { value: "metadata", label: "Metadata" },
             ]}
           />
           <div className={styles.debugJsonContainer}>
@@ -236,6 +268,12 @@ export default function BattleScreen() {
                 <pre className={styles.debugJson}>
                   {JSON.stringify(battleSession.playerData, null, 2)}
                 </pre>
+              </>
+            )}
+            {debugTab === "metadata" && (
+              <>
+                <h4>BattleMetadata</h4>
+                <pre className={styles.debugJson}>{JSON.stringify(metadata, null, 2)}</pre>
               </>
             )}
           </div>

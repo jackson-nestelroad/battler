@@ -18,10 +18,8 @@ use battler::{
     CoreBattleOptions,
     FieldData,
     FormatData,
-    Id,
     MonData,
     PlayerData,
-    Rule,
     SideData,
     TeamData,
 };
@@ -87,10 +85,7 @@ fn battle_options() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Singles,
-            rules: hashbrown::HashSet::from_iter([Rule::Value {
-                name: Id::from("Species Clause"),
-                value: String::default(),
-            }]),
+            rules: Vec::from_iter(["Species Clause".to_owned()]),
         },
         field: FieldData::default(),
         side_1: SideData {

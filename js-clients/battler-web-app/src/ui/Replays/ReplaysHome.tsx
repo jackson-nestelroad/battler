@@ -48,6 +48,7 @@ export default function ReplaysHome() {
           engineLogs: json.engineLogs,
           keyframes,
           maxTurn,
+          metadata: json.metadata,
         }),
       );
       setReplayError(null);

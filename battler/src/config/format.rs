@@ -1,5 +1,8 @@
 use anyhow::Result;
-use battler_data::SerializedRuleSet;
+use battler_data::{
+    Rule,
+    SerializedRuleSet,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -19,8 +22,7 @@ pub struct FormatData {
     /// The type of battle that will take place.
     pub battle_type: BattleType,
     /// The rules in place that must be validated before and during the battle.
-    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
-    pub rules: SerializedRuleSet,
+    pub rules: Vec<String>,
 }
 
 /// The format of a battle, which describes how a battle is configured.
@@ -30,15 +32,23 @@ pub struct Format {
     pub battle_type: BattleType,
     /// The rules in place that must be validated before and during the battle.
     pub rules: RuleSet,
+    /// The original human-readable rule names.
+    pub original_rules: Vec<String>,
 }
 
 impl Format {
     /// Creates a new format.
     pub fn new(data: FormatData, dex: &Dex) -> Result<Self> {
-        let rules = RuleSet::new(data.rules, &data.battle_type, dex)?;
+        let serialized_rules = data
+            .rules
+            .iter()
+            .map(|s| s.parse::<Rule>())
+            .collect::<Result<SerializedRuleSet, _>>()?;
+        let rules = RuleSet::new(serialized_rules, &data.battle_type, dex)?;
         Ok(Self {
             battle_type: data.battle_type,
             rules,
+            original_rules: data.rules,
         })
     }
 
@@ -46,7 +56,12 @@ impl Format {
     pub fn data(&self) -> FormatData {
         FormatData {
             battle_type: self.battle_type.clone(),
-            rules: self.rules.serialized(),
+            rules: self.original_rules.clone(),
         }
+    }
+
+    /// Returns the rules of the format as strings.
+    pub fn rules(&self) -> Vec<String> {
+        self.original_rules.clone()
     }
 }

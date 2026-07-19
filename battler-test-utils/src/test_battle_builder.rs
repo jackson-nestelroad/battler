@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use ahash::HashMap;
 use anyhow::Result;
 use battler::{
@@ -13,14 +11,12 @@ use battler::{
     FieldData,
     FieldEnvironment,
     FormatData,
-    Id,
     PlayerData,
     PlayerDex,
     PlayerOptions,
     PlayerType,
     PublicCoreBattle,
     Rule,
-    SerializedRuleSet,
     SideData,
     TeamData,
     TimeOfDay,
@@ -46,7 +42,7 @@ impl TestBattleBuilder {
                 seed: None,
                 format: FormatData {
                     battle_type: BattleType::Singles,
-                    rules: SerializedRuleSet::new(),
+                    rules: Vec::new(),
                 },
                 field: FieldData::default(),
                 side_1: SideData {
@@ -155,8 +151,8 @@ impl TestBattleBuilder {
     }
 
     pub fn with_rule(mut self, rule: &str) -> Self {
-        let rule = Rule::from_str(rule).unwrap();
-        self.options.format.rules.insert(rule);
+        let _ = rule.parse::<Rule>().unwrap();
+        self.options.format.rules.push(rule.to_owned());
         self
     }
 
@@ -240,30 +236,28 @@ impl TestBattleBuilder {
     }
 
     pub fn with_adjacency_reach(mut self, adjacency_reach: u8) -> Self {
-        self.options.format.rules.insert(Rule::Value {
-            name: Id::from("Adjacency Reach"),
-            value: adjacency_reach.to_string(),
-        });
+        self.options
+            .format
+            .rules
+            .push(format!("Adjacency Reach = {adjacency_reach}"));
         self
     }
 
     pub fn with_obedience_cap(mut self, obedience_cap: u8) -> Self {
-        self.options.format.rules.insert(Rule::Value {
-            name: Id::from("Obedience Cap"),
-            value: obedience_cap.to_string(),
-        });
+        self.options
+            .format
+            .rules
+            .push(format!("Obedience Cap = {obedience_cap}"));
         self
     }
 
     fn with_boolean_rule(mut self, name: &str, value: bool) -> Self {
-        let rule = Rule::Value {
-            name: Id::from(name),
-            value: String::default(),
-        };
         if value {
-            self.options.format.rules.insert(rule);
+            if !self.options.format.rules.contains(&name.to_owned()) {
+                self.options.format.rules.push(name.to_owned());
+            }
         } else {
-            self.options.format.rules.remove(&rule);
+            self.options.format.rules.retain(|r| r != name);
         }
         self
     }

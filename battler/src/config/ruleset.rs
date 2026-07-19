@@ -247,6 +247,11 @@ impl RuleSet {
         Ok(ruleset)
     }
 
+    /// Returns the original serialized ruleset.
+    pub fn original(&self) -> &SerializedRuleSet {
+        &self.original
+    }
+
     /// Stores the given rules by flattening all compound rules.
     fn store_flattened_ruleset(&mut self, rules: SerializedRuleSet, dex: &Dex) {
         // First, record all repeals.
