@@ -333,7 +333,7 @@ fn proposed_battle_options() -> ProposedBattleOptions {
                             name: "Pikachu".to_owned(),
                             species: "Pikachu".to_owned(),
                             ability: "Static".to_owned(),
-                            moves: Vec::from_iter(["Tackle".to_owned()]),
+                            moves: Vec::from_iter(["Growl".to_owned()]),
                             level: 5,
                             ..Default::default()
                         }]),
@@ -347,17 +347,7 @@ fn proposed_battle_options() -> ProposedBattleOptions {
                 players: Vec::from_iter([PlayerData {
                     id: "player_2".to_owned(),
                     name: "Player 2".to_owned(),
-                    team: TeamData {
-                        members: Vec::from_iter([MonData {
-                            name: "Meowth".to_owned(),
-                            species: "Meowth".to_owned(),
-                            ability: "Pickup".to_owned(),
-                            moves: Vec::from_iter(["Scratch".to_owned()]),
-                            level: 5,
-                            ..Default::default()
-                        }]),
-                        ..Default::default()
-                    },
+                    team: TeamData::default(),
                     ..Default::default()
                 }]),
             },
@@ -479,6 +469,47 @@ async fn proposes_and_starts_battle_lifecycle() {
     let battle_client = battler_service_client_over_wamp_consumer(Arc::new(battle_consumer));
     let battle = battle_client.battle(battle_uuid).await.unwrap();
 
+    // The battle is in Preparing state since player_2's team is not yet submitted.
+    assert_eq!(battle.state, BattleState::Preparing);
+
+    // Connect player 2 to battle service and submit their team.
+    let battle_peer_2 = create_peer("battle-client-2").unwrap();
+    let battle_consumer_2 = start_battle_consumer(
+        "player_2",
+        PeerConnectionType::Direct(context.router_handle.clone()),
+        battle_peer_2,
+    )
+    .await
+    .unwrap();
+    let battle_client_2 = battler_service_client_over_wamp_consumer(Arc::new(battle_consumer_2));
+    battle_client_2
+        .update_team(
+            battle_uuid,
+            "player_2",
+            TeamData {
+                members: Vec::from_iter([MonData {
+                    name: "Meowth".to_owned(),
+                    species: "Meowth".to_owned(),
+                    ability: "Pickup".to_owned(),
+                    moves: Vec::from_iter(["Scratch".to_owned()]),
+                    level: 10,
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    // Verify the battle is now Active (wait for the background housekeeping loop to start it).
+    let mut battle = battle_client.battle(battle_uuid).await.unwrap();
+    let start_time = std::time::Instant::now();
+    while battle.state != BattleState::Active
+        && start_time.elapsed() < std::time::Duration::from_secs(5)
+    {
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        battle = battle_client.battle(battle_uuid).await.unwrap();
+    }
     assert_eq!(battle.state, BattleState::Active);
 
     context.teardown().await;

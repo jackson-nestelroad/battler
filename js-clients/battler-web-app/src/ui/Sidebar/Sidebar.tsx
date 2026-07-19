@@ -59,20 +59,20 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         {!isCollapsed &&
           (connection.status === "connected" ||
             (connection.status === "connecting" && !!connection.playerId)) && (
-          <div className={styles.userInfo}>
-            <div className={styles.playerMeta}>
-              <span className={styles.username}>@{connection.playerId}</span>
-              {connection.serverUrl && (
-                <span className={styles.serverUrl} title={connection.serverUrl}>
-                  {connection.serverUrl}
-                </span>
-              )}
+            <div className={styles.userInfo}>
+              <div className={styles.playerMeta}>
+                <span className={styles.username}>@{connection.playerId}</span>
+                {connection.serverUrl && (
+                  <span className={styles.serverUrl} title={connection.serverUrl}>
+                    {connection.serverUrl}
+                  </span>
+                )}
+              </div>
+              <button className="btn btn-sm btn-danger" onClick={() => dispatch(disconnectWamp())}>
+                Disconnect
+              </button>
             </div>
-            <button className="btn btn-sm btn-danger" onClick={() => dispatch(disconnectWamp())}>
-              Disconnect
-            </button>
-          </div>
-        )}
+          )}
       </div>
 
       <nav className={styles.nav}>
@@ -135,7 +135,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 const isPreparing =
                   battle.serviceBattle?.state === "preparing" ||
                   battle.battleState?.phase === "pre_battle";
-                const isDeleted = !battle.battleState && !!battle.error;
+                const isDeleted = battle.isDeleted || (!battle.battleState && !!battle.error);
                 const isCloseable = isFinished || isDeleted;
 
                 return (
@@ -221,9 +221,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                         </span>
                       ) : (
                         <>
-                          <span className={styles.opponentName}>
-                            {title}
-                          </span>
+                          <span className={styles.opponentName}>{title}</span>
                           <span className={styles.turnLabel}>Turn {turnNumber}</span>
                         </>
                       )}

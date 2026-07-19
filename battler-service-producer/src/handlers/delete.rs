@@ -7,6 +7,7 @@ use uuid::Uuid;
 use crate::{
     BattleAuthorizer,
     BattleOperation,
+    common::error::map_battle_error,
 };
 
 pub(crate) struct Handler<'d> {
@@ -29,13 +30,13 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
         let uuid = Uuid::try_parse(&procedure.0)?;
-        let battle = self.service.battle(uuid).await?;
+        let battle = self.service.battle(uuid).await.map_err(map_battle_error)?;
 
         self.authorizer
             .authorize_battle_operation(&invocation.peer_info, &battle, BattleOperation::Delete)
             .await?;
 
-        self.service.delete(uuid).await?;
+        self.service.delete(uuid).await.map_err(map_battle_error)?;
         Ok(battler_service_schema::DeleteOutput)
     }
 

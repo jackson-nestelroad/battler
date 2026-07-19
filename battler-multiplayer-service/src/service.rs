@@ -42,6 +42,7 @@ use uuid::Uuid;
 use crate::{
     AiPlayers,
     DirectBattlerMultiplayerServiceClient,
+    MultiplayerError,
     Player,
     PlayerStatus,
     ProposedBattle,
@@ -571,7 +572,7 @@ impl BattlerMultiplayerServiceState {
     fn proposed_battle(&self, uuid: Uuid) -> Result<Arc<ActiveProposedBattleManager>> {
         self.proposed_battles
             .get(&uuid)
-            .ok_or_else(|| Error::msg("proposed battle not found"))
+            .ok_or_else(|| MultiplayerError::ProposedBattleNotFound.into())
             .cloned()
     }
 
@@ -669,7 +670,7 @@ impl<'d> BattlerMultiplayerService<'d> {
             .await
             .proposed_battles
             .get(&uuid)
-            .ok_or_else(|| Error::msg("proposed battle not found"))
+            .ok_or_else(|| MultiplayerError::ProposedBattleNotFound.into())
             .cloned()
     }
 

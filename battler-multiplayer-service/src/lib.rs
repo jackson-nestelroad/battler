@@ -1,6 +1,7 @@
 mod ai;
 mod api;
 mod client;
+mod error;
 mod service;
 
 pub use api::*;
@@ -8,6 +9,7 @@ pub use client::{
     BattlerMultiplayerServiceClient,
     DirectBattlerMultiplayerServiceClient,
 };
+pub use error::MultiplayerError;
 pub use service::BattlerMultiplayerService;
 
 #[cfg(all(test, feature = "typescript"))]

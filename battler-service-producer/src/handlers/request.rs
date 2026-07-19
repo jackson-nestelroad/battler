@@ -7,6 +7,7 @@ use uuid::Uuid;
 use crate::{
     BattleAuthorizer,
     PlayerOperation,
+    common::error::map_battle_error,
 };
 
 pub(crate) struct Handler<'d> {
@@ -38,7 +39,8 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         let request = self
             .service
             .request(Uuid::try_parse(&procedure.0)?, &input.0.player)
-            .await?;
+            .await
+            .map_err(map_battle_error)?;
         Ok(battler_service_schema::RequestOutput(
             battler_service_schema::RequestOutputArgs {
                 request_json: request

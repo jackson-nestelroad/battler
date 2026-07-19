@@ -21,3 +21,9 @@ export function getBattleTitle(
 
   return `${side0Name} vs ${side1Name}`;
 }
+
+export function formatDeletionReason(reason: string | null | undefined): string {
+  if (!reason) return "Declined";
+  if (reason === "deleted") return "Deleted";
+  return reason.charAt(0).toUpperCase() + reason.slice(1);
+}

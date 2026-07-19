@@ -283,7 +283,7 @@ fn battle_options() -> CoreBattleOptions {
                         name: "Pikachu".to_owned(),
                         species: "Pikachu".to_owned(),
                         ability: "Static".to_owned(),
-                        moves: Vec::from_iter(["Tackle".to_owned()]),
+                        moves: Vec::from_iter(["Growl".to_owned()]),
                         level: 5,
                         ..Default::default()
                     }]),
@@ -302,7 +302,7 @@ fn battle_options() -> CoreBattleOptions {
                         name: "Meowth".to_owned(),
                         species: "Meowth".to_owned(),
                         ability: "Pickup".to_owned(),
-                        moves: Vec::from_iter(["Return".to_owned()]),
+                        moves: Vec::from_iter(["Growl".to_owned()]),
                         level: 5,
                         ..Default::default()
                     }]),
@@ -799,13 +799,15 @@ async fn publishes_battle_logs() {
             "switch|player:player-1|position:1|name:Pikachu|health:18/18|species:Pikachu|level:5|gender:U",
             "switch|player:player-2|position:1|name:Meowth|health:100/100|species:Meowth|level:5|gender:U",
             "turn|turn:1",
+            "-battlerservice:request",
             "-battlerservice:timer|battle|remainingsecs:60",
             "continue",
-            "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
-            "damage|mon:Meowth,player-2,1|health:74/100",
-            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:17/18",
+            "move|mon:Pikachu,player-1,1|name:Growl",
+            "unboost|mon:Meowth,player-2,1|stat:atk|by:1",
+            "move|mon:Meowth,player-2,1|name:Growl",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1",
             "residual",
+            "-battlerservice:request",
         ]
     );
 
@@ -836,13 +838,15 @@ async fn publishes_battle_logs() {
             "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:U",
             "switch|player:player-2|position:1|name:Meowth|health:19/19|species:Meowth|level:5|gender:U",
             "turn|turn:1",
+            "-battlerservice:request",
             "-battlerservice:timer|battle|remainingsecs:60",
             "continue",
-            "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
-            "damage|mon:Meowth,player-2,1|health:14/19",
-            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:95/100",
+            "move|mon:Pikachu,player-1,1|name:Growl",
+            "unboost|mon:Meowth,player-2,1|stat:atk|by:1",
+            "move|mon:Meowth,player-2,1|name:Growl",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1",
             "residual",
+            "-battlerservice:request",
         ]
     );
 
@@ -873,13 +877,15 @@ async fn publishes_battle_logs() {
             "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:U",
             "switch|player:player-2|position:1|name:Meowth|health:100/100|species:Meowth|level:5|gender:U",
             "turn|turn:1",
+            "-battlerservice:request",
             "-battlerservice:timer|battle|remainingsecs:60",
             "continue",
-            "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
-            "damage|mon:Meowth,player-2,1|health:74/100",
-            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:95/100",
+            "move|mon:Pikachu,player-1,1|name:Growl",
+            "unboost|mon:Meowth,player-2,1|stat:atk|by:1",
+            "move|mon:Meowth,player-2,1|name:Growl",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1",
             "residual",
+            "-battlerservice:request",
         ]
     );
     context.teardown().await;

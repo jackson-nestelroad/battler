@@ -4,7 +4,10 @@ use anyhow::Result;
 use battler_service::BattlerService;
 use uuid::Uuid;
 
-use crate::BattleAuthorizer;
+use crate::{
+    BattleAuthorizer,
+    common::error::map_battle_error,
+};
 
 pub(crate) struct Handler<'d> {
     pub service: Arc<BattlerService<'d>>,
@@ -27,7 +30,7 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
     ) -> Result<Self::Output, Self::Error> {
         let uuid = Uuid::try_parse(&procedure.0)?;
         let side = input.0.side.map(|side| side as usize);
-        let battle = self.service.battle(uuid).await?;
+        let battle = self.service.battle(uuid).await.map_err(map_battle_error)?;
 
         self.authorizer
             .authorize_log_access(&invocation.peer_info, &battle, side)
@@ -36,7 +39,8 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         let log = self
             .service
             .full_log(Uuid::try_parse(&procedure.0)?, side)
-            .await?;
+            .await
+            .map_err(map_battle_error)?;
         Ok(battler_service_schema::FullLogOutput(
             battler_service_schema::FullLogOutputArgs { log },
         ))

@@ -1,5 +1,5 @@
 import type { ProposedBattleWithDetails } from "../../store/proposalsSlice";
-import { getBattleTitle } from "../../utils/battle";
+import { getBattleTitle, formatDeletionReason } from "../../utils/battle";
 import styles from "./ProposalRow.module.scss";
 
 interface ProposalRowProps {
@@ -32,7 +32,7 @@ export default function ProposalRow({
           <span className={styles.proposerName}>{title}</span>
           {isDeclined ? (
             <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
-              Failed: {proposal.deletionReason || "declined"}
+              Failed: {formatDeletionReason(proposal.deletionReason)}
             </span>
           ) : (
             <span className={styles.proposalMeta}>Incoming • Waiting...</span>
@@ -69,7 +69,7 @@ export default function ProposalRow({
           <span className={styles.proposerName}>{title}</span>
           {isDeclined ? (
             <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
-              Failed: {proposal.deletionReason || "declined"}
+              Failed: {formatDeletionReason(proposal.deletionReason)}
             </span>
           ) : (
             <span className={styles.proposalMeta}>Waiting...</span>

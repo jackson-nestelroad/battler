@@ -80,8 +80,6 @@ export default function BattleScreen() {
 
   const isReplay = !!battleSession?.isReplay;
 
-
-
   if (!battleId) {
     return (
       <div className={styles.placeholder}>
@@ -135,11 +133,13 @@ export default function BattleScreen() {
   if (!battleSession.battleState && battleSession.error) {
     const isDeleted = battleSession.isDeleted;
     const isProposalRoute = currentView === "proposal";
-    const headerText = isProposalRoute ? "Not found" : isDeleted ? "Deleted" : "Not found";
-    const descText = isProposalRoute
-      ? "Proposal no longer active."
-      : isDeleted
-        ? "Battle no longer exists."
+    const headerText = isDeleted ? "Deleted" : isProposalRoute ? "Not found" : "Not found";
+    const descText = isDeleted
+      ? isProposalRoute
+        ? "Proposal no longer exists."
+        : "Battle no longer exists."
+      : isProposalRoute
+        ? "Proposal no longer active."
         : "Battle not found.";
     return (
       <div className={styles.placeholder}>
@@ -151,7 +151,10 @@ export default function BattleScreen() {
             </div>
           </div>
           <p>{descText}</p>
-          <button onClick={() => dispatch(closeBattleSession(battleId))} className="btn btn-primary">
+          <button
+            onClick={() => dispatch(closeBattleSession(battleId))}
+            className="btn btn-primary"
+          >
             ← Lobby
           </button>
         </div>
@@ -166,7 +169,6 @@ export default function BattleScreen() {
 
   return (
     <div className="page-container">
-
       <header className={`${styles.screenHeader} flex-row justify-between align-center gap-m`}>
         <div className={`${styles.titleInfo} flex-col gap-xs`}>
           <h2>{title}</h2>

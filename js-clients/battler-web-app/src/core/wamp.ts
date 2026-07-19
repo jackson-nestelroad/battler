@@ -1,12 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Dispatch } from "@reduxjs/toolkit";
+import type { RootState } from "../store/store";
 
 import { WampSessionProvider } from "battler-wamp-client";
 import { BattlerMultiplayerClient } from "battler-multiplayer-client";
 import { BattlerClient } from "battler-client";
 import { BattlerServiceClient } from "battler-service-client";
 import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
-import type { ProposedBattleOptions, ProposedBattle, ProposedBattleRejection } from "battler-multiplayer-service-client";
+import type {
+  ProposedBattleOptions,
+  ProposedBattle,
+  ProposedBattleRejection,
+} from "battler-multiplayer-service-client";
 import type { Subscription, IConnectionOptions } from "autobahn";
 import type { MonData } from "battler-types";
 import {
@@ -67,6 +72,36 @@ function formatWampError(err: unknown): string {
   return String(err);
 }
 
+interface WampErrorObject {
+  error: string;
+}
+
+function getWampErrorUri(error: unknown): string {
+  if (error && typeof error === "object" && "error" in error) {
+    return String((error as WampErrorObject).error);
+  }
+  return "";
+}
+
+function handleProposalNotFound(
+  dispatch: Dispatch,
+  proposedBattleId: string,
+  state?: RootState,
+) {
+  dispatch(clearBattleState(proposedBattleId));
+  if (state) {
+    const existing = state.proposals.proposals[proposedBattleId];
+    if (existing) {
+      dispatch(
+        updateProposal({
+          ...existing,
+          deletionReason: "deleted",
+        }),
+      );
+    }
+  }
+}
+
 function handleBattleError(
   dispatch: Dispatch,
   battleId: string,
@@ -76,6 +111,7 @@ function handleBattleError(
   prefixMessageOnUi: boolean = true,
 ): string {
   const formatted = formatWampError(error);
+  const errorUri = getWampErrorUri(error);
   const uiErrorMsg = prefixMessageOnUi ? `${message}: ${formatted}` : formatted;
 
   if (level === "error") {
@@ -85,6 +121,11 @@ function handleBattleError(
   }
 
   dispatch(setBattleError({ battleId, error: uiErrorMsg }));
+
+  if (errorUri === "com.battler.battler_service.error.battle_not_found") {
+    dispatch(clearBattleState(battleId));
+  }
+
   return formatted;
 }
 
@@ -219,7 +260,6 @@ export async function initializeBattleClient(
   }
 }
 
-
 // Helper to restore an active/historical battle session in the background
 export function restoreBattleSession(rawBattleId: string, playerId: string, dispatch: Dispatch) {
   const battleId = formatUuid(rawBattleId);
@@ -259,8 +299,13 @@ export function restoreProposalSession(rawBattleId: string, playerId: string, di
     })
     .catch((err: unknown) => {
       console.error("[WAMP] Failed to fetch proposal:", err);
+      const errorMsg = formatWampError(err);
+      const errorUri = getWampErrorUri(err);
       dispatch(setBattleLoading({ battleId, isLoading: false }));
-      dispatch(setBattleError({ battleId, error: formatWampError(err) }));
+      dispatch(setBattleError({ battleId, error: errorMsg }));
+      if (errorUri === "com.battler.battler_multiplayer_service.error.proposed_battle_not_found") {
+        handleProposalNotFound(dispatch, battleId);
+      }
     });
 }
 
@@ -450,8 +495,6 @@ export const connectWamp = createAsyncThunk(
         await connectionManager.multiplayerClient.proposedBattleUpdates(
           getProposalUpdateHandler(playerId, dispatch),
         );
-
-
     } catch (err: unknown) {
       dispatch(setConnectionStatus("disconnected"));
       const errorMsg = formatWampError(err);
@@ -515,7 +558,7 @@ export const closeBattleSession = createAsyncThunk(
       connectionManager.clientsRegistry.delete(battleId);
     }
     dispatch(removeBattle(battleId));
-  }
+  },
 );
 
 // Propose Battle thunk
@@ -534,12 +577,14 @@ export const proposeBattle = createAsyncThunk(
 );
 
 // Respond to Proposal thunk
-export const respondToProposal = createAsyncThunk(
+export const respondToProposal = createAsyncThunk<
+  any,
+  { proposedBattleId: string; accept: boolean },
+  { state: RootState }
+>(
   "wamp/respondToProposal",
-  async (
-    { proposedBattleId, accept }: { proposedBattleId: string; accept: boolean },
-    { rejectWithValue },
-  ) => {
+  async ({ proposedBattleId, accept }: { proposedBattleId: string; accept: boolean }, thunkAPI) => {
+    const { dispatch, getState, rejectWithValue } = thunkAPI;
     if (!connectionManager.multiplayerClient) return rejectWithValue("Not connected");
     try {
       const updated = await connectionManager.multiplayerClient.respondToProposal(
@@ -549,7 +594,12 @@ export const respondToProposal = createAsyncThunk(
       return updated;
     } catch (err: unknown) {
       console.error("[WAMP] Respond to proposal failed:", err);
-      return rejectWithValue(formatWampError(err));
+      const errorMsg = formatWampError(err);
+      const errorUri = getWampErrorUri(err);
+      if (errorUri === "com.battler.battler_multiplayer_service.error.proposed_battle_not_found") {
+        handleProposalNotFound(dispatch, proposedBattleId, getState());
+      }
+      return rejectWithValue(errorMsg);
     }
   },
 );
@@ -572,6 +622,10 @@ export const submitChoice = createAsyncThunk(
       dispatch(setChoiceSubmitted({ battleId, submitted: true }));
     } catch (err: unknown) {
       const formatted = formatWampError(err);
+      const errorUri = getWampErrorUri(err);
+      if (errorUri === "com.battler.battler_service.error.battle_not_found") {
+        dispatch(clearBattleState(battleId));
+      }
       dispatch(setChoiceError({ battleId, error: formatted }));
       dispatch(setChoiceSubmitted({ battleId, submitted: false }));
       return rejectWithValue(formatted);
@@ -716,9 +770,14 @@ export const refreshLobby = createAsyncThunk(
 );
 
 // Refresh Proposal Session thunk
-export const refreshProposalSession = createAsyncThunk(
+export const refreshProposalSession = createAsyncThunk<
+  any,
+  { battleId: string; playerId: string },
+  { state: RootState }
+>(
   "wamp/refreshProposalSession",
-  async ({ battleId: rawId, playerId }: { battleId: string; playerId: string }, { dispatch }) => {
+  async ({ battleId: rawId, playerId }: { battleId: string; playerId: string }, thunkAPI) => {
+    const { dispatch, getState } = thunkAPI;
     const battleId = formatUuid(rawId);
     if (!connectionManager.multiplayerClient) return;
 
@@ -746,7 +805,12 @@ export const refreshProposalSession = createAsyncThunk(
       }
     } catch (err: unknown) {
       console.error(`[WAMP] Failed to refresh proposal for ${battleId}:`, err);
-      dispatch(setBattleError({ battleId, error: formatWampError(err) }));
+      const errorMsg = formatWampError(err);
+      const errorUri = getWampErrorUri(err);
+      dispatch(setBattleError({ battleId, error: errorMsg }));
+      if (errorUri === "com.battler.battler_multiplayer_service.error.proposed_battle_not_found") {
+        handleProposalNotFound(dispatch, battleId, getState());
+      }
     } finally {
       dispatch(setBattleLoading({ battleId, isLoading: false }));
     }

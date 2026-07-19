@@ -7,6 +7,9 @@ use battler_wamprat_message::WampApplicationMessage;
 use battler_wamprat_schema::WampSchema;
 use battler_wamprat_uri::WampUriMatcher;
 
+mod error;
+pub use error::BattlerMultiplayerServiceError;
+
 /// Arguments for proposing a battle.
 #[derive(Debug, Clone, WampList)]
 pub struct ProposeBattleInputArgs {

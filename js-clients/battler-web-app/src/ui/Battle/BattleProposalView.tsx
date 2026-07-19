@@ -8,7 +8,7 @@ import { setConnectionError } from "../../store/connectionSlice";
 import type { ConnectionState } from "../../store/connectionSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import BattleSidesList from "../Common/BattleSidesList";
-import { getBattleTitle } from "../../utils/battle";
+import { getBattleTitle, formatDeletionReason } from "../../utils/battle";
 import CopyableId from "../Common/CopyableId";
 import RefreshButton from "../Common/RefreshButton";
 import CountdownTimer from "../Common/CountdownTimer";
@@ -112,7 +112,9 @@ export default function BattleProposalView({
           )}
 
           {isDeclined && (
-            <ErrorBanner message={`Failed: ${activeProposal.deletionReason || "unknown reason"}`} />
+            <ErrorBanner
+              message={`Failed: ${formatDeletionReason(activeProposal.deletionReason)}`}
+            />
           )}
 
           <div className={`${styles.actionRow} flex-col gap-m`}>
