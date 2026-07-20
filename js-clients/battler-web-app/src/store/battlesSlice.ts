@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, current } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import isEqual from "fast-deep-equal";
 import type { BattleState } from "battler-state";
@@ -158,14 +158,11 @@ const battlesSlice = createSlice({
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
-        let changed = false;
-        if (!isEqual(battle.activeRequest, request)) {
+        const prevRequest = battle.activeRequest ? current(battle.activeRequest) : null;
+        if (!isEqual(prevRequest, request)) {
+          battle.activeRequest = request;
           battle.choiceSubmitted = false;
           battle.choiceError = null;
-          changed = true;
-        }
-        battle.activeRequest = request;
-        if (changed) {
           rebuildActiveTimers(battle);
         }
       }
