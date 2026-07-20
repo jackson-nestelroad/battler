@@ -75,20 +75,16 @@ function rebuildActiveTimers(battle: SerializedBattleSession) {
   if (!battle.battleState?.ui_log) return;
 
   const uiLog = battle.battleState.ui_log;
-  uiLog.forEach((turnLogs, turnIndex) => {
-    if (turnIndex > 0) {
-      for (const key of Object.keys(activeTimers)) {
-        const timer = activeTimers[key];
-        if (timer.type === "action" || timer.type === "teampreview") {
-          delete activeTimers[key];
-        }
-      }
-    }
-
+  uiLog.forEach((turnLogs) => {
     for (const entry of turnLogs) {
       const parsed = parseTimerLog(entry);
       if (parsed) {
-        updateTimerState(activeTimers, parsed);
+        if (parsed.isClear || (parsed.type === "teampreview" && parsed.isDone)) {
+          const key = parsed.playerId ? `${parsed.type}:${parsed.playerId}` : parsed.type;
+          delete activeTimers[key];
+        } else {
+          updateTimerState(activeTimers, parsed);
+        }
       }
     }
   });
@@ -133,8 +129,6 @@ const battlesSlice = createSlice({
           serviceBattle: null,
         };
       }
-      state.activeBattleId = battleId;
-      state.currentView = "battle";
     },
     battleStateUpdated(
       state,

@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
-import battlesReducer, {
-  battleSessionCreated,
-  battleStateUpdated,
-} from "./battlesSlice";
+import battlesReducer, { battleSessionCreated, battleStateUpdated } from "./battlesSlice";
 import type { BattleState, UiLogEntry } from "battler-state";
 
 describe("battlesSlice active timers", () => {
@@ -34,22 +31,20 @@ describe("battlesSlice active timers", () => {
     const mockBattleState: BattleState = {
       turn: 1,
       phase: "play",
-      ui_log: [
-        [doneTimerEntry],
-      ],
+      ui_log: [[doneTimerEntry]],
     } as unknown as BattleState;
 
     store.dispatch(
       battleStateUpdated({
         battleId,
         state: mockBattleState,
-      })
+      }),
     );
 
     const state = store.getState().battles;
     const battle = state.battles[battleId];
     expect(battle).toBeDefined();
-    
+
     const timers = battle.activeTimers;
     expect(timers).toBeDefined();
     expect(timers?.["action:player-1"]).toEqual({
@@ -60,5 +55,95 @@ describe("battlesSlice active timers", () => {
       isDone: true,
       isInactive: false,
     });
+  });
+
+  it("should delete teampreview timer when it is cleared or done", () => {
+    const store = configureStore({
+      reducer: {
+        battles: battlesReducer,
+      },
+    });
+
+    const battleId = "15cf2863-792b-4afc-8852-3aa6481m268e";
+    store.dispatch(battleSessionCreated(battleId));
+
+    const clearTimerEntry: UiLogEntry = {
+      Extension: {
+        source: "-battlerservice",
+        title: "timer",
+        values: {
+          teampreview: "",
+          remainingsecs: "48",
+          deadline: "1784498900",
+          clear: "",
+        },
+      },
+    } as unknown as UiLogEntry;
+
+    const mockBattleState: BattleState = {
+      turn: 0,
+      phase: "play",
+      ui_log: [[clearTimerEntry]],
+    } as unknown as BattleState;
+
+    store.dispatch(
+      battleStateUpdated({
+        battleId,
+        state: mockBattleState,
+      }),
+    );
+
+    const state = store.getState().battles;
+    const battle = state.battles[battleId];
+    expect(battle).toBeDefined();
+
+    const timers = battle.activeTimers;
+    expect(timers).toBeDefined();
+    expect(timers?.["teampreview"]).toBeUndefined();
+  });
+
+  it("should delete teampreview timer when it is done", () => {
+    const store = configureStore({
+      reducer: {
+        battles: battlesReducer,
+      },
+    });
+
+    const battleId = "15cf2863-792b-4afc-8852-3aa6481m268e";
+    store.dispatch(battleSessionCreated(battleId));
+
+    const doneTimerEntry: UiLogEntry = {
+      Extension: {
+        source: "-battlerservice",
+        title: "timer",
+        values: {
+          teampreview: "",
+          remainingsecs: "0",
+          deadline: "1784498900",
+          done: "",
+        },
+      },
+    } as unknown as UiLogEntry;
+
+    const mockBattleState: BattleState = {
+      turn: 0,
+      phase: "play",
+      ui_log: [[doneTimerEntry]],
+    } as unknown as BattleState;
+
+    store.dispatch(
+      battleStateUpdated({
+        battleId,
+        state: mockBattleState,
+      }),
+    );
+
+    const state = store.getState().battles;
+    const battle = state.battles[battleId];
+    expect(battle).toBeDefined();
+
+    const timers = battle.activeTimers;
+    expect(timers).toBeDefined();
+    expect(timers?.["teampreview"]).toBeUndefined();
   });
 });

@@ -43,7 +43,7 @@ export default function BattleTimers({
           } else if (timer.type === "action") {
             label = isMe ? "Action Timer" : `${name} Action`;
           } else if (timer.type === "teampreview") {
-            label = isMe ? "Team Preview" : `${name} Preview`;
+            label = timer.playerId ? (isMe ? "Team Preview" : `${name} Preview`) : "Team Preview";
           }
         }
 
@@ -85,8 +85,12 @@ export default function BattleTimers({
 
   if (activeTimersList.length === 0) return null;
 
-  const primaryTimers = activeTimersList.filter((t) => t.type === "battle" || t.isMe);
-  const otherTimers = activeTimersList.filter((t) => t.type !== "battle" && !t.isMe);
+  const primaryTimers = activeTimersList.filter(
+    (t) => t.type === "battle" || t.type === "teampreview" || t.isMe,
+  );
+  const otherTimers = activeTimersList.filter(
+    (t) => t.type !== "battle" && t.type !== "teampreview" && !t.isMe,
+  );
 
   const renderTimerBadge = (timer: (typeof activeTimersList)[0]) => {
     if (timer.isDone) {
@@ -109,7 +113,11 @@ export default function BattleTimers({
         deadlineSecs={timer.deadlineSecs}
         prefix={`${timer.label}: `}
         badgeMode={true}
-        badgeClassOverride={timer.type !== "battle" && !timer.isMe ? "badge-secondary" : undefined}
+        badgeClassOverride={
+          timer.type !== "battle" && timer.type !== "teampreview" && !timer.isMe
+            ? "badge-secondary"
+            : undefined
+        }
       />
     );
   };

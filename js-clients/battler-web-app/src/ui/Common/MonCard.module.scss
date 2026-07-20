@@ -37,6 +37,12 @@
       box-shadow: 0 var(--spacing-xs) rem(10px) var(--color-primary-border);
     }
   }
+
+  &.selectedCard {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-bg);
+    border-style: solid;
+  }
 }
 
 .summaryCardHeader {
@@ -81,4 +87,23 @@
   font-family: var(--font-mono);
   white-space: nowrap;
   line-height: 1;
+}
+
+.selectionBadge {
+  position: absolute;
+  top: rem(-8px);
+  left: rem(-8px);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  width: rem(22px);
+  height: rem(22px);
+  border-radius: var(--border-radius-round);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  border: var(--spacing-xxs) solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
 }

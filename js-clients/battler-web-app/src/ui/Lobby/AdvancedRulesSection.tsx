@@ -3,6 +3,7 @@ import styles from "./ProposalForm.module.scss";
 
 export interface CustomRulesState {
   preset: "none" | "standard" | "standarddoubles" | "flatrules" | "custom";
+  teamPreview: boolean;
   speciesClause: boolean;
   sleepClause: boolean;
   itemClause: boolean;
@@ -45,9 +46,7 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
       formatted = `! ${trimmed}`;
     } else {
       const prefix = ruleAction === "ban" ? "-" : "+";
-      formatted = ruleCategory
-        ? `${prefix} ${ruleCategory}: ${trimmed}`
-        : `${prefix} ${trimmed}`;
+      formatted = ruleCategory ? `${prefix} ${ruleCategory}: ${trimmed}` : `${prefix} ${trimmed}`;
     }
     if (formatted && !customRules.rulesList.includes(formatted)) {
       onChange({
@@ -68,7 +67,7 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
   return (
     <div className={styles.advancedSection}>
       <h4 className="mb-s">Format rules</h4>
-      <div className="flex-row flex-mobile-col gap-m align-end">
+      <div className="flex-row gap-m mb-m w-full">
         <div className="form-group flex-1">
           <label htmlFor="rulesetPreset">Ruleset preset</label>
           <select
@@ -82,6 +81,42 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
             <option value="flatrules">Flat Rules</option>
             <option value="custom">Custom</option>
           </select>
+        </div>
+      </div>
+
+      <div className="flex-row flex-mobile-col gap-m mb-m align-start">
+        <div className="form-group flex-1 mt-s">
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={customRules.teamPreview}
+              onChange={(e) => onChange({ teamPreview: e.target.checked })}
+            />
+            <span>Team preview</span>
+          </label>
+        </div>
+
+        <div className="form-group flex-1">
+          <label htmlFor="pickedTeamSize">Picked team size</label>
+          <input
+            id="pickedTeamSize"
+            type="number"
+            min="1"
+            max="6"
+            value={customRules.pickedTeamSizeAuto ? "" : customRules.pickedTeamSize}
+            onChange={(e) => onChange({ pickedTeamSize: Number(e.target.value) })}
+            placeholder={customRules.pickedTeamSizeAuto ? "Auto" : undefined}
+            disabled={customRules.pickedTeamSizeAuto || !customRules.teamPreview}
+          />
+          <label className={`${styles.checkboxLabel} mt-xs`}>
+            <input
+              type="checkbox"
+              checked={customRules.pickedTeamSizeAuto}
+              onChange={(e) => onChange({ pickedTeamSizeAuto: e.target.checked })}
+              disabled={!customRules.teamPreview}
+            />
+            <span>Auto</span>
+          </label>
         </div>
       </div>
 
@@ -198,28 +233,6 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
           </div>
 
           <div className="flex-row flex-mobile-col gap-m mt-s">
-            <div className="form-group flex-1">
-              <label htmlFor="customPickedTeamSize">Picked team size</label>
-              <input
-                id="customPickedTeamSize"
-                type="number"
-                min="1"
-                max="6"
-                value={customRules.pickedTeamSizeAuto ? "" : customRules.pickedTeamSize}
-                onChange={(e) => onChange({ pickedTeamSize: Number(e.target.value) })}
-                placeholder={customRules.pickedTeamSizeAuto ? "Auto" : undefined}
-                disabled={customRules.pickedTeamSizeAuto}
-              />
-              <label className={styles.checkboxLabel} style={{ marginTop: "var(--spacing-xs)" }}>
-                <input
-                  type="checkbox"
-                  checked={customRules.pickedTeamSizeAuto}
-                  onChange={(e) => onChange({ pickedTeamSizeAuto: e.target.checked })}
-                />
-                <span>Auto</span>
-              </label>
-            </div>
-
             <div className="form-group flex-1">
               <label htmlFor="customAdjustLevelDown">Adjust level down</label>
               <input

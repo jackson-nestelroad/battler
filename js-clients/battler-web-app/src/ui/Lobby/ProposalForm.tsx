@@ -51,6 +51,7 @@ export default function ProposalForm() {
   // Grouped advanced custom rules state
   const [customRules, setCustomRules] = useState<CustomRulesState>({
     preset: "standard",
+    teamPreview: true,
     speciesClause: true,
     sleepClause: true,
     itemClause: true,
@@ -233,9 +234,6 @@ export default function ProposalForm() {
       if (customRules.terastallization) rulesArray.push("Terastallization");
       if (customRules.bagItems) rulesArray.push("Bag Items");
 
-      if (!customRules.pickedTeamSizeAuto) {
-        rulesArray.push(`Picked Team Size = ${customRules.pickedTeamSize}`);
-      }
       if (customRules.adjustLevelDownEnabled) {
         rulesArray.push(`Adjust Level Down = ${customRules.adjustLevelDown}`);
       }
@@ -246,8 +244,17 @@ export default function ProposalForm() {
       }
     }
 
-    // TODO: Re-enable when we support Team Preview.
-    rulesArray.push("! Team Preview");
+    // Apply Team Preview and Picked Team Size rules globally
+    if (customRules.teamPreview) {
+      if (customRules.preset === "custom" || customRules.preset === "none") {
+        rulesArray.push("Team Preview");
+      }
+      if (!customRules.pickedTeamSizeAuto) {
+        rulesArray.push(`Picked Team Size = ${customRules.pickedTeamSize}`);
+      }
+    } else {
+      rulesArray.push("! Team Preview");
+    }
 
     // Build timers
     let battleTimerVal: { secs: bigint; warnings: bigint[] } | null = null;

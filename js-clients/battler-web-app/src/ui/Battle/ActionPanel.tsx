@@ -36,6 +36,17 @@ export default function ActionPanel({
   const [choices, setChoices] = useState<string[]>([]);
   const [selectedMove, setSelectedMove] = useState<MonMoveSlotData | null>(null);
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
+  const [selectedTeamIndices, setSelectedTeamIndices] = useState<number[]>([]);
+  const [isConfirmingTeam, setIsConfirmingTeam] = useState(false);
+  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (confirmTimeoutRef.current) {
+        clearTimeout(confirmTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Modifiers
   const [mega, setMega] = useState(false);
@@ -62,6 +73,12 @@ export default function ActionPanel({
     setChoices([]);
     setSelectedMove(null);
     setSelectedMoveIndex(null);
+    setSelectedTeamIndices([]);
+    setIsConfirmingTeam(false);
+    if (confirmTimeoutRef.current) {
+      clearTimeout(confirmTimeoutRef.current);
+      confirmTimeoutRef.current = null;
+    }
     resetModifiers();
     submittingRef.current = false;
     setShowForfeitConfirm(false);
@@ -147,6 +164,34 @@ export default function ActionPanel({
     advanceSlotOrSubmit(newChoices, totalSlots);
   };
 
+  const handleSelectMon = (idx: number) => {
+    if (submittingRef.current) return;
+    dispatch(setChoiceError({ battleId, error: null }));
+    if (isConfirmingTeam) {
+      setIsConfirmingTeam(false);
+      if (confirmTimeoutRef.current) {
+        clearTimeout(confirmTimeoutRef.current);
+        confirmTimeoutRef.current = null;
+      }
+    }
+    setSelectedTeamIndices((prev) => {
+      const exists = prev.indexOf(idx);
+      if (exists !== -1) {
+        return prev.filter((i) => i !== idx);
+      } else {
+        const maxTeamSize = request?.type === "team" ? request.max_team_size : null;
+        const targetSize = Math.min(
+          playerData?.mons?.length || 0,
+          maxTeamSize ?? (playerData?.mons?.length || 0),
+        );
+        if (prev.length < targetSize) {
+          return [...prev, idx];
+        }
+        return prev;
+      }
+    });
+  };
+
   const renderTeamSummary = () => {
     return (
       <TeamSummary
@@ -158,6 +203,8 @@ export default function ActionPanel({
         playbackPending={playbackPending}
         isLoading={isLoading}
         onSwitch={handleSwitch}
+        selectedTeamIndices={selectedTeamIndices}
+        onSelectMon={handleSelectMon}
       />
     );
   };
@@ -183,25 +230,77 @@ export default function ActionPanel({
     }
 
     if (request.type === "team") {
+      const targetSize = Math.min(
+        playerData?.mons?.length || 0,
+        request.max_team_size ?? (playerData?.mons?.length || 0),
+      );
+
       const handleTeamPreviewSubmit = () => {
         if (submittingRef.current) return;
         submittingRef.current = true;
-        dispatch(submitChoice({ battleId, choice: "team 0 1 2 3 4 5" }));
+        if (selectedTeamIndices.length > 0) {
+          dispatch(submitChoice({ battleId, choice: `team ${selectedTeamIndices.join(" ")}` }));
+        } else {
+          dispatch(submitChoice({ battleId, choice: "team" }));
+        }
+      };
+
+      const handleConfirmClick = () => {
+        if (submittingRef.current) return;
+        if (!isConfirmingTeam) {
+          setIsConfirmingTeam(true);
+          confirmTimeoutRef.current = setTimeout(() => {
+            setIsConfirmingTeam(false);
+            confirmTimeoutRef.current = null;
+          }, 3000);
+        } else {
+          if (confirmTimeoutRef.current) {
+            clearTimeout(confirmTimeoutRef.current);
+            confirmTimeoutRef.current = null;
+          }
+          handleTeamPreviewSubmit();
+        }
+      };
+
+      const handleClearSelection = () => {
+        setSelectedTeamIndices([]);
+        setIsConfirmingTeam(false);
+        if (confirmTimeoutRef.current) {
+          clearTimeout(confirmTimeoutRef.current);
+          confirmTimeoutRef.current = null;
+        }
       };
 
       return (
         <div className="flex-col gap-m">
-          <h3>Team Preview</h3>
-          <ErrorBanner message={errorMessage} />
-          <div className="flex-row gap-s align-center">
-            <button
-              className="btn btn-primary"
-              onClick={handleTeamPreviewSubmit}
-              disabled={isLoading}
-            >
-              Confirm
-            </button>
+          <div className="card-header">
+            <h3>Team Preview</h3>
             {renderForfeitButton()}
+          </div>
+          <ErrorBanner message={errorMessage} />
+
+          <div className="flex-col gap-s">
+            <p className={styles.instructionText}>
+              Select your team order. Remaining spots will be filled automatically when confirming.
+            </p>
+            <span className={styles.selectionProgress}>
+              Selected: <strong>{selectedTeamIndices.length}</strong> / {targetSize}
+            </span>
+          </div>
+
+          <div className="flex-row gap-s align-center">
+            <button className="btn btn-primary" onClick={handleConfirmClick} disabled={isLoading}>
+              {isConfirmingTeam ? "Are you sure?" : "Confirm"}
+            </button>
+            {selectedTeamIndices.length > 0 && (
+              <button
+                className="btn btn-secondary"
+                onClick={handleClearSelection}
+                disabled={isLoading}
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
       );

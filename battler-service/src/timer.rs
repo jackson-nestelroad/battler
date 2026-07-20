@@ -20,15 +20,15 @@ pub(crate) enum TimerType {
     Player(String),
     /// Timer per player per action.
     Action(String),
-    /// Timer per player during team preview.
-    TeamPreview(String),
+    /// Timer for team preview.
+    TeamPreview,
 }
 
 impl TimerType {
     /// Should the timer be reset when resumed?
     pub(crate) fn reset_on_resume(&self) -> bool {
         match self {
-            Self::Action(_) | Self::TeamPreview(_) => true,
+            Self::Action(_) | Self::TeamPreview => true,
             _ => false,
         }
     }
@@ -36,9 +36,7 @@ impl TimerType {
     /// The player the timer corresponds to.
     pub(crate) fn player(&self) -> Option<&str> {
         match self {
-            Self::Player(player) | Self::Action(player) | Self::TeamPreview(player) => {
-                Some(&player)
-            }
+            Self::Player(player) | Self::Action(player) => Some(&player),
             _ => None,
         }
     }
@@ -134,12 +132,7 @@ impl Timers {
             );
         }
         if let Some(timer) = self.team_preview {
-            state.extend(players.iter().map(|player| {
-                (
-                    TimerType::TeamPreview(player.to_string()),
-                    timer.clone().into(),
-                )
-            }));
+            state.insert(TimerType::TeamPreview, timer.into());
         }
         state
     }

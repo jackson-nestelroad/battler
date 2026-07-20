@@ -187,4 +187,21 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(rem(130px), 1fr));
   gap: var(--spacing-s);
+  padding: var(--spacing-s);
+}
+
+.instructionText {
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.selectionProgress {
+  font-size: var(--font-size-s);
+  color: var(--text-muted);
+
+  strong {
+    color: var(--text-primary);
+  }
 }

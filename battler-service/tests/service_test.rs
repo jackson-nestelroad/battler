@@ -1101,11 +1101,114 @@ async fn selects_random_leads_on_team_preview_timer() {
     // Wait for the team preview timer to start.
     read_all_entries_from_log_rx_stopping_at(
         &mut public_log_rx,
-        "-battlerservice:timer|teampreview:player-1|remainingsecs:5",
+        "-battlerservice:timer|teampreview|remainingsecs:5",
     )
     .await;
 
     // Do NOT make any choices. The team preview timer should fire and make choice "randomall",
     // causing the battle to start.
     read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "battlestart").await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn player_and_battle_timers_do_not_activate_during_team_preview() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let mut options = core_battle_options(BattleType::Singles, team(5));
+    // Enable Team Preview clause.
+    options.format.rules.push("Team Preview".to_owned());
+    let battle = battler_service
+        .create(
+            options,
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                log_time: false,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    battle: Some(Timer {
+                        secs: 300,
+                        warnings: BTreeSet::default(),
+                    }),
+                    player: Some(Timer {
+                        secs: 120,
+                        warnings: BTreeSet::default(),
+                    }),
+                    team_preview: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::default(),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    // Wait for the team preview and inactive timers to start.
+    let log = read_all_entries_from_log_rx_stopping_at(
+        &mut public_log_rx,
+        "-battlerservice:timer|player:player-2|inactive|remainingsecs:120",
+    )
+    .await;
+
+    // Verify that NO battle timer or player timer has started (active) during Team Preview.
+    assert!(
+        !log.iter()
+            .any(|line| line.contains("timer|battle") && !line.contains("inactive"))
+    );
+    assert!(
+        !log.iter()
+            .any(|line| line.contains("timer|player") && !line.contains("inactive"))
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|teampreview|remainingsecs:5")
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|battle|inactive|remainingsecs:300")
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|player:player-1|inactive|remainingsecs:120")
+    );
+
+    // Submit team preview choices to move out of Team Preview.
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "team 0 1 2 3 4 5")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "team 0 1 2 3 4 5")
+            .await,
+        Ok(())
+    );
+
+    // Wait for Turn 1 to start.
+    _ = read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
+
+    // Now that Team Preview has ended, the battle and player timers should start.
+    let log = read_all_entries_from_log_rx_stopping_at(
+        &mut public_log_rx,
+        "-battlerservice:timer|player:player-2|remainingsecs:120",
+    )
+    .await;
+
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|battle|remainingsecs:300")
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|player:player-1|remainingsecs:120")
+    );
 }

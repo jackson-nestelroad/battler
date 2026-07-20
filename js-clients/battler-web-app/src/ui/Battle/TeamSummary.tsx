@@ -11,6 +11,8 @@ interface TeamSummaryProps {
   playbackPending: boolean;
   isLoading: boolean;
   onSwitch: (playerTeamPosition: number, totalSlots: number) => void;
+  selectedTeamIndices?: number[];
+  onSelectMon?: (idx: number) => void;
 }
 
 export default function TeamSummary({
@@ -22,6 +24,8 @@ export default function TeamSummary({
   playbackPending,
   isLoading,
   onSwitch,
+  selectedTeamIndices = [],
+  onSelectMon,
 }: TeamSummaryProps) {
   if (!playerData || !playerData.mons) return null;
 
@@ -32,7 +36,7 @@ export default function TeamSummary({
         {playerData.mons.map((mon, idx) => {
           const name = mon.summary?.name || mon.species;
 
-          // Check if card is clickable for switching
+          // Check if card is clickable for switching or team preview
           let isClickable = false;
           let handleClick: (() => void) | undefined = undefined;
 
@@ -40,7 +44,20 @@ export default function TeamSummary({
             let totalSlots = 0;
             let canSwitch = false;
 
-            if (request.type === "switch") {
+            if (request.type === "team") {
+              const maxTeamSize = request.max_team_size;
+              const targetSize = Math.min(
+                playerData.mons.length,
+                maxTeamSize ?? playerData.mons.length,
+              );
+              const isSelected = selectedTeamIndices.includes(idx);
+              const hasReachedMax = selectedTeamIndices.length >= targetSize;
+
+              isClickable = isSelected || !hasReachedMax;
+              handleClick = () => {
+                if (onSelectMon) onSelectMon(idx);
+              };
+            } else if (request.type === "switch") {
               const needsSwitch = request.needs_switch || [];
               totalSlots = needsSwitch.length;
               canSwitch = needsSwitch[currentSlotIndex] !== undefined;
@@ -61,6 +78,9 @@ export default function TeamSummary({
             }
           }
 
+          const selectedIdx = selectedTeamIndices.indexOf(idx);
+          const selectionOrder = selectedIdx !== -1 ? selectedIdx + 1 : undefined;
+
           return (
             <MonCard
               key={idx}
@@ -72,6 +92,7 @@ export default function TeamSummary({
               active={!!mon.active}
               isClickable={isClickable}
               onClick={handleClick}
+              selectionOrder={selectionOrder}
             />
           );
         })}

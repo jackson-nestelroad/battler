@@ -96,6 +96,7 @@ enum TimerLogType {
     Warning,
     Done,
     Inactive,
+    Clear,
 }
 
 /// An ongoing battle, managed by [`BattlerService`].
@@ -362,17 +363,18 @@ impl<'d> LiveBattle<'d> {
         timer_log_type: Option<TimerLogType>,
         log_timer_deadlines: bool,
     ) -> String {
-        let timer_type = match timer_type {
-            TimerType::Battle => "battle".to_owned(),
-            TimerType::Player(player) => format!("player:{player}"),
-            TimerType::Action(player) => format!("action:{player}"),
-            TimerType::TeamPreview(player) => format!("teampreview:{player}"),
-        };
         let log_type = match timer_log_type {
             Some(TimerLogType::Warning) => "|warning",
             Some(TimerLogType::Done) => "|done",
             Some(TimerLogType::Inactive) => "|inactive",
+            Some(TimerLogType::Clear) => "|clear",
             None => "",
+        };
+        let timer_type = match timer_type {
+            TimerType::Battle => "battle".to_owned(),
+            TimerType::Player(player) => format!("player:{player}"),
+            TimerType::Action(player) => format!("action:{player}"),
+            TimerType::TeamPreview => "teampreview".to_owned(),
         };
         if log_timer_deadlines {
             let deadline = SystemTime::now() + remaining;
@@ -430,28 +432,53 @@ impl<'d> LiveBattle<'d> {
         match timer_type {
             TimerType::Battle => self.battle.auto_end(),
             TimerType::Player(player) => self.battle.set_player_choice(player, "forfeit"),
-            TimerType::Action(player) | TimerType::TeamPreview(player) => {
-                self.battle.set_player_choice(player, "randomall")
+            TimerType::Action(player) => self.battle.set_player_choice(player, "randomall"),
+            TimerType::TeamPreview => {
+                let players_to_randomize: Vec<String> = self
+                    .battle
+                    .active_requests()
+                    .filter(|(_, request)| request.request_type() == RequestType::TeamPreview)
+                    .map(|(player, _)| player)
+                    .collect();
+                for player in players_to_randomize {
+                    self.battle.set_player_choice(&player, "randomall").ok();
+                }
+                Ok(())
             }
+        }
+    }
+
+    fn is_timer_active(&self, timer_type: &TimerType) -> Result<bool> {
+        let is_team_preview = self
+            .battle
+            .active_requests()
+            .any(|(_, request)| request.request_type() == RequestType::TeamPreview);
+        let active = match timer_type {
+            TimerType::Battle => !is_team_preview,
+            TimerType::Player(player) => match self.battle.request_for_player(player)? {
+                Some(request) => request.request_type() != RequestType::TeamPreview,
+                None => false,
+            },
+            TimerType::Action(player) => match self.battle.request_for_player(player)? {
+                Some(request) => request.request_type() != RequestType::TeamPreview,
+                None => false,
+            },
+            TimerType::TeamPreview => is_team_preview,
+        };
+        Ok(active)
+    }
+
+    fn log_type_for_inactive(timer_type: &TimerType) -> TimerLogType {
+        match timer_type {
+            TimerType::TeamPreview => TimerLogType::Clear,
+            _ => TimerLogType::Inactive,
         }
     }
 
     fn active_timer_types(&self) -> Result<BTreeSet<TimerType>> {
         let mut timers = BTreeSet::default();
         for timer_type in self.timers.keys() {
-            let active = match timer_type {
-                TimerType::Battle => true,
-                TimerType::Player(player) => self.battle.request_for_player(player)?.is_some(),
-                TimerType::Action(player) => match self.battle.request_for_player(player)? {
-                    Some(request) => request.request_type() != RequestType::TeamPreview,
-                    None => false,
-                },
-                TimerType::TeamPreview(player) => match self.battle.request_for_player(player)? {
-                    Some(request) => request.request_type() == RequestType::TeamPreview,
-                    None => false,
-                },
-            };
-            if active {
+            if self.is_timer_active(timer_type)? {
                 timers.insert(timer_type.clone());
             }
         }
@@ -475,7 +502,7 @@ struct LiveBattleManager<'d> {
     live_battle: Arc<Mutex<LiveBattle<'d>>>,
     state: Arc<tokio::sync::Mutex<LiveBattleManagerState>>,
     task_tx: tokio::sync::Mutex<Option<mpsc::Sender<()>>>,
-    task_rx: tokio::sync::Mutex<mpsc::Receiver<()>>,
+    _task_rx: tokio::sync::Mutex<mpsc::Receiver<()>>,
 }
 
 impl<'d> LiveBattleManager<'d> {
@@ -487,7 +514,7 @@ impl<'d> LiveBattleManager<'d> {
             live_battle: Arc::new(Mutex::new(battle)),
             state: Arc::new(tokio::sync::Mutex::new(LiveBattleManagerState::default())),
             task_tx: tokio::sync::Mutex::new(Some(task_tx)),
-            task_rx: tokio::sync::Mutex::new(task_rx),
+            _task_rx: tokio::sync::Mutex::new(task_rx),
         }
     }
 
@@ -687,7 +714,7 @@ impl<'d> LiveBattleManager<'d> {
                         LiveBattle::timer_log(
                             timer_type,
                             state.remaining,
-                            Some(TimerLogType::Inactive),
+                            Some(LiveBattle::log_type_for_inactive(timer_type)),
                             log_timer_deadlines,
                         )
                     })
@@ -740,6 +767,15 @@ impl<'d> LiveBattleManager<'d> {
             let timers = {
                 let mut battle = battle.lock().await;
 
+                // If team preview is finished, remove the team preview timer from the map.
+                let is_team_preview = battle
+                    .battle
+                    .active_requests()
+                    .any(|(_, request)| request.request_type() == RequestType::TeamPreview);
+                if !is_team_preview && battle.timers.contains_key(&TimerType::TeamPreview) {
+                    battle.timers.remove(&TimerType::TeamPreview);
+                }
+
                 for (timer_type, timer_state) in &mut battle.timers {
                     if timer_type.reset_on_resume() {
                         timer_state.remaining = timer_state.total;
@@ -749,7 +785,7 @@ impl<'d> LiveBattleManager<'d> {
                 // Filter timers that should be active.
                 let timers = battle.active_timer_types()?;
 
-                let timer_logs = timers
+                let mut timer_logs = timers
                     .iter()
                     .map(|timer_type| {
                         LiveBattle::timer_log(
@@ -762,6 +798,19 @@ impl<'d> LiveBattleManager<'d> {
                         )
                     })
                     .collect::<Vec<_>>();
+
+                // Log inactive timers so they are reported to the logs and web UI.
+                for (timer_type, timer_state) in &battle.timers {
+                    if !timers.contains(timer_type) {
+                        timer_logs.push(LiveBattle::timer_log(
+                            timer_type,
+                            timer_state.remaining,
+                            Some(LiveBattle::log_type_for_inactive(timer_type)),
+                            battle.log_timer_deadlines,
+                        ));
+                    }
+                }
+
                 battle.inject_log_entries(timer_logs);
 
                 timers
@@ -901,22 +950,19 @@ impl<'d> LiveBattleManager<'d> {
                 Some(state) => state,
                 None => return Ok((None, false)),
             };
-            let active = match timer_type {
-                TimerType::Battle => true,
-                TimerType::Player(player) => battle.battle.request_for_player(player)?.is_some(),
-                TimerType::Action(player) => match battle.battle.request_for_player(player)? {
-                    Some(request) => request.request_type() != RequestType::TeamPreview,
-                    None => false,
-                },
-                TimerType::TeamPreview(player) => match battle.battle.request_for_player(player)? {
-                    Some(request) => request.request_type() == RequestType::TeamPreview,
-                    None => false,
-                },
-            };
+            let active = battle.is_timer_active(timer_type)?;
             (state, active)
         };
 
         if !active {
+            let mut battle = battle.lock().await;
+            let log_timer_deadlines = battle.log_timer_deadlines;
+            battle.inject_log_entries([LiveBattle::timer_log(
+                timer_type,
+                state.remaining,
+                Some(LiveBattle::log_type_for_inactive(timer_type)),
+                log_timer_deadlines,
+            )]);
             return Ok((Some(state), false));
         }
 
@@ -999,7 +1045,7 @@ impl<'d> LiveBattleManager<'d> {
             battle.inject_log_entries([LiveBattle::timer_log(
                 timer_type,
                 remaining,
-                Some(TimerLogType::Inactive),
+                Some(LiveBattle::log_type_for_inactive(timer_type)),
                 log_timer_deadlines,
             )]);
         }
@@ -1038,22 +1084,19 @@ impl<'d> LiveBattleManager<'d> {
         // Drop our Sender, so that the Receiver is only open because of asynchronous tasks.
         self.task_tx.blocking_lock().take();
 
-        {
+        if let Ok(handle) = tokio::runtime::Handle::try_current() {
+            handle.block_on(self.shutdown());
+        } else {
             let mut state = self.state.blocking_lock();
 
             // Abort all tasks.
             state.proceed_tasks.abort_all();
             state.current_timer_tasks.abort_all();
 
-            // Then detach. We block on the Receiver below to know when all tasks finish.
+            // Then detach.
             state.proceed_tasks.detach_all();
             state.current_timer_tasks.detach_all();
         }
-
-        // Wait for all Senders to be dropped. One Sender is given to each task, so the Receiver
-        // closing means all tasks are finished.
-        log::trace!("Blocking on task completion for live battle {}", self.uuid);
-        self.task_rx.blocking_lock().blocking_recv();
     }
 }
 
@@ -1086,10 +1129,9 @@ impl Drop for LiveBattleManager<'_> {
         );
 
         assert!(
-            self.task_rx.get_mut().is_closed(),
+            self._task_rx.get_mut().is_closed(),
             "battle has remaining tasks open during drop"
         );
-
         let strong_count = Arc::strong_count(&self.live_battle);
         assert_eq!(
             strong_count, 1,

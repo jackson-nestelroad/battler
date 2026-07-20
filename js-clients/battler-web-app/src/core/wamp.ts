@@ -363,10 +363,23 @@ export const connectWamp = createAsyncThunk(
     dispatch(clearBattles());
 
     try {
-      // Disconnect existing session if any
-      if (connectionManager.sessionProvider) {
-        await connectionManager.sessionProvider.disconnect();
+      // Cancel active battle clients and clear registry
+      for (const client of connectionManager.clientsRegistry.values()) {
+        try {
+          await client.cancel();
+        } catch (err: unknown) {
+          console.warn(`[WAMP] Failed to cancel battle client during reconnect:`, err);
+        }
       }
+      if (connectionManager.sessionProvider) {
+        try {
+          connectionManager.sessionProvider.removeAllListeners();
+          await connectionManager.sessionProvider.disconnect();
+        } catch (e) {
+          console.warn("[WAMP] error during disconnect in connectWamp:", e);
+        }
+      }
+      connectionManager.clear();
 
       connectionManager.sessionProvider = new WampSessionProvider({
         url,

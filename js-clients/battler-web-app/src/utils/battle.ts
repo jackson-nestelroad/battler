@@ -44,6 +44,7 @@ export interface ParsedTimerLog {
   isWarning: boolean;
   isDone: boolean;
   isInactive?: boolean;
+  isClear?: boolean;
 }
 
 export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
@@ -77,6 +78,7 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
   const isWarning = "warning" in values;
   const isDone = "done" in values || remainingSecs === 0;
   const isInactive = "inactive" in values;
+  const isClear = "clear" in values;
 
   // Parse absolute deadline timestamp (in seconds)
   const deadlineSecs = values["deadline"] ? parseInt(values["deadline"], 10) : 0;
@@ -89,6 +91,7 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
     isWarning,
     isDone,
     isInactive,
+    isClear,
   };
 }
 

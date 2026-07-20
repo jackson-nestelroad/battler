@@ -59,7 +59,7 @@ export default function PlayerSlotCard({
               }}
               disabled={isProposer}
             >
-              <option value="human">Human</option>
+              <option value="human">Player</option>
               <option value="ai">AI</option>
             </select>
           </div>
