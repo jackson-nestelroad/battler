@@ -894,11 +894,31 @@ impl<'d> LiveBattleManager<'d> {
         mut choice_made_rx: broadcast::Receiver<String>,
         mut cancel_timers_rx: broadcast::Receiver<()>,
     ) -> Result<(Option<TimerState>, bool)> {
-        // Read the current state of the timer.
-        let state = match battle.lock().await.timers.get(&timer_type).cloned() {
-            Some(state) => state,
-            None => return Ok((None, false)),
+        // Read the current state of the timer and check if it is active.
+        let (state, active) = {
+            let battle = battle.lock().await;
+            let state = match battle.timers.get(timer_type).cloned() {
+                Some(state) => state,
+                None => return Ok((None, false)),
+            };
+            let active = match timer_type {
+                TimerType::Battle => true,
+                TimerType::Player(player) => battle.battle.request_for_player(player)?.is_some(),
+                TimerType::Action(player) => match battle.battle.request_for_player(player)? {
+                    Some(request) => request.request_type() != RequestType::TeamPreview,
+                    None => false,
+                },
+                TimerType::TeamPreview(player) => match battle.battle.request_for_player(player)? {
+                    Some(request) => request.request_type() == RequestType::TeamPreview,
+                    None => false,
+                },
+            };
+            (state, active)
         };
+
+        if !active {
+            return Ok((Some(state), false));
+        }
 
         let mut remaining = state.remaining;
         let mut now = Instant::now();
