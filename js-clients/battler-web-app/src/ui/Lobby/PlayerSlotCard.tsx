@@ -71,7 +71,7 @@ export default function PlayerSlotCard({
                 type="text"
                 value={player.id}
                 onChange={(e) => onChange({ id: e.target.value })}
-                placeholder="Username"
+                placeholder="Player name"
                 disabled={isProposer}
                 required
               />

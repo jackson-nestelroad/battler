@@ -16,6 +16,7 @@ import FieldSettingsSection from "./FieldSettingsSection";
 import type { FieldSettingsState } from "./FieldSettingsSection";
 import TimerSettingsSection, { TIMER_PRESETS } from "./TimerSettingsSection";
 import type { TimerSettingsState } from "./TimerSettingsSection";
+import TeamSelect from "../Common/TeamSelect";
 
 import styles from "./ProposalForm.module.scss";
 
@@ -88,6 +89,8 @@ export default function ProposalForm() {
     teamPreviewTimer: "",
     proposalTimeout: 60,
   });
+
+  const isAdvancedView = showAdvanced || format === "Multi";
 
   // Synchronize player ID when proposer is loaded/logged in
   useEffect(() => {
@@ -394,76 +397,131 @@ export default function ProposalForm() {
               <option value="Triples">Triples</option>
             </select>
           </div>
+
+          {!isAdvancedView && (
+            <>
+              <div className={`form-group ${styles.opponentControlField}`}>
+                <label htmlFor="opponentControlType">Opponent</label>
+                <select
+                  id="opponentControlType"
+                  value={side2Players[0].controlType}
+                  onChange={(e) => {
+                    const val = e.target.value as "human" | "ai";
+                    updatePlayerSlot(2, 0, {
+                      controlType: val,
+                      id: val === "ai" ? "" : side2Players[0].id,
+                      selectedTeam: val === "ai" ? defaultTeam || teamNames[0] || "" : undefined,
+                    });
+                  }}
+                >
+                  <option value="human">Player</option>
+                  <option value="ai">Random AI</option>
+                </select>
+              </div>
+
+              {side2Players[0].controlType === "human" ? (
+                <div className={`form-group ${styles.opponentField}`}>
+                  <label htmlFor="opponentName">Opponent name</label>
+                  <input
+                    id="opponentName"
+                    type="text"
+                    value={side2Players[0].id}
+                    onChange={(e) => updatePlayerSlot(2, 0, { id: e.target.value })}
+                    placeholder="Player name"
+                    required
+                  />
+                </div>
+              ) : (
+                <div className={`form-group ${styles.opponentField}`}>
+                  <label htmlFor="opponentTeam">AI team</label>
+                  {teamNames.length > 0 ? (
+                    <TeamSelect
+                      id="opponentTeam"
+                      value={side2Players[0].selectedTeam || ""}
+                      onChange={(val) => updatePlayerSlot(2, 0, { selectedTeam: val })}
+                      teamNames={teamNames}
+                      teams={teams}
+                      required
+                    />
+                  ) : (
+                    <span className="text-danger text-sm">No teams. Go to Teams.</span>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Player slot editors for Side 1 and Side 2 */}
-        <div className={styles.sidesContainer}>
-          {/* Side 1 */}
-          <div className="flex-1 flex-col gap-s">
-            <div className="flex-row justify-between align-center">
-              <span className={styles.sideHeaderLabel}>Side 1</span>
-              {format === "Multi" && side1Players.length < 5 && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => addPlayerSlot(1)}
-                >
-                  + Add ally
-                </button>
-              )}
+        {isAdvancedView && (
+          <div className={styles.sidesContainer}>
+            {/* Side 1 */}
+            <div className="flex-1 flex-col gap-s">
+              <div className="flex-row justify-between align-center">
+                <span className={styles.sideHeaderLabel}>Side 1</span>
+                {format === "Multi" && side1Players.length < 5 && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => addPlayerSlot(1)}
+                  >
+                    + Add ally
+                  </button>
+                )}
+              </div>
+              <div className="flex-col gap-s">
+                {side1Players.map((player, idx) => (
+                  <PlayerSlotCard
+                    key={`1-${idx}`}
+                    side={1}
+                    index={idx}
+                    player={player}
+                    isProposer={idx === 0}
+                    format={format}
+                    teams={teams}
+                    teamNames={teamNames}
+                    defaultTeam={defaultTeam}
+                    onRemove={() => removePlayerSlot(1, idx)}
+                    onChange={(fields) => updatePlayerSlot(1, idx, fields)}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex-col gap-s">
-              {side1Players.map((player, idx) => (
-                <PlayerSlotCard
-                  key={`1-${idx}`}
-                  side={1}
-                  index={idx}
-                  player={player}
-                  isProposer={idx === 0}
-                  format={format}
-                  teams={teams}
-                  teamNames={teamNames}
-                  defaultTeam={defaultTeam}
-                  onRemove={() => removePlayerSlot(1, idx)}
-                  onChange={(fields) => updatePlayerSlot(1, idx, fields)}
-                />
-              ))}
-            </div>
-          </div>
 
-          {/* Side 2 */}
-          <div className="flex-1 flex-col gap-s">
-            <div className="flex-row justify-between align-center">
-              <span className={styles.sideHeaderLabel}>Side 2</span>
-              {format === "Multi" && side2Players.length < 5 && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => addPlayerSlot(2)}
-                >
-                  + Add opponent
-                </button>
-              )}
-            </div>
-            <div className="flex-col gap-s">
-              {side2Players.map((player, idx) => (
-                <PlayerSlotCard
-                  key={`2-${idx}`}
-                  side={2}
-                  index={idx}
-                  player={player}
-                  isProposer={false}
-                  format={format}
-                  teams={teams}
-                  teamNames={teamNames}
-                  defaultTeam={defaultTeam}
-                  onRemove={() => removePlayerSlot(2, idx)}
-                  onChange={(fields) => updatePlayerSlot(2, idx, fields)}
-                />
-              ))}
+            {/* Side 2 */}
+            <div className="flex-1 flex-col gap-s">
+              <div className="flex-row justify-between align-center">
+                <span className={styles.sideHeaderLabel}>Side 2</span>
+                {format === "Multi" && side2Players.length < 5 && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => addPlayerSlot(2)}
+                  >
+                    + Add opponent
+                  </button>
+                )}
+              </div>
+              <div className="flex-col gap-s">
+                {side2Players.map((player, idx) => (
+                  <PlayerSlotCard
+                    key={`2-${idx}`}
+                    side={2}
+                    index={idx}
+                    player={player}
+                    isProposer={false}
+                    format={format}
+                    teams={teams}
+                    teamNames={teamNames}
+                    defaultTeam={defaultTeam}
+                    onRemove={() => removePlayerSlot(2, idx)}
+                    onChange={(fields) => updatePlayerSlot(2, idx, fields)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Advanced options trigger */}
         <div className="flex-row justify-start w-full">
