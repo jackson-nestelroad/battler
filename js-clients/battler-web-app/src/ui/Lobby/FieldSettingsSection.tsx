@@ -20,8 +20,8 @@ export default function FieldSettingsSection({
   return (
     <div className={styles.advancedSection}>
       <h4 className="mb-s">Field</h4>
-      <div className="flex-row flex-mobile-col gap-m">
-        <div className="form-group flex-1">
+      <div className={styles.settingsInputsGrid}>
+        <div className="form-group">
           <label htmlFor="weather">Default weather</label>
           <select
             id="weather"
@@ -40,7 +40,7 @@ export default function FieldSettingsSection({
           </select>
         </div>
 
-        <div className="form-group flex-1">
+        <div className="form-group">
           <label htmlFor="terrain">Default terrain</label>
           <select
             id="terrain"
@@ -55,7 +55,7 @@ export default function FieldSettingsSection({
           </select>
         </div>
 
-        <div className="form-group flex-1">
+        <div className="form-group">
           <label htmlFor="environment">Environment</label>
           <select
             id="environment"
@@ -73,7 +73,7 @@ export default function FieldSettingsSection({
           </select>
         </div>
 
-        <div className="form-group flex-1">
+        <div className="form-group">
           <label htmlFor="timeOfDay">Time of day</label>
           <select
             id="timeOfDay"

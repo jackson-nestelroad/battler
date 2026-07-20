@@ -211,13 +211,19 @@
   }
 }
 
-.timerInputsGrid {
+.settingsInputsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(rem(120px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(rem(140px), 1fr));
   gap: var(--spacing-m);
   width: 100%;
 
   @include mobile {
     grid-template-columns: 1fr;
+  }
+
+  :global(.form-group) > label:first-child {
+    min-height: rem(34px);
+    display: flex;
+    align-items: flex-end;
   }
 }

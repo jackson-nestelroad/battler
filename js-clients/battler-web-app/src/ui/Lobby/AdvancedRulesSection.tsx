@@ -232,8 +232,8 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
             </label>
           </div>
 
-          <div className="flex-row flex-mobile-col gap-m mt-s">
-            <div className="form-group flex-1">
+          <div className={`${styles.settingsInputsGrid} mt-s`}>
+            <div className="form-group">
               <label htmlFor="customAdjustLevelDown">Adjust level down</label>
               <input
                 id="customAdjustLevelDown"
@@ -255,7 +255,7 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
               </label>
             </div>
 
-            <div className="form-group flex-1">
+            <div className="form-group">
               <label htmlFor="customDefaultLevel">Default level</label>
               <input
                 id="customDefaultLevel"
@@ -267,7 +267,7 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
               />
             </div>
 
-            <div className="form-group flex-1">
+            <div className="form-group">
               <label htmlFor="customMaxLevel">Max level</label>
               <input
                 id="customMaxLevel"

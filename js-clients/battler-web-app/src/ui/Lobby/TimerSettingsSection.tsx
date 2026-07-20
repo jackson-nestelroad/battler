@@ -87,7 +87,7 @@ export default function TimerSettingsSection({
         </div>
       </div>
 
-      <div className={`${styles.timerInputsGrid} mt-m`}>
+      <div className={`${styles.settingsInputsGrid} mt-m`}>
         <div className="form-group">
           <label htmlFor="customActionTimer">Action (secs)</label>
           <input
