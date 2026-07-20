@@ -1340,7 +1340,6 @@ impl<'d> BattlerService<'d> {
             // SAFETY: Must call shutdown here to join all tasks that are using the battle, so that
             // the battle does not outlive this object.
             battle.shutdown().await;
-            let battle = tokio::task::block_in_place(|| Self::unwrap_battle(battle, "deletion"));
 
             let players = battle.players().await;
             for player in players {
@@ -1354,9 +1353,6 @@ impl<'d> BattlerService<'d> {
                     _ => (),
                 }
             }
-
-            // Purely for safety, ensure Drop is called here, which checks our invariants.
-            drop(battle);
         }
 
         Ok(())
