@@ -369,6 +369,17 @@ pub fn player_mons<'s>(
     Ok(player_or_else(state, player)?.mons.iter())
 }
 
+/// Returns an iterator of Mons brought to battle by a player.
+pub fn player_brought_mons<'s>(
+    state: &'s BattleState,
+    player: &str,
+) -> Result<impl Iterator<Item = &'s Mon> + 's> {
+    Ok(player_or_else(state, player)?
+        .mons
+        .iter()
+        .filter(|mon| mon.brought))
+}
+
 /// Returns an iterator of all players on a side.
 pub fn side_players<'s>(
     state: &'s BattleState,

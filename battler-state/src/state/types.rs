@@ -517,6 +517,8 @@ pub struct Mon {
     pub battle_appearances: VecDeque<MonBattleAppearanceWithRecovery>,
     pub fainted: bool,
     pub volatile_data: MonVolatileData,
+    pub team_preview: bool,
+    pub brought: bool,
 }
 
 impl Mon {
@@ -752,13 +754,15 @@ impl Side {
         battle_appearance: Option<&MonBattleAppearanceFromSwitchIn>,
     ) -> Result<MonBattleAppearanceReference> {
         let player = self.player_or_else(player_id)?;
-        let player_has_seen_all_mons = player.mons.len() >= player.team_size;
+        let brought_mons_count = player.mons.iter().filter(|mon| mon.brought).count();
+        let player_has_seen_all_mons = brought_mons_count >= player.team_size;
         let mons_by_appearance = player
             .mons
             .iter()
             .enumerate()
             .filter(|(mon_index, mon)| {
-                mon.physical_appearance.matches(&physical_appearance)
+                mon.brought
+                    && mon.physical_appearance.matches(&physical_appearance)
                     && (player_has_seen_all_mons
                         || (!mon.fainted && !self.mon_index_is_active(*mon_index)))
             })
@@ -785,12 +789,44 @@ impl Side {
             })
             .collect::<Vec<_>>();
 
-        // If we matched some Mon battle appearance directly, just use the first one.
+        // If we matched some Mon battle appearance directly among brought Mons, use it.
         if let Some(mon_reference) = inactive_mon_references_by_battle_appearance
             .into_iter()
             .next()
         {
             return Ok(mon_reference);
+        }
+
+        // If no brought Mon matched and we have not brought all Mons yet, look for an unbrought
+        // Mon (e.g. from Team Preview) that matches.
+        if !player_has_seen_all_mons {
+            let unbrought_index = player
+                .mons
+                .iter()
+                .enumerate()
+                .find(|(_, mon)| {
+                    !mon.brought
+                        && mon.physical_appearance.matches(&physical_appearance)
+                        && match battle_appearance {
+                            Some(battle_appearance) => mon
+                                .battle_appearances
+                                .iter()
+                                .any(|ba| ba.matches_switch_in(battle_appearance)),
+                            None => true,
+                        }
+                })
+                .map(|(i, _)| i);
+
+            if let Some(mon_index) = unbrought_index {
+                let player = self.player_mut_or_else(player_id)?;
+                let mon = player.mons.get_mut(mon_index).unwrap();
+                mon.brought = true;
+                return Ok(MonBattleAppearanceReference {
+                    player: player.id.to_owned(),
+                    mon_index,
+                    battle_appearance_index: 0,
+                });
+            }
         }
 
         // If we matched some Mon by appearance, and we do not have room for any more unique Mons,
@@ -825,7 +861,10 @@ impl Side {
             Some(replace_index) => replace_index,
             None => {
                 let player = self.player_mut_or_else(player_id)?;
-                player.mons.push(Mon::default());
+                player.mons.push(Mon {
+                    brought: true,
+                    ..Mon::default()
+                });
                 player.mons.len() - 1
             }
         };
@@ -835,6 +874,7 @@ impl Side {
         let mon = player.mons.get_mut(replace_index).unwrap();
 
         mon.physical_appearance = physical_appearance.clone();
+        mon.brought = true;
         let battle_appearance_index = mon.push_battle_appearance();
 
         Ok(MonBattleAppearanceReference {

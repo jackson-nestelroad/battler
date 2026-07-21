@@ -2987,6 +2987,203 @@ mod state_test {
     }
 
     #[test]
+    fn team_preview_mon_reveal_sets_flags_and_matches_on_switch() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:6",
+            "teamsize|player:player-2|size:6",
+            "teampreviewstart",
+            "mon|player:player-1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F",
+            "mon|player:player-1|name:Charmander|species:Charmander|level:100|gender:F",
+            "mon|player:player-1|name:Squirtle|species:Squirtle|level:100|gender:F",
+            "mon|player:player-1|name:Pikachu|species:Pikachu|level:100|gender:M",
+            "mon|player:player-1|name:Eevee|species:Eevee|level:100|gender:M",
+            "mon|player:player-1|name:Snorlax|species:Snorlax|level:100|gender:M",
+            "mon|player:player-2|name:Rattata|species:Rattata|level:100|gender:M",
+            "teampreview|pick:3",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.team_size, 3);
+        assert_eq!(p1.mons.len(), 6);
+        for mon in &p1.mons {
+            assert!(mon.team_preview);
+            assert!(!mon.brought);
+        }
+        assert_eq!(
+            state_selectors::player_brought_mons(&state, "player-1")
+                .unwrap()
+                .count(),
+            0
+        );
+
+        log.extend([
+            "battlestart",
+            "switch|player:player-1|position:1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert!(p1.mons[0].brought); // Bulbasaur
+        assert!(!p1.mons[1].brought); // Charmander
+        assert_eq!(
+            state_selectors::player_brought_mons(&state, "player-1")
+                .unwrap()
+                .count(),
+            1
+        );
+
+        log.extend([
+            "switchout|mon:Bulbasaur,player-1,1",
+            "switch|player:player-1|position:1|name:Charmander|species:Charmander|level:100|gender:F|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert!(p1.mons[0].brought); // Bulbasaur
+        assert!(p1.mons[1].brought); // Charmander
+        assert!(!p1.mons[2].brought); // Squirtle
+        assert_eq!(
+            state_selectors::player_brought_mons(&state, "player-1")
+                .unwrap()
+                .count(),
+            2
+        );
+    }
+
+    #[test]
+    fn team_preview_with_illusion_user() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:1",
+            "teampreviewstart",
+            "mon|player:player-1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F",
+            "mon|player:player-1|name:Zoroark|species:Zoroark|level:100|gender:F",
+            "mon|player:player-2|name:Rattata|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert!(p1.mons[0].brought); // Bulbasaur matched
+        assert!(!p1.mons[1].brought); // Zoroark not brought yet
+
+        // Illusion breaks and reveals Zoroark via replace
+        log.extend([
+            "replace|player:player-1|position:1|name:Zoroark|species:Zoroark|level:100|gender:F|health:50/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert!(p1.mons[0].brought); // Bulbasaur
+        assert!(p1.mons[1].brought); // Zoroark matched from preview on replace
+        assert_eq!(
+            state_selectors::player_brought_mons(&state, "player-1")
+                .unwrap()
+                .count(),
+            2
+        );
+    }
+
+    #[test]
+    fn team_preview_duplicate_species_matching() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:1",
+            "teampreviewstart",
+            "mon|player:player-1|name:Pikachu|species:Pikachu|level:100|gender:M",
+            "mon|player:player-1|name:Pikachu|species:Pikachu|level:100|gender:M",
+            "mon|player:player-2|name:Rattata|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Pikachu|species:Pikachu|level:100|gender:M|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert!(p1.mons[0].brought); // First Pikachu brought
+        assert!(!p1.mons[1].brought); // Second Pikachu not brought yet
+
+        log.extend([
+            "switchout|mon:Pikachu,player-1,1",
+            "switch|player:player-1|position:1|name:Pikachu|species:Pikachu|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert!(p1.mons[0].brought); // First Pikachu brought
+        assert!(p1.mons[1].brought); // Second Pikachu now brought
+    }
+
+    #[test]
+    fn team_preview_unpreviewed_mon_switch_in() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:1",
+            "teampreviewstart",
+            "mon|player:player-1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F",
+            "mon|player:player-2|name:Rattata|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        // An unexpected Mon (Mewtwo) switches in.
+        log.extend([
+            "switchout|mon:Bulbasaur,player-1,1",
+            "switch|player:player-1|position:1|name:Mewtwo|species:Mewtwo|level:100|gender:N|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons.len(), 2);
+        assert!(p1.mons[0].team_preview);
+        assert!(p1.mons[0].brought);
+        assert!(!p1.mons[1].team_preview); // Mewtwo was not in Team Preview
+        assert!(p1.mons[1].brought); // Mewtwo is brought in battle
+    }
+
+    #[test]
     fn records_turn_limit() {
         let state = setup_singles_battle(&["turnlimit"]);
         assert_eq!(state.phase, BattlePhase::Battle);

@@ -1051,9 +1051,10 @@ fn alter_battle_state_for_entry(
             let (physical_appearance, battle_appearance) = mon_appearance_from_log_entry(entry)?;
             let player: String = entry.value_or_else("player")?;
             let player = state.field.player_mut_or_else(&player)?;
-            player
-                .mons
-                .push(Mon::new(physical_appearance, [(&battle_appearance).into()]));
+            let mut mon = Mon::new(physical_appearance, [(&battle_appearance).into()]);
+            mon.team_preview = true;
+            mon.brought = false;
+            player.mons.push(mon);
         }
         "move" | "animatemove" => {
             let mon: MonName = entry.value_or_else("mon")?;
@@ -1293,15 +1294,19 @@ fn alter_battle_state_for_entry(
         "teampreview" => {
             let pick = entry.value("pick").unwrap_or_default();
             state.phase = BattlePhase::TeamPreview(pick);
+            if pick > 0 {
+                for side in &mut state.field.sides {
+                    for player in side.players.values_mut() {
+                        player.team_size = pick;
+                    }
+                }
+            }
         }
         "teamsize" => {
             let player: String = entry.value_or_else("player")?;
             let size = entry.value_or_else("size")?;
             let player = state.field.player_mut_or_else(&player)?;
             player.team_size = size;
-
-            // TODO: We could try to remember Mons from team preview and match them up as they
-            // appear.
             player.mons.clear();
         }
         "tie" => {

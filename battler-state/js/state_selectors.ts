@@ -313,6 +313,11 @@ export function playerMons(state: BattleState, playerName: string): Mon[] {
   return p.mons;
 }
 
+export function playerBroughtMons(state: BattleState, playerName: string): Mon[] {
+  const p = playerOrElse(state, playerName);
+  return p.mons.filter((m) => m.brought);
+}
+
 export function sidePlayers(state: BattleState, sideIndex: number): Player[] {
   const s = sideOrElse(state, sideIndex);
   return Object.values(s.players || {}).filter((p): p is Player => p !== undefined);
