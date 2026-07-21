@@ -418,6 +418,13 @@
     "requires_value": true,
     "value_type": "NonNegativeInteger"
   },
+  "limitrestricted": {
+    "name": "Limit Restricted",
+    "description": "Limits number of restricted Mons.",
+    "rule_log": "Limit {} Restricted: Limit {} restricted Mon.",
+    "value_type": "PositiveInteger",
+    "default_value": "1"
+  },
   "maxlevel": {
     "name": "Max Level",
     "description": "Maximum level for each Mon.",

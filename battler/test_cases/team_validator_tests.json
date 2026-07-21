@@ -606,6 +606,200 @@
     },
     "expected_problems": ["Giratina (Altered) is not allowed."]
   },
+  "limit_restricted_valid": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "Limit Restricted"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Bulbasaur",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": []
+  },
+  "limit_restricted_exceeded_default": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "Limit Restricted"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": ["You may only bring 1 restricted Mon (you have Giratina, Rayquaza)."]
+  },
+  "limit_restricted_exceeded_custom": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "Limit Restricted = 2"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Kyogre",
+          "species": "Kyogre",
+          "ability": "Drizzle",
+          "moves": [],
+          "nature": "Modest",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": [
+      "You may only bring 2 restricted Mons (you have Giratina, Rayquaza, Kyogre)."
+    ]
+  },
+  "unrestrict_species_valid": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "!* Rayquaza", "Limit Restricted = 1"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": []
+  },
+  "unrestrict_species_exceeded": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "!* Rayquaza", "Limit Restricted = 1"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Kyogre",
+          "species": "Kyogre",
+          "ability": "Drizzle",
+          "moves": [],
+          "nature": "Modest",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": ["You may only bring 1 restricted Mon (you have Giratina, Kyogre)."]
+  },
+  "restrict_by_species": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Bulbasaur", "Limit Restricted = 1"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Bulba 1",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal"
+        },
+        {
+          "name": "Bulba 2",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": ["You may only bring 1 restricted Mon (you have Bulba 1, Bulba 2)."]
+  },
   "max_move_count": {
     "format": { "battle_type": "Singles", "rules": ["Max Move Count = 3"] },
     "team": {
