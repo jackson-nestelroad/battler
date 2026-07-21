@@ -106,7 +106,7 @@ export default function TimerSettingsSection({
         </div>
 
         <div className="form-group">
-          <label htmlFor="customTeamPreviewTimer">Team preview (secs)</label>
+          <label htmlFor="customTeamPreviewTimer">Team Preview (secs)</label>
           <input
             id="customTeamPreviewTimer"
             type="number"

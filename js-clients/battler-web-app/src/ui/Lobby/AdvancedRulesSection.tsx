@@ -11,6 +11,7 @@ export interface CustomRulesState {
   ohkoClause: boolean;
   evasionClause: boolean;
   endlessBattleClause: boolean;
+  restrictedLegendaries: boolean;
   megaEvolution: boolean;
   zMoves: boolean;
   dynamax: boolean;
@@ -18,6 +19,8 @@ export interface CustomRulesState {
   bagItems: boolean;
   pickedTeamSizeAuto: boolean;
   pickedTeamSize: number;
+  limitRestrictedEnabled: boolean;
+  limitRestricted: number;
   adjustLevelDownEnabled: boolean;
   adjustLevelDown: number;
   defaultLevel: number;
@@ -32,7 +35,9 @@ interface AdvancedRulesSectionProps {
 
 export default function AdvancedRulesSection({ customRules, onChange }: AdvancedRulesSectionProps) {
   // Rules builder local form state
-  const [ruleAction, setRuleAction] = useState<"clause" | "ban" | "allow" | "repeal">("clause");
+  const [ruleAction, setRuleAction] = useState<
+    "clause" | "ban" | "allow" | "restrict" | "unrestrict" | "repeal"
+  >("clause");
   const [ruleCategory, setRuleCategory] = useState<string>("");
   const [ruleValue, setRuleValue] = useState<string>("");
 
@@ -45,7 +50,14 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
     } else if (ruleAction === "repeal") {
       formatted = `! ${trimmed}`;
     } else {
-      const prefix = ruleAction === "ban" ? "-" : "+";
+      const prefix =
+        ruleAction === "ban"
+          ? "-"
+          : ruleAction === "allow"
+            ? "+"
+            : ruleAction === "restrict"
+              ? "*"
+              : "!*";
       formatted = ruleCategory ? `${prefix} ${ruleCategory}: ${trimmed}` : `${prefix} ${trimmed}`;
     }
     if (formatted && !customRules.rulesList.includes(formatted)) {
@@ -92,7 +104,7 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
               checked={customRules.teamPreview}
               onChange={(e) => onChange({ teamPreview: e.target.checked })}
             />
-            <span>Team preview</span>
+            <span>Team Preview</span>
           </label>
         </div>
 
@@ -234,6 +246,36 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
 
           <div className={`${styles.settingsInputsGrid} mt-s`}>
             <div className="form-group">
+              <label htmlFor="customLimitRestricted">Limit restricted</label>
+              <input
+                id="customLimitRestricted"
+                type="number"
+                min="0"
+                max="6"
+                value={customRules.limitRestrictedEnabled ? customRules.limitRestricted : ""}
+                onChange={(e) => onChange({ limitRestricted: Number(e.target.value) })}
+                placeholder={customRules.limitRestrictedEnabled ? undefined : "None"}
+                disabled={!customRules.limitRestrictedEnabled}
+              />
+              <label className={`${styles.checkboxLabel} mt-xs`}>
+                <input
+                  type="checkbox"
+                  checked={customRules.limitRestrictedEnabled}
+                  onChange={(e) => onChange({ limitRestrictedEnabled: e.target.checked })}
+                />
+                <span>Enable custom limit</span>
+              </label>
+              <label className={`${styles.checkboxLabel} mt-xs`}>
+                <input
+                  type="checkbox"
+                  checked={customRules.restrictedLegendaries}
+                  onChange={(e) => onChange({ restrictedLegendaries: e.target.checked })}
+                />
+                <span>Restrict Restricted Legendaries</span>
+              </label>
+            </div>
+
+            <div className="form-group">
               <label htmlFor="customAdjustLevelDown">Adjust level down</label>
               <input
                 id="customAdjustLevelDown"
@@ -245,7 +287,7 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
                 placeholder={customRules.adjustLevelDownEnabled ? undefined : "None"}
                 disabled={!customRules.adjustLevelDownEnabled}
               />
-              <label className={styles.checkboxLabel} style={{ marginTop: "var(--spacing-xs)" }}>
+              <label className={`${styles.checkboxLabel} mt-xs`}>
                 <input
                   type="checkbox"
                   checked={customRules.adjustLevelDownEnabled}
@@ -316,11 +358,16 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
                 <option value="clause">Clause</option>
                 <option value="ban">Ban (-)</option>
                 <option value="allow">Allow (+)</option>
+                <option value="restrict">Restrict (*)</option>
+                <option value="unrestrict">Unrestrict (!*)</option>
                 <option value="repeal">Repeal (!)</option>
               </select>
             </div>
 
-            {(ruleAction === "ban" || ruleAction === "allow") && (
+            {(ruleAction === "ban" ||
+              ruleAction === "allow" ||
+              ruleAction === "restrict" ||
+              ruleAction === "unrestrict") && (
               <div className={`form-group ${styles.categoryField}`}>
                 <label htmlFor="ruleCategory">Category</label>
                 <select

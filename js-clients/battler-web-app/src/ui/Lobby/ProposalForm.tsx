@@ -59,6 +59,7 @@ export default function ProposalForm() {
     ohkoClause: true,
     evasionClause: true,
     endlessBattleClause: true,
+    restrictedLegendaries: false,
     megaEvolution: false,
     zMoves: false,
     dynamax: false,
@@ -66,6 +67,8 @@ export default function ProposalForm() {
     bagItems: false,
     pickedTeamSizeAuto: true,
     pickedTeamSize: 3,
+    limitRestrictedEnabled: false,
+    limitRestricted: 1,
     adjustLevelDownEnabled: false,
     adjustLevelDown: 50,
     defaultLevel: 100,
@@ -226,6 +229,7 @@ export default function ProposalForm() {
         rulesArray.push("Evasion Moves Clause");
       }
       if (customRules.endlessBattleClause) rulesArray.push("Endless Battle Clause");
+      if (customRules.restrictedLegendaries) rulesArray.push("* Restricted Legendary");
 
       // Custom rule flags (Dynamax, Z-Moves, Mega Evolution, Terastallization)
       if (customRules.megaEvolution) rulesArray.push("Mega Evolution");
@@ -234,6 +238,9 @@ export default function ProposalForm() {
       if (customRules.terastallization) rulesArray.push("Terastallization");
       if (customRules.bagItems) rulesArray.push("Bag Items");
 
+      if (customRules.limitRestrictedEnabled) {
+        rulesArray.push(`Limit Restricted = ${customRules.limitRestricted}`);
+      }
       if (customRules.adjustLevelDownEnabled) {
         rulesArray.push(`Adjust Level Down = ${customRules.adjustLevelDown}`);
       }
