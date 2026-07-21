@@ -2654,6 +2654,10 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                         .partial_cmp(rhs)
                 }
             }
+            (Self::Fraction(lhs), Self::Accuracy(rhs)) => rhs
+                .percentage()
+                .and_then(|rhs| lhs.partial_cmp(&Fraction::from(rhs as i32)))
+                .or(Some(Ordering::Less)),
             (Self::UFraction(lhs), Self::Fraction(rhs)) => {
                 if rhs < &0 {
                     Some(Ordering::Greater)
@@ -2665,6 +2669,26 @@ impl<'eval> MaybeReferenceValueForOperation<'eval> {
                 }
             }
             (Self::UFraction(lhs), Self::UFraction(rhs)) => lhs.partial_cmp(rhs),
+            (Self::UFraction(lhs), Self::Accuracy(rhs)) => rhs
+                .percentage()
+                .and_then(|rhs| lhs.partial_cmp(&Fraction::from(rhs as u32)))
+                .or(Some(Ordering::Less)),
+            (Self::Accuracy(lhs), Self::Fraction(rhs)) => lhs
+                .percentage()
+                .and_then(|lhs| Fraction::from(lhs as i32).partial_cmp(rhs))
+                .or(Some(Ordering::Greater)),
+            (Self::Accuracy(lhs), Self::UFraction(rhs)) => lhs
+                .percentage()
+                .and_then(|lhs| Fraction::from(lhs as u32).partial_cmp(rhs))
+                .or(Some(Ordering::Greater)),
+            (Self::Accuracy(lhs), Self::Accuracy(rhs)) => lhs
+                .percentage()
+                .and_then(|lhs| {
+                    rhs.percentage()
+                        .and_then(|rhs| lhs.partial_cmp(&rhs))
+                        .or(Some(Ordering::Less))
+                })
+                .or(Some(Ordering::Equal)),
             (lhs @ _, rhs @ _) => {
                 return Err(Self::invalid_binary_operation(
                     "compare",

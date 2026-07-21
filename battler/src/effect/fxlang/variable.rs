@@ -715,6 +715,9 @@ where
                                 ValueRef::UFraction(context.mon(mon_handle)?.friendship.into())
                             }
                             "gender" => ValueRef::Gender(context.mon(mon_handle)?.gender),
+                            "gigantamax_factor" => {
+                                ValueRef::Boolean(context.mon(mon_handle)?.gigantamax_factor)
+                            }
                             "hidden_power_type" => {
                                 ValueRef::Type(context.mon(mon_handle)?.hidden_power_type)
                             }
@@ -1222,12 +1225,12 @@ where
                         }
                     } else if let ValueRef::StatTable(stats) = value {
                         value = match *member {
-                            "atk" => ValueRef::Fraction(stats.atk.into()),
-                            "def" => ValueRef::Fraction(stats.def.into()),
-                            "hp" => ValueRef::Fraction(stats.hp.into()),
-                            "spa" => ValueRef::Fraction(stats.spa.into()),
-                            "spd" => ValueRef::Fraction(stats.spd.into()),
-                            "spe" => ValueRef::Fraction(stats.spe.into()),
+                            "atk" => ValueRef::UFraction(stats.atk.into()),
+                            "def" => ValueRef::UFraction(stats.def.into()),
+                            "hp" => ValueRef::UFraction(stats.hp.into()),
+                            "spa" => ValueRef::UFraction(stats.spa.into()),
+                            "spd" => ValueRef::UFraction(stats.spd.into()),
+                            "spe" => ValueRef::UFraction(stats.spe.into()),
                             _ => return Err(Self::bad_member_access(member, value_type)),
                         }
                     } else if let ValueRef::Nature(nature) = value {

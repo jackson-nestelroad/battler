@@ -321,6 +321,46 @@
     "rule_log": "Sleep Moves Clause: Sleep-inducing moves are banned",
     "rules": ["- Move Tag: Sleep Inducing"]
   },
+  "gravitysleepclause": {
+    "name": "Gravity Sleep Clause",
+    "description": "Bans low-accuracy sleep-inducing moves alongside Gravity.",
+    "rule_log": "Gravity Sleep Clause: Low-accuracy sleep-inducing moves with Gravity are banned.",
+    "effect": {
+      "callbacks": {
+        "on_validate_team": [
+          "$sleep_move = undefined",
+          "$gravity = false",
+          "$gmax_orbeetle = false",
+          "foreach $mon in $player.team:",
+          [
+            "if $mon.species == orbeetle and $mon.gigantamax_factor:",
+            ["$gmax_orbeetle = true"],
+            "foreach $move_slot in $mon.move_slots:",
+            [
+              "$move = func_call(get_move: $move_slot.id)",
+              "if !$move:",
+              ["continue"],
+              "if func_call(move_has_flag: $move sleepinducing) and ($move.accuracy == exempt or $move.accuracy < 100):",
+              ["$sleep_move = $move.name"],
+              "if $move.id == gravity:",
+              ["$gravity = true"]
+            ]
+          ],
+          "if !$sleep_move:",
+          ["return $problems"],
+          "if $gravity:",
+          [
+            "$problems = func_call(append: $problems str('Low-accuracy sleep moves ({}) cannot be used with Gravity.', $sleep_move))"
+          ],
+          "if $gmax_orbeetle:",
+          [
+            "$problems = func_call(append: $problems str('Low-accuracy sleep moves ({}) cannot be used with G-Max Orbeetle.', $sleep_move))"
+          ],
+          "return $problems"
+        ]
+      }
+    }
+  },
   "teampreview": {
     "name": "Team Preview",
     "description": "Allows each player to see all Mons before they choose their lead Mon."

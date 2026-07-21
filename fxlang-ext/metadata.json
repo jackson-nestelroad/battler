@@ -564,6 +564,10 @@
         "description": "",
         "type": "Gender"
       },
+      "gigantamax_factor": {
+        "description": "",
+        "type": "Boolean"
+      },
       "hidden_power_type": {
         "description": "",
         "type": "Type"
@@ -992,27 +996,27 @@
     "StatTable": {
       "atk": {
         "description": "",
-        "type": "Fraction | UFraction"
+        "type": "UFraction"
       },
       "def": {
         "description": "",
-        "type": "Fraction | UFraction"
+        "type": "UFraction"
       },
       "hp": {
         "description": "",
-        "type": "Fraction"
+        "type": "UFraction"
       },
       "spa": {
         "description": "",
-        "type": "Fraction | UFraction"
+        "type": "UFraction"
       },
       "spd": {
         "description": "",
-        "type": "Fraction | UFraction"
+        "type": "UFraction"
       },
       "spe": {
         "description": "",
-        "type": "Fraction | UFraction"
+        "type": "UFraction"
       }
     },
     "Nature": {
@@ -8492,6 +8496,24 @@
       "variables": {
         "mon": {
           "type": "Mon",
+          "optional": false
+        }
+      },
+      "allows_custom_input_vars": false
+    },
+    "swap": {
+      "description": "Runs when a Mon swaps positions when another Mon.\n\nRuns in the context of an applying effect on a Mon.",
+      "variables": {
+        "target": {
+          "type": "Mon",
+          "optional": true
+        },
+        "source": {
+          "type": "Mon",
+          "optional": true
+        },
+        "effect": {
+          "type": "Effect",
           "optional": false
         }
       },

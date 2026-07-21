@@ -227,6 +227,7 @@ mod clauses {
     mod ability_clause_test;
     mod endless_battle_clause_test;
     mod force_mono_type_test;
+    mod gravity_sleep_clause_test;
     mod item_clause_test;
     mod nickname_clause_test;
     mod same_type_clause_test;
