@@ -211,18 +211,16 @@ pub enum ResourceCheck {
 }
 
 impl ResourceCheck {
-    /// Performs the next resource check only if the resource is not explicitly allowed.
+    /// Performs the next resource check only if this resource check was inconclusive.
+    ///
+    /// This works because we expect the chain to be ordered from most specific to least specific.
     pub fn chain<F>(self, next: F) -> Self
     where
         F: Fn() -> Self,
     {
         match self {
-            Self::Allowed => Self::Allowed,
-            _ => match next() {
-                Self::Banned => Self::Banned,
-                Self::Allowed => Self::Allowed,
-                Self::Unknown => self,
-            },
+            Self::Unknown => next(),
+            _ => self,
         }
     }
 }
