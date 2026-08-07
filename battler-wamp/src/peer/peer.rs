@@ -120,11 +120,26 @@ use crate::{
 
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "-", env!("CARGO_PKG_VERSION"));
 
+/// PEM file paths for establishing an mTLS connection, set via [`WebSocketConfig::mutual_tls`].
+#[derive(Debug)]
+pub struct ClientMutualTlsPaths {
+    /// Path to the CA certificate used to verify the router's certificate.
+    pub ca_cert_path: String,
+    /// Path to the certificate presented to the router.
+    pub client_cert_path: String,
+    /// Path to the private key for [`Self::client_cert_path`].
+    pub client_key_path: String,
+}
+
 /// Configuration for WebSocket-specific WAMP connections.
 #[derive(Debug, Default)]
 pub struct WebSocketConfig {
     /// Additional headers to include in the WebSocket handshake request.
     pub headers: HashMap<String, String>,
+    /// PEM file paths for authenticating this peer to the router with mTLS.
+    /// When set, the router's certificate is verified against
+    /// [`ClientMutualTlsPaths::ca_cert_path`] instead of the system's native root certificates.
+    pub mutual_tls: Option<ClientMutualTlsPaths>,
 }
 
 /// Configuration for a [`Peer`] acting as a callee.
