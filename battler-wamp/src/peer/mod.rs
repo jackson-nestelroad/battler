@@ -11,6 +11,7 @@ pub use connector::{
 };
 pub use peer::{
     CalleeConfig,
+    ClientMutualTlsPaths,
     Peer,
     PeerConfig,
     PeerNotConnectedError,
