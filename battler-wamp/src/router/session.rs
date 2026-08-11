@@ -126,6 +126,12 @@ struct EstablishedSessionState {
     active_invocations_by_call: HashMap<Id, RpcInvocation>,
 }
 
+struct CleanupSessionData {
+    realm: Uri,
+    subscriptions: HashMap<Id, WildcardUri>,
+    procedures: HashMap<Id, WildcardUri>,
+}
+
 impl Debug for EstablishedSessionState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         #[derive(Debug)]
@@ -336,7 +342,7 @@ pub struct Session {
     id: Id,
     connection_type: ConnectionType,
     message_tx: mpsc::UnboundedSender<Message>,
-    service_message_tx: mpsc::Sender<Message>,
+    service_message_tx: mpsc::UnboundedSender<Message>,
     state: RwLock<SessionState>,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
@@ -349,6 +355,7 @@ pub struct Session {
 
     publish_tx: broadcast::Sender<PublishMessage>,
     procedure_message_tx: broadcast::Sender<ProcedureMessage>,
+    cleanup_data: Mutex<Option<CleanupSessionData>>,
 }
 
 impl Session {
@@ -357,7 +364,7 @@ impl Session {
         id: Id,
         connection_type: ConnectionType,
         message_tx: mpsc::UnboundedSender<Message>,
-        service_message_tx: mpsc::Sender<Message>,
+        service_message_tx: mpsc::UnboundedSender<Message>,
     ) -> Self {
         let id_allocator = SequentialIdAllocator::default();
         let (closed_session_tx, _) = broadcast::channel(48);
@@ -379,6 +386,7 @@ impl Session {
             rpc_yield_cancel_rx,
             publish_tx,
             procedure_message_tx,
+            cleanup_data: Mutex::new(None),
         }
     }
 
@@ -450,10 +458,7 @@ impl Session {
 
     pub async fn send_message(&self, message: Message) -> Result<()> {
         self.transition_state_from_sending_message(&message).await?;
-        self.service_message_tx
-            .send(message)
-            .await
-            .map_err(Error::new)
+        self.service_message_tx.send(message).map_err(Error::new)
     }
 
     async fn transition_state_from_sending_message(&self, message: &Message) -> Result<()> {
@@ -1632,16 +1637,37 @@ impl Session {
             self.id,
             self.state.read().await
         );
-        *self.state.write().await = state;
 
-        match &*self.state.read().await {
-            SessionState::Established(_) => {
-                self.id_allocator.reset().await;
+        let mut cleanup_data = None;
+        {
+            let mut state_guard = self.state.write().await;
+            if let SessionState::Established(established) = &mut *state_guard {
+                if !matches!(state, SessionState::Established(_)) {
+                    cleanup_data = Some(CleanupSessionData {
+                        realm: established.realm.clone(),
+                        subscriptions: std::mem::take(&mut established.subscriptions),
+                        procedures: std::mem::take(&mut established.procedures),
+                    });
+                }
             }
-            SessionState::Closed => {
-                self.closed_session_tx.send(()).ok();
+            *state_guard = state;
+
+            match &*state_guard {
+                SessionState::Established(_) => {
+                    self.id_allocator.reset().await;
+                }
+                SessionState::Closed => {
+                    self.closed_session_tx.send(()).ok();
+                }
+                _ => (),
             }
-            _ => (),
+        }
+
+        if let Some(data) = cleanup_data {
+            let mut cleanup_guard = self.cleanup_data.lock().await;
+            if cleanup_guard.is_none() {
+                *cleanup_guard = Some(data);
+            }
         }
 
         Ok(())
@@ -1650,40 +1676,46 @@ impl Session {
     pub async fn clean_up<S>(&self, context: &RouterContext<S>) {
         let id = self.id;
 
-        // We only need to clean up if we have resources in a realm.
-        let realm = match self
-            .get_from_established_session_state(|state| state.realm.clone())
-            .await
-        {
-            Ok(realm) => realm,
-            Err(_) => return,
+        let cleanup_data = {
+            let mut cleanup_guard = self.cleanup_data.lock().await;
+            cleanup_guard.take()
         };
 
-        let mut context = match context.realm_context(&realm) {
+        let cleanup_data = match cleanup_data {
+            Some(cleanup_data) => cleanup_data,
+            None => {
+                let mut state_guard = self.state.write().await;
+                if let SessionState::Established(established) = &mut *state_guard {
+                    CleanupSessionData {
+                        realm: established.realm.clone(),
+                        subscriptions: std::mem::take(&mut established.subscriptions),
+                        procedures: std::mem::take(&mut established.procedures),
+                    }
+                } else {
+                    return;
+                }
+            }
+        };
+
+        let mut context = match context.realm_context(&cleanup_data.realm) {
             Ok(context) => context,
             Err(err) => {
                 error!(
-                    "Failed to clean up session {id}, due to error getting context for realm {realm}: {err:?}"
+                    "Failed to clean up session {id}, due to error getting context for realm {}: {err:?}",
+                    cleanup_data.realm
                 );
                 return;
             }
         };
 
-        match &mut *self.state.write().await {
-            SessionState::Established(state) => {
-                for topic in state.subscriptions.values() {
-                    TopicManager::unsubscribe(&mut context, id, &topic).await;
-                }
-                state.subscriptions.clear();
-
-                for procedure in state.procedures.values() {
-                    ProcedureManager::unregister(&mut context, id, &procedure).await;
-                }
-                state.procedures.clear();
-
-                context.realm().sessions.write().await.remove(&id);
-            }
-            _ => (),
+        for topic in cleanup_data.subscriptions.values() {
+            TopicManager::unsubscribe(&mut context, id, &topic).await;
         }
+
+        for procedure in cleanup_data.procedures.values() {
+            ProcedureManager::unregister(&mut context, id, &procedure).await;
+        }
+
+        context.realm().sessions.write().await.remove(&id);
     }
 }

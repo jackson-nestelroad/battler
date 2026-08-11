@@ -5,6 +5,7 @@ use battler::{
     BattleType,
     CoreBattleEngineSpeedSortTieResolution,
     PublicCoreBattle,
+    Request,
     TeamData,
     WrapResultError,
 };
@@ -38,6 +39,50 @@ fn team() -> Result<TeamData> {
                     ],
                     "nature": "Hardy",
                     "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn strong_attacker_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Bulbasaur",
+                    "species": "Bulbasaur",
+                    "ability": "Overgrow",
+                    "moves": ["Air Cutter", "Tackle"],
+                    "nature": "Hardy",
+                    "level": 100
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn faint_with_reserve_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Charmander",
+                    "species": "Charmander",
+                    "ability": "Blaze",
+                    "moves": ["Scratch"],
+                    "nature": "Hardy",
+                    "level": 5
+                },
+                {
+                    "name": "Squirtle",
+                    "species": "Squirtle",
+                    "ability": "Torrent",
+                    "moves": ["Tackle"],
+                    "nature": "Hardy",
+                    "level": 5
                 }
             ]
         }"#,
@@ -221,4 +266,85 @@ fn forfeit_order_determined_by_time() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn forfeit_during_force_switch_request() {
+    let mut battle = make_battle(
+        BattleType::Singles,
+        0,
+        strong_attacker_team().unwrap(),
+        faint_with_reserve_team().unwrap(),
+    )
+    .unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    // Turn 1: Player 1 moves, Player 2 moves. Charmander faints!
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    // Player 2 receives Switch request. Player 2 forfeits!
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-2"),
+        Ok(Some(Request::Switch(_)))
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "forfeit"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Bulbasaur,player-1,1|name:Air Cutter",
+            "split|side:1",
+            "damage|mon:Charmander,player-2,1|health:0",
+            "damage|mon:Charmander,player-2,1|health:0",
+            "faint|mon:Charmander,player-2,1",
+            "residual",
+            "continue",
+            "forfeited|player:player-2",
+            "win|side:0"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn forfeit_during_force_switch_request_multi() {
+    let mut battle = make_multi_battle(
+        BattleType::Multi,
+        0,
+        strong_attacker_team().unwrap(),
+        strong_attacker_team().unwrap(),
+        faint_with_reserve_team().unwrap(),
+        strong_attacker_team().unwrap(),
+    )
+    .unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    // Turn 1: Player 1 moves (Air Cutter), Player 3's Charmander faints!
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "move 0,1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-4", "move 1,1"), Ok(()));
+
+    // Player 3 receives Switch request. Player 3 forfeits!
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-3"),
+        Ok(Some(Request::Switch(_)))
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-3", "forfeit"), Ok(()));
+
+    // Turn 2 requests should be present for remaining active players
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-1"),
+        Ok(Some(Request::Turn(_)))
+    );
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-2"),
+        Ok(Some(Request::Turn(_)))
+    );
+    assert_matches::assert_matches!(battle.request_for_player("player-3"), Ok(None));
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-4"),
+        Ok(Some(Request::Turn(_)))
+    );
 }

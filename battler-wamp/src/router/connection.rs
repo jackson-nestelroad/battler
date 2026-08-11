@@ -107,7 +107,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         connection_type: ConnectionType,
-        service_message_tx: mpsc::Sender<Message>,
+        service_message_tx: mpsc::UnboundedSender<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
@@ -172,21 +172,12 @@ impl Connection {
         context: RouterContext<S>,
         session: Arc<Session>,
         message: Message,
-        handle_message_result_tx: mpsc::Sender<ChannelTransmittableResult<()>>,
-    ) {
+    ) -> Result<()> {
         let message_name = message.message_name();
-        handle_message_result_tx
-            .send(
-                session
-                    .handle_message(context.clone(), message)
-                    .await
-                    .map_err(|err| {
-                        err.context(format!("failed to handle {message_name} message"))
-                            .into()
-                    }),
-            )
+        session
+            .handle_message(context.clone(), message)
             .await
-            .ok();
+            .map_err(|err| err.context(format!("failed to handle {message_name} message")))
     }
 
     async fn publish_loop<S>(
@@ -354,7 +345,9 @@ impl Connection {
                         Err(err) => return Err(Error::context(err.into(), "failed to receive message")),
                     };
 
-                    Self::handle_message(context.clone(), session.clone(), message, handle_message_result_tx.clone()).await;
+                    if let Err(err) = Self::handle_message(context.clone(), session.clone(), message).await {
+                        return Err(err.into());
+                    }
                 }
                 // Finished handling a message.
                 result = handle_message_result_rx.recv() => {

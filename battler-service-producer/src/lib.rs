@@ -1,3 +1,18 @@
+#[macro_export]
+macro_rules! log_procedure {
+    ($name:expr, $details:expr, $block:expr) => {{
+        let name = $name;
+        let details = $details;
+        log::info!("RPC: {} invoked ({})", name, details);
+        let res = $block;
+        match &res {
+            Ok(_) => log::info!("RPC: {} succeeded ({})", name, details),
+            Err(err) => log::error!("RPC: {} failed ({}): {:?}", name, details, err),
+        }
+        res
+    }};
+}
+
 mod common;
 mod handlers;
 mod producer;

@@ -73,8 +73,10 @@ impl<'d> AiPlayerHandle<'d> {
     /// Joins the task.
     #[allow(unused)]
     pub async fn join(mut self) -> Result<(), JoinError> {
-        // SAFETY: `join_handle` is set
-        self.join_handle.take().unwrap().await
+        match self.join_handle.take() {
+            Some(handle) => handle.await,
+            None => Ok(()),
+        }
     }
 
     /// The error receiver channel.
@@ -353,7 +355,19 @@ impl<'d> AiPlayer<'d> {
         loop {
             tokio::select! {
                 update = proposed_battle_update_rx.recv() => {
-                    self.handle_proposed_battle_update(player, &update?).await?;
+                    let update = match update {
+                        Ok(update) => update,
+                        Err(broadcast::error::RecvError::Lagged(skipped)) => {
+                            log::warn!("AI {} proposed battle update receiver for {player} lagged by {skipped} messages", self.id);
+                            continue;
+                        }
+                        Err(broadcast::error::RecvError::Closed) => {
+                            break;
+                        }
+                    };
+                    if let Err(err) = self.handle_proposed_battle_update(player, &update).await {
+                        log::warn!("AI {} failed handling proposed battle update for {player}: {err:?}", self.id);
+                    }
                 }
                 _ = cancel_rx.recv() => {
                     break;
@@ -401,6 +415,10 @@ impl<'d> AiPlayer<'d> {
                 Arc<Box<dyn BattlerServiceClient + 'static>>,
             >(self.battler_service_client.clone())
         };
+        let task_tx = match self.task_tx.clone() {
+            Some(tx) => tx,
+            None => return,
+        };
         self.battle_tasks.lock().await.spawn(AiPlayer::watch_battle(
             self.id.clone(),
             battle,
@@ -410,9 +428,7 @@ impl<'d> AiPlayer<'d> {
             self.options.clone(),
             Arc::downgrade(&self.state),
             self.error_tx.clone(),
-            // SAFETY: task_tx is None only when dropping this object, which cannot happen in
-            // parallel because this method takes requires a mutable borrow.
-            self.task_tx.clone().unwrap(),
+            task_tx,
         ));
     }
 

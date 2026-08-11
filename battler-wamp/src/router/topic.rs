@@ -39,7 +39,7 @@ use crate::{
 };
 
 /// A single subscriber to a topic.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct TopicSubscriber {
     subscription_id: Id,
     active: bool,
@@ -183,12 +183,16 @@ impl TopicManager {
         F: FnOnce() -> Fut,
         Fut: std::future::Future<Output = Result<()>>,
     {
+        let mut activated = false;
         if let Some(topic) = context.topic(topic).await {
             let mut subscribers = topic.subscribers.write().await;
             if let Some(subscriber) = subscribers.get_mut(&session) {
                 subscriber.active = true;
-                after_activation().await?;
+                activated = true;
             }
+        }
+        if activated {
+            after_activation().await?;
         }
         Ok(())
     }
@@ -325,7 +329,15 @@ impl TopicManager {
         arguments_keyword: Dictionary,
         options: &PublishOptions,
     ) {
-        for (session, subscription) in single_topic.subscribers.read().await.iter() {
+        let subscribers = {
+            let subscribers = single_topic.subscribers.read().await;
+            subscribers
+                .iter()
+                .map(|(session, sub)| (*session, sub.clone()))
+                .collect::<Vec<_>>()
+        };
+
+        for (session, subscription) in subscribers {
             if !subscription.active {
                 continue;
             }
@@ -338,7 +350,7 @@ impl TopicManager {
             }
 
             let exclude_me = options.exclude_me.unwrap_or(true);
-            if *session == publisher && exclude_me {
+            if session == publisher && exclude_me {
                 continue;
             }
 

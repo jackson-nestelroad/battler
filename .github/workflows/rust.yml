@@ -109,6 +109,22 @@ jobs:
       - name: Run battler-service tests
         run: cargo test -p "battler-service*"
 
+  test-battler-service-tsan:
+    name: Run battler-service tests (TSan)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_service == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-service tests (TSan)
+        env:
+          RUSTFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+          RUSTDOCFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+        run: cargo test -p "battler-service*" -Zbuild-std --target x86_64-unknown-linux-gnu
+
   test-battler-state:
     name: Run battler-state tests
     needs: detect-changes
@@ -178,6 +194,26 @@ jobs:
       - name: Run battler-multiplayer-service tests
         run: cargo test -p "battler-multiplayer-service*"
 
+  test-battler-multiplayer-service-tsan:
+    name: Run battler-multiplayer-service tests (TSan)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_multiplayer_service == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-multiplayer-service tests (TSan)
+        env:
+          RUSTFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+          RUSTDOCFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+        run: cargo test -p "battler-multiplayer-service*" -Zbuild-std --target x86_64-unknown-linux-gnu
+
   test-battler-multiplayer-client:
     name: Run battler-multiplayer-client tests
     needs: detect-changes
@@ -211,6 +247,26 @@ jobs:
         uses: ./.github/actions/rust
       - name: Run battler-server tests
         run: cargo test -p battler-server
+
+  test-battler-server-tsan:
+    name: Run battler-server tests (TSan)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_server == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-server tests (TSan)
+        env:
+          RUSTFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+          RUSTDOCFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+        run: cargo test -p battler-server -Zbuild-std --target x86_64-unknown-linux-gnu
 
   test-battler-wamp:
     name: Run battler-wamp tests

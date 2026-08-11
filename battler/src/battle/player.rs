@@ -1584,8 +1584,8 @@ impl Player {
             _ => return Err(general_error("you cannot forfeit out of turn")),
         }
 
-        if Self::get_position_for_next_choice(context, false)? >= context.player().active.len() {
-            return Err(general_error("you sent more choices than active mons"));
+        if context.player().choice.forfeiting {
+            return Err(general_error("you are already forfeiting"));
         }
 
         let action = Action::Forfeit(ForfeitAction {
@@ -1948,6 +1948,9 @@ impl Player {
 
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool> {
+        if context.player().escaped {
+            return Ok(false);
+        }
         for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.switch_state.needs_switch.is_some() {
                 return Ok(true);
@@ -1958,6 +1961,9 @@ impl Player {
 
     /// Checks if the player needs to select a Mon.
     pub fn needs_select(context: &PlayerContext) -> Result<bool> {
+        if context.player().escaped {
+            return Ok(false);
+        }
         for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.volatile_state.select.is_some() {
                 return Ok(true);

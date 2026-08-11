@@ -29,19 +29,26 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         input: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        self.authorizer
-            .authorize_player_operation(
-                &invocation.peer_info,
-                &input.0.player,
-                PlayerOperation::UpdateTeam,
-            )
-            .await?;
-        let team_data = serde_json::from_str(&input.0.team_data_json)?;
-        self.service
-            .update_team(Uuid::try_parse(&procedure.0)?, &input.0.player, team_data)
+        crate::log_procedure!(
+            "UpdateTeam",
+            format!("battle={}, player={}", procedure.0, input.0.player),
+            async {
+                self.authorizer
+                    .authorize_player_operation(
+                        &invocation.peer_info,
+                        &input.0.player,
+                        PlayerOperation::UpdateTeam,
+                    )
+                    .await?;
+                let team_data = serde_json::from_str(&input.0.team_data_json)?;
+                self.service
+                    .update_team(Uuid::try_parse(&procedure.0)?, &input.0.player, team_data)
+                    .await
+                    .map_err(map_battle_error)?;
+                Ok(battler_service_schema::UpdateTeamOutput)
+            }
             .await
-            .map_err(map_battle_error)?;
-        Ok(battler_service_schema::UpdateTeamOutput)
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

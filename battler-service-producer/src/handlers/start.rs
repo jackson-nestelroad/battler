@@ -29,17 +29,28 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         _: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        let uuid = Uuid::try_parse(&procedure.0)?;
-        let battle = self.service.battle(uuid).await.map_err(map_battle_error)?;
+        crate::log_procedure!(
+            "Start",
+            &procedure.0,
+            async {
+                let uuid = Uuid::try_parse(&procedure.0)?;
+                let battle = self.service.battle(uuid).await.map_err(map_battle_error)?;
 
-        if invocation.peer_info.identity.id != battle.metadata.creator {
-            self.authorizer
-                .authorize_battle_operation(&invocation.peer_info, &battle, BattleOperation::Start)
-                .await?;
-        }
+                if invocation.peer_info.identity.id != battle.metadata.creator {
+                    self.authorizer
+                        .authorize_battle_operation(
+                            &invocation.peer_info,
+                            &battle,
+                            BattleOperation::Start,
+                        )
+                        .await?;
+                }
 
-        self.service.start(uuid).await.map_err(map_battle_error)?;
-        Ok(battler_service_schema::StartOutput)
+                self.service.start(uuid).await.map_err(map_battle_error)?;
+                Ok(battler_service_schema::StartOutput)
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

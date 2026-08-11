@@ -203,7 +203,18 @@ impl<'b> BattlerClientInternal<'b> {
 
             tokio::select! {
                 log_entry = log_entry_rx.recv() => {
-                    self.process_log_entry(log_entry?).await?;
+                    let log_entry = match log_entry {
+                        Ok(entry) => entry,
+                        Err(broadcast::error::RecvError::Lagged(skipped)) => {
+                            log::warn!("Log entry receiver for player {} in battle {} lagged by {} entries, backfilling", self.player, self.battle, skipped);
+                            self.ensure_caught_up().await.ok();
+                            continue;
+                        }
+                        Err(broadcast::error::RecvError::Closed) => {
+                            break;
+                        }
+                    };
+                    self.process_log_entry(log_entry).await?;
                     // Consume any other buffered logs in this tick (batching)
                     while let Ok(next_entry) = log_entry_rx.try_recv() {
                         self.process_log_entry(next_entry).await?;
@@ -261,6 +272,9 @@ impl<'b> BattlerClientInternal<'b> {
     async fn backfill_log(&self, log: &mut Log) -> Result<()> {
         let full_log = self.service.full_log(self.battle, self.role.side()).await?;
         for (i, entry) in full_log.into_iter().enumerate() {
+            if entry == "-battlerservice:done" {
+                *self.has_done_signal.lock().await = true;
+            }
             log.add(i, entry)?;
         }
         log::info!(

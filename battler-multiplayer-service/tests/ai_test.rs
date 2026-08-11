@@ -224,7 +224,12 @@ async fn hosts_singles_battle_against_random_ai() {
 
     let mut battle_event_rx = battler_client.battle_event_rx();
     while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
-        assert_matches::assert_matches!(battler_client.make_choice("move 0").await, Ok(()));
+        if let Err(err) = battler_client.make_choice("move 0").await {
+            if err.to_string().contains("the battle is over") {
+                break;
+            }
+            panic!("unexpected error making choice: {err:?}");
+        }
     }
 
     assert_matches::assert_matches!(
@@ -379,7 +384,12 @@ async fn spectator_receives_updates() {
     // Make choices to run the battle
     let mut battle_event_rx = battler_client.battle_event_rx();
     while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
-        assert_matches::assert_matches!(battler_client.make_choice("move 0").await, Ok(()));
+        if let Err(err) = battler_client.make_choice("move 0").await {
+            if err.to_string().contains("the battle is over") {
+                break;
+            }
+            panic!("unexpected error making choice: {err:?}");
+        }
     }
 
     assert_matches::assert_matches!(

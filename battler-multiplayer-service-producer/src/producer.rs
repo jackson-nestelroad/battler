@@ -137,10 +137,14 @@ where
         };
         tokio::select! {
             update = global_update_rx.recv() => {
-                publish_update(
-                    &producer,
-                    update.ok_or_else(|| Error::msg("global update channel unexpectedly closed"))?,
-                ).await?;
+                let update = match update {
+                    Some(update) => update,
+                    None => break,
+                };
+                log::info!("Multiplayer producer received update from channel for proposed battle {}", update.proposed_battle.uuid);
+                if let Err(err) = publish_update(&producer, update).await {
+                    log::warn!("Failed to publish proposed battle update: {err:?}");
+                }
             },
             _ = stop_recv => {
                 producer.stop().await?;

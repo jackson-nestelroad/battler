@@ -15,7 +15,6 @@ use battler_service::{
     BattlerService,
     GlobalLogEntry,
 };
-use battler_wamp::core::hash::HashSet;
 use tokio::sync::{
     broadcast,
     mpsc::{
@@ -168,16 +167,13 @@ where
     )
     .await?;
 
-    Arc::try_unwrap(service).unwrap_or_else(|_| {
-        panic!("battler service has additional references after producer was dropped")
-    });
-
+    drop(service);
     Ok(())
 }
 
-async fn run_battler_service_producer_internal<'d, S>(
+async fn run_battler_service_producer_internal<S>(
     producer: battler_service_schema::BattlerServiceProducer<S>,
-    service: Arc<BattlerService<'d>>,
+    service: Arc<BattlerService<'static>>,
     mut stop_rx: Option<broadcast::Receiver<()>>,
     mut global_log_rx: mpsc::UnboundedReceiver<GlobalLogEntry>,
 ) -> Result<()>
@@ -193,11 +189,14 @@ where
         };
         tokio::select! {
             log = global_log_rx.recv() => {
-                publish_log_entry(
-                    &producer,
-                    service.as_ref(),
-                    log.ok_or_else(|| Error::msg("global log channel unexpectedly closed"))?,
-                ).await?;
+                let log = match log {
+                    Some(log) => log,
+                    None => break,
+                };
+                log::info!("Producer received log entry from channel for battle {}, side: {:?}", log.battle, log.side);
+                if let Err(err) = publish_log_entry(&producer, service.as_ref(), log).await {
+                    log::warn!("Failed to publish log entry: {err:?}");
+                }
             },
             _ = stop_recv => {
                 producer.stop().await?;
@@ -216,22 +215,15 @@ async fn publish_log_entry<'d, S>(
 where
     S: Send + 'static,
 {
-    // If battle gets deleted, we do not need to publish logs.
-    let battle = match service.battle(global_log_entry.battle).await {
-        Ok(battle) => battle,
-        Err(_) => return Ok(()),
-    };
-
-    let players = global_log_entry
-        .side
-        .map(|side| battle.sides.get(side))
-        .flatten()
-        .map(|side| {
-            side.players
-                .iter()
-                .map(|player| player.id.clone())
-                .collect::<HashSet<_>>()
-        });
+    log::info!(
+        "publish_log_entry: fetching side players for battle {}, side: {:?}",
+        global_log_entry.battle,
+        global_log_entry.side
+    );
+    let players = service
+        .side_players(global_log_entry.battle, global_log_entry.side)
+        .await;
+    log::info!("publish_log_entry: side players fetched: {:?}", players);
     let log_pattern = battler_service_schema::LogPattern(
         uuid_for_uri(&global_log_entry.battle),
         match global_log_entry.side {
@@ -243,14 +235,23 @@ where
         index: global_log_entry.entry.index as battler_wamp_values::Integer,
         content: global_log_entry.entry.content,
     });
-    producer
-        .publish_log(
-            log_pattern,
-            log_event,
-            battler_wamprat::peer::PublishOptions {
-                eligible_authid: players,
-                ..Default::default()
-            },
-        )
-        .await
+    let options = match global_log_entry.side {
+        Some(_) => battler_wamprat::peer::PublishOptions {
+            eligible_authid: players,
+            ..Default::default()
+        },
+        None => battler_wamprat::peer::PublishOptions::default(),
+    };
+    log::info!(
+        "publish_log_entry: publishing log to WAMP for battle {}",
+        global_log_entry.battle
+    );
+    let res = producer.publish_log(log_pattern, log_event, options).await;
+    if res.is_ok() {
+        log::info!(
+            "publish_log_entry: successfully published log to WAMP for battle {}",
+            global_log_entry.battle
+        );
+    }
+    res
 }

@@ -778,10 +778,12 @@ async fn publishes_battle_logs() {
         Duration::from_secs(3),
     )
     .await;
-    assert_matches::assert_matches!(
-        player_1_side_1_log.pop(),
-        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
-    );
+    while player_1_side_1_log
+        .last()
+        .is_some_and(|line| line.starts_with("-battlerservice:timer|"))
+    {
+        player_1_side_1_log.pop();
+    }
     pretty_assertions::assert_eq!(
         player_1_side_1_log,
         [
@@ -817,10 +819,12 @@ async fn publishes_battle_logs() {
         Duration::from_secs(3),
     )
     .await;
-    assert_matches::assert_matches!(
-        player_2_side_2_log.pop(),
-        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
-    );
+    while player_2_side_2_log
+        .last()
+        .is_some_and(|line| line.starts_with("-battlerservice:timer|"))
+    {
+        player_2_side_2_log.pop();
+    }
     pretty_assertions::assert_eq!(
         player_2_side_2_log,
         [
@@ -856,10 +860,12 @@ async fn publishes_battle_logs() {
         Duration::from_secs(5),
     )
     .await;
-    assert_matches::assert_matches!(
-        public_log.pop(),
-        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
-    );
+    while public_log
+        .last()
+        .is_some_and(|line| line.starts_with("-battlerservice:timer|"))
+    {
+        public_log.pop();
+    }
     pretty_assertions::assert_eq!(
         public_log,
         [

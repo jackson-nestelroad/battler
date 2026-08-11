@@ -93,7 +93,11 @@ impl<'b> BattlerMultiplayerClient<'b> {
         rx: &mut broadcast::Receiver<ProposedBattleUpdate>,
     ) -> Result<Uuid> {
         loop {
-            let update = rx.recv().await?;
+            let update = match rx.recv().await {
+                Ok(update) => update,
+                Err(broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(err) => return Err(err.into()),
+            };
             if update.proposed_battle.uuid == proposed_battle {
                 if let Some(battle_uuid) = update.proposed_battle.battle {
                     return Ok(battle_uuid);

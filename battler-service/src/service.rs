@@ -16,7 +16,10 @@ use std::{
     },
 };
 
-use ahash::HashMap;
+use ahash::{
+    HashMap,
+    HashSet,
+};
 use anyhow::{
     Error,
     Result,
@@ -42,6 +45,7 @@ use tokio::{
     sync::{
         broadcast,
         mpsc,
+        watch,
     },
     task::JoinSet,
 };
@@ -121,6 +125,11 @@ struct LiveBattle<'d> {
     cancel_timers_tx: broadcast::Sender<()>,
     finished_at: Option<Instant>,
     log_timer_deadlines: bool,
+    current_timer_tasks: JoinSet<()>,
+    proceed_tasks: JoinSet<()>,
+    is_proceeding: bool,
+    proceed_requested: bool,
+    canceled: bool,
 }
 
 impl<'d> LiveBattle<'d> {
@@ -161,6 +170,11 @@ impl<'d> LiveBattle<'d> {
             cancel_timers_tx,
             finished_at: None,
             log_timer_deadlines: service_options.log_timer_deadlines,
+            current_timer_tasks: JoinSet::new(),
+            proceed_tasks: JoinSet::new(),
+            is_proceeding: false,
+            proceed_requested: false,
+            canceled: false,
         }
         .initialize()
     }
@@ -266,15 +280,23 @@ impl<'d> LiveBattle<'d> {
     }
 
     fn validate_player(&mut self, player: &str) -> Result<PlayerValidation> {
-        match self.battle.validate_player(player) {
-            Ok(()) => Ok(PlayerValidation::default()),
+        let mut validation = match self.battle.validate_player(player) {
+            Ok(()) => PlayerValidation::default(),
             Err(err) => match err.downcast::<ValidationError>() {
-                Ok(err) => Ok(PlayerValidation {
+                Ok(err) => PlayerValidation {
                     problems: err.problems().map(|s| s.to_owned()).collect(),
-                }),
-                Err(err) => Err(err),
+                },
+                Err(err) => return Err(err),
             },
+        };
+        if let Ok(player_data) = self.battle.player_data(player) {
+            if player_data.mons.is_empty() {
+                validation.problems.push(format!(
+                    "Validation failed for {player}: Empty team is not allowed."
+                ));
+            }
         }
+        Ok(validation)
     }
 
     fn update_player_state(&mut self, player: &str) -> Result<()> {
@@ -486,12 +508,6 @@ impl<'d> LiveBattle<'d> {
     }
 }
 
-#[derive(Default)]
-struct LiveBattleManagerState {
-    current_timer_tasks: JoinSet<()>,
-    proceed_tasks: JoinSet<()>,
-}
-
 /// A wrapper around a [`LiveBattle`] for non-atomic operations.
 ///
 /// Some tasks are spawned in the background, such as tasks for battle timers. Such tasks must have
@@ -499,23 +515,47 @@ struct LiveBattleManagerState {
 /// This object manages such things.
 struct LiveBattleManager<'d> {
     uuid: Uuid,
+    side_players: Vec<HashSet<String>>,
     live_battle: Arc<Mutex<LiveBattle<'d>>>,
-    state: Arc<tokio::sync::Mutex<LiveBattleManagerState>>,
-    task_tx: tokio::sync::Mutex<Option<mpsc::Sender<()>>>,
-    _task_rx: tokio::sync::Mutex<mpsc::Receiver<()>>,
+    preview_tx: watch::Sender<BattlePreview>,
+    preview_rx: watch::Receiver<BattlePreview>,
+    task_tx: Mutex<Option<mpsc::Sender<()>>>,
+    _task_rx: Mutex<mpsc::Receiver<()>>,
 }
 
 impl<'d> LiveBattleManager<'d> {
     fn new(battle: LiveBattle<'d>) -> Self {
         let uuid = battle.uuid;
+        let initial_preview = battle.battle_preview();
+        let (preview_tx, preview_rx) = watch::channel(initial_preview);
+        let side_players = battle
+            .sides
+            .iter()
+            .map(|side| {
+                side.players
+                    .iter()
+                    .map(|p| p.id.clone())
+                    .collect::<HashSet<String>>()
+            })
+            .collect::<Vec<_>>();
         let (task_tx, task_rx) = mpsc::channel(1);
         Self {
             uuid,
+            side_players,
             live_battle: Arc::new(Mutex::new(battle)),
-            state: Arc::new(tokio::sync::Mutex::new(LiveBattleManagerState::default())),
-            task_tx: tokio::sync::Mutex::new(Some(task_tx)),
-            _task_rx: tokio::sync::Mutex::new(task_rx),
+            preview_tx,
+            preview_rx,
+            task_tx: Mutex::new(Some(task_tx)),
+            _task_rx: Mutex::new(task_rx),
         }
+    }
+
+    fn update_preview(&self, live_battle: &LiveBattle) {
+        self.preview_tx.send_replace(live_battle.battle_preview());
+    }
+
+    fn side_players(&self, side: Option<usize>) -> Option<HashSet<String>> {
+        side.and_then(|side| self.side_players.get(side).cloned())
     }
 
     async fn task_tx(&self) -> Result<mpsc::Sender<()>> {
@@ -541,8 +581,8 @@ impl<'d> LiveBattleManager<'d> {
         self.live_battle.lock().await.battle()
     }
 
-    async fn battle_preview(&self) -> BattlePreview {
-        self.live_battle.lock().await.battle_preview()
+    fn battle_preview(&self) -> BattlePreview {
+        self.preview_rx.borrow().clone()
     }
 
     async fn finished_at(&self) -> Option<Instant> {
@@ -562,6 +602,7 @@ impl<'d> LiveBattleManager<'d> {
 
         // Inject a log entry so that clients can refresh player states.
         live_battle.inject_log_entries([format!("teamupdate|player:{player}")]);
+        self.update_preview(&live_battle);
 
         Ok(())
     }
@@ -589,10 +630,12 @@ impl<'d> LiveBattleManager<'d> {
             live_battle.inject_log_entries(["started"]);
             live_battle.update_log()?;
             live_battle.state = BattleState::Active;
+            self.update_preview(&live_battle);
         }
         Self::proceed(
+            self.uuid,
             self.live_battle.clone(),
-            self.state.clone(),
+            self.preview_tx.clone(),
             self.task_tx().await?,
         )
         .await;
@@ -603,10 +646,12 @@ impl<'d> LiveBattleManager<'d> {
         {
             let mut battle = self.live_battle.lock().await;
             battle.make_choice(player, choice)?;
+            self.update_preview(&battle);
         }
         Self::proceed(
+            self.uuid,
             self.live_battle.clone(),
-            self.state.clone(),
+            self.preview_tx.clone(),
             self.task_tx().await?,
         )
         .await;
@@ -614,97 +659,133 @@ impl<'d> LiveBattleManager<'d> {
     }
 
     async fn proceed(
+        uuid: Uuid,
         battle: Arc<Mutex<LiveBattle<'d>>>,
-        live_battle_manager_state: Arc<tokio::sync::Mutex<LiveBattleManagerState>>,
+        preview_tx: watch::Sender<BattlePreview>,
         task_tx: mpsc::Sender<()>,
     ) {
-        // Garbage collection.
-        while let Some(_) = live_battle_manager_state
-            .lock()
-            .await
-            .proceed_tasks
-            .try_join_next()
-        {}
+        let should_spawn = {
+            let mut battle = battle.lock().await;
+            if battle.canceled {
+                return;
+            }
+            if battle.is_proceeding {
+                battle.proceed_requested = true;
+                false
+            } else {
+                battle.is_proceeding = true;
+                true
+            }
+        };
 
-        // SAFETY: self.proceed_tasks is joined during shutdown, before this object is dropped.
-        // Additionally, the Drop implementation panics if tasks are remaining. Thus, no tasks
-        // extend beyond the lifetime of this object, and the lifetime of 'd.
-        let live_battle = unsafe {
+        if !should_spawn {
+            return;
+        }
+
+        {
+            let mut battle = battle.lock().await;
+            if battle.canceled {
+                return;
+            }
+            while let Some(_) = battle.proceed_tasks.try_join_next() {}
+        }
+
+        let static_battle = unsafe {
             std::mem::transmute::<Arc<Mutex<LiveBattle<'d>>>, Arc<Mutex<LiveBattle<'static>>>>(
                 battle.clone(),
             )
         };
 
-        // Pass UUID separately for convenience.
-        let uuid = battle.lock().await.uuid;
-
-        live_battle_manager_state.lock().await.proceed_tasks.spawn(
-            LiveBattleManager::proceed_detached(
-                uuid,
-                Arc::downgrade(&live_battle),
-                Arc::downgrade(&live_battle_manager_state),
-                task_tx.downgrade(),
-            ),
-        );
+        let mut battle_guard = battle.lock().await;
+        battle_guard.proceed_tasks.spawn(proceed_loop(
+            uuid,
+            static_battle,
+            preview_tx,
+            task_tx.downgrade(),
+        ));
     }
+}
 
-    async fn proceed_detached(
-        uuid: Uuid,
-        battle: Weak<Mutex<LiveBattle<'d>>>,
-        live_battle_manager_state: Weak<tokio::sync::Mutex<LiveBattleManagerState>>,
-        task_tx: mpsc::WeakSender<()>,
-    ) {
-        let battle = match battle.upgrade() {
-            Some(battle) => battle,
-            None => return,
-        };
-        let live_battle_manager_state = match live_battle_manager_state.upgrade() {
-            Some(live_battle_manager_state) => live_battle_manager_state,
-            None => return,
+async fn proceed_loop<'d>(
+    uuid: Uuid,
+    battle: Arc<Mutex<LiveBattle<'static>>>,
+    preview_tx: watch::Sender<BattlePreview>,
+    task_tx: mpsc::WeakSender<()>,
+) {
+    loop {
+        let battle = unsafe {
+            std::mem::transmute::<Arc<Mutex<LiveBattle<'static>>>, Arc<Mutex<LiveBattle<'d>>>>(
+                battle.clone(),
+            )
         };
         let task_tx = match task_tx.upgrade() {
             Some(task_tx) => task_tx,
             None => return,
         };
-        if let Err(err) = Self::proceed_detached_internal(
+
+        if let Err(err) = LiveBattleManager::proceed_detached_internal(
             uuid,
             battle.clone(),
-            live_battle_manager_state,
+            preview_tx.clone(),
             task_tx,
         )
         .await
         {
+            log::error!("Live battle {uuid} proceed failed: {err:#}");
             battle.lock().await.error = Some(format!("{err:#}"));
+            battle.lock().await.is_proceeding = false;
+            break;
+        }
+
+        let continue_loop = {
+            let mut battle_guard = battle.lock().await;
+            if battle_guard.battle.ended() {
+                battle_guard.is_proceeding = false;
+                false
+            } else {
+                let ready = battle_guard.battle.ready_to_continue().unwrap_or(false);
+                if battle_guard.proceed_requested || ready {
+                    battle_guard.proceed_requested = false;
+                    true
+                } else {
+                    battle_guard.is_proceeding = false;
+                    false
+                }
+            }
+        };
+
+        if !continue_loop {
+            break;
         }
     }
+}
 
+impl<'d> LiveBattleManager<'d> {
     async fn proceed_detached_internal(
         uuid: Uuid,
         battle: Arc<Mutex<LiveBattle<'d>>>,
-        live_battle_manager_state: Arc<tokio::sync::Mutex<LiveBattleManagerState>>,
+        preview_tx: watch::Sender<BattlePreview>,
         task_tx: mpsc::Sender<()>,
     ) -> Result<()> {
         log::info!("Live battle {uuid} is proceeding");
-        let (continued, ended, active_timers) = {
+        let (continued, ended, active_timers, is_empty) = {
             let mut battle = battle.lock().await;
+            if battle.canceled {
+                return Ok(());
+            }
             battle.error = None;
             let active_timers = battle.active_timer_types()?;
-            (
-                battle.continue_battle()?,
-                battle.battle.ended(),
-                active_timers,
-            )
+            let continued = battle.continue_battle()?;
+            let ended = battle.battle.ended();
+            let is_empty = battle.current_timer_tasks.is_empty();
+            preview_tx.send_replace(battle.battle_preview());
+            (continued, ended, active_timers, is_empty)
         };
 
-        let is_empty = live_battle_manager_state
-            .lock()
-            .await
-            .current_timer_tasks
-            .is_empty();
         if (continued || is_empty) && !ended {
-            Self::resume_timers(uuid, battle, live_battle_manager_state, task_tx).await?;
+            Self::resume_timers(uuid, battle, preview_tx, task_tx).await?;
         } else if ended {
-            Self::join_all_timer_tasks(&battle, &live_battle_manager_state).await;
+            Self::join_all_timer_tasks(&battle).await;
             let mut battle = battle.lock().await;
             let log_timer_deadlines = battle.log_timer_deadlines;
             let timer_logs = active_timers
@@ -722,52 +803,41 @@ impl<'d> LiveBattleManager<'d> {
                 .collect::<Vec<_>>();
             battle.inject_log_entries(timer_logs);
             battle.inject_log_entries(["done"]);
+            preview_tx.send_replace(battle.battle_preview());
         }
 
         Ok(())
     }
 
-    async fn join_all_timer_tasks(
-        battle: &Mutex<LiveBattle<'d>>,
-        live_battle_manager_state: &tokio::sync::Mutex<LiveBattleManagerState>,
-    ) {
-        // Soft cancellation; we want timer tasks to finish so that their state is updated.
-        battle.lock().await.cancel_timers_tx.send(()).ok();
-
-        // Join all timer tasks when finished.
-        let mut current_timer_tasks = JoinSet::default();
-        std::mem::swap(
-            &mut current_timer_tasks,
-            &mut live_battle_manager_state.lock().await.current_timer_tasks,
-        );
-        // Avoid `join_all` so that we do not panic. We only care that the tasks completed.
-        while let Some(_) = current_timer_tasks.join_next().await {}
+    async fn join_all_timer_tasks(battle: &Mutex<LiveBattle<'d>>) {
+        let mut current_timer_tasks = {
+            let mut battle = battle.lock().await;
+            battle.cancel_timers_tx.send(()).ok();
+            std::mem::take(&mut battle.current_timer_tasks)
+        };
+        current_timer_tasks.abort_all();
+        tokio::spawn(async move { while let Some(_) = current_timer_tasks.join_next().await {} });
     }
 
-    // We must manually add the `Send` trait because this async function can be recursive: when a
-    // timer finished, the battle proceeds and restarts timers.
     fn resume_timers(
         uuid: Uuid,
         battle: Arc<Mutex<LiveBattle<'d>>>,
-        live_battle_manager_state: Arc<tokio::sync::Mutex<LiveBattleManagerState>>,
+        preview_tx: watch::Sender<BattlePreview>,
         task_tx: mpsc::Sender<()>,
     ) -> impl Future<Output = Result<()>> + Send {
         async move {
             log::trace!("Starting to join all previous timer tasks for live battle {uuid}");
 
-            // CRITICAL: Ensure all previous timer tasks finished.
-            //
-            // If we skip this step, a timer task may not have updated the current state of a
-            // timer, resulting in the timer not progressing.
-            Self::join_all_timer_tasks(&battle, &live_battle_manager_state).await;
+            Self::join_all_timer_tasks(&battle).await;
 
             log::trace!("Joined all previous timer tasks for live battle {uuid}");
 
-            // Get all timers, after all previous timer tasks finished.
-            let timers = {
+            let (timers, choice_made_tx, cancel_timers_tx) = {
                 let mut battle = battle.lock().await;
+                if battle.canceled {
+                    return Ok(());
+                }
 
-                // If team preview is finished, remove the team preview timer from the map.
                 let is_team_preview = battle
                     .battle
                     .active_requests()
@@ -782,24 +852,22 @@ impl<'d> LiveBattleManager<'d> {
                     }
                 }
 
-                // Filter timers that should be active.
                 let timers = battle.active_timer_types()?;
 
                 let mut timer_logs = timers
                     .iter()
-                    .map(|timer_type| {
-                        LiveBattle::timer_log(
-                            timer_type,
-                            // SAFETY: All keys in `timers` are generated from existing values in
-                            // `battle.timers`.
-                            battle.timers.get(timer_type).unwrap().remaining,
-                            None,
-                            battle.log_timer_deadlines,
-                        )
+                    .filter_map(|timer_type| {
+                        battle.timers.get(timer_type).map(|timer_state| {
+                            LiveBattle::timer_log(
+                                timer_type,
+                                timer_state.remaining,
+                                None,
+                                battle.log_timer_deadlines,
+                            )
+                        })
                     })
                     .collect::<Vec<_>>();
 
-                // Log inactive timers so they are reported to the logs and web UI.
                 for (timer_type, timer_state) in &battle.timers {
                     if !timers.contains(timer_type) {
                         timer_logs.push(LiveBattle::timer_log(
@@ -812,54 +880,43 @@ impl<'d> LiveBattleManager<'d> {
                 }
 
                 battle.inject_log_entries(timer_logs);
+                preview_tx.send_replace(battle.battle_preview());
 
-                timers
-            };
-
-            log::info!("Resuming timers for live battle {uuid}: {timers:?}");
-
-            // Subscribe to channels before spawning tasks. This ensures that tasks won't miss
-            // messages that are sent before they begin polling.
-            let (choice_made_rx, cancel_timers_rx) = {
-                let battle = battle.lock().await;
                 (
+                    timers,
                     battle.choice_made_tx.subscribe(),
                     battle.cancel_timers_tx.subscribe(),
                 )
             };
 
-            log::trace!("Subscribed to channels for timer tasks for live battle {uuid}");
+            log::info!("Resuming timers for live battle {uuid}: {timers:?}");
 
-            // Spawn new timer tasks.
-            let tasks = {
-                // SAFETY: All tasks spawned here are joined during shutdown, and before a new
-                // JoinSet is created. No task can extend beyond the lifetime of this object and the
-                // lifetime of 'd.
-                let battle = unsafe {
-                    std::mem::transmute::<Arc<Mutex<LiveBattle<'d>>>, Arc<Mutex<LiveBattle<'static>>>>(
-                        battle.clone(),
-                    )
-                };
-                let mut tasks = JoinSet::default();
-                for timer_type in timers {
-                    log::debug!("Spawning timer task for live battle {uuid}: {timer_type:?}");
-                    tasks.spawn(LiveBattleManager::run_timer(
-                        uuid,
-                        Arc::downgrade(&battle),
-                        Arc::downgrade(&live_battle_manager_state),
-                        timer_type,
-                        choice_made_rx.resubscribe(),
-                        cancel_timers_rx.resubscribe(),
-                        task_tx.downgrade(),
-                    ));
-                }
-                tasks
+            let static_battle = unsafe {
+                std::mem::transmute::<Arc<Mutex<LiveBattle<'d>>>, Arc<Mutex<LiveBattle<'static>>>>(
+                    battle.clone(),
+                )
             };
 
+            let mut new_tasks = JoinSet::default();
+            for timer_type in timers {
+                log::debug!("Spawning timer task for live battle {uuid}: {timer_type:?}");
+                new_tasks.spawn(LiveBattleManager::run_timer(
+                    uuid,
+                    Arc::downgrade(&static_battle),
+                    preview_tx.clone(),
+                    timer_type,
+                    choice_made_tx.resubscribe(),
+                    cancel_timers_tx.resubscribe(),
+                    task_tx.downgrade(),
+                ));
+            }
+
+            {
+                let mut battle = battle.lock().await;
+                battle.current_timer_tasks = new_tasks;
+            }
+
             log::trace!("Spawned all timer tasks for live battle {uuid}");
-
-            live_battle_manager_state.lock().await.current_timer_tasks = tasks;
-
             log::trace!("Done resuming timers for live battle {uuid}");
 
             Ok(())
@@ -869,7 +926,7 @@ impl<'d> LiveBattleManager<'d> {
     async fn run_timer(
         uuid: Uuid,
         battle: Weak<Mutex<LiveBattle<'d>>>,
-        live_battle_manager_state: Weak<tokio::sync::Mutex<LiveBattleManagerState>>,
+        preview_tx: watch::Sender<BattlePreview>,
         timer_type: TimerType,
         choice_made_rx: broadcast::Receiver<String>,
         cancel_timers_rx: broadcast::Receiver<()>,
@@ -877,10 +934,6 @@ impl<'d> LiveBattleManager<'d> {
     ) {
         let battle = match battle.upgrade() {
             Some(battle) => battle,
-            None => return,
-        };
-        let live_battle_manager_state = match live_battle_manager_state.upgrade() {
-            Some(live_battle_manager_state) => live_battle_manager_state,
             None => return,
         };
         let task_tx = match task_tx.upgrade() {
@@ -900,27 +953,25 @@ impl<'d> LiveBattleManager<'d> {
             Err(_) => return,
         };
 
-        log::debug!("Timer {timer_type:?} for live battle {uuid} returned with state {state:?}");
+        if !proceed {
+            return;
+        }
 
         let finished = state
             .as_ref()
             .is_some_and(|state| state.remaining.is_zero());
 
-        // Remove the timer if it finished and is never reset, so that we do not continue to spawn
-        // empty timer tasks.
         if finished && !timer_type.reset_on_resume() {
             state = None;
         }
 
         {
-            // Update the timer state and handle the finished timer, all while the battle is locked.
-            //
-            // Locking the mutex for both of these actions ensures there is no data race between the
-            // timer finishing and the player taking an action. The player CANNOT take an action
-            // while we are handling a finished timer. If they send their action before, then the
-            // finished timer is ignored. If they send their action after, then it fails due to the
-            // finished timer.
             let mut battle = battle.lock().await;
+
+            if !battle.is_timer_active(&timer_type).unwrap_or(false) {
+                return;
+            }
+
             match state {
                 Some(state) => battle.timers.insert(timer_type.clone(), state),
                 None => battle.timers.remove(&timer_type),
@@ -931,10 +982,14 @@ impl<'d> LiveBattleManager<'d> {
             }
         }
 
-        // The timer finishing may have allowed the battle to proceed.
-        if proceed {
-            Self::proceed(battle, live_battle_manager_state, task_tx).await;
-        }
+        let static_battle = unsafe {
+            std::mem::transmute::<Arc<Mutex<LiveBattle<'d>>>, Arc<Mutex<LiveBattle<'static>>>>(
+                battle,
+            )
+        };
+        tokio::spawn(async move {
+            LiveBattleManager::<'static>::proceed(uuid, static_battle, preview_tx, task_tx).await;
+        });
     }
 
     async fn run_timer_internal(
@@ -1024,15 +1079,27 @@ impl<'d> LiveBattleManager<'d> {
                 }
                 choice_made = choice_made_rx.recv() => {
                     // A choice was made for the player this timer corresponds to.
-                    let player = choice_made?;
-                    if timer_type.player().is_some_and(|timer_player| timer_player == player) {
-                        break false;
+                    match choice_made {
+                        Ok(player) => {
+                            if timer_type.player().is_some_and(|timer_player| timer_player == player) {
+                                break false;
+                            }
+                        }
+                        Err(broadcast::error::RecvError::Closed) => {
+                            break false;
+                        }
+                        Err(broadcast::error::RecvError::Lagged(_)) => {
+                            // Ignore lag and continue loop to process remaining duration or next event.
+                        }
                     }
                 }
                 result = cancel_timers_rx.recv() => {
                     // The timer was canceled, likely because the battle continued.
-                    result?;
-                    break false;
+                    match result {
+                        Ok(()) | Err(broadcast::error::RecvError::Closed) | Err(broadcast::error::RecvError::Lagged(_)) => {
+                            break false;
+                        }
+                    }
                 }
             }
         };
@@ -1068,34 +1135,39 @@ impl<'d> LiveBattleManager<'d> {
     async fn shutdown(&self) {
         log::trace!("Shutting down live battle {}", self.uuid);
         let (mut proceed_tasks, mut current_timer_tasks) = {
-            let mut state = self.state.lock().await;
+            let mut battle = self.live_battle.lock().await;
+            battle.canceled = true;
             (
-                std::mem::replace(&mut state.proceed_tasks, JoinSet::new()),
-                std::mem::replace(&mut state.current_timer_tasks, JoinSet::new()),
+                std::mem::take(&mut battle.proceed_tasks),
+                std::mem::take(&mut battle.current_timer_tasks),
             )
         };
-        proceed_tasks.shutdown().await;
-        current_timer_tasks.shutdown().await;
+        proceed_tasks.abort_all();
+        current_timer_tasks.abort_all();
+        let _ = tokio::time::timeout(Duration::from_secs(2), async {
+            while let Some(_) = proceed_tasks.join_next().await {}
+            while let Some(_) = current_timer_tasks.join_next().await {}
+        })
+        .await;
     }
 
     fn cancel(&self) {
         log::trace!("Canceling live battle {}", self.uuid);
 
-        // Drop our Sender, so that the Receiver is only open because of asynchronous tasks.
-        self.task_tx.blocking_lock().take();
+        if let Some(mut task_tx) = self.task_tx.try_lock() {
+            task_tx.take();
+        }
 
-        if let Ok(handle) = tokio::runtime::Handle::try_current() {
-            handle.block_on(self.shutdown());
-        } else {
-            let mut state = self.state.blocking_lock();
+        if let Some(mut battle) = self.live_battle.try_lock() {
+            battle.canceled = true;
 
             // Abort all tasks.
-            state.proceed_tasks.abort_all();
-            state.current_timer_tasks.abort_all();
+            battle.proceed_tasks.abort_all();
+            battle.current_timer_tasks.abort_all();
 
             // Then detach.
-            state.proceed_tasks.detach_all();
-            state.current_timer_tasks.detach_all();
+            battle.proceed_tasks.detach_all();
+            battle.current_timer_tasks.detach_all();
         }
     }
 }
@@ -1104,51 +1176,22 @@ impl Drop for LiveBattleManager<'_> {
     fn drop(&mut self) {
         log::trace!("Dropping live battle {}", self.uuid);
 
-        // SAFETY: Ensure all tasks finish.
-        tokio::task::block_in_place(|| {
-            self.cancel();
-        });
-        // SAFETY: Breaking these invariants can lead to undefined behavior, so it is better to just
-        // crash now.
-        self.live_battle
-            .try_lock()
-            .expect("battle cannot be locked during drop");
-        let state = self
-            .state
-            .try_lock()
-            .expect("state cannot be locked during drop");
-        assert!(
-            state.proceed_tasks.is_empty(),
-            "battle has {} proceed tasks during drop",
-            state.proceed_tasks.len()
-        );
-        assert!(
-            state.current_timer_tasks.is_empty(),
-            "battle has {} timer tasks during drop",
-            state.current_timer_tasks.len()
-        );
-
-        assert!(
-            self._task_rx.get_mut().is_closed(),
-            "battle has remaining tasks open during drop"
-        );
-        let strong_count = Arc::strong_count(&self.live_battle);
-        assert_eq!(
-            strong_count, 1,
-            "live battle has {strong_count} references during drop"
-        );
+        // Ensure all tasks are canceled.
+        self.cancel();
     }
+}
+
+#[derive(Default)]
+struct BattlerServiceState<'d> {
+    battles: BTreeMap<Uuid, Arc<LiveBattleManager<'d>>>,
+    battles_by_player: HashMap<String, BTreeSet<Uuid>>,
 }
 
 /// Service for managing multiple battles on the [`battler`] battle engine.
 pub struct BattlerService<'d> {
     data: &'d dyn DataStore,
 
-    // SAFETY: Arc is used for the simplicity of looking up battles internally. When we drop this
-    // object, we unwrap the Arc to destroy the object. Thus, these battles cannot live beyond the
-    // lifetime of this object and the lifetime of 'd.
-    battles: Mutex<BTreeMap<Uuid, Arc<LiveBattleManager<'d>>>>,
-    battles_by_player: Mutex<HashMap<String, BTreeSet<Uuid>>>,
+    state: Mutex<BattlerServiceState<'d>>,
 
     global_log_tx: mpsc::UnboundedSender<GlobalLogEntry>,
     global_log_rx: Option<mpsc::UnboundedReceiver<GlobalLogEntry>>,
@@ -1160,8 +1203,7 @@ impl<'d> BattlerService<'d> {
         let (global_log_tx, global_log_rx) = mpsc::unbounded_channel();
         Self {
             data,
-            battles: Mutex::new(BTreeMap::default()),
-            battles_by_player: Mutex::new(HashMap::default()),
+            state: Mutex::new(BattlerServiceState::default()),
             global_log_tx,
             global_log_rx: Some(global_log_rx),
         }
@@ -1177,7 +1219,7 @@ impl<'d> BattlerService<'d> {
     }
 
     async fn find_battle(&self, uuid: Uuid) -> Option<Arc<LiveBattleManager<'d>>> {
-        self.battles.lock().await.get(&uuid).cloned()
+        self.state.lock().await.battles.get(&uuid).cloned()
     }
 
     async fn find_battle_or_error(
@@ -1191,6 +1233,12 @@ impl<'d> BattlerService<'d> {
     pub async fn battle(&self, battle: Uuid) -> Result<Battle> {
         let battle = self.find_battle_or_error(battle).await?;
         Ok(battle.battle().await)
+    }
+
+    /// Gets the player IDs for a given side in a battle without locking the live battle.
+    pub async fn side_players(&self, uuid: Uuid, side: Option<usize>) -> Option<HashSet<String>> {
+        let battle = self.find_battle(uuid).await?;
+        battle.side_players(side)
     }
 
     /// Creates a new battle.
@@ -1213,15 +1261,17 @@ impl<'d> BattlerService<'d> {
         let uuid = battle.uuid;
         let players = battle.players().map(|s| s.to_owned()).collect::<Vec<_>>();
         let battle = LiveBattleManager::new(battle);
-        self.battles.lock().await.insert(uuid, Arc::new(battle));
+        {
+            let mut state = self.state.lock().await;
+            state.battles.insert(uuid, Arc::new(battle));
 
-        for player in players {
-            self.battles_by_player
-                .lock()
-                .await
-                .entry(player)
-                .or_default()
-                .insert(uuid);
+            for player in players {
+                state
+                    .battles_by_player
+                    .entry(player)
+                    .or_default()
+                    .insert(uuid);
+            }
         }
 
         log::info!("Created battle {uuid}");
@@ -1308,65 +1358,66 @@ impl<'d> BattlerService<'d> {
     }
 
     fn unwrap_battle(battle: Arc<LiveBattleManager<'d>>, context: &str) -> LiveBattleManager<'d> {
-        let mut battle_opt = Some(battle);
-        for _ in 0..1000 {
-            match Arc::try_unwrap(battle_opt.take().unwrap()) {
-                Ok(battle) => return battle,
-                Err(battle_arc) => {
-                    battle_opt = Some(battle_arc);
-                    std::thread::sleep(Duration::from_millis(5));
-                }
+        match Arc::try_unwrap(battle) {
+            Ok(battle) => battle,
+            Err(_) => {
+                panic!("battle could not be unwrapped during {context} (leaked references exist)")
             }
         }
-        panic!("battle could not be unwrapped during {context} (leaked references exist)");
     }
 
     /// Deletes a battle.
     pub async fn delete(&self, battle: Uuid) -> Result<()> {
-        {
-            let battle = match self.find_battle_or_error(battle).await {
-                Ok(battle) => battle,
-                Err(_) => return Ok(()),
-            };
-            if battle.battle_state().await == BattleState::Active {
-                return Err(Error::msg("cannot delete an ongoing battle"));
-            }
+        let manager = match self.find_battle_or_error(battle).await {
+            Ok(manager) => manager,
+            Err(_) => return Ok(()),
+        };
+        if manager.battle_state().await == BattleState::Active {
+            return Err(Error::msg("cannot delete an ongoing battle"));
         }
         log::info!("Deleting battle {battle}");
-        let uuid = battle;
-        let battle = self.battles.lock().await.remove(&battle);
+        let players = manager.players().await;
 
-        if let Some(battle) = battle {
-            // SAFETY: Must call shutdown here to join all tasks that are using the battle, so that
-            // the battle does not outlive this object.
-            battle.shutdown().await;
-
-            let players = battle.players().await;
+        let manager = {
+            let mut state = self.state.lock().await;
+            let manager = state.battles.remove(&battle);
             for player in players {
-                match self.battles_by_player.lock().await.entry(player) {
-                    std::collections::hash_map::Entry::Occupied(mut entry) => {
-                        entry.get_mut().remove(&uuid);
-                        if entry.get().is_empty() {
-                            entry.remove_entry();
-                        }
+                if let std::collections::hash_map::Entry::Occupied(mut entry) =
+                    state.battles_by_player.entry(player)
+                {
+                    entry.get_mut().remove(&battle);
+                    if entry.get().is_empty() {
+                        entry.remove_entry();
                     }
-                    _ => (),
                 }
             }
+            manager
+        };
+
+        if let Some(manager) = manager {
+            manager.shutdown().await;
         }
 
         Ok(())
     }
 
-    /// Lists battles.
+    /// Returns active battles up to the specified count.
     pub async fn battles(&self, count: usize, offset: usize) -> Vec<BattlePreview> {
         let count = count.min(100);
-        let battles = self.battles.lock().await;
-        let mut previews = Vec::with_capacity(count);
-        for (_, battle) in battles.iter().skip(offset).take(count) {
-            previews.push(battle.battle_preview().await);
-        }
-        previews
+        let cloned_battles = {
+            let state = self.state.lock().await;
+            state
+                .battles
+                .values()
+                .skip(offset)
+                .take(count)
+                .cloned()
+                .collect::<Vec<_>>()
+        };
+        cloned_battles
+            .into_iter()
+            .map(|battle| battle.battle_preview())
+            .collect()
     }
 
     /// Looks up battles for a player.
@@ -1377,37 +1428,39 @@ impl<'d> BattlerService<'d> {
         offset: usize,
     ) -> Vec<BattlePreview> {
         let count = count.min(100);
-        let battles = self.battles_by_player.lock().await;
-        let battles = match battles.get(player) {
-            Some(battles) => battles,
-            None => return Vec::default(),
-        };
-        let uuids = battles
-            .iter()
-            .skip(offset)
-            .take(count)
-            .cloned()
-            .collect::<Vec<_>>();
-        let mut previews = Vec::with_capacity(count);
-        let battles = self.battles.lock().await;
-        for battle in uuids {
-            if let Some(battle) = battles.get(&battle) {
-                previews.push(battle.battle_preview().await);
+        let cloned_battles = {
+            let state = self.state.lock().await;
+            match state.battles_by_player.get(player) {
+                Some(uuids) => uuids
+                    .iter()
+                    .skip(offset)
+                    .take(count)
+                    .filter_map(|uuid| state.battles.get(uuid).cloned())
+                    .collect::<Vec<_>>(),
+                None => return Vec::default(),
             }
-        }
-        previews
+        };
+        cloned_battles
+            .into_iter()
+            .map(|battle| battle.battle_preview())
+            .collect()
     }
 
     /// Cleans up finished battles that are older than the specified duration.
     pub async fn clean_up_finished_battles(&self, max_age: Duration) -> Result<Vec<Uuid>> {
+        let uuids_and_battles = {
+            let state = self.state.lock().await;
+            state
+                .battles
+                .iter()
+                .map(|(uuid, battle)| (*uuid, battle.clone()))
+                .collect::<Vec<_>>()
+        };
         let mut to_delete = Vec::new();
-        {
-            let battles = self.battles.lock().await;
-            for (uuid, battle) in battles.iter() {
-                if let Some(finished_at) = battle.finished_at().await {
-                    if finished_at.elapsed() >= max_age {
-                        to_delete.push(*uuid);
-                    }
+        for (uuid, battle) in uuids_and_battles {
+            if let Some(finished_at) = battle.finished_at().await {
+                if finished_at.elapsed() >= max_age {
+                    to_delete.push(uuid);
                 }
             }
         }
@@ -1430,7 +1483,7 @@ impl Drop for BattlerService<'_> {
 
         tokio::task::block_in_place(move || {
             let mut battles = BTreeMap::default();
-            std::mem::swap(&mut battles, self.battles.get_mut());
+            std::mem::swap(&mut battles, &mut self.state.get_mut().battles);
             for (_, battle) in battles {
                 // SAFETY: Must synchronously cancel and wait for tasks to finish, so that the
                 // battle does not outlive this object.

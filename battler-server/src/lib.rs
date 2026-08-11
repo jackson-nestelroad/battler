@@ -88,7 +88,12 @@ impl<S> ConnectionPolicies<S> for BattlerConnectionPolicies {
             return Ok(());
         }
         let id = &peer_info.identity.id;
+        log::info!("WAMP: validating connection for ID: {}", id);
         if id.starts_with("ai-") {
+            log::warn!(
+                "WAMP: rejected connection for ID: {} (ai prefix is reserved)",
+                id
+            );
             return Err(BasicError::PermissionDenied(
                 "player id prefix is reserved for AI players".to_owned(),
             )
@@ -111,15 +116,29 @@ impl<S> PubSubPolicies<S> for BattlerPubSubPolicies {
         if !is_battler_topic {
             return Ok(());
         }
+        log::info!("WAMP: validating publication to topic: {}", uri);
         match session.peer_info().await {
             Some(peer_info) => match peer_info.connection_type {
                 ConnectionType::Direct => Ok(()),
-                _ => Err(BasicError::NotAllowed(
-                    "remote connection cannot publish to battler service topics".to_owned(),
-                )
-                .into()),
+                _ => {
+                    log::warn!(
+                        "WAMP: rejected remote publication to topic {} by peer {:?}",
+                        uri,
+                        peer_info.identity.id
+                    );
+                    Err(BasicError::NotAllowed(
+                        "remote connection cannot publish to battler service topics".to_owned(),
+                    )
+                    .into())
+                }
             },
-            None => Err(BasicError::Internal("missing peer info during publish".to_owned()).into()),
+            None => {
+                log::warn!(
+                    "WAMP: rejected publication to topic {} due to missing peer info",
+                    uri
+                );
+                Err(BasicError::Internal("missing peer info during publish".to_owned()).into())
+            }
         }
     }
 }
@@ -142,14 +161,32 @@ impl<S> RpcPolicies<S> for BattlerRpcPolicies {
             return Ok(());
         }
 
+        if procedure.as_ref().ends_with(".validate_player") {
+            return Ok(());
+        }
+
+        log::info!("WAMP: validating registration for procedure: {}", procedure);
         match session.peer_info().await {
             Some(peer_info) => match peer_info.connection_type {
                 ConnectionType::Direct => Ok(()),
-                _ => Err(Error::msg(
-                    "remote connection is not allowed to register procedures on battler service namespaces",
-                )),
+                _ => {
+                    log::warn!(
+                        "WAMP: rejected remote registration for procedure: {} by peer {:?}",
+                        procedure,
+                        peer_info.identity.id
+                    );
+                    Err(Error::msg(
+                        "remote connection is not allowed to register procedures on battler service namespaces",
+                    ))
+                }
             },
-            None => Err(Error::msg("missing peer info during registration")),
+            None => {
+                log::warn!(
+                    "WAMP: rejected registration for procedure {} due to missing peer info",
+                    procedure
+                );
+                Err(Error::msg("missing peer info during registration"))
+            }
         }
     }
 }
@@ -163,11 +200,21 @@ impl BattleAuthorizer for ServerAuthorizer {
         peer_info: &PeerInfo,
         _: &CoreBattleOptions,
     ) -> Result<()> {
+        log::info!(
+            "Authorizing new battle request by peer {:?}",
+            peer_info.identity.id
+        );
         match peer_info.connection_type {
             ConnectionType::Direct => Ok(()),
-            _ => Err(Error::msg(
-                "remote connection is not allowed to create a battle directly",
-            )),
+            _ => {
+                log::warn!(
+                    "Authorization failed: remote connection {:?} is not allowed to create a battle directly",
+                    peer_info.identity.id
+                );
+                Err(Error::msg(
+                    "remote connection is not allowed to create a battle directly",
+                ))
+            }
         }
     }
 
@@ -175,24 +222,56 @@ impl BattleAuthorizer for ServerAuthorizer {
         &self,
         peer_info: &PeerInfo,
         battle: &Battle,
-        _operation: BattleOperation,
+        operation: BattleOperation,
     ) -> Result<()> {
+        log::info!(
+            "Authorizing battle operation {:?} on battle {} by peer {:?}",
+            operation,
+            battle.uuid,
+            peer_info.identity.id
+        );
         if let ConnectionType::Direct = peer_info.connection_type {
             return Ok(());
         }
-        authorize_battle_owner(peer_info, battle)
+        let res = authorize_battle_owner(peer_info, battle);
+        if let Err(ref err) = res {
+            log::warn!(
+                "Authorization failed: peer {:?} not authorized for operation {:?} on battle {}: {:?}",
+                peer_info.identity.id,
+                operation,
+                battle.uuid,
+                err
+            );
+        }
+        res
     }
 
     async fn authorize_player_operation(
         &self,
         peer_info: &PeerInfo,
         player: &str,
-        _operation: PlayerOperation,
+        operation: PlayerOperation,
     ) -> Result<()> {
+        log::info!(
+            "Authorizing player operation {:?} for player {} by peer {:?}",
+            operation,
+            player,
+            peer_info.identity.id
+        );
         if let ConnectionType::Direct = peer_info.connection_type {
             return Ok(());
         }
-        authorize_player(peer_info, player)
+        let res = authorize_player(peer_info, player);
+        if let Err(ref err) = res {
+            log::warn!(
+                "Authorization failed: peer {:?} not authorized for operation {:?} on player {}: {:?}",
+                peer_info.identity.id,
+                operation,
+                player,
+                err
+            );
+        }
+        res
     }
 
     async fn authorize_log_access(
@@ -201,10 +280,26 @@ impl BattleAuthorizer for ServerAuthorizer {
         battle: &Battle,
         side: Option<usize>,
     ) -> Result<()> {
+        log::info!(
+            "Authorizing log access for battle {}, side {:?} by peer {:?}",
+            battle.uuid,
+            side,
+            peer_info.identity.id
+        );
         if let ConnectionType::Direct = peer_info.connection_type {
             return Ok(());
         }
-        authorize_side(peer_info, battle, side)
+        let res = authorize_side(peer_info, battle, side);
+        if let Err(ref err) = res {
+            log::warn!(
+                "Authorization failed: peer {:?} not authorized for log access on battle {}, side {:?}: {:?}",
+                peer_info.identity.id,
+                battle.uuid,
+                side,
+                err
+            );
+        }
+        res
     }
 }
 
@@ -215,6 +310,10 @@ impl MultiplayerBattleAuthorizer for ServerAuthorizer {
         peer_info: &PeerInfo,
         options: &ProposedBattleOptions,
     ) -> Result<()> {
+        log::info!(
+            "Authorizing new proposed battle request by peer {:?}",
+            peer_info.identity.id
+        );
         if let ConnectionType::Direct = peer_info.connection_type {
             return Ok(());
         }
@@ -222,9 +321,15 @@ impl MultiplayerBattleAuthorizer for ServerAuthorizer {
         let caller_id = &peer_info.identity.id;
         let creator_id = &options.service_options.creator;
         if caller_id.is_empty() {
+            log::warn!("Authorization failed: unauthenticated caller cannot propose a battle");
             return Err(Error::msg("unauthenticated caller cannot propose a battle"));
         }
         if caller_id != creator_id {
+            log::warn!(
+                "Authorization failed: caller '{}' cannot propose a battle on behalf of creator '{}'",
+                caller_id,
+                creator_id
+            );
             return Err(Error::msg(format!(
                 "caller '{caller_id}' cannot propose a battle on behalf of creator '{creator_id}'"
             )));
@@ -252,10 +357,13 @@ pub struct ServerHandle {
 impl ServerHandle {
     pub async fn shutdown(self) -> Result<()> {
         let _ = self.stop_tx.send(());
-        let _ = self.battle_producer_handle.await;
-        let _ = self.multiplayer_producer_handle.await;
         let _ = self.router_handle.cancel();
-        let _ = self.router_join_handle.await;
+        let _ = tokio::time::timeout(Duration::from_secs(3), async {
+            let _ = self.battle_producer_handle.await;
+            let _ = self.multiplayer_producer_handle.await;
+            let _ = self.router_join_handle.await;
+        })
+        .await;
         Ok(())
     }
 }
@@ -344,8 +452,9 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
         auth_methods: Vec::default(),
     };
     let stop_rx_1 = stop_tx.subscribe();
-    let battle_producer_handle = tokio::spawn(
-        battler_service_producer::run_battler_service_producer_over_service(
+    let stop_tx_fail_1 = stop_tx.clone();
+    let battle_producer_handle = tokio::spawn(async move {
+        let res = battler_service_producer::run_battler_service_producer_over_service(
             battler_service,
             global_log_rx,
             CoreBattleEngineOptions::default(),
@@ -356,8 +465,15 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
                 stop_rx: Some(stop_rx_1),
                 started_tx: Some(started_tx_1),
             },
-        ),
-    );
+        )
+        .await;
+        if let Err(ref err) = res {
+            log::error!("FATAL: battle-producer service failed: {err:#}. Crashing server process!");
+            let _ = stop_tx_fail_1.send(());
+            std::process::exit(1);
+        }
+        res
+    });
 
     // 5. Spin up Multiplayer Service Producer
     let multiplayer_peer = new_web_socket_peer(battler_wamp::peer::PeerConfig {
@@ -369,8 +485,9 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
         auth_methods: Vec::default(),
     };
     let stop_rx_2 = stop_tx.subscribe();
-    let multiplayer_producer_handle = tokio::spawn(
-        battler_multiplayer_service_producer::run_multiplayer_battler_service_producer_over_service(
+    let stop_tx_fail_2 = stop_tx.clone();
+    let multiplayer_producer_handle = tokio::spawn(async move {
+        let res = battler_multiplayer_service_producer::run_multiplayer_battler_service_producer_over_service(
             multiplayer_service,
             global_update_rx,
             multiplayer_config,
@@ -380,8 +497,15 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
                 stop_rx: Some(stop_rx_2),
                 started_tx: Some(started_tx_2),
             },
-        ),
-    );
+        )
+        .await;
+        if let Err(ref err) = res {
+            log::error!("FATAL: mp-producer service failed: {err:#}. Crashing server process!");
+            let _ = stop_tx_fail_2.send(());
+            std::process::exit(1);
+        }
+        res
+    });
 
     // Wait until both producers are connected and active
     started_rx_1.await?;

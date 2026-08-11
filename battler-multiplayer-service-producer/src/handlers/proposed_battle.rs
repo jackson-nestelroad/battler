@@ -26,26 +26,28 @@ impl battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler {
         _: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        let proposed = self
-            .service
-            .proposed_battle(Uuid::try_parse(&procedure.0)?)
-            .await
-            .map_err(|err| {
-                if let Some(MultiplayerError::ProposedBattleNotFound) =
-                    err.downcast_ref::<MultiplayerError>()
-                {
-                    Self::Error::from(Into::<WampError>::into(
-                        battler_multiplayer_service_schema::BattlerMultiplayerServiceError::ProposedBattleNotFound,
-                    ))
-                } else {
-                    err
-                }
-            })?;
-        Ok(battler_multiplayer_service_schema::ProposedBattleOutput(
-            battler_multiplayer_service_schema::ProposedBattle {
-                proposed_battle_json: serde_json::to_string(&proposed)?,
-            },
-        ))
+        battler_service_producer::log_procedure!("ProposedBattle", &procedure.0, async {
+            let proposed = self
+                .service
+                .proposed_battle(Uuid::try_parse(&procedure.0)?)
+                .await
+                .map_err(|err| {
+                    if let Some(MultiplayerError::ProposedBattleNotFound) =
+                        err.downcast_ref::<MultiplayerError>()
+                    {
+                        Self::Error::from(Into::<WampError>::into(
+                            battler_multiplayer_service_schema::BattlerMultiplayerServiceError::ProposedBattleNotFound,
+                        ))
+                    } else {
+                        err
+                    }
+                })?;
+            Ok(battler_multiplayer_service_schema::ProposedBattleOutput(
+                battler_multiplayer_service_schema::ProposedBattle {
+                    proposed_battle_json: serde_json::to_string(&proposed)?,
+                },
+            ))
+        }.await)
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

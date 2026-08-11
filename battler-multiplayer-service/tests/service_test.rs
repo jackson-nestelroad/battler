@@ -553,6 +553,109 @@ async fn battle_starting_deletes_proposed_battle() {
     })
 }
 
+fn multi_proposed_battle_options<S>(creator: S) -> ProposedBattleOptions
+where
+    S: Into<String>,
+{
+    let mut options = battle_options();
+    options.format.battle_type = BattleType::Multi;
+    options.side_1.players = vec![
+        PlayerData {
+            id: "player-1".to_owned(),
+            name: "Player 1".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+        PlayerData {
+            id: "player-2".to_owned(),
+            name: "Player 2".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+    ];
+    options.side_2.players = vec![
+        PlayerData {
+            id: "player-3".to_owned(),
+            name: "Player 3".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+        PlayerData {
+            id: "player-4".to_owned(),
+            name: "Player 4".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+    ];
+    ProposedBattleOptions {
+        battle_options: options,
+        service_options: battle_service_options(creator),
+        timeout: Duration::from_secs(30),
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn multi_battle_starting_deletes_proposed_battle() {
+    let battler_service = battler_service();
+    let service = battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
+    let proposed_battle = service
+        .clone()
+        .propose_battle(multi_proposed_battle_options("player-1"))
+        .await
+        .unwrap();
+    let mut update_rx = service.proposed_battle_updates("player-1").await.unwrap();
+
+    for player in ["player-2", "player-3", "player-4"] {
+        assert_matches::assert_matches!(
+            service
+                .respond_to_proposed_battle(
+                    proposed_battle.uuid,
+                    player,
+                    &ProposedBattleResponse { accept: true },
+                )
+                .await,
+            Ok(_)
+        );
+    }
+
+    let mut battle = None;
+    while battle.is_none() {
+        let update = update_rx.recv().await.unwrap();
+        battle = update.proposed_battle.battle;
+    }
+    let battle = battle.unwrap();
+
+    for player in ["player-1", "player-2", "player-3", "player-4"] {
+        assert_matches::assert_matches!(
+            battler_service
+                .update_team(battle, player, team_data())
+                .await,
+            Ok(())
+        );
+    }
+
+    let updates = read_all_entries_from_update_rx_stopping_at_deleted_or_timeout(
+        &mut update_rx,
+        Duration::from_secs(5),
+    )
+    .await;
+    let update = updates.last().unwrap();
+
+    assert_matches::assert_matches!(&update.deletion_reason, Some(reason) => {
+        assert_eq!(reason, "fulfilled");
+    });
+
+    assert_matches::assert_matches!(
+        wait_until_proposed_battle_deleted(&service, proposed_battle.uuid, Duration::from_secs(5))
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(service.proposed_battle(proposed_battle.uuid).await, Err(err) => {
+        assert_eq!(err.to_string(), "proposed battle not found");
+    });
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn rejection_deletes_underlying_battle_after_creation() {
     let battler_service = battler_service();

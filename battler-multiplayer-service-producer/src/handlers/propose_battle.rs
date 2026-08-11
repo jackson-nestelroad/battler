@@ -25,17 +25,24 @@ impl battler_wamprat::procedure::TypedProcedure for Handler {
         invocation: battler_wamprat::procedure::Invocation,
         input: Self::Input,
     ) -> Result<Self::Output, Self::Error> {
-        let options: ProposedBattleOptions =
-            serde_json::from_str(&input.0.proposed_battle_options_json)?;
-        self.authorizer
-            .authorize_new_proposed_battle(&invocation.peer_info, &options)
-            .await?;
-        let proposed = self.service.clone().propose_battle(options).await?;
-        Ok(battler_multiplayer_service_schema::ProposedBattleOutput(
-            battler_multiplayer_service_schema::ProposedBattle {
-                proposed_battle_json: serde_json::to_string(&proposed)?,
-            },
-        ))
+        battler_service_producer::log_procedure!(
+            "ProposeBattle",
+            "",
+            async {
+                let options: ProposedBattleOptions =
+                    serde_json::from_str(&input.0.proposed_battle_options_json)?;
+                self.authorizer
+                    .authorize_new_proposed_battle(&invocation.peer_info, &options)
+                    .await?;
+                let proposed = self.service.clone().propose_battle(options).await?;
+                Ok(battler_multiplayer_service_schema::ProposedBattleOutput(
+                    battler_multiplayer_service_schema::ProposedBattle {
+                        proposed_battle_json: serde_json::to_string(&proposed)?,
+                    },
+                ))
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

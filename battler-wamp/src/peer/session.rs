@@ -172,7 +172,7 @@ pub struct Invocation {
     pub peer_info: PeerInfo,
 
     id: Id,
-    message_tx: mpsc::Sender<Message>,
+    message_tx: mpsc::UnboundedSender<Message>,
     receive_progress: bool,
 }
 
@@ -196,7 +196,6 @@ impl Invocation {
                 arguments: rpc_yield.arguments,
                 arguments_keyword: rpc_yield.arguments_keyword,
             }))
-            .await
             .map_err(Error::new)
     }
 
@@ -206,27 +205,25 @@ impl Invocation {
         E: Into<WampError>,
     {
         match rpc_yield {
-            Ok(rpc_yield) => {
-                self.message_tx
-                    .send(Message::Yield(YieldMessage {
-                        invocation_request: self.id,
-                        options: Dictionary::default(),
-                        arguments: rpc_yield.arguments,
-                        arguments_keyword: rpc_yield.arguments_keyword,
-                    }))
-                    .await?
-            }
-            Err(err) => {
-                self.message_tx
-                    .send(error_for_request(
-                        &Message::Invocation(InvocationMessage {
-                            request: self.id,
-                            ..Default::default()
-                        }),
-                        &Into::<WampError>::into(err).into(),
-                    ))
-                    .await?
-            }
+            Ok(rpc_yield) => self
+                .message_tx
+                .send(Message::Yield(YieldMessage {
+                    invocation_request: self.id,
+                    options: Dictionary::default(),
+                    arguments: rpc_yield.arguments,
+                    arguments_keyword: rpc_yield.arguments_keyword,
+                }))
+                .map_err(Error::new)?,
+            Err(err) => self
+                .message_tx
+                .send(error_for_request(
+                    &Message::Invocation(InvocationMessage {
+                        request: self.id,
+                        ..Default::default()
+                    }),
+                    &Into::<WampError>::into(err).into(),
+                ))
+                .map_err(Error::new)?,
         }
         Ok(())
     }
@@ -478,7 +475,7 @@ impl SessionHandle {
 /// Handles WAMP messages in a state machine and holds all session-scoped state.
 pub struct Session {
     name: String,
-    service_message_tx: mpsc::Sender<Message>,
+    service_message_tx: mpsc::UnboundedSender<Message>,
     state: Arc<RwLock<SessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
 
@@ -502,7 +499,7 @@ pub struct Session {
 
 impl Session {
     /// Creates a new session over a service.
-    pub fn new(name: String, service_message_tx: mpsc::Sender<Message>) -> Self {
+    pub fn new(name: String, service_message_tx: mpsc::UnboundedSender<Message>) -> Self {
         let id_allocator = SequentialIdAllocator::default();
         let (established_session_tx, _) = broadcast::channel(48);
         let (closed_session_tx, _) = broadcast::channel(48);
@@ -618,10 +615,7 @@ impl Session {
                 return Err(err);
             }
         }
-        self.service_message_tx
-            .send(message)
-            .await
-            .map_err(Error::new)
+        self.service_message_tx.send(message).map_err(Error::new)
     }
 
     async fn transition_state_from_sending_message(&self, message: &Message) -> Result<()> {

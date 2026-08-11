@@ -48,6 +48,7 @@ pub struct MonData {
     /// Moves.
     pub moves: Vec<String>,
     /// Held item.
+    #[serde(default)]
     pub item: Option<String>,
     #[serde(default)]
     // PP boosts.

@@ -29,23 +29,30 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         input: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        self.authorizer
-            .authorize_player_operation(
-                &invocation.peer_info,
-                &input.0.player,
-                PlayerOperation::UpdateTeam,
-            )
-            .await?;
-        let validation = self
-            .service
-            .validate_player(Uuid::try_parse(&procedure.0)?, &input.0.player)
+        crate::log_procedure!(
+            "ValidatePlayer",
+            format!("battle={}, player={}", procedure.0, input.0.player),
+            async {
+                self.authorizer
+                    .authorize_player_operation(
+                        &invocation.peer_info,
+                        &input.0.player,
+                        PlayerOperation::UpdateTeam,
+                    )
+                    .await?;
+                let validation = self
+                    .service
+                    .validate_player(Uuid::try_parse(&procedure.0)?, &input.0.player)
+                    .await
+                    .map_err(map_battle_error)?;
+                Ok(battler_service_schema::ValidatePlayerOutput(
+                    battler_service_schema::ValidatePlayerOutputArgs {
+                        problems: validation.problems,
+                    },
+                ))
+            }
             .await
-            .map_err(map_battle_error)?;
-        Ok(battler_service_schema::ValidatePlayerOutput(
-            battler_service_schema::ValidatePlayerOutputArgs {
-                problems: validation.problems,
-            },
-        ))
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

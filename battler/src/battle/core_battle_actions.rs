@@ -4498,16 +4498,15 @@ fn leave_battle(context: &mut PlayerContext) -> Result<()> {
     context.player_mut().escaped = true;
     for mon in context
         .player()
-        .active_mon_handles()
+        .active_or_exited_mon_handles()
         .cloned()
         .collect::<Vec<_>>()
     {
-        switch_out_internal(
-            &mut context.as_battle_context_mut().mon_context(mon)?,
-            false,
-            false,
-            None,
-        )?;
+        let mut context = context.as_battle_context_mut().mon_context(mon)?;
+        context.mon_mut().switch_state.needs_switch = None;
+        if context.mon().active {
+            switch_out_internal(&mut context, false, false, None)?;
+        }
     }
     Ok(())
 }

@@ -29,25 +29,32 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         input: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        self.authorizer
-            .authorize_player_operation(
-                &invocation.peer_info,
-                &input.0.player,
-                PlayerOperation::PlayerData,
-            )
-            .await?;
-        let request = self
-            .service
-            .request(Uuid::try_parse(&procedure.0)?, &input.0.player)
+        crate::log_procedure!(
+            "Request",
+            format!("battle={}, player={}", procedure.0, input.0.player),
+            async {
+                self.authorizer
+                    .authorize_player_operation(
+                        &invocation.peer_info,
+                        &input.0.player,
+                        PlayerOperation::PlayerData,
+                    )
+                    .await?;
+                let request = self
+                    .service
+                    .request(Uuid::try_parse(&procedure.0)?, &input.0.player)
+                    .await
+                    .map_err(map_battle_error)?;
+                Ok(battler_service_schema::RequestOutput(
+                    battler_service_schema::RequestOutputArgs {
+                        request_json: request
+                            .map(|request| serde_json::to_string(&request))
+                            .transpose()?,
+                    },
+                ))
+            }
             .await
-            .map_err(map_battle_error)?;
-        Ok(battler_service_schema::RequestOutput(
-            battler_service_schema::RequestOutputArgs {
-                request_json: request
-                    .map(|request| serde_json::to_string(&request))
-                    .transpose()?,
-            },
-        ))
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

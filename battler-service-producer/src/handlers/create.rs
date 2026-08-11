@@ -27,28 +27,35 @@ impl<'d> battler_wamprat::procedure::TypedProcedure for Handler<'d> {
         invocation: battler_wamprat::procedure::Invocation,
         input: Self::Input,
     ) -> Result<Self::Output, Self::Error> {
-        let options = serde_json::from_str(&input.0.options_json)?;
+        crate::log_procedure!(
+            "Create",
+            "",
+            async {
+                let options = serde_json::from_str(&input.0.options_json)?;
 
-        self.authorizer
-            .authorize_new_battle(&invocation.peer_info, &options)
-            .await?;
+                self.authorizer
+                    .authorize_new_battle(&invocation.peer_info, &options)
+                    .await?;
 
-        let mut service_options: BattleServiceOptions =
-            serde_json::from_str(&input.0.service_options_json)?;
+                let mut service_options: BattleServiceOptions =
+                    serde_json::from_str(&input.0.service_options_json)?;
 
-        if !invocation.peer_info.identity.id.is_empty() {
-            service_options.creator = invocation.peer_info.identity.id.clone();
-        }
+                if !invocation.peer_info.identity.id.is_empty() {
+                    service_options.creator = invocation.peer_info.identity.id.clone();
+                }
 
-        let battle = self
-            .service
-            .create(options, self.engine_options.clone(), service_options)
-            .await?;
-        Ok(battler_service_schema::BattleOutput(
-            battler_service_schema::Battle {
-                battle_json: serde_json::to_string(&battle)?,
-            },
-        ))
+                let battle = self
+                    .service
+                    .create(options, self.engine_options.clone(), service_options)
+                    .await?;
+                Ok(battler_service_schema::BattleOutput(
+                    battler_service_schema::Battle {
+                        battle_json: serde_json::to_string(&battle)?,
+                    },
+                ))
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

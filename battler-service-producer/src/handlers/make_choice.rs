@@ -29,22 +29,32 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         input: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        self.authorizer
-            .authorize_player_operation(
-                &invocation.peer_info,
-                &input.0.player,
-                PlayerOperation::MakeChoice,
-            )
-            .await?;
-        self.service
-            .make_choice(
-                Uuid::try_parse(&procedure.0)?,
-                &input.0.player,
-                &input.0.choice,
-            )
+        crate::log_procedure!(
+            "MakeChoice",
+            format!(
+                "battle={}, player={}, choice={}",
+                procedure.0, input.0.player, input.0.choice
+            ),
+            async {
+                self.authorizer
+                    .authorize_player_operation(
+                        &invocation.peer_info,
+                        &input.0.player,
+                        PlayerOperation::MakeChoice,
+                    )
+                    .await?;
+                self.service
+                    .make_choice(
+                        Uuid::try_parse(&procedure.0)?,
+                        &input.0.player,
+                        &input.0.choice,
+                    )
+                    .await
+                    .map_err(map_battle_error)?;
+                Ok(battler_service_schema::MakeChoiceOutput)
+            }
             .await
-            .map_err(map_battle_error)?;
-        Ok(battler_service_schema::MakeChoiceOutput)
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {
