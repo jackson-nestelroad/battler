@@ -835,6 +835,114 @@ async fn auto_ends_battle_on_battle_timer() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn battle_timer_does_not_reset_on_resume() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    battle: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::from_iter([4, 2, 1]),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    tokio::time::sleep(Duration::from_secs(2)).await;
+
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 1")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "move 1")
+            .await,
+        Ok(())
+    );
+
+    tokio::time::sleep(Duration::from_millis(3500)).await;
+
+    assert_eq!(
+        battler_service
+            .battle(battle.uuid)
+            .await
+            .unwrap()
+            .state,
+        BattleState::Finished
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn player_timer_does_not_reset_on_resume() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    player: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::from_iter([4, 2, 1]),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    tokio::time::sleep(Duration::from_secs(2)).await;
+
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 1")
+            .await,
+        Ok(())
+    );
+
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "move 1")
+            .await,
+        Ok(())
+    );
+
+    tokio::time::sleep(Duration::from_millis(3500)).await;
+
+    assert_eq!(
+        battler_service
+            .battle(battle.uuid)
+            .await
+            .unwrap()
+            .state,
+        BattleState::Finished
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn forfeits_on_player_timer() {
     let battler_service = BattlerService::new(static_local_data_store());
     let battle = battler_service

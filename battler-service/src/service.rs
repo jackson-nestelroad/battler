@@ -815,8 +815,7 @@ impl<'d> LiveBattleManager<'d> {
             battle.cancel_timers_tx.send(()).ok();
             std::mem::take(&mut battle.current_timer_tasks)
         };
-        current_timer_tasks.abort_all();
-        tokio::spawn(async move { while let Some(_) = current_timer_tasks.join_next().await {} });
+        while let Some(_) = current_timer_tasks.join_next().await {}
     }
 
     fn resume_timers(
@@ -953,10 +952,6 @@ impl<'d> LiveBattleManager<'d> {
             Err(_) => return,
         };
 
-        if !proceed {
-            return;
-        }
-
         let finished = state
             .as_ref()
             .is_some_and(|state| state.remaining.is_zero());
@@ -968,10 +963,6 @@ impl<'d> LiveBattleManager<'d> {
         {
             let mut battle = battle.lock().await;
 
-            if !battle.is_timer_active(&timer_type).unwrap_or(false) {
-                return;
-            }
-
             match state {
                 Some(state) => battle.timers.insert(timer_type.clone(), state),
                 None => battle.timers.remove(&timer_type),
@@ -982,14 +973,16 @@ impl<'d> LiveBattleManager<'d> {
             }
         }
 
-        let static_battle = unsafe {
-            std::mem::transmute::<Arc<Mutex<LiveBattle<'d>>>, Arc<Mutex<LiveBattle<'static>>>>(
-                battle,
-            )
-        };
-        tokio::spawn(async move {
-            LiveBattleManager::<'static>::proceed(uuid, static_battle, preview_tx, task_tx).await;
-        });
+        if proceed {
+            let static_battle = unsafe {
+                std::mem::transmute::<Arc<Mutex<LiveBattle<'d>>>, Arc<Mutex<LiveBattle<'static>>>>(
+                    battle,
+                )
+            };
+            tokio::spawn(async move {
+                LiveBattleManager::<'static>::proceed(uuid, static_battle, preview_tx, task_tx).await;
+            });
+        }
     }
 
     async fn run_timer_internal(

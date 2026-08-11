@@ -170,7 +170,7 @@ export class BattlerClient extends EventEmitter {
       this.checkAndEmitRequest().catch(() => {});
     }
 
-    if (this.hasDoneSignal || this.currentBattleState.phase === "finished") {
+    if (this.hasDoneSignal) {
       this.emit("end");
       await this.cancel();
       return;
