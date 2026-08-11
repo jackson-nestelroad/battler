@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../store/store";
+import type { BattleType, CoreBattleOptions, MonData } from "battler-types";
+import React, { useEffect, useMemo, useState } from "react";
 import { proposeBattle } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
 import { updateProposal } from "../../store/proposalsSlice";
-import type { CoreBattleOptions, BattleType, MonData } from "battler-types";
+import { useAppDispatch, useAppSelector } from "../../store/store";
 
 import { setConnectionError } from "../../store/connectionSlice";
 
-import PlayerSlotCard from "./PlayerSlotCard";
-import { createDefaultPlayer } from "./proposalTypes";
-import type { FormPlayer } from "./proposalTypes";
-import AdvancedRulesSection from "./AdvancedRulesSection";
-import type { CustomRulesState } from "./AdvancedRulesSection";
-import FieldSettingsSection from "./FieldSettingsSection";
-import type { FieldSettingsState } from "./FieldSettingsSection";
-import TimerSettingsSection, { TIMER_PRESETS } from "./TimerSettingsSection";
-import type { TimerSettingsState } from "./TimerSettingsSection";
 import TeamSelect from "../Common/TeamSelect";
+import type { CustomRulesState } from "./AdvancedRulesSection";
+import AdvancedRulesSection from "./AdvancedRulesSection";
+import type { FieldSettingsState } from "./FieldSettingsSection";
+import FieldSettingsSection from "./FieldSettingsSection";
+import PlayerSlotCard from "./PlayerSlotCard";
+import type { FormPlayer } from "./proposalTypes";
+import { createDefaultPlayer } from "./proposalTypes";
+import type { TimerSettingsState } from "./TimerSettingsSection";
+import TimerSettingsSection, { TIMER_PRESETS } from "./TimerSettingsSection";
 
 import styles from "./ProposalForm.module.scss";
 

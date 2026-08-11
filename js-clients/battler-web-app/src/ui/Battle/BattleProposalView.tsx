@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { useAppDispatch } from "../../store/store";
-import { respondToProposal, refreshProposalSession } from "../../core/wamp";
+import { useEffect, useState } from "react";
+import { refreshProposalSession, respondToProposal } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
-import { removeProposal } from "../../store/proposalsSlice";
-import type { ProposedBattleWithDetails } from "../../store/proposalsSlice";
-import { setConnectionError } from "../../store/connectionSlice";
 import type { ConnectionState } from "../../store/connectionSlice";
-import ErrorBanner from "../Common/ErrorBanner";
-import BattleSidesList from "../Common/BattleSidesList";
-import { getBattleTitle, formatDeletionReason } from "../../utils/battle";
-import CopyableId from "../Common/CopyableId";
-import RefreshButton from "../Common/RefreshButton";
-import CountdownTimer from "../Common/CountdownTimer";
+import { setConnectionError } from "../../store/connectionSlice";
+import type { ProposedBattleWithDetails } from "../../store/proposalsSlice";
+import { removeProposal } from "../../store/proposalsSlice";
+import { useAppDispatch } from "../../store/store";
+import { formatDeletionReason, getBattleTitle } from "../../utils/battle";
 import BattleDetailsGrid from "../Common/BattleDetailsGrid";
+import BattleSidesList from "../Common/BattleSidesList";
+import CopyableId from "../Common/CopyableId";
+import CountdownTimer from "../Common/CountdownTimer";
+import ErrorBanner from "../Common/ErrorBanner";
+import RefreshButton from "../Common/RefreshButton";
 
 import styles from "./BattleProposalView.module.scss";
 
@@ -53,9 +53,11 @@ export default function BattleProposalView({
     }
   };
 
-  const isPlayer2 = activeProposal.sides[1]?.players[0]?.id === connection.playerId;
-  const player2Status = activeProposal.sides[1]?.players[0]?.status;
-  const hasPlayer2Accepted = player2Status === "accepted";
+  const currentPlayer = activeProposal.sides
+    .flatMap((side) => side.players)
+    .find((player) => player.id === connection.playerId);
+  const isParticipant = !!currentPlayer;
+  const hasCurrentPlayerAccepted = currentPlayer?.status === "accepted";
   const isDeclined = !!activeProposal.rejection || !!activeProposal.deletionReason;
 
   const handleAccept = () => {
@@ -134,7 +136,7 @@ export default function BattleProposalView({
               </button>
             ) : (
               <>
-                {isPlayer2 && !hasPlayer2Accepted && (
+                {isParticipant && !hasCurrentPlayerAccepted && (
                   <div className="flex-row gap-s">
                     <button onClick={handleAccept} className="btn btn-success flex-1">
                       Accept
@@ -145,7 +147,7 @@ export default function BattleProposalView({
                   </div>
                 )}
 
-                {(!isPlayer2 || hasPlayer2Accepted) && (
+                {(!isParticipant || hasCurrentPlayerAccepted) && (
                   <div className="flex-col align-center gap-m text-center">
                     <p>Waiting...</p>
                     <div className="flex-row flex-mobile-col justify-center gap-s w-full">
@@ -155,9 +157,11 @@ export default function BattleProposalView({
                       >
                         ← Lobby
                       </button>
-                      <button onClick={handleDecline} className="btn btn-danger">
-                        Cancel
-                      </button>
+                      {isParticipant && (
+                        <button onClick={handleDecline} className="btn btn-danger">
+                          Cancel
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

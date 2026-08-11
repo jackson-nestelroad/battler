@@ -1,15 +1,14 @@
-import { createSlice, current } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import isEqual from "fast-deep-equal";
-import type { BattleState } from "battler-state";
-import type { Request, PlayerBattleData } from "battler-types";
-import type { UiLogEntry } from "battler-state";
-import { formatUuid } from "../utils/uuid";
+import { createSlice, current } from "@reduxjs/toolkit";
 import type { Battle, BattleMetadata } from "battler-service-client";
-import { resolveReplayTurnState, getReplayStepBoundary } from "../utils/replay";
-import type { ReplayKeyframe } from "../utils/replay";
-import { parseTimerLog } from "../utils/battle";
+import type { BattleState, UiLogEntry } from "battler-state";
+import type { PlayerBattleData, Request } from "battler-types";
+import isEqual from "fast-deep-equal";
 import type { ParsedTimerLog } from "../utils/battle";
+import { parseTimerLog } from "../utils/battle";
+import type { ReplayKeyframe } from "../utils/replay";
+import { getReplayStepBoundary, resolveReplayTurnState } from "../utils/replay";
+import { formatUuid } from "../utils/uuid";
 
 export interface ActiveTimerState {
   type: "battle" | "player" | "action" | "teampreview";
@@ -197,6 +196,9 @@ const battlesSlice = createSlice({
       const battle = state.battles[battleId];
       if (battle) {
         battle.error = error;
+        if (error) {
+          battle.isLoading = false;
+        }
       }
     },
     setChoiceError(state, action: PayloadAction<{ battleId: string; error: string | null }>) {
@@ -205,6 +207,9 @@ const battlesSlice = createSlice({
       const battle = state.battles[battleId];
       if (battle) {
         battle.choiceError = error;
+        if (error) {
+          battle.isLoading = false;
+        }
       }
     },
     setBattleLoading(state, action: PayloadAction<{ battleId: string; isLoading: boolean }>) {

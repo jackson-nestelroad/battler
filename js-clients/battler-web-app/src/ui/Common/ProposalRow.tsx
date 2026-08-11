@@ -1,5 +1,5 @@
 import type { ProposedBattleWithDetails } from "../../store/proposalsSlice";
-import { getBattleTitle, formatDeletionReason } from "../../utils/battle";
+import { formatDeletionReason, getBattleTitle } from "../../utils/battle";
 import styles from "./ProposalRow.module.scss";
 
 interface ProposalRowProps {
@@ -19,13 +19,18 @@ export default function ProposalRow({
   onDismiss,
   onView,
 }: ProposalRowProps) {
-  const isPlayer2 = proposal.sides[1]?.players.some((pl) => pl.id === playerId);
-  const isPlayer1 = proposal.sides[0]?.players.some((pl) => pl.id === playerId);
+  const userPlayer = proposal.sides.flatMap((s) => s.players).find((pl) => pl.id === playerId);
   const isDeclined = !!proposal.rejection || !!proposal.deletionReason;
   const title = getBattleTitle(null, null, proposal);
 
-  if (isPlayer2) {
-    // Incoming Proposal
+  if (!userPlayer) {
+    return null;
+  }
+
+  const isPending = userPlayer.status !== "accepted";
+
+  if (isPending) {
+    // Incoming / Pending response for this user
     return (
       <div className={styles.proposalItem}>
         <div className={styles.proposalInfo}>
@@ -61,39 +66,37 @@ export default function ProposalRow({
     );
   }
 
-  if (isPlayer1) {
-    // Sent Proposal
-    return (
-      <div className={styles.proposalItem}>
-        <div className={styles.proposalInfo}>
-          <span className={styles.proposerName}>{title}</span>
-          {isDeclined ? (
-            <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
-              Failed: {formatDeletionReason(proposal.deletionReason)}
-            </span>
-          ) : (
-            <span className={styles.proposalMeta}>Waiting...</span>
-          )}
-        </div>
-        <div className={styles.proposalActions}>
-          {isDeclined ? (
-            <button onClick={() => onDismiss(proposal.uuid)} className="btn btn-secondary">
-              Dismiss
-            </button>
-          ) : (
-            <>
-              <button onClick={() => onView(proposal.uuid)} className="btn btn-primary">
-                View
-              </button>
-              <button onClick={() => onDecline(proposal.uuid)} className="btn btn-danger">
-                Cancel
-              </button>
-            </>
-          )}
-        </div>
+  // Accepted / Sent
+  return (
+    <div className={styles.proposalItem}>
+      <div className={styles.proposalInfo}>
+        <span className={styles.proposerName}>{title}</span>
+        {isDeclined ? (
+          <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
+            Failed: {formatDeletionReason(proposal.deletionReason)}
+          </span>
+        ) : (
+          <span className={styles.proposalMeta}>Waiting...</span>
+        )}
       </div>
-    );
-  }
+      <div className={styles.proposalActions}>
+        {isDeclined ? (
+          <button onClick={() => onDismiss(proposal.uuid)} className="btn btn-secondary">
+            Dismiss
+          </button>
+        ) : (
+          <>
+            <button onClick={() => onView(proposal.uuid)} className="btn btn-primary">
+              View
+            </button>
+            <button onClick={() => onDecline(proposal.uuid)} className="btn btn-danger">
+              Cancel
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 
   return null;
 }

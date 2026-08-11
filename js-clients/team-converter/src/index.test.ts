@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { parseShowdown, exportToShowdown } from "./index.js";
 import type { MonData } from "battler-types";
+import { describe, expect, it } from "vitest";
+import { exportToShowdown, parseShowdown } from "./index.js";
 
 describe("Showdown Format Team Converter", () => {
   describe("parseShowdown", () => {

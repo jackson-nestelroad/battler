@@ -1,4 +1,3 @@
-
 import type { MonData } from "battler-types";
 
 interface TeamSelectProps {

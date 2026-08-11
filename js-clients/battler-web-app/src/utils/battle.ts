@@ -1,5 +1,5 @@
-import type { BattleState, UiLogEntry } from "battler-state";
 import type { Battle } from "battler-service-client";
+import type { BattleState, UiLogEntry } from "battler-state";
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
 
 export function getBattleTitle(

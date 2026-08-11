@@ -1,5 +1,5 @@
+import type { Dispatch, PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction, Dispatch } from "@reduxjs/toolkit";
 
 export interface ConnectionState {
   status: "disconnected" | "connecting" | "connected";

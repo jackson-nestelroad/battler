@@ -5,8 +5,15 @@ export function uuidForUri(uuid: string): string {
   return uuid.replace(/-/g, "").toLowerCase();
 }
 
+interface InternalConnection extends autobahn.Connection {
+  _session_close_reason?: string;
+  _session_close_message?: string;
+  _retry?: boolean;
+  _transport?: { close: () => void };
+}
+
 export class WampSessionProvider extends EventEmitter {
-  private connection: autobahn.Connection;
+  private connection: InternalConnection;
   private currentSession: autobahn.Session | null = null;
   private connectionPromise: Promise<autobahn.Session> | null = null;
   private isManualDisconnect = false;
@@ -18,11 +25,11 @@ export class WampSessionProvider extends EventEmitter {
     this.connection.onopen = (session) => {
       this.currentSession = session;
       session.onleave = (reason, details) => {
-        (this.connection as any)._session_close_reason = reason;
-        (this.connection as any)._session_close_message = details?.message || "";
-        (this.connection as any)._retry = !this.isManualDisconnect;
-        if ((this.connection as any)._transport) {
-          (this.connection as any)._transport.close();
+        this.connection._session_close_reason = reason;
+        this.connection._session_close_message = details?.message || "";
+        this.connection._retry = !this.isManualDisconnect;
+        if (this.connection._transport) {
+          this.connection._transport.close();
         }
       };
       this.emit("connect", session);
@@ -73,33 +80,40 @@ export class WampSessionProvider extends EventEmitter {
 
   async disconnect(): Promise<void> {
     this.isManualDisconnect = true;
+    if (!this.currentSession && !this.connection.isOpen) {
+      return;
+    }
+    const disconnectPromise = new Promise<void>((resolve) => {
+      this.once("disconnect", () => resolve());
+    });
     this.connection.close();
     this.currentSession = null;
     this.connectionPromise = null;
+    await disconnectPromise;
   }
 }
 
-export function getWampResultString(res: any): string | null {
+export function getWampResultString(res: unknown): string | null {
   if (res === null || res === undefined) return null;
   if (typeof res === "string") return res;
   if (typeof res === "object") {
-    if (res.battle_json && typeof res.battle_json === "string") {
+    if ("battle_json" in res && typeof res.battle_json === "string") {
       return res.battle_json;
     }
-    if (res.json && typeof res.json === "string") {
+    if ("json" in res && typeof res.json === "string") {
       return res.json;
     }
     if (Array.isArray(res)) {
       return res.length > 0 ? getWampResultString(res[0]) : null;
     }
-    if (res.args && Array.isArray(res.args) && res.args.length > 0) {
+    if ("args" in res && Array.isArray(res.args) && res.args.length > 0) {
       return getWampResultString(res.args[0]);
     }
   }
   return null;
 }
 
-export function getWampResultArray(res: any): any[] {
+export function getWampResultArray(res: unknown): unknown[] {
   if (!res) return [];
   if (Array.isArray(res)) {
     if (res.length === 1 && Array.isArray(res[0])) {
@@ -108,23 +122,23 @@ export function getWampResultArray(res: any): any[] {
     return res;
   }
   if (typeof res === "object") {
-    if (res.args && Array.isArray(res.args)) {
+    if ("args" in res && Array.isArray(res.args)) {
       return getWampResultArray(res.args[0]);
     }
   }
   return [];
 }
 
-export function getWampResultArguments(res: any): any[] {
+export function getWampResultArguments(res: unknown): unknown[] {
   if (!res) return [];
   if (Array.isArray(res)) return res;
-  if (typeof res === "object" && res.args && Array.isArray(res.args)) {
+  if (typeof res === "object" && res !== null && "args" in res && Array.isArray(res.args)) {
     return res.args;
   }
   return [];
 }
 
-export function safeJsonStringify(value: any): string {
+export function safeJsonStringify(value: unknown): string {
   return JSON.stringify(value, (_, v) => {
     if (typeof v === "bigint") {
       return Number(v);

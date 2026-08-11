@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { isReplaySession, setReplayTurn } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { setReplayTurn, isReplaySession } from "../../store/battlesSlice";
 import styles from "./ReplayPanel.module.scss";
 
 interface ReplayPanelProps {

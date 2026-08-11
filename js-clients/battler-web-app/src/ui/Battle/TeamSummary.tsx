@@ -1,4 +1,4 @@
-import type { Request, PlayerBattleData, MonMoveSlotData } from "battler-types";
+import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
 import MonCard from "../Common/MonCard";
 import styles from "./ActionPanel.module.scss";
 

@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { useAppSelector } from "./store/store";
-import Sidebar from "./ui/Sidebar/Sidebar";
-import Lobby from "./ui/Lobby/Lobby";
-import Teams from "./ui/Teams/Teams";
-import BattleScreen from "./ui/Battle/BattleScreen";
-import ReplaysHome from "./ui/Replays/ReplaysHome";
-import { BREAKPOINT_TABLET_PX } from "./utils/constants";
-import { useHistorySync } from "./hooks/useHistorySync";
 import { useConnectionCountdown } from "./hooks/useConnectionCountdown";
+import { useHistorySync } from "./hooks/useHistorySync";
+import { useAppSelector } from "./store/store";
+import BattleScreen from "./ui/Battle/BattleScreen";
 import ConnectionRequired from "./ui/Common/ConnectionRequired";
+import Lobby from "./ui/Lobby/Lobby";
+import ReplaysHome from "./ui/Replays/ReplaysHome";
+import Sidebar from "./ui/Sidebar/Sidebar";
+import Teams from "./ui/Teams/Teams";
+import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 
 import styles from "./App.module.scss";
 
@@ -23,7 +23,6 @@ export default function App() {
     battleId ? !!state.battles.battles[battleId]?.isReplay : false,
   );
 
-
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false,
   );
@@ -34,9 +33,7 @@ export default function App() {
     return (
       <div className={styles.loadingScreen}>
         <div className="spinner"></div>
-        <p>
-          {showAutoconnectLoader ? connectionMessage : "Loading..."}
-        </p>
+        <p>{showAutoconnectLoader ? connectionMessage : "Loading..."}</p>
       </div>
     );
   }

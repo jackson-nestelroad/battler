@@ -1,7 +1,7 @@
 import React from "react";
+import { useConnectionCountdown } from "../../hooks/useConnectionCountdown";
 import { useAppSelector } from "../../store/store";
 import ConnectForm from "./ConnectForm";
-import { useConnectionCountdown } from "../../hooks/useConnectionCountdown";
 import styles from "./ConnectionRequired.module.scss";
 
 interface ConnectionRequiredProps {
@@ -9,10 +9,7 @@ interface ConnectionRequiredProps {
   bypass?: boolean;
 }
 
-export default function ConnectionRequired({
-  children,
-  bypass = false,
-}: ConnectionRequiredProps) {
+export default function ConnectionRequired({ children, bypass = false }: ConnectionRequiredProps) {
   const connection = useAppSelector((state) => state.connection);
   const { status, connectionMessage } = useConnectionCountdown();
 
@@ -45,4 +42,3 @@ export default function ConnectionRequired({
     </div>
   );
 }
-

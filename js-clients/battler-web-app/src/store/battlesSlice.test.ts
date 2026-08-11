@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
-import battlesReducer, { battleSessionCreated, battleStateUpdated } from "./battlesSlice";
 import type { BattleState, UiLogEntry } from "battler-state";
+import { describe, expect, it } from "vitest";
+import battlesReducer, { battleSessionCreated, battleStateUpdated } from "./battlesSlice";
 
 describe("battlesSlice active timers", () => {
   it("should retain active timers with isDone status instead of deleting them when they expire", () => {

@@ -1,6 +1,6 @@
 import { useAppSelector } from "../../store/store";
-import styles from "./BattleFinishedPanel.module.scss";
 import { encodeBase64Utf8 } from "../../utils/replay";
+import styles from "./BattleFinishedPanel.module.scss";
 
 interface BattleFinishedPanelProps {
   battleId: string;

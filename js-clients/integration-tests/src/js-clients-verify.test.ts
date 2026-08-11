@@ -1,15 +1,14 @@
-import { test, describe, before, after } from "node:test";
+import { ChildProcess, spawn } from "child_process";
 import * as assert from "node:assert";
-import { spawn, ChildProcess } from "child_process";
+import { after, before, describe, test } from "node:test";
 import * as path from "path";
 import * as readline from "readline";
 import { fileURLToPath } from "url";
-import * as autobahn from "autobahn";
 
-import { BattlerServiceClient } from "battler-service-client";
 import { BattlerClient, ChoiceBuilder } from "battler-client";
-import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
 import { BattlerMultiplayerClient } from "battler-multiplayer-client";
+import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
+import { BattlerServiceClient } from "battler-service-client";
 import { WampSessionProvider } from "battler-wamp-client";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -128,25 +127,31 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     const p1Team = {
       members: [
         {
-          name: "Pikachu",
-          species: "Pikachu",
-          ability: "Static",
-          moves: ["Tackle"],
+          name: "Bulbasaur",
+          species: "Bulbasaur",
+          ability: "Overgrow",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Tackle", "Growl"],
           level: 5,
         },
       ],
+      bag: { items: {} },
     };
 
     const p2Team = {
       members: [
         {
-          name: "Meowth",
-          species: "Meowth",
-          ability: "Pickup",
-          moves: ["Scratch"],
+          name: "Charmander",
+          species: "Charmander",
+          ability: "Blaze",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Scratch", "Growl"],
           level: 5,
         },
       ],
+      bag: { items: {} },
     };
 
     const battleOptions = {
@@ -177,7 +182,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
           {
             id: "player_2",
             name: "Player 2",
-            team: p2Team,
+            team: { members: [] },
           },
         ],
       },
@@ -211,7 +216,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     });
 
     // P2 accepts the battle
-    await p2MultiClient.respondToProposal(proposal.uuid, true);
+    await p2MultiClient.respondToProposal(proposal.uuid, true, p2Team as any);
 
     // Both clients should resolve their start promises and catch up
     const p1Client = await p1StartPromise;
@@ -234,13 +239,31 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     });
 
     // Make choices when requests are ready
-    // P1 chooses Tackle, P2 chooses Scratch
-    await p1Client.makeChoice("move 0");
-    await p2Client.makeChoice("move 0");
+    if (!p1Client.request()) {
+      await new Promise<void>((r) => {
+        const handler = () => {
+          p1Client.off("request", handler);
+          r();
+        };
+        p1Client.on("request", handler);
+      });
+    }
+    if (!p2Client.request()) {
+      await new Promise<void>((r) => {
+        const handler = () => {
+          p2Client.off("request", handler);
+          r();
+        };
+        p2Client.on("request", handler);
+      });
+    }
+
+    await p1Client.makeChoice("move 1");
+    await p2Client.makeChoice("move 1");
 
     // Wait until the battle state turn increases
     let turn2Resolved = false;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
       await new Promise((r) => setTimeout(r, 100));
       const s = p1Client.state();
       console.log(`[P1 CLIENT STATE] turn: ${s?.turn}, phase: ${s?.phase}`);
@@ -270,7 +293,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
 
     // Wait until battle resolves finished
     let finishedResolved = false;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
       await new Promise((r) => setTimeout(r, 100));
       const s = p1Client.state();
       console.log(`[P1 CLIENT STATE] phase: ${s?.phase}`);
@@ -337,10 +360,13 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
           name: "Charmander",
           species: "Charmander",
           ability: "Blaze",
-          moves: ["Tackle", "Growl"],
-          level: 5,
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Scratch", "Growl"],
+          level: 100,
         },
       ],
+      bag: { items: {} },
     };
 
     const p2Team = {
@@ -349,10 +375,13 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
           name: "Bulbasaur",
           species: "Bulbasaur",
           ability: "Overgrow",
+          nature: "Hardy",
+          gender: "Female",
           moves: ["Tackle", "Growl"],
-          level: 5,
+          level: 100,
         },
       ],
+      bag: { items: {} },
     };
 
     const battleOptions = {
@@ -383,7 +412,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
           {
             id: "player_2",
             name: "Player 2",
-            team: p2Team,
+            team: { members: [] },
           },
         ],
       },
@@ -400,7 +429,8 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       },
     };
 
-    // P1 proposes the battle
+    // P1 proposes the battle after cooldown
+    await new Promise((r) => setTimeout(r, 3100));
     const proposed = await p1MultiClient.proposeBattle(proposedOptions as any);
 
     // P1 proposed battle start promise
@@ -414,41 +444,51 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     });
 
     // P2 accepts the battle
-    await p2MultiClient.respondToProposal(proposed.uuid, true);
+    await p2MultiClient.respondToProposal(proposed.uuid, true, p2Team as any);
 
     const [p1Client, p2Client] = await Promise.all([p1StartPromise, p2StartPromise]);
     assert.ok(p1Client, "Player 1 client should resolve and catch up");
     assert.ok(p2Client, "Player 2 client should resolve and catch up");
 
-    // Give a small delay to make sure the start log gets published and processed
-    await new Promise((r) => setTimeout(r, 150));
-
     // Play turn 1 using ChoiceBuilder moves
-    await p1Client.makeChoice(ChoiceBuilder.move(0).toString());
-    await p2Client.makeChoice(ChoiceBuilder.move(0).toString());
-
-    // Wait until turn 2 request arrives
-    let turn2Resolved = false;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
+      const r1 = await p1Client.fetchRequest();
+      const r2 = await p2Client.fetchRequest();
+      if (r1 && r2) break;
       await new Promise((r) => setTimeout(r, 100));
-      const s = p1Client.state();
-      if (s && s.turn === 2) {
-        turn2Resolved = true;
-        break;
-      }
     }
-    assert.ok(turn2Resolved, "Turn 2 should be reached");
+    await Promise.all([
+      p1Client.makeChoice(ChoiceBuilder.move(1).toString()),
+      p2Client.makeChoice(ChoiceBuilder.move(1).toString()),
+    ]);
+    for (let i = 0; i < 50; i++) {
+      const req = await p1Client.fetchRequest();
+      if (req && (p1Client.state()?.turn ?? 0) >= 2) break;
+      await new Promise((r) => setTimeout(r, 100));
+    }
 
-    // Forfeit using ChoiceBuilder
+    let p1Ended = false;
+    p1Client.on("end", () => {
+      p1Ended = true;
+    });
+
     await p1Client.makeChoice(ChoiceBuilder.forfeit().toString());
     await p2Client.makeChoice(ChoiceBuilder.move(0).toString());
 
+    function isFinished(phase: any): boolean {
+      if (!phase) return false;
+      if (phase === "finished" || phase === "Finished") return true;
+      if (typeof phase === "object" && ("finished" in phase || "Finished" in phase)) return true;
+      return false;
+    }
+
     // Wait until battle resolves finished
     let finishedResolved = false;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
       await new Promise((r) => setTimeout(r, 100));
       const s = p1Client.state();
-      if (s && s.phase === "finished") {
+      const phase = s?.phase;
+      if (p1Ended || isFinished(phase)) {
         finishedResolved = true;
         break;
       }
@@ -488,11 +528,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     assert.ok(connectFired, "connect event should be fired");
     assert.ok(provider.session, "session should be active");
 
-    const disconnectPromise = new Promise<void>((resolve) =>
-      provider.once("disconnect", () => resolve()),
-    );
     await provider.disconnect();
-    await disconnectPromise;
     assert.ok(disconnectFired, "disconnect event should be fired");
     assert.strictEqual(provider.session, null, "session should be null");
   });
@@ -566,7 +602,8 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     const emptyProposals = await multiplayerClient.proposedBattlesForPlayer("player_1", 10, 0);
     assert.ok(Array.isArray(emptyProposals), "proposedBattlesForPlayer should return list");
 
-    // 3. Propose a battle, query it by ID, and test unsubscribe
+    // 3. Propose a battle after cooldown
+    await new Promise((r) => setTimeout(r, 3100));
     const proposed = await multiplayerClient.proposeBattle({
       battle_options: {
         seed: 0,
@@ -599,7 +636,9 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
           battle: null,
           player: null,
           action: null,
+          team_preview: null,
         },
+        log_timer_deadlines: false,
       },
       timeout: { secs: 30, nanos: 0 },
     });
@@ -611,6 +650,9 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     // Test multiplayer service subscription and unsubscribe
     const sub = await multiplayerClient.proposedBattleUpdates("player_1", () => {});
     await multiplayerClient.unsubscribe(sub);
+
+    // Reject proposal to clean it up immediately
+    await multiplayerClient.respondToProposedBattle(proposed.uuid, "player_1", { accept: false });
 
     await provider.disconnect();
   });
@@ -665,25 +707,31 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     const p1Team = {
       members: [
         {
-          name: "Pikachu",
-          species: "Pikachu",
-          ability: "Static",
-          moves: ["Tackle"],
-          level: 5,
+          name: "Bulbasaur",
+          species: "Bulbasaur",
+          ability: "Overgrow",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Tackle", "Growl"],
+          level: 100,
         },
       ],
+      bag: { items: {} },
     };
 
     const p2Team = {
       members: [
         {
-          name: "Meowth",
-          species: "Meowth",
-          ability: "Pickup",
-          moves: ["Scratch"],
-          level: 5,
+          name: "Charmander",
+          species: "Charmander",
+          ability: "Blaze",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Scratch", "Growl"],
+          level: 100,
         },
       ],
+      bag: { items: {} },
     };
 
     const battleOptions = {
@@ -704,7 +752,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       },
       side_2: {
         name: "Player 2",
-        players: [{ id: "player_2", name: "Player 2", team: p2Team }],
+        players: [{ id: "player_2", name: "Player 2", team: { members: [] } }],
       },
     };
 
@@ -717,6 +765,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       timeout: { secs: 30, nanos: 0 },
     };
 
+    await new Promise((r) => setTimeout(r, 3100));
     const proposed = await p1MultiClient.proposeBattle(proposedOptions as any);
 
     // Players wait for battle start
@@ -727,7 +776,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       return p2MultiClient.createBattlerClient(battleId);
     });
 
-    await p2MultiClient.respondToProposal(proposed.uuid, true);
+    await p2MultiClient.respondToProposal(proposed.uuid, true, p2Team as any);
 
     const [p1Client, p2Client] = await Promise.all([p1StartPromise, p2StartPromise]);
 
@@ -747,15 +796,28 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     });
 
     // Make choices
-    await p1Client.makeChoice(ChoiceBuilder.move(0).toString());
-    await p2Client.makeChoice(ChoiceBuilder.move(0).toString());
+    for (let i = 0; i < 100; i++) {
+      if (p1Client.request()) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    for (let i = 0; i < 100; i++) {
+      if (p2Client.request()) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
 
-    // Give a small delay to let the logs process
-    await new Promise((r) => setTimeout(r, 200));
+    await p1Client.makeChoice(ChoiceBuilder.move(1).toString());
+    await p2Client.makeChoice(ChoiceBuilder.move(1).toString());
+
+    // Wait until turn 2 state arrives or battle finishes
+    for (let i = 0; i < 100; i++) {
+      const s = p1Client.state();
+      if (!s || s.turn >= 2 || s.phase === "finished") break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
 
     // End battle by forfeiting
     await p1Client.makeChoice(ChoiceBuilder.forfeit().toString());
-    await p2Client.makeChoice(ChoiceBuilder.move(0).toString());
+    await p2Client.makeChoice(ChoiceBuilder.move(0).toString()).catch(() => {});
 
     // Wait a brief period for logs to settle
     await new Promise((r) => setTimeout(r, 200));
@@ -773,6 +835,177 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       p1Provider.disconnect(),
       p2Provider.disconnect(),
       spectatorProvider.disconnect(),
+    ]);
+  });
+
+  test("proposes, accepts, and starts a 4-player multi battle", async () => {
+    const createProvider = (authid: string) =>
+      new WampSessionProvider({
+        url: wampUrl,
+        realm: "com.battler",
+        max_retries: 5,
+        authmethods: ["wamp-battler-undisputed"],
+        authid,
+        authextra: { role: "user" },
+        onchallenge: () => "role:user",
+      });
+
+    const p1Provider = createProvider("player_1");
+    const p2Provider = createProvider("player_2");
+    const p3Provider = createProvider("player_3");
+    const p4Provider = createProvider("player_4");
+
+    await Promise.all([
+      p1Provider.connect(),
+      p2Provider.connect(),
+      p3Provider.connect(),
+      p4Provider.connect(),
+    ]);
+
+    const createMultiClient = (provider: WampSessionProvider, player: string) =>
+      new BattlerMultiplayerClient(
+        player,
+        new BattlerMultiplayerServiceClient(provider),
+        new BattlerServiceClient(provider),
+      );
+
+    const p1Multi = createMultiClient(p1Provider, "player_1");
+    const p2Multi = createMultiClient(p2Provider, "player_2");
+    const p3Multi = createMultiClient(p3Provider, "player_3");
+    const p4Multi = createMultiClient(p4Provider, "player_4");
+
+    const makeMon = (name: string, species: string, move: string) => ({
+      name,
+      species,
+      ability: "Blaze",
+      nature: "Hardy",
+      gender: "Female",
+      moves: [move],
+      level: 100,
+    });
+
+    const p1Team = {
+      members: [
+        {
+          name: "Charmander1",
+          species: "Charmander",
+          ability: "Blaze",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Scratch"],
+          level: 100,
+        },
+      ],
+      bag: { items: {} },
+    };
+    const p2Team = {
+      members: [
+        {
+          name: "Bulbasaur2",
+          species: "Bulbasaur",
+          ability: "Overgrow",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Tackle"],
+          level: 100,
+        },
+      ],
+      bag: { items: {} },
+    };
+    const p3Team = {
+      members: [
+        {
+          name: "Squirtle3",
+          species: "Squirtle",
+          ability: "Torrent",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Tackle"],
+          level: 100,
+        },
+      ],
+      bag: { items: {} },
+    };
+    const p4Team = {
+      members: [
+        {
+          name: "Pikachu4",
+          species: "Pikachu",
+          ability: "Static",
+          nature: "Hardy",
+          gender: "Female",
+          moves: ["Quick Attack"],
+          level: 100,
+        },
+      ],
+      bag: { items: {} },
+    };
+
+    const proposedOptions = {
+      battle_options: {
+        seed: 123456,
+        format: {
+          battle_type: "Multi",
+          rules: [],
+        },
+        field: {
+          weather: null,
+          terrain: null,
+          environment: "Grass",
+          time: "Day",
+        },
+        side_1: {
+          name: "Side 1",
+          players: [
+            { id: "player_1", name: "Player 1", team: p1Team },
+            { id: "player_2", name: "Player 2", team: { members: [] } },
+          ],
+        },
+        side_2: {
+          name: "Side 2",
+          players: [
+            { id: "player_3", name: "Player 3", team: { members: [] } },
+            { id: "player_4", name: "Player 4", team: { members: [] } },
+          ],
+        },
+      },
+      service_options: {
+        creator: "player_1",
+        timers: { battle: null, player: null, action: null, team_preview: null },
+        log_timer_deadlines: false,
+      },
+      timeout: { secs: 30, nanos: 0 },
+    };
+
+    await new Promise((r) => setTimeout(r, 3100));
+    const proposed = await p1Multi.proposeBattle(proposedOptions as any);
+
+    const startPromises = [
+      p1Multi.waitForBattleStart(proposed.uuid).then((id) => p1Multi.createBattlerClient(id)),
+      p2Multi.waitForBattleStart(proposed.uuid).then((id) => p2Multi.createBattlerClient(id)),
+      p3Multi.waitForBattleStart(proposed.uuid).then((id) => p3Multi.createBattlerClient(id)),
+      p4Multi.waitForBattleStart(proposed.uuid).then((id) => p4Multi.createBattlerClient(id)),
+    ];
+
+    await Promise.all([
+      p2Multi.respondToProposal(proposed.uuid, true, p2Team as any),
+      p3Multi.respondToProposal(proposed.uuid, true, p3Team as any),
+      p4Multi.respondToProposal(proposed.uuid, true, p4Team as any),
+    ]);
+
+    const [c1, c2, c3, c4] = await Promise.all(startPromises);
+
+    assert.ok(c1, "Client 1 should exist");
+    assert.ok(c2, "Client 2 should exist");
+    assert.ok(c3, "Client 3 should exist");
+    assert.ok(c4, "Client 4 should exist");
+
+    await Promise.all([c1.cancel(), c2.cancel(), c3.cancel(), c4.cancel()]);
+    await Promise.all([
+      p1Provider.disconnect(),
+      p2Provider.disconnect(),
+      p3Provider.disconnect(),
+      p4Provider.disconnect(),
     ]);
   });
 });

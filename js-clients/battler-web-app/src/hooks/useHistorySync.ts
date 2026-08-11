@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../store/store";
-import { selectBattle } from "../store/battlesSlice";
-import type { ActiveView } from "../store/battlesSlice";
 import { restoreBattleSession, restoreProposalSession } from "../core/wamp";
+import type { ActiveView } from "../store/battlesSlice";
+import { selectBattle } from "../store/battlesSlice";
+import { store, useAppDispatch, useAppSelector } from "../store/store";
 
 // Helper to get path relative to Vite's BASE_URL (e.g., /my-app/teams -> /teams)
 const getCleanPathname = () => {
@@ -99,7 +99,7 @@ export function useHistorySync() {
       const hasAttempted =
         b && (b.isLoading || b.error !== null || proposalsMap[activeBattleId] !== undefined);
       if (!hasAttempted) {
-        restoreProposalSession(activeBattleId, connection.playerId, dispatch);
+        restoreProposalSession(activeBattleId, connection.playerId, dispatch, store.getState);
       }
     }
   }, [

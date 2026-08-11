@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../store/store";
+import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
+import { useEffect, useRef, useState } from "react";
 import { submitChoice } from "../../core/wamp";
 import { setChoiceError } from "../../store/battlesSlice";
-import type { Request, MonMoveSlotData, PlayerBattleData } from "battler-types";
+import { useAppDispatch, useAppSelector } from "../../store/store";
 import ErrorBanner from "../Common/ErrorBanner";
 import MoveSelector from "./MoveSelector";
 import TargetSelector from "./TargetSelector";
@@ -37,16 +37,6 @@ export default function ActionPanel({
   const [selectedMove, setSelectedMove] = useState<MonMoveSlotData | null>(null);
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
   const [selectedTeamIndices, setSelectedTeamIndices] = useState<number[]>([]);
-  const [isConfirmingTeam, setIsConfirmingTeam] = useState(false);
-  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (confirmTimeoutRef.current) {
-        clearTimeout(confirmTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Modifiers
   const [mega, setMega] = useState(false);
@@ -74,11 +64,6 @@ export default function ActionPanel({
     setSelectedMove(null);
     setSelectedMoveIndex(null);
     setSelectedTeamIndices([]);
-    setIsConfirmingTeam(false);
-    if (confirmTimeoutRef.current) {
-      clearTimeout(confirmTimeoutRef.current);
-      confirmTimeoutRef.current = null;
-    }
     resetModifiers();
     submittingRef.current = false;
     setShowForfeitConfirm(false);
@@ -167,13 +152,6 @@ export default function ActionPanel({
   const handleSelectMon = (idx: number) => {
     if (submittingRef.current) return;
     dispatch(setChoiceError({ battleId, error: null }));
-    if (isConfirmingTeam) {
-      setIsConfirmingTeam(false);
-      if (confirmTimeoutRef.current) {
-        clearTimeout(confirmTimeoutRef.current);
-        confirmTimeoutRef.current = null;
-      }
-    }
     setSelectedTeamIndices((prev) => {
       const exists = prev.indexOf(idx);
       if (exists !== -1) {
@@ -213,7 +191,7 @@ export default function ActionPanel({
     if (!request || isMeReady) {
       return (
         <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-          <p>Waiting for opponent...</p>
+          <p>Waiting...</p>
         </div>
       );
     }
@@ -245,30 +223,8 @@ export default function ActionPanel({
         }
       };
 
-      const handleConfirmClick = () => {
-        if (submittingRef.current) return;
-        if (!isConfirmingTeam) {
-          setIsConfirmingTeam(true);
-          confirmTimeoutRef.current = setTimeout(() => {
-            setIsConfirmingTeam(false);
-            confirmTimeoutRef.current = null;
-          }, 3000);
-        } else {
-          if (confirmTimeoutRef.current) {
-            clearTimeout(confirmTimeoutRef.current);
-            confirmTimeoutRef.current = null;
-          }
-          handleTeamPreviewSubmit();
-        }
-      };
-
       const handleClearSelection = () => {
         setSelectedTeamIndices([]);
-        setIsConfirmingTeam(false);
-        if (confirmTimeoutRef.current) {
-          clearTimeout(confirmTimeoutRef.current);
-          confirmTimeoutRef.current = null;
-        }
       };
 
       return (
@@ -277,7 +233,6 @@ export default function ActionPanel({
             <h3>Team Preview</h3>
             {renderForfeitButton()}
           </div>
-          <ErrorBanner message={errorMessage} />
 
           <div className="flex-col gap-s">
             <p className={styles.instructionText}>
@@ -289,8 +244,12 @@ export default function ActionPanel({
           </div>
 
           <div className="flex-row gap-s align-center">
-            <button className="btn btn-primary" onClick={handleConfirmClick} disabled={isLoading}>
-              {isConfirmingTeam ? "Are you sure?" : "Confirm"}
+            <button
+              className="btn btn-primary"
+              onClick={handleTeamPreviewSubmit}
+              disabled={isLoading}
+            >
+              Confirm team
             </button>
             {selectedTeamIndices.length > 0 && (
               <button
@@ -329,7 +288,6 @@ export default function ActionPanel({
           <h3>
             Switch: <strong>{replaceMonName}</strong>
           </h3>
-          <ErrorBanner message={errorMessage} />
 
           <div className="flex-row gap-s align-center">
             {currentSlotIndex > 0 && (
@@ -414,7 +372,6 @@ export default function ActionPanel({
             </h3>
             <div className={styles.headerActions}>{renderForfeitButton()}</div>
           </div>
-          <ErrorBanner message={errorMessage} />
 
           {selectedMove === null ? (
             <MoveSelector
@@ -457,7 +414,10 @@ export default function ActionPanel({
 
   return (
     <div className="flex-col gap-xl">
-      <div className="card">{renderChoiceBody()}</div>
+      <div className="card flex-col gap-m">
+        <ErrorBanner message={errorMessage} />
+        {renderChoiceBody()}
+      </div>
       {renderTeamSummary()}
     </div>
   );

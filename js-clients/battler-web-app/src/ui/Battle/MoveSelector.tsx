@@ -1,5 +1,5 @@
-import type { CSSProperties } from "react";
 import type { MonMoveSlotData } from "battler-types";
+import type { CSSProperties } from "react";
 import styles from "./ActionPanel.module.scss";
 
 interface MoveSelectorProps {
@@ -136,9 +136,7 @@ export default function MoveSelector({
             );
           })}
         </div>
-        {activeReq.trapped && (
-          <p className={styles.trappedMessage}>Trapped</p>
-        )}
+        {activeReq.trapped && <p className={styles.trappedMessage}>Trapped</p>}
       </div>
     </div>
   );

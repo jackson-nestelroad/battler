@@ -1,47 +1,48 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Dispatch } from "@reduxjs/toolkit";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "../store/store";
 
-import { WampSessionProvider } from "battler-wamp-client";
-import { BattlerMultiplayerClient } from "battler-multiplayer-client";
+import type { IConnectionOptions, Subscription } from "autobahn";
 import { BattlerClient } from "battler-client";
-import { BattlerServiceClient } from "battler-service-client";
-import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
+import { BattlerMultiplayerClient } from "battler-multiplayer-client";
 import type {
-  ProposedBattleOptions,
   ProposedBattle,
+  ProposedBattleOptions,
   ProposedBattleRejection,
 } from "battler-multiplayer-service-client";
-import type { Subscription, IConnectionOptions } from "autobahn";
+import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
+import { BattlerServiceClient } from "battler-service-client";
 import type { MonData } from "battler-types";
-import {
-  setConnectionStatus,
-  setPlayerId,
-  setServerUrl,
-  setConnectionError,
-  setSavedConnectionDetails,
-  setAutoconnect,
-  setRetryDetails,
-} from "../store/connectionSlice";
-import { updateProposal, addProposals, clearProposals } from "../store/proposalsSlice";
-import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
+import { WampSessionProvider } from "battler-wamp-client";
 import {
   battleSessionCreated,
+  battleSessionEnded,
   battleSessionRestored,
   battleStateUpdated,
-  setBattleRequest,
-  setBattleError,
-  setChoiceError,
-  setBattleLoading,
-  battleSessionEnded,
-  serviceBattleUpdated,
-  clearBattleState,
-  setChoiceSubmitted,
-  setBattlePlayerData,
   clearBattles,
-  resetBattlesState,
+  clearBattleState,
   removeBattle,
+  resetBattlesState,
+  selectBattle,
+  serviceBattleUpdated,
+  setBattleError,
+  setBattleLoading,
+  setBattlePlayerData,
+  setBattleRequest,
+  setChoiceError,
+  setChoiceSubmitted,
 } from "../store/battlesSlice";
+import {
+  setAutoconnect,
+  setConnectionError,
+  setConnectionStatus,
+  setPlayerId,
+  setRetryDetails,
+  setSavedConnectionDetails,
+  setServerUrl,
+} from "../store/connectionSlice";
+import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
+import { addProposals, clearProposals, updateProposal } from "../store/proposalsSlice";
 import { formatUuid } from "../utils/uuid";
 
 function saveItem(key: string, value: string) {
@@ -91,9 +92,13 @@ function handleProposalNotFound(dispatch: Dispatch, proposedBattleId: string, st
       dispatch(
         updateProposal({
           ...existing,
-          deletionReason: "deleted",
+          deletionReason: existing.deletionReason || "deleted",
         }),
       );
+      if (existing.battle) {
+        dispatch(selectBattle({ view: "battle", battleId: existing.battle }));
+        return;
+      }
     }
   }
 }
@@ -108,6 +113,7 @@ function handleBattleError(
 ): string {
   const formatted = formatWampError(error);
   const errorUri = getWampErrorUri(error);
+
   const uiErrorMsg = prefixMessageOnUi ? `${message}: ${formatted}` : formatted;
 
   if (level === "error") {
@@ -132,6 +138,7 @@ class WampConnectionManager {
   public multiplayerClient: BattlerMultiplayerClient | null = null;
   public proposalSubscription: Subscription | null = null;
   public readonly clientsRegistry = new Map<string, BattlerClient>();
+  public readonly pendingInitializations = new Map<string, Promise<BattlerClient | undefined>>();
 
   public clear() {
     this.sessionProvider = null;
@@ -140,6 +147,7 @@ class WampConnectionManager {
     this.multiplayerClient = null;
     this.proposalSubscription = null;
     this.clientsRegistry.clear();
+    this.pendingInitializations.clear();
   }
 }
 
@@ -155,21 +163,13 @@ function bindClientEvents(
     const state = client.state();
     dispatch(battleStateUpdated({ battleId, state, engineLogs: client.getLogs() }));
 
-    // Fetch the service battle state to update player Ready/Waiting status!
+    // Only update high-level serviceBattle status while the battle is in preparation mode
     if (connectionManager.serviceClient && state.phase === "pre_battle") {
       try {
         const serviceBattle = await connectionManager.serviceClient.battle(battleId);
         dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
       } catch (e) {
-        handleBattleError(dispatch, battleId, "Failed to fetch service battle update", e);
-      }
-      if (client.role().type === "player") {
-        try {
-          const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
-          dispatch(setBattlePlayerData({ battleId, playerData }));
-        } catch (e) {
-          handleBattleError(dispatch, battleId, "Failed to fetch player data on update", e);
-        }
+        // Ignored
       }
     }
   });
@@ -181,7 +181,7 @@ function bindClientEvents(
         const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
         dispatch(setBattlePlayerData({ battleId, playerData }));
       } catch (e) {
-        handleBattleError(dispatch, battleId, "Failed to fetch player data on request", e);
+        // Ignored
       }
     }
   });
@@ -200,60 +200,77 @@ export async function initializeBattleClient(
   rawBattleId: string,
   playerId: string,
   dispatch: Dispatch,
-) {
+): Promise<BattlerClient | undefined> {
   const battleId = formatUuid(rawBattleId);
   if (connectionManager.clientsRegistry.has(battleId)) {
     return connectionManager.clientsRegistry.get(battleId)!;
   }
-  if (!connectionManager.serviceClient) return;
+  if (connectionManager.pendingInitializations.has(battleId)) {
+    return connectionManager.pendingInitializations.get(battleId)!;
+  }
+  if (!connectionManager.serviceClient) {
+    dispatch(setBattleLoading({ battleId, isLoading: false }));
+    dispatch(setBattleError({ battleId, error: "Not connected to battle server" }));
+    return;
+  }
 
-  try {
-    dispatch(setBattleLoading({ battleId, isLoading: true }));
-    dispatch(setBattleError({ battleId, error: null }));
+  const initPromise = (async () => {
+    try {
+      dispatch(setBattleLoading({ battleId, isLoading: true }));
+      dispatch(setBattleError({ battleId, error: null }));
 
-    const client = await BattlerClient.create(battleId, playerId, connectionManager.serviceClient);
-    connectionManager.clientsRegistry.set(battleId, client);
+      const client = await BattlerClient.create(
+        battleId,
+        playerId,
+        connectionManager.serviceClient!,
+      );
+      connectionManager.clientsRegistry.set(battleId, client);
 
-    // Initial setup dispatch
-    dispatch(battleStateUpdated({ battleId, state: client.state(), engineLogs: client.getLogs() }));
-    dispatch(setBattleRequest({ battleId, request: client.request() }));
+      // Initial setup dispatch
+      dispatch(
+        battleStateUpdated({ battleId, state: client.state(), engineLogs: client.getLogs() }),
+      );
+      dispatch(setBattleRequest({ battleId, request: client.request() }));
 
-    // Fetch initial service battle state
-    if (connectionManager.serviceClient) {
-      try {
-        const serviceBattle = await connectionManager.serviceClient.battle(battleId);
-        dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
-      } catch (e) {
-        handleBattleError(dispatch, battleId, "Failed to fetch initial service battle state", e);
-      }
-      if (client.role().type === "player") {
+      // Fetch initial service battle state
+      if (connectionManager.serviceClient) {
         try {
-          const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
-          dispatch(setBattlePlayerData({ battleId, playerData }));
+          const serviceBattle = await connectionManager.serviceClient.battle(battleId);
+          dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
         } catch (e) {
-          handleBattleError(dispatch, battleId, "Failed to fetch initial player data", e);
+          handleBattleError(dispatch, battleId, "Failed to fetch initial service battle state", e);
+        }
+        if (client.role().type === "player") {
+          try {
+            const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
+            dispatch(setBattlePlayerData({ battleId, playerData }));
+          } catch (e) {
+            handleBattleError(dispatch, battleId, "Failed to fetch initial player data", e);
+          }
         }
       }
+
+      bindClientEvents(client, battleId, playerId, dispatch);
+
+      return client;
+    } catch (err: unknown) {
+      handleBattleError(
+        dispatch,
+        battleId,
+        "Failed to initialize battle client",
+        err,
+        "error",
+        false,
+      );
+      return undefined;
+    } finally {
+      dispatch(setBattleLoading({ battleId, isLoading: false }));
+      connectionManager.pendingInitializations.delete(battleId);
     }
+  })();
 
-    bindClientEvents(client, battleId, playerId, dispatch);
-
-    // Sync the client now that listeners are registered to fetch initial request/state
-    await client.sync();
-
-    return client;
-  } catch (err: unknown) {
-    handleBattleError(
-      dispatch,
-      battleId,
-      "Failed to initialize battle client",
-      err,
-      "error",
-      false,
-    );
-  } finally {
-    dispatch(setBattleLoading({ battleId, isLoading: false }));
-  }
+  connectionManager.pendingInitializations.set(battleId, initPromise);
+  return initPromise;
 }
 
 // Helper to restore an active/historical battle session in the background
@@ -266,12 +283,21 @@ export function restoreBattleSession(rawBattleId: string, playerId: string, disp
 }
 
 // Helper to restore/fetch a proposed battle session in the background
-export function restoreProposalSession(rawBattleId: string, playerId: string, dispatch: Dispatch) {
+export function restoreProposalSession(
+  rawBattleId: string,
+  playerId: string,
+  dispatch: Dispatch,
+  _getState?: () => RootState,
+) {
   const battleId = formatUuid(rawBattleId);
-  if (!connectionManager.multiplayerClient) return;
-
   dispatch(battleSessionRestored({ battleId, isProposal: true }));
   dispatch(setBattleLoading({ battleId, isLoading: true }));
+
+  if (!connectionManager.multiplayerClient) {
+    dispatch(setBattleLoading({ battleId, isLoading: false }));
+    dispatch(setBattleError({ battleId, error: "Not connected to battle server" }));
+    return;
+  }
   connectionManager.multiplayerClient
     .proposedBattle(battleId)
     .then(async (proposal) => {
@@ -280,26 +306,21 @@ export function restoreProposalSession(rawBattleId: string, playerId: string, di
       if (proposal.battle) {
         const actualBattleId = proposal.battle;
         dispatch(battleSessionCreated(actualBattleId));
-        const client = await initializeBattleClient(actualBattleId, playerId, dispatch);
-        if (client) {
-          client.sync().catch((err: unknown) => {
-            handleBattleError(
-              dispatch,
-              actualBattleId,
-              "Failed to sync battle client on fulfillment during restore",
-              err,
-            );
-          });
-        }
+        await initializeBattleClient(actualBattleId, playerId, dispatch);
       }
     })
-    .catch((err: unknown) => {
-      console.error("[WAMP] Failed to fetch proposal:", err);
-      const errorMsg = formatWampError(err);
-      const errorUri = getWampErrorUri(err);
+    .catch((err) => {
       dispatch(setBattleLoading({ battleId, isLoading: false }));
-      dispatch(setBattleError({ battleId, error: errorMsg }));
-      if (errorUri === "com.battler.battler_multiplayer_service.error.proposed_battle_not_found") {
+      handleBattleError(
+        dispatch,
+        battleId,
+        "Failed to fetch proposal details for active battle",
+        err,
+      );
+      if (
+        getWampErrorUri(err) ===
+        "com.battler.battler_multiplayer_service.error.proposed_battle_not_found"
+      ) {
         handleProposalNotFound(dispatch, battleId);
       }
     });
@@ -333,14 +354,7 @@ function getProposalUpdateHandler(playerId: string, dispatch: Dispatch) {
       } else {
         const client = await initializeBattleClient(battleId, playerId, dispatch);
         if (client && update.deletion_reason === "fulfilled") {
-          client.sync().catch((err: unknown) => {
-            handleBattleError(
-              dispatch,
-              battleId,
-              "Failed to sync battle client on fulfillment",
-              err,
-            );
-          });
+          dispatch(selectBattle({ view: "battle", battleId }));
         }
       }
     }
@@ -416,7 +430,30 @@ export const connectWamp = createAsyncThunk(
       provider.on("connect", async () => {
         dispatch(setConnectionStatus("connected"));
         dispatch(setConnectionError(null));
-        // Catch up on reconnection
+
+        // Re-subscribe to proposal updates on connection restoration
+        if (connectionManager.multiplayerClient) {
+          if (connectionManager.proposalSubscription) {
+            try {
+              await connectionManager.mpServiceClient?.unsubscribe(
+                connectionManager.proposalSubscription,
+              );
+            } catch (e) {
+              // Ignore error on dead session
+            }
+            connectionManager.proposalSubscription = null;
+          }
+          try {
+            connectionManager.proposalSubscription =
+              await connectionManager.multiplayerClient.proposedBattleUpdates(
+                getProposalUpdateHandler(playerId, dispatch),
+              );
+          } catch (e) {
+            // Ignored
+          }
+        }
+
+        // Catch up and re-subscribe on reconnection
         for (const [battleId, client] of connectionManager.clientsRegistry.entries()) {
           try {
             await client.sync();
@@ -469,7 +506,7 @@ export const connectWamp = createAsyncThunk(
         if (page.length > 0) {
           dispatch(addProposals(page));
         }
-        if (page.length === 0) {
+        if (page.length < proposalsLimit) {
           break;
         }
         proposalsOffset += proposalsLimit;
@@ -490,13 +527,14 @@ export const connectWamp = createAsyncThunk(
             restoredIds.add(b.uuid);
             restoreBattleSession(b.uuid, playerId, dispatch);
           }
-          if (page.length === 0) {
+          if (page.length < battlesLimit) {
             break;
           }
           battlesOffset += battlesLimit;
         }
       } catch (err: unknown) {
         console.error("[WAMP] Failed to fetch active battles for player:", err);
+        dispatch(setConnectionError(`Failed to fetch active battles: ${formatWampError(err)}`));
       }
 
       // Subscribe to proposal updates
@@ -587,7 +625,7 @@ export const proposeBattle = createAsyncThunk(
 
 // Respond to Proposal thunk
 export const respondToProposal = createAsyncThunk<
-  any,
+  unknown,
   { proposedBattleId: string; accept: boolean },
   { state: RootState }
 >(
@@ -660,22 +698,6 @@ export const submitBattleTeam = createAsyncThunk(
       await client.updateTeam({ members: team, bag: { items: {} } });
 
       dispatch(setChoiceSubmitted({ battleId, submitted: true }));
-
-      // Fetch latest service battle state to refresh ready status!
-      if (connectionManager.serviceClient) {
-        const serviceBattle = await connectionManager.serviceClient.battle(battleId);
-        dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
-        if (serviceBattle.state === "active") {
-          client.sync().catch((err: unknown) => {
-            handleBattleError(
-              dispatch,
-              battleId,
-              "Failed to sync battle client on submit team",
-              err,
-            );
-          });
-        }
-      }
     } catch (err: unknown) {
       const formatted = handleBattleError(
         dispatch,
@@ -734,13 +756,14 @@ export const refreshLobby = createAsyncThunk(
         if (page.length > 0) {
           dispatch(addProposals(page));
         }
-        if (page.length === 0) {
+        if (page.length < proposalsLimit) {
           break;
         }
         proposalsOffset += proposalsLimit;
       }
     } catch (err) {
       console.error("[WAMP] Failed to fetch proposed battles during refresh:", err);
+      dispatch(setConnectionError(`Failed to refresh proposed battles: ${formatWampError(err)}`));
     }
 
     // Fetch active battles for the player to refresh sidebar/battles list
@@ -757,32 +780,31 @@ export const refreshLobby = createAsyncThunk(
         for (const b of page) {
           const existingClient = connectionManager.clientsRegistry.get(b.uuid);
           if (existingClient) {
-            try {
-              await existingClient.cancel();
-            } catch (e) {
+            existingClient.sync().catch((err: unknown) => {
               console.warn(
-                `[WAMP] Failed to cancel existing battle client for ${b.uuid} during lobby refresh:`,
-                e,
+                `[WAMP] Failed to sync existing battle client for ${b.uuid} during lobby refresh:`,
+                err,
               );
-            }
-            connectionManager.clientsRegistry.delete(b.uuid);
+            });
+          } else {
+            restoreBattleSession(b.uuid, playerId, dispatch);
           }
-          restoreBattleSession(b.uuid, playerId, dispatch);
         }
-        if (page.length === 0) {
+        if (page.length < battlesLimit) {
           break;
         }
         battlesOffset += battlesLimit;
       }
     } catch (err) {
       console.error("[WAMP] Failed to fetch active battles during lobby refresh:", err);
+      dispatch(setConnectionError(`Failed to refresh active battles: ${formatWampError(err)}`));
     }
   },
 );
 
 // Refresh Proposal Session thunk
 export const refreshProposalSession = createAsyncThunk<
-  any,
+  unknown,
   { battleId: string; playerId: string },
   { state: RootState }
 >(
@@ -799,20 +821,17 @@ export const refreshProposalSession = createAsyncThunk<
       if (proposal.battle) {
         const actualBattleId = proposal.battle;
         dispatch(battleSessionCreated(actualBattleId));
-        // If there's already a client, cancel it first to refresh it too
         const existingClient = connectionManager.clientsRegistry.get(actualBattleId);
         if (existingClient) {
-          try {
-            await existingClient.cancel();
-          } catch (e) {
+          existingClient.sync().catch((err: unknown) => {
             console.warn(
-              `[WAMP] Failed to cancel existing battle client for ${actualBattleId}:`,
-              e,
+              `[WAMP] Failed to sync existing battle client for ${actualBattleId}:`,
+              err,
             );
-          }
-          connectionManager.clientsRegistry.delete(actualBattleId);
+          });
+        } else {
+          await initializeBattleClient(actualBattleId, playerId, dispatch);
         }
-        await initializeBattleClient(actualBattleId, playerId, dispatch);
       }
     } catch (err: unknown) {
       console.error(`[WAMP] Failed to refresh proposal for ${battleId}:`, err);
@@ -848,6 +867,7 @@ export const refreshBattleSession = createAsyncThunk(
       await initializeBattleClient(battleId, playerId, dispatch);
     } catch (err) {
       console.error(`[WAMP] Failed to refresh battle client for ${battleId}:`, err);
+      dispatch(setBattleError({ battleId, error: formatWampError(err) }));
     } finally {
       dispatch(setBattleLoading({ battleId, isLoading: false }));
     }

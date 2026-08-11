@@ -1,8 +1,8 @@
-import { useState } from "react";
 import type { BattleType, MonData } from "battler-types";
-import type { FormPlayer } from "./proposalTypes";
+import { useState } from "react";
 import TeamSelect from "../Common/TeamSelect";
 import styles from "./ProposalForm.module.scss";
+import type { FormPlayer } from "./proposalTypes";
 
 interface PlayerSlotCardProps {
   side: 1 | 2;

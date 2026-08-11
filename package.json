@@ -26,6 +26,8 @@
     "wamp-integration-tests"
   ],
   "devDependencies": {
+    "prettier": "^3.9.6",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "wasm-pack": "^0.15.0"
   }
 }

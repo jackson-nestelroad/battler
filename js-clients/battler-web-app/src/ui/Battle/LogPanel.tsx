@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
 import type { UiLogEntry } from "battler-state";
+import { useEffect, useRef, useState } from "react";
 import Tabs from "../Common/Tabs";
 
 import styles from "./LogPanel.module.scss";

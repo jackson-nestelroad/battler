@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { store, hydrateStore } from "./store";
-import { saveTeam } from "./teamsSlice";
 import type { MonData } from "battler-types";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { hydrateStore, store } from "./store";
+import { saveTeam } from "./teamsSlice";
 
 describe("teams persistence", () => {
   let localStorageMock: Record<string, string> = {};

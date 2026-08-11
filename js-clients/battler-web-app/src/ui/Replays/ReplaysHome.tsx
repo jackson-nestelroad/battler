@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useAppDispatch } from "../../store/store";
 import { battleReplayLoaded } from "../../store/battlesSlice";
-import { precomputeReplayKeyframes, decodeBase64Utf8 } from "../../utils/replay";
+import { useAppDispatch } from "../../store/store";
 import type { SavedReplay } from "../../utils/replay";
+import { decodeBase64Utf8, precomputeReplayKeyframes } from "../../utils/replay";
 import styles from "./ReplaysHome.module.scss";
 
 export default function ReplaysHome() {

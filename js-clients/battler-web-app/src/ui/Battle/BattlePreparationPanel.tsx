@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../store/store";
+import { useEffect, useMemo, useState } from "react";
 import { submitBattleTeam } from "../../core/wamp";
-import ErrorBanner from "../Common/ErrorBanner";
+import { useAppDispatch, useAppSelector } from "../../store/store";
 import BattleSidesList from "../Common/BattleSidesList";
 import CountdownTimer from "../Common/CountdownTimer";
+import ErrorBanner from "../Common/ErrorBanner";
 import TeamSelect from "../Common/TeamSelect";
 import styles from "./BattlePreparationPanel.module.scss";
 

@@ -1,11 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.scss";
-import App from "./App.tsx";
-
 import { Provider } from "react-redux";
-import { store, hydrateStore } from "./store/store.ts";
+import App from "./App.tsx";
+import "./index.scss";
+
 import { connectWamp } from "./core/wamp.ts";
+import { hydrateStore, store } from "./store/store.ts";
+import ErrorBoundary from "./ui/Common/ErrorBoundary.tsx";
 
 // Dispatch hydration immediately on startup
 store
@@ -28,7 +29,9 @@ store
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </Provider>
   </StrictMode>,
 );

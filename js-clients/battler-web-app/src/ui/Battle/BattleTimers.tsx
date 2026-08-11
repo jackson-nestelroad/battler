@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
-import type { BattleState } from "battler-state";
 import type { Battle } from "battler-service-client";
-import { getPlayerName, formatSeconds } from "../../utils/battle";
-import CountdownTimer from "../Common/CountdownTimer";
+import type { BattleState } from "battler-state";
+import { useMemo, useState } from "react";
 import type { ActiveTimerState } from "../../store/battlesSlice";
+import { formatSeconds, getPlayerName } from "../../utils/battle";
+import CountdownTimer from "../Common/CountdownTimer";
 import styles from "./BattleScreen.module.scss";
 
 interface BattleTimersProps {

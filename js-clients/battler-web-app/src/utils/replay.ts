@@ -1,6 +1,6 @@
-import { newBattleState, alterBattleState } from "battler-state";
-import type { BattleState } from "battler-state";
 import type { BattleMetadata } from "battler-service-client";
+import type { BattleState } from "battler-state";
+import { alterBattleState, newBattleState } from "battler-state";
 
 export interface ReplayKeyframe {
   turn: number;

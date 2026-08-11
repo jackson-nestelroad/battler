@@ -1,8 +1,6 @@
-import type { UiLogEntry, BattleState } from "battler-state";
+import type { BattleState, UiLogEntry } from "battler-state";
 
-type MonRef =
-  | { Active: { side: number; position: number } }
-  | { Inactive: { name?: string } };
+type MonRef = { Active: { side: number; position: number } } | { Inactive: { name?: string } };
 
 function resolveMonName(monRef: MonRef | undefined, state?: BattleState): string {
   if (!monRef) return "Mon";

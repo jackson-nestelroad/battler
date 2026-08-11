@@ -1,17 +1,17 @@
 import autobahn from "autobahn";
 import {
-  ProposedBattleOptions,
   ProposedBattle,
+  ProposedBattleOptions,
   ProposedBattleResponse,
   ProposedBattleUpdate,
 } from "./bindings/index.js";
 
 import {
   WampSessionProvider,
-  uuidForUri,
-  getWampResultString,
   getWampResultArray,
+  getWampResultString,
   safeJsonStringify,
+  uuidForUri,
 } from "battler-wamp-client";
 
 export * from "battler-types";
@@ -27,7 +27,7 @@ export class BattlerMultiplayerServiceClient {
   }
 
   async proposeBattle(options: ProposedBattleOptions): Promise<ProposedBattle> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       "com.battler.battler_multiplayer_service.proposed_battles.create",
       [safeJsonStringify(options)],
     );
@@ -37,7 +37,7 @@ export class BattlerMultiplayerServiceClient {
   }
 
   async proposedBattle(proposedBattleId: string): Promise<ProposedBattle> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_multiplayer_service.proposed_battles.${uuidForUri(proposedBattleId)}`,
     );
     const json = getWampResultString(res);
@@ -50,7 +50,7 @@ export class BattlerMultiplayerServiceClient {
     player: string,
     response: ProposedBattleResponse,
   ): Promise<ProposedBattle> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_multiplayer_service.proposed_battles.${uuidForUri(proposedBattleId)}.respond`,
       [player, safeJsonStringify(response)],
     );
@@ -64,13 +64,13 @@ export class BattlerMultiplayerServiceClient {
     count: number,
     offset: number,
   ): Promise<ProposedBattle[]> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       "com.battler.battler_multiplayer_service.proposed_battles_for_player",
       [player, count, offset],
     );
     const arr = getWampResultArray(res);
     return arr
-      .map((item: any) => {
+      .map((item: unknown) => {
         const json = getWampResultString(item);
         return json ? JSON.parse(json) : null;
       })
@@ -82,7 +82,7 @@ export class BattlerMultiplayerServiceClient {
     onUpdate: (update: ProposedBattleUpdate) => void,
   ): Promise<autobahn.Subscription> {
     const topic = `com.battler.battler_multiplayer_service.proposed_battle_updates`;
-    const handler = (args?: any[] | null) => {
+    const handler = (args?: unknown[] | null) => {
       const json = getWampResultString(args);
       if (json) {
         onUpdate(JSON.parse(json));
@@ -92,6 +92,9 @@ export class BattlerMultiplayerServiceClient {
   }
 
   async unsubscribe(subscription: autobahn.Subscription): Promise<void> {
-    await this.session.unsubscribe(subscription);
+    if (!this.session || !("isOpen" in this.session && this.session.isOpen)) {
+      return;
+    }
+    await this.session.unsubscribe(subscription).catch(() => {});
   }
 }

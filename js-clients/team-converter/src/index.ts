@@ -1,10 +1,10 @@
 import type {
-  MonData,
   Gender,
+  MonData,
+  MonPersistentBattleData,
   Nature,
   StatTable,
   Type,
-  MonPersistentBattleData,
 } from "battler-types";
 
 // Helper to normalize Nature names
@@ -111,7 +111,7 @@ export function parseShowdown(text: string): MonData[] {
   const pushCurrentMon = () => {
     if (currentMon.species) {
       const name = currentMon.name || currentMon.species;
-      const mon: any = {
+      const mon: Record<string, unknown> = {
         name,
         species: currentMon.species,
         moves: currentMon.moves,
@@ -141,7 +141,7 @@ export function parseShowdown(text: string): MonData[] {
       if (currentMon.persistent_battle_data !== undefined)
         mon.persistent_battle_data = currentMon.persistent_battle_data;
 
-      teams.push(mon as MonData);
+      teams.push(mon as unknown as MonData);
     }
     currentMon = { moves: [] };
   };

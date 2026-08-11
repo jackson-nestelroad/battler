@@ -1,13 +1,13 @@
+import type { Dispatch, Middleware, UnknownAction } from "@reduxjs/toolkit";
 import { configureStore, createAsyncThunk } from "@reduxjs/toolkit";
-import type { Middleware, Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import { useDispatch, useSelector } from "react-redux";
-import type { TypedUseSelectorHook } from "react-redux";
-import connectionReducer, { setIsHydrated, setConnectionError } from "./connectionSlice";
-import proposalsReducer from "./proposalsSlice";
-import battlesReducer from "./battlesSlice";
-import teamsReducer, { teamsLoaded } from "./teamsSlice";
-import { LocalStoragePersistentStorage } from "../core/storage";
 import type { MonData } from "battler-types";
+import type { TypedUseSelectorHook } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { LocalStoragePersistentStorage } from "../core/storage";
+import battlesReducer from "./battlesSlice";
+import connectionReducer, { setConnectionError, setIsHydrated } from "./connectionSlice";
+import proposalsReducer from "./proposalsSlice";
+import teamsReducer, { teamsLoaded } from "./teamsSlice";
 
 const storage = new LocalStoragePersistentStorage();
 

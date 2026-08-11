@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../store/store";
-import { respondToProposal, refreshLobby } from "../../core/wamp";
+import { refreshLobby, respondToProposal } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
 import { removeProposal } from "../../store/proposalsSlice";
+import { useAppDispatch, useAppSelector } from "../../store/store";
 
 import { setConnectionError } from "../../store/connectionSlice";
 import ErrorBanner from "../Common/ErrorBanner";
-import ProposalList from "./ProposalList";
-import ProposalForm from "./ProposalForm";
 import RefreshButton from "../Common/RefreshButton";
+import ProposalForm from "./ProposalForm";
+import ProposalList from "./ProposalList";
 
 import styles from "./Lobby.module.scss";
 
@@ -48,20 +48,22 @@ export default function Lobby() {
       });
   };
 
-
-
-  // Split proposals into incoming proposals and outgoing proposals supporting multi sides
+  // Split proposals into incoming proposals (user is a participant but hasn't accepted yet)
+  // and outgoing proposals (user is a participant and has accepted, or proposal is declined)
   const incomingProposals = proposals.filter((p) => {
-    const isPlayerOnSide2 = p.sides[1]?.players.some((pl) => pl.id === connection.playerId);
+    const player = p.sides.flatMap((s) => s.players).find((pl) => pl.id === connection.playerId);
     const isResolved = !!p.battle;
     const isDeclined = !!p.rejection || !!p.deletionReason;
-    return isPlayerOnSide2 && !isResolved && !isDeclined;
+    const hasAccepted = player?.status === "accepted";
+    return !!player && !isResolved && !isDeclined && !hasAccepted;
   });
 
   const outgoingProposals = proposals.filter((p) => {
-    const isPlayerOnSide1 = p.sides[0]?.players.some((pl) => pl.id === connection.playerId);
+    const player = p.sides.flatMap((s) => s.players).find((pl) => pl.id === connection.playerId);
     const isResolved = !!p.battle;
-    return isPlayerOnSide1 && !isResolved;
+    const hasAccepted = player?.status === "accepted";
+    const isDeclined = !!p.rejection || !!p.deletionReason;
+    return !!player && !isResolved && (hasAccepted || isDeclined);
   });
 
   return (

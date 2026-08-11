@@ -1,16 +1,16 @@
+import type { MonData } from "battler-types";
 import React, { useState } from "react";
+import { exportToShowdown, parseShowdown } from "team-converter";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import {
-  saveTeam,
   deleteTeam,
-  setDefaultTeam,
-  moveTeamUp,
   moveTeamDown,
+  moveTeamUp,
+  saveTeam,
+  setDefaultTeam,
 } from "../../store/teamsSlice";
-import type { MonData } from "battler-types";
 import JsonEditor from "../Common/JsonEditor";
 import Tabs from "../Common/Tabs";
-import { parseShowdown, exportToShowdown } from "team-converter";
 
 import styles from "./Teams.module.scss";
 

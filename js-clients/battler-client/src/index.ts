@@ -1,15 +1,15 @@
-import { EventEmitter } from "events";
 import autobahn from "autobahn";
-import { newBattleState, alterBattleState, BattleState } from "battler-state";
 import {
-  BattlerServiceClient,
   Battle,
-  Request,
+  BattlerServiceClient,
   LogEntry,
-  PlayerValidation,
-  TeamData,
   PlayerBattleData,
+  PlayerValidation,
+  Request,
+  TeamData,
 } from "battler-service-client";
+import { alterBattleState, BattleState, newBattleState } from "battler-state";
+import { EventEmitter } from "events";
 
 export type Role = { type: "spectator"; side: undefined } | { type: "player"; side: number };
 
@@ -19,17 +19,17 @@ export interface BattlerClient {
   on(event: "update", listener: () => void): this;
   on(event: "request", listener: (request: Request | null) => void): this;
   on(event: "end", listener: () => void): this;
-  on(event: "error", listener: (err: any) => void): this;
+  on(event: "error", listener: (err: unknown) => void): this;
 
   once(event: "update", listener: () => void): this;
   once(event: "request", listener: (request: Request | null) => void): this;
   once(event: "end", listener: () => void): this;
-  once(event: "error", listener: (err: any) => void): this;
+  once(event: "error", listener: (err: unknown) => void): this;
 
   off(event: "update", listener: () => void): this;
   off(event: "request", listener: (request: Request | null) => void): this;
   off(event: "end", listener: () => void): this;
-  off(event: "error", listener: (err: any) => void): this;
+  off(event: "error", listener: (err: unknown) => void): this;
 }
 
 export function getRoleForPlayer(battle: Battle, player: string): Role {
@@ -65,11 +65,12 @@ async function backfillLog(
 }
 
 function updateBattleState(state: BattleState, logLines: string[]): BattleState {
-  const lines: string[] = [];
-  for (let i = 0; i < logLines.length; i++) {
-    lines.push(logLines[i] ?? "");
+  const lines = logLines.filter((l) => l !== undefined);
+  try {
+    return alterBattleState(newBattleState(), lines);
+  } catch (err) {
+    return state;
   }
-  return alterBattleState(state, lines);
 }
 
 export class BattlerClient extends EventEmitter {
@@ -82,7 +83,8 @@ export class BattlerClient extends EventEmitter {
   private currentRequest: Request | null = null;
   private stateUpdatePromise: Promise<void> | null = null;
   private hasDoneSignal = false;
-  private safetyEndTimeout: any = null;
+  private safetyEndTimeout: ReturnType<typeof setTimeout> | null = null;
+  private hasPendingRequestSignal = false;
 
   private constructor(
     public readonly battleId: string,
@@ -128,6 +130,10 @@ export class BattlerClient extends EventEmitter {
 
     this.logLines[entry.index] = entry.content;
 
+    if (entry?.content === "-battlerservice:request") {
+      this.hasPendingRequestSignal = true;
+    }
+
     if (entry.content === "-battlerservice:done") {
       this.hasDoneSignal = true;
     }
@@ -149,32 +155,25 @@ export class BattlerClient extends EventEmitter {
 
     if (!isLogFilled(this.logLines)) {
       await backfillLog(this.logLines, this.service, this.battleId, this._role.side);
+      if (!isLogFilled(this.logLines)) {
+        throw new Error("Failed to backfill missing battle log entries");
+      }
+      if (this.logLines.some((l) => l === "-battlerservice:request")) {
+        this.hasPendingRequestSignal = true;
+      }
     }
 
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
     this.emit("update");
+    if (this.hasPendingRequestSignal) {
+      this.hasPendingRequestSignal = false;
+      this.checkAndEmitRequest().catch(() => {});
+    }
 
-    if (this.hasDoneSignal) {
+    if (this.hasDoneSignal || this.currentBattleState.phase === "finished") {
       this.emit("end");
       await this.cancel();
       return;
-    }
-
-    if (this.currentBattleState.phase === "finished" && !this.safetyEndTimeout) {
-      this.safetyEndTimeout = setTimeout(() => {
-        if (!this.isCanceled) {
-          console.warn("[BattlerClient] Safety timeout triggered: forcing end unsubscription");
-          this.emit("end");
-          this.cancel().catch((err) => this.emit("error", err));
-        }
-      }, 5000);
-    }
-
-    const lastLogIndex = this.lastLogIndex();
-    const lastEntry = await this.service.lastLogEntry(this.battleId, this._role.side);
-    const caughtUp = lastLogIndex === (lastEntry ? lastEntry[0] : 0);
-    if (caughtUp && lastLogIndex > 0) {
-      await this.checkAndEmitRequest();
     }
   }
 
@@ -186,8 +185,7 @@ export class BattlerClient extends EventEmitter {
 
   private async checkAndEmitRequest(): Promise<void> {
     if (this._role.type === "spectator") return;
-    const request = await this.service.request(this.battleId, this.player);
-    this.currentRequest = request;
+    const request = await this.fetchRequest();
     const requestStr = JSON.stringify(request);
     if (requestStr !== this.lastEmittedRequest) {
       this.lastEmittedRequest = requestStr;
@@ -196,6 +194,20 @@ export class BattlerClient extends EventEmitter {
   }
 
   async sync(): Promise<void> {
+    if (this.subscription) {
+      try {
+        await this.service.unsubscribe(this.subscription);
+      } catch (e) {
+        // Ignore unsubscribe errors if previous session died
+      }
+      this.subscription = undefined;
+    }
+    const side = this._role.side;
+    this.subscription = await this.service.subscribe(this.battleId, side, (entry) => {
+      this.processLogEntry(entry).catch((err) => {
+        this.emit("error", err);
+      });
+    });
     await this.ensureCaughtUp();
     this.lastEmittedRequest = null;
     await this.checkAndEmitRequest();
@@ -219,11 +231,23 @@ export class BattlerClient extends EventEmitter {
 
   async makeChoice(choice: string): Promise<void> {
     await this.service.makeChoice(this.battleId, this.player, choice);
+    this.currentRequest = null;
     this.lastEmittedRequest = null;
   }
 
   async playerData(): Promise<PlayerBattleData> {
     return this.service.playerData(this.battleId, this.player);
+  }
+
+  async fetchRequest(): Promise<Request | null> {
+    if (this._role.type === "spectator") return null;
+    try {
+      const request = await this.service.request(this.battleId, this.player);
+      this.currentRequest = request;
+      return request;
+    } catch (err) {
+      return null;
+    }
   }
 
   request(): Request | null {

@@ -1,9 +1,9 @@
-import { useAppDispatch, useAppSelector } from "../../store/store";
-import { selectBattle } from "../../store/battlesSlice";
+import { closeBattleSession, disconnectWamp } from "../../core/wamp";
 import type { ActiveView } from "../../store/battlesSlice";
-import { disconnectWamp, closeBattleSession } from "../../core/wamp";
-import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
+import { selectBattle } from "../../store/battlesSlice";
+import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
+import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
 
 import styles from "./Sidebar.module.scss";
 

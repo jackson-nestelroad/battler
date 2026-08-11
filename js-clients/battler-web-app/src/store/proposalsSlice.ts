@@ -1,5 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import type { ProposedBattle, ProposedBattleRejection } from "battler-multiplayer-service-client";
 import type { CoreBattleOptions } from "battler-types";
 import { formatUuid } from "../utils/uuid";

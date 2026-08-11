@@ -1,7 +1,7 @@
-import type { BattleType } from "battler-types";
 import type { Timers } from "battler-multiplayer-service-client";
-import RulesList from "./RulesList";
+import type { BattleType } from "battler-types";
 import { formatSeconds } from "../../utils/battle";
+import RulesList from "./RulesList";
 
 interface BattleDetailsGridProps {
   battleType: BattleType;
@@ -11,12 +11,14 @@ interface BattleDetailsGridProps {
 
 export default function BattleDetailsGrid({ battleType, rules, timers }: BattleDetailsGridProps) {
   const activeTimers = timers
-    ? ([
-        { key: "battle", label: "Battle", value: timers.battle },
-        { key: "player", label: "Player", value: timers.player },
-        { key: "team_preview", label: "Preview", value: timers.team_preview },
-        { key: "action", label: "Action", value: timers.action },
-      ] as const).filter((t) => t.value)
+    ? (
+        [
+          { key: "battle", label: "Battle", value: timers.battle },
+          { key: "player", label: "Player", value: timers.player },
+          { key: "team_preview", label: "Preview", value: timers.team_preview },
+          { key: "action", label: "Action", value: timers.action },
+        ] as const
+      ).filter((t) => t.value)
     : [];
 
   return (

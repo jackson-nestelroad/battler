@@ -2,24 +2,24 @@ import autobahn from "autobahn";
 import {
   Battle,
   BattlePreview,
-  PlayerValidation,
-  LogEntry,
   BattleServiceOptions,
+  LogEntry,
+  PlayerValidation,
 } from "./bindings/index.js";
 
 import {
   WampSessionProvider,
-  uuidForUri,
-  getWampResultString,
-  getWampResultArray,
   getWampResultArguments,
+  getWampResultArray,
+  getWampResultString,
   safeJsonStringify,
+  uuidForUri,
 } from "battler-wamp-client";
 
 export * from "battler-types";
 export * from "./bindings/index.js";
 
-import { Request, CoreBattleOptions, TeamData, PlayerBattleData } from "battler-types";
+import { CoreBattleOptions, PlayerBattleData, Request, TeamData } from "battler-types";
 export type RequestType = Request["type"];
 
 export class BattlerServiceClient {
@@ -32,7 +32,7 @@ export class BattlerServiceClient {
   }
 
   async create(options: CoreBattleOptions, serviceOptions: BattleServiceOptions): Promise<Battle> {
-    const res = await this.session.call<any>("com.battler.battler_service.battles.create", [
+    const res = await this.session.call<unknown>("com.battler.battler_service.battles.create", [
       safeJsonStringify(options),
       safeJsonStringify(serviceOptions),
     ]);
@@ -42,13 +42,13 @@ export class BattlerServiceClient {
   }
 
   async battles(count: number, offset: number): Promise<BattlePreview[]> {
-    const res = await this.session.call<any>("com.battler.battler_service.battles", [
+    const res = await this.session.call<unknown>("com.battler.battler_service.battles", [
       count,
       offset,
     ]);
     const arr = getWampResultArray(res);
     return arr
-      .map((item: any) => {
+      .map((item: unknown) => {
         const json = getWampResultString(item);
         return json ? JSON.parse(json) : null;
       })
@@ -56,14 +56,14 @@ export class BattlerServiceClient {
   }
 
   async battlesForPlayer(player: string, count: number, offset: number): Promise<BattlePreview[]> {
-    const res = await this.session.call<any>("com.battler.battler_service.battles_for_player", [
+    const res = await this.session.call<unknown>("com.battler.battler_service.battles_for_player", [
       player,
       count,
       offset,
     ]);
     const arr = getWampResultArray(res);
     return arr
-      .map((item: any) => {
+      .map((item: unknown) => {
         const json = getWampResultString(item);
         return json ? JSON.parse(json) : null;
       })
@@ -71,7 +71,7 @@ export class BattlerServiceClient {
   }
 
   async battle(battleId: string): Promise<Battle> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}`,
     );
     const json = getWampResultString(res);
@@ -87,11 +87,11 @@ export class BattlerServiceClient {
   }
 
   async validatePlayer(battleId: string, player: string): Promise<PlayerValidation> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.validate_player`,
       [player],
     );
-    const problems = getWampResultArray(res);
+    const problems = getWampResultArray(res).map(String);
     return { problems };
   }
 
@@ -100,7 +100,7 @@ export class BattlerServiceClient {
   }
 
   async playerData(battleId: string, player: string): Promise<PlayerBattleData> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.player_data`,
       [player],
     );
@@ -110,7 +110,7 @@ export class BattlerServiceClient {
   }
 
   async request(battleId: string, player: string): Promise<Request | null> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.request`,
       [player],
     );
@@ -130,15 +130,15 @@ export class BattlerServiceClient {
   }
 
   async fullLog(battleId: string, side?: number): Promise<string[]> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.full_log`,
       [side !== undefined ? side : null],
     );
-    return getWampResultArray(res);
+    return getWampResultArray(res).map(String);
   }
 
   async lastLogEntry(battleId: string, side?: number): Promise<[number, string] | null> {
-    const res = await this.session.call<any>(
+    const res = await this.session.call<unknown>(
       `com.battler.battler_service.battles.${uuidForUri(battleId)}.last_log_entry`,
       [side !== undefined ? side : null],
     );
@@ -152,11 +152,8 @@ export class BattlerServiceClient {
     side: number | undefined,
     onLogEntry: (entry: LogEntry) => void,
   ): Promise<autobahn.Subscription> {
-    const selector = side !== undefined ? side.toString() : "public";
-    const topic = `com.battler.battler_service.battles.${uuidForUri(battleId)}.log.${selector}`;
-
-    const handler = (args?: any[] | null) => {
-      const arr = getWampResultArray(args);
+    const handler = (args?: unknown[] | null) => {
+      const arr = getWampResultArguments(args);
       if (arr.length >= 2) {
         onLogEntry({
           index: Number(arr[0]),
@@ -165,10 +162,16 @@ export class BattlerServiceClient {
       }
     };
 
+    const selector = side !== undefined ? `${side}` : "public";
+    const topic = `com.battler.battler_service.battles.${uuidForUri(battleId)}.log.${selector}`;
+
     return this.session.subscribe(topic, handler);
   }
 
   async unsubscribe(subscription: autobahn.Subscription): Promise<void> {
-    await this.session.unsubscribe(subscription);
+    if (!this.session || !("isOpen" in this.session && this.session.isOpen)) {
+      return;
+    }
+    await this.session.unsubscribe(subscription).catch(() => {});
   }
 }

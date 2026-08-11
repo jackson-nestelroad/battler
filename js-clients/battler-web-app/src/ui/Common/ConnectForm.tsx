@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../store/store";
 import { connectWamp } from "../../core/wamp";
 import { setConnectionError } from "../../store/connectionSlice";
+import { useAppDispatch, useAppSelector } from "../../store/store";
 import ErrorBanner from "./ErrorBanner";
 
 import styles from "./ConnectForm.module.scss";
@@ -9,7 +9,6 @@ import styles from "./ConnectForm.module.scss";
 export default function ConnectForm() {
   const dispatch = useAppDispatch();
   const connection = useAppSelector((state) => state.connection);
-
 
   const [playerName, setPlayerName] = useState(connection.savedPlayerId || "");
   const [serverUrl, setServerUrl] = useState(connection.savedServerUrl || "ws://localhost:8080/ws");

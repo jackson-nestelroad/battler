@@ -1,23 +1,23 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { closeBattleSession, refreshBattleSession } from "../../core/wamp";
+import { selectBattle, setBattleError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
+import { getBattleTitle } from "../../utils/battle";
 import { formatUiLogEntry } from "../../utils/logFormatter";
-import { setBattleError } from "../../store/battlesSlice";
-import { refreshBattleSession, closeBattleSession } from "../../core/wamp";
+import BattleDetailsGrid from "../Common/BattleDetailsGrid";
+import CopyableId from "../Common/CopyableId";
 import ErrorBanner from "../Common/ErrorBanner";
-import Field from "./Field";
+import RefreshButton from "../Common/RefreshButton";
+import Tabs from "../Common/Tabs";
 import ActionPanel from "./ActionPanel";
-import ReplayPanel from "./ReplayPanel";
 import BattleFinishedPanel from "./BattleFinishedPanel";
-import LogPanel from "./LogPanel";
 import BattlePreparationPanel from "./BattlePreparationPanel";
 import BattleProposalView from "./BattleProposalView";
-import Tabs from "../Common/Tabs";
-import CopyableId from "../Common/CopyableId";
-import RefreshButton from "../Common/RefreshButton";
-import { getBattleTitle } from "../../utils/battle";
-import BattleDetailsGrid from "../Common/BattleDetailsGrid";
-import BattleTimers from "./BattleTimers";
 import styles from "./BattleScreen.module.scss";
+import BattleTimers from "./BattleTimers";
+import Field from "./Field";
+import LogPanel from "./LogPanel";
+import ReplayPanel from "./ReplayPanel";
 
 export default function BattleScreen() {
   const dispatch = useAppDispatch();
@@ -114,18 +114,26 @@ export default function BattleScreen() {
         />
       );
     }
-    return (
-      <div className={styles.placeholder}>
-        <div className="flex-col align-center gap-m">
-          <div className="spinner" />
-          <p>Loading...</p>
+    if (connection.status === "connected") {
+      return (
+        <div className={styles.placeholder}>
+          <div className={`flex-col align-center gap-m text-center ${styles.errorCard}`}>
+            <div className="alert alert-danger w-full">
+              <div className="flex-col align-start gap-xs text-left">
+                <h4>Not Found</h4>
+                <p>Battle or proposal no longer exists.</p>
+              </div>
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => dispatch(selectBattle({ view: "lobby", battleId: null }))}
+            >
+              Return to Lobby
+            </button>
+          </div>
         </div>
-      </div>
-    );
-  }
-
-  // If battle session is loading, display loading spinner
-  if (!battleSession.battleState && battleSession.isLoading) {
+      );
+    }
     return (
       <div className={styles.placeholder}>
         <div className="flex-col align-center gap-m">
@@ -168,6 +176,18 @@ export default function BattleScreen() {
     );
   }
 
+  // If battle session is loading, display loading spinner
+  if (!battleSession.battleState && battleSession.isLoading) {
+    return (
+      <div className={styles.placeholder}>
+        <div className="flex-col align-center gap-m">
+          <div className="spinner" />
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   const isPreparing =
     !battleSession.isDeleted &&
     (battleSession.serviceBattle?.state === "preparing" ||
@@ -192,7 +212,10 @@ export default function BattleScreen() {
                   <>
                     {" "}
                     •{" "}
-                    <span className={styles.detailsToggle} onClick={() => setShowDetails(!showDetails)}>
+                    <span
+                      className={styles.detailsToggle}
+                      onClick={() => setShowDetails(!showDetails)}
+                    >
                       Details {showDetails ? "▲" : "▼"}
                     </span>
                   </>
