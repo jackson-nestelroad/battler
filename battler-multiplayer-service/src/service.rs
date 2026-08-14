@@ -297,10 +297,11 @@ impl ActiveProposedBattleManager {
             "Publishing update for proposed battle {}: {update:?}",
             self.uuid
         );
-        {
+        let global_update_tx = {
             let state = self.battler_multiplayer_service_state.lock().await;
-            state.global_update_tx.send(update.clone()).ok();
-        }
+            state.global_update_tx.clone()
+        };
+        global_update_tx.send(update.clone()).await.ok();
         for player in self.players() {
             self.publish_update_to_player(player, update.clone()).await;
         }
@@ -660,13 +661,13 @@ struct BattlerMultiplayerServiceState {
     proposed_battles: BTreeMap<Uuid, Arc<ActiveProposedBattleManager>>,
     players: HashMap<String, PlayerState>,
     join_set: JoinSet<()>,
-    global_update_tx: mpsc::UnboundedSender<ProposedBattleUpdate>,
-    global_update_rx: Option<mpsc::UnboundedReceiver<ProposedBattleUpdate>>,
+    global_update_tx: mpsc::Sender<ProposedBattleUpdate>,
+    global_update_rx: Option<mpsc::Receiver<ProposedBattleUpdate>>,
 }
 
 impl BattlerMultiplayerServiceState {
     fn new() -> Self {
-        let (global_update_tx, global_update_rx) = mpsc::unbounded_channel();
+        let (global_update_tx, global_update_rx) = mpsc::channel(4096);
         Self {
             proposed_battles: BTreeMap::default(),
             players: HashMap::default(),
@@ -1043,9 +1044,7 @@ impl<'d> BattlerMultiplayerService<'d> {
     }
 
     /// Takes the global update receiver.
-    pub async fn take_global_update_rx(
-        &self,
-    ) -> Option<mpsc::UnboundedReceiver<ProposedBattleUpdate>> {
+    pub async fn take_global_update_rx(&self) -> Option<mpsc::Receiver<ProposedBattleUpdate>> {
         let mut state = self.state.lock().await;
         state.global_update_rx.take()
     }

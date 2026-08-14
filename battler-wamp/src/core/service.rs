@@ -84,7 +84,7 @@ impl futures_util::Sink<StreamMessage> for StreamWrapper {
 pub struct ServiceHandle {
     start_handle: JoinHandle<()>,
     cancel_tx: broadcast::Sender<()>,
-    message_tx: mpsc::UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
 }
 
 impl ServiceHandle {
@@ -101,7 +101,7 @@ impl ServiceHandle {
     }
 
     /// The message transmission channel.
-    pub fn message_tx(&self) -> mpsc::UnboundedSender<Message> {
+    pub fn message_tx(&self) -> mpsc::Sender<Message> {
         self.message_tx.clone()
     }
 }
@@ -127,8 +127,8 @@ pub struct Service {
     cancel_tx: broadcast::Sender<()>,
     cancel_rx: broadcast::Receiver<()>,
 
-    user_message_tx: mpsc::UnboundedSender<Message>,
-    user_message_rx: mpsc::UnboundedReceiver<Message>,
+    user_message_tx: mpsc::Sender<Message>,
+    user_message_rx: mpsc::Receiver<Message>,
 }
 
 impl Service {
@@ -137,7 +137,7 @@ impl Service {
         let (message_tx, _) = broadcast::channel(4096);
         let (end_tx, end_rx) = broadcast::channel(1);
         let (cancel_tx, cancel_rx) = broadcast::channel(1);
-        let (user_message_tx, user_message_rx) = mpsc::unbounded_channel();
+        let (user_message_tx, user_message_rx) = mpsc::channel(4096);
         Self {
             name,
             stream,
@@ -184,7 +184,7 @@ impl Service {
     async fn run(self) {
         let wrapper = StreamWrapper { inner: self.stream };
         let (mut stream_sink, mut stream_stream) = wrapper.split();
-        let (write_tx, mut write_rx) = mpsc::unbounded_channel();
+        let (write_tx, mut write_rx) = mpsc::channel(4096);
 
         // Spawn the writer task to handle sending asynchronously.
         let name_clone = self.name.clone();
@@ -212,7 +212,7 @@ impl Service {
                     match message {
                         Some(Ok(StreamMessage::Ping(data))) => {
                             // Ping the message back.
-                            if write_tx.send(StreamMessage::Ping(data)).is_err() {
+                            if write_tx.send(StreamMessage::Ping(data)).await.is_err() {
                                 break;
                             }
                         },
@@ -229,7 +229,7 @@ impl Service {
                             //
                             // Ignore the error because the stream may be closed.
                             let abort_msg = abort_message_for_error(&InteractionError::ProtocolViolation("stream abruptly closed".to_owned()).into());
-                            let _ = write_tx.send(StreamMessage::Message(abort_msg));
+                            let _ = write_tx.send(StreamMessage::Message(abort_msg)).await;
                             result = Err(err);
                             break;
                         }
@@ -241,7 +241,7 @@ impl Service {
                 message = user_message_rx.recv() => {
                     match message {
                         Some(message) => {
-                            if write_tx.send(StreamMessage::Message(message)).is_err() {
+                            if write_tx.send(StreamMessage::Message(message)).await.is_err() {
                                 break;
                             }
                         }

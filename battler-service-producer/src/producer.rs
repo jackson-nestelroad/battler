@@ -17,10 +17,7 @@ use battler_service::{
 };
 use tokio::sync::{
     broadcast,
-    mpsc::{
-        self,
-        UnboundedReceiver,
-    },
+    mpsc,
     oneshot,
 };
 use uuid::Uuid;
@@ -86,7 +83,7 @@ where
 
 pub async fn run_battler_service_producer_over_service<S>(
     service: Arc<BattlerService<'static>>,
-    global_log_rx: UnboundedReceiver<GlobalLogEntry>,
+    global_log_rx: tokio::sync::mpsc::Receiver<GlobalLogEntry>,
     engine_options: CoreBattleEngineOptions,
     peer_config: battler_wamprat_schema::PeerConfig,
     peer: battler_wamp::peer::Peer<S>,
@@ -175,7 +172,7 @@ async fn run_battler_service_producer_internal<S>(
     producer: battler_service_schema::BattlerServiceProducer<S>,
     service: Arc<BattlerService<'static>>,
     mut stop_rx: Option<broadcast::Receiver<()>>,
-    mut global_log_rx: mpsc::UnboundedReceiver<GlobalLogEntry>,
+    mut global_log_rx: mpsc::Receiver<GlobalLogEntry>,
 ) -> Result<()>
 where
     S: Send + 'static,

@@ -284,7 +284,7 @@ pub struct SessionHandle {
     id: Id,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
-    message_tx: mpsc::UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
 
     closed_session_rx: broadcast::Receiver<()>,
     rpc_yield_rx: broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>,
@@ -314,13 +314,13 @@ impl SessionHandle {
 
     /// Sends a message over the session.
     pub async fn send_message(&self, message: Message) -> Result<()> {
-        self.message_tx.send(message).map_err(Error::new)
+        self.message_tx.try_send(message).map_err(Error::new)
     }
 
     /// Closes the session.
     pub async fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
-            .send(goodbye_with_close_reason(close_reason))
+            .try_send(goodbye_with_close_reason(close_reason))
             .map_err(Error::new)
     }
 
@@ -341,8 +341,8 @@ impl SessionHandle {
 pub struct Session {
     id: Id,
     connection_type: ConnectionType,
-    message_tx: mpsc::UnboundedSender<Message>,
-    service_message_tx: mpsc::UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
+    service_message_tx: mpsc::Sender<Message>,
     state: RwLock<SessionState>,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
@@ -363,8 +363,8 @@ impl Session {
     pub fn new(
         id: Id,
         connection_type: ConnectionType,
-        message_tx: mpsc::UnboundedSender<Message>,
-        service_message_tx: mpsc::UnboundedSender<Message>,
+        message_tx: mpsc::Sender<Message>,
+        service_message_tx: mpsc::Sender<Message>,
     ) -> Self {
         let id_allocator = SequentialIdAllocator::default();
         let (closed_session_tx, _) = broadcast::channel(48);
@@ -458,7 +458,9 @@ impl Session {
 
     pub async fn send_message(&self, message: Message) -> Result<()> {
         self.transition_state_from_sending_message(&message).await?;
-        self.service_message_tx.send(message).map_err(Error::new)
+        self.service_message_tx
+            .try_send(message)
+            .map_err(Error::new)
     }
 
     async fn transition_state_from_sending_message(&self, message: &Message) -> Result<()> {

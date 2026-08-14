@@ -878,11 +878,7 @@ async fn battle_timer_does_not_reset_on_resume() {
     tokio::time::sleep(Duration::from_millis(3500)).await;
 
     assert_eq!(
-        battler_service
-            .battle(battle.uuid)
-            .await
-            .unwrap()
-            .state,
+        battler_service.battle(battle.uuid).await.unwrap().state,
         BattleState::Finished
     );
 }
@@ -933,11 +929,7 @@ async fn player_timer_does_not_reset_on_resume() {
     tokio::time::sleep(Duration::from_millis(3500)).await;
 
     assert_eq!(
-        battler_service
-            .battle(battle.uuid)
-            .await
-            .unwrap()
-            .state,
+        battler_service.battle(battle.uuid).await.unwrap().state,
         BattleState::Finished
     );
 }

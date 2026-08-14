@@ -107,12 +107,12 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         connection_type: ConnectionType,
-        service_message_tx: mpsc::UnboundedSender<Message>,
+        service_message_tx: mpsc::Sender<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session_id = context.router().id_allocator.generate_id().await;
-        let (message_tx, message_rx) = mpsc::unbounded_channel();
+        let (message_tx, message_rx) = mpsc::channel(4096);
         let session = Session::new(session_id, connection_type, message_tx, service_message_tx);
 
         info!(
@@ -128,7 +128,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Session,
-        message_rx: mpsc::UnboundedReceiver<Message>,
+        message_rx: mpsc::Receiver<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
@@ -301,7 +301,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Arc<Session>,
-        mut message_rx: mpsc::UnboundedReceiver<Message>,
+        mut message_rx: mpsc::Receiver<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         session_loop_done_rx: broadcast::Receiver<()>,

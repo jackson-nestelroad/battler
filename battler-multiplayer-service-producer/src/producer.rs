@@ -73,7 +73,7 @@ where
 
 pub async fn run_multiplayer_battler_service_producer_over_service<S>(
     service: Arc<BattlerMultiplayerService<'static>>,
-    global_update_rx: mpsc::UnboundedReceiver<ProposedBattleUpdate>,
+    global_update_rx: mpsc::Receiver<ProposedBattleUpdate>,
     peer_config: battler_wamprat_schema::PeerConfig,
     peer: battler_wamp::peer::Peer<S>,
     modules: Modules,
@@ -123,7 +123,7 @@ where
 async fn run_multiplayer_battler_service_producer_internal<S>(
     producer: battler_multiplayer_service_schema::BattlerMultiplayerServiceProducer<S>,
     mut stop_rx: Option<broadcast::Receiver<()>>,
-    mut global_update_rx: mpsc::UnboundedReceiver<ProposedBattleUpdate>,
+    mut global_update_rx: mpsc::Receiver<ProposedBattleUpdate>,
 ) -> Result<()>
 where
     S: Send + 'static,

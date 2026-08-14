@@ -205,7 +205,7 @@ struct PeerState {
     service: ServiceHandle,
     session: SessionHandle,
 
-    message_tx: mpsc::UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
     session_references: Arc<()>,
 }
 
@@ -540,7 +540,7 @@ where
 
         // Start the service and message handler.
         let service = Service::new(self.config.name.clone(), stream);
-        let (message_tx, message_rx) = mpsc::unbounded_channel();
+        let (message_tx, message_rx) = mpsc::channel(4096);
         let service_message_rx = service.message_rx();
         let end_rx = service.end_rx();
         let drop_rx = self.drop_tx.subscribe();
@@ -582,7 +582,7 @@ where
         session_references: Weak<()>,
         session_finished_tx: broadcast::Sender<()>,
         connection_finished_tx: broadcast::Sender<()>,
-        message_rx: mpsc::UnboundedReceiver<Message>,
+        message_rx: mpsc::Receiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
         drop_rx: broadcast::Receiver<()>,
@@ -630,7 +630,7 @@ where
         peer_state: Arc<Mutex<Option<PeerState>>>,
         session_finished_tx: broadcast::Sender<()>,
         connection_finished_tx: broadcast::Sender<()>,
-        mut message_rx: mpsc::UnboundedReceiver<Message>,
+        mut message_rx: mpsc::Receiver<Message>,
         service_message_rx: broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
         drop_rx: broadcast::Receiver<()>,
@@ -677,7 +677,7 @@ where
 
     async fn session_loop_with_errors(
         session: &mut Session,
-        message_rx: &mut mpsc::UnboundedReceiver<Message>,
+        message_rx: &mut mpsc::Receiver<Message>,
         mut service_message_rx: broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         mut drop_rx: broadcast::Receiver<()>,
@@ -825,6 +825,7 @@ where
 
         message_tx
             .send(Message::Hello(message))
+            .await
             .map_err(Error::new)?;
 
         let mut connection_finished_rx = self.connection_finished_rx();
@@ -837,7 +838,7 @@ where
                     match self.validate_new_established_session(result, &authenticators, realm, &selected_auth_method).await {
                         Ok(()) => break,
                         Err(err) => {
-                            message_tx.send(abort_message_for_error(&err)).map_err(Error::new)?;
+                            message_tx.send(abort_message_for_error(&err)).await.map_err(Error::new)?;
                             return Err(err.context("failed to validate newly established session"));
                         }
                     }
@@ -845,11 +846,11 @@ where
                 challenge = auth_challenge_rx.recv() => {
                     match self.handle_challenge(challenge?, &authenticators).await {
                         Ok((auth_method, response)) =>  {
-                            message_tx.send(Message::Authenticate(response)).map_err(Error::new)?;
+                            message_tx.send(Message::Authenticate(response)).await.map_err(Error::new)?;
                             selected_auth_method = Some(auth_method);
                         },
                         Err(err) => {
-                            message_tx.send(abort_message_for_error(&err)).map_err(Error::new)?;
+                            message_tx.send(abort_message_for_error(&err)).await.map_err(Error::new)?;
                             return Err(err.context("failed to handle authentication challenge"));
                         },
                     }
@@ -918,6 +919,7 @@ where
 
         message_tx
             .send(goodbye_with_close_reason(CloseReason::Normal))
+            .await
             .map_err(Error::new)?;
 
         let mut connection_finished_rx = self.connection_finished_rx();
@@ -980,6 +982,7 @@ where
                 options: message_options,
                 topic,
             }))
+            .await
             .map_err(Error::new)?;
         let mut session_finished_rx = self.session_finished_rx();
         loop {
@@ -1059,6 +1062,7 @@ where
                 request: request_id,
                 subscribed_subscription: id,
             }))
+            .await
             .map_err(Error::new)?;
 
         let mut session_finished_rx = self.session_finished_rx();
@@ -1114,6 +1118,7 @@ where
                 arguments: event.arguments,
                 arguments_keyword: event.arguments_keyword,
             }))
+            .await
             .map_err(Error::new)?;
 
         if !acknowledge {
@@ -1189,6 +1194,7 @@ where
                 options: message_options,
                 procedure: procedure.into(),
             }))
+            .await
             .map_err(Error::new)?;
 
         let mut session_finished_rx = self.session_finished_rx();
@@ -1264,6 +1270,7 @@ where
                 request: request_id,
                 registered_registration: id,
             }))
+            .await
             .map_err(Error::new)?;
 
         let mut session_finished_rx = self.session_finished_rx();
@@ -1305,7 +1312,7 @@ where
         >,
         mut session_finished_rx: broadcast::Receiver<()>,
         mut cancel_rx: mpsc::Receiver<CallCancelMode>,
-        message_tx: mpsc::UnboundedSender<Message>,
+        message_tx: mpsc::Sender<Message>,
         rpc_result_tx: mpsc::Sender<ChannelTransmittableResult<RpcResult>>,
     ) -> Result<()> {
         loop {
@@ -1345,7 +1352,7 @@ where
                     message_tx.send(Message::Cancel(CancelMessage {
                         call_request: request_id,
                         options: Dictionary::from_iter([("mode".to_owned(), Value::String(cancel_mode.into()))]),
-                    })).map_err(Error::new)?;
+                    })).await.map_err(Error::new)?;
                 }
                 _ = session_finished_rx.recv() => {
                     rpc_result_tx.send(Err(Into::<Error>::into(PeerNotConnectedError).into())).await?;
@@ -1397,6 +1404,7 @@ where
                 arguments: rpc_call.arguments,
                 arguments_keyword: rpc_call.arguments_keyword,
             }))
+            .await
             .map_err(Error::new)?;
 
         let session_finished_rx = self.session_finished_rx();
