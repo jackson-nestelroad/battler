@@ -299,6 +299,10 @@ export function monIsActive(state: BattleState, monRef: MonBattleAppearanceRefer
   return monActivePosition(state, monRef) !== null;
 }
 
+export function monIsDynamaxed(state: BattleState, monRef: MonBattleAppearanceReference): boolean {
+  return monConditions(state, monRef).includes("Dynamax");
+}
+
 export function activeMonByPosition(
   state: BattleState,
   sideIndex: number,

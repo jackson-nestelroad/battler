@@ -5,6 +5,8 @@ import styles from "./ActionPanel.module.scss";
 interface MoveSelectorProps {
   activeReq: {
     moves: MonMoveSlotData[];
+    z_moves?: (MonMoveSlotData | null)[];
+    max_moves?: MonMoveSlotData[];
     trapped?: boolean;
     can_mega_evolve?: boolean;
     can_terastallize?: boolean;
@@ -12,6 +14,7 @@ interface MoveSelectorProps {
     can_dynamax?: boolean;
     can_ultra_burst?: boolean;
   };
+  isDynamaxed?: boolean;
   isLoading: boolean;
   mega: boolean;
   setMega: (val: boolean) => void;
@@ -29,6 +32,7 @@ interface MoveSelectorProps {
 
 export default function MoveSelector({
   activeReq,
+  isDynamaxed = false,
   isLoading,
   mega,
   setMega,
@@ -43,6 +47,8 @@ export default function MoveSelector({
   onSelectMove,
   onClearError,
 }: MoveSelectorProps) {
+  const isMaxMoveActive = dyna || isDynamaxed;
+
   const hasModifiers = !!(
     activeReq.can_mega_evolve ||
     activeReq.can_terastallize ||
@@ -83,7 +89,7 @@ export default function MoveSelector({
               {
                 key: "dyna",
                 label: "Dynamax",
-                flag: activeReq.can_dynamax,
+                flag: activeReq.can_dynamax && !isDynamaxed,
                 value: dyna,
                 setter: setDyna,
               },
@@ -114,23 +120,57 @@ export default function MoveSelector({
         )}
 
         <div className={styles.movesGrid}>
-          {activeReq.moves.map((move, index) => {
-            const isMoveDisabled = move.disabled || move.pp === 0;
+          {activeReq.moves.map((baseMove, index) => {
+            let moveToRender: MonMoveSlotData | null = baseMove;
+            let badgeText: string | null = null;
+            let isZMoveDisabled = false;
+
+            if (zmove) {
+              const zMoveData = activeReq.z_moves?.[index];
+              if (zMoveData) {
+                moveToRender = zMoveData;
+                badgeText = "Z-Move";
+              } else {
+                moveToRender = baseMove;
+                isZMoveDisabled = true;
+              }
+            } else if (isMaxMoveActive) {
+              const maxMoveData = activeReq.max_moves?.[index];
+              if (maxMoveData) {
+                moveToRender = maxMoveData;
+                badgeText = "Max Move";
+              }
+            }
+
+            const isMoveDisabled =
+              isZMoveDisabled || baseMove.disabled || baseMove.pp === 0 || moveToRender.disabled;
+
             return (
               <button
-                key={move.id}
-                onClick={() => onSelectMove(move, index)}
+                key={baseMove.id || index}
+                onClick={() => onSelectMove(moveToRender, index)}
                 className={`${styles.moveBtn} type-border`}
                 style={
                   {
-                    "--type-color": `var(--color-type-${move.type.toLowerCase()})`,
+                    "--type-color": `var(--color-type-${moveToRender.type.toLowerCase()})`,
                   } as CSSProperties
                 }
                 disabled={isMoveDisabled || isLoading}
               >
-                <span className={styles.moveName}>{move.name}</span>
+                <div className={styles.moveHeaderRow}>
+                  <span className={styles.moveName}>{moveToRender.name}</span>
+                  {badgeText && (
+                    <span
+                      className={`${styles.moveBadge} ${
+                        badgeText === "Z-Move" ? styles.zmoveBadge : styles.maxMoveBadge
+                      }`}
+                    >
+                      {badgeText}
+                    </span>
+                  )}
+                </div>
                 <span className={styles.moveMeta}>
-                  {move.type} | PP: {move.pp}/{move.max_pp}
+                  {moveToRender.type} | PP: {baseMove.pp}/{baseMove.max_pp}
                 </span>
               </button>
             );

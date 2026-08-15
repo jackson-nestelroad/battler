@@ -1,4 +1,5 @@
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
+import { stateSelectors } from "battler-state";
 import { useEffect, useRef, useState } from "react";
 import { submitChoice } from "../../core/wamp";
 import { setChoiceError } from "../../store/battlesSlice";
@@ -364,6 +365,19 @@ export default function ActionPanel({
         }
       };
 
+      let isMonActiveDynamaxed = false;
+      if (battleSession?.battleState && playerData) {
+        try {
+          isMonActiveDynamaxed = stateSelectors.monIsDynamaxed(battleSession.battleState, {
+            player: playerData.id || playerData.name,
+            mon_index: activeReq.team_position,
+            battle_appearance_index: 0,
+          });
+        } catch {
+          isMonActiveDynamaxed = false;
+        }
+      }
+
       return (
         <div className="flex-col gap-m">
           <div className="card-header">
@@ -376,6 +390,7 @@ export default function ActionPanel({
           {selectedMove === null ? (
             <MoveSelector
               activeReq={activeReq}
+              isDynamaxed={isMonActiveDynamaxed}
               isLoading={isLoading}
               mega={mega}
               setMega={setMega}

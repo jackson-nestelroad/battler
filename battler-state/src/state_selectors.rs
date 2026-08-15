@@ -351,6 +351,14 @@ pub fn mon_is_active(state: &BattleState, mon: &MonBattleAppearanceReference) ->
     Ok(mon_active_position(state, mon)?.is_some())
 }
 
+/// Checks if a Mon is currently Dynamaxed.
+pub fn mon_is_dynamaxed(state: &BattleState, mon: &MonBattleAppearanceReference) -> Result<bool> {
+    Ok(mon_or_else(state, mon)?
+        .volatile_data
+        .conditions
+        .contains_key("Dynamax"))
+}
+
 /// Resolves a side and slot position to a Mon reference.
 pub fn active_mon_by_position(
     state: &BattleState,
@@ -1232,6 +1240,46 @@ mod state_selectors_test {
                 }
             ),
             Ok(None)
+        );
+    }
+
+    #[test]
+    fn returns_mon_is_dynamaxed() {
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([(
+                        "player-1".to_owned(),
+                        Player {
+                            mons: Vec::from_iter([Mon {
+                                volatile_data: MonVolatileData {
+                                    conditions: BTreeMap::from_iter([(
+                                        "Dynamax".to_owned(),
+                                        ConditionData::default(),
+                                    )]),
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            }]),
+                            ..Default::default()
+                        },
+                    )]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert_matches::assert_matches!(
+            mon_is_dynamaxed(
+                &state,
+                &MonBattleAppearanceReference {
+                    player: "player-1".to_owned(),
+                    mon_index: 0,
+                    battle_appearance_index: 0,
+                }
+            ),
+            Ok(true)
         );
     }
 
