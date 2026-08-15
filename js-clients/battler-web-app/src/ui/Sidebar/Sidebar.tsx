@@ -21,6 +21,16 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const activeBattlesList = Object.values(battles).filter((b) => !b.isReplay && !b.isProposal);
   const replayBattlesList = Object.values(battles).filter((b) => b.isReplay);
 
+  const incomingProposals = Object.values(proposalsMap).filter((p) => {
+    if (!connection.playerId) return false;
+    const player = p.sides.flatMap((s) => s.players).find((pl) => pl.id === connection.playerId);
+    const isResolved = !!p.battle;
+    const isDeclined = !!p.rejection || !!p.deletionReason;
+    const hasAccepted = player?.status === "accepted";
+    return !!player && !isResolved && !isDeclined && !hasAccepted;
+  });
+  const hasIncomingProposals = incomingProposals.length > 0;
+
   const handleNav = (view: ActiveView, battleId: string | null = null) => {
     dispatch(selectBattle({ view, battleId }));
 
@@ -85,6 +95,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <span className={styles.navIcon}>🌐</span>
           ) : (
             <span className={styles.navLabel}>Lobby</span>
+          )}
+          {hasIncomingProposals && (
+            <span className={styles.actionBadge} title="New proposal received!">
+              !
+            </span>
           )}
         </button>
         <button

@@ -155,6 +155,7 @@
   color: var(--text-secondary);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--spacing-s);
   transition: all 0.2s ease;
   overflow: hidden;
@@ -170,6 +171,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1;
   }
 
   &:hover {
@@ -326,11 +328,22 @@
     justify-content: center;
     padding: var(--spacing-s) 0;
     border-left: none;
+    position: relative;
 
     &.active {
       border-left: none;
       background-color: var(--color-primary-bg);
       color: var(--color-primary);
+    }
+
+    .actionBadge {
+      position: absolute;
+      top: var(--spacing-xs);
+      right: var(--spacing-m);
+      width: var(--spacing-s);
+      height: var(--spacing-s);
+      font-size: 0;
+      animation: pulse 1.5s infinite alternate;
     }
   }
 
