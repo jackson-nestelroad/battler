@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useConnectionCountdown } from "./hooks/useConnectionCountdown";
 import { useHistorySync } from "./hooks/useHistorySync";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useAppSelector } from "./store/store";
 import BattleScreen from "./ui/Battle/BattleScreen";
 import ConnectionRequired from "./ui/Common/ConnectionRequired";
@@ -14,6 +15,7 @@ import styles from "./App.module.scss";
 
 export default function App() {
   useHistorySync();
+  const isOnline = useOnlineStatus();
   const connection = useAppSelector((state) => state.connection);
   const { connectionMessage } = useConnectionCountdown();
   const isHydrated = connection.isHydrated;
@@ -45,6 +47,12 @@ export default function App() {
       {!isCollapsed && <div className={styles.backdrop} onClick={() => setIsCollapsed(true)} />}
 
       <main className={styles.mainContent}>
+        {!isOnline && (
+          <div className="alert alert-warning">
+            <span className="alert-message">Offline mode</span>
+          </div>
+        )}
+
         <header className={styles.mobileTopBar}>
           <button className={styles.menuTrigger} onClick={() => setIsCollapsed(false)}>
             ☰

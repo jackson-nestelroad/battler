@@ -5,8 +5,12 @@ import App from "./App.tsx";
 import "./index.scss";
 
 import { connectWamp } from "./core/wamp.ts";
+import { initPWA } from "./pwa.ts";
 import { hydrateStore, store } from "./store/store.ts";
 import ErrorBoundary from "./ui/Common/ErrorBoundary.tsx";
+
+// Register Service Worker for offline asset caching
+initPWA();
 
 // Dispatch hydration immediately on startup
 store

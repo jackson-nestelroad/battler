@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { connectWamp } from "../../core/wamp";
 import { useConnectionCountdown } from "../../hooks/useConnectionCountdown";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { setConnectionError } from "../../store/connectionSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import ErrorBanner from "./ErrorBanner";
@@ -9,6 +10,7 @@ import styles from "./ConnectForm.module.scss";
 
 export default function ConnectForm() {
   const dispatch = useAppDispatch();
+  const isOnline = useOnlineStatus();
   const connection = useAppSelector((state) => state.connection);
   const { connectionMessage } = useConnectionCountdown();
 
@@ -18,6 +20,7 @@ export default function ConnectForm() {
 
   const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isOnline) return;
     if (!playerName.trim()) return;
     const cleanPlayerName = playerName.trim().toLowerCase();
     if (cleanPlayerName.startsWith("ai-")) {
@@ -34,6 +37,7 @@ export default function ConnectForm() {
   };
 
   const isConnecting = connection.status === "connecting";
+  const isDisabled = isConnecting || !isOnline;
 
   return (
     <div className={styles.connectContainer}>
@@ -49,7 +53,7 @@ export default function ConnectForm() {
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
               placeholder="e.g., Red, Ash, Cynthia"
-              disabled={isConnecting}
+              disabled={isDisabled}
               required
             />
           </div>
@@ -61,7 +65,7 @@ export default function ConnectForm() {
               value={serverUrl}
               onChange={(e) => setServerUrl(e.target.value)}
               placeholder="ws://localhost:8080/ws"
-              disabled={isConnecting}
+              disabled={isDisabled}
               required
             />
           </div>
@@ -71,7 +75,7 @@ export default function ConnectForm() {
               type="checkbox"
               checked={autoconnect}
               onChange={(e) => setAutoconnect(e.target.checked)}
-              disabled={isConnecting}
+              disabled={isDisabled}
             />
             <label htmlFor="autoconnect">Auto-connect</label>
           </div>
@@ -79,8 +83,8 @@ export default function ConnectForm() {
             message={connection.error}
             onClear={() => dispatch(setConnectionError(null))}
           />
-          <button type="submit" className="btn btn-primary" disabled={isConnecting}>
-            {isConnecting ? connectionMessage : "Connect"}
+          <button type="submit" className="btn btn-primary" disabled={isDisabled}>
+            {!isOnline ? "Offline" : isConnecting ? connectionMessage : "Connect"}
           </button>
         </form>
       </div>
