@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { closeBattleSession, refreshBattleSession } from "../../core/wamp";
+import { checkBattleStatus, closeBattleSession, refreshBattleSession } from "../../core/wamp";
 import { selectBattle, setBattleError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
@@ -33,6 +33,14 @@ export default function BattleScreen() {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+
+  const isFinished = battleSession?.battleState?.phase === "finished";
+  const isReplay = !!battleSession?.isReplay;
+
+  useEffect(() => {
+    if (!battleId || !isFinished || battleSession?.isDeleted || isReplay) return;
+    dispatch(checkBattleStatus(battleId));
+  }, [battleId, isFinished, battleSession?.isDeleted, isReplay, dispatch]);
 
   useEffect(() => {
     setShowDetails(false);
@@ -83,8 +91,6 @@ export default function BattleScreen() {
       .map((e) => formatUiLogEntry(e, battleSession.battleState!))
       .filter((formatted): formatted is string => formatted !== null);
   }, [battleSession]);
-
-  const isReplay = !!battleSession?.isReplay;
 
   if (!battleId) {
     return (
@@ -151,7 +157,7 @@ export default function BattleScreen() {
     const descText = isDeleted
       ? isProposalRoute
         ? "Proposal no longer exists."
-        : "Battle no longer exists."
+        : "battle does not exist"
       : isProposalRoute
         ? "Proposal no longer active."
         : "Battle not found.";
@@ -192,7 +198,6 @@ export default function BattleScreen() {
     !battleSession.isDeleted &&
     (battleSession.serviceBattle?.state === "preparing" ||
       battleSession.battleState?.phase === "pre_battle");
-  const isFinished = battleSession.battleState?.phase === "finished";
 
   const metadata = battleSession?.serviceBattle?.metadata || battleSession?.metadata;
 
@@ -255,7 +260,7 @@ export default function BattleScreen() {
       )}
 
       {battleSession.isDeleted ? (
-        <ErrorBanner message={battleSession.error || "Battle no longer exists."} />
+        <ErrorBanner message={battleSession.error || "battle does not exist"} />
       ) : (
         battleSession.error &&
         !isPreparing && (

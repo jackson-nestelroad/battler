@@ -146,4 +146,26 @@ describe("battlesSlice active timers", () => {
     expect(timers).toBeDefined();
     expect(timers?.["teampreview"]).toBeUndefined();
   });
+
+  it("should mark battle as deleted and set default error when clearBattleState is dispatched", () => {
+    const store = configureStore({
+      reducer: {
+        battles: battlesReducer,
+      },
+    });
+
+    const battleId = "15cf2863-792b-4afc-8852-3aa6481m268e";
+    store.dispatch(battleSessionCreated(battleId));
+
+    store.dispatch({
+      type: "battles/clearBattleState",
+      payload: battleId,
+    });
+
+    const state = store.getState().battles;
+    const battle = state.battles[battleId];
+    expect(battle).toBeDefined();
+    expect(battle?.isDeleted).toBe(true);
+    expect(battle?.error).toBe("battle does not exist");
+  });
 });

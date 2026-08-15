@@ -263,6 +263,9 @@ const battlesSlice = createSlice({
       const battle = state.battles[battleId];
       if (battle) {
         battle.isDeleted = true;
+        if (!battle.error) {
+          battle.error = "battle does not exist";
+        }
       }
     },
 

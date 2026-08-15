@@ -19,17 +19,26 @@ export interface BattlerClient {
   on(event: "update", listener: () => void): this;
   on(event: "request", listener: (request: Request | null) => void): this;
   on(event: "end", listener: () => void): this;
+  on(event: "deleted", listener: () => void): this;
   on(event: "error", listener: (err: unknown) => void): this;
 
   once(event: "update", listener: () => void): this;
   once(event: "request", listener: (request: Request | null) => void): this;
   once(event: "end", listener: () => void): this;
+  once(event: "deleted", listener: () => void): this;
   once(event: "error", listener: (err: unknown) => void): this;
 
   off(event: "update", listener: () => void): this;
   off(event: "request", listener: (request: Request | null) => void): this;
   off(event: "end", listener: () => void): this;
+  off(event: "deleted", listener: () => void): this;
   off(event: "error", listener: (err: unknown) => void): this;
+
+  emit(event: "update"): boolean;
+  emit(event: "request", request: Request | null): boolean;
+  emit(event: "end"): boolean;
+  emit(event: "deleted"): boolean;
+  emit(event: "error", err: unknown): boolean;
 }
 
 export function getRoleForPlayer(battle: Battle, player: string): Role {
@@ -83,6 +92,8 @@ export class BattlerClient extends EventEmitter {
   private currentRequest: Request | null = null;
   private stateUpdatePromise: Promise<void> | null = null;
   private hasDoneSignal = false;
+  private hasEmittedEndSignal = false;
+  private hasDeletedSignal = false;
   private safetyEndTimeout: ReturnType<typeof setTimeout> | null = null;
   private hasPendingRequestSignal = false;
 
@@ -138,6 +149,10 @@ export class BattlerClient extends EventEmitter {
       this.hasDoneSignal = true;
     }
 
+    if (entry.content === "-battlerservice:deleted") {
+      this.hasDeletedSignal = true;
+    }
+
     if (!this.stateUpdatePromise) {
       this.stateUpdatePromise = Promise.resolve().then(async () => {
         this.stateUpdatePromise = null;
@@ -161,6 +176,9 @@ export class BattlerClient extends EventEmitter {
       if (this.logLines.some((l) => l === "-battlerservice:request")) {
         this.hasPendingRequestSignal = true;
       }
+      if (this.logLines.some((l) => l === "-battlerservice:deleted")) {
+        this.hasDeletedSignal = true;
+      }
     }
 
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
@@ -170,8 +188,13 @@ export class BattlerClient extends EventEmitter {
       this.checkAndEmitRequest().catch(() => {});
     }
 
-    if (this.hasDoneSignal) {
+    if (this.hasDoneSignal && !this.hasEmittedEndSignal) {
+      this.hasEmittedEndSignal = true;
       this.emit("end");
+    }
+
+    if (this.hasDeletedSignal) {
+      this.emit("deleted");
       await this.cancel();
       return;
     }

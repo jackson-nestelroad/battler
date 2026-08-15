@@ -187,11 +187,15 @@ function bindClientEvents(
   });
 
   client.on("error", (err) => {
-    dispatch(setBattleError({ battleId, error: formatWampError(err) }));
+    handleBattleError(dispatch, battleId, "Battle error", err);
   });
 
   client.on("end", () => {
     dispatch(battleSessionEnded(battleId));
+  });
+
+  client.on("deleted", () => {
+    dispatch(clearBattleState(battleId));
   });
 }
 
@@ -200,6 +204,7 @@ export async function initializeBattleClient(
   rawBattleId: string,
   playerId: string,
   dispatch: Dispatch,
+  getState?: () => RootState,
 ): Promise<BattlerClient | undefined> {
   const battleId = formatUuid(rawBattleId);
   if (connectionManager.clientsRegistry.has(battleId)) {
@@ -217,7 +222,10 @@ export async function initializeBattleClient(
   const initPromise = (async () => {
     try {
       dispatch(setBattleLoading({ battleId, isLoading: true }));
-      dispatch(setBattleError({ battleId, error: null }));
+      const existingSession = getState ? getState().battles.battles[battleId] : undefined;
+      if (!existingSession?.isDeleted) {
+        dispatch(setBattleError({ battleId, error: null }));
+      }
 
       const client = await BattlerClient.create(
         battleId,
@@ -413,7 +421,10 @@ export const connectWamp = createAsyncThunk(
           event: "disconnect",
           listener: (
             reason: string | null,
-            details: { retry_delay?: number; retry_count?: number; will_retry?: boolean } | null | undefined,
+            details:
+              | { retry_delay?: number; retry_count?: number; will_retry?: boolean }
+              | null
+              | undefined,
           ) => void,
         ): void;
         on(event: "connect", listener: () => void): void;
@@ -724,9 +735,9 @@ export const submitBattleTeam = createAsyncThunk(
 );
 
 // Refresh Lobby thunk
-export const refreshLobby = createAsyncThunk(
+export const refreshLobby = createAsyncThunk<void, string, { state: RootState }>(
   "wamp/refreshLobby",
-  async (playerId: string, { dispatch }) => {
+  async (playerId: string, { dispatch, getState }) => {
     if (!connectionManager.multiplayerClient) return;
 
     // Restart subscription if active
@@ -779,6 +790,7 @@ export const refreshLobby = createAsyncThunk(
     try {
       let battlesOffset = 0;
       const battlesLimit = 50;
+      const fetchedBattleIds = new Set<string>();
       while (true) {
         if (!connectionManager.serviceClient) break;
         const page = await connectionManager.serviceClient.battlesForPlayer(
@@ -787,22 +799,36 @@ export const refreshLobby = createAsyncThunk(
           battlesOffset,
         );
         for (const b of page) {
-          const existingClient = connectionManager.clientsRegistry.get(b.uuid);
+          const battleId = formatUuid(b.uuid);
+          fetchedBattleIds.add(battleId);
+          const existingClient = connectionManager.clientsRegistry.get(battleId);
           if (existingClient) {
             existingClient.sync().catch((err: unknown) => {
               console.warn(
-                `[WAMP] Failed to sync existing battle client for ${b.uuid} during lobby refresh:`,
+                `[WAMP] Failed to sync existing battle client for ${battleId} during lobby refresh:`,
                 err,
               );
+              handleBattleError(dispatch, battleId, "Failed to sync battle client", err);
             });
           } else {
-            restoreBattleSession(b.uuid, playerId, dispatch);
+            restoreBattleSession(battleId, playerId, dispatch);
           }
         }
         if (page.length < battlesLimit) {
           break;
         }
         battlesOffset += battlesLimit;
+      }
+
+      if (connectionManager.serviceClient) {
+        const currentBattles = getState().battles.battles;
+        for (const [id, battle] of Object.entries(currentBattles)) {
+          if (!battle.isReplay && !battle.isProposal && !battle.isDeleted) {
+            if (!fetchedBattleIds.has(id)) {
+              dispatch(clearBattleState(id));
+            }
+          }
+        }
       }
     } catch (err) {
       console.error("[WAMP] Failed to fetch active battles during lobby refresh:", err);
@@ -857,9 +883,16 @@ export const refreshProposalSession = createAsyncThunk<
 );
 
 // Refresh Battle Session thunk
-export const refreshBattleSession = createAsyncThunk(
+export const refreshBattleSession = createAsyncThunk<
+  void,
+  { battleId: string; playerId: string },
+  { state: RootState }
+>(
   "wamp/refreshBattleSession",
-  async ({ battleId: rawId, playerId }: { battleId: string; playerId: string }, { dispatch }) => {
+  async (
+    { battleId: rawId, playerId }: { battleId: string; playerId: string },
+    { dispatch, getState },
+  ) => {
     const battleId = formatUuid(rawId);
     const client = connectionManager.clientsRegistry.get(battleId);
     if (client) {
@@ -873,12 +906,26 @@ export const refreshBattleSession = createAsyncThunk(
 
     dispatch(setBattleLoading({ battleId, isLoading: true }));
     try {
-      await initializeBattleClient(battleId, playerId, dispatch);
+      await initializeBattleClient(battleId, playerId, dispatch, getState);
     } catch (err) {
       console.error(`[WAMP] Failed to refresh battle client for ${battleId}:`, err);
-      dispatch(setBattleError({ battleId, error: formatWampError(err) }));
+      handleBattleError(dispatch, battleId, "Failed to refresh battle client", err);
     } finally {
       dispatch(setBattleLoading({ battleId, isLoading: false }));
+    }
+  },
+);
+
+// Check Battle Status thunk
+export const checkBattleStatus = createAsyncThunk(
+  "wamp/checkBattleStatus",
+  async (battleId: string, { dispatch }) => {
+    const formattedId = formatUuid(battleId);
+    if (!connectionManager.serviceClient) return;
+    try {
+      await connectionManager.serviceClient.battle(formattedId);
+    } catch (err) {
+      handleBattleError(dispatch, formattedId, "Battle status check failed", err);
     }
   },
 );

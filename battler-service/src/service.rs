@@ -529,6 +529,14 @@ struct LiveBattleManager<'d> {
 }
 
 impl<'d> LiveBattleManager<'d> {
+    async fn inject_and_flush_logs(&self, entries: impl IntoIterator<Item = impl Into<String>>) {
+        {
+            let mut battle_guard = self.live_battle.lock().await;
+            battle_guard.inject_log_entries(entries);
+        }
+        Self::flush_battle_logs(&self.live_battle).await;
+    }
+
     async fn flush_logs(&self) {
         Self::flush_battle_logs(&self.live_battle).await;
     }
@@ -1432,6 +1440,7 @@ impl<'d> BattlerService<'d> {
         };
 
         if let Some(manager) = manager {
+            manager.inject_and_flush_logs(["deleted"]).await;
             manager.shutdown().await;
         }
 
