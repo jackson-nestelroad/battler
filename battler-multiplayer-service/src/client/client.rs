@@ -15,6 +15,8 @@ use crate::{
 pub trait BattlerMultiplayerServiceClient: Send + Sync {
     /// Proposes a battle.
     async fn propose_battle(&self, options: ProposedBattleOptions) -> Result<ProposedBattle>;
+    /// Looks up a proposed battle.
+    async fn proposed_battle(&self, uuid: Uuid) -> Result<ProposedBattle>;
     /// Lists proposed battles for a player.
     async fn proposed_battles_for_player(
         &self,

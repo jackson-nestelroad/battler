@@ -190,7 +190,7 @@ where
                     Some(log) => log,
                     None => break,
                 };
-                log::info!("Producer received log entry from channel for battle {}, side: {:?}", log.battle, log.side);
+                log::trace!("Producer received log entry from channel for battle {}, side: {:?}", log.battle, log.side);
                 if let Err(err) = publish_log_entry(&producer, service.as_ref(), log).await {
                     log::warn!("Failed to publish log entry: {err:?}");
                 }
@@ -212,7 +212,7 @@ async fn publish_log_entry<'d, S>(
 where
     S: Send + 'static,
 {
-    log::info!(
+    log::trace!(
         "publish_log_entry: fetching side players for battle {}, side: {:?}",
         global_log_entry.battle,
         global_log_entry.side
@@ -220,7 +220,7 @@ where
     let players = service
         .side_players(global_log_entry.battle, global_log_entry.side)
         .await;
-    log::info!("publish_log_entry: side players fetched: {:?}", players);
+    log::trace!("publish_log_entry: side players fetched: {:?}", players);
     let log_pattern = battler_service_schema::LogPattern(
         uuid_for_uri(&global_log_entry.battle),
         match global_log_entry.side {
@@ -239,13 +239,13 @@ where
         },
         None => battler_wamprat::peer::PublishOptions::default(),
     };
-    log::info!(
+    log::trace!(
         "publish_log_entry: publishing log to WAMP for battle {}",
         global_log_entry.battle
     );
     let res = producer.publish_log(log_pattern, log_event, options).await;
     if res.is_ok() {
-        log::info!(
+        log::trace!(
             "publish_log_entry: successfully published log to WAMP for battle {}",
             global_log_entry.battle
         );

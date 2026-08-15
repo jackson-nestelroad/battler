@@ -1,6 +1,9 @@
 use std::{
     fmt::Debug,
-    sync::Arc,
+    sync::{
+        Arc,
+        Mutex,
+    },
     time::Duration,
 };
 
@@ -25,6 +28,7 @@ use tokio::sync::{
     RwLock,
     broadcast,
     mpsc,
+    oneshot,
 };
 
 use crate::{
@@ -362,6 +366,18 @@ struct Procedure {
     procedure_tx: broadcast::Sender<ProcedureMessage>,
 }
 
+/// Automatically removes a request from its corresponding tracking map when dropped.
+pub struct RequestDropGuard<T> {
+    request_id: Id,
+    txs: Arc<Mutex<HashMap<Id, T>>>,
+}
+
+impl<T> Drop for RequestDropGuard<T> {
+    fn drop(&mut self) {
+        self.txs.lock().unwrap().remove(&self.request_id);
+    }
+}
+
 /// A handle to an asynchronously-running peer session.
 pub struct SessionHandle {
     state: Arc<RwLock<SessionState>>,
@@ -373,17 +389,54 @@ pub struct SessionHandle {
 
     auth_challenge_rx: broadcast::Receiver<ChallengeMessage>,
 
-    subscribed_rx:
-        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Subscription>>,
-    unsubscribed_rx:
-        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
-    published_rx:
-        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Publication>>,
-    registered_rx:
-        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Registration>>,
-    unregistered_rx:
-        broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unregistration>>,
-    rpc_result_rx: broadcast::Receiver<ChannelTransmittableResult<peer_session_message::RpcResult>>,
+    subscribed_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Subscription>>,
+            >,
+        >,
+    >,
+    unsubscribed_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
+            >,
+        >,
+    >,
+    published_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Publication>>,
+            >,
+        >,
+    >,
+    registered_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Registration>>,
+            >,
+        >,
+    >,
+    unregistered_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Unregistration>>,
+            >,
+        >,
+    >,
+    rpc_result_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                mpsc::UnboundedSender<ChannelTransmittableResult<peer_session_message::RpcResult>>,
+            >,
+        >,
+    >,
 }
 
 impl SessionHandle {
@@ -431,45 +484,129 @@ impl SessionHandle {
     }
 
     /// The receiver channel for responses to SUBSCRIBE messages.
-    pub fn subscribed_rx(
+    pub fn register_subscribed_request(
         &self,
-    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Subscription>> {
-        self.subscribed_rx.resubscribe()
+        request_id: Id,
+    ) -> (
+        oneshot::Receiver<ChannelTransmittableResult<peer_session_message::Subscription>>,
+        RequestDropGuard<
+            oneshot::Sender<ChannelTransmittableResult<peer_session_message::Subscription>>,
+        >,
+    ) {
+        let (tx, rx) = oneshot::channel();
+        self.subscribed_txs.lock().unwrap().insert(request_id, tx);
+        (
+            rx,
+            RequestDropGuard {
+                request_id,
+                txs: self.subscribed_txs.clone(),
+            },
+        )
     }
 
     /// The receiver channel for responses to UNSUBSCRIBE messages.
-    pub fn unsubscribed_rx(
+    pub fn register_unsubscribed_request(
         &self,
-    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unsubscription>> {
-        self.unsubscribed_rx.resubscribe()
+        request_id: Id,
+    ) -> (
+        oneshot::Receiver<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
+        RequestDropGuard<
+            oneshot::Sender<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
+        >,
+    ) {
+        let (tx, rx) = oneshot::channel();
+        self.unsubscribed_txs.lock().unwrap().insert(request_id, tx);
+        (
+            rx,
+            RequestDropGuard {
+                request_id,
+                txs: self.unsubscribed_txs.clone(),
+            },
+        )
     }
 
     /// The receiver channel for responses to PUBLISH messages.
-    pub fn published_rx(
+    pub fn register_published_request(
         &self,
-    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Publication>> {
-        self.published_rx.resubscribe()
+        request_id: Id,
+    ) -> (
+        oneshot::Receiver<ChannelTransmittableResult<peer_session_message::Publication>>,
+        RequestDropGuard<
+            oneshot::Sender<ChannelTransmittableResult<peer_session_message::Publication>>,
+        >,
+    ) {
+        let (tx, rx) = oneshot::channel();
+        self.published_txs.lock().unwrap().insert(request_id, tx);
+        (
+            rx,
+            RequestDropGuard {
+                request_id,
+                txs: self.published_txs.clone(),
+            },
+        )
     }
 
     /// The receiver channel for responses to REGISTER messages.
-    pub fn registered_rx(
+    pub fn register_registered_request(
         &self,
-    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Registration>> {
-        self.registered_rx.resubscribe()
+        request_id: Id,
+    ) -> (
+        oneshot::Receiver<ChannelTransmittableResult<peer_session_message::Registration>>,
+        RequestDropGuard<
+            oneshot::Sender<ChannelTransmittableResult<peer_session_message::Registration>>,
+        >,
+    ) {
+        let (tx, rx) = oneshot::channel();
+        self.registered_txs.lock().unwrap().insert(request_id, tx);
+        (
+            rx,
+            RequestDropGuard {
+                request_id,
+                txs: self.registered_txs.clone(),
+            },
+        )
     }
 
     /// The receiver channel for responses to UNREGISTER messages.
-    pub fn unregistered_rx(
+    pub fn register_unregistered_request(
         &self,
-    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::Unregistration>> {
-        self.unregistered_rx.resubscribe()
+        request_id: Id,
+    ) -> (
+        oneshot::Receiver<ChannelTransmittableResult<peer_session_message::Unregistration>>,
+        RequestDropGuard<
+            oneshot::Sender<ChannelTransmittableResult<peer_session_message::Unregistration>>,
+        >,
+    ) {
+        let (tx, rx) = oneshot::channel();
+        self.unregistered_txs.lock().unwrap().insert(request_id, tx);
+        (
+            rx,
+            RequestDropGuard {
+                request_id,
+                txs: self.unregistered_txs.clone(),
+            },
+        )
     }
 
     /// The receiver channel for responses to CALL messages.
-    pub fn rpc_result_rx(
+    pub fn register_rpc_result_request(
         &self,
-    ) -> broadcast::Receiver<ChannelTransmittableResult<peer_session_message::RpcResult>> {
-        self.rpc_result_rx.resubscribe()
+        request_id: Id,
+    ) -> (
+        mpsc::UnboundedReceiver<ChannelTransmittableResult<peer_session_message::RpcResult>>,
+        RequestDropGuard<
+            mpsc::UnboundedSender<ChannelTransmittableResult<peer_session_message::RpcResult>>,
+        >,
+    ) {
+        let (tx, rx) = mpsc::unbounded_channel();
+        self.rpc_result_txs.lock().unwrap().insert(request_id, tx);
+        (
+            rx,
+            RequestDropGuard {
+                request_id,
+                txs: self.rpc_result_txs.clone(),
+            },
+        )
     }
 }
 
@@ -488,16 +625,54 @@ pub struct Session {
 
     auth_challenge_tx: broadcast::Sender<ChallengeMessage>,
 
-    subscribed_tx:
-        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Subscription>>,
-    unsubscribed_tx:
-        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
-    published_tx: broadcast::Sender<ChannelTransmittableResult<peer_session_message::Publication>>,
-    registered_tx:
-        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Registration>>,
-    unregistered_tx:
-        broadcast::Sender<ChannelTransmittableResult<peer_session_message::Unregistration>>,
-    rpc_result_tx: broadcast::Sender<ChannelTransmittableResult<peer_session_message::RpcResult>>,
+    subscribed_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Subscription>>,
+            >,
+        >,
+    >,
+    unsubscribed_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Unsubscription>>,
+            >,
+        >,
+    >,
+    published_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Publication>>,
+            >,
+        >,
+    >,
+    registered_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Registration>>,
+            >,
+        >,
+    >,
+    unregistered_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                oneshot::Sender<ChannelTransmittableResult<peer_session_message::Unregistration>>,
+            >,
+        >,
+    >,
+    rpc_result_txs: Arc<
+        Mutex<
+            HashMap<
+                Id,
+                mpsc::UnboundedSender<ChannelTransmittableResult<peer_session_message::RpcResult>>,
+            >,
+        >,
+    >,
 }
 
 impl Session {
@@ -507,12 +682,14 @@ impl Session {
         let (established_session_tx, _) = broadcast::channel(48);
         let (closed_session_tx, _) = broadcast::channel(48);
         let (auth_challenge_tx, _) = broadcast::channel(48);
-        let (subscribed_tx, _) = broadcast::channel(128);
-        let (unsubscribed_tx, _) = broadcast::channel(128);
-        let (published_tx, _) = broadcast::channel(128);
-        let (registered_tx, _) = broadcast::channel(128);
-        let (unregistered_tx, _) = broadcast::channel(128);
-        let (rpc_result_tx, _) = broadcast::channel(128);
+
+        let subscribed_txs = Arc::new(Mutex::new(HashMap::default()));
+        let unsubscribed_txs = Arc::new(Mutex::new(HashMap::default()));
+        let published_txs = Arc::new(Mutex::new(HashMap::default()));
+        let registered_txs = Arc::new(Mutex::new(HashMap::default()));
+        let unregistered_txs = Arc::new(Mutex::new(HashMap::default()));
+        let rpc_result_txs = Arc::new(Mutex::new(HashMap::default()));
+
         Self {
             name,
             service_message_tx,
@@ -521,12 +698,30 @@ impl Session {
             established_session_tx,
             closed_session_tx,
             auth_challenge_tx,
-            subscribed_tx,
-            unsubscribed_tx,
-            published_tx,
-            registered_tx,
-            unregistered_tx,
-            rpc_result_tx,
+            subscribed_txs,
+            unsubscribed_txs,
+            published_txs,
+            registered_txs,
+            unregistered_txs,
+            rpc_result_txs,
+        }
+    }
+
+    /// Generates a handle to the session, which can be saved separately from the session's
+    /// lifecycle.
+    pub fn session_handle(&self) -> SessionHandle {
+        SessionHandle {
+            state: self.state.clone(),
+            id_allocator: self.id_allocator.clone(),
+            established_session_rx: self.established_session_tx.subscribe(),
+            closed_session_rx: self.closed_session_tx.subscribe(),
+            auth_challenge_rx: self.auth_challenge_tx.subscribe(),
+            subscribed_txs: self.subscribed_txs.clone(),
+            unsubscribed_txs: self.unsubscribed_txs.clone(),
+            published_txs: self.published_txs.clone(),
+            registered_txs: self.registered_txs.clone(),
+            unregistered_txs: self.unregistered_txs.clone(),
+            rpc_result_txs: self.rpc_result_txs.clone(),
         }
     }
 
@@ -540,24 +735,6 @@ impl Session {
         match *self.state.read().await {
             SessionState::Closed => true,
             _ => false,
-        }
-    }
-
-    /// Generates a handle to the session, which can be saved separately from the session's
-    /// lifecycle.
-    pub fn session_handle(&self) -> SessionHandle {
-        SessionHandle {
-            state: self.state.clone(),
-            id_allocator: self.id_allocator.clone(),
-            established_session_rx: self.established_session_tx.subscribe(),
-            closed_session_rx: self.closed_session_tx.subscribe(),
-            auth_challenge_rx: self.auth_challenge_tx.subscribe(),
-            subscribed_rx: self.subscribed_tx.subscribe(),
-            unsubscribed_rx: self.unsubscribed_tx.subscribe(),
-            published_rx: self.published_tx.subscribe(),
-            registered_rx: self.registered_tx.subscribe(),
-            unregistered_rx: self.unregistered_tx.subscribe(),
-            rpc_result_rx: self.rpc_result_tx.subscribe(),
         }
     }
 
@@ -799,30 +976,72 @@ impl Session {
             ref message @ Message::Error(ref error_message) => {
                 match error_message.request_type {
                     Message::SUBSCRIBE_TAG => {
-                        self.subscribed_tx.send(Err(message.try_into()?))?;
+                        if let Some(tx) = self
+                            .subscribed_txs
+                            .lock()
+                            .unwrap()
+                            .remove(&error_message.request)
+                        {
+                            tx.send(Err(message.try_into()?)).ok();
+                        }
                     }
                     Message::UNSUBSCRIBE_TAG => {
                         self.modify_established_session_state(|state| {
                             state.pending_unsubscriptions.remove(&error_message.request);
                         })
                         .await?;
-                        self.unsubscribed_tx.send(Err(message.try_into()?))?;
+                        if let Some(tx) = self
+                            .unsubscribed_txs
+                            .lock()
+                            .unwrap()
+                            .remove(&error_message.request)
+                        {
+                            tx.send(Err(message.try_into()?)).ok();
+                        }
                     }
                     Message::PUBLISH_TAG => {
-                        self.published_tx.send(Err(message.try_into()?))?;
+                        if let Some(tx) = self
+                            .published_txs
+                            .lock()
+                            .unwrap()
+                            .remove(&error_message.request)
+                        {
+                            tx.send(Err(message.try_into()?)).ok();
+                        }
                     }
                     Message::REGISTER_TAG => {
-                        self.registered_tx.send(Err(message.try_into()?))?;
+                        if let Some(tx) = self
+                            .registered_txs
+                            .lock()
+                            .unwrap()
+                            .remove(&error_message.request)
+                        {
+                            tx.send(Err(message.try_into()?)).ok();
+                        }
                     }
                     Message::UNREGISTER_TAG => {
                         self.modify_established_session_state(|state| {
                             state.pending_unregistrations.remove(&error_message.request);
                         })
                         .await?;
-                        self.unregistered_tx.send(Err(message.try_into()?))?;
+                        if let Some(tx) = self
+                            .unregistered_txs
+                            .lock()
+                            .unwrap()
+                            .remove(&error_message.request)
+                        {
+                            tx.send(Err(message.try_into()?)).ok();
+                        }
                     }
                     Message::CALL_TAG => {
-                        self.rpc_result_tx.send(Err(message.try_into()?))?;
+                        let tx = self
+                            .rpc_result_txs
+                            .lock()
+                            .unwrap()
+                            .remove(&error_message.request);
+                        if let Some(tx) = tx {
+                            tx.send(Err(message.try_into()?)).ok();
+                        }
                     }
                     _ => {
                         error!(
@@ -844,12 +1063,19 @@ impl Session {
                         .insert(message.subscription, Subscription { event_tx })
                 })
                 .await?;
-                self.subscribed_tx
-                    .send(Ok(peer_session_message::Subscription {
+                if let Some(tx) = self
+                    .subscribed_txs
+                    .lock()
+                    .unwrap()
+                    .remove(&message.subscribe_request)
+                {
+                    tx.send(Ok(peer_session_message::Subscription {
                         request_id: message.subscribe_request,
                         subscription_id: message.subscription,
                         event_rx,
-                    }))?;
+                    }))
+                    .ok();
+                }
                 Ok(())
             }
             Message::Unsubscribed(message) => {
@@ -862,17 +1088,31 @@ impl Session {
                     }
                 })
                 .await?;
-                self.unsubscribed_tx
-                    .send(Ok(peer_session_message::Unsubscription {
+                if let Some(tx) = self
+                    .unsubscribed_txs
+                    .lock()
+                    .unwrap()
+                    .remove(&message.unsubscribe_request)
+                {
+                    tx.send(Ok(peer_session_message::Unsubscription {
                         request_id: message.unsubscribe_request,
-                    }))?;
+                    }))
+                    .ok();
+                }
                 Ok(())
             }
             Message::Published(message) => {
-                self.published_tx
-                    .send(Ok(peer_session_message::Publication {
+                if let Some(tx) = self
+                    .published_txs
+                    .lock()
+                    .unwrap()
+                    .remove(&message.publish_request)
+                {
+                    tx.send(Ok(peer_session_message::Publication {
                         request_id: message.publish_request,
-                    }))?;
+                    }))
+                    .ok();
+                }
                 Ok(())
             }
             Message::Event(message) => {
@@ -909,12 +1149,19 @@ impl Session {
                         .insert(message.registration, Procedure { procedure_tx })
                 })
                 .await?;
-                self.registered_tx
-                    .send(Ok(peer_session_message::Registration {
+                if let Some(tx) = self
+                    .registered_txs
+                    .lock()
+                    .unwrap()
+                    .remove(&message.register_request)
+                {
+                    tx.send(Ok(peer_session_message::Registration {
                         request_id: message.register_request,
                         registration_id: message.registration,
                         procedure_message_rx,
-                    }))?;
+                    }))
+                    .ok();
+                }
                 Ok(())
             }
             Message::Unregistered(message) => {
@@ -927,10 +1174,17 @@ impl Session {
                     }
                 })
                 .await?;
-                self.unregistered_tx
-                    .send(Ok(peer_session_message::Unregistration {
+                if let Some(tx) = self
+                    .unregistered_txs
+                    .lock()
+                    .unwrap()
+                    .remove(&message.unregister_request)
+                {
+                    tx.send(Ok(peer_session_message::Unregistration {
                         request_id: message.unregister_request,
-                    }))?;
+                    }))
+                    .ok();
+                }
                 Ok(())
             }
             Message::Invocation(message) => {
@@ -1020,13 +1274,23 @@ impl Session {
                     .get("progress")
                     .and_then(|val| val.bool())
                     .unwrap_or(false);
-                self.rpc_result_tx
-                    .send(Ok(peer_session_message::RpcResult {
+                let tx = {
+                    let mut txs = self.rpc_result_txs.lock().unwrap();
+                    if progress {
+                        txs.get(&message.call_request).cloned()
+                    } else {
+                        txs.remove(&message.call_request)
+                    }
+                };
+                if let Some(tx) = tx {
+                    tx.send(Ok(peer_session_message::RpcResult {
                         request_id: message.call_request,
                         arguments: message.yield_arguments,
                         arguments_keyword: message.yield_arguments_keyword,
                         progress,
-                    }))?;
+                    }))
+                    .ok();
+                }
                 Ok(())
             }
             Message::Interrupt(message) => {

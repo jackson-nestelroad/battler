@@ -29,6 +29,7 @@ async fn picks_valid_move_for_double_battle() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+#[ignore = "fuzz test requires explicit invocation"]
 async fn competes_in_fuzz_test_battle() {
     battler_test_utils::collect_logs();
     let store = battler_test_utils::static_local_data_store();

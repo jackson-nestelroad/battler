@@ -122,6 +122,8 @@ struct LiveBattle<'d> {
 
     choice_made_tx: broadcast::Sender<String>,
     cancel_timers_tx: broadcast::Sender<()>,
+    global_log_tx: mpsc::Sender<GlobalLogEntry>,
+    pending_global_logs: Vec<GlobalLogEntry>,
     finished_at: Option<Instant>,
     log_timer_deadlines: bool,
     current_timer_tasks: JoinSet<()>,
@@ -145,7 +147,7 @@ impl<'d> LiveBattle<'d> {
             Self::new_side(&options.side_2),
         ]);
         let battle = PublicCoreBattle::new(options, data, engine_options)?;
-        let logs = SplitLogs::new(uuid, sides.len(), global_log_tx);
+        let logs = SplitLogs::new(uuid, sides.len());
 
         let (choice_made_tx, _) = broadcast::channel(48);
         let (cancel_timers_tx, _) = broadcast::channel(48);
@@ -167,6 +169,8 @@ impl<'d> LiveBattle<'d> {
             timers_config: service_options.timers,
             choice_made_tx,
             cancel_timers_tx,
+            global_log_tx,
+            pending_global_logs: Vec::new(),
             finished_at: None,
             log_timer_deadlines: service_options.log_timer_deadlines,
             current_timer_tasks: JoinSet::new(),
@@ -328,14 +332,14 @@ impl<'d> LiveBattle<'d> {
         Ok(())
     }
 
-    async fn update_log(&mut self) -> Result<()> {
+    fn update_log(&mut self) -> Result<()> {
         let new_entries: Vec<String> = self
             .battle
             .new_log_entries()
             .map(|s| s.to_owned())
             .collect();
         let has_new_entries = !new_entries.is_empty();
-        self.logs.append(new_entries).await;
+        self.logs.append(new_entries, &mut self.pending_global_logs);
         let players = self
             .sides
             .iter()
@@ -348,12 +352,12 @@ impl<'d> LiveBattle<'d> {
             }
         }
         if has_request && has_new_entries {
-            self.inject_log_entries(["request"]).await;
+            self.inject_log_entries(["request"]);
         }
         Ok(())
     }
 
-    async fn continue_battle(&mut self) -> Result<bool> {
+    fn continue_battle(&mut self) -> Result<bool> {
         let continued = if self.battle.ready_to_continue()? {
             self.cancel_timers_tx.send(()).ok();
             self.battle.continue_battle()?;
@@ -361,7 +365,7 @@ impl<'d> LiveBattle<'d> {
         } else {
             false
         };
-        self.update_log().await?;
+        self.update_log()?;
         if self.battle.ended() {
             self.state = BattleState::Finished;
             if self.finished_at.is_none() {
@@ -412,7 +416,7 @@ impl<'d> LiveBattle<'d> {
         }
     }
 
-    async fn inject_log_entries<I, S>(&mut self, entries: I)
+    fn inject_log_entries<I, S>(&mut self, entries: I)
     where
         I: IntoIterator<Item = S>,
         S: Into<String>,
@@ -421,10 +425,11 @@ impl<'d> LiveBattle<'d> {
         for entry in entries {
             string_entries.push(Self::injected_log_entry(entry.into()));
         }
-        self.logs.append(string_entries).await;
+        self.logs
+            .append(string_entries, &mut self.pending_global_logs);
     }
 
-    async fn handle_timer_finished(&mut self, timer_type: &TimerType) -> Result<()> {
+    fn handle_timer_finished(&mut self, timer_type: &TimerType) -> Result<()> {
         log::info!("Timer {timer_type:?} finished for battle {}", self.uuid);
 
         // The timer finished, but the player it corresponds to made an action.
@@ -445,8 +450,7 @@ impl<'d> LiveBattle<'d> {
             Duration::ZERO,
             Some(TimerLogType::Done),
             log_timer_deadlines,
-        )])
-        .await;
+        )]);
 
         match timer_type {
             TimerType::Battle => self.battle.auto_end(),
@@ -465,6 +469,10 @@ impl<'d> LiveBattle<'d> {
                 Ok(())
             }
         }
+    }
+
+    pub fn take_pending_logs(&mut self) -> Vec<GlobalLogEntry> {
+        std::mem::take(&mut self.pending_global_logs)
     }
 
     fn is_timer_active(&self, timer_type: &TimerType) -> Result<bool> {
@@ -521,6 +529,23 @@ struct LiveBattleManager<'d> {
 }
 
 impl<'d> LiveBattleManager<'d> {
+    async fn flush_logs(&self) {
+        Self::flush_battle_logs(&self.live_battle).await;
+    }
+
+    async fn flush_battle_logs(battle: &Arc<Mutex<LiveBattle<'d>>>) {
+        let (tx, logs) = {
+            let mut battle_guard = battle.lock().await;
+            (
+                battle_guard.global_log_tx.clone(),
+                battle_guard.take_pending_logs(),
+            )
+        };
+        for log in logs {
+            tx.send(log).await.ok();
+        }
+    }
+
     fn new(battle: LiveBattle<'d>) -> Self {
         let uuid = battle.uuid;
         let initial_preview = battle.battle_preview();
@@ -598,10 +623,10 @@ impl<'d> LiveBattleManager<'d> {
         live_battle.update_team(player, team)?;
 
         // Inject a log entry so that clients can refresh player states.
-        live_battle
-            .inject_log_entries([format!("teamupdate|player:{player}")])
-            .await;
+        live_battle.inject_log_entries([format!("teamupdate|player:{player}")]);
         self.update_preview(&live_battle);
+        drop(live_battle);
+        self.flush_logs().await;
 
         Ok(())
     }
@@ -626,11 +651,12 @@ impl<'d> LiveBattleManager<'d> {
         {
             let mut live_battle = self.live_battle.lock().await;
             live_battle.battle.start()?;
-            live_battle.inject_log_entries(["started"]).await;
-            live_battle.update_log().await?;
+            live_battle.inject_log_entries(["started"]);
+            live_battle.update_log()?;
             live_battle.state = BattleState::Active;
             self.update_preview(&live_battle);
         }
+        self.flush_logs().await;
         Self::proceed(
             self.uuid,
             self.live_battle.clone(),
@@ -705,55 +731,53 @@ impl<'d> LiveBattleManager<'d> {
     }
 }
 
-fn proceed_loop(
+async fn proceed_loop(
     uuid: Uuid,
     battle: Arc<Mutex<LiveBattle<'static>>>,
     preview_tx: watch::Sender<BattlePreview>,
     task_tx: mpsc::WeakSender<()>,
-) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> {
-    Box::pin(async move {
-        loop {
-            let task_tx = match task_tx.upgrade() {
-                Some(task_tx) => task_tx,
-                None => return,
-            };
+) {
+    loop {
+        let task_tx = match task_tx.upgrade() {
+            Some(task_tx) => task_tx,
+            None => return,
+        };
 
-            if let Err(err) = LiveBattleManager::proceed_detached_internal(
-                uuid,
-                battle.clone(),
-                preview_tx.clone(),
-                task_tx,
-            )
-            .await
-            {
-                log::error!("Live battle {uuid} proceed failed: {err:#}");
-                battle.lock().await.error = Some(format!("{err:#}"));
-                battle.lock().await.is_proceeding = false;
-                break;
-            }
+        if let Err(err) = LiveBattleManager::proceed_detached_internal(
+            uuid,
+            battle.clone(),
+            preview_tx.clone(),
+            task_tx,
+        )
+        .await
+        {
+            log::error!("Live battle {uuid} proceed failed: {err:#}");
+            battle.lock().await.error = Some(format!("{err:#}"));
+            battle.lock().await.is_proceeding = false;
+            break;
+        }
 
-            let continue_loop = {
-                let mut battle_guard = battle.lock().await;
-                if battle_guard.battle.ended() {
+        let continue_loop = {
+            let mut battle_guard = battle.lock().await;
+            if battle_guard.battle.ended() {
+                battle_guard.is_proceeding = false;
+                false
+            } else {
+                let ready = battle_guard.battle.ready_to_continue().unwrap_or(false);
+                if battle_guard.proceed_requested || ready {
+                    battle_guard.proceed_requested = false;
+                    true
+                } else {
                     battle_guard.is_proceeding = false;
                     false
-                } else {
-                    let ready = battle_guard.battle.ready_to_continue().unwrap_or(false);
-                    if battle_guard.proceed_requested || ready {
-                        battle_guard.proceed_requested = false;
-                        true
-                    } else {
-                        battle_guard.is_proceeding = false;
-                        false
-                    }
                 }
-            };
-
-            if !continue_loop {
-                break;
             }
+        };
+
+        if !continue_loop {
+            break;
         }
-    })
+    }
 }
 
 impl<'d> LiveBattleManager<'d> {
@@ -771,7 +795,7 @@ impl<'d> LiveBattleManager<'d> {
             }
             battle.error = None;
             let active_timers = battle.active_timer_types()?;
-            let continued = battle.continue_battle().await?;
+            let continued = battle.continue_battle()?;
             let ended = battle.battle.ended();
             let is_empty = battle.current_timer_tasks.is_empty();
             preview_tx.send_replace(battle.battle_preview());
@@ -779,7 +803,7 @@ impl<'d> LiveBattleManager<'d> {
         };
 
         if (continued || is_empty) && !ended {
-            Self::resume_timers(uuid, battle, preview_tx, task_tx).await?;
+            Self::resume_timers(uuid, battle.clone(), preview_tx, task_tx).await?;
         } else if ended {
             Self::join_all_timer_tasks(&battle).await;
             let mut battle = battle.lock().await;
@@ -797,10 +821,12 @@ impl<'d> LiveBattleManager<'d> {
                     })
                 })
                 .collect::<Vec<_>>();
-            battle.inject_log_entries(timer_logs).await;
-            battle.inject_log_entries(["done"]).await;
+            battle.inject_log_entries(timer_logs);
+            battle.inject_log_entries(["done"]);
             preview_tx.send_replace(battle.battle_preview());
         }
+
+        Self::flush_battle_logs(&battle).await;
 
         Ok(())
     }
@@ -873,7 +899,7 @@ impl<'d> LiveBattleManager<'d> {
                 }
             }
 
-            battle.inject_log_entries(timer_logs).await;
+            battle.inject_log_entries(timer_logs);
             preview_tx.send_replace(battle.battle_preview());
 
             (
@@ -912,6 +938,8 @@ impl<'d> LiveBattleManager<'d> {
 
         log::trace!("Spawned all timer tasks for live battle {uuid}");
         log::trace!("Done resuming timers for live battle {uuid}");
+
+        Self::flush_battle_logs(&battle).await;
 
         Ok(())
     }
@@ -964,9 +992,10 @@ impl<'d> LiveBattleManager<'d> {
                 };
 
                 if finished {
-                    battle.handle_timer_finished(&timer_type).await.ok();
+                    battle.handle_timer_finished(&timer_type).ok();
                 }
             }
+            Self::flush_battle_logs(&battle).await;
 
             if proceed {
                 let static_battle = unsafe {
@@ -974,29 +1003,25 @@ impl<'d> LiveBattleManager<'d> {
                         battle,
                     )
                 };
-                tokio::spawn(async move {
-                    let fut: std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> =
-                        Box::pin(LiveBattleManager::<'static>::proceed(
-                            uuid,
-                            static_battle,
-                            preview_tx,
-                            task_tx,
-                        ));
-                    fut.await;
-                });
+                tokio::spawn(LiveBattleManager::<'static>::proceed(
+                    uuid,
+                    static_battle,
+                    preview_tx,
+                    task_tx,
+                ));
             }
         })
     }
 
     async fn run_timer_internal(
-        battle: Arc<Mutex<LiveBattle<'d>>>,
+        battle_arc: Arc<Mutex<LiveBattle<'d>>>,
         timer_type: &TimerType,
         mut choice_made_rx: broadcast::Receiver<String>,
         mut cancel_timers_rx: broadcast::Receiver<()>,
     ) -> Result<(Option<TimerState>, bool)> {
         // Read the current state of the timer and check if it is active.
         let (state, active) = {
-            let battle = battle.lock().await;
+            let battle = battle_arc.lock().await;
             let state = match battle.timers.get(timer_type).cloned() {
                 Some(state) => state,
                 None => return Ok((None, false)),
@@ -1006,16 +1031,16 @@ impl<'d> LiveBattleManager<'d> {
         };
 
         if !active {
-            let mut battle = battle.lock().await;
+            let mut battle = battle_arc.lock().await;
             let log_timer_deadlines = battle.log_timer_deadlines;
-            battle
-                .inject_log_entries([LiveBattle::timer_log(
-                    timer_type,
-                    state.remaining,
-                    Some(LiveBattle::log_type_for_inactive(timer_type)),
-                    log_timer_deadlines,
-                )])
-                .await;
+            battle.inject_log_entries([LiveBattle::timer_log(
+                timer_type,
+                state.remaining,
+                Some(LiveBattle::log_type_for_inactive(timer_type)),
+                log_timer_deadlines,
+            )]);
+            drop(battle);
+            Self::flush_battle_logs(&battle_arc).await;
             return Ok((Some(state), false));
         }
 
@@ -1066,14 +1091,16 @@ impl<'d> LiveBattleManager<'d> {
                 }
                 _ = next_warning_future => {
                     // Issue a warning.
-                    let mut battle = battle.lock().await;
+                    let mut battle = battle_arc.lock().await;
                     let log_timer_deadlines = battle.log_timer_deadlines;
                     battle.inject_log_entries([LiveBattle::timer_log(
                         timer_type,
                         next_warning.unwrap_or_default(),
                         Some(TimerLogType::Warning),
                         log_timer_deadlines,
-                    )]).await;
+                    )]);
+                    drop(battle);
+                    Self::flush_battle_logs(&battle_arc).await;
                 }
                 choice_made = choice_made_rx.recv() => {
                     // A choice was made for the player this timer corresponds to.
@@ -1087,7 +1114,16 @@ impl<'d> LiveBattleManager<'d> {
                             break false;
                         }
                         Err(broadcast::error::RecvError::Lagged(_)) => {
-                            // Ignore lag and continue loop to process remaining duration or next event.
+                            // If lag occurs, we might have missed the choice. Check the battle state directly.
+                            while let Ok(_) = choice_made_rx.try_recv() {}
+                            if let Some(player) = timer_type.player() {
+                                let mut battle = battle_arc.lock().await;
+                                if battle.battle.ready_to_continue().unwrap_or(false)
+                                    || !battle.battle.active_requests().any(|(p, _)| p == player)
+                                {
+                                    break false;
+                                }
+                            }
                         }
                     }
                 }
@@ -1105,17 +1141,18 @@ impl<'d> LiveBattleManager<'d> {
         recalculate_remaining(&mut now, &mut remaining);
 
         if !proceed {
-            let mut battle = battle.lock().await;
+            let mut battle = battle_arc.lock().await;
             let log_timer_deadlines = battle.log_timer_deadlines;
-            battle
-                .inject_log_entries([LiveBattle::timer_log(
-                    timer_type,
-                    remaining,
-                    Some(LiveBattle::log_type_for_inactive(timer_type)),
-                    log_timer_deadlines,
-                )])
-                .await;
+            battle.inject_log_entries([LiveBattle::timer_log(
+                timer_type,
+                remaining,
+                Some(LiveBattle::log_type_for_inactive(timer_type)),
+                log_timer_deadlines,
+            )]);
+            drop(battle);
         }
+
+        Self::flush_battle_logs(&battle_arc).await;
 
         // Save the timer state, even if the duration is zero.
         //

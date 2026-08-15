@@ -79,6 +79,20 @@ where
         export_proposed_battle(output.0)
     }
 
+    async fn proposed_battle(&self, uuid: Uuid) -> Result<ProposedBattle> {
+        let output = self
+            .consumer
+            .proposed_battle(
+                battler_multiplayer_service_schema::ProposedBattlePattern(uuid.to_string()),
+                battler_multiplayer_service_schema::ProposedBattleInput,
+                CallOptions::default(),
+            )
+            .await?
+            .result()
+            .await?;
+        export_proposed_battle(output.0)
+    }
+
     async fn proposed_battles_for_player(
         &self,
         player: &str,

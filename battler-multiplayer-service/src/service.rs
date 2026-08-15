@@ -592,17 +592,28 @@ impl ActiveProposedBattleManager {
         loop {
             tokio::select! {
                 entry = battle_log_rx.recv() => {
-                    let entry = match entry {
-                        Ok(entry) => entry,
-                        Err(tokio::sync::broadcast::error::RecvError::Lagged(skipped)) => {
+                    let entries = match entry {
+                        Ok(entry) => Vec::from_iter([entry.content]),
+                        Err(broadcast::error::RecvError::Lagged(skipped)) => {
                             log::warn!("Battle log receiver for proposed battle watcher on {battle} lagged by {skipped} entries");
-                            continue;
+                            while let Ok(_) = battle_log_rx.try_recv() {}
+                            match battler_service_client.full_log(battle, None).await {
+                                Ok(full_log) => full_log,
+                                Err(_) => continue,
+                            }
                         }
-                        Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                        Err(broadcast::error::RecvError::Closed) => {
                             break;
                         }
                     };
-                    if process_log(&entry.content).await {
+                    let mut done = false;
+                    for entry in entries {
+                        if process_log(&entry).await {
+                            done = true;
+                            break;
+                        }
+                    }
+                    if done {
                         log::info!("Battle {battle} started, done watching");
                         break;
                     }

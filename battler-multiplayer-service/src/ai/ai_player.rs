@@ -342,6 +342,29 @@ impl<'d> AiPlayer<'d> {
         Ok(())
     }
 
+    async fn list_proposed_battles(&self, player: &str) -> Result<Vec<ProposedBattleUpdate>> {
+        let mut updates = Vec::new();
+        let mut offset = 0;
+        loop {
+            let battles = self
+                .battler_multiplayer_service_client
+                .proposed_battles_for_player(player, 100, offset)
+                .await?;
+            if battles.is_empty() {
+                break;
+            }
+            offset += battles.len();
+            for battle in battles {
+                updates.push(ProposedBattleUpdate {
+                    proposed_battle: battle,
+                    rejection: None,
+                    deletion_reason: None,
+                });
+            }
+        }
+        Ok(updates)
+    }
+
     async fn watch_proposed_battle_updates(
         &self,
         player: &str,
@@ -355,18 +378,27 @@ impl<'d> AiPlayer<'d> {
         loop {
             tokio::select! {
                 update = proposed_battle_update_rx.recv() => {
-                    let update = match update {
-                        Ok(update) => update,
+                    let updates = match update {
+                        Ok(update) => Vec::from_iter([update]),
                         Err(broadcast::error::RecvError::Lagged(skipped)) => {
                             log::warn!("AI {} proposed battle update receiver for {player} lagged by {skipped} messages", self.id);
-                            continue;
+                            while let Ok(_) = proposed_battle_update_rx.try_recv() {}
+                            match self.list_proposed_battles(player).await {
+                                Ok(updates) => updates,
+                                Err(err) => {
+                                    log::error!("AI {} failed to list proposed battles for {player} after lag: {err:?}", self.id);
+                                    continue;
+                                }
+                            }
                         }
                         Err(broadcast::error::RecvError::Closed) => {
                             break;
                         }
                     };
-                    if let Err(err) = self.handle_proposed_battle_update(player, &update).await {
-                        log::warn!("AI {} failed handling proposed battle update for {player}: {err:?}", self.id);
+                    for update in updates {
+                        if let Err(err) = self.handle_proposed_battle_update(player, &update).await {
+                            log::warn!("AI {} failed handling proposed battle update for {player}: {err:?}", self.id);
+                        }
                     }
                 }
                 _ = cancel_rx.recv() => {
@@ -388,8 +420,8 @@ impl<'d> AiPlayer<'d> {
     ) -> Result<()> {
         self.respond_to_proposed_battle(player, &update.proposed_battle)
             .await?;
-        if let Some(battle) = update.proposed_battle.battle {
-            self.handle_battle(player, battle).await;
+        if let Some(battle_uuid) = update.proposed_battle.battle {
+            self.handle_battle(player, battle_uuid).await;
         }
         Ok(())
     }

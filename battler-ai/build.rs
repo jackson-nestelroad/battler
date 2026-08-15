@@ -7,6 +7,14 @@ fn main() {
 
     println!("cargo:rerun-if-changed={}", script.to_str().unwrap());
     println!("cargo:rerun-if-changed={}", spec.to_str().unwrap());
+    println!(
+        "cargo:rerun-if-changed={}",
+        python_dir.join("context.md").to_str().unwrap()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        python_dir.join("prompt.md").to_str().unwrap()
+    );
 
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_dir = std::path::Path::new(&out_dir);

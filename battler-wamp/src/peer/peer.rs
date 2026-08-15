@@ -960,16 +960,20 @@ where
         topic: WildcardUri,
         options: SubscriptionOptions,
     ) -> Result<Subscription> {
-        let (_reference, (message_tx, id_allocator, mut subscribed_rx)) = self
+        let (_reference, (message_tx, id_allocator)) = self
             .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
-                    peer_state.session.subscribed_rx(),
                 )
             })
             .await?;
         let request_id = id_allocator.generate_id().await;
+        let (_reference, (mut subscribed_rx, _drop_guard)) = self
+            .get_from_peer_state(async move |peer_state| {
+                peer_state.session.register_subscribed_request(request_id)
+            })
+            .await?;
 
         let mut message_options = Dictionary::default();
         if let Some(match_style) = options.match_style {
@@ -987,13 +991,9 @@ where
         let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
-                subscription = subscribed_rx.recv() => {
+                subscription = &mut subscribed_rx => {
                     let subscription = match subscription {
                         Ok(subscription) => subscription,
-                        Err(RecvError::Lagged(skipped)) => {
-                            warn!("subscribed_rx lagged by {} messages", skipped);
-                            continue;
-                        }
                         Err(err) => return Err(err.into()),
                     };
                     match subscription {
@@ -1046,16 +1046,20 @@ where
     ///
     /// The subscription ID is received after subscribing to the topic.
     pub async fn unsubscribe(&self, id: Id) -> Result<()> {
-        let (_reference, (message_tx, id_allocator, mut unsubscribed_rx)) = self
+        let (_reference, (message_tx, id_allocator)) = self
             .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
-                    peer_state.session.unsubscribed_rx(),
                 )
             })
             .await?;
         let request_id = id_allocator.generate_id().await;
+        let (_reference, (mut unsubscribed_rx, _drop_guard)) = self
+            .get_from_peer_state(async move |peer_state| {
+                peer_state.session.register_unsubscribed_request(request_id)
+            })
+            .await?;
 
         message_tx
             .send(Message::Unsubscribe(UnsubscribeMessage {
@@ -1068,7 +1072,7 @@ where
         let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
-                unsubscription = unsubscribed_rx.recv() => {
+                unsubscription = &mut unsubscribed_rx => {
                     match unsubscription? {
                         Ok(unsubscription) => {
                             if unsubscription.request_id == request_id {
@@ -1091,17 +1095,26 @@ where
 
     /// Publishes an event to a topic.
     pub async fn publish(&self, topic: Uri, event: PublishedEvent) -> Result<()> {
-        let (_reference, (message_tx, id_allocator, mut published_rx)) = self
+        let (_reference, (message_tx, id_allocator)) = self
             .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
-                    peer_state.session.published_rx(),
                 )
             })
             .await?;
         let request_id = id_allocator.generate_id().await;
         let acknowledge = event.options.acknowledge.unwrap_or(false);
+        let (published_rx, _drop_guard) = if acknowledge {
+            let (_reference, (rx, drop_guard)) = self
+                .get_from_peer_state(async move |peer_state| {
+                    peer_state.session.register_published_request(request_id)
+                })
+                .await?;
+            (Some(rx), Some(drop_guard))
+        } else {
+            (None, None)
+        };
 
         message_tx
             .send(Message::Publish(PublishMessage {
@@ -1125,16 +1138,13 @@ where
             return Ok(());
         }
 
+        let mut published_rx = published_rx.unwrap();
         let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
-                publication = published_rx.recv() => {
+                publication = &mut published_rx => {
                     let publication = match publication {
                         Ok(publication) => publication,
-                        Err(RecvError::Lagged(skipped)) => {
-                            warn!("published_rx lagged by {} messages", skipped);
-                            continue;
-                        }
                         Err(err) => return Err(err.into()),
                     };
                     match publication {
@@ -1166,16 +1176,20 @@ where
         procedure: WildcardUri,
         options: ProcedureOptions,
     ) -> Result<Procedure> {
-        let (_reference, (message_tx, id_allocator, mut registered_rx)) = self
+        let (_reference, (message_tx, id_allocator)) = self
             .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
-                    peer_state.session.registered_rx(),
                 )
             })
             .await?;
         let request_id = id_allocator.generate_id().await;
+        let (_reference, (mut registered_rx, _drop_guard)) = self
+            .get_from_peer_state(async move |peer_state| {
+                peer_state.session.register_registered_request(request_id)
+            })
+            .await?;
 
         let mut message_options = Dictionary::default();
         if let Some(match_style) = options.match_style {
@@ -1200,13 +1214,9 @@ where
         let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
-                registration = registered_rx.recv() => {
+                registration = &mut registered_rx => {
                     let registration = match registration {
                         Ok(registration) => registration,
-                        Err(RecvError::Lagged(skipped)) => {
-                            warn!("registered_rx lagged by {} messages", skipped);
-                            continue;
-                        }
                         Err(err) => return Err(err.into()),
                     };
                     match registration {
@@ -1254,16 +1264,20 @@ where
     ///
     /// The registration ID is received after registering the procedure.
     pub async fn unregister(&self, id: Id) -> Result<()> {
-        let (_reference, (message_tx, id_allocator, mut unregistered_rx)) = self
+        let (_reference, (message_tx, id_allocator)) = self
             .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
-                    peer_state.session.unregistered_rx(),
                 )
             })
             .await?;
         let request_id = id_allocator.generate_id().await;
+        let (_reference, (mut unregistered_rx, _drop_guard)) = self
+            .get_from_peer_state(async move |peer_state| {
+                peer_state.session.register_unregistered_request(request_id)
+            })
+            .await?;
 
         message_tx
             .send(Message::Unregister(UnregisterMessage {
@@ -1276,13 +1290,9 @@ where
         let mut session_finished_rx = self.session_finished_rx();
         loop {
             tokio::select! {
-                unregistration = unregistered_rx.recv() => {
+                unregistration = &mut unregistered_rx => {
                     let unregistration = match unregistration {
                         Ok(unregistration) => unregistration,
-                        Err(RecvError::Lagged(skipped)) => {
-                            warn!("unregistered_rx lagged by {} messages", skipped);
-                            continue;
-                        }
                         Err(err) => return Err(err.into()),
                     };
                     match unregistration {
@@ -1307,24 +1317,23 @@ where
 
     async fn wait_for_results(
         request_id: Id,
-        mut session_rpc_result_rx: broadcast::Receiver<
+        mut session_rpc_result_rx: mpsc::UnboundedReceiver<
             ChannelTransmittableResult<peer_session_message::RpcResult>,
         >,
         mut session_finished_rx: broadcast::Receiver<()>,
         mut cancel_rx: mpsc::Receiver<CallCancelMode>,
         message_tx: mpsc::Sender<Message>,
         rpc_result_tx: mpsc::Sender<ChannelTransmittableResult<RpcResult>>,
+        _drop_guard: crate::peer::session::RequestDropGuard<
+            mpsc::UnboundedSender<ChannelTransmittableResult<peer_session_message::RpcResult>>,
+        >,
     ) -> Result<()> {
         loop {
             tokio::select! {
                 rpc_result = session_rpc_result_rx.recv() => {
                     let rpc_result = match rpc_result {
-                        Ok(rpc_result) => rpc_result,
-                        Err(RecvError::Lagged(skipped)) => {
-                            warn!("session_rpc_result_rx lagged by {} messages", skipped);
-                            continue;
-                        }
-                        Err(err) => return Err(err.into()),
+                        Some(rpc_result) => rpc_result,
+                        None => return Err(Error::msg("RPC result channel dropped")),
                     };
                     match rpc_result {
                         Ok(rpc_result) => {
@@ -1370,16 +1379,20 @@ where
         rpc_call: RpcCall,
         receive_progress: bool,
     ) -> Result<PendingRpc> {
-        let (_reference, (message_tx, id_allocator, session_rpc_result_rx)) = self
+        let (_reference, (message_tx, id_allocator)) = self
             .get_from_peer_state(async |peer_state| {
                 (
                     peer_state.message_tx.clone(),
                     peer_state.session.id_allocator(),
-                    peer_state.session.rpc_result_rx(),
                 )
             })
             .await?;
         let request_id = id_allocator.generate_id().await;
+        let (_reference, (session_rpc_result_rx, _drop_guard)) = self
+            .get_from_peer_state(async move |peer_state| {
+                peer_state.session.register_rpc_result_request(request_id)
+            })
+            .await?;
 
         let mut options = Dictionary::default();
         if receive_progress {
@@ -1417,6 +1430,7 @@ where
             cancel_rx,
             message_tx,
             rpc_result_tx,
+            _drop_guard,
         ));
 
         Ok(PendingRpc {

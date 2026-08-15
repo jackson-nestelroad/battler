@@ -314,13 +314,14 @@ impl SessionHandle {
 
     /// Sends a message over the session.
     pub async fn send_message(&self, message: Message) -> Result<()> {
-        self.message_tx.try_send(message).map_err(Error::new)
+        self.message_tx.send(message).await.map_err(Error::new)
     }
 
     /// Closes the session.
     pub async fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
-            .try_send(goodbye_with_close_reason(close_reason))
+            .send(goodbye_with_close_reason(close_reason))
+            .await
             .map_err(Error::new)
     }
 
@@ -459,7 +460,8 @@ impl Session {
     pub async fn send_message(&self, message: Message) -> Result<()> {
         self.transition_state_from_sending_message(&message).await?;
         self.service_message_tx
-            .try_send(message)
+            .send(message)
+            .await
             .map_err(Error::new)
     }
 

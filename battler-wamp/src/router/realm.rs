@@ -143,7 +143,10 @@ impl Realm {
             futures.push((async |session: Arc<RealmSession>| {
                 session.session.closed_session_rx().recv().await
             })(session.clone()));
-            session.session.close(close_reason).await.ok();
+            let session_clone = session.clone();
+            tokio::spawn(async move {
+                session_clone.session.close(close_reason.clone()).await.ok();
+            });
         }
 
         tokio::select! {

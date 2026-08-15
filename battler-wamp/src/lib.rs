@@ -58,7 +58,7 @@
 //! #[tokio::main]
 //! async fn main() {
 //!     let mut config = RouterConfig::default();
-//!     config.port = 8080;
+//!     config.port = 0;
 //!     config.realms.push(RealmConfig {
 //!         name: "Test Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm.test").unwrap(),

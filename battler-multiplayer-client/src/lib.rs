@@ -84,6 +84,15 @@ impl<'b> BattlerMultiplayerClient<'b> {
             .await
     }
 
+    /// Fetches a specific proposed battle by looking it up.
+    pub async fn proposed_battle(&self, uuid: Uuid) -> Result<Option<ProposedBattle>> {
+        Ok(self
+            .battler_multiplayer_service_client
+            .proposed_battle(uuid)
+            .await
+            .ok())
+    }
+
     /// Helper to block and wait for a specific proposed battle to start.
     ///
     /// Returns the battle UUID once accepted by all players.
@@ -95,7 +104,22 @@ impl<'b> BattlerMultiplayerClient<'b> {
         loop {
             let update = match rx.recv().await {
                 Ok(update) => update,
-                Err(broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(broadcast::error::RecvError::Lagged(_)) => {
+                    match self.proposed_battle(proposed_battle).await {
+                        Ok(Some(battle)) => {
+                            if let Some(battle_uuid) = battle.battle {
+                                return Ok(battle_uuid);
+                            }
+                        }
+                        Ok(None) => {
+                            return Err(Error::msg("proposed battle not found or was cancelled"));
+                        }
+                        Err(_) => {
+                            continue;
+                        }
+                    }
+                    continue;
+                }
                 Err(err) => return Err(err.into()),
             };
             if update.proposed_battle.uuid == proposed_battle {

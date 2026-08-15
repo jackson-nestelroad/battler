@@ -88,7 +88,7 @@ impl<S> ConnectionPolicies<S> for BattlerConnectionPolicies {
             return Ok(());
         }
         let id = &peer_info.identity.id;
-        log::info!("WAMP: validating connection for ID: {}", id);
+        log::debug!("WAMP: validating connection for ID: {}", id);
         if id.starts_with("ai-") {
             log::warn!(
                 "WAMP: rejected connection for ID: {} (ai prefix is reserved)",
@@ -116,7 +116,7 @@ impl<S> PubSubPolicies<S> for BattlerPubSubPolicies {
         if !is_battler_topic {
             return Ok(());
         }
-        log::info!("WAMP: validating publication to topic: {}", uri);
+        log::debug!("WAMP: validating publication to topic: {}", uri);
         match session.peer_info().await {
             Some(peer_info) => match peer_info.connection_type {
                 ConnectionType::Direct => Ok(()),
@@ -165,7 +165,7 @@ impl<S> RpcPolicies<S> for BattlerRpcPolicies {
             return Ok(());
         }
 
-        log::info!("WAMP: validating registration for procedure: {}", procedure);
+        log::debug!("WAMP: validating registration for procedure: {}", procedure);
         match session.peer_info().await {
             Some(peer_info) => match peer_info.connection_type {
                 ConnectionType::Direct => Ok(()),
@@ -200,7 +200,7 @@ impl BattleAuthorizer for ServerAuthorizer {
         peer_info: &PeerInfo,
         _: &CoreBattleOptions,
     ) -> Result<()> {
-        log::info!(
+        log::debug!(
             "Authorizing new battle request by peer {:?}",
             peer_info.identity.id
         );
@@ -224,7 +224,7 @@ impl BattleAuthorizer for ServerAuthorizer {
         battle: &Battle,
         operation: BattleOperation,
     ) -> Result<()> {
-        log::info!(
+        log::debug!(
             "Authorizing battle operation {:?} on battle {} by peer {:?}",
             operation,
             battle.uuid,
@@ -252,7 +252,7 @@ impl BattleAuthorizer for ServerAuthorizer {
         player: &str,
         operation: PlayerOperation,
     ) -> Result<()> {
-        log::info!(
+        log::debug!(
             "Authorizing player operation {:?} for player {} by peer {:?}",
             operation,
             player,
@@ -280,7 +280,7 @@ impl BattleAuthorizer for ServerAuthorizer {
         battle: &Battle,
         side: Option<usize>,
     ) -> Result<()> {
-        log::info!(
+        log::debug!(
             "Authorizing log access for battle {}, side {:?} by peer {:?}",
             battle.uuid,
             side,
@@ -310,7 +310,7 @@ impl MultiplayerBattleAuthorizer for ServerAuthorizer {
         peer_info: &PeerInfo,
         options: &ProposedBattleOptions,
     ) -> Result<()> {
-        log::info!(
+        log::debug!(
             "Authorizing new proposed battle request by peer {:?}",
             peer_info.identity.id
         );
