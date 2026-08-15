@@ -266,6 +266,17 @@
   color: var(--text-muted);
 }
 
+.subHeader {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding-left: var(--spacing-s);
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-xxs);
+}
+
 .finishedLabel {
   color: var(--color-success);
   font-weight: 600;
@@ -274,6 +285,11 @@
 .errorLabel {
   color: var(--color-danger);
   font-weight: 600;
+}
+
+.spectatorBadge {
+  color: var(--color-accent);
+  font-weight: 500;
 }
 
 .actionBadge {

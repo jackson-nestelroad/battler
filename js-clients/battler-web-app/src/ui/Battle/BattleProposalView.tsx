@@ -60,6 +60,17 @@ export default function BattleProposalView({
   const hasCurrentPlayerAccepted = currentPlayer?.status === "accepted";
   const isDeclined = !!activeProposal.rejection || !!activeProposal.deletionReason;
 
+  useEffect(() => {
+    if (!isParticipant) {
+      dispatch(setConnectionError("Spectators cannot view proposed battles"));
+      dispatch(selectBattle({ view: "lobby", battleId: null }));
+    }
+  }, [isParticipant, dispatch]);
+
+  if (!isParticipant) {
+    return null;
+  }
+
   const handleAccept = () => {
     dispatch(respondToProposal({ proposedBattleId: battleId, accept: true }))
       .unwrap()

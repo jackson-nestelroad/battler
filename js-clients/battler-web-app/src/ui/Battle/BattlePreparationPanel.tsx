@@ -50,6 +50,16 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
     dispatch(submitBattleTeam({ battleId, team: teamMembers }));
   };
 
+  const connection = useAppSelector((state) => state.connection);
+
+  const isSpectator =
+    battleSession?.isSpectator ??
+    (connection.playerId && battleSession?.serviceBattle?.sides
+      ? !battleSession.serviceBattle.sides.some((side) =>
+          side.players.some((p) => p.id === connection.playerId),
+        )
+      : false);
+
   const sides = battleSession?.serviceBattle?.sides || [];
 
   return (
@@ -72,34 +82,36 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
           <BattleSidesList sides={sides} isProposal={false} />
         </div>
 
-        {/* Team Selection Section */}
-        <div className={styles.teamSelectionSection}>
-          <label htmlFor="battle-team-select">Team</label>
-          {teamNames.length > 0 ? (
-            <div className="flex-row flex-mobile-col gap-s">
-              <TeamSelect
-                id="battle-team-select"
-                className="flex-1"
-                value={selectedTeam}
-                onChange={setSelectedTeam}
-                teamNames={teamNames}
-                teams={teams}
-                disabled={battleSession?.isLoading}
-              />
-              <button
-                onClick={handleSubmitTeam}
-                className="btn btn-success"
-                disabled={!selectedTeam || battleSession?.isLoading}
-              >
-                {battleSession?.isLoading ? "Confirming..." : "Confirm"}
-              </button>
-            </div>
-          ) : (
-            <p className="alert alert-warning">
-              No teams configured. Go to <strong>Teams</strong>.
-            </p>
-          )}
-        </div>
+        {/* Team Selection Section (Only for active players) */}
+        {!isSpectator && (
+          <div className={styles.teamSelectionSection}>
+            <label htmlFor="battle-team-select">Team</label>
+            {teamNames.length > 0 ? (
+              <div className="flex-row flex-mobile-col gap-s">
+                <TeamSelect
+                  id="battle-team-select"
+                  className="flex-1"
+                  value={selectedTeam}
+                  onChange={setSelectedTeam}
+                  teamNames={teamNames}
+                  teams={teams}
+                  disabled={battleSession?.isLoading}
+                />
+                <button
+                  onClick={handleSubmitTeam}
+                  className="btn btn-success"
+                  disabled={!selectedTeam || battleSession?.isLoading}
+                >
+                  {battleSession?.isLoading ? "Confirming..." : "Confirm"}
+                </button>
+              </div>
+            ) : (
+              <p className="alert alert-warning">
+                No teams configured. Go to <strong>Teams</strong>.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Validation / error reporting */}
         {battleSession?.error && <ErrorBanner message={battleSession.error} />}

@@ -1,5 +1,5 @@
 import { closeBattleSession, disconnectWamp } from "../../core/wamp";
-import type { ActiveView } from "../../store/battlesSlice";
+import type { ActiveView, SerializedBattleSession } from "../../store/battlesSlice";
 import { selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
@@ -18,8 +18,106 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const { battles, activeBattleId, currentView } = useAppSelector((state) => state.battles);
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
 
+  const isSpectatorBattle = (b: SerializedBattleSession, playerId: string | null): boolean => {
+    if (b.isSpectator !== undefined) return b.isSpectator;
+    if (!playerId) return true;
+    if (b.serviceBattle?.sides) {
+      const isPlayer = b.serviceBattle.sides.some((side) =>
+        side.players.some((p) => p.id === playerId),
+      );
+      if (isPlayer) return false;
+    }
+    if (b.playerData) return false;
+    return true;
+  };
+
   const activeBattlesList = Object.values(battles).filter((b) => !b.isReplay && !b.isProposal);
+  const playingBattlesList = activeBattlesList.filter(
+    (b) => !isSpectatorBattle(b, connection.playerId),
+  );
+  const spectatingBattlesList = activeBattlesList.filter((b) =>
+    isSpectatorBattle(b, connection.playerId),
+  );
   const replayBattlesList = Object.values(battles).filter((b) => b.isReplay);
+
+  const renderBattleItem = (battle: SerializedBattleSession) => {
+    const isSpectator = isSpectatorBattle(battle, connection.playerId);
+    const isSelected =
+      (currentView === "battle" || currentView === "proposal") &&
+      activeBattleId === battle.battleId;
+    const hasPendingAction =
+      !isSpectator &&
+      battle.activeRequest !== null &&
+      battle.battleState?.phase !== "finished";
+    const title = getBattleTitle(
+      battle.battleState,
+      battle.serviceBattle,
+      proposalsMap[battle.battleId],
+    );
+    const turnNumber = battle.battleState?.turn || 0;
+    const isFinished = battle.battleState?.phase === "finished";
+    const isPreparing =
+      battle.serviceBattle?.state === "preparing" ||
+      battle.battleState?.phase === "pre_battle";
+    const isDeleted = battle.isDeleted || (!battle.battleState && !!battle.error);
+    const isCloseable = isFinished || isDeleted || isSpectator;
+
+    return (
+      <div
+        key={battle.battleId}
+        className={`${styles.battleItemWrapper} flex-row align-center justify-between w-full`}
+      >
+        <button
+          className={`${styles.battleItem} ${isCloseable ? styles.closeableBattleItem : ""} ${isSelected ? styles.selected : ""}`}
+          onClick={() => handleNav("battle", battle.battleId)}
+          title={isSpectator ? `Spectating: ${title}` : title}
+        >
+          <div className={styles.battleMeta}>
+            {isCollapsed ? (
+              <span className={styles.navIcon} title={isSpectator ? "Spectating" : "Playing"}>
+                🎮
+              </span>
+            ) : (
+              <>
+                <span className={styles.opponentName}>{title}</span>
+                <span
+                  className={`${styles.turnLabel} ${isDeleted ? styles.errorLabel : isFinished ? styles.finishedLabel : ""}`}
+                >
+                  {isDeleted
+                    ? "Deleted"
+                    : isFinished
+                      ? "Finished"
+                      : isPreparing
+                        ? "Preparing"
+                        : turnNumber === 0
+                          ? "Preview"
+                          : `Turn ${turnNumber}`}
+                  {isSpectator && <span className={styles.spectatorBadge}> • Spectating</span>}
+                </span>
+              </>
+            )}
+          </div>
+          {hasPendingAction && (
+            <span className={styles.actionBadge} title="Your turn to act!">
+              !
+            </span>
+          )}
+        </button>
+        {!isCollapsed && isCloseable && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              dispatch(closeBattleSession(battle.battleId));
+            }}
+            className={styles.closeBtn}
+            title={isSpectator ? "Close Spectating Battle" : "Close Battle"}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    );
+  };
 
   const incomingProposals = Object.values(proposalsMap).filter((p) => {
     if (!connection.playerId) return false;
@@ -134,78 +232,21 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             !isCollapsed && <p className={styles.emptyBattles}>None</p>
           ) : (
             <div className={styles.battlesList}>
-              {activeBattlesList.map((battle) => {
-                const isSelected =
-                  (currentView === "battle" || currentView === "proposal") &&
-                  activeBattleId === battle.battleId;
-                const hasPendingAction =
-                  battle.activeRequest !== null && battle.battleState?.phase !== "finished";
-                const title = getBattleTitle(
-                  battle.battleState,
-                  battle.serviceBattle,
-                  proposalsMap[battle.battleId],
-                );
-                const turnNumber = battle.battleState?.turn || 0;
-                const isFinished = battle.battleState?.phase === "finished";
-                const isPreparing =
-                  battle.serviceBattle?.state === "preparing" ||
-                  battle.battleState?.phase === "pre_battle";
-                const isDeleted = battle.isDeleted || (!battle.battleState && !!battle.error);
-                const isCloseable = isFinished || isDeleted;
-
-                return (
-                  <div
-                    key={battle.battleId}
-                    className={`${styles.battleItemWrapper} flex-row align-center justify-between w-full`}
-                  >
-                    <button
-                      className={`${styles.battleItem} ${isCloseable ? styles.closeableBattleItem : ""} ${isSelected ? styles.selected : ""}`}
-                      onClick={() => handleNav("battle", battle.battleId)}
-                      title={title}
-                    >
-                      <div className={styles.battleMeta}>
-                        {isCollapsed ? (
-                          <span className={styles.navIcon}>🎮</span>
-                        ) : (
-                          <>
-                            <span className={styles.opponentName}>{title}</span>
-                            <span
-                              className={`${styles.turnLabel} ${isDeleted ? styles.errorLabel : isFinished ? styles.finishedLabel : ""}`}
-                            >
-                              {isDeleted
-                                ? "Deleted"
-                                : isFinished
-                                  ? "Finished"
-                                  : isPreparing
-                                    ? "Preparing"
-                                    : turnNumber === 0
-                                      ? "Preview"
-                                      : `Turn ${turnNumber}`}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      {hasPendingAction && (
-                        <span className={styles.actionBadge} title="Your turn to act!">
-                          !
-                        </span>
-                      )}
-                    </button>
-                    {!isCollapsed && isCloseable && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dispatch(closeBattleSession(battle.battleId));
-                        }}
-                        className={styles.closeBtn}
-                        title="Close Battle"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+              {playingBattlesList.length > 0 && spectatingBattlesList.length > 0 ? (
+                <>
+                  {!isCollapsed && <div className={styles.subHeader}>Playing</div>}
+                  {playingBattlesList.map(renderBattleItem)}
+                  {!isCollapsed && <div className={styles.subHeader}>Spectating</div>}
+                  {spectatingBattlesList.map(renderBattleItem)}
+                </>
+              ) : playingBattlesList.length > 0 ? (
+                playingBattlesList.map(renderBattleItem)
+              ) : (
+                <>
+                  {!isCollapsed && <div className={styles.subHeader}>Spectating</div>}
+                  {spectatingBattlesList.map(renderBattleItem)}
+                </>
+              )}
             </div>
           )}
         </div>

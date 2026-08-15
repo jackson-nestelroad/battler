@@ -33,6 +33,7 @@ export interface BaseBattleSession {
   serviceBattle: Battle | null;
   isDeleted?: boolean;
   isProposal?: boolean;
+  isSpectator?: boolean;
   metadata?: BattleMetadata;
   activeTimers?: Record<string, ActiveTimerState>;
 }
@@ -220,6 +221,14 @@ const battlesSlice = createSlice({
         battle.isLoading = isLoading;
       }
     },
+    setIsSpectator(state, action: PayloadAction<{ battleId: string; isSpectator: boolean }>) {
+      const { battleId: rawId, isSpectator } = action.payload;
+      const battleId = normalizeId(rawId);
+      const battle = state.battles[battleId];
+      if (battle) {
+        battle.isSpectator = isSpectator;
+      }
+    },
     battleSessionEnded(state, action: PayloadAction<string>) {
       const battleId = normalizeId(action.payload);
       const battle = state.battles[battleId];
@@ -264,7 +273,7 @@ const battlesSlice = createSlice({
       if (battle) {
         battle.isDeleted = true;
         if (!battle.error) {
-          battle.error = "battle does not exist";
+          battle.error = "Battle no longer exists";
         }
       }
     },
@@ -393,6 +402,7 @@ export const {
   setBattleError,
   setChoiceError,
   setBattleLoading,
+  setIsSpectator,
   battleSessionEnded,
   battleSessionRestored,
   clearBattleState,

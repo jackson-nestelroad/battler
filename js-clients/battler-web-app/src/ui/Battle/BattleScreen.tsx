@@ -134,7 +134,7 @@ export default function BattleScreen() {
               className="btn btn-primary"
               onClick={() => dispatch(selectBattle({ view: "lobby", battleId: null }))}
             >
-              Return to Lobby
+              ← Lobby
             </button>
           </div>
         </div>
@@ -153,14 +153,14 @@ export default function BattleScreen() {
   if (!battleSession.battleState && battleSession.error) {
     const isDeleted = battleSession.isDeleted;
     const isProposalRoute = currentView === "proposal";
-    const headerText = isDeleted ? "Deleted" : isProposalRoute ? "Not found" : "Not found";
+    const headerText = isDeleted ? "Deleted" : "Not found";
     const descText = isDeleted
       ? isProposalRoute
-        ? "Proposal no longer exists."
-        : "battle does not exist"
+        ? "Proposal no longer exists"
+        : "Battle no longer exists"
       : isProposalRoute
-        ? "Proposal no longer active."
-        : "Battle not found.";
+        ? "Proposal no longer active"
+        : "Battle not found";
     return (
       <div className={styles.placeholder}>
         <div className={`flex-col align-center gap-m text-center ${styles.errorCard}`}>
@@ -195,9 +195,8 @@ export default function BattleScreen() {
   }
 
   const isPreparing =
-    !battleSession.isDeleted &&
-    (battleSession.serviceBattle?.state === "preparing" ||
-      battleSession.battleState?.phase === "pre_battle");
+    battleSession.serviceBattle?.state === "preparing" ||
+    battleSession.battleState?.phase === "pre_battle";
 
   const metadata = battleSession?.serviceBattle?.metadata || battleSession?.metadata;
 
@@ -207,8 +206,10 @@ export default function BattleScreen() {
         <div className="screen-header-title flex-col gap-xs">
           <h2>{title}</h2>
           <span className="screen-header-subtitle">
-            <span className="screen-header-format">{isReplay ? "Replay" : "Battle"}</span> •{" "}
-            <CopyableId id={battleId} type={isReplay ? "replay" : "battle"} />
+            <span className="screen-header-format">
+              {isReplay ? "Replay" : battleSession.isSpectator ? "Spectating" : "Battle"}
+            </span>{" "}
+            • <CopyableId id={battleId} type={isReplay ? "replay" : "battle"} />
             {metadata && (
               <>
                 {" "}
@@ -260,7 +261,18 @@ export default function BattleScreen() {
       )}
 
       {battleSession.isDeleted ? (
-        <ErrorBanner message={battleSession.error || "battle does not exist"} />
+        <div className="alert alert-danger w-full flex-row align-center justify-between gap-m">
+          <div className="flex-col gap-xxs text-left">
+            <strong>Battle Deleted</strong>
+            <span>{battleSession.error || "Battle no longer exists"}</span>
+          </div>
+          <button
+            onClick={() => dispatch(closeBattleSession(battleId))}
+            className="btn btn-primary btn-sm"
+          >
+            ← Lobby
+          </button>
+        </div>
       ) : (
         battleSession.error &&
         !isPreparing && (

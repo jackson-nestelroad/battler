@@ -31,6 +31,7 @@ import {
   setBattleRequest,
   setChoiceError,
   setChoiceSubmitted,
+  setIsSpectator,
 } from "../store/battlesSlice";
 import {
   setAutoconnect,
@@ -158,10 +159,14 @@ function bindClientEvents(
   battleId: string,
   playerId: string,
   dispatch: Dispatch,
+  getState?: () => RootState,
 ) {
   client.on("update", async () => {
     const state = client.state();
     dispatch(battleStateUpdated({ battleId, state, engineLogs: client.getLogs() }));
+
+    const session = getState ? getState().battles.battles[battleId] : undefined;
+    if (session?.isDeleted) return;
 
     // Only update high-level serviceBattle status while the battle is in preparation mode
     if (connectionManager.serviceClient && state.phase === "pre_battle") {
@@ -175,6 +180,8 @@ function bindClientEvents(
   });
 
   client.on("request", async (req) => {
+    const session = getState ? getState().battles.battles[battleId] : undefined;
+    if (session?.isDeleted) return;
     dispatch(setBattleRequest({ battleId, request: req }));
     if (connectionManager.serviceClient && client.role().type === "player") {
       try {
@@ -233,6 +240,8 @@ export async function initializeBattleClient(
         connectionManager.serviceClient!,
       );
       connectionManager.clientsRegistry.set(battleId, client);
+      const isSpectator = client.role().type === "spectator";
+      dispatch(setIsSpectator({ battleId, isSpectator }));
 
       // Initial setup dispatch
       dispatch(
@@ -258,7 +267,7 @@ export async function initializeBattleClient(
         }
       }
 
-      bindClientEvents(client, battleId, playerId, dispatch);
+      bindClientEvents(client, battleId, playerId, dispatch, getState);
 
       return client;
     } catch (err: unknown) {

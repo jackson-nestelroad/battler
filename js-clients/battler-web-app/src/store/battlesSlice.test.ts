@@ -166,6 +166,6 @@ describe("battlesSlice active timers", () => {
     const battle = state.battles[battleId];
     expect(battle).toBeDefined();
     expect(battle?.isDeleted).toBe(true);
-    expect(battle?.error).toBe("battle does not exist");
+    expect(battle?.error).toBe("Battle no longer exists");
   });
 });

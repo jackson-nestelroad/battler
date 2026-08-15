@@ -33,15 +33,24 @@ export function useHistorySync() {
     battlesRef.current = battles;
   }, [battles]);
 
-  // Auto-transition from proposal view to battle view if the battle session has been created
+  // Auto-transition from proposal view to battle view if battle session created, or redirect if not a participant
   useEffect(() => {
     if (currentView === "proposal" && activeBattleId) {
       const proposal = proposalsMap[activeBattleId];
-      if (proposal?.battle && battles[proposal.battle]) {
-        dispatch(selectBattle({ view: "battle", battleId: proposal.battle }));
+      if (proposal) {
+        if (proposal.battle && battles[proposal.battle]) {
+          dispatch(selectBattle({ view: "battle", battleId: proposal.battle }));
+        } else if (connection.playerId) {
+          const isParticipant = proposal.sides
+            .flatMap((s) => s.players)
+            .some((p) => p.id === connection.playerId);
+          if (!isParticipant) {
+            dispatch(selectBattle({ view: "lobby", battleId: null }));
+          }
+        }
       }
     }
-  }, [currentView, activeBattleId, proposalsMap, battles, dispatch]);
+  }, [currentView, activeBattleId, proposalsMap, battles, connection.playerId, dispatch]);
 
   // 1. Sync URL -> Redux (on load and back/forward navigation)
   useEffect(() => {
