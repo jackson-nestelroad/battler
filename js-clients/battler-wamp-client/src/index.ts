@@ -59,14 +59,25 @@ export class WampSessionProvider extends EventEmitter {
     this.connectionPromise = new Promise<autobahn.Session>((resolve, reject) => {
       const onConnect = (session: autobahn.Session) => {
         this.off("error", onError);
+        this.off("disconnect", onDisconnect);
         resolve(session);
       };
       const onError = (err: any) => {
         this.off("connect", onConnect);
+        this.off("disconnect", onDisconnect);
         reject(err);
+      };
+      const onDisconnect = (reason: string, details?: any) => {
+        if (details?.will_retry === false) {
+          this.off("connect", onConnect);
+          this.off("error", onError);
+          this.off("disconnect", onDisconnect);
+          reject(new Error(details?.message || reason || "Connection failed"));
+        }
       };
       this.once("connect", onConnect);
       this.once("error", onError);
+      this.on("disconnect", onDisconnect);
     });
 
     try {

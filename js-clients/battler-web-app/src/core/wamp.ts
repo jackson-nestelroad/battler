@@ -374,6 +374,7 @@ export const connectWamp = createAsyncThunk(
   ) => {
     dispatch(setConnectionStatus("connecting"));
     dispatch(setConnectionError(null));
+    dispatch(setRetryDetails(null));
     dispatch(clearBattles());
 
     try {
@@ -412,7 +413,7 @@ export const connectWamp = createAsyncThunk(
           event: "disconnect",
           listener: (
             reason: string | null,
-            details: { retry_delay?: number; retry_count?: number } | null | undefined,
+            details: { retry_delay?: number; retry_count?: number; will_retry?: boolean } | null | undefined,
           ) => void,
         ): void;
         on(event: "connect", listener: () => void): void;
@@ -420,11 +421,19 @@ export const connectWamp = createAsyncThunk(
       const provider = connectionManager.sessionProvider as unknown as EventEmitterLike;
 
       // Register reconnection handlers
-      provider.on("disconnect", (_reason, details) => {
-        dispatch(setConnectionStatus("connecting"));
-        const retryDelay = details?.retry_delay ?? null;
-        const retryCount = details?.retry_count ?? null;
-        dispatch(setRetryDetails({ retryDelay, retryCount }));
+      provider.on("disconnect", (reason, details) => {
+        if (details?.will_retry === false) {
+          dispatch(setConnectionStatus("disconnected"));
+          dispatch(setRetryDetails(null));
+          if (reason) {
+            dispatch(setConnectionError(`Disconnected: ${reason}`));
+          }
+        } else {
+          dispatch(setConnectionStatus("connecting"));
+          const retryDelay = details?.retry_delay ?? null;
+          const retryCount = details?.retry_count ?? null;
+          dispatch(setRetryDetails({ retryDelay, retryCount }));
+        }
       });
 
       provider.on("connect", async () => {
