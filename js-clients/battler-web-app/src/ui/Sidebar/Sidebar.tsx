@@ -1,6 +1,6 @@
 import { closeBattleSession, disconnectWamp } from "../../core/wamp";
 import type { ActiveView, SerializedBattleSession } from "../../store/battlesSlice";
-import { selectBattle } from "../../store/battlesSlice";
+import { isSpectatorSession, selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
@@ -18,30 +18,17 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const { battles, activeBattleId, currentView } = useAppSelector((state) => state.battles);
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
 
-  const isSpectatorBattle = (b: SerializedBattleSession, playerId: string | null): boolean => {
-    if (b.isSpectator !== undefined) return b.isSpectator;
-    if (!playerId) return true;
-    if (b.serviceBattle?.sides) {
-      const isPlayer = b.serviceBattle.sides.some((side) =>
-        side.players.some((p) => p.id === playerId),
-      );
-      if (isPlayer) return false;
-    }
-    if (b.playerData) return false;
-    return true;
-  };
-
   const activeBattlesList = Object.values(battles).filter((b) => !b.isReplay && !b.isProposal);
   const playingBattlesList = activeBattlesList.filter(
-    (b) => !isSpectatorBattle(b, connection.playerId),
+    (b) => !isSpectatorSession(b, connection.playerId),
   );
   const spectatingBattlesList = activeBattlesList.filter((b) =>
-    isSpectatorBattle(b, connection.playerId),
+    isSpectatorSession(b, connection.playerId),
   );
   const replayBattlesList = Object.values(battles).filter((b) => b.isReplay);
 
   const renderBattleItem = (battle: SerializedBattleSession) => {
-    const isSpectator = isSpectatorBattle(battle, connection.playerId);
+    const isSpectator = isSpectatorSession(battle, connection.playerId);
     const isSelected =
       (currentView === "battle" || currentView === "proposal") &&
       activeBattleId === battle.battleId;
@@ -49,17 +36,18 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       !isSpectator &&
       battle.activeRequest !== null &&
       battle.battleState?.phase !== "finished";
+    const isDeleted = battle.isDeleted || (!battle.battleState && !!battle.error);
     const title = getBattleTitle(
       battle.battleState,
       battle.serviceBattle,
       proposalsMap[battle.battleId],
+      isDeleted,
     );
     const turnNumber = battle.battleState?.turn || 0;
     const isFinished = battle.battleState?.phase === "finished";
     const isPreparing =
       battle.serviceBattle?.state === "preparing" ||
       battle.battleState?.phase === "pre_battle";
-    const isDeleted = battle.isDeleted || (!battle.battleState && !!battle.error);
     const isCloseable = isFinished || isDeleted || isSpectator;
 
     return (

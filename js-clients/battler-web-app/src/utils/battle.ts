@@ -6,20 +6,27 @@ export function getBattleTitle(
   battleState?: BattleState | null,
   serviceBattle?: Battle | null,
   proposal?: ProposedBattleWithDetails | null,
+  isDeleted?: boolean,
 ): string {
   const side0Name =
     battleState?.field?.sides?.[0]?.name ||
     serviceBattle?.sides?.[0]?.name ||
-    proposal?.sides?.[0]?.name ||
-    "Side 1";
+    proposal?.sides?.[0]?.name;
 
   const side1Name =
     battleState?.field?.sides?.[1]?.name ||
     serviceBattle?.sides?.[1]?.name ||
-    proposal?.sides?.[1]?.name ||
-    "Side 2";
+    proposal?.sides?.[1]?.name;
 
-  return `${side0Name} vs ${side1Name}`;
+  if (side0Name && side1Name) {
+    return `${side0Name} vs ${side1Name}`;
+  }
+
+  if (isDeleted) {
+    return "Deleted Battle";
+  }
+
+  return `${side0Name || "Side 1"} vs ${side1Name || "Side 2"}`;
 }
 
 export function formatDeletionReason(reason: string | null | undefined): string {

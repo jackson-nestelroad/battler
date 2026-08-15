@@ -4,7 +4,11 @@ import type { MonData } from "battler-types";
 import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import { LocalStoragePersistentStorage } from "../core/storage";
-import battlesReducer from "./battlesSlice";
+import battlesReducer, {
+  addSpectatingBattle,
+  removeSpectatingBattle,
+  setSpectatingBattles,
+} from "./battlesSlice";
 import connectionReducer, { setConnectionError, setIsHydrated } from "./connectionSlice";
 import proposalsReducer from "./proposalsSlice";
 import teamsReducer, { teamsLoaded } from "./teamsSlice";
@@ -42,6 +46,26 @@ const teamsPersistenceMiddleware: Middleware = (storeApi) => {
   };
 };
 
+const spectatingBattlesPersistenceMiddleware: Middleware = (storeApi) => {
+  return (next) => (action: unknown) => {
+    const result = next(action);
+    const actionObj = action as UnknownAction;
+    if (
+      actionObj.type === addSpectatingBattle.type ||
+      actionObj.type === removeSpectatingBattle.type ||
+      actionObj.type === setSpectatingBattles.type
+    ) {
+      const state = storeApi.getState() as {
+        battles: ReturnType<typeof battlesReducer>;
+      };
+      storage
+        .setItem("battler_spectating_battles", state.battles.spectatingBattleIds)
+        .catch(() => {});
+    }
+    return result;
+  };
+};
+
 export const store = configureStore({
   reducer: {
     connection: connectionReducer,
@@ -49,7 +73,11 @@ export const store = configureStore({
     battles: battlesReducer,
     teams: teamsReducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(teamsPersistenceMiddleware),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(
+      teamsPersistenceMiddleware,
+      spectatingBattlesPersistenceMiddleware,
+    ),
 });
 
 // Async hydration thunk triggered on mount

@@ -52,6 +52,24 @@ export interface ReplayBattleSession extends BaseBattleSession {
 
 export type SerializedBattleSession = LiveBattleSession | ReplayBattleSession;
 
+export function isSpectatorSession(
+  session: SerializedBattleSession | undefined,
+  playerId: string | null,
+): boolean {
+  if (!session) return false;
+  if (session.isSpectator !== undefined) return session.isSpectator;
+  if (!playerId) return true;
+  if (session.serviceBattle?.sides) {
+    const isPlayer = session.serviceBattle.sides.some((side) =>
+      side.players.some((p) => p.id === playerId),
+    );
+    if (isPlayer) return false;
+    return true;
+  }
+  if (session.playerData) return false;
+  return false;
+}
+
 export function isReplaySession(
   session: SerializedBattleSession | undefined,
 ): session is ReplayBattleSession {
@@ -98,12 +116,14 @@ export interface BattlesState {
   battles: Record<string, SerializedBattleSession>;
   activeBattleId: string | null;
   currentView: ActiveView;
+  spectatingBattleIds: string[];
 }
 
 const initialState: BattlesState = {
   battles: {},
   activeBattleId: null,
   currentView: "lobby",
+  spectatingBattleIds: [],
 };
 
 const normalizeId = (id: string): string => formatUuid(id);
@@ -112,6 +132,19 @@ const battlesSlice = createSlice({
   name: "battles",
   initialState,
   reducers: {
+    addSpectatingBattle(state, action: PayloadAction<string>) {
+      const battleId = normalizeId(action.payload);
+      if (!state.spectatingBattleIds.includes(battleId)) {
+        state.spectatingBattleIds.push(battleId);
+      }
+    },
+    removeSpectatingBattle(state, action: PayloadAction<string>) {
+      const battleId = normalizeId(action.payload);
+      state.spectatingBattleIds = state.spectatingBattleIds.filter((id) => id !== battleId);
+    },
+    setSpectatingBattles(state, action: PayloadAction<string[]>) {
+      state.spectatingBattleIds = action.payload.map(normalizeId);
+    },
     battleSessionCreated(state, action: PayloadAction<string>) {
       const battleId = normalizeId(action.payload);
       if (!state.battles[battleId]) {
@@ -396,6 +429,9 @@ const battlesSlice = createSlice({
 });
 
 export const {
+  addSpectatingBattle,
+  removeSpectatingBattle,
+  setSpectatingBattles,
   battleSessionCreated,
   battleStateUpdated,
   setBattleRequest,

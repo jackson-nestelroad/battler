@@ -15,13 +15,16 @@ import { BattlerServiceClient } from "battler-service-client";
 import type { MonData } from "battler-types";
 import { WampSessionProvider } from "battler-wamp-client";
 import {
+  addSpectatingBattle,
   battleSessionCreated,
   battleSessionEnded,
   battleSessionRestored,
   battleStateUpdated,
   clearBattles,
   clearBattleState,
+  isSpectatorSession,
   removeBattle,
+  removeSpectatingBattle,
   resetBattlesState,
   selectBattle,
   serviceBattleUpdated,
@@ -32,6 +35,7 @@ import {
   setChoiceError,
   setChoiceSubmitted,
   setIsSpectator,
+  setSpectatingBattles,
 } from "../store/battlesSlice";
 import {
   setAutoconnect,
@@ -45,6 +49,7 @@ import {
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
 import { addProposals, clearProposals, updateProposal } from "../store/proposalsSlice";
 import { formatUuid } from "../utils/uuid";
+import { LocalStoragePersistentStorage } from "./storage";
 
 function saveItem(key: string, value: string) {
   if (typeof window !== "undefined" && window.localStorage) {
@@ -126,6 +131,7 @@ function handleBattleError(
   dispatch(setBattleError({ battleId, error: uiErrorMsg }));
 
   if (errorUri === "com.battler.battler_service.error.battle_not_found") {
+    dispatch(removeSpectatingBattle(battleId));
     dispatch(clearBattleState(battleId));
   }
 
@@ -242,6 +248,11 @@ export async function initializeBattleClient(
       connectionManager.clientsRegistry.set(battleId, client);
       const isSpectator = client.role().type === "spectator";
       dispatch(setIsSpectator({ battleId, isSpectator }));
+      if (isSpectator) {
+        dispatch(addSpectatingBattle(battleId));
+      } else {
+        dispatch(removeSpectatingBattle(battleId));
+      }
 
       // Initial setup dispatch
       dispatch(
@@ -291,9 +302,22 @@ export async function initializeBattleClient(
 }
 
 // Helper to restore an active/historical battle session in the background
-export function restoreBattleSession(rawBattleId: string, playerId: string, dispatch: Dispatch) {
+export function restoreBattleSession(
+  rawBattleId: string,
+  playerId: string,
+  dispatch: Dispatch,
+  isSpectator?: boolean,
+) {
   const battleId = formatUuid(rawBattleId);
   dispatch(battleSessionRestored(battleId));
+  if (isSpectator !== undefined) {
+    dispatch(setIsSpectator({ battleId, isSpectator }));
+    if (isSpectator) {
+      dispatch(addSpectatingBattle(battleId));
+    } else {
+      dispatch(removeSpectatingBattle(battleId));
+    }
+  }
   initializeBattleClient(battleId, playerId, dispatch).catch((err) => {
     console.error(`[WAMP] Failed to restore battle client for ${battleId}:`, err);
   });
@@ -515,7 +539,6 @@ export const connectWamp = createAsyncThunk(
 
       dispatch(setPlayerId(playerId));
       dispatch(setServerUrl(url));
-      dispatch(setConnectionStatus("connected"));
       dispatch(setSavedConnectionDetails({ playerId, serverUrl: url, autoconnect }));
 
       // Save settings to local storage
@@ -542,10 +565,10 @@ export const connectWamp = createAsyncThunk(
       }
 
       // Restore active battles for the player
+      const restoredIds = new Set<string>();
       try {
         let battlesOffset = 0;
         const battlesLimit = 50;
-        const restoredIds = new Set<string>();
         while (true) {
           const page = await connectionManager.serviceClient.battlesForPlayer(
             playerId,
@@ -553,8 +576,8 @@ export const connectWamp = createAsyncThunk(
             battlesOffset,
           );
           for (const b of page) {
-            restoredIds.add(b.uuid);
-            restoreBattleSession(b.uuid, playerId, dispatch);
+            restoredIds.add(formatUuid(b.uuid));
+            restoreBattleSession(b.uuid, playerId, dispatch, false);
           }
           if (page.length < battlesLimit) {
             break;
@@ -566,11 +589,29 @@ export const connectWamp = createAsyncThunk(
         dispatch(setConnectionError(`Failed to fetch active battles: ${formatWampError(err)}`));
       }
 
+      // Restore saved spectating battles
+      try {
+        const storage = new LocalStoragePersistentStorage();
+        const savedSpectating =
+          (await storage.getItem<string[]>("battler_spectating_battles")) || [];
+        dispatch(setSpectatingBattles(savedSpectating));
+        for (const spectatedId of savedSpectating) {
+          const normId = formatUuid(spectatedId);
+          if (!restoredIds.has(normId)) {
+            restoreBattleSession(spectatedId, playerId, dispatch, true);
+          }
+        }
+      } catch (err: unknown) {
+        console.error("[WAMP] Failed to restore spectating battles:", err);
+      }
+
       // Subscribe to proposal updates
       connectionManager.proposalSubscription =
         await connectionManager.multiplayerClient.proposedBattleUpdates(
           getProposalUpdateHandler(playerId, dispatch),
         );
+
+      dispatch(setConnectionStatus("connected"));
     } catch (err: unknown) {
       dispatch(setConnectionStatus("disconnected"));
       const errorMsg = formatWampError(err);
@@ -633,6 +674,7 @@ export const closeBattleSession = createAsyncThunk(
       }
       connectionManager.clientsRegistry.delete(battleId);
     }
+    dispatch(removeSpectatingBattle(battleId));
     dispatch(removeBattle(battleId));
   },
 );
@@ -833,7 +875,8 @@ export const refreshLobby = createAsyncThunk<void, string, { state: RootState }>
         const currentBattles = getState().battles.battles;
         for (const [id, battle] of Object.entries(currentBattles)) {
           if (!battle.isReplay && !battle.isProposal && !battle.isDeleted) {
-            if (!fetchedBattleIds.has(id)) {
+            const isSpectator = isSpectatorSession(battle, playerId);
+            if (!isSpectator && !fetchedBattleIds.has(id)) {
               dispatch(clearBattleState(id));
             }
           }
