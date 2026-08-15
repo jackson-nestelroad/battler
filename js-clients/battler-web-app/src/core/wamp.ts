@@ -11,7 +11,7 @@ import type {
   ProposedBattleRejection,
 } from "battler-multiplayer-service-client";
 import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
-import { BattlerServiceClient } from "battler-service-client";
+import { BattlerServiceClient, type BattlePreview } from "battler-service-client";
 import type { MonData } from "battler-types";
 import { WampSessionProvider } from "battler-wamp-client";
 import {
@@ -373,7 +373,11 @@ interface ProposedBattleUpdate {
   deletion_reason?: string | null;
 }
 
-function getProposalUpdateHandler(playerId: string, dispatch: Dispatch) {
+function getProposalUpdateHandler(
+  playerId: string,
+  dispatch: Dispatch,
+  getState?: () => RootState,
+) {
   return async (update: ProposedBattleUpdate) => {
     const proposalWithDetails: ProposedBattleWithDetails = {
       ...update.proposed_battle,
@@ -393,9 +397,19 @@ function getProposalUpdateHandler(playerId: string, dispatch: Dispatch) {
           }),
         );
       } else {
-        const client = await initializeBattleClient(battleId, playerId, dispatch);
+        const client = await initializeBattleClient(battleId, playerId, dispatch, getState);
         if (client && update.deletion_reason === "fulfilled") {
-          dispatch(selectBattle({ view: "battle", battleId }));
+          if (getState) {
+            const currentBattlesState = getState().battles;
+            const currentView = currentBattlesState.currentView;
+            const currentBattleId = currentBattlesState.activeBattleId;
+            const proposalId = update.proposed_battle.uuid;
+            if (currentView === "proposal" && currentBattleId === proposalId) {
+              dispatch(selectBattle({ view: "battle", battleId }));
+            }
+          } else {
+            dispatch(selectBattle({ view: "battle", battleId }));
+          }
         }
       }
     }
@@ -403,7 +417,11 @@ function getProposalUpdateHandler(playerId: string, dispatch: Dispatch) {
 }
 
 // Connect thunk
-export const connectWamp = createAsyncThunk(
+export const connectWamp = createAsyncThunk<
+  void,
+  { url: string; playerId: string; autoconnect?: boolean },
+  { state: RootState }
+>(
   "wamp/connect",
   async (
     {
@@ -411,7 +429,7 @@ export const connectWamp = createAsyncThunk(
       playerId,
       autoconnect = false,
     }: { url: string; playerId: string; autoconnect?: boolean },
-    { dispatch },
+    { dispatch, getState },
   ) => {
     dispatch(setConnectionStatus("connecting"));
     dispatch(setConnectionError(null));
@@ -499,7 +517,7 @@ export const connectWamp = createAsyncThunk(
           try {
             connectionManager.proposalSubscription =
               await connectionManager.multiplayerClient.proposedBattleUpdates(
-                getProposalUpdateHandler(playerId, dispatch),
+                getProposalUpdateHandler(playerId, dispatch, getState),
               );
           } catch (e) {
             // Ignored
@@ -523,10 +541,6 @@ export const connectWamp = createAsyncThunk(
         }
       });
 
-      // Connect
-      await connectionManager.sessionProvider.connect();
-
-      // Instantiate services
       connectionManager.serviceClient = new BattlerServiceClient(connectionManager.sessionProvider);
       connectionManager.mpServiceClient = new BattlerMultiplayerServiceClient(
         connectionManager.sessionProvider,
@@ -536,6 +550,9 @@ export const connectWamp = createAsyncThunk(
         connectionManager.mpServiceClient,
         connectionManager.serviceClient,
       );
+
+      // Connect
+      await connectionManager.sessionProvider.connect();
 
       dispatch(setPlayerId(playerId));
       dispatch(setServerUrl(url));
@@ -608,7 +625,7 @@ export const connectWamp = createAsyncThunk(
       // Subscribe to proposal updates
       connectionManager.proposalSubscription =
         await connectionManager.multiplayerClient.proposedBattleUpdates(
-          getProposalUpdateHandler(playerId, dispatch),
+          getProposalUpdateHandler(playerId, dispatch, getState),
         );
 
       dispatch(setConnectionStatus("connected"));
@@ -809,7 +826,7 @@ export const refreshLobby = createAsyncThunk<void, string, { state: RootState }>
     try {
       connectionManager.proposalSubscription =
         await connectionManager.multiplayerClient.proposedBattleUpdates(
-          getProposalUpdateHandler(playerId, dispatch),
+          getProposalUpdateHandler(playerId, dispatch, getState),
         );
     } catch (err) {
       console.error("[WAMP] Failed to re-subscribe to proposal updates during refresh:", err);
@@ -981,3 +998,19 @@ export const checkBattleStatus = createAsyncThunk(
     }
   },
 );
+
+// Fetch Paginated Battles thunk
+export const fetchBattles = createAsyncThunk<
+  BattlePreview[],
+  { count: number; offset: number },
+  { rejectValue: string }
+>("wamp/fetchBattles", async ({ count, offset }, { rejectWithValue }) => {
+  if (!connectionManager.serviceClient) {
+    return rejectWithValue("Not connected to battle server");
+  }
+  try {
+    return await connectionManager.serviceClient.battles(count, offset);
+  } catch (err) {
+    return rejectWithValue(formatWampError(err));
+  }
+});

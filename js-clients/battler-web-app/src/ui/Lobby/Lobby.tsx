@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { setConnectionError } from "../../store/connectionSlice";
 import ErrorBanner from "../Common/ErrorBanner";
 import RefreshButton from "../Common/RefreshButton";
+import BattlesList from "./BattlesList";
 import ProposalForm from "./ProposalForm";
 import ProposalList from "./ProposalList";
 
@@ -15,11 +16,13 @@ import styles from "./Lobby.module.scss";
 export default function Lobby() {
   const dispatch = useAppDispatch();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       await dispatch(refreshLobby(connection.playerId || "")).unwrap();
+      setRefreshCounter((c) => c + 1);
     } catch (err) {
       console.error(err);
     } finally {
@@ -105,6 +108,9 @@ export default function Lobby() {
           onView={(uuid) => dispatch(selectBattle({ view: "proposal", battleId: uuid }))}
         />
       </div>
+
+      {/* All Battles Section */}
+      <BattlesList refreshTrigger={refreshCounter} />
     </div>
   );
 }

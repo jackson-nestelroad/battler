@@ -1,0 +1,89 @@
+@use "../../styles/breakpoints" as *;
+
+.battleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-s) var(--spacing-m);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-s);
+  gap: var(--spacing-m);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--bg-card);
+    border-color: var(--color-primary);
+  }
+
+  @include mobile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+}
+
+.battleInfo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-s);
+  min-width: 0;
+  flex: 1;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xxs);
+    width: 100%;
+  }
+}
+
+.playersText {
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dotSeparator {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  user-select: none;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+.battleSubtitle {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+}
+
+.paginationFooter {
+  padding-top: var(--spacing-m);
+  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-m);
+}
+
+.pageIndicator {
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-l) 0;
+  margin: auto 0;
+}
