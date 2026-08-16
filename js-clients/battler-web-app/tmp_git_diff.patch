@@ -1,0 +1,523 @@
+diff --git a/js-clients/battler-web-app/src/ui/Battle/ActionPanel.tsx b/js-clients/battler-web-app/src/ui/Battle/ActionPanel.tsx
+index 815b0983..1e7af2ea 100644
+--- a/js-clients/battler-web-app/src/ui/Battle/ActionPanel.tsx
++++ b/js-clients/battler-web-app/src/ui/Battle/ActionPanel.tsx
+@@ -1,10 +1,16 @@
+-import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
+ import { stateSelectors } from "battler-state";
+-import { useEffect, useRef, useState } from "react";
++import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
++import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+ import { submitChoice } from "../../core/wamp";
+ import { setChoiceError } from "../../store/battlesSlice";
+ import { useAppDispatch, useAppSelector } from "../../store/store";
++import { ChoiceBuilder } from "../../utils/choiceBuilder";
++import { parseChoiceError } from "../../utils/choiceErrorParser";
++import { parseChoiceString } from "../../utils/choiceFormatter";
++import { canSlotShift, getMonTeamPosition } from "../../utils/monHelpers";
++import { getValidTargets } from "../../utils/targeting";
+ import ErrorBanner from "../Common/ErrorBanner";
++import ChoiceStepper from "./ChoiceStepper";
+ import MoveSelector from "./MoveSelector";
+ import TargetSelector from "./TargetSelector";
+ import TeamSummary from "./TeamSummary";
+@@ -58,6 +64,19 @@ export default function ActionPanel({
+ 
+   const submittingRef = useRef(false);
+ 
++  const choiceError = battleSession?.choiceError || null;
++  const parsedChoiceError = useMemo(() => parseChoiceError(choiceError), [choiceError]);
++
++  const handleJumpToSlot = (slotIndex: number) => {
++    if (submittingRef.current) return;
++    dispatch(setChoiceError({ battleId, error: null }));
++    setChoices(choices.slice(0, slotIndex));
++    setCurrentSlotIndex(slotIndex);
++    setSelectedMove(null);
++    setSelectedMoveIndex(null);
++    resetModifiers();
++  };
++
+   // Reset when request or turn changes
+   useEffect(() => {
+     setCurrentSlotIndex(0);
+@@ -172,6 +191,26 @@ export default function ActionPanel({
+   };
+ 
+   const renderTeamSummary = () => {
++    let activeMonTeamPosition: number | null = null;
++    if (request?.type === "turn") {
++      const activeRequests = request.active || [];
++      const activeReq = activeRequests[currentSlotIndex];
++      if (activeReq) {
++        activeMonTeamPosition = activeReq.team_position;
++      }
++    } else if (request?.type === "switch") {
++      const needsSwitch = request.needs_switch || [];
++      const activeSwitchSlot = needsSwitch[currentSlotIndex];
++      if (activeSwitchSlot !== undefined && playerData?.mons) {
++        const monToReplace = playerData.mons.find(
++          (m) => m.player_active_position === activeSwitchSlot,
++        );
++        if (monToReplace) {
++          activeMonTeamPosition = getMonTeamPosition(monToReplace, 0);
++        }
++      }
++    }
++
+     return (
+       <TeamSummary
+         playerData={playerData}
+@@ -184,6 +223,8 @@ export default function ActionPanel({
+         onSwitch={handleSwitch}
+         selectedTeamIndices={selectedTeamIndices}
+         onSelectMon={handleSelectMon}
++        activeMonTeamPosition={activeMonTeamPosition}
++        actingBadgeText={request?.type === "switch" ? "SWITCHING" : "ACTING"}
+       />
+     );
+   };
+@@ -281,15 +322,66 @@ export default function ActionPanel({
+       const monToReplace = playerData?.mons?.find(
+         (m) => m.player_active_position === activeSwitchSlot,
+       );
+-      const replaceMonName =
+-        monToReplace?.summary?.name || monToReplace?.species || `Slot ${activeSwitchSlot + 1}`;
++      const replaceMonName = monToReplace?.summary?.name || monToReplace?.species;
++
++      const chosenSwitchPositions = choices
++        .map((c) => {
++          const parsed = parseChoiceString(c);
++          return parsed.type === "switch" ? parsed.switchPosition : null;
++        })
++        .filter((pos): pos is number => pos !== null);
++
++      const remainingHealthyBenchCount =
++        playerData?.mons?.filter((m, idx) => {
++          const pos = getMonTeamPosition(m, idx);
++          return !m.active && m.hp > 0 && !chosenSwitchPositions.includes(pos);
++        }).length || 0;
++
++      const remainingChoicesToMake = needsSwitch.length - currentSlotIndex;
++      const canPassSwitch =
++        remainingHealthyBenchCount < remainingChoicesToMake || remainingHealthyBenchCount === 0;
++
++      const handlePassSwitch = () => {
++        if (submittingRef.current) return;
++        const newChoices = [...choices, "pass"];
++        advanceSlotOrSubmit(newChoices, needsSwitch.length);
++      };
++
++      const isMultiSlotBattle =
++        needsSwitch.length > 1 ||
++        (battleSession?.serviceBattle?.metadata?.battle_type &&
++          battleSession.serviceBattle.metadata.battle_type !== "Singles") ||
++        (battleSession?.metadata?.battle_type &&
++          battleSession.metadata.battle_type !== "Singles");
+ 
+       return (
+         <div className="flex-col gap-m">
+           <h3>
+-            Switch: <strong>{replaceMonName}</strong>
++            {isMultiSlotBattle
++              ? replaceMonName
++                ? `Switch slot ${activeSwitchSlot + 1}: ${replaceMonName}`
++                : `Switch slot ${activeSwitchSlot + 1}`
++              : replaceMonName
++                ? `Switch: ${replaceMonName}`
++                : `Switch`}
+           </h3>
+ 
++          {canPassSwitch && (
++            <button
++              type="button"
++              onClick={handlePassSwitch}
++              className={`${styles.moveBtn} type-border`}
++              style={{ "--type-color": "var(--color-warning)" } as CSSProperties}
++              disabled={isLoading}
++              title="Leave slot empty"
++            >
++              <div className={styles.moveHeaderRow}>
++                <span className={styles.moveName}>Pass</span>
++              </div>
++              <span className={styles.moveMeta}>Leave slot empty</span>
++            </button>
++          )}
++
+           <div className="flex-row gap-s align-center">
+             {currentSlotIndex > 0 && (
+               <button
+@@ -305,6 +397,17 @@ export default function ActionPanel({
+             )}
+             {renderForfeitButton()}
+           </div>
++
++          <ChoiceStepper
++            request={request}
++            playerData={playerData}
++            battleState={battleSession?.battleState}
++            choices={choices}
++            currentSlotIndex={currentSlotIndex}
++            parsedChoiceError={parsedChoiceError}
++            isLoading={isLoading}
++            onJumpToSlot={handleJumpToSlot}
++          />
+         </div>
+       );
+     }
+@@ -327,11 +430,47 @@ export default function ActionPanel({
+       const activeMonName =
+         activeMon?.summary?.name || activeMon?.species || `Mon #${currentSlotIndex + 1}`;
+ 
++      const TARGET_REQUIRING_SELECT = [
++        "Normal",
++        "AdjacentFoe",
++        "AdjacentAlly",
++        "Any",
++        "AdjacentAllyOrUser",
++      ];
++
+       const handleSelectMove = (move: MonMoveSlotData, index: number) => {
+         if (submittingRef.current) return;
+         dispatch(setChoiceError({ battleId, error: null }));
+-        setSelectedMove(move);
+-        setSelectedMoveIndex(index);
++
++        const requiresSelect = TARGET_REQUIRING_SELECT.includes(move.target);
++        const dynamicTargets = requiresSelect
++          ? getValidTargets({
++              moveTarget: move.target,
++              currentSlotIndex,
++              battleType:
++                battleSession?.serviceBattle?.metadata?.battle_type ||
++                battleSession?.metadata?.battle_type,
++              activeRequestsCount: activeRequests.length,
++              playerData,
++              battleState: battleSession?.battleState,
++            })
++          : [];
++
++        if (!requiresSelect || dynamicTargets.length <= 1) {
++          const targetVal = requiresSelect ? (dynamicTargets[0]?.value ?? 1) : null;
++          const choiceStr = ChoiceBuilder.move(index, targetVal, {
++            mega,
++            zmove,
++            ultra,
++            dyna,
++            tera,
++          });
++          const newChoices = [...choices, choiceStr];
++          advanceSlotOrSubmit(newChoices, activeRequests.length);
++        } else {
++          setSelectedMove(move);
++          setSelectedMoveIndex(index);
++        }
+       };
+ 
+       const handleConfirmMove = (targetVal: number | null) => {
+@@ -378,11 +517,26 @@ export default function ActionPanel({
+         }
+       }
+ 
++      const canShift = canSlotShift(
++        currentSlotIndex,
++        activeRequests.length,
++        !!activeReq?.trapped,
++      );
++      const handleShift = () => {
++        if (submittingRef.current) return;
++        dispatch(setChoiceError({ battleId, error: null }));
++        const choiceStr = ChoiceBuilder.shift();
++        const newChoices = [...choices, choiceStr];
++        advanceSlotOrSubmit(newChoices, activeRequests.length);
++      };
++
+       return (
+         <div className="flex-col gap-m">
+           <div className="card-header">
+             <h3>
+-              {activeMonName} ({currentSlotIndex + 1}/{activeRequests.length})
++              {activeRequests.length > 1
++                ? `Slot ${currentSlotIndex + 1}: ${activeMonName}`
++                : activeMonName}
+             </h3>
+             <div className={styles.headerActions}>{renderForfeitButton()}</div>
+           </div>
+@@ -402,12 +556,22 @@ export default function ActionPanel({
+               setDyna={setDyna}
+               ultra={ultra}
+               setUltra={setUltra}
++              canShift={canShift}
++              onShift={handleShift}
+               onSelectMove={handleSelectMove}
+               onClearError={() => dispatch(setChoiceError({ battleId, error: null }))}
+             />
+           ) : (
+             <TargetSelector
+               selectedMoveTarget={selectedMove.target}
++              currentSlotIndex={currentSlotIndex}
++              battleType={
++                battleSession?.serviceBattle?.metadata?.battle_type ||
++                battleSession?.metadata?.battle_type
++              }
++              activeRequestsCount={activeRequests.length}
++              playerData={playerData}
++              battleState={battleSession?.battleState}
+               isLoading={isLoading}
+               onConfirmMove={handleConfirmMove}
+             />
+@@ -420,6 +584,17 @@ export default function ActionPanel({
+               </button>
+             )}
+           </div>
++
++          <ChoiceStepper
++            request={request}
++            playerData={playerData}
++            battleState={battleSession?.battleState}
++            choices={choices}
++            currentSlotIndex={currentSlotIndex}
++            parsedChoiceError={parsedChoiceError}
++            isLoading={isLoading}
++            onJumpToSlot={handleJumpToSlot}
++          />
+         </div>
+       );
+     }
+diff --git a/js-clients/battler-web-app/src/ui/Battle/MoveSelector.tsx b/js-clients/battler-web-app/src/ui/Battle/MoveSelector.tsx
+index 72aede46..94c149b3 100644
+--- a/js-clients/battler-web-app/src/ui/Battle/MoveSelector.tsx
++++ b/js-clients/battler-web-app/src/ui/Battle/MoveSelector.tsx
+@@ -28,6 +28,8 @@ interface MoveSelectorProps {
+   setUltra: (val: boolean) => void;
+   onSelectMove: (move: MonMoveSlotData, index: number) => void;
+   onClearError: () => void;
++  canShift?: boolean;
++  onShift?: () => void;
+ }
+ 
+ export default function MoveSelector({
+@@ -46,6 +48,8 @@ export default function MoveSelector({
+   setUltra,
+   onSelectMove,
+   onClearError,
++  canShift = false,
++  onShift,
+ }: MoveSelectorProps) {
+   const isMaxMoveActive = dyna || isDynamaxed;
+ 
+@@ -103,7 +107,12 @@ export default function MoveSelector({
+             ].map(
+               ({ key, label, flag, value, setter }) =>
+                 flag && (
+-                  <label key={key} className={styles.checkboxLabel}>
++                  <label
++                    key={key}
++                    className={`${styles.checkboxLabel} ${
++                      styles[`modifierLabel_${key}`] || ""
++                    } ${value ? styles.checked : ""}`}
++                  >
+                     <input
+                       type="checkbox"
+                       checked={value}
+@@ -176,7 +185,22 @@ export default function MoveSelector({
+             );
+           })}
+         </div>
+-        {activeReq.trapped && <p className={styles.trappedMessage}>Trapped</p>}
++        {canShift && onShift && (
++          <button
++            type="button"
++            onClick={onShift}
++            className={`${styles.moveBtn} type-border`}
++            style={{ "--type-color": "var(--color-primary)" } as CSSProperties}
++            disabled={isLoading}
++            title="Shift position to the center slot"
++          >
++            <div className={styles.moveHeaderRow}>
++              <span className={styles.moveName}>Shift</span>
++            </div>
++            <span className={styles.moveMeta}>Shift to center position</span>
++          </button>
++        )}
++        {activeReq.trapped && <div className="alert alert-warning">Trapped</div>}
+       </div>
+     </div>
+   );
+diff --git a/js-clients/battler-web-app/src/ui/Battle/TargetSelector.tsx b/js-clients/battler-web-app/src/ui/Battle/TargetSelector.tsx
+index 8003a357..76e06bca 100644
+--- a/js-clients/battler-web-app/src/ui/Battle/TargetSelector.tsx
++++ b/js-clients/battler-web-app/src/ui/Battle/TargetSelector.tsx
+@@ -1,7 +1,15 @@
++import type { BattleState } from "battler-state";
++import type { BattleType, PlayerBattleData } from "battler-types";
++import { getValidTargets } from "../../utils/targeting";
+ import styles from "./ActionPanel.module.scss";
+ 
+ interface TargetSelectorProps {
+   selectedMoveTarget: string;
++  currentSlotIndex?: number;
++  battleType?: BattleType | string | null;
++  activeRequestsCount?: number;
++  playerData?: PlayerBattleData | null;
++  battleState?: BattleState | null;
+   isLoading: boolean;
+   onConfirmMove: (targetVal: number | null) => void;
+ }
+@@ -16,11 +24,27 @@ const TARGET_REQUIRING_SELECT = [
+ 
+ export default function TargetSelector({
+   selectedMoveTarget,
++  currentSlotIndex = 0,
++  battleType,
++  activeRequestsCount = 1,
++  playerData,
++  battleState,
+   isLoading,
+   onConfirmMove,
+ }: TargetSelectorProps) {
+   const requiresSelect = TARGET_REQUIRING_SELECT.includes(selectedMoveTarget);
+ 
++  const dynamicTargets = requiresSelect
++    ? getValidTargets({
++        moveTarget: selectedMoveTarget,
++        currentSlotIndex,
++        battleType,
++        activeRequestsCount,
++        playerData,
++        battleState,
++      })
++    : [];
++
+   return (
+     <div className={styles.targetCard}>
+       <h4>Select target</h4>
+@@ -34,6 +58,28 @@ export default function TargetSelector({
+           >
+             Confirm
+           </button>
++        ) : dynamicTargets.length > 0 ? (
++          <div className={styles.targetGrid}>
++            {dynamicTargets.map((opt) => {
++              const typeLabel =
++                opt.type === "self" ? "Self" : opt.type === "foe" ? "Foe" : "Ally";
++              const subText = opt.playerName ? `${typeLabel} • ${opt.playerName}` : typeLabel;
++
++              return (
++                <button
++                  key={`${opt.type}-${opt.value}`}
++                  onClick={() => onConfirmMove(opt.value)}
++                  className={`${styles.targetBtn} btn ${
++                    opt.type === "self" ? "btn-primary" : "btn-secondary"
++                  }`}
++                  disabled={isLoading}
++                >
++                  <span className={styles.targetMonName}>{opt.monName}</span>
++                  <span className={`${styles.targetSubText} ${styles[opt.type]}`}>{subText}</span>
++                </button>
++              );
++            })}
++          </div>
+         ) : (
+           <div className={styles.targetGrid}>
+             <button
+diff --git a/js-clients/battler-web-app/src/ui/Battle/TeamSummary.tsx b/js-clients/battler-web-app/src/ui/Battle/TeamSummary.tsx
+index 2050655a..039a9232 100644
+--- a/js-clients/battler-web-app/src/ui/Battle/TeamSummary.tsx
++++ b/js-clients/battler-web-app/src/ui/Battle/TeamSummary.tsx
+@@ -1,4 +1,5 @@
+ import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
++import { getMonTeamPosition } from "../../utils/monHelpers";
+ import MonCard from "../Common/MonCard";
+ import styles from "./ActionPanel.module.scss";
+ 
+@@ -13,6 +14,8 @@ interface TeamSummaryProps {
+   onSwitch: (playerTeamPosition: number, totalSlots: number) => void;
+   selectedTeamIndices?: number[];
+   onSelectMon?: (idx: number) => void;
++  activeMonTeamPosition?: number | null;
++  actingBadgeText?: string;
+ }
+ 
+ export default function TeamSummary({
+@@ -26,6 +29,8 @@ export default function TeamSummary({
+   onSwitch,
+   selectedTeamIndices = [],
+   onSelectMon,
++  activeMonTeamPosition,
++  actingBadgeText,
+ }: TeamSummaryProps) {
+   if (!playerData || !playerData.mons) return null;
+ 
+@@ -35,6 +40,11 @@ export default function TeamSummary({
+       <div className={styles.teamSummaryGrid}>
+         {playerData.mons.map((mon, idx) => {
+           const name = mon.summary?.name || mon.species;
++          const monPos = getMonTeamPosition(mon, idx);
++          const isActing =
++            activeMonTeamPosition !== undefined &&
++            activeMonTeamPosition !== null &&
++            monPos === activeMonTeamPosition;
+ 
+           // Check if card is clickable for switching or team preview
+           let isClickable = false;
+@@ -71,8 +81,9 @@ export default function TeamSummary({
+             if (canSwitch) {
+               isClickable = !mon.active && mon.hp > 0;
+               if (isClickable) {
++                const pos = getMonTeamPosition(mon, idx);
+                 handleClick = () => {
+-                  onSwitch(mon.player_team_position, totalSlots);
++                  onSwitch(pos, totalSlots);
+                 };
+               }
+             }
+@@ -93,6 +104,8 @@ export default function TeamSummary({
+               isClickable={isClickable}
+               onClick={handleClick}
+               selectionOrder={selectionOrder}
++              isActing={isActing}
++              actingBadgeText={actingBadgeText}
+             />
+           );
+         })}
+diff --git a/js-clients/battler-web-app/src/ui/Common/MonCard.tsx b/js-clients/battler-web-app/src/ui/Common/MonCard.tsx
+index 575cce87..8ec94e87 100644
+--- a/js-clients/battler-web-app/src/ui/Common/MonCard.tsx
++++ b/js-clients/battler-web-app/src/ui/Common/MonCard.tsx
+@@ -11,6 +11,8 @@ interface MonCardProps {
+   isClickable: boolean;
+   onClick?: () => void;
+   selectionOrder?: number;
++  isActing?: boolean;
++  actingBadgeText?: string;
+ }
+ 
+ export default function MonCard({
+@@ -23,19 +25,22 @@ export default function MonCard({
+   isClickable,
+   onClick,
+   selectionOrder,
++  isActing,
++  actingBadgeText = "ACTING",
+ }: MonCardProps) {
+   return (
+     <div
+       onClick={isClickable ? onClick : undefined}
+       className={`${styles.teamSummaryCard} ${active ? styles.summaryActive : ""} ${
+-        hp === 0 ? styles.summaryFainted : ""
+-      } ${isClickable ? styles.clickableSummaryCard : ""} ${
+-        selectionOrder !== undefined ? styles.selectedCard : ""
+-      }`}
++        isActing ? styles.summaryActing : ""
++      } ${hp === 0 ? styles.summaryFainted : ""} ${
++        isClickable ? styles.clickableSummaryCard : ""
++      } ${selectionOrder !== undefined ? styles.selectedCard : ""}`}
+     >
+       {selectionOrder !== undefined && (
+         <div className={styles.selectionBadge}>{selectionOrder}</div>
+       )}
++      {isActing && <div className={styles.actingBadge}>{actingBadgeText}</div>}
+       <div className={styles.summaryCardHeader}>
+         <span className={styles.summaryMonName}>{name}</span>
+         <span className={styles.summaryMonLevel}>L{level}</span>

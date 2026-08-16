@@ -1,7 +1,9 @@
+import type { TargetOption } from "../../utils/targeting";
 import styles from "./ActionPanel.module.scss";
 
 interface TargetSelectorProps {
   selectedMoveTarget: string;
+  dynamicTargets: TargetOption[];
   isLoading: boolean;
   onConfirmMove: (targetVal: number | null) => void;
 }
@@ -16,6 +18,7 @@ const TARGET_REQUIRING_SELECT = [
 
 export default function TargetSelector({
   selectedMoveTarget,
+  dynamicTargets,
   isLoading,
   onConfirmMove,
 }: TargetSelectorProps) {
@@ -34,6 +37,28 @@ export default function TargetSelector({
           >
             Confirm
           </button>
+        ) : dynamicTargets.length > 0 ? (
+          <div className={styles.targetGrid}>
+            {dynamicTargets.map((opt) => {
+              const typeLabel =
+                opt.type === "self" ? "Self" : opt.type === "foe" ? "Foe" : "Ally";
+              const subText = opt.playerName ? `${typeLabel} • ${opt.playerName}` : typeLabel;
+
+              return (
+                <button
+                  key={`${opt.type}-${opt.value}`}
+                  onClick={() => onConfirmMove(opt.value)}
+                  className={`${styles.targetBtn} btn ${
+                    opt.type === "self" ? "btn-primary" : "btn-secondary"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <span className={styles.targetMonName}>{opt.monName}</span>
+                  <span className={`${styles.targetSubText} ${styles[opt.type]}`}>{subText}</span>
+                </button>
+              );
+            })}
+          </div>
         ) : (
           <div className={styles.targetGrid}>
             <button

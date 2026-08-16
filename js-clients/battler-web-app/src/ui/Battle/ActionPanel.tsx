@@ -1,10 +1,16 @@
-import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
 import { stateSelectors } from "battler-state";
-import { useEffect, useRef, useState } from "react";
+import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { submitChoice } from "../../core/wamp";
 import { setChoiceError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
+import { ChoiceBuilder } from "../../utils/choiceBuilder";
+import { parseChoiceError } from "../../utils/choiceErrorParser";
+import { parseChoiceString } from "../../utils/choiceFormatter";
+import { canSlotShift, getMonTeamPosition } from "../../utils/monHelpers";
+import { getValidTargets, type TargetOption } from "../../utils/targeting";
 import ErrorBanner from "../Common/ErrorBanner";
+import ChoiceStepper from "./ChoiceStepper";
 import MoveSelector from "./MoveSelector";
 import TargetSelector from "./TargetSelector";
 import TeamSummary from "./TeamSummary";
@@ -38,6 +44,7 @@ export default function ActionPanel({
   const [selectedMove, setSelectedMove] = useState<MonMoveSlotData | null>(null);
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
   const [selectedTeamIndices, setSelectedTeamIndices] = useState<number[]>([]);
+  const [dynamicTargets, setDynamicTargets] = useState<TargetOption[]>([]);
 
   // Modifiers
   const [mega, setMega] = useState(false);
@@ -58,6 +65,32 @@ export default function ActionPanel({
 
   const submittingRef = useRef(false);
 
+  const choiceError = battleSession?.choiceError || null;
+  const parsedChoiceError = useMemo(() => parseChoiceError(choiceError), [choiceError]);
+
+  useEffect(() => {
+    const failedIdx = parsedChoiceError.failedSlotIndex;
+    if (failedIdx !== null && failedIdx < currentSlotIndex) {
+      setChoices((prev) => prev.slice(0, failedIdx));
+      setCurrentSlotIndex(failedIdx);
+      setSelectedMove(null);
+      setSelectedMoveIndex(null);
+      setDynamicTargets([]);
+      resetModifiers();
+    }
+  }, [parsedChoiceError.failedSlotIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleJumpToSlot = (slotIndex: number) => {
+    if (submittingRef.current) return;
+    dispatch(setChoiceError({ battleId, error: null }));
+    setChoices(choices.slice(0, slotIndex));
+    setCurrentSlotIndex(slotIndex);
+    setSelectedMove(null);
+    setSelectedMoveIndex(null);
+    setDynamicTargets([]);
+    resetModifiers();
+  };
+
   // Reset when request or turn changes
   useEffect(() => {
     setCurrentSlotIndex(0);
@@ -65,6 +98,7 @@ export default function ActionPanel({
     setSelectedMove(null);
     setSelectedMoveIndex(null);
     setSelectedTeamIndices([]);
+    setDynamicTargets([]);
     resetModifiers();
     submittingRef.current = false;
     setShowForfeitConfirm(false);
@@ -129,6 +163,45 @@ export default function ActionPanel({
   // Check if player has already submitted their choice for the current turn
   const isMeReady = !!battleSession?.choiceSubmitted;
 
+  const battleType =
+    battleSession?.serviceBattle?.metadata?.battle_type ||
+    battleSession?.metadata?.battle_type ||
+    "Singles";
+
+  let activeMonTeamPosition: number | null = null;
+  let activeSwitchSlot: number | undefined;
+  let monToReplace: MonMoveSlotData | undefined;
+
+  if (request?.type === "turn") {
+    const activeReq = request.active?.[currentSlotIndex];
+    if (activeReq) {
+      activeMonTeamPosition = activeReq.team_position;
+    }
+  } else if (request?.type === "switch") {
+    activeSwitchSlot = request.needs_switch?.[currentSlotIndex];
+    if (activeSwitchSlot !== undefined && playerData?.mons) {
+      monToReplace = playerData.mons.find(
+        (m) => m.player_active_position === activeSwitchSlot,
+      );
+      if (monToReplace) {
+        activeMonTeamPosition = getMonTeamPosition(monToReplace, 0);
+      }
+    }
+  }
+
+  const renderChoiceStepper = () => (
+    <ChoiceStepper
+      request={request}
+      playerData={playerData}
+      battleState={battleSession?.battleState}
+      choices={choices}
+      currentSlotIndex={currentSlotIndex}
+      parsedChoiceError={parsedChoiceError}
+      isLoading={isLoading}
+      onJumpToSlot={handleJumpToSlot}
+    />
+  );
+
   // Unified choice progression logic (DRY)
   const advanceSlotOrSubmit = (nextChoices: string[], totalSlots: number) => {
     if (currentSlotIndex + 1 < totalSlots) {
@@ -172,6 +245,7 @@ export default function ActionPanel({
   };
 
   const renderTeamSummary = () => {
+
     return (
       <TeamSummary
         playerData={playerData}
@@ -184,6 +258,8 @@ export default function ActionPanel({
         onSwitch={handleSwitch}
         selectedTeamIndices={selectedTeamIndices}
         onSelectMon={handleSelectMon}
+        activeMonTeamPosition={activeMonTeamPosition}
+        actingBadgeText={request?.type === "switch" ? "SWITCHING" : "ACTING"}
       />
     );
   };
@@ -232,7 +308,7 @@ export default function ActionPanel({
         <div className="flex-col gap-m">
           <div className="card-header">
             <h3>Team Preview</h3>
-            {renderForfeitButton()}
+            <div className={styles.headerActions}>{renderForfeitButton()}</div>
           </div>
 
           <div className="flex-col gap-s">
@@ -268,7 +344,6 @@ export default function ActionPanel({
 
     if (request.type === "switch") {
       const needsSwitch = request.needs_switch || [];
-      const activeSwitchSlot = needsSwitch[currentSlotIndex];
 
       if (activeSwitchSlot === undefined) {
         return (
@@ -278,20 +353,66 @@ export default function ActionPanel({
         );
       }
 
-      const monToReplace = playerData?.mons?.find(
-        (m) => m.player_active_position === activeSwitchSlot,
-      );
-      const replaceMonName =
-        monToReplace?.summary?.name || monToReplace?.species || `Slot ${activeSwitchSlot + 1}`;
+      const replaceMonName = monToReplace?.summary?.name || monToReplace?.species;
+
+      const chosenSwitchPositions = choices
+        .map((c) => {
+          const parsed = parseChoiceString(c);
+          return parsed.type === "switch" ? parsed.switchPosition : null;
+        })
+        .filter((pos): pos is number => pos !== null);
+
+      const remainingHealthyBenchCount =
+        playerData?.mons?.filter((m, idx) => {
+          const pos = getMonTeamPosition(m, idx);
+          return !m.active && m.hp > 0 && !chosenSwitchPositions.includes(pos);
+        }).length || 0;
+
+      const remainingChoicesToMake = needsSwitch.length - currentSlotIndex;
+      const canPassSwitch =
+        remainingHealthyBenchCount < remainingChoicesToMake || remainingHealthyBenchCount === 0;
+
+      const handlePassSwitch = () => {
+        if (submittingRef.current) return;
+        const newChoices = [...choices, "pass"];
+        advanceSlotOrSubmit(newChoices, needsSwitch.length);
+      };
+
+      const isMultiSlotBattle = needsSwitch.length > 1 || battleType !== "Singles";
 
       return (
         <div className="flex-col gap-m">
-          <h3>
-            Switch: <strong>{replaceMonName}</strong>
-          </h3>
+          <div className="card-header">
+            <h3>
+              {isMultiSlotBattle
+                ? replaceMonName
+                  ? `Switch slot ${activeSwitchSlot + 1}: ${replaceMonName}`
+                  : `Switch slot ${activeSwitchSlot + 1}`
+                : replaceMonName
+                  ? `Switch: ${replaceMonName}`
+                  : `Switch`}
+            </h3>
+            <div className={styles.headerActions}>{renderForfeitButton()}</div>
+          </div>
 
-          <div className="flex-row gap-s align-center">
-            {currentSlotIndex > 0 && (
+          {canPassSwitch && (
+            <button
+              type="button"
+              onClick={handlePassSwitch}
+              className={`${styles.moveBtn} type-border`}
+              style={{ "--type-color": "var(--color-warning)" } as CSSProperties}
+              disabled={isLoading}
+              title="Leave slot empty"
+            >
+              <div className={styles.moveHeaderRow}>
+                <span className={styles.moveName}>Pass</span>
+              </div>
+              <span className={styles.moveMeta}>Leave slot empty</span>
+            </button>
+          )}
+
+          {currentSlotIndex > 0 && (
+            <div className="flex-row gap-s align-center">
               <button
                 onClick={() => {
                   setChoices(choices.slice(0, -1));
@@ -302,9 +423,10 @@ export default function ActionPanel({
               >
                 ← Back
               </button>
-            )}
-            {renderForfeitButton()}
-          </div>
+            </div>
+          )}
+
+          {renderChoiceStepper()}
         </div>
       );
     }
@@ -327,11 +449,46 @@ export default function ActionPanel({
       const activeMonName =
         activeMon?.summary?.name || activeMon?.species || `Mon #${currentSlotIndex + 1}`;
 
+      const TARGET_REQUIRING_SELECT = [
+        "Normal",
+        "AdjacentFoe",
+        "AdjacentAlly",
+        "Any",
+        "AdjacentAllyOrUser",
+      ];
+
       const handleSelectMove = (move: MonMoveSlotData, index: number) => {
         if (submittingRef.current) return;
         dispatch(setChoiceError({ battleId, error: null }));
-        setSelectedMove(move);
-        setSelectedMoveIndex(index);
+
+        const requiresSelect = TARGET_REQUIRING_SELECT.includes(move.target);
+        const dynamicTargetsLocal = requiresSelect
+          ? getValidTargets({
+              moveTarget: move.target,
+              currentSlotIndex,
+              battleType,
+              activeRequestsCount: activeRequests.length,
+              playerData,
+              battleState: battleSession?.battleState,
+            })
+          : [];
+
+        if (!requiresSelect || dynamicTargetsLocal.length <= 1) {
+          const targetVal = requiresSelect ? (dynamicTargetsLocal[0]?.value ?? 1) : null;
+          const choiceStr = ChoiceBuilder.move(index, targetVal, {
+            mega,
+            zmove,
+            ultra,
+            dyna,
+            tera,
+          });
+          const newChoices = [...choices, choiceStr];
+          advanceSlotOrSubmit(newChoices, activeRequests.length);
+        } else {
+          setSelectedMove(move);
+          setSelectedMoveIndex(index);
+          setDynamicTargets(dynamicTargetsLocal);
+        }
       };
 
       const handleConfirmMove = (targetVal: number | null) => {
@@ -378,11 +535,26 @@ export default function ActionPanel({
         }
       }
 
+      const canShift = canSlotShift(
+        currentSlotIndex,
+        activeRequests.length,
+        !!activeReq?.trapped,
+      );
+      const handleShift = () => {
+        if (submittingRef.current) return;
+        dispatch(setChoiceError({ battleId, error: null }));
+        const choiceStr = ChoiceBuilder.shift();
+        const newChoices = [...choices, choiceStr];
+        advanceSlotOrSubmit(newChoices, activeRequests.length);
+      };
+
       return (
         <div className="flex-col gap-m">
           <div className="card-header">
             <h3>
-              {activeMonName} ({currentSlotIndex + 1}/{activeRequests.length})
+              {activeRequests.length > 1
+                ? `Slot ${currentSlotIndex + 1}: ${activeMonName}`
+                : activeMonName}
             </h3>
             <div className={styles.headerActions}>{renderForfeitButton()}</div>
           </div>
@@ -402,12 +574,15 @@ export default function ActionPanel({
               setDyna={setDyna}
               ultra={ultra}
               setUltra={setUltra}
+              canShift={canShift}
+              onShift={handleShift}
               onSelectMove={handleSelectMove}
               onClearError={() => dispatch(setChoiceError({ battleId, error: null }))}
             />
           ) : (
             <TargetSelector
               selectedMoveTarget={selectedMove.target}
+              dynamicTargets={dynamicTargets}
               isLoading={isLoading}
               onConfirmMove={handleConfirmMove}
             />
@@ -420,6 +595,8 @@ export default function ActionPanel({
               </button>
             )}
           </div>
+
+          {renderChoiceStepper()}
         </div>
       );
     }
@@ -427,10 +604,14 @@ export default function ActionPanel({
     return null;
   };
 
+  const displayErrorMessage = parsedChoiceError.failedSlotIndex !== null
+    ? `Slot ${parsedChoiceError.failedSlotIndex + 1}: ${parsedChoiceError.errorMessage}`
+    : errorMessage;
+
   return (
     <div className="flex-col gap-xl">
       <div className="card flex-col gap-m">
-        <ErrorBanner message={errorMessage} />
+        {displayErrorMessage && <ErrorBanner message={displayErrorMessage} />}
         {renderChoiceBody()}
       </div>
       {renderTeamSummary()}

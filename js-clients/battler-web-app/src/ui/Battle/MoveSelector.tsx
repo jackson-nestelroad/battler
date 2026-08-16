@@ -28,6 +28,8 @@ interface MoveSelectorProps {
   setUltra: (val: boolean) => void;
   onSelectMove: (move: MonMoveSlotData, index: number) => void;
   onClearError: () => void;
+  canShift?: boolean;
+  onShift?: () => void;
 }
 
 export default function MoveSelector({
@@ -46,6 +48,8 @@ export default function MoveSelector({
   setUltra,
   onSelectMove,
   onClearError,
+  canShift = false,
+  onShift,
 }: MoveSelectorProps) {
   const isMaxMoveActive = dyna || isDynamaxed;
 
@@ -103,7 +107,12 @@ export default function MoveSelector({
             ].map(
               ({ key, label, flag, value, setter }) =>
                 flag && (
-                  <label key={key} className={styles.checkboxLabel}>
+                  <label
+                    key={key}
+                    className={`${styles.checkboxLabel} ${
+                      styles[`modifierLabel_${key}`] || ""
+                    } ${value ? styles.checked : ""}`}
+                  >
                     <input
                       type="checkbox"
                       checked={value}
@@ -176,7 +185,22 @@ export default function MoveSelector({
             );
           })}
         </div>
-        {activeReq.trapped && <p className={styles.trappedMessage}>Trapped</p>}
+        {canShift && onShift && (
+          <button
+            type="button"
+            onClick={onShift}
+            className={`${styles.moveBtn} type-border`}
+            style={{ "--type-color": "var(--color-primary)" } as CSSProperties}
+            disabled={isLoading}
+            title="Shift position to the center slot"
+          >
+            <div className={styles.moveHeaderRow}>
+              <span className={styles.moveName}>Shift</span>
+            </div>
+            <span className={styles.moveMeta}>Shift to center position</span>
+          </button>
+        )}
+        {activeReq.trapped && <div className="alert alert-warning">Trapped</div>}
       </div>
     </div>
   );

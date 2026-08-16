@@ -80,6 +80,29 @@
   --color-type-dark: #705848;
   --color-type-steel: #b8b8d0;
   --color-type-fairy: #ee99ac;
+  --color-type-stellar: #43b5a0;
+  --color-type-unknown: #68a090;
+
+  /* Battle Mechanic Badge Tokens */
+  --color-badge-tera-bg: rgba(168, 85, 247, 0.2);
+  --color-badge-tera-border: #c084fc;
+  --color-badge-tera-text: #e9d5ff;
+
+  --color-badge-dynamax-bg: rgba(239, 68, 68, 0.2);
+  --color-badge-dynamax-border: #f87171;
+  --color-badge-dynamax-text: #fca5a5;
+
+  --color-badge-mega-bg: rgba(6, 182, 212, 0.2);
+  --color-badge-mega-border: #38bdf8;
+  --color-badge-mega-text: #a5f3fc;
+
+  --color-badge-zmove-bg: rgba(234, 179, 8, 0.2);
+  --color-badge-zmove-border: #facc15;
+  --color-badge-zmove-text: #fef08a;
+
+  --color-badge-ultra-bg: rgba(245, 158, 11, 0.2);
+  --color-badge-ultra-border: #fbbf24;
+  --color-badge-ultra-text: #fde68a;
 
   /* Pokémon Status Colors */
   --color-status-slp: #a890f0;
@@ -96,8 +119,10 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-glow: 0 0 15px 0 color-mix(in srgb, var(--color-primary) 30%, transparent);
+  --color-shadow-acting: rgba(0, 0, 0, 0.4);
 
   /* Font Sizes */
+  --font-size-xxs: 0.625rem; /* 10px */
   --font-size-xs: 0.75rem; /* 12px */
   --font-size-s: 0.875rem; /* 14px */
   --font-size-m: 1rem; /* 16px */

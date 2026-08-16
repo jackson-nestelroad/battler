@@ -11,6 +11,8 @@ interface MonCardProps {
   isClickable: boolean;
   onClick?: () => void;
   selectionOrder?: number;
+  isActing?: boolean;
+  actingBadgeText?: string;
 }
 
 export default function MonCard({
@@ -23,19 +25,22 @@ export default function MonCard({
   isClickable,
   onClick,
   selectionOrder,
+  isActing,
+  actingBadgeText = "ACTING",
 }: MonCardProps) {
   return (
     <div
       onClick={isClickable ? onClick : undefined}
       className={`${styles.teamSummaryCard} ${active ? styles.summaryActive : ""} ${
-        hp === 0 ? styles.summaryFainted : ""
-      } ${isClickable ? styles.clickableSummaryCard : ""} ${
-        selectionOrder !== undefined ? styles.selectedCard : ""
-      }`}
+        isActing ? styles.summaryActing : ""
+      } ${hp === 0 ? styles.summaryFainted : ""} ${
+        isClickable ? styles.clickableSummaryCard : ""
+      } ${selectionOrder !== undefined ? styles.selectedCard : ""}`}
     >
       {selectionOrder !== undefined && (
         <div className={styles.selectionBadge}>{selectionOrder}</div>
       )}
+      {isActing && <div className={styles.actingBadge}>{actingBadgeText}</div>}
       <div className={styles.summaryCardHeader}>
         <span className={styles.summaryMonName}>{name}</span>
         <span className={styles.summaryMonLevel}>L{level}</span>

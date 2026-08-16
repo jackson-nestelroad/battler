@@ -1,4 +1,5 @@
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
+import { getMonTeamPosition } from "../../utils/monHelpers";
 import MonCard from "../Common/MonCard";
 import styles from "./ActionPanel.module.scss";
 
@@ -13,6 +14,8 @@ interface TeamSummaryProps {
   onSwitch: (playerTeamPosition: number, totalSlots: number) => void;
   selectedTeamIndices?: number[];
   onSelectMon?: (idx: number) => void;
+  activeMonTeamPosition?: number | null;
+  actingBadgeText?: string;
 }
 
 export default function TeamSummary({
@@ -26,6 +29,8 @@ export default function TeamSummary({
   onSwitch,
   selectedTeamIndices = [],
   onSelectMon,
+  activeMonTeamPosition,
+  actingBadgeText,
 }: TeamSummaryProps) {
   if (!playerData || !playerData.mons) return null;
 
@@ -35,6 +40,11 @@ export default function TeamSummary({
       <div className={styles.teamSummaryGrid}>
         {playerData.mons.map((mon, idx) => {
           const name = mon.summary?.name || mon.species;
+          const monPos = getMonTeamPosition(mon, idx);
+          const isActing =
+            activeMonTeamPosition !== undefined &&
+            activeMonTeamPosition !== null &&
+            monPos === activeMonTeamPosition;
 
           // Check if card is clickable for switching or team preview
           let isClickable = false;
@@ -72,7 +82,7 @@ export default function TeamSummary({
               isClickable = !mon.active && mon.hp > 0;
               if (isClickable) {
                 handleClick = () => {
-                  onSwitch(mon.player_team_position, totalSlots);
+                  onSwitch(monPos, totalSlots);
                 };
               }
             }
@@ -93,6 +103,8 @@ export default function TeamSummary({
               isClickable={isClickable}
               onClick={handleClick}
               selectionOrder={selectionOrder}
+              isActing={isActing}
+              actingBadgeText={actingBadgeText}
             />
           );
         })}

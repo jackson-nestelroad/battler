@@ -10,14 +10,26 @@
   gap: var(--spacing-xs);
   position: relative;
   transition: var(--transition-fast);
-  min-height: rem(84px);
+  min-height: 5.25rem;
 
   &.summaryActive {
     border-color: var(--color-primary);
     background-color: var(--color-primary-bg);
     box-shadow:
       inset 0 0 0 1px var(--color-primary),
-      0 0 rem(12px) var(--color-primary-border);
+      0 0 0.75rem var(--color-primary-border);
+  }
+
+  &.summaryActing {
+    border-color: var(--color-primary);
+    border-width: var(--spacing-xxs);
+    background-color: color-mix(in srgb, var(--color-primary) 18%, var(--bg-subtle-neutral));
+    transform: translateY(calc(-1 * var(--spacing-xxs)));
+    box-shadow:
+      0 0 0 1px var(--color-primary),
+      0 0 var(--spacing-m) var(--color-primary),
+      0 var(--spacing-xs) var(--spacing-s) var(--color-shadow-acting);
+    z-index: 2;
   }
 
   &.summaryFainted {
@@ -33,8 +45,8 @@
       background-color: var(--color-primary-bg);
       border-color: var(--color-primary);
       border-style: solid;
-      transform: translateY(rem(-2px));
-      box-shadow: 0 var(--spacing-xs) rem(10px) var(--color-primary-border);
+      transform: translateY(calc(-1 * var(--spacing-xxs)));
+      box-shadow: 0 var(--spacing-xs) var(--spacing-s) var(--color-primary-border);
     }
   }
 
@@ -91,12 +103,12 @@
 
 .selectionBadge {
   position: absolute;
-  top: rem(-8px);
-  left: rem(-8px);
+  top: calc(-1 * var(--spacing-s));
+  left: calc(-1 * var(--spacing-s));
   background-color: var(--color-primary);
   color: var(--color-white);
-  width: rem(22px);
-  height: rem(22px);
+  width: var(--spacing-l);
+  height: var(--spacing-l);
   border-radius: var(--border-radius-round);
   display: flex;
   align-items: center;
@@ -106,4 +118,21 @@
   border: var(--spacing-xxs) solid var(--border-color);
   box-shadow: var(--shadow-sm);
   z-index: 2;
+}
+
+.actingBadge {
+  position: absolute;
+  top: calc(-1 * var(--spacing-s));
+  right: var(--spacing-s);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-size: var(--font-size-xxs);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-s);
+  border: 1px solid var(--color-primary-border);
+  box-shadow: 0 0 var(--spacing-s) var(--color-primary-border);
+  text-transform: uppercase;
+  z-index: 3;
 }

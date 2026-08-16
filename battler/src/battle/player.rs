@@ -1484,7 +1484,7 @@ impl Player {
         if choice.dyna {
             context.player_mut().choice.dyna = true;
         }
-        if choice.dyna {
+        if choice.tera {
             context.player_mut().choice.tera = true;
         }
 

@@ -1,0 +1,178 @@
+@use "../../styles/breakpoints" as *;
+
+.choiceStepper {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-s) var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.stepperHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  padding-bottom: var(--spacing-xs);
+
+  &:hover {
+    .stepperTitle {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.stepperTitle {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 700;
+  transition: color 0.15s ease;
+}
+
+.stepperToggleText {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.choiceChip {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  padding: var(--spacing-xs) var(--spacing-s);
+  border-radius: var(--border-radius-s);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-subtle-neutral);
+  text-align: left;
+  width: 100%;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  font-family: inherit;
+  font-size: inherit;
+
+  &.completed {
+    cursor: pointer;
+    background-color: var(--color-success-bg);
+    border-color: var(--color-success-border);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-success-border);
+    }
+  }
+
+  &.active {
+    background-color: var(--bg-subtle-hover);
+    border-color: var(--color-primary);
+  }
+
+  &.errored {
+    background-color: var(--color-danger-bg);
+    border-color: var(--color-danger-border);
+  }
+
+  &.pending {
+    opacity: 0.5;
+  }
+}
+
+.chipStepBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-l);
+  height: var(--spacing-l);
+  border-radius: var(--border-radius-round);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &.completed {
+    background-color: var(--color-success);
+    color: var(--color-white);
+  }
+
+  &.active {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+  }
+
+  &.errored {
+    background-color: var(--color-danger);
+    color: var(--color-white);
+  }
+
+  &.pending {
+    background-color: var(--border-color);
+    color: var(--text-muted);
+  }
+}
+
+.chipContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  min-width: 0;
+  flex: 1;
+}
+
+.chipMonName {
+  font-size: var(--font-size-s);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.chipSummary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xxs);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.modifierBadge {
+  font-size: var(--font-size-xxs);
+  font-weight: 700;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mod_tera {
+  background-color: var(--color-badge-tera-bg);
+  color: var(--color-badge-tera-text);
+  border: 1px solid var(--color-badge-tera-border);
+}
+
+.mod_dynamax {
+  background-color: var(--color-badge-dynamax-bg);
+  color: var(--color-badge-dynamax-text);
+  border: 1px solid var(--color-badge-dynamax-border);
+}
+
+.mod_mega {
+  background-color: var(--color-badge-mega-bg);
+  color: var(--color-badge-mega-text);
+  border: 1px solid var(--color-badge-mega-border);
+}
+
+.mod_zmove {
+  background-color: var(--color-badge-zmove-bg);
+  color: var(--color-badge-zmove-text);
+  border: 1px solid var(--color-badge-zmove-border);
+}
+
+.mod_ultra {
+  background-color: var(--color-badge-ultra-bg);
+  color: var(--color-badge-ultra-text);
+  border: 1px solid var(--color-badge-ultra-border);
+}
