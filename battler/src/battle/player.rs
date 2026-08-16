@@ -1874,7 +1874,27 @@ impl Player {
                 },
             ),
             // Randomly switch in a Mon.
-            Some(RequestType::Switch) => Self::choose_switch(context, SwitchChoice::default()),
+            Some(RequestType::Switch) => {
+                let passes = context.player().choice.forced_passes_left;
+                let switches = context.player().choice.forced_switches_left;
+                let should_pass = if switches == 0 {
+                    true
+                } else if passes == 0 {
+                    false
+                } else {
+                    rand_util::chance(
+                        context.battle_mut().prng.as_mut(),
+                        passes as u64,
+                        (passes + switches) as u64,
+                    )
+                };
+
+                if should_pass {
+                    Self::choose_pass(context, false)
+                } else {
+                    Self::choose_switch(context, SwitchChoice::default())
+                }
+            }
             // Randomly select in a Mon.
             Some(RequestType::Select) => Self::choose_select(context, SelectChoice::default()),
             // Auto-select first Mons.
