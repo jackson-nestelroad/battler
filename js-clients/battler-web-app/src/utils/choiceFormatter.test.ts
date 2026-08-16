@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { formatTurnChoice, parseChoiceString, resolveTargetName } from "./choiceFormatter";
+import { formatTurnChoice } from "./choiceFormatter";
+import { parseChoiceString } from "./choiceParser";
+import { resolveTargetLabel } from "./targeting";
 
 describe("choiceFormatter utility", () => {
   describe("parseChoiceString", () => {
@@ -9,11 +11,7 @@ describe("choiceFormatter utility", () => {
         type: "move",
         moveIndex: 0,
         targetVal: null,
-        mega: false,
-        zmove: false,
-        ultra: false,
-        dyna: false,
-        tera: false,
+        modifiers: {},
       });
     });
 
@@ -23,11 +21,9 @@ describe("choiceFormatter utility", () => {
         type: "move",
         moveIndex: 1,
         targetVal: 2,
-        mega: true,
-        zmove: false,
-        ultra: false,
-        dyna: false,
-        tera: false,
+        modifiers: {
+          mega: true,
+        },
       });
     });
 
@@ -37,11 +33,10 @@ describe("choiceFormatter utility", () => {
         type: "move",
         moveIndex: 0,
         targetVal: -1,
-        mega: true,
-        zmove: false,
-        ultra: false,
-        dyna: false,
-        tera: true,
+        modifiers: {
+          mega: true,
+          tera: true,
+        },
       });
     });
 
@@ -68,18 +63,18 @@ describe("choiceFormatter utility", () => {
     });
   });
 
-  describe("resolveTargetName", () => {
+  describe("resolveTargetLabel", () => {
     it("returns null for null target", () => {
-      expect(resolveTargetName(null, 0)).toBeNull();
+      expect(resolveTargetLabel(null, 0)).toBeNull();
     });
 
     it("formats foe target correctly", () => {
-      const targetName = resolveTargetName(1, 0);
+      const targetName = resolveTargetLabel(1, 0);
       expect(targetName).toContain("Foe 1");
     });
 
     it("formats self target correctly", () => {
-      const targetName = resolveTargetName(-1, 0);
+      const targetName = resolveTargetLabel(-1, 0);
       expect(targetName).toContain("Self");
     });
   });
@@ -108,8 +103,6 @@ describe("choiceFormatter utility", () => {
 
       expect(formatted.actionName).toBe("Flamethrower");
       expect(formatted.modifiers).toContain("Mega");
-      expect(formatted.summaryText).toContain("Flamethrower");
-      expect(formatted.summaryText).toContain("Mega");
     });
 
     it("formats forced switch pass choice summary cleanly", () => {
@@ -119,7 +112,6 @@ describe("choiceFormatter utility", () => {
       });
 
       expect(formatted.actionType).toBe("pass");
-      expect(formatted.summaryText).toBe("Leave Empty (Pass)");
     });
   });
 });

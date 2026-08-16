@@ -1,13 +1,73 @@
 import type { BattleType, MoveTarget, PlayerBattleData } from "battler-types";
 import type { BattleState } from "battler-state";
+import { resolveActiveMonName } from "./monHelpers";
+import { getPlayerNameFromState } from "./battleState";
+
+export function parseTargetValue(targetVal: number, currentSlotIndex: number) {
+  const isFoe = targetVal > 0;
+  const sideIdx = isFoe ? 1 : 0;
+  const pos = isFoe ? targetVal - 1 : Math.abs(targetVal) - 1;
+  const isSelf = sideIdx === 0 && pos === currentSlotIndex;
+  const type: "foe" | "ally" | "self" = isFoe ? "foe" : isSelf ? "self" : "ally";
+  return { sideIdx, pos, isSelf, type };
+}
+
+export function buildTargetValue(type: "foe" | "ally" | "self", pos: number): number {
+  return type === "foe" ? pos + 1 : -1 * (pos + 1);
+}
+
+export function getTargetDisplayInfo(
+  playerData: PlayerBattleData | null | undefined,
+  battleState: BattleState | null | undefined,
+  type: "foe" | "ally" | "self",
+  pos: number,
+) {
+  const sideIdx = type === "foe" ? 1 : 0;
+  const fallback = type === "self" ? "Self" : `${getTargetTypeLabel(type)} ${pos + 1}`;
+  const monName = resolveActiveMonName(playerData, battleState, sideIdx, pos, fallback);
+  const playerName =
+    type === "self"
+      ? playerData?.name || getPlayerNameFromState(battleState, sideIdx, pos)
+      : getPlayerNameFromState(battleState, sideIdx, pos);
+  const subText = formatTargetSubText(type, playerName);
+  const label = type === "self" ? `Self (${monName})` : `${monName} (${subText})`;
+
+  return { monName, playerName, subText, label };
+}
+
+export function resolveTargetLabel(
+  targetVal: number | null | undefined,
+  currentSlotIndex: number,
+  battleState?: BattleState | null,
+  playerData?: PlayerBattleData | null,
+): string | null {
+  if (!targetVal) return null;
+
+  const { pos, type } = parseTargetValue(targetVal, currentSlotIndex);
+  const { label } = getTargetDisplayInfo(playerData, battleState, type, pos);
+  return label;
+}
 
 export interface TargetOption {
   value: number;
   monName: string;
   playerName?: string | null;
   label: string;
+  subText?: string;
   type: "foe" | "ally" | "self";
   position: number;
+}
+
+export function getTargetTypeLabel(type: "foe" | "ally" | "self"): string {
+  return type === "self" ? "Self" : type === "foe" ? "Foe" : "Ally";
+}
+
+export function formatTargetSubText(
+  type: "foe" | "ally" | "self",
+  playerName?: string | null,
+): string {
+  const typeLabel = getTargetTypeLabel(type);
+  return playerName ? `${typeLabel} • ${playerName}` : typeLabel;
 }
 
 export interface MoveTargetInfo {
@@ -79,32 +139,15 @@ export function isAdjacent(
   return Math.abs(userPosition - effectiveFoePosition) <= 1;
 }
 
-export function getMonNameFromState(
-  state: BattleState | null | undefined,
-  sideIdx: number,
-  pos: number,
-): string | null {
-  const side = state?.field?.sides?.[sideIdx];
-  const activeRef = side?.active?.[pos];
-  if (!activeRef) return null;
-  const player = side?.players?.[activeRef.player];
-  const mon = player?.mons?.[activeRef.mon_index];
-  return mon?.physical_appearance?.name || null;
-}
-
-export function getPlayerNameFromState(
-  state: BattleState | null | undefined,
-  sideIdx: number,
-  pos: number,
-): string | null {
-  const side = state?.field?.sides?.[sideIdx];
-  if (!side) return null;
-  const activeRef = side.active?.[pos];
-  if (activeRef && activeRef.player !== undefined) {
-    const playerName = side.players?.[activeRef.player]?.name;
-    if (playerName) return playerName;
-  }
-  return side.name || null;
+export function getActivePerPlayer(
+  battleType?: BattleType | string | null,
+  activeRequestsCount: number = 1,
+): number {
+  if (battleType === "Triples") return 3;
+  if (battleType === "Doubles") return 2;
+  if (battleType === "Singles") return 1;
+  if (activeRequestsCount > 1) return activeRequestsCount;
+  return 2;
 }
 
 export interface GetValidTargetsParams {
@@ -129,76 +172,44 @@ export function getValidTargets({
     return [];
   }
 
-  let activePerPlayer = 2;
-  if (battleType === "Triples") activePerPlayer = 3;
-  else if (battleType === "Doubles") activePerPlayer = 2;
-  else if (battleType === "Singles") activePerPlayer = 1;
-  else if (activeRequestsCount > 1) activePerPlayer = activeRequestsCount;
+  const activePerPlayer = getActivePerPlayer(battleType, activeRequestsCount);
 
   const targets: TargetOption[] = [];
 
-  // 1. Foe targets (Side index 1 in battle state)
-  if (info.canTargetFoe) {
-    for (let pos = 0; pos < activePerPlayer; pos++) {
-      if (info.isAdjacentOnly && !isAdjacent(currentSlotIndex, pos, true, activePerPlayer)) {
-        continue;
-      }
-      const targetVal = pos + 1;
-      const stateFoeName = getMonNameFromState(battleState, 1, pos);
-      const foeMonName = stateFoeName || `Foe ${pos + 1}`;
-      const foePlayerName = getPlayerNameFromState(battleState, 1, pos);
-      const subText = foePlayerName ? `Foe • ${foePlayerName}` : "Foe";
-      targets.push({
-        value: targetVal,
-        monName: foeMonName,
-        playerName: foePlayerName,
-        label: `${foeMonName} (${subText})`,
-        type: "foe",
-        position: pos,
-      });
-    }
-  }
-
-  // 2. Self target
-  if (info.canTargetSelf) {
-    const selfTargetVal = -1 * (currentSlotIndex + 1);
-    const selfMon = playerData?.mons?.find((m) => m.player_active_position === currentSlotIndex);
-    const stateSelfName = getMonNameFromState(battleState, 0, currentSlotIndex);
-    const selfMonName = selfMon?.summary?.name || selfMon?.species || stateSelfName || "Self";
-    const selfPlayerName = playerData?.name || getPlayerNameFromState(battleState, 0, currentSlotIndex);
+  const addTarget = (type: "foe" | "ally" | "self", pos: number, targetVal: number) => {
+    const { monName, playerName, subText, label } = getTargetDisplayInfo(playerData, battleState, type, pos);
     targets.push({
-      value: selfTargetVal,
-      monName: selfMonName,
-      playerName: selfPlayerName,
-      label: `Self (${selfMonName})`,
-      type: "self",
-      position: currentSlotIndex,
+      value: targetVal,
+      monName,
+      playerName,
+      label,
+      subText,
+      type,
+      position: pos,
     });
-  }
+  };
 
-  // 3. Ally targets (excluding self, Side index 0 in battle state)
-  if (info.canTargetAlly) {
+  const processSide = (type: "foe" | "ally") => {
+    if (type === "foe" && !info.canTargetFoe) return;
+    if (type === "ally" && !info.canTargetAlly) return;
+    
     for (let pos = 0; pos < activePerPlayer; pos++) {
-      if (pos === currentSlotIndex) continue;
-      if (info.isAdjacentOnly && !isAdjacent(currentSlotIndex, pos, false, activePerPlayer)) {
+      if (type === "ally" && pos === currentSlotIndex) continue;
+      if (info.isAdjacentOnly && !isAdjacent(currentSlotIndex, pos, type === "foe", activePerPlayer)) {
         continue;
       }
-      const allyTargetVal = -1 * (pos + 1);
-      const allyMon = playerData?.mons?.find((m) => m.player_active_position === pos);
-      const stateAllyName = getMonNameFromState(battleState, 0, pos);
-      const allyMonName = allyMon?.summary?.name || allyMon?.species || stateAllyName || `Ally ${pos + 1}`;
-      const allyPlayerName = getPlayerNameFromState(battleState, 0, pos);
-      const subText = allyPlayerName ? `Ally • ${allyPlayerName}` : "Ally";
-      targets.push({
-        value: allyTargetVal,
-        monName: allyMonName,
-        playerName: allyPlayerName,
-        label: `${allyMonName} (${subText})`,
-        type: "ally",
-        position: pos,
-      });
+      const targetVal = buildTargetValue(type, pos);
+      addTarget(type, pos, targetVal);
     }
+  };
+
+  processSide("foe");
+
+  if (info.canTargetSelf) {
+    addTarget("self", currentSlotIndex, buildTargetValue("self", currentSlotIndex));
   }
+
+  processSide("ally");
 
   return targets;
 }

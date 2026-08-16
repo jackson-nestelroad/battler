@@ -1,21 +1,50 @@
-import { stateSelectors } from "battler-state";
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { submitChoice } from "../../core/wamp";
-import { setChoiceError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { ChoiceBuilder } from "../../utils/choiceBuilder";
-import { parseChoiceError } from "../../utils/choiceErrorParser";
-import { parseChoiceString } from "../../utils/choiceFormatter";
-import { canSlotShift, getMonTeamPosition } from "../../utils/monHelpers";
-import { getValidTargets, type TargetOption } from "../../utils/targeting";
+import { parseChoiceError, getChosenSwitchPositions } from "../../utils/choiceParser";
+import {
+  canSlotShift,
+  getMonTeamPosition,
+  getMonDisplayName,
+  getSlotLabel,
+  getMonForSlot,
+  getAvailableBenchCount,
+  getTeamPreviewTargetSize,
+  getSlotMonName,
+  getRequestSlotCount,
+  getActiveSlotPosition,
+} from "../../utils/monHelpers";
+import { getMoveTargetInfo, getValidTargets, type TargetOption } from "../../utils/targeting";
 import ErrorBanner from "../Common/ErrorBanner";
+import ActionButton from "./ActionButton";
 import ChoiceStepper from "./ChoiceStepper";
+import { useChoiceStepper } from "./hooks/useChoiceStepper";
 import MoveSelector from "./MoveSelector";
 import TargetSelector from "./TargetSelector";
 import TeamSummary from "./TeamSummary";
+import ForfeitButton from "./ForfeitButton";
+import { isMonDynamaxedInState } from "../../utils/battleState";
 
 import styles from "./ActionPanel.module.scss";
+
+interface RequestHeaderProps {
+  title: string;
+  onForfeit: () => void;
+  isLoading: boolean;
+}
+
+function RequestHeader({ title, onForfeit, isLoading }: RequestHeaderProps) {
+  return (
+    <div className="card-header">
+      <h3>{title}</h3>
+      <div className={styles.headerActions}>
+        <ForfeitButton onForfeit={onForfeit} isLoading={isLoading} />
+      </div>
+    </div>
+  );
+}
 
 interface ActionPanelProps {
   battleId: string;
@@ -38,126 +67,44 @@ export default function ActionPanel({
   const battleSession = useAppSelector((state) => state.battles.battles[battleId]);
   const turn = useAppSelector((state) => state.battles.battles[battleId]?.battleState?.turn || 0);
 
-  // Current state of choice building
-  const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
-  const [choices, setChoices] = useState<string[]>([]);
-  const [selectedMove, setSelectedMove] = useState<MonMoveSlotData | null>(null);
-  const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
-  const [selectedTeamIndices, setSelectedTeamIndices] = useState<number[]>([]);
-  const [dynamicTargets, setDynamicTargets] = useState<TargetOption[]>([]);
-
-  // Modifiers
-  const [mega, setMega] = useState(false);
-  const [zmove, setZmove] = useState(false);
-  const [ultra, setUltra] = useState(false);
-  const [dyna, setDyna] = useState(false);
-  const [tera, setTera] = useState(false);
-
-  const [showForfeitConfirm, setShowForfeitConfirm] = useState(false);
-
-  const resetModifiers = () => {
-    setMega(false);
-    setZmove(false);
-    setUltra(false);
-    setDyna(false);
-    setTera(false);
-  };
-
-  const submittingRef = useRef(false);
-
   const choiceError = battleSession?.choiceError || null;
   const parsedChoiceError = useMemo(() => parseChoiceError(choiceError), [choiceError]);
 
-  useEffect(() => {
-    const failedIdx = parsedChoiceError.failedSlotIndex;
-    if (failedIdx !== null && failedIdx < currentSlotIndex) {
-      setChoices((prev) => prev.slice(0, failedIdx));
-      setCurrentSlotIndex(failedIdx);
-      setSelectedMove(null);
-      setSelectedMoveIndex(null);
-      setDynamicTargets([]);
-      resetModifiers();
-    }
-  }, [parsedChoiceError.failedSlotIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  const {
+    choices,
+    currentSlotIndex,
+    selectedMove,
+    setSelectedMove,
+    selectedMoveIndex,
+    setSelectedMoveIndex,
+    selectedTeamIndices,
+    setSelectedTeamIndices,
+    modifiers,
+    toggleModifier,
+    submittingRef,
+    clearChoiceError,
+    advanceSlotOrSubmit,
+    handleJumpToSlot,
+    goBackStep,
+  } = useChoiceStepper({
+    battleId,
+    request,
+    parsedChoiceError,
+    isLoading,
+    choiceError,
+  });
 
-  const handleJumpToSlot = (slotIndex: number) => {
-    if (submittingRef.current) return;
-    dispatch(setChoiceError({ battleId, error: null }));
-    setChoices(choices.slice(0, slotIndex));
-    setCurrentSlotIndex(slotIndex);
-    setSelectedMove(null);
-    setSelectedMoveIndex(null);
-    setDynamicTargets([]);
-    resetModifiers();
-  };
+  const [dynamicTargets, setDynamicTargets] = useState<TargetOption[]>([]);
 
-  // Reset when request or turn changes
+  // Reset dynamicTargets when request or turn changes
   useEffect(() => {
-    setCurrentSlotIndex(0);
-    setChoices([]);
-    setSelectedMove(null);
-    setSelectedMoveIndex(null);
-    setSelectedTeamIndices([]);
     setDynamicTargets([]);
-    resetModifiers();
-    submittingRef.current = false;
-    setShowForfeitConfirm(false);
   }, [request, turn]);
 
-  // Reset submitting ref and forfeit confirm when loading finishes
-  useEffect(() => {
-    if (!isLoading) {
-      submittingRef.current = false;
-      setShowForfeitConfirm(false);
-    }
-  }, [isLoading]);
-
-  // Reset forfeit confirmation after 4 seconds of inactivity
-  useEffect(() => {
-    if (showForfeitConfirm) {
-      const timer = setTimeout(() => {
-        setShowForfeitConfirm(false);
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [showForfeitConfirm]);
-
-  const handleForfeitClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowForfeitConfirm(true);
-  };
-
-  const handleForfeitCancel = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowForfeitConfirm(false);
-  };
-
-  const handleForfeitConfirm = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleForfeit = () => {
     if (submittingRef.current) return;
     submittingRef.current = true;
     dispatch(submitChoice({ battleId, choice: "forfeit" }));
-  };
-
-  const renderForfeitButton = () => {
-    if (showForfeitConfirm) {
-      return (
-        <div className="flex-row gap-xs align-center">
-          <button className="btn btn-danger" onClick={handleForfeitConfirm} disabled={isLoading}>
-            Confirm
-          </button>
-          <button className="btn btn-secondary" onClick={handleForfeitCancel} disabled={isLoading}>
-            Cancel
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <button className="btn btn-danger" onClick={handleForfeitClick} disabled={isLoading}>
-        Forfeit
-      </button>
-    );
   };
 
   // Check if player has already submitted their choice for the current turn
@@ -168,74 +115,30 @@ export default function ActionPanel({
     battleSession?.metadata?.battle_type ||
     "Singles";
 
-  let activeMonTeamPosition: number | null = null;
-  let activeSwitchSlot: number | undefined;
-  let monToReplace: MonMoveSlotData | undefined;
+  const activeMon = getMonForSlot(playerData, request, currentSlotIndex);
+  const activeMonTeamPosition = activeMon ? getMonTeamPosition(activeMon, 0) : null;
+  const monToReplace = request?.type === "switch" ? activeMon : undefined;
+  const activeSwitchSlot = request?.type === "switch" ? getActiveSlotPosition(request, currentSlotIndex) : undefined;
 
-  if (request?.type === "turn") {
-    const activeReq = request.active?.[currentSlotIndex];
-    if (activeReq) {
-      activeMonTeamPosition = activeReq.team_position;
-    }
-  } else if (request?.type === "switch") {
-    activeSwitchSlot = request.needs_switch?.[currentSlotIndex];
-    if (activeSwitchSlot !== undefined && playerData?.mons) {
-      monToReplace = playerData.mons.find(
-        (m) => m.player_active_position === activeSwitchSlot,
-      );
-      if (monToReplace) {
-        activeMonTeamPosition = getMonTeamPosition(monToReplace, 0);
-      }
-    }
-  }
-
-  const renderChoiceStepper = () => (
-    <ChoiceStepper
-      request={request}
-      playerData={playerData}
-      battleState={battleSession?.battleState}
-      choices={choices}
-      currentSlotIndex={currentSlotIndex}
-      parsedChoiceError={parsedChoiceError}
-      isLoading={isLoading}
-      onJumpToSlot={handleJumpToSlot}
-    />
-  );
-
-  // Unified choice progression logic (DRY)
-  const advanceSlotOrSubmit = (nextChoices: string[], totalSlots: number) => {
-    if (currentSlotIndex + 1 < totalSlots) {
-      setChoices(nextChoices);
-      setCurrentSlotIndex(currentSlotIndex + 1);
-      setSelectedMove(null);
-      setSelectedMoveIndex(null);
-      resetModifiers();
-    } else {
-      submittingRef.current = true;
-      dispatch(submitChoice({ battleId, choice: nextChoices.join("; ") }));
-    }
-  };
+  const isTeamPreview = request?.type === "team";
+  const isSwitch = request?.type === "switch";
+  const isTurn = request?.type === "turn";
 
   const handleSwitch = (playerTeamPosition: number, totalSlots: number) => {
     if (submittingRef.current) return;
-    dispatch(setChoiceError({ battleId, error: null }));
-    const newChoices = [...choices, `switch ${playerTeamPosition}`];
+    const newChoices = [...choices, ChoiceBuilder.switch(playerTeamPosition)];
     advanceSlotOrSubmit(newChoices, totalSlots);
   };
 
   const handleSelectMon = (idx: number) => {
     if (submittingRef.current) return;
-    dispatch(setChoiceError({ battleId, error: null }));
+    clearChoiceError();
     setSelectedTeamIndices((prev) => {
       const exists = prev.indexOf(idx);
       if (exists !== -1) {
         return prev.filter((i) => i !== idx);
       } else {
-        const maxTeamSize = request?.type === "team" ? request.max_team_size : null;
-        const targetSize = Math.min(
-          playerData?.mons?.length || 0,
-          maxTeamSize ?? (playerData?.mons?.length || 0),
-        );
+        const targetSize = getTeamPreviewTargetSize(request, playerData);
         if (prev.length < targetSize) {
           return [...prev, idx];
         }
@@ -245,7 +148,6 @@ export default function ActionPanel({
   };
 
   const renderTeamSummary = () => {
-
     return (
       <TeamSummary
         playerData={playerData}
@@ -264,37 +166,54 @@ export default function ActionPanel({
     );
   };
 
-  const renderChoiceBody = () => {
-    if (!request || isMeReady) {
-      return (
-        <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-          <p>Waiting...</p>
-        </div>
-      );
+  const getHeaderTitle = (): string => {
+    if (request?.type === "team") return "Team Preview";
+    if (request?.type === "switch") {
+      if (activeSwitchSlot === undefined) return "Switch";
+      const replaceMonName = getMonDisplayName(monToReplace);
+      const totalSlots = getRequestSlotCount(request);
+      const isMultiSlotBattle = totalSlots > 1 || battleType !== "Singles";
+      return isMultiSlotBattle
+        ? `Switch ${getSlotLabel(activeSwitchSlot + 1, replaceMonName)}`
+        : replaceMonName
+          ? `Switch: ${replaceMonName}`
+          : "Switch";
     }
+    if (request?.type === "turn") {
+      const activeRequests = request.active || [];
+      const activeMonName = getSlotMonName(activeMon, currentSlotIndex);
+      return activeRequests.length > 1
+        ? getSlotLabel(currentSlotIndex + 1, activeMonName)
+        : activeMonName;
+    }
+    return "Battle";
+  };
 
-    if (playbackPending) {
-      return (
-        <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-          <div className="flex-col align-center gap-m">
-            <div className={styles.dotPulse} />
-            <p>Playing turn...</p>
-          </div>
+  const renderPlaceholder = (text: string, showSpinner = false) => (
+    <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
+      {showSpinner ? (
+        <div className="flex-col align-center gap-m">
+          <div className={styles.dotPulse} />
+          <p>{text}</p>
         </div>
-      );
-    }
+      ) : (
+        <p>{text}</p>
+      )}
+    </div>
+  );
+
+  const renderChoiceBody = () => {
+    if (!request || isMeReady) return renderPlaceholder("Waiting...");
+    if (playbackPending) return renderPlaceholder("Playing turn...", true);
 
     if (request.type === "team") {
-      const targetSize = Math.min(
-        playerData?.mons?.length || 0,
-        request.max_team_size ?? (playerData?.mons?.length || 0),
-      );
+      const targetSize = getTeamPreviewTargetSize(request, playerData);
 
       const handleTeamPreviewSubmit = () => {
         if (submittingRef.current) return;
         submittingRef.current = true;
         if (selectedTeamIndices.length > 0) {
-          dispatch(submitChoice({ battleId, choice: `team ${selectedTeamIndices.join(" ")}` }));
+          dispatch(submitChoice({ battleId, choice: ChoiceBuilder.team(selectedTeamIndices) }));
         } else {
           dispatch(submitChoice({ battleId, choice: "team" }));
         }
@@ -305,12 +224,7 @@ export default function ActionPanel({
       };
 
       return (
-        <div className="flex-col gap-m">
-          <div className="card-header">
-            <h3>Team Preview</h3>
-            <div className={styles.headerActions}>{renderForfeitButton()}</div>
-          </div>
-
+        <>
           <div className="flex-col gap-s">
             <p className={styles.instructionText}>
               Select your team order. Remaining spots will be filled automatically when confirming.
@@ -338,130 +252,55 @@ export default function ActionPanel({
               </button>
             )}
           </div>
-        </div>
+        </>
       );
     }
 
     if (request.type === "switch") {
-      const needsSwitch = request.needs_switch || [];
+      if (activeSwitchSlot === undefined) return renderPlaceholder("Submitting...");
 
-      if (activeSwitchSlot === undefined) {
-        return (
-          <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-            <p>Submitting...</p>
-          </div>
-        );
-      }
-
-      const replaceMonName = monToReplace?.summary?.name || monToReplace?.species;
-
-      const chosenSwitchPositions = choices
-        .map((c) => {
-          const parsed = parseChoiceString(c);
-          return parsed.type === "switch" ? parsed.switchPosition : null;
-        })
-        .filter((pos): pos is number => pos !== null);
-
-      const remainingHealthyBenchCount =
-        playerData?.mons?.filter((m, idx) => {
-          const pos = getMonTeamPosition(m, idx);
-          return !m.active && m.hp > 0 && !chosenSwitchPositions.includes(pos);
-        }).length || 0;
-
-      const remainingChoicesToMake = needsSwitch.length - currentSlotIndex;
+      const chosenSwitchPositions = getChosenSwitchPositions(choices);
+      const remainingHealthyBenchCount = getAvailableBenchCount(playerData, chosenSwitchPositions);
+      const totalSlots = getRequestSlotCount(request);
+      const remainingChoicesToMake = totalSlots - currentSlotIndex;
       const canPassSwitch =
         remainingHealthyBenchCount < remainingChoicesToMake || remainingHealthyBenchCount === 0;
 
       const handlePassSwitch = () => {
         if (submittingRef.current) return;
-        const newChoices = [...choices, "pass"];
-        advanceSlotOrSubmit(newChoices, needsSwitch.length);
+        const newChoices = [...choices, ChoiceBuilder.pass()];
+        advanceSlotOrSubmit(newChoices, totalSlots);
       };
 
-      const isMultiSlotBattle = needsSwitch.length > 1 || battleType !== "Singles";
-
-      return (
-        <div className="flex-col gap-m">
-          <div className="card-header">
-            <h3>
-              {isMultiSlotBattle
-                ? replaceMonName
-                  ? `Switch slot ${activeSwitchSlot + 1}: ${replaceMonName}`
-                  : `Switch slot ${activeSwitchSlot + 1}`
-                : replaceMonName
-                  ? `Switch: ${replaceMonName}`
-                  : `Switch`}
-            </h3>
-            <div className={styles.headerActions}>{renderForfeitButton()}</div>
-          </div>
-
-          {canPassSwitch && (
-            <button
-              type="button"
-              onClick={handlePassSwitch}
-              className={`${styles.moveBtn} type-border`}
-              style={{ "--type-color": "var(--color-warning)" } as CSSProperties}
-              disabled={isLoading}
-              title="Leave slot empty"
-            >
-              <div className={styles.moveHeaderRow}>
-                <span className={styles.moveName}>Pass</span>
-              </div>
-              <span className={styles.moveMeta}>Leave slot empty</span>
-            </button>
-          )}
-
-          {currentSlotIndex > 0 && (
-            <div className="flex-row gap-s align-center">
-              <button
-                onClick={() => {
-                  setChoices(choices.slice(0, -1));
-                  setCurrentSlotIndex(currentSlotIndex - 1);
-                }}
-                className="btn btn-secondary"
-                disabled={isLoading}
-              >
-                ← Back
-              </button>
-            </div>
-          )}
-
-          {renderChoiceStepper()}
-        </div>
-      );
+      return canPassSwitch ? (
+        <ActionButton
+          title="Pass"
+          subtitle="Leave slot empty"
+          onClick={handlePassSwitch}
+          disabled={isLoading}
+          typeColor="var(--color-warning)"
+          htmlTitle="Leave slot empty"
+        />
+      ) : null;
     }
 
     if (request.type === "turn") {
       const activeRequests = request.active || [];
       const activeReq = activeRequests[currentSlotIndex];
 
-      if (!activeReq) {
-        return (
-          <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
-            <p>Submitting...</p>
-          </div>
-        );
-      }
+      if (!activeReq) return renderPlaceholder("Submitting...");
 
-      const activeMon = playerData?.mons?.find(
-        (m) => m.player_team_position === activeReq.team_position,
-      );
-      const activeMonName =
-        activeMon?.summary?.name || activeMon?.species || `Mon #${currentSlotIndex + 1}`;
-
-      const TARGET_REQUIRING_SELECT = [
-        "Normal",
-        "AdjacentFoe",
-        "AdjacentAlly",
-        "Any",
-        "AdjacentAllyOrUser",
-      ];
+      const submitMoveChoice = (moveIdx: number, targetVal: number | null) => {
+        const choiceStr = ChoiceBuilder.move(moveIdx, targetVal, modifiers);
+        const newChoices = [...choices, choiceStr];
+        advanceSlotOrSubmit(newChoices, activeRequests.length);
+      };
 
       const handleSelectMove = (move: MonMoveSlotData, index: number) => {
         if (submittingRef.current) return;
-        dispatch(setChoiceError({ battleId, error: null }));
+        clearChoiceError();
 
-        const requiresSelect = TARGET_REQUIRING_SELECT.includes(move.target);
+        const requiresSelect = getMoveTargetInfo(move.target).isChoosable;
         const dynamicTargetsLocal = requiresSelect
           ? getValidTargets({
               moveTarget: move.target,
@@ -475,15 +314,7 @@ export default function ActionPanel({
 
         if (!requiresSelect || dynamicTargetsLocal.length <= 1) {
           const targetVal = requiresSelect ? (dynamicTargetsLocal[0]?.value ?? 1) : null;
-          const choiceStr = ChoiceBuilder.move(index, targetVal, {
-            mega,
-            zmove,
-            ultra,
-            dyna,
-            tera,
-          });
-          const newChoices = [...choices, choiceStr];
-          advanceSlotOrSubmit(newChoices, activeRequests.length);
+          submitMoveChoice(index, targetVal);
         } else {
           setSelectedMove(move);
           setSelectedMoveIndex(index);
@@ -493,47 +324,14 @@ export default function ActionPanel({
 
       const handleConfirmMove = (targetVal: number | null) => {
         if (submittingRef.current || selectedMoveIndex === null) return;
-
-        let moveStr = `move ${selectedMoveIndex}`;
-        if (targetVal !== null) {
-          moveStr += `,${targetVal}`;
-        }
-
-        if (mega) moveStr += ",mega";
-        if (zmove) moveStr += ",zmove";
-        if (ultra) moveStr += ",ultra";
-        if (dyna) moveStr += ",dyna";
-        if (tera) moveStr += ",tera";
-
-        const newChoices = [...choices, moveStr];
-        advanceSlotOrSubmit(newChoices, activeRequests.length);
+        submitMoveChoice(selectedMoveIndex, targetVal);
       };
 
-      const handleBack = () => {
-        if (submittingRef.current) return;
-        dispatch(setChoiceError({ battleId, error: null }));
-        if (selectedMove) {
-          setSelectedMove(null);
-          setSelectedMoveIndex(null);
-        } else if (currentSlotIndex > 0) {
-          setChoices(choices.slice(0, -1));
-          setCurrentSlotIndex(currentSlotIndex - 1);
-          resetModifiers();
-        }
-      };
-
-      let isMonActiveDynamaxed = false;
-      if (battleSession?.battleState && playerData) {
-        try {
-          isMonActiveDynamaxed = stateSelectors.monIsDynamaxed(battleSession.battleState, {
-            player: playerData.id || playerData.name,
-            mon_index: activeReq.team_position,
-            battle_appearance_index: 0,
-          });
-        } catch {
-          isMonActiveDynamaxed = false;
-        }
-      }
+      const isMonActiveDynamaxed = isMonDynamaxedInState(
+        battleSession?.battleState,
+        playerData,
+        activeReq.team_position,
+      );
 
       const canShift = canSlotShift(
         currentSlotIndex,
@@ -542,77 +340,98 @@ export default function ActionPanel({
       );
       const handleShift = () => {
         if (submittingRef.current) return;
-        dispatch(setChoiceError({ battleId, error: null }));
         const choiceStr = ChoiceBuilder.shift();
         const newChoices = [...choices, choiceStr];
         advanceSlotOrSubmit(newChoices, activeRequests.length);
       };
 
-      return (
-        <div className="flex-col gap-m">
-          <div className="card-header">
-            <h3>
-              {activeRequests.length > 1
-                ? `Slot ${currentSlotIndex + 1}: ${activeMonName}`
-                : activeMonName}
-            </h3>
-            <div className={styles.headerActions}>{renderForfeitButton()}</div>
-          </div>
-
-          {selectedMove === null ? (
-            <MoveSelector
-              activeReq={activeReq}
-              isDynamaxed={isMonActiveDynamaxed}
-              isLoading={isLoading}
-              mega={mega}
-              setMega={setMega}
-              tera={tera}
-              setTera={setTera}
-              zmove={zmove}
-              setZmove={setZmove}
-              dyna={dyna}
-              setDyna={setDyna}
-              ultra={ultra}
-              setUltra={setUltra}
-              canShift={canShift}
-              onShift={handleShift}
-              onSelectMove={handleSelectMove}
-              onClearError={() => dispatch(setChoiceError({ battleId, error: null }))}
-            />
-          ) : (
-            <TargetSelector
-              selectedMoveTarget={selectedMove.target}
-              dynamicTargets={dynamicTargets}
-              isLoading={isLoading}
-              onConfirmMove={handleConfirmMove}
-            />
-          )}
-
-          <div className="flex-row">
-            {(currentSlotIndex > 0 || selectedMove !== null) && (
-              <button onClick={handleBack} className="btn btn-secondary" disabled={isLoading}>
-                ← Back
-              </button>
-            )}
-          </div>
-
-          {renderChoiceStepper()}
-        </div>
+      return selectedMove === null ? (
+        <MoveSelector
+          activeReq={activeReq}
+          isDynamaxed={isMonActiveDynamaxed}
+          isLoading={isLoading}
+          modifiers={modifiers}
+          toggleModifier={toggleModifier}
+          canShift={canShift}
+          onShift={handleShift}
+          onSelectMove={handleSelectMove}
+          onClearError={clearChoiceError}
+        />
+      ) : (
+        <TargetSelector
+          selectedMoveTarget={selectedMove.target}
+          dynamicTargets={dynamicTargets}
+          isLoading={isLoading}
+          onConfirmMove={handleConfirmMove}
+        />
       );
     }
 
     return null;
   };
 
-  const displayErrorMessage = parsedChoiceError.failedSlotIndex !== null
-    ? `Slot ${parsedChoiceError.failedSlotIndex + 1}: ${parsedChoiceError.errorMessage}`
-    : errorMessage;
+  let displayErrorMessage = errorMessage;
+  if (parsedChoiceError.failedSlotIndex !== null) {
+    const failedIdx = parsedChoiceError.failedSlotIndex;
+    const actualSlotPos = getActiveSlotPosition(request, failedIdx);
+    displayErrorMessage = `Slot ${actualSlotPos + 1}: ${parsedChoiceError.errorMessage}`;
+  } else if (choiceError) {
+    displayErrorMessage = choiceError;
+  }
+
+  // Determine visibility states for hoisted elements
+  let showHeader = false;
+  let showStepper = false;
+  if (request && !isMeReady && !playbackPending) {
+    if (isTeamPreview) {
+      showHeader = true;
+    } else if (isSwitch) {
+      showHeader = activeSwitchSlot !== undefined;
+      showStepper = activeSwitchSlot !== undefined;
+    } else if (isTurn && request.type === "turn") {
+      showHeader = !!request.active?.[currentSlotIndex];
+      showStepper = !!request.active?.[currentSlotIndex];
+    }
+  }
+
+  const showBackButton = isSwitch
+    ? currentSlotIndex > 0
+    : isTurn
+      ? currentSlotIndex > 0 || selectedMove !== null
+      : false;
 
   return (
     <div className="flex-col gap-xl">
       <div className="card flex-col gap-m">
         {displayErrorMessage && <ErrorBanner message={displayErrorMessage} />}
+        {showHeader && (
+          <RequestHeader
+            title={getHeaderTitle()}
+            onForfeit={handleForfeit}
+            isLoading={isLoading}
+            key={turn}
+          />
+        )}
         {renderChoiceBody()}
+        {showBackButton && showHeader && (
+          <div className="flex-row">
+            <button onClick={goBackStep} className="btn btn-secondary" disabled={isLoading}>
+              ← Back
+            </button>
+          </div>
+        )}
+        {showStepper && (
+          <ChoiceStepper
+            request={request}
+            playerData={playerData}
+            battleState={battleSession?.battleState}
+            choices={choices}
+            currentSlotIndex={currentSlotIndex}
+            parsedChoiceError={parsedChoiceError}
+            isLoading={isLoading}
+            onJumpToSlot={handleJumpToSlot}
+          />
+        )}
       </div>
       {renderTeamSummary()}
     </div>

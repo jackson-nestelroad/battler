@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { submitChoice } from "../../../core/wamp";
 import { setChoiceError } from "../../../store/battlesSlice";
 import { useAppDispatch } from "../../../store/store";
-import type { ParsedChoiceError } from "../../../utils/choiceErrorParser";
+import type { ParsedChoiceError } from "../../../utils/choiceParser";
+import type { ChoiceModifiers } from "../../../utils/choiceBuilder";
 import { getRequestSlotCount } from "../../../utils/monHelpers";
 
 interface UseChoiceStepperOptions {
@@ -29,11 +30,11 @@ export function useChoiceStepper({
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
   const [selectedTeamIndices, setSelectedTeamIndices] = useState<number[]>([]);
 
-  const [mega, setMega] = useState(false);
-  const [zmove, setZmove] = useState(false);
-  const [ultra, setUltra] = useState(false);
-  const [dyna, setDyna] = useState(false);
-  const [tera, setTera] = useState(false);
+  const [modifiers, setModifiers] = useState<ChoiceModifiers>({});
+
+  const toggleModifier = useCallback((key: keyof ChoiceModifiers, value: boolean) => {
+    setModifiers((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
   const submittingRef = useRef(false);
 
@@ -45,22 +46,22 @@ export function useChoiceStepper({
   }, [isLoading, choiceError]);
 
   const resetModifiers = useCallback(() => {
-    setMega(false);
-    setZmove(false);
-    setUltra(false);
-    setDyna(false);
-    setTera(false);
+    setModifiers({});
   }, []);
+
+  const clearMoveSelection = useCallback(() => {
+    setSelectedMove(null);
+    setSelectedMoveIndex(null);
+    resetModifiers();
+  }, [resetModifiers]);
 
   const resetChoiceState = useCallback(() => {
     submittingRef.current = false;
     setChoices([]);
     setCurrentSlotIndex(0);
-    setSelectedMove(null);
-    setSelectedMoveIndex(null);
     setSelectedTeamIndices([]);
-    resetModifiers();
-  }, [resetModifiers]);
+    clearMoveSelection();
+  }, [clearMoveSelection]);
 
   // Reset when request changes
   const prevReqRef = useRef(request);
@@ -71,6 +72,22 @@ export function useChoiceStepper({
     }
   }, [request, resetChoiceState]);
 
+  const goBackStep = useCallback(() => {
+    if (submittingRef.current) return;
+    dispatch(setChoiceError({ battleId, error: null }));
+    
+    if (selectedMove) {
+      // 100% No-op: Backing out of target selection shouldn't wipe modifiers
+      setSelectedMove(null);
+      setSelectedMoveIndex(null);
+    } else if (currentSlotIndex > 0) {
+      // Backing out of a whole slot resets everything
+      setChoices((prev) => prev.slice(0, -1));
+      setCurrentSlotIndex((prev) => prev - 1);
+      clearMoveSelection();
+    }
+  }, [dispatch, battleId, selectedMove, currentSlotIndex, clearMoveSelection]);
+
   const advanceSlotOrSubmit = useCallback(
     (newChoices: string[], totalSlotsRequired: number) => {
       dispatch(setChoiceError({ battleId, error: null }));
@@ -80,12 +97,10 @@ export function useChoiceStepper({
       } else {
         setChoices(newChoices);
         setCurrentSlotIndex(newChoices.length);
-        setSelectedMove(null);
-        setSelectedMoveIndex(null);
-        resetModifiers();
+        clearMoveSelection();
       }
     },
-    [battleId, dispatch, resetModifiers, request],
+    [battleId, dispatch, clearMoveSelection],
   );
 
   const handleJumpToSlot = useCallback(
@@ -94,11 +109,9 @@ export function useChoiceStepper({
       dispatch(setChoiceError({ battleId, error: null }));
       setChoices((prev) => prev.slice(0, slotIndex));
       setCurrentSlotIndex(slotIndex);
-      setSelectedMove(null);
-      setSelectedMoveIndex(null);
-      resetModifiers();
+      clearMoveSelection();
     },
-    [currentSlotIndex, dispatch, battleId, resetModifiers],
+    [currentSlotIndex, dispatch, battleId, clearMoveSelection],
   );
 
   // Auto-jump to failing slot when choiceError points to a specific failed slot index
@@ -111,12 +124,14 @@ export function useChoiceStepper({
         const failedIdx = parsedChoiceError.failedSlotIndex;
         setChoices((prev) => prev.slice(0, failedIdx));
         setCurrentSlotIndex(failedIdx);
-        setSelectedMove(null);
-        setSelectedMoveIndex(null);
-        resetModifiers();
+        clearMoveSelection();
       }
     }
-  }, [parsedChoiceError.failedSlotIndex, request, resetModifiers]);
+  }, [parsedChoiceError.failedSlotIndex, request, clearMoveSelection]);
+
+  const clearChoiceError = useCallback(() => {
+    dispatch(setChoiceError({ battleId, error: null }));
+  }, [dispatch, battleId]);
 
   return {
     choices,
@@ -129,19 +144,14 @@ export function useChoiceStepper({
     setSelectedMoveIndex,
     selectedTeamIndices,
     setSelectedTeamIndices,
-    mega,
-    setMega,
-    zmove,
-    setZmove,
-    ultra,
-    setUltra,
-    dyna,
-    setDyna,
-    tera,
-    setTera,
+    modifiers,
+    toggleModifier,
     submittingRef,
     resetModifiers,
+    clearMoveSelection,
+    clearChoiceError,
     advanceSlotOrSubmit,
     handleJumpToSlot,
+    goBackStep,
   };
 }

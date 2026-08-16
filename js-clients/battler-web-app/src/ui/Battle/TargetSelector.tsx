@@ -1,4 +1,4 @@
-import type { TargetOption } from "../../utils/targeting";
+import { getMoveTargetInfo, type TargetOption } from "../../utils/targeting";
 import styles from "./ActionPanel.module.scss";
 
 interface TargetSelectorProps {
@@ -8,21 +8,13 @@ interface TargetSelectorProps {
   onConfirmMove: (targetVal: number | null) => void;
 }
 
-const TARGET_REQUIRING_SELECT = [
-  "Normal",
-  "AdjacentFoe",
-  "AdjacentAlly",
-  "Any",
-  "AdjacentAllyOrUser",
-];
-
 export default function TargetSelector({
   selectedMoveTarget,
   dynamicTargets,
   isLoading,
   onConfirmMove,
 }: TargetSelectorProps) {
-  const requiresSelect = TARGET_REQUIRING_SELECT.includes(selectedMoveTarget);
+  const requiresSelect = getMoveTargetInfo(selectedMoveTarget).isChoosable;
 
   return (
     <div className={styles.targetCard}>
@@ -37,12 +29,10 @@ export default function TargetSelector({
           >
             Confirm
           </button>
-        ) : dynamicTargets.length > 0 ? (
+        ) : (
           <div className={styles.targetGrid}>
             {dynamicTargets.map((opt) => {
-              const typeLabel =
-                opt.type === "self" ? "Self" : opt.type === "foe" ? "Foe" : "Ally";
-              const subText = opt.playerName ? `${typeLabel} • ${opt.playerName}` : typeLabel;
+              const subText = opt.subText;
 
               return (
                 <button
@@ -58,30 +48,6 @@ export default function TargetSelector({
                 </button>
               );
             })}
-          </div>
-        ) : (
-          <div className={styles.targetGrid}>
-            <button
-              onClick={() => onConfirmMove(1)}
-              className="btn btn-secondary"
-              disabled={isLoading}
-            >
-              Opponent left
-            </button>
-            <button
-              onClick={() => onConfirmMove(2)}
-              className="btn btn-secondary"
-              disabled={isLoading}
-            >
-              Opponent right
-            </button>
-            <button
-              onClick={() => onConfirmMove(-1)}
-              className="btn btn-secondary"
-              disabled={isLoading}
-            >
-              Ally
-            </button>
           </div>
         )}
       </div>

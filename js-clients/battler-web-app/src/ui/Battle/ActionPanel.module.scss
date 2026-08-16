@@ -201,13 +201,15 @@
 }
 
 .zmoveBadge {
-  background-color: var(--color-primary);
-  color: var(--color-white);
+  background-color: var(--color-badge-zmove-bg);
+  color: var(--color-badge-zmove-text);
+  border: 1px solid var(--color-badge-zmove-border);
 }
 
 .maxMoveBadge {
-  background-color: var(--color-warning);
-  color: var(--text-primary);
+  background-color: var(--color-badge-dynamax-bg);
+  color: var(--color-badge-dynamax-text);
+  border: 1px solid var(--color-badge-dynamax-border);
 }
 
 .targetCard {

@@ -6,6 +6,28 @@ export interface ChoiceModifiers {
   tera?: boolean;
 }
 
+export type ModifierKey = keyof ChoiceModifiers;
+
+export interface ModifierConfig {
+  key: ModifierKey;
+  label: string;
+  requestFlag: string;
+}
+
+export const CHOICE_MODIFIER_CONFIGS: Record<ModifierKey, ModifierConfig> = {
+  mega: { key: "mega", label: "Mega", requestFlag: "can_mega_evolve" },
+  tera: { key: "tera", label: "Tera", requestFlag: "can_terastallize" },
+  zmove: { key: "zmove", label: "Z-Move", requestFlag: "can_z_move" },
+  dyna: { key: "dyna", label: "Dynamax", requestFlag: "can_dynamax" },
+  ultra: { key: "ultra", label: "Ultra", requestFlag: "can_ultra_burst" },
+};
+
+// Serialization order (used for choice strings)
+export const CHOICE_MODIFIER_KEYS: ModifierKey[] = ["mega", "zmove", "ultra", "dyna", "tera"];
+
+// UI rendering order
+export const UI_MODIFIER_KEYS: ModifierKey[] = ["mega", "tera", "zmove", "dyna", "ultra"];
+
 export const ChoiceBuilder = {
   /**
    * Constructs a move choice string e.g. "move 0, 1, mega" or "move 0, -1, tera, dyna".
@@ -15,11 +37,9 @@ export const ChoiceBuilder = {
     if (typeof targetVal === "number") {
       parts.push(targetVal.toString());
     }
-    if (modifiers?.mega) parts.push("mega");
-    if (modifiers?.zmove) parts.push("zmove");
-    if (modifiers?.ultra) parts.push("ultra");
-    if (modifiers?.dyna) parts.push("dyna");
-    if (modifiers?.tera) parts.push("tera");
+    for (const mod of CHOICE_MODIFIER_KEYS) {
+      if (modifiers?.[mod]) parts.push(mod);
+    }
 
     return parts.join(", ");
   },
@@ -46,9 +66,9 @@ export const ChoiceBuilder = {
   },
 
   /**
-   * Constructs a team order choice string e.g. "team 1, 2, 3".
+   * Constructs a team order choice string e.g. "team 0 1 2".
    */
   team(positions: number[]): string {
-    return `team ${positions.join(", ")}`;
+    return `team ${positions.join(" ")}`;
   },
 };

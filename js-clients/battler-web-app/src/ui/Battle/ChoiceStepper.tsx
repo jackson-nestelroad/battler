@@ -1,15 +1,67 @@
 import type { BattleState } from "battler-state";
 import type { PlayerBattleData, Request } from "battler-types";
 import { useState } from "react";
-import type { ParsedChoiceError } from "../../utils/choiceErrorParser";
+import type { ParsedChoiceError } from "../../utils/choiceParser";
 import { formatTurnChoice } from "../../utils/choiceFormatter";
 import {
   getMonDisplayName,
   getMonForSlot,
   getRequestSlotCount,
   getSlotLabel,
+  getActiveSlotPosition,
 } from "../../utils/monHelpers";
 import styles from "./ChoiceStepper.module.scss";
+
+interface StepChipProps {
+  status: "completed" | "active" | "errored" | "pending";
+  badgeContent: React.ReactNode;
+  monName: string;
+  summaryContent: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  title?: string;
+}
+
+function StepChip({
+  status,
+  badgeContent,
+  monName,
+  summaryContent,
+  onClick,
+  disabled,
+  title,
+}: StepChipProps) {
+  const containerClass = `${styles.choiceChip} ${styles[status]}`;
+  const badgeClass = `${styles.chipStepBadge} ${styles[status]}`;
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={containerClass}
+        title={title}
+        disabled={disabled}
+      >
+        <span className={badgeClass}>{badgeContent}</span>
+        <div className={styles.chipContent}>
+          <span className={styles.chipMonName}>{monName}</span>
+          <span className={styles.chipSummary}>{summaryContent}</span>
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <div className={containerClass} title={title}>
+      <span className={badgeClass}>{badgeContent}</span>
+      <div className={styles.chipContent}>
+        <span className={styles.chipMonName}>{monName}</span>
+        <span className={styles.chipSummary}>{summaryContent}</span>
+      </div>
+    </div>
+  );
+}
 
 interface ChoiceStepperProps {
   request: Request | null;
@@ -41,7 +93,7 @@ export default function ChoiceStepper({
 
   const slotItems = Array.from({ length: slotCount }).map((_, idx) => {
     const mon = getMonForSlot(playerData, request, idx);
-    const activePos = request.type === "switch" ? request.needs_switch?.[idx] ?? idx : idx;
+    const activePos = getActiveSlotPosition(request, idx);
     const slotMonName = getSlotLabel(activePos + 1, getMonDisplayName(mon));
     return { slotMonName };
   });
@@ -81,70 +133,61 @@ export default function ChoiceStepper({
                 battleState,
               );
 
+              const summaryContent = (
+                <>
+                  <span>{formatted.actionName}</span>
+                  {formatted.modifiers.map((mod) => (
+                    <span
+                      key={mod}
+                      className={`${styles.modifierBadge} ${
+                        styles[`mod_${mod.toLowerCase().replace("-", "")}`] || ""
+                      }`}
+                    >
+                      {mod}
+                    </span>
+                  ))}
+                  {formatted.targetName && <span> → {formatted.targetName}</span>}
+                </>
+              );
+
               return (
-                <button
+                <StepChip
                   key={idx}
-                  type="button"
+                  status="completed"
+                  badgeContent="✓"
+                  monName={slotMonName}
+                  summaryContent={summaryContent}
                   onClick={() => onJumpToSlot(idx)}
-                  className={`${styles.choiceChip} ${styles.completed}`}
                   title="Click to edit choice for this slot"
                   disabled={isLoading}
-                >
-                  <span className={`${styles.chipStepBadge} ${styles.completed}`}>✓</span>
-                  <div className={styles.chipContent}>
-                    <span className={styles.chipMonName}>{slotMonName}</span>
-                    <span className={styles.chipSummary}>
-                      <span>{formatted.actionName}</span>
-                      {formatted.modifiers.map((mod) => (
-                        <span
-                          key={mod}
-                          className={`${styles.modifierBadge} ${
-                            styles[`mod_${mod.toLowerCase().replace("-", "")}`] || ""
-                          }`}
-                        >
-                          {mod}
-                        </span>
-                      ))}
-                      {formatted.targetName && <span> → {formatted.targetName}</span>}
-                    </span>
-                  </div>
-                </button>
+                />
               );
             }
 
             if (isActive || isErrored) {
+              const status = isErrored ? "errored" : "active";
+              const badgeContent = isErrored ? "!" : idx + 1;
+              const summaryContent = isErrored ? parsedChoiceError.errorMessage : selectingText;
+              
               return (
-                <div
+                <StepChip
                   key={idx}
-                  className={`${styles.choiceChip} ${isActive ? styles.active : ""} ${
-                    isErrored ? styles.errored : ""
-                  }`}
-                >
-                  <span
-                    className={`${styles.chipStepBadge} ${
-                      isErrored ? styles.errored : styles.active
-                    }`}
-                  >
-                    {isErrored ? "!" : idx + 1}
-                  </span>
-                  <div className={styles.chipContent}>
-                    <span className={styles.chipMonName}>{slotMonName}</span>
-                    <span className={styles.chipSummary}>
-                      {isErrored ? parsedChoiceError.errorMessage : selectingText}
-                    </span>
-                  </div>
-                </div>
+                  status={status}
+                  badgeContent={badgeContent}
+                  monName={slotMonName}
+                  summaryContent={summaryContent}
+                />
               );
             }
 
             return (
-              <div key={idx} className={`${styles.choiceChip} ${styles.pending}`}>
-                <span className={`${styles.chipStepBadge} ${styles.pending}`}>{idx + 1}</span>
-                <div className={styles.chipContent}>
-                  <span className={styles.chipMonName}>{slotMonName}</span>
-                  <span className={styles.chipSummary}>Waiting...</span>
-                </div>
-              </div>
+              <StepChip
+                key={idx}
+                status="pending"
+                badgeContent={idx + 1}
+                monName={slotMonName}
+                summaryContent="Waiting..."
+              />
             );
           })}
         </div>

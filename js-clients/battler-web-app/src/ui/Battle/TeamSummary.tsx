@@ -1,5 +1,11 @@
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
-import { getMonTeamPosition } from "../../utils/monHelpers";
+import { 
+  getMonDisplayName, 
+  getMonTeamPosition, 
+  getRequestSlotCount,
+  getTeamPreviewTargetSize,
+  canSlotSwitch,
+} from "../../utils/monHelpers";
 import MonCard from "../Common/MonCard";
 import styles from "./ActionPanel.module.scss";
 
@@ -34,12 +40,14 @@ export default function TeamSummary({
 }: TeamSummaryProps) {
   if (!playerData || !playerData.mons) return null;
 
+  const targetSize = request?.type === "team" ? getTeamPreviewTargetSize(request, playerData) : 0;
+
   return (
     <div className={styles.teamSummarySection}>
       <h4 className={styles.summaryTitle}>Team</h4>
       <div className={styles.teamSummaryGrid}>
         {playerData.mons.map((mon, idx) => {
-          const name = mon.summary?.name || mon.species;
+          const name = getMonDisplayName(mon);
           const monPos = getMonTeamPosition(mon, idx);
           const isActing =
             activeMonTeamPosition !== undefined &&
@@ -51,39 +59,19 @@ export default function TeamSummary({
           let handleClick: (() => void) | undefined = undefined;
 
           if (request && !isMeReady && !playbackPending && !isLoading) {
-            let totalSlots = 0;
-            let canSwitch = false;
-
             if (request.type === "team") {
-              const maxTeamSize = request.max_team_size;
-              const targetSize = Math.min(
-                playerData.mons.length,
-                maxTeamSize ?? playerData.mons.length,
-              );
               const isSelected = selectedTeamIndices.includes(idx);
               const hasReachedMax = selectedTeamIndices.length >= targetSize;
 
               isClickable = isSelected || !hasReachedMax;
-              handleClick = () => {
-                if (onSelectMon) onSelectMon(idx);
-              };
-            } else if (request.type === "switch") {
-              const needsSwitch = request.needs_switch || [];
-              totalSlots = needsSwitch.length;
-              canSwitch = needsSwitch[currentSlotIndex] !== undefined;
-            } else if (request.type === "turn" && selectedMove === null) {
-              const activeRequests = request.active || [];
-              totalSlots = activeRequests.length;
-              const activeReq = activeRequests[currentSlotIndex];
-              canSwitch = !!(activeReq && !activeReq.trapped);
-            }
-
-            if (canSwitch) {
+              if (isClickable && onSelectMon) {
+                handleClick = () => onSelectMon(idx);
+              }
+            } else if (canSlotSwitch(request, currentSlotIndex, selectedMove)) {
               isClickable = !mon.active && mon.hp > 0;
               if (isClickable) {
-                handleClick = () => {
-                  onSwitch(monPos, totalSlots);
-                };
+                const totalSlots = getRequestSlotCount(request);
+                handleClick = () => onSwitch(monPos, totalSlots);
               }
             }
           }

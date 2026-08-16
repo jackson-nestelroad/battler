@@ -1,5 +1,8 @@
 import type { MonMoveSlotData } from "battler-types";
-import type { CSSProperties } from "react";
+import { type ChoiceModifiers, UI_MODIFIER_KEYS, CHOICE_MODIFIER_CONFIGS, CHOICE_MODIFIER_KEYS } from "../../utils/choiceBuilder";
+
+import { getAvailableMoves } from "../../utils/monHelpers";
+import ActionButton from "./ActionButton";
 import styles from "./ActionPanel.module.scss";
 
 interface MoveSelectorProps {
@@ -16,16 +19,8 @@ interface MoveSelectorProps {
   };
   isDynamaxed?: boolean;
   isLoading: boolean;
-  mega: boolean;
-  setMega: (val: boolean) => void;
-  tera: boolean;
-  setTera: (val: boolean) => void;
-  zmove: boolean;
-  setZmove: (val: boolean) => void;
-  dyna: boolean;
-  setDyna: (val: boolean) => void;
-  ultra: boolean;
-  setUltra: (val: boolean) => void;
+  modifiers: ChoiceModifiers;
+  toggleModifier: (key: keyof ChoiceModifiers, value: boolean) => void;
   onSelectMove: (move: MonMoveSlotData, index: number) => void;
   onClearError: () => void;
   canShift?: boolean;
@@ -36,29 +31,17 @@ export default function MoveSelector({
   activeReq,
   isDynamaxed = false,
   isLoading,
-  mega,
-  setMega,
-  tera,
-  setTera,
-  zmove,
-  setZmove,
-  dyna,
-  setDyna,
-  ultra,
-  setUltra,
+  modifiers,
+  toggleModifier,
   onSelectMove,
   onClearError,
   canShift = false,
   onShift,
 }: MoveSelectorProps) {
-  const isMaxMoveActive = dyna || isDynamaxed;
+  const isMaxMoveActive = modifiers.dyna || isDynamaxed;
 
-  const hasModifiers = !!(
-    activeReq.can_mega_evolve ||
-    activeReq.can_terastallize ||
-    activeReq.can_z_move ||
-    activeReq.can_dynamax ||
-    activeReq.can_ultra_burst
+  const hasModifiers = CHOICE_MODIFIER_KEYS.some(
+    (key) => !!(activeReq as any)[CHOICE_MODIFIER_CONFIGS[key].requestFlag],
   );
 
   return (
@@ -68,137 +51,80 @@ export default function MoveSelector({
 
         {hasModifiers && (
           <div className={styles.modifiersRow}>
-            {[
-              {
-                key: "mega",
-                label: "Mega",
-                flag: activeReq.can_mega_evolve,
-                value: mega,
-                setter: setMega,
-              },
-              {
-                key: "tera",
-                label: "Tera",
-                flag: activeReq.can_terastallize,
-                value: tera,
-                setter: setTera,
-              },
-              {
-                key: "zmove",
-                label: "Z-Move",
-                flag: activeReq.can_z_move,
-                value: zmove,
-                setter: setZmove,
-              },
-              {
-                key: "dyna",
-                label: "Dynamax",
-                flag: activeReq.can_dynamax && !isDynamaxed,
-                value: dyna,
-                setter: setDyna,
-              },
-              {
-                key: "ultra",
-                label: "Ultra",
-                flag: activeReq.can_ultra_burst,
-                value: ultra,
-                setter: setUltra,
-              },
-            ].map(
-              ({ key, label, flag, value, setter }) =>
-                flag && (
+            {UI_MODIFIER_KEYS.map((key) => {
+              const config = CHOICE_MODIFIER_CONFIGS[key];
+              let flag = !!(activeReq as any)[config.requestFlag];
+              if (key === "dyna" && isDynamaxed) flag = false;
+
+              if (!flag) return null;
+
+              return (
                   <label
                     key={key}
                     className={`${styles.checkboxLabel} ${
                       styles[`modifierLabel_${key}`] || ""
-                    } ${value ? styles.checked : ""}`}
+                    } ${modifiers[key] ? styles.checked : ""}`}
                   >
                     <input
                       type="checkbox"
-                      checked={value}
+                      checked={!!modifiers[key]}
                       onChange={(e) => {
                         onClearError();
-                        setter(e.target.checked);
+                        toggleModifier(key, e.target.checked);
                       }}
                     />
-                    {label}
+                    {config.label}
                   </label>
-                ),
-            )}
+              );
+            })}
           </div>
         )}
 
         <div className={styles.movesGrid}>
-          {activeReq.moves.map((baseMove, index) => {
-            let moveToRender: MonMoveSlotData | null = baseMove;
-            let badgeText: string | null = null;
-            let isZMoveDisabled = false;
+          {(() => {
+            const availableMoves = getAvailableMoves(activeReq, { zmove: modifiers.zmove, dyna: isMaxMoveActive });
+            
+            return activeReq.moves.map((baseMove, index) => {
+              const modifierMove = availableMoves[index];
+              const moveToRender = modifierMove || baseMove;
+              let badgeText: string | null = null;
+              let isZMoveDisabled = false;
 
-            if (zmove) {
-              const zMoveData = activeReq.z_moves?.[index];
-              if (zMoveData) {
-                moveToRender = zMoveData;
-                badgeText = "Z-Move";
-              } else {
-                moveToRender = baseMove;
-                isZMoveDisabled = true;
-              }
-            } else if (isMaxMoveActive) {
-              const maxMoveData = activeReq.max_moves?.[index];
-              if (maxMoveData) {
-                moveToRender = maxMoveData;
+              if (modifiers.zmove) {
+                if (modifierMove) {
+                  badgeText = "Z-Move";
+                } else {
+                  isZMoveDisabled = true;
+                }
+              } else if (isMaxMoveActive && modifierMove) {
                 badgeText = "Max Move";
               }
-            }
 
             const isMoveDisabled =
               isZMoveDisabled || baseMove.disabled || baseMove.pp === 0 || moveToRender.disabled;
 
             return (
-              <button
+              <ActionButton
                 key={baseMove.id || index}
-                onClick={() => onSelectMove(moveToRender, index)}
-                className={`${styles.moveBtn} type-border`}
-                style={
-                  {
-                    "--type-color": `var(--color-type-${moveToRender.type.toLowerCase()})`,
-                  } as CSSProperties
-                }
+                title={moveToRender.name}
+                subtitle={`${moveToRender.type} | PP: ${baseMove.pp}/${baseMove.max_pp}`}
+                onClick={() => onSelectMove(moveToRender!, index)}
                 disabled={isMoveDisabled || isLoading}
-              >
-                <div className={styles.moveHeaderRow}>
-                  <span className={styles.moveName}>{moveToRender.name}</span>
-                  {badgeText && (
-                    <span
-                      className={`${styles.moveBadge} ${
-                        badgeText === "Z-Move" ? styles.zmoveBadge : styles.maxMoveBadge
-                      }`}
-                    >
-                      {badgeText}
-                    </span>
-                  )}
-                </div>
-                <span className={styles.moveMeta}>
-                  {moveToRender.type} | PP: {baseMove.pp}/{baseMove.max_pp}
-                </span>
-              </button>
+                typeColor={`var(--color-type-${moveToRender.type.toLowerCase()})`}
+                badgeText={badgeText}
+                badgeClassName={badgeText === "Z-Move" ? styles.zmoveBadge : styles.maxMoveBadge}
+              />
             );
-          })}
+          })})()}
         </div>
         {canShift && onShift && (
-          <button
-            type="button"
+          <ActionButton
+            title="Shift"
+            subtitle="Shift to center position"
             onClick={onShift}
-            className={`${styles.moveBtn} type-border`}
-            style={{ "--type-color": "var(--color-primary)" } as CSSProperties}
             disabled={isLoading}
-            title="Shift position to the center slot"
-          >
-            <div className={styles.moveHeaderRow}>
-              <span className={styles.moveName}>Shift</span>
-            </div>
-            <span className={styles.moveMeta}>Shift to center position</span>
-          </button>
+            htmlTitle="Shift position to the center slot"
+          />
         )}
         {activeReq.trapped && <div className="alert alert-warning">Trapped</div>}
       </div>

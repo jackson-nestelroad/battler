@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseChoiceError } from "./choiceErrorParser";
+import { parseChoiceError } from "./choiceParser";
 
 describe("choiceErrorParser utility", () => {
   it("returns null for empty or null error string", () => {

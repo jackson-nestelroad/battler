@@ -24,6 +24,6 @@ describe("ChoiceBuilder utility", () => {
   });
 
   it("builds team choice", () => {
-    expect(ChoiceBuilder.team([1, 2, 3])).toBe("team 1, 2, 3");
+    expect(ChoiceBuilder.team([1, 2, 3])).toBe("team 1 2 3");
   });
 });
