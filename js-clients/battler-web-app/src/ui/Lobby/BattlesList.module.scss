@@ -38,7 +38,14 @@
     gap: var(--spacing-xxs);
     width: 100%;
   }
+
+  > .dotSeparator {
+    @include mobile {
+      display: none;
+    }
+  }
 }
+
 
 .playersText {
   font-size: var(--font-size-s);
@@ -53,10 +60,6 @@
   color: var(--text-muted);
   font-size: var(--font-size-s);
   user-select: none;
-
-  @include mobile {
-    display: none;
-  }
 }
 
 .battleSubtitle {
@@ -64,6 +67,12 @@
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
+}
+
+.metaText {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .paginationFooter {

@@ -3,6 +3,7 @@ import type { ActiveView, SerializedBattleSession } from "../../store/battlesSli
 import { isSpectatorSession, selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
+import { getBattleStateLabel } from "../../utils/battleState";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
 
 import styles from "./Sidebar.module.scss";
@@ -73,13 +74,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 >
                   {isDeleted
                     ? "Deleted"
-                    : isFinished
-                      ? "Finished"
-                      : isPreparing
-                        ? "Preparing"
-                        : turnNumber === 0
-                          ? "Preview"
-                          : `Turn ${turnNumber}`}
+                    : getBattleStateLabel({
+                        state: isFinished ? "finished" : isPreparing ? "preparing" : "active",
+                        phase: battle.battleState?.phase,
+                        turn: turnNumber,
+                      })}
                   {isSpectator && <span className={styles.spectatorBadge}> • Spectating</span>}
                 </span>
               </>
@@ -269,7 +268,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                         <>
                           <span className={styles.opponentName}>{title}</span>
                           <span className={styles.turnLabel}>
-                            {turnNumber === 0 ? "Preview" : `Turn ${turnNumber}`}
+                            {getBattleStateLabel({ phase: battle.battleState?.phase, turn: turnNumber })}
                           </span>
                         </>
                       )}

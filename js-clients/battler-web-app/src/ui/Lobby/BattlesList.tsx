@@ -3,6 +3,7 @@ import type { BattlePreview } from "battler-service-client";
 import { fetchBattles, restoreBattleSession } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
+import { getBattleStateLabel } from "../../utils/battleState";
 import { formatUuid } from "../../utils/uuid";
 import CopyableId from "../Common/CopyableId";
 import styles from "./BattlesList.module.scss";
@@ -95,6 +96,7 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
         <div className="flex-col gap-xs">
           {battles.map((b) => {
             const battleId = formatUuid(b.uuid);
+            const stateStr = getBattleStateLabel({ state: b.state, turn: b.turn });
             return (
               <div
                 key={b.uuid}
@@ -112,8 +114,22 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
                 <div className={styles.battleInfo}>
                   <span className={styles.playersText}>{formatSides(b.sides)}</span>
                   <span className={styles.dotSeparator}>•</span>
-                  <div className={styles.battleSubtitle} onClick={(e) => e.stopPropagation()}>
-                    <CopyableId id={battleId} type="battle" />
+                  <div className="flex-row align-center gap-xs flex-wrap">
+                    <div className={styles.battleSubtitle} onClick={(e) => e.stopPropagation()}>
+                      <CopyableId id={battleId} type="battle" />
+                    </div>
+                    {b.battle_type && (
+                      <>
+                        <span className={styles.dotSeparator}>•</span>
+                        <span className={styles.metaText}>{b.battle_type}</span>
+                      </>
+                    )}
+                    {stateStr && (
+                      <>
+                        <span className={styles.dotSeparator}>•</span>
+                        <span className={styles.metaText}>{stateStr}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -269,6 +269,9 @@ impl<'d> LiveBattle<'d> {
                 .iter()
                 .map(|side| Self::side_preview(side))
                 .collect(),
+            battle_type: self.battle.battle_type(),
+            state: self.battle_state(),
+            turn: self.battle.turn(),
         }
     }
 

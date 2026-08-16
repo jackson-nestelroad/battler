@@ -595,6 +595,9 @@ async fn lists_battles_in_uuid_order() {
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
             },
             BattlePreview {
                 uuid: battles[1],
@@ -612,6 +615,9 @@ async fn lists_battles_in_uuid_order() {
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
             }
         ])
     );
@@ -634,6 +640,9 @@ async fn lists_battles_in_uuid_order() {
                     }]),
                 }
             ]),
+            battle_type: battler::battle::BattleType::Singles,
+            state: BattleState::Preparing,
+            turn: 0,
         }])
     );
 
@@ -699,6 +708,9 @@ async fn lists_battles_for_player_in_uuid_order() {
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
             },
             BattlePreview {
                 uuid: battles[1],
@@ -716,6 +728,9 @@ async fn lists_battles_for_player_in_uuid_order() {
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
             }
         ])
     );
@@ -738,6 +753,9 @@ async fn lists_battles_for_player_in_uuid_order() {
                     }]),
                 }
             ]),
+            battle_type: battler::battle::BattleType::Singles,
+            state: BattleState::Preparing,
+            turn: 0,
         }])
     );
 

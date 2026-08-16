@@ -1,4 +1,5 @@
 import type { BattleState } from "battler-state";
+import { getBattleStateLabel } from "../../utils/battleState";
 import styles from "./Field.module.scss";
 
 interface FieldProps {
@@ -24,7 +25,7 @@ export default function Field({ battleState }: FieldProps) {
         <span className="badge badge-warning">Weather: {weather}</span>
         <span className="badge badge-info">Terrain: {terrain}</span>
         <span className={styles.turnLabel}>
-          {battleState.turn === 0 ? "Preview" : `Turn ${battleState.turn}`}
+          {getBattleStateLabel({ phase: battleState.phase, turn: battleState.turn })}
         </span>
       </div>
 

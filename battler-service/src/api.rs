@@ -146,4 +146,10 @@ pub struct BattlePreview {
     pub uuid: Uuid,
     /// The sides participating in the battle.
     pub sides: Vec<SidePreview>,
+    /// The type of the battle format.
+    pub battle_type: battler::battle::BattleType,
+    /// The state of the battle.
+    pub state: BattleState,
+    /// The current turn number.
+    pub turn: u64,
 }
