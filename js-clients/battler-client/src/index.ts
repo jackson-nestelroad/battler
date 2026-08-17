@@ -3,8 +3,6 @@ import {
   Battle,
   BattlerServiceClient,
   LogEntry,
-  PlayerBattleData,
-  PlayerValidation,
   Request,
   TeamData,
 } from "battler-service-client";
@@ -238,10 +236,6 @@ export class BattlerClient extends EventEmitter {
 
   getLogs(): string[] {
     return [...this.logLines];
-  }
-
-  async readyForBattle(): Promise<PlayerValidation> {
-    return this.service.validatePlayer(this.battleId, this.player);
   }
 
   async updateTeam(team: TeamData): Promise<void> {

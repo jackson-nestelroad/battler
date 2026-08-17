@@ -37,7 +37,6 @@ use crate::{
         request,
         start,
         update_team,
-        validate_player,
     },
 };
 
@@ -114,10 +113,7 @@ where
         service: service.clone(),
         authorizer: authorizer.clone(),
     })?;
-    builder.register_validate_player(validate_player::Handler {
-        service: service.clone(),
-        authorizer: authorizer.clone(),
-    })?;
+
     builder.register_start(start::Handler {
         service: service.clone(),
         authorizer: authorizer.clone(),

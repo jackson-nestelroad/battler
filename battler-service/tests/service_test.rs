@@ -258,10 +258,6 @@ async fn invalid_team_fails_validation_and_resets_state() {
         .await
         .unwrap();
     assert_eq!(battle.sides[0].players[0].state, PlayerState::Ready);
-    assert_matches::assert_matches!(battler_service.validate_player(battle.uuid, "player-1").await, Ok(validation) => {
-        assert!(validation.problems.is_empty());
-    });
-
     let mut bad_team = team(5);
     bad_team.members[0].item = Some("Leftovers".to_owned());
     bad_team.members[1].item = Some("Leftovers".to_owned());
@@ -270,16 +266,10 @@ async fn invalid_team_fails_validation_and_resets_state() {
         battler_service
             .update_team(battle.uuid, "player-1", bad_team)
             .await,
-        Ok(())
+        Err(err) => {
+            assert!(err.to_string().contains("Item Leftovers appears more than 1 time."));
+        }
     );
-
-    assert_matches::assert_matches!(battler_service.battle(battle.uuid).await, Ok(battle) => {
-        assert_eq!(battle.sides[0].players[0].state, PlayerState::Waiting);
-    });
-
-    assert_matches::assert_matches!(battler_service.validate_player(battle.uuid, "player-1").await, Ok(validation) => {
-        pretty_assertions::assert_eq!(validation.problems, Vec::from_iter(["Item Leftovers appears more than 1 time."]));
-    });
 }
 
 #[tokio::test(flavor = "multi_thread")]

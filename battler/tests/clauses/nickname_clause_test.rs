@@ -67,16 +67,9 @@ fn enforces_unique_nicknames() {
     let mut bad_team = three_starters().unwrap();
     bad_team.members[1].name = "Bulbasaur".to_owned();
 
-    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Ok(()));
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Err(err) => {
+    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Nickname \"Bulbasaur\" appears more than 1 time."), "{err:?}");
-        });
-    });
-    assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
-            assert!(err.problems().contains(&"Validation failed for Player 1: Nickname \"Bulbasaur\" appears more than 1 time."), "{err:?}");
         });
     });
 
@@ -84,11 +77,4 @@ fn enforces_unique_nicknames() {
         battle.update_team("player-1", three_starters().unwrap()),
         Ok(())
     );
-    assert_matches::assert_matches!(
-        battle.update_team("player-2", three_starters().unwrap()),
-        Ok(())
-    );
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
-    assert_matches::assert_matches!(battle.start(), Ok(()));
 }

@@ -67,16 +67,9 @@ fn enforces_unique_abilities_by_default() {
     let mut bad_team = three_starters().unwrap();
     bad_team.members[1].ability = "Overgrow".to_owned();
 
-    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Ok(()));
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Err(err) => {
+    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Ability Overgrow appears more than 1 time."), "{err:?}");
-        });
-    });
-    assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
-            assert!(err.problems().contains(&"Validation failed for Player 1: Ability Overgrow appears more than 1 time."), "{err:?}");
         });
     });
 
@@ -84,13 +77,6 @@ fn enforces_unique_abilities_by_default() {
         battle.update_team("player-1", three_starters().unwrap()),
         Ok(())
     );
-    assert_matches::assert_matches!(
-        battle.update_team("player-2", three_starters().unwrap()),
-        Ok(())
-    );
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
-    assert_matches::assert_matches!(battle.start(), Ok(()));
 }
 
 #[test]
@@ -104,16 +90,9 @@ fn enforces_ability_limits() {
     bad_team.members[0].ability = "Blaze".to_owned();
     bad_team.members[2].ability = "Blaze".to_owned();
 
-    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Ok(()));
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Err(err) => {
+    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Ability Blaze appears more than 2 times."), "{err:?}");
-        });
-    });
-    assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
-            assert!(err.problems().contains(&"Validation failed for Player 1: Ability Blaze appears more than 2 times."), "{err:?}");
         });
     });
 
@@ -121,10 +100,6 @@ fn enforces_ability_limits() {
     good_team.members[0].ability = "Blaze".to_owned();
 
     assert_matches::assert_matches!(battle.update_team("player-1", good_team.clone()), Ok(()));
-    assert_matches::assert_matches!(battle.update_team("player-2", good_team), Ok(()));
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
-    assert_matches::assert_matches!(battle.start(), Ok(()));
 }
 
 #[test]

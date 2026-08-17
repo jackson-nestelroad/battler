@@ -113,7 +113,6 @@ fn detects_endless_battle_initiated_by_single_player() {
     )
     .unwrap();
 
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // Turn 1.
@@ -199,7 +198,6 @@ fn endless_battle_clause_does_not_activate_if_mon_can_switch() {
 
     let mut battle = make_battle(0, team_1, team_2).unwrap();
 
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
     assert_matches::assert_matches!(battle.start(), Ok(()));
 
     // Turn 1.

@@ -86,14 +86,7 @@ export class BattlerServiceClient {
     );
   }
 
-  async validatePlayer(battleId: string, player: string): Promise<PlayerValidation> {
-    const res = await this.session.call<unknown>(
-      `com.battler.battler_service.battles.${uuidForUri(battleId)}.validate_player`,
-      [player],
-    );
-    const problems = getWampResultArray(res).map(String);
-    return { problems };
-  }
+
 
   async start(battleId: string): Promise<void> {
     await this.session.call(`com.battler.battler_service.battles.${uuidForUri(battleId)}.start`);

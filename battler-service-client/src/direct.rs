@@ -15,7 +15,6 @@ use battler_service::{
     BattleServiceOptions,
     BattlerService,
     LogEntry,
-    PlayerValidation,
 };
 use tokio::sync::broadcast;
 use uuid::Uuid;
@@ -62,10 +61,6 @@ impl<'d> BattlerServiceClient for DirectBattlerServiceClient<'d> {
 
     async fn update_team(&self, battle: Uuid, player: &str, team: TeamData) -> Result<()> {
         self.service.update_team(battle, player, team).await
-    }
-
-    async fn validate_player(&self, battle: Uuid, player: &str) -> Result<PlayerValidation> {
-        self.service.validate_player(battle, player).await
     }
 
     async fn start(&self, battle: Uuid) -> Result<()> {

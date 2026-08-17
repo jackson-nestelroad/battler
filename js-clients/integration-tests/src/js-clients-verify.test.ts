@@ -590,11 +590,6 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     const serviceClient = new BattlerServiceClient(provider);
     const multiplayerClient = new BattlerMultiplayerServiceClient(provider);
 
-    // 1. validatePlayer error check for non-existent battle
-    await assert.rejects(async () => {
-      await serviceClient.validatePlayer("some-uuid", "player_1");
-    });
-
     // 2. Query battles and proposed battles filtered by player
     const emptyBattles = await serviceClient.battlesForPlayer("player_1", 10, 0);
     assert.ok(Array.isArray(emptyBattles), "battlesForPlayer should return list");

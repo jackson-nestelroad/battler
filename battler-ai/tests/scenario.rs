@@ -31,7 +31,6 @@ use battler_service::{
     BattlePreview,
     BattleServiceOptions,
     BattlerService,
-    PlayerValidation,
 };
 use battler_service_client::BattlerServiceClient;
 use battler_test_utils::static_local_data_store;
@@ -314,9 +313,7 @@ impl<'a> BattlerServiceClient for ChoiceRecordingServiceClient<'a> {
     ) -> Result<()> {
         self.inner.update_team(battle, player, team).await
     }
-    async fn validate_player(&self, battle: uuid::Uuid, player: &str) -> Result<PlayerValidation> {
-        self.inner.validate_player(battle, player).await
-    }
+
     async fn start(&self, battle: uuid::Uuid) -> Result<()> {
         self.inner.start(battle).await
     }

@@ -310,12 +310,6 @@ impl<'b> BattlerClientInternal<'b> {
         Ok(())
     }
 
-    async fn ready_for_battle(&self) -> Result<battler_service::PlayerValidation> {
-        self.service
-            .validate_player(self.battle, &self.player)
-            .await
-    }
-
     async fn update_team(&self, team: battler::TeamData) -> Result<()> {
         self.service
             .update_team(self.battle, &self.player, team)
@@ -421,13 +415,6 @@ impl<'b> BattlerClient<'b> {
     pub async fn cancel(&self) {
         self.client.cancel_tx.send(()).ok();
         self.watch_tasks.lock().await.shutdown().await;
-    }
-
-    /// Checks if the player is ready for the battle to start.
-    ///
-    /// If not, [`Self::update_team`] should be used to prepare the player for battle.
-    pub async fn ready_for_battle(&self) -> Result<battler_service::PlayerValidation> {
-        self.client.ready_for_battle().await
     }
 
     /// Updates the player's team.

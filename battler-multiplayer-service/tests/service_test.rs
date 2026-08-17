@@ -481,11 +481,8 @@ async fn proposed_battle_updates_when_team_updates() {
         battler_service
             .update_team(battle, "player-2", invalid_team_data)
             .await,
-        Ok(())
+        Err(_)
     );
-
-    let update = update_rx.recv().await.unwrap();
-    assert_matches::assert_matches!(update.deletion_reason, None);
 }
 
 #[tokio::test(flavor = "multi_thread")]

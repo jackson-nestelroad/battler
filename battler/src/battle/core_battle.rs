@@ -145,11 +145,6 @@ impl<'d> PublicCoreBattle<'d> {
         self.internal.update_team(player_id, team)
     }
 
-    /// Validates a single player.
-    pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
-        self.internal.validate_player(player_id)
-    }
-
     /// Has the battle started?
     pub fn started(&self) -> bool {
         self.internal.started
@@ -215,6 +210,11 @@ impl<'d> PublicCoreBattle<'d> {
     /// viewing for the player's team at other points in the battle and even after the battle ends.
     pub fn player_data(&mut self, player: &str) -> Result<PlayerBattleData> {
         self.internal.player_data(player)
+    }
+
+    /// Validates a player's team for this battle.
+    pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
+        self.internal.validate_player(player_id)
     }
 
     /// Returns all active requests for the battle, indexed by player ID.
@@ -738,15 +738,21 @@ impl<'d> CoreBattle<'d> {
         }
 
         let player = self.player_index_by_id(player_id)?;
-        let player = self.player_mut(player)?;
 
-        // SAFETY: Players, dex, and registry are disjoint. We could use a context instead, but this
-        // method allows the team to be set from initialization logic as well.
-        let player = unsafe { player.unsafely_detach_borrow_mut() };
-        player.update_team(team, &self.dex, &self.registry)?;
+        {
+            let player = self.player_mut(player)?;
+
+            // SAFETY: Players, dex, and registry are disjoint. We could use a context instead, but
+            // this method allows the team to be set from initialization logic as well.
+            let player = unsafe { player.unsafely_detach_borrow_mut() };
+            player.update_team(team, &self.dex, &self.registry)?;
+        }
 
         // Reinitialize players and Mons.
         Self::initialize(&mut self.context())?;
+
+        // Run full dynamic validation (fxlang clauses) now that the team is initialized.
+        Self::validate_player_internal(&mut self.context().player_context(player)?)?;
 
         Ok(())
     }
@@ -884,12 +890,20 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    /// Validates a player's team for this battle.
     pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
         let player = self.player_index_by_id(player_id)?;
         Self::validate_player_internal(&mut self.context().player_context(player)?)
     }
 
     fn validate_player_internal(context: &mut PlayerContext) -> Result<()> {
+        if let Some(cached) = &context.player().validation_status {
+            return match cached {
+                Ok(()) => Ok(()),
+                Err(err) => Err(err.clone().wrap_error()),
+            };
+        }
+
         // Note that we do not call the TeamValidator here, since the player's team is not updated
         // unless it passes validation.
         //
@@ -927,8 +941,12 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().log.commit();
 
         if !problems.is_empty() {
-            return Err(ValidationError::from_iter(problems).wrap_error());
+            let error = ValidationError::from_iter(problems);
+            context.player_mut().validation_status = Some(Err(error.clone()));
+            return Err(error.wrap_error());
         }
+
+        context.player_mut().validation_status = Some(Ok(()));
         Ok(())
     }
 

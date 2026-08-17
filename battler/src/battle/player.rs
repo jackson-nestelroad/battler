@@ -94,6 +94,7 @@ use crate::{
         fxlang,
     },
     error::{
+        ValidationError,
         WrapOptionError,
         WrapResultError,
         general_error,
@@ -464,6 +465,8 @@ pub struct Player {
     pub bag: HashMap<Id, u16>,
     pub dex: PlayerDex,
     pub caught: Vec<MonHandle>,
+
+    pub validation_status: Option<Result<(), ValidationError>>,
 }
 
 // Construction and initialization logic.
@@ -522,6 +525,7 @@ impl Player {
             bag: HashMap::default(),
             dex: player_dex,
             caught: Vec::new(),
+            validation_status: None,
         };
         player.update_team(data.team, dex, registry)?;
         Ok(player)
@@ -582,6 +586,7 @@ impl Player {
 
         self.mons = mons;
         self.bag = bag;
+        self.validation_status = None;
 
         Ok(())
     }
@@ -807,6 +812,8 @@ impl Player {
     /// Clears the player's team.
     pub fn clear_team(&mut self) {
         self.mons.clear();
+        self.bag.clear();
+        self.validation_status = None;
     }
 
     /// Adds a Mon to the player's team.

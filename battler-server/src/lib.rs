@@ -161,10 +161,6 @@ impl<S> RpcPolicies<S> for BattlerRpcPolicies {
             return Ok(());
         }
 
-        if procedure.as_ref().ends_with(".validate_player") {
-            return Ok(());
-        }
-
         log::debug!("WAMP: validating registration for procedure: {}", procedure);
         match session.peer_info().await {
             Some(peer_info) => match peer_info.connection_type {

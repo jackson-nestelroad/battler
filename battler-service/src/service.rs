@@ -33,7 +33,6 @@ use battler::{
     RequestType,
     SideData,
     TeamData,
-    ValidationError,
 };
 use futures_util::lock::Mutex;
 use serde::{
@@ -61,7 +60,6 @@ use crate::{
     Player,
     PlayerPreview,
     PlayerState,
-    PlayerValidation,
     Side,
     SidePreview,
     Timers,
@@ -285,31 +283,8 @@ impl<'d> LiveBattle<'d> {
         self.update_player_state(player)
     }
 
-    fn validate_player(&mut self, player: &str) -> Result<PlayerValidation> {
-        let mut validation = match self.battle.validate_player(player) {
-            Ok(()) => PlayerValidation::default(),
-            Err(err) => match err.downcast::<ValidationError>() {
-                Ok(err) => PlayerValidation {
-                    problems: err.problems().map(|s| s.to_owned()).collect(),
-                },
-                Err(err) => return Err(err),
-            },
-        };
-        if let Ok(player_data) = self.battle.player_data(player) {
-            if player_data.mons.is_empty() {
-                validation.problems.push(format!(
-                    "Validation failed for {player}: Empty team is not allowed."
-                ));
-            }
-        }
-        Ok(validation)
-    }
-
     fn update_player_state(&mut self, player: &str) -> Result<()> {
-        let state = if self
-            .validate_player(&player)
-            .is_ok_and(|validation| validation.problems.is_empty())
-        {
+        let state = if self.battle.validate_player(player).is_ok() {
             PlayerState::Ready
         } else {
             PlayerState::Waiting
@@ -640,10 +615,6 @@ impl<'d> LiveBattleManager<'d> {
         self.flush_logs().await;
 
         Ok(())
-    }
-
-    async fn validate_player(&self, player: &str) -> Result<PlayerValidation> {
-        self.live_battle.lock().await.validate_player(player)
     }
 
     async fn player_data(&self, player: &str) -> Result<PlayerBattleData> {
@@ -1332,12 +1303,6 @@ impl<'d> BattlerService<'d> {
         log::info!("Updating team for {player} in battle {battle}");
         let battle = self.find_battle_or_error(battle).await?;
         battle.update_team(player, team).await
-    }
-
-    /// Validates a player in a battle.
-    pub async fn validate_player(&self, battle: Uuid, player: &str) -> Result<PlayerValidation> {
-        let battle = self.find_battle_or_error(battle).await?;
-        battle.validate_player(player).await
     }
 
     /// Starts a battle.
