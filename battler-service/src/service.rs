@@ -974,7 +974,11 @@ impl<'d> LiveBattleManager<'d> {
                 };
 
                 if finished {
-                    battle.handle_timer_finished(&timer_type).ok();
+                    if let Err(err) = battle.handle_timer_finished(&timer_type) {
+                        log::error!(
+                            "Failed to handle finished timer {timer_type:?} for battle {uuid}: {err:?}"
+                        );
+                    }
                 }
             }
             Self::flush_battle_logs(&battle).await;
