@@ -87,12 +87,26 @@ impl WampError {
 
 impl Into<WampError> for Error {
     fn into(self) -> WampError {
-        WampError::new(uri_for_error(&self), format!("{self:#}"))
+        match self.downcast::<WampError>() {
+            Ok(error) => error,
+            Err(err) => {
+                if let Some(error) = err.downcast_ref::<ChannelTransmittableError>() {
+                    return error.error.clone();
+                }
+                WampError::new(uri_for_error(&err), format!("{err:#}"))
+            }
+        }
     }
 }
 
 impl Into<WampError> for &Error {
     fn into(self) -> WampError {
+        if let Some(error) = self.downcast_ref::<WampError>() {
+            return error.clone();
+        }
+        if let Some(error) = self.downcast_ref::<ChannelTransmittableError>() {
+            return error.error.clone();
+        }
         WampError::new(uri_for_error(self), format!("{self:#}"))
     }
 }

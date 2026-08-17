@@ -28,6 +28,7 @@ export interface BaseBattleSession {
   engineLogs: string[];
   choiceSubmitted?: boolean;
   error: string | null;
+  validationProblems?: string[] | null;
   choiceError: string | null;
   isLoading: boolean;
   serviceBattle: Battle | null;
@@ -224,12 +225,20 @@ const battlesSlice = createSlice({
         rebuildActiveTimers(battle);
       }
     },
-    setBattleError(state, action: PayloadAction<{ battleId: string; error: string | null }>) {
-      const { battleId: rawId, error } = action.payload;
+    setBattleError(
+      state,
+      action: PayloadAction<{
+        battleId: string;
+        error: string | null;
+        validationProblems?: string[] | null;
+      }>,
+    ) {
+      const { battleId: rawId, error, validationProblems } = action.payload;
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.error = error;
+        battle.validationProblems = validationProblems || null;
         if (error) {
           battle.isLoading = false;
         }

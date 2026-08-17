@@ -114,7 +114,12 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
         )}
 
         {/* Validation / error reporting */}
-        {battleSession?.error && <ErrorBanner message={battleSession.error} />}
+        {battleSession?.error && (
+          <ErrorBanner
+            message={battleSession.error}
+            details={battleSession.validationProblems}
+          />
+        )}
       </div>
     </div>
   );

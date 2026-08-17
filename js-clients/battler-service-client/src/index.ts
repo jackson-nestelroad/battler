@@ -1,11 +1,5 @@
 import autobahn from "autobahn";
-import {
-  Battle,
-  BattlePreview,
-  BattleServiceOptions,
-  LogEntry,
-  PlayerValidation,
-} from "./bindings/index.js";
+import { Battle, BattlePreview, BattleServiceOptions, LogEntry } from "./bindings/index.js";
 
 import {
   WampSessionProvider,
@@ -21,6 +15,16 @@ export * from "./bindings/index.js";
 
 import { CoreBattleOptions, PlayerBattleData, Request, TeamData } from "battler-types";
 export type RequestType = Request["type"];
+
+export class ValidationError extends Error {
+  constructor(
+    message: string,
+    public problems: string[],
+  ) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
 
 export class BattlerServiceClient {
   constructor(private provider: WampSessionProvider) {}
@@ -80,13 +84,19 @@ export class BattlerServiceClient {
   }
 
   async updateTeam(battleId: string, player: string, team: TeamData): Promise<void> {
-    await this.session.call(
-      `com.battler.battler_service.battles.${uuidForUri(battleId)}.update_team`,
-      [player, safeJsonStringify(team)],
-    );
+    try {
+      await this.session.call(
+        `com.battler.battler_service.battles.${uuidForUri(battleId)}.update_team`,
+        [player, safeJsonStringify(team)],
+      );
+    } catch (err: any) {
+      if (err?.error === "com.battler.battler_service.error.validation_failed") {
+        const problems = err.args?.map((arg: any) => String(arg)) || [];
+        throw new ValidationError(err.message || "Validation failed", problems);
+      }
+      throw err;
+    }
   }
-
-
 
   async start(battleId: string): Promise<void> {
     await this.session.call(`com.battler.battler_service.battles.${uuidForUri(battleId)}.start`);

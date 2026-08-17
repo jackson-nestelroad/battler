@@ -11,7 +11,7 @@ import type {
   ProposedBattleRejection,
 } from "battler-multiplayer-service-client";
 import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
-import { BattlerServiceClient, type BattlePreview } from "battler-service-client";
+import { BattlerServiceClient, ValidationError, type BattlePreview } from "battler-service-client";
 import type { MonData } from "battler-types";
 import { WampSessionProvider } from "battler-wamp-client";
 import {
@@ -128,7 +128,14 @@ function handleBattleError(
     console.warn(`[WAMP] [Battle: ${battleId}] ${message}:`, error);
   }
 
-  dispatch(setBattleError({ battleId, error: uiErrorMsg }));
+  let validationProblems = null;
+  let finalUiErrorMsg = uiErrorMsg;
+  if (error instanceof ValidationError) {
+    validationProblems = error.problems;
+    finalUiErrorMsg = prefixMessageOnUi ? `${message}: Validation failed` : "Validation failed";
+  }
+
+  dispatch(setBattleError({ battleId, error: finalUiErrorMsg, validationProblems }));
 
   if (errorUri === "com.battler.battler_service.error.battle_not_found") {
     dispatch(removeSpectatingBattle(battleId));

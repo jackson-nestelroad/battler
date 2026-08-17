@@ -568,6 +568,15 @@ input[type="checkbox"] {
   word-break: break-word;
 }
 
+.alert-details {
+  margin: var(--spacing-xs) 0 0 var(--spacing-m);
+  padding: 0;
+}
+
+.alert-detail-item {
+  font-size: var(--font-size-s);
+}
+
 .alert-close {
   background: transparent;
   border: none;
