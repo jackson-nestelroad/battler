@@ -1240,7 +1240,7 @@ impl Player {
         let position = Self::get_position_for_next_choice(context, !chosen_by_player)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
-                if let Some(mon) = context.player().active_mon_handle(position) {
+                if let Some(mon) = context.player().active_or_exited_mon_handle(position) {
                     let mut context = context.mon_context(mon)?;
                     if context.mon().switch_state.needs_switch.is_some() {
                         if context.player().choice.forced_passes_left == 0 {
