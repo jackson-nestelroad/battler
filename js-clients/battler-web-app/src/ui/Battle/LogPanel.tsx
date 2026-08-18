@@ -1,11 +1,12 @@
+import type { FormattedUiLog } from "battler-log-formatter";
 import type { UiLogEntry } from "battler-state";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
 
 import styles from "./LogPanel.module.scss";
 
 interface LogPanelProps {
-  visibleLogs: string[];
+  visibleLogs: FormattedUiLog[];
   uiLogs: UiLogEntry[];
   engineLogs?: string[];
 }
@@ -23,9 +24,9 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
   }, [visibleLogs, uiLogs, engineLogs, mode]);
 
   return (
-    <div className={`${styles.logPanel} ${isCollapsed ? styles.collapsed : ""}`}>
-      <header className={styles.header}>
-        <div className={styles.headerTitleRow}>
+    <div className={`card ${styles.logPanel} ${isCollapsed ? styles.collapsed : ""}`}>
+      <header className={`card-header ${styles.header}`}>
+        <div className="flex-row align-center gap-m">
           <button
             type="button"
             className={styles.collapseToggle}
@@ -53,7 +54,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
         )}
 
         {mode === "engine" && (
-          <div className={styles.engineList}>
+          <div className="flex-col gap-xs">
             {engineLogs.map((log, index) => (
               <div key={index} className={styles.engineLogLine}>
                 <span className={styles.indicator}>#</span>
@@ -65,11 +66,26 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
         )}
 
         {mode === "text" && (
-          <div className={styles.logsList}>
+          <div className="flex-col gap-s">
             {visibleLogs.map((log, index) => (
-              <div key={index} className={styles.logLine}>
+              <div key={index} className={`${styles.logLine} ${styles[log.category] || ""}`}>
                 <span className={styles.indicator}>&gt;</span>
-                <span className={styles.text}>{log}</span>
+                <span className={styles.text}>
+                  {log.tokens.map((token, i) => {
+                    if (token.type === "text") {
+                      return <Fragment key={i}>{token.value}</Fragment>;
+                    }
+                    const ctxVal = log.context[token.value];
+                    if (typeof ctxVal === "string") return <Fragment key={i}>{ctxVal}</Fragment>;
+                    if (Array.isArray(ctxVal)) {
+                      return <Fragment key={i}>{ctxVal.map(v => typeof v === "string" ? v : v.text).join(", ")}</Fragment>;
+                    }
+                    if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) {
+                      return <Fragment key={i}>{ctxVal.text}</Fragment>;
+                    }
+                    return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
+                  })}
+                </span>
               </div>
             ))}
             {visibleLogs.length === 0 && <p className={styles.emptyLogs}>None</p>}

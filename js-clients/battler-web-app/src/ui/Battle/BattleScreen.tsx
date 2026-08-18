@@ -4,6 +4,7 @@ import { selectBattle, setBattleError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
 import { formatUiLogEntry } from "../../utils/logFormatter";
+import type { FormattedUiLog } from "battler-log-formatter";
 import BattleDetailsGrid from "../Common/BattleDetailsGrid";
 import CopyableId from "../Common/CopyableId";
 import ErrorBanner from "../Common/ErrorBanner";
@@ -89,9 +90,9 @@ export default function BattleScreen() {
   const visibleLogs = useMemo(() => {
     if (!battleSession || !battleSession.battleState) return [];
     return battleSession.uiLogs
-      .map((e) => formatUiLogEntry(e, battleSession.battleState!))
-      .filter((formatted): formatted is string => formatted !== null);
-  }, [battleSession]);
+      .map((e) => formatUiLogEntry(e, battleSession.battleState!, connection.playerId || undefined))
+      .filter((formatted): formatted is FormattedUiLog => formatted !== null);
+  }, [battleSession, connection.playerId]);
 
   if (!battleId) {
     return (
