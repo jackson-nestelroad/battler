@@ -22,7 +22,7 @@ import ReplayPanel from "./ReplayPanel";
 export default function BattleScreen() {
   const dispatch = useAppDispatch();
   const [showDebug, setShowDebug] = useState(false);
-  const [debugTab, setDebugTab] = useState<"state" | "request" | "player" | "metadata">("state");
+  const [debugTab, setDebugTab] = useState<"state" | "ui_log" | "request" | "player" | "metadata">("state");
 
   const battleId = useAppSelector((state) => state.battles.activeBattleId);
   const currentView = useAppSelector((state) => state.battles.currentView);
@@ -291,6 +291,7 @@ export default function BattleScreen() {
             onChange={setDebugTab}
             options={[
               { value: "state", label: "State" },
+              { value: "ui_log", label: "UI Log" },
               { value: "request", label: "Request" },
               { value: "player", label: "Player" },
               { value: "metadata", label: "Metadata" },
@@ -301,7 +302,21 @@ export default function BattleScreen() {
               <>
                 <h4>BattleState</h4>
                 <pre className={styles.debugJson}>
-                  {JSON.stringify(battleSession.battleState, null, 2)}
+                  {JSON.stringify(
+                    battleSession.battleState
+                      ? { ...battleSession.battleState, ui_log: undefined }
+                      : null,
+                    null,
+                    2
+                  )}
+                </pre>
+              </>
+            )}
+            {debugTab === "ui_log" && (
+              <>
+                <h4>UI Log</h4>
+                <pre className={styles.debugJson}>
+                  {JSON.stringify(battleSession.battleState?.ui_log, null, 2)}
                 </pre>
               </>
             )}
