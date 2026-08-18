@@ -33,41 +33,17 @@ function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undef
   let id = "";
 
   if ("Active" in monRef && monRef.Active) {
-    if (state) {
-      const { side, position } = monRef.Active;
-      try {
-        let activeRef = activeMonByPosition(state, side, position);
-        
-        if (!activeRef && state.field.sides[side]) {
-          const sideObj = state.field.sides[side];
-          if (sideObj.players) {
-            for (const p of Object.values(sideObj.players)) {
-              if (p && p.mons) {
-                for (let i = 0; i < p.mons.length; i++) {
-                  const m = p.mons[i];
-                  if (m && m.fainted) {
-                    activeRef = { player: p.id, mon_index: i, battle_appearance_index: Math.max(0, m.battle_appearances.length - 1) };
-                    break;
-                  }
-                }
-                if (activeRef) break;
-              }
-            }
-          }
-        }
-
-        if (activeRef) {
-          playerId = activeRef.player;
-          id = `${playerId}-active-${position}`;
-          const appearance = monPhysicalAppearance(state, activeRef);
-          if (appearance?.name) {
-            name = appearance.name;
-          }
-        }
-      } catch (e) {
-        // ignore
-      }
+    if (monRef.Active.name) {
+      name = monRef.Active.name;
     }
+    if (monRef.Active.player) {
+      playerId = monRef.Active.player;
+    }
+    const { position } = monRef.Active;
+    if (playerId) {
+      id = `${playerId}-active-${position}`;
+    }
+
   } else if ("Inactive" in monRef && monRef.Inactive) {
     name = monRef.Inactive.name || "Mon";
     playerId = monRef.Inactive.player || "";

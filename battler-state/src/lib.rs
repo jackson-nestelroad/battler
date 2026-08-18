@@ -59,6 +59,7 @@ mod export_ts_bindings {
         Side::export().unwrap();
         Field::export().unwrap();
         ui::FieldPosition::export().unwrap();
+        ui::ActiveMonReference::export().unwrap();
         ui::MonReference::export().unwrap();
         ui::Mon::export().unwrap();
         ui::MoveTarget::export().unwrap();

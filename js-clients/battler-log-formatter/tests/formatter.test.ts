@@ -22,7 +22,7 @@ describe("LogFormatter", () => {
       Move: {
         name: "Thunderbolt",
         mon: {
-          Active: { side: 0, position: 0 }
+          Active: { side: 0, position: 0, name: "Pikachu", player: "p2" }
         }
       }
     };

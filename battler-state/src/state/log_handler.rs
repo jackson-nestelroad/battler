@@ -136,9 +136,15 @@ fn mon_name_to_mon_for_ui_log(state: &mut BattleState, mon: &MonName) -> Result<
             let index = position
                 .checked_sub(1)
                 .ok_or_else(|| Error::msg("position must be greater than 0"))?;
-            Ok(ui::Mon::Active(ui::FieldPosition {
-                side,
-                position: index,
+            Ok(ui::Mon::Active(ui::ActiveMonReference {
+                position: ui::FieldPosition {
+                    side,
+                    position: index,
+                },
+                reference: ui::MonReference {
+                    player: mon.player.clone(),
+                    name: mon.name.clone(),
+                },
             }))
         }
         None => Ok(ui::Mon::Inactive(ui::MonReference {

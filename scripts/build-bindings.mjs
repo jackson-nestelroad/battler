@@ -11,7 +11,7 @@ console.log("=== Starting TypeScript Bindings Build Pipeline ===");
 
 // 1. Generate TypeScript bindings from Rust crates
 console.log("Generating types from Rust crates...");
-const crates = ["battler-choice", "battler", "battler-service", "battler-multiplayer-service"];
+const crates = ["battler-choice", "battler", "battler-state", "battler-service", "battler-multiplayer-service"];
 
 for (const crate of crates) {
   console.log(`Running cargo test for ${crate}...`);

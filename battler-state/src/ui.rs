@@ -33,9 +33,19 @@ pub struct MonReference {
 /// be referred to by name.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
+pub struct ActiveMonReference {
+    #[serde(flatten)]
+    pub position: FieldPosition,
+    #[serde(flatten)]
+    pub reference: MonReference,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export, rename = "UiMon"))]
 pub enum Mon {
-    Active(FieldPosition),
+    Active(ActiveMonReference),
     Inactive(MonReference),
 }
 
