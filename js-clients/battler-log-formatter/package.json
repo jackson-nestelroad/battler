@@ -13,14 +13,15 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "extract-logs": "tsx tests/scraper.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "i18next": "^23.0.0",
-    "battler-state": "^0.1.0"
+    "battler-state": "^0.1.0",
+    "i18next": "^23.0.0"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

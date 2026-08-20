@@ -190,7 +190,12 @@ pub enum UiLogEntry {
         effect: EffectData,
     },
     /// A Mon's stat received a boost (or drop).
-    StatBoost { mon: Mon, stat: String, by: i64 },
+    StatBoost {
+        mon: Mon,
+        stat: String,
+        by: i64,
+        effect: EffectData,
+    },
     /// A Mon switched in.
     Switch {
         title: String,

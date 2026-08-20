@@ -1,3 +1,4 @@
+import { getLogPatterns } from "../src/pattern_reconstructor.js";
 import fs from "fs";
 import path from "path";
 import { describe, it, expect } from "vitest";
@@ -73,10 +74,20 @@ describe("Exhaustive Log Coverage", () => {
     const uiLogEntry = lastTurnLogs[lastTurnLogs.length - 1];
     
     // 3. Format it
-    const formatted = formatter.format(uiLogEntry, alteredState);
+    const formattedArray = formatter.format(uiLogEntry, alteredState);
+    const formatted = formattedArray.length > 0 ? formattedArray[0] : null;
+
+    const rawMapped = Object.values(uiLogEntry)[0] as any;
+    const isSilent = rawMapped?.effect?.additional?.silent !== undefined;
+
+    if (isSilent) {
+      expect(formattedArray.length).toBe(0);
+      return;
+    }
 
     // 4. Assert mapping exists
     if (!formatted) {
+      console.log(`PATTERN IN VITEST: ${getLogPatterns(uiLogEntry).join(' OR ')}`);
       console.log(`UNMAPPED LOG [${logString}]:`, JSON.stringify(uiLogEntry));
     }
     expect(formatted).not.toBeNull();
@@ -89,7 +100,7 @@ describe("Exhaustive Log Coverage", () => {
     }
 
     // 5. Snapshot test!
-    const stringifiedLog = formatted!.tokens.map((token: LogToken) => {
+    const stringifiedLog = `[${formatted!.category}] ` + formatted!.tokens.map((token: LogToken) => {
       if (token.type === "text") return token.value;
       const ctxVal = formatted!.context[token.value];
       if (typeof ctxVal === "string") return ctxVal;
@@ -103,5 +114,6 @@ describe("Exhaustive Log Coverage", () => {
     }).join("");
     
     expect(stringifiedLog).toMatchSnapshot();
+    expect(stringifiedLog).not.toContain("[UNHANDLED]");
   });
 });

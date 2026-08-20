@@ -87,6 +87,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
   const key = Object.keys(entry)[0];
   const data = (entry as Record<string, any>)[key];
 
+  const mapped = (() => {
   switch (key) {
     case "Move": {
       return {
@@ -338,4 +339,10 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
     default:
       return null;
   }
+  })() as AnyMappedLog | null;
+
+  if (mapped && data.effect) {
+    mapped.effect = data.effect;
+  }
+  return mapped;
 }

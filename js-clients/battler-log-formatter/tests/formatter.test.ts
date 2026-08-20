@@ -9,9 +9,10 @@ describe("LogFormatter", () => {
     const entry: any = "TurnLimit";
     const result = formatter.format(entry);
     
-    expect(result).not.toBeNull();
-    expect(result?.category).toBe(LogCategory.Primary);
-    expect(result?.tokens).toEqual([
+    expect(result.length).toBeGreaterThan(0);
+    const log = result[result.length - 1];
+    expect(log.category).toBe(LogCategory.Primary);
+    expect(log.tokens).toEqual([
       { type: "text", value: "The turn limit has been reached." }
     ]);
   });
@@ -40,16 +41,17 @@ describe("LogFormatter", () => {
     };
     
     const result = formatter.format(entry, state);
-    expect(result).not.toBeNull();
-    expect(result?.category).toBe(LogCategory.Primary);
+    expect(result.length).toBeGreaterThan(0);
+    const log = result[result.length - 1];
+    expect(log.category).toBe(LogCategory.Primary);
     
     // Because localPlayerId is p1, and the mon belongs to p2, it should format as a foe.
     // wait, we mocked the state to have player id 'p2', which is not 'p1'.
     // so it should use mon.foe -> "The opposing Pikachu"
-    expect(result?.context.MON).toEqual({ text: "the opposing Pikachu", id: "p2-active-0", noAutoCapitalize: false });
-    expect(result?.context.MOVE).toBe("Thunderbolt");
+    expect(log.context.MON).toEqual({ text: "the opposing Pikachu", id: "p2-active-0", noAutoCapitalize: false });
+    expect(log.context.MOVE).toBe("Thunderbolt");
     
-    expect(result?.tokens).toEqual([
+    expect(log.tokens).toEqual([
       { type: "variable", value: "__CAPITALIZED_MON" },
       { type: "text", value: " used " },
       { type: "variable", value: "MOVE" },

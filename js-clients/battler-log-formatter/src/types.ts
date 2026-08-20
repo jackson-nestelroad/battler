@@ -5,7 +5,8 @@ export type LogTemplateKey = keyof typeof en.logs;
 export enum LogCategory {
   Primary = "primary",     // Main actions (Moves, Switches, Faints)
   Secondary = "secondary", // Modifiers to primary actions (Critical hit, Super effective)
-  Hint = "hint"            // Side-effects, abilities, weather, etc.
+  Hint = "hint",           // Side-effects, abilities, weather, etc.
+  Ability = "ability",     // Standalone ability activations
 }
 
 export interface ContextVar {
@@ -28,10 +29,13 @@ export type RequiredContext<K extends LogTemplateKey> =
     ? { count?: number }
     : Record<ExtractVariables<typeof en.logs[K]>, ContextValue> & { count?: number };
 
+import type { EffectData } from "battler-state";
+
 export interface MappedLogBase<K extends LogTemplateKey> {
   key: K;
   category: LogCategory;
   context: RequiredContext<K>;
+  effect?: EffectData;
 }
 
 export type AnyMappedLog = {

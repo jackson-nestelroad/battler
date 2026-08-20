@@ -921,6 +921,7 @@ fn alter_battle_state_for_entry(
                 mon: mon_name_to_mon_for_ui_log(state, &mon)?,
                 stat,
                 by,
+                effect: effect_data_from_log_entry(state, entry)?,
             });
         }
         "cannotescape" => {

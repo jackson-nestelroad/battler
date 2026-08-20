@@ -1,3 +1,4 @@
+import { getLogPatterns } from './pattern_reconstructor.js';
 import type { UiLogEntry, BattleState } from "battler-state";
 import i18next from "./i18n.js";
 import { LogCategory } from "./types.js";
@@ -39,17 +40,122 @@ export class LogFormatter {
   constructor(options: MapperOptions = {}) {
     this.options = options;
   }
-
-  public format(entry: UiLogEntry, state?: BattleState): FormattedUiLog | null {
+  public format(entry: UiLogEntry, state?: BattleState): FormattedUiLog[] {
     const mapped = mapUiLogEntry(entry, state, this.options);
-    if (!mapped) return null;
+    if (!mapped) return [];
+    
+    if (mapped.effect?.additional?.silent !== undefined) {
+      return [];
+    }
+    
+    // Auto-augment context with raw variables so fallback translations always have them
+    const ctx = mapped.context as Record<string, ContextValue>;
+    if (mapped.effect) {
+        if (mapped.effect.effect) {
+            const e = mapped.effect.effect;
+            if (e.effect_type && e.name) {
+                const key = e.effect_type.toUpperCase();
+                if (ctx[key] === undefined) {
+                    ctx[key] = e.name;
+                }
+            }
+        }
+        
+        if (mapped.effect.source_effect) {
+            const e = mapped.effect.source_effect;
+            if (e.effect_type && e.name) {
+                const key = `FROM_${e.effect_type.toUpperCase()}`;
+                if (ctx[key] === undefined) {
+                    ctx[key] = e.name;
+                }
+            }
+        }
+
+        if (mapped.effect.additional) {
+            for (const [k, v] of Object.entries(mapped.effect.additional)) {
+                const upperK = k.toUpperCase();
+                if (ctx[upperK] === undefined && v !== undefined) {
+                    ctx[upperK] = String(v);
+                }
+            }
+        }
+    }
+    
+    // Also auto-augment from any other raw top-level fields (e.g. exp in Experience, stats in LevelUp)
+    const rawData = typeof entry === 'string' ? null : Object.values(entry)[0] as any;
+    if (rawData && typeof rawData === 'object') {
+        for (const [k, v] of Object.entries(rawData)) {
+            // Skip large domain objects that are explicitly mapped
+            if (k === 'effect' || k === 'mon' || k === 'target' || k === 'source' || k === 'title') continue;
+            
+            if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+                const upperK = k.toUpperCase();
+                if (ctx[upperK] === undefined) {
+                    ctx[upperK] = String(v);
+                }
+            } else if (v && typeof v === 'object' && !Array.isArray(v)) {
+                // If it's a map of primitive values (like stats: { atk: 10 })
+                // ensure it's not a Mon object by checking for known Mon keys
+                if (!('Active' in v) && !('Bench' in v) && !('Party' in v)) {
+                    for (const [subK, subV] of Object.entries(v)) {
+                        if (typeof subV === 'string' || typeof subV === 'number' || typeof subV === 'boolean') {
+                            const upperSubK = subK.toUpperCase();
+                            if (ctx[upperSubK] === undefined) {
+                                ctx[upperSubK] = String(subV);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     const count = mapped.context.count;
     const templateArgs = count !== undefined ? { count } : undefined;
 
-    // Use i18next to get the string, passing any primitive args like count for plurals
-    const template = i18next.t(`logs.${mapped.key}`, templateArgs);
-    if (!template || template === `logs.${mapped.key}`) return null;
+    let templateKey = `logs.${mapped.key}`;
+    const patterns = getLogPatterns(entry);
+    
+    if (patterns && patterns.length > 0) {
+        let found = false;
+        for (const pattern of patterns) {
+            const permutations = [pattern];
+            // If pattern has mon:*, try target:* and of:*
+            if (pattern.includes('mon:*')) {
+                permutations.push(pattern.replace('mon:*', 'target:*'));
+                permutations.push(pattern.replace('mon:*', 'of:*'));
+            } else if (pattern.includes('target:*')) {
+                permutations.push(pattern.replace('target:*', 'mon:*'));
+                permutations.push(pattern.replace('target:*', 'of:*'));
+            } else if (pattern.includes('of:*')) {
+                permutations.push(pattern.replace('of:*', 'mon:*'));
+                permutations.push(pattern.replace('of:*', 'target:*'));
+            }
+            
+            for (let p of permutations) {
+                const parts = p.split('|');
+                const title = parts.shift()!;
+                const tags = parts.filter(x => !x.startsWith('[') && !x.endsWith(']'));
+                const flags = parts.filter(x => x.startsWith('[') && x.endsWith(']'));
+                tags.sort();
+                flags.sort();
+                p = [title, ...tags, ...flags].join('|');
+                
+                const safePattern = p.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
+                if (i18next.exists(`logs.${safePattern}`)) {
+                    templateKey = `logs.${safePattern}`;
+                    found = true;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+    }
+
+
+    const template = i18next.t(templateKey, templateArgs);
+    // If the template is literally empty string, or it doesn't exist (returns the key)
+    if (!template || template === templateKey) return [];
     
     const result: FormattedUiLog = {
       key: mapped.key,
@@ -72,7 +178,6 @@ export class LogFormatter {
         if (capitalizedVal !== val) {
           result.tokens = [...result.tokens];
           result.context = { ...result.context };
-          // Store it under a new key to avoid mutating shared variables
           const newKey = `__CAPITALIZED_${firstToken.value}`;
           result.context[newKey] = capitalizedVal;
           result.tokens[0] = { ...firstToken, value: newKey };
@@ -80,6 +185,21 @@ export class LogFormatter {
       }
     }
 
-    return result;
+    const logs: FormattedUiLog[] = [];
+    
+    // Inject synthetic Ability log if this log was triggered by an ability
+    if (mapped.effect?.effect?.effect_type === "Ability" && mapped.effect.effect.name) {
+      // Create a synthetic ability log
+      const abilityLog: FormattedUiLog = {
+        tokens: parseTemplateToTokens(`[${mapped.effect.effect.name}]`),
+        category: LogCategory.Ability,
+        context: {}
+      };
+      logs.push(abilityLog);
+    }
+    
+    logs.push(result);
+    return logs;
   }
+
 }

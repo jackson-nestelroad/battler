@@ -1,64 +1,7 @@
+import { maskLog } from '../src/utils.js';
 import fs from "fs";
 import path from "path";
 
-export interface LogDefinition {
-  name: string;
-  required: string[];
-  optional: string[];
-  flags: string[];
-}
-
-export function parseBattleLogsMd(filePath: string): LogDefinition[] {
-  const content = fs.readFileSync(filePath, "utf-8");
-  const definitions: LogDefinition[] = [];
-  
-  const sections = content.split("#### `");
-  sections.shift(); // Remove content before first log
-
-  for (const section of sections) {
-    const lines = section.split("\n");
-    const headerLine = lines[0];
-    const nameMatches = headerLine.match(/`?([a-zA-Z0-9]+)`?/g);
-    if (!nameMatches) continue;
-
-    const names = nameMatches.map(n => n.replace(/`/g, "").trim()).filter(n => n.length > 0 && n !== "and");
-
-    const required: string[] = [];
-    const optional: string[] = [];
-    const flags: string[] = [];
-
-    let currentSection: "required" | "optional" | "flags" | null = null;
-
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (line.startsWith("#### `") || line.startsWith("### ")) break;
-
-      if (line.includes("- **Required fields**:")) {
-        currentSection = "required";
-      } else if (line.includes("- **Optional fields**:") || line.includes("- **Optional fields / flags**:")) {
-        currentSection = "optional";
-      } else if (line.includes("- **Optional flags**:")) {
-        currentSection = "flags";
-      } else if (line.startsWith("- `") && currentSection) {
-        const match = line.match(/^- `([^:`]+)/);
-        if (match) {
-          const key = match[1];
-          if (currentSection === "required") required.push(key);
-          else if (currentSection === "optional") optional.push(key);
-          else if (currentSection === "flags") flags.push(key);
-        }
-      } else if (line.startsWith("- **Examples**:")) {
-        currentSection = null;
-      }
-    }
-
-    for (const name of names) {
-      definitions.push({ name, required, optional, flags });
-    }
-  }
-
-  return definitions;
-}
 
 const RUST_TESTS_DIR = path.resolve(import.meta.dirname, "../../../battler/tests");
 
@@ -77,9 +20,11 @@ function readAllRsFiles(dir: string): string[] {
   return results;
 }
 
-function extractLogsFromRs(): string[] {
+
+function extractLogsFromRs(): { raw: string[], patterns: Set<string> } {
   const files = readAllRsFiles(RUST_TESTS_DIR);
   const allLogs: Set<string> = new Set();
+  const allPatterns: Set<string> = new Set();
 
   for (const file of files) {
     const content = fs.readFileSync(file, "utf-8");
@@ -93,6 +38,10 @@ function extractLogsFromRs(): string[] {
           for (const item of arr) {
             if (typeof item === "string") {
               allLogs.add(item);
+              const pattern = maskLog(item);
+              if (pattern) {
+                allPatterns.add(pattern);
+              }
             }
           }
         }
@@ -101,36 +50,72 @@ function extractLogsFromRs(): string[] {
     }
   }
 
-  return Array.from(allLogs).sort();
+  return { 
+    raw: Array.from(allLogs).sort(), 
+    patterns: allPatterns 
+  };
 }
 
 function generateMatrix() {
-  const mdDefs = parseBattleLogsMd(path.resolve(import.meta.dirname, "../../../battle-logs.md"));
-  const rustLogs = extractLogsFromRs();
+  const extracted = extractLogsFromRs();
 
   const finalMatrix: string[] = [];
-  const missingDefs: string[] = [];
 
-  for (const def of mdDefs) {
-    const matchingLogs = rustLogs.filter(log => log === def.name || log.startsWith(def.name + "|"));
-    
-    if (matchingLogs.length === 0) {
-      missingDefs.push(def.name);
-    } else {
-      finalMatrix.push(...matchingLogs.slice(0, 3));
-    }
+  for (const pattern of Array.from(extracted.patterns).sort()) {
+    // Find up to 3 raw logs that match this pattern.
+    // The mask algorithm drops details so we do a fuzzy match or just re-run maskLog on raw logs.
+    const matching = extracted.raw.filter(log => maskLog(log) === pattern);
+    finalMatrix.push(...matching.slice(0, 3));
   }
 
   fs.writeFileSync(path.resolve(import.meta.dirname, "logs-matrix.json"), JSON.stringify(finalMatrix, null, 2));
+  fs.writeFileSync(path.resolve(import.meta.dirname, "unique-log-patterns.txt"), Array.from(extracted.patterns).sort().join("\n"));
   
-  console.log(`Generated ${finalMatrix.length} log permutations in logs-matrix.json`);
-  if (missingDefs.length > 0) {
-    console.log(`WARNING: Found 0 Rust test examples for the following ${missingDefs.length} logs:`);
-    console.log(missingDefs.join(", "));
+  console.log(`Generated ${extracted.patterns.size} unique patterns in unique-log-patterns.txt`);
+  console.log(`Generated ${finalMatrix.length} raw examples in logs-matrix.json`);
+
+  // Auto-discover unhandled logs and inject them into en.ts
+  const enTsPath = path.resolve(import.meta.dirname, "../locales/en.ts");
+  let enTsContent = fs.readFileSync(enTsPath, "utf-8");
+  
+  const logsRegex = /("logs": \{)([\s\S]*?)(\n  \})/m;
+  const match = enTsContent.match(logsRegex);
+  if (match) {
+      const lines = match[2].split('\n').filter(l => l.trim().length > 0);
+      const currentLogs: Record<string, string> = {};
+      for (const line of lines) {
+          const parts = line.split(':');
+          if (parts.length >= 2) {
+              const keyMatch = parts[0].match(/"([^"]+)"/);
+              if (keyMatch) {
+                  const key = keyMatch[1];
+                  const value = parts.slice(1).join(':').trim().replace(/,$/, '');
+                  currentLogs[key] = value;
+              }
+          }
+      }
+
+      let added = false;
+      for (const pattern of Array.from(extracted.patterns)) {
+          const safePattern = pattern.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
+          if (!(safePattern in currentLogs)) {
+              currentLogs[safePattern] = '"[UNHANDLED]"';
+              added = true;
+              console.log(`Auto-added missing log translation: ${safePattern}`);
+          }
+      }
+
+      if (added) {
+          const newLines = Object.keys(currentLogs).sort((a,b) => a.localeCompare(b)).map(k => `    "${k}": ${currentLogs[k]},`);
+          const newBlock = `${match[1]}\n${newLines.join('\n')}${match[3]}`;
+          enTsContent = enTsContent.replace(logsRegex, newBlock);
+          fs.writeFileSync(enTsPath, enTsContent);
+          console.log("Updated locales/en.ts with missing [UNHANDLED] logs.");
+      }
+  } else {
+      console.error("Could not parse en.ts logs block");
   }
 }
-
-import { fileURLToPath } from 'url';
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   generateMatrix();

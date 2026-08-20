@@ -1258,7 +1258,8 @@ mod state_test {
                     }
                 }),
                 stat: "atk".to_owned(),
-                by: 2
+                by: 2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
             }])
         );
         assert_eq!(
@@ -1275,7 +1276,8 @@ mod state_test {
                     }
                 }),
                 stat: "def".to_owned(),
-                by: -1
+                by: -1,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
             }])
         );
         assert_eq!(
@@ -2073,7 +2075,8 @@ mod state_test {
                         }
                     }),
                     stat: "atk".to_owned(),
-                    by: 2
+                    by: 2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1, position: 0 }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::Effect {
                     title: "copyboosts".to_owned(),
@@ -2180,7 +2183,8 @@ mod state_test {
                         }
                     }),
                     stat: "atk".to_owned(),
-                    by: 2
+                    by: 2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::StatBoost {
                     mon: ui::Mon::Active(ui::ActiveMonReference {
@@ -2194,7 +2198,8 @@ mod state_test {
                         }
                     }),
                     stat: "def".to_owned(),
-                    by: 1
+                    by: 1,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1, position: 0 }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::Effect {
                     title: "swapboosts".to_owned(),
@@ -2301,7 +2306,8 @@ mod state_test {
                         }
                     }),
                     stat: "atk".to_owned(),
-                    by: 2
+                    by: 2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::StatBoost {
                     mon: ui::Mon::Active(ui::ActiveMonReference {
@@ -2315,7 +2321,8 @@ mod state_test {
                         }
                     }),
                     stat: "def".to_owned(),
-                    by: 1
+                    by: 1,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1, position: 0 }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::Effect {
                     title: "swapboosts".to_owned(),
@@ -2578,7 +2585,8 @@ mod state_test {
                         }
                     }),
                     stat: "atk".to_owned(),
-                    by: 2
+                    by: 2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::StatBoost {
                     mon: ui::Mon::Active(ui::ActiveMonReference {
@@ -2592,7 +2600,8 @@ mod state_test {
                         }
                     }),
                     stat: "def".to_owned(),
-                    by: -1
+                    by: -1,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::Effect {
                     title: "invertboosts".to_owned(),
@@ -2693,7 +2702,8 @@ mod state_test {
                         }
                     }),
                     stat: "atk".to_owned(),
-                    by: 2
+                    by: 2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::Effect {
                     title: "clearboosts".to_owned(),
@@ -2747,7 +2757,8 @@ mod state_test {
                         }
                     }),
                     stat: "atk".to_owned(),
-                    by: 2
+                    by: 2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::StatBoost {
                     mon: ui::Mon::Active(ui::ActiveMonReference {
@@ -2761,7 +2772,8 @@ mod state_test {
                         }
                     }),
                     stat: "def".to_owned(),
-                    by: -2
+                    by: -2,
+                effect: ui::EffectData { target: Some(ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0, position: 0 }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } })), ..Default::default() }
                 },
                 ui::UiLogEntry::Effect {
                     title: "clearnegativeboosts".to_owned(),
