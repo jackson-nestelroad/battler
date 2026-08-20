@@ -64,7 +64,7 @@ fn lingering_aroma_changes_ability_on_contact() {
             "damage|mon:Oinkologne,player-2,1|health:134/170",
             "damage|mon:Oinkologne,player-2,1|health:79/100",
             "abilityend|mon:Oinkologne,player-1,1|ability:Gluttony|from:ability:Lingering Aroma|of:Oinkologne,player-2,1",
-            "ability|mon:Oinkologne,player-1,1|ability:Lingering Aroma|from:ability:Lingering Aroma|of:Oinkologne,player-2,1",
+            "abilitystart|mon:Oinkologne,player-1,1|ability:Lingering Aroma|from:ability:Lingering Aroma|of:Oinkologne,player-2,1",
             "move|mon:Oinkologne,player-2,1|name:Tackle|target:Oinkologne,player-1,1",
             "split|side:0",
             "damage|mon:Oinkologne,player-1,1|health:137/170",

@@ -147,8 +147,8 @@ fn gmax_replenish_recovers_used_berries_after_use() {
             "split|side:1",
             "damage|mon:Snorlax,player-2,2|health:120/220",
             "damage|mon:Snorlax,player-2,2|health:55/100",
-            "item|mon:Snorlax,player-1,2|item:Rawst Berry|from:move:G-Max Replenish|of:Snorlax,player-1,1",
-            "item|mon:Snorlax,player-1,3|item:Cheri Berry|from:move:G-Max Replenish|of:Snorlax,player-1,1",
+            "itemstart|mon:Snorlax,player-1,2|item:Rawst Berry|from:move:G-Max Replenish|of:Snorlax,player-1,1",
+            "itemstart|mon:Snorlax,player-1,3|item:Cheri Berry|from:move:G-Max Replenish|of:Snorlax,player-1,1",
             "residual",
             "turn|turn:4"
         ]"#,

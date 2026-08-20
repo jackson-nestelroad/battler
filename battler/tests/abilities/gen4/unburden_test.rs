@@ -109,7 +109,7 @@ fn unburden_activates_if_item_is_taken() {
             "damage|mon:Drifblim,player-1,1|health:120/210",
             "damage|mon:Drifblim,player-1,1|health:58/100",
             "itemend|mon:Drifblim,player-1,1|item:Cheri Berry|from:move:Thief|of:Porygon-Z,player-2,1",
-            "item|mon:Porygon-Z,player-2,1|item:Cheri Berry|from:move:Thief",
+            "itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|from:move:Thief",
             "residual",
             "turn|turn:2",
             "continue",

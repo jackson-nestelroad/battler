@@ -158,15 +158,17 @@ Indicates that the following logs are split into private and public versions.
 
 ### 2. Mon Action & State Logs
 
-#### `ability` / `abilityend`
-Logs ability activations or removal/suppression.
+#### `ability` / `abilitystart` / `abilityend`
+Logs ability activations or removal/suppression. `abilitystart` specifically represents an ability starting due to an effect (like Trace or Skill Swap).
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `ability:AbilityName` (string)
 - **Optional fields**:
-  - `from:EffectName` (cause of trigger/removal)
-  - `of:MonPositionDetails` (source Mon)
-- **Example**: `ability|mon:Gyarados,p1,1|ability:Intimidate`
+  - `from:EffectName` (cause of trigger/removal, only applicable for `abilitystart` and `abilityend`)
+  - `of:MonPositionDetails` (source Mon, only applicable for `abilitystart` and `abilityend`)
+- **Example**:
+  - `ability|mon:Gyarados,p1,1|ability:Intimidate`
+  - `abilitystart|mon:Gardevoir,p1,1|ability:Intimidate|from:ability:Trace|of:Gyarados,p2,1`
 
 #### `activate`
 Logs the activation of a status, condition, effect, or clause.
@@ -492,19 +494,20 @@ Inverts all boost multipliers (positive becomes negative and vice versa).
   - `of:MonPositionDetails` (source of the effect)
 - **Example**: `invertboosts|mon:Malamar,player-2,1|from:move:Topsy-Turvy|of:Malamar,player-1,1`
 
-#### `item` / `itemend`
-Logs item activations or item consumption/discard.
+#### `item` / `itemstart` / `itemend`
+Logs item activations or item consumption/discard. `itemstart` specifically represents an item being applied or obtained due to an effect (like Trick or Magician).
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `item:ItemName` (string)
 - **Optional fields**:
-  - `from:EffectName` (cause of trigger/removal)
-  - `of:MonPositionDetails` (source Mon)
+  - `from:EffectName` (cause of trigger/removal, or cause of obtaining for `itemstart`)
+  - `of:MonPositionDetails` (source Mon, often applicable for `itemstart` and `itemend`, and occasionally for `item` like Frisk)
 - **Optional flags (for `itemend` only)**:
   - `silent` (silences normal announcement)
   - `eat` (marks item as eaten/consumed)
 - **Examples**:
   - `item|mon:Pikachu,p1,1|item:Light Ball`
+  - `itemstart|mon:Alakazam,p1,1|item:Choice Band|from:move:Trick|of:Mr. Mime,p2,1`
   - `itemend|mon:Snorlax,p1,1|item:Iapapa Berry|eat`
 
 #### `learnedmove`

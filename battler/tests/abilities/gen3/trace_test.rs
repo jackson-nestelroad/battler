@@ -96,9 +96,9 @@ fn trace_copies_target_ability() {
         r#"[
             "move|mon:Ralts,player-1,1|name:Worry Seed|target:Ralts,player-2,1",
             "abilityend|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed|of:Ralts,player-1,1",
-            "ability|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1",
+            "abilitystart|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1",
             "abilityend|mon:Ralts,player-1,1|ability:Trace|from:ability:Trace",
-            "ability|mon:Ralts,player-1,1|ability:Insomnia|from:ability:Trace",
+            "abilitystart|mon:Ralts,player-1,1|ability:Insomnia|from:ability:Trace",
             "move|mon:Ralts,player-2,1|name:Sleep Powder|noanim",
             "immune|mon:Ralts,player-1,1|from:ability:Insomnia",
             "residual",
@@ -127,7 +127,7 @@ fn ability_shield_blocks_trace() {
         r#"[
             "move|mon:Ralts,player-1,1|name:Worry Seed|target:Ralts,player-2,1",
             "abilityend|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed|of:Ralts,player-1,1",
-            "ability|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1",
+            "abilitystart|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1",
             "block|mon:Ralts,player-1,1|ability:Trace|from:item:Ability Shield",
             "residual",
             "turn|turn:2",
@@ -138,7 +138,7 @@ fn ability_shield_blocks_trace() {
             "damage|mon:Ralts,player-1,1|health:53/100",
             "itemend|mon:Ralts,player-1,1|item:Ability Shield|from:move:Knock Off|of:Ralts,player-2,1",
             "abilityend|mon:Ralts,player-1,1|ability:Trace|from:ability:Trace",
-            "ability|mon:Ralts,player-1,1|ability:Insomnia|from:ability:Trace",
+            "abilitystart|mon:Ralts,player-1,1|ability:Insomnia|from:ability:Trace",
             "residual",
             "turn|turn:3"
         ]"#,

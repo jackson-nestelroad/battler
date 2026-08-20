@@ -926,6 +926,29 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
     )
 }
 
+pub fn ability_start(context: &mut ApplyingEffectContext) -> Result<()> {
+    let ability = context
+        .battle()
+        .dex
+        .abilities
+        .get_by_id(&context.target().volatile_state.ability_slot.ability.id)?
+        .data
+        .name
+        .clone();
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("ability:{ability}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "abilitystart".to_owned(),
+        activation,
+    )
+}
+
 pub fn ability_end(context: &mut ApplyingEffectContext) -> Result<()> {
     let ability = context
         .battle()
@@ -973,6 +996,34 @@ pub fn item(context: &mut ApplyingEffectContext) -> Result<()> {
     effect_activation(
         context.as_battle_context_mut(),
         "item".to_owned(),
+        activation,
+    )
+}
+
+pub fn item_start(context: &mut ApplyingEffectContext) -> Result<()> {
+    let item = match context.target().item.clone() {
+        Some(item) => item,
+        None => return Err(general_error("target has no item")),
+    };
+    let item = context
+        .battle()
+        .dex
+        .items
+        .get_by_id(&item)?
+        .data
+        .name
+        .clone();
+
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional: Vec::from_iter([format!("item:{item}")]),
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "itemstart".to_owned(),
         activation,
     )
 }

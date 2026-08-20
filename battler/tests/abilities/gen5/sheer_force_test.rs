@@ -68,7 +68,7 @@ fn sheer_force_cancels_secondary_effects() {
             "damage|mon:Conkeldurr,player-2,1|health:63/165",
             "damage|mon:Conkeldurr,player-2,1|health:39/100",
             "abilityend|mon:Conkeldurr,player-1,1|ability:Sheer Force|from:ability:Mummy|of:Conkeldurr,player-2,1",
-            "ability|mon:Conkeldurr,player-1,1|ability:Mummy|from:ability:Mummy|of:Conkeldurr,player-2,1",
+            "abilitystart|mon:Conkeldurr,player-1,1|ability:Mummy|from:ability:Mummy|of:Conkeldurr,player-2,1",
             "move|mon:Conkeldurr,player-2,1|name:Recover|target:Conkeldurr,player-2,1",
             "split|side:1",
             "heal|mon:Conkeldurr,player-2,1|health:146/165",

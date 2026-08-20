@@ -86,7 +86,7 @@ fn magician_steals_target_item_after_damage() {
             "damage|mon:Delphox,player-2,1|health:228/260",
             "damage|mon:Delphox,player-2,1|health:88/100",
             "itemend|mon:Delphox,player-2,1|item:Leppa Berry|from:ability:Magician|of:Delphox,player-1,1",
-            "item|mon:Delphox,player-1,1|item:Leppa Berry|from:ability:Magician",
+            "itemstart|mon:Delphox,player-1,1|item:Leppa Berry|from:ability:Magician",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -128,7 +128,7 @@ fn magician_steals_item_from_fastest_target() {
             "damage|mon:Greninja,player-2,3|health:198/254",
             "damage|mon:Greninja,player-2,3|health:78/100",
             "itemend|mon:Greninja,player-2,3|item:Cheri Berry|from:ability:Magician|of:Delphox,player-1,1",
-            "item|mon:Delphox,player-1,1|item:Cheri Berry|from:ability:Magician",
+            "itemstart|mon:Delphox,player-1,1|item:Cheri Berry|from:ability:Magician",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -170,7 +170,7 @@ fn magician_steals_item_from_other_target_when_item_is_untakable() {
             "damage|mon:Greninja,player-2,3|health:198/254",
             "damage|mon:Greninja,player-2,3|health:78/100",
             "itemend|mon:Chesnaught,player-2,2|item:Oran Berry|from:ability:Magician|of:Delphox,player-1,1",
-            "item|mon:Delphox,player-1,1|item:Oran Berry|from:ability:Magician",
+            "itemstart|mon:Delphox,player-1,1|item:Oran Berry|from:ability:Magician",
             "residual",
             "turn|turn:2"
         ]"#,

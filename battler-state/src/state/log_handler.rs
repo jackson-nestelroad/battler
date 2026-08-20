@@ -207,6 +207,7 @@ fn effect_data_from_log_entry(state: &mut BattleState, entry: &LogEntry) -> Resu
         .values()
         .filter(|(key, _)| match *key {
             "from" | "mon" | "of" | "player" | "side" | "slot" => false,
+            "stat" | "by" | "boost" => !matches!(entry.title(), "boost" | "unboost" | "setboost"),
             key => effect_type
                 .as_ref()
                 .is_none_or(|effect_type| key != effect_type),
@@ -339,10 +340,10 @@ fn record_effect_from_mon(
     mon: &MonName,
 ) -> Result<()> {
     match effect.effect_type.as_ref().map(|s| s.as_str()) {
-        Some("ability") => {
+        Some("ability") | Some("abilitystart") => {
             record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
         }
-        Some("item") => {
+        Some("item") | Some("itemstart") => {
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
                 // If we know that the Mon does not have an item, then this effect is presumably
                 // after the item ended.
@@ -374,7 +375,7 @@ fn modify_state_from_effect(
     }
 
     match entry.title() {
-        "ability" => {
+        "ability" | "abilitystart" => {
             let mon = entry.value_or_else("mon")?;
             if let Some(effect) = &effect_data.effect {
                 record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
@@ -554,7 +555,7 @@ fn modify_state_from_effect(
                 mon.volatile_data.record_forme_change(species.clone());
             })?;
         }
-        "item" => {
+        "item" | "itemstart" => {
             let mon = entry.value_or_else("mon")?;
             if let Some(effect) = &effect_data.effect {
                 apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
@@ -797,6 +798,7 @@ fn alter_battle_state_for_entry(
     let title = entry.title().strip_prefix("-").unwrap_or(entry.title());
     match title {
         "ability"
+        | "abilitystart"
         | "abilityend"
         | "activate"
         | "addedtype"
@@ -828,6 +830,7 @@ fn alter_battle_state_for_entry(
         | "immune"
         | "invertboosts"
         | "item"
+        | "itemstart"
         | "itemend"
         | "mega"
         | "miss"

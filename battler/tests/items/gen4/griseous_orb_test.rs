@@ -129,7 +129,7 @@ fn griseous_orb_can_be_taken_from_non_giratina() {
             "damage|mon:Empoleon,player-1,1|health:118/144",
             "damage|mon:Empoleon,player-1,1|health:82/100",
             "itemend|mon:Empoleon,player-1,1|item:Griseous Orb|from:move:Thief|of:Empoleon,player-2,1",
-            "item|mon:Empoleon,player-2,1|item:Griseous Orb|from:move:Thief",
+            "itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|from:move:Thief",
             "residual",
             "turn|turn:2"
         ]"#,

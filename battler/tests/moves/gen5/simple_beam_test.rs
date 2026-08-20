@@ -67,7 +67,7 @@ fn simple_beam_changes_ability_to_simple() {
         r#"[
             "move|mon:Woobat,player-1,1|name:Simple Beam|target:Woobat,player-2,1",
             "abilityend|mon:Woobat,player-2,1|ability:Klutz|from:move:Simple Beam|of:Woobat,player-1,1",
-            "ability|mon:Woobat,player-2,1|ability:Simple|from:move:Simple Beam|of:Woobat,player-1,1",
+            "abilitystart|mon:Woobat,player-2,1|ability:Simple|from:move:Simple Beam|of:Woobat,player-1,1",
             "move|mon:Woobat,player-2,1|name:Defense Curl|target:Woobat,player-2,1",
             "boost|mon:Woobat,player-2,1|stat:def|by:2",
             "residual",

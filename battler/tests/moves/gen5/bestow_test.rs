@@ -63,7 +63,7 @@ fn bestow_transfers_held_item() {
         r#"[
             "move|mon:Pidove,player-1,1|name:Bestow|target:Pidove,player-2,1",
             "itemend|mon:Pidove,player-1,1|item:Sticky Barb|from:move:Bestow",
-            "item|mon:Pidove,player-2,1|item:Sticky Barb|from:move:Bestow|of:Pidove,player-1,1",
+            "itemstart|mon:Pidove,player-2,1|item:Sticky Barb|from:move:Bestow|of:Pidove,player-1,1",
             "split|side:1",
             "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:184/210",
             "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:88/100",

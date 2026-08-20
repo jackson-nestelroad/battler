@@ -72,9 +72,9 @@ fn doodle_copies_target_ability_to_user_and_allies() {
         r#"[
             "move|mon:Grafaiai,player-1,1|name:Doodle|target:Grafaiai,player-2,1",
             "abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle",
-            "ability|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
+            "abilitystart|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
             "abilityend|mon:Grafaiai,player-1,2|ability:No Ability|from:move:Doodle|of:Grafaiai,player-1,1",
-            "ability|mon:Grafaiai,player-1,2|ability:Speed Boost|from:move:Doodle|of:Grafaiai,player-1,1",
+            "abilitystart|mon:Grafaiai,player-1,2|ability:Speed Boost|from:move:Doodle|of:Grafaiai,player-1,1",
             "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
             "boost|mon:Grafaiai,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
             "boost|mon:Grafaiai,player-1,2|stat:spe|by:1|from:ability:Speed Boost",
@@ -105,7 +105,7 @@ fn doodle_does_not_overwrite_permanent_ability() {
         r#"[
             "move|mon:Grafaiai,player-1,1|name:Doodle|target:Grafaiai,player-2,1",
             "abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle",
-            "ability|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
+            "abilitystart|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
             "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
             "boost|mon:Grafaiai,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
             "residual",

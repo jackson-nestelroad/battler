@@ -81,7 +81,7 @@ fn ball_fetch_receives_first_used_ball() {
         r#"[
             "useitem|player:player-1|name:Poké Ball|target:Eternatus,player-2,1",
             "catchfailed|player:player-1|mon:Eternatus,player-2,1|item:Poké Ball|shakes:0",
-            "item|mon:Yamper,player-1,1|item:Poké Ball|from:ability:Ball Fetch",
+            "itemstart|mon:Yamper,player-1,1|item:Poké Ball|from:ability:Ball Fetch",
             "residual",
             "turn|turn:2"
         ]"#,

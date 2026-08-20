@@ -5180,7 +5180,7 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
     }
 
     if !silent {
-        core_battle_logs::ability(context)?;
+        core_battle_logs::ability_start(context)?;
     }
 
     core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
@@ -5610,7 +5610,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
     }
 
     if !silent {
-        core_battle_logs::item(context)?;
+        core_battle_logs::item_start(context)?;
     }
 
     core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(

@@ -76,7 +76,7 @@ fn harvest_reclaims_berry_in_sun() {
             "split|side:1",
             "damage|mon:Tropius,player-2,1|health:137/159",
             "damage|mon:Tropius,player-2,1|health:87/100",
-            "item|mon:Tropius,player-2,1|item:Chilan Berry|from:ability:Harvest",
+            "itemstart|mon:Tropius,player-2,1|item:Chilan Berry|from:ability:Harvest",
             "residual",
             "turn|turn:3",
             "continue",
