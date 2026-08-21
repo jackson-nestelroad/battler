@@ -56,8 +56,163 @@ function extractLogsFromRs(): { raw: string[], patterns: Set<string> } {
   };
 }
 
+function extractLogsFromFxlang(): Set<string> {
+  const fxlangLogs = new Set<string>();
+  const BATTLE_DATA_DIR = path.resolve(import.meta.dirname, "../../../battle-data/data");
+
+  const effectRegistry = new Map<string, { type: string, name: string, program: string, delegates: string[] }>();
+
+  function getTypeFromCondition(condType?: string): string {
+    if (!condType) return "condition";
+    const lower = condType.toLowerCase();
+    if (lower === "status" || lower === "weather" || lower === "volatile") return lower;
+    return "condition";
+  }
+
+  function extractStrings(obj: any): string {
+      if (typeof obj === 'string') return obj;
+      if (Array.isArray(obj)) return obj.map(extractStrings).join('\n');
+      if (obj && typeof obj === 'object') {
+          return Object.values(obj).map(extractStrings).join('\n');
+      }
+      return '';
+  }
+
+  if (!fs.existsSync(BATTLE_DATA_DIR)) {
+      console.error("Path does not exist:", BATTLE_DATA_DIR);
+      return fxlangLogs;
+  }
+
+  function readAllJsonFiles(dir: string): string[] {
+    let results: string[] = [];
+    const list = fs.readdirSync(dir);
+    for (const file of list) {
+      const fullPath = path.resolve(dir, file);
+      const stat = fs.statSync(fullPath);
+      if (stat && stat.isDirectory()) {
+        results = results.concat(readAllJsonFiles(fullPath));
+      } else if (fullPath.endsWith(".json")) {
+        results.push(fullPath);
+      }
+    }
+    return results;
+  }
+
+  const jsonFiles = readAllJsonFiles(BATTLE_DATA_DIR);
+  for (const file of jsonFiles) {
+    const relPath = path.relative(BATTLE_DATA_DIR, file);
+    let defaultType = "effect";
+    if (relPath.startsWith("abilities")) defaultType = "ability";
+    else if (relPath.startsWith("items")) defaultType = "item";
+    else if (relPath.startsWith("moves")) defaultType = "move";
+    else if (relPath.startsWith("clauses")) defaultType = "clause";
+
+    const content = JSON.parse(fs.readFileSync(file, "utf-8"));
+    
+    const processObj = (key: string, obj: any, typeOverride?: string) => {
+        if (!obj || typeof obj !== 'object') return;
+        const name = obj.name || key;
+        const type = typeOverride || (obj.condition_type ? getTypeFromCondition(obj.condition_type) : defaultType);
+        
+        const programStr = extractStrings(obj.program || obj);
+        
+        effectRegistry.set(name, {
+            type,
+            name,
+            program: programStr,
+            delegates: obj.delegates || []
+        });
+    };
+
+    if (Array.isArray(content)) {
+        for (const val of content) processObj(val.name || "Unknown", val);
+    } else {
+        for (const [key, val] of Object.entries(content)) {
+            if (val && typeof val === 'object') {
+                processObj(key, val);
+            }
+        }
+    }
+  }
+
+  function getLogsForEffect(effectName: string, visited: Set<string>): string[] {
+      if (visited.has(effectName)) return [];
+      visited.add(effectName);
+      
+      const effect = effectRegistry.get(effectName);
+      if (!effect) return [];
+      
+      const logs: string[] = [];
+      const regex = /log_([a-z_]+)(?:\:\s*([a-z_]+))?/g;
+      let match;
+      while ((match = regex.exec(effect.program)) !== null) {
+          const logType = match[1];
+          const customArg = match[2];
+          
+          if (logType === "custom_effect" && customArg) {
+              logs.push(customArg);
+          } else {
+              logs.push(`log_${logType}`);
+          }
+      }
+      
+      for (const delegate of (effect.delegates || [])) {
+          logs.push(...getLogsForEffect(delegate, visited));
+      }
+      
+      return logs;
+  }
+
+  for (const [name, effect] of effectRegistry.entries()) {
+      const logs = getLogsForEffect(name, new Set());
+      for (const rawLog of logs) {
+          const type = effect.type;
+          
+          let logKey = "";
+          switch (rawLog) {
+              case "log_ability": logKey = `ability|ability:${name}`; break;
+              case "log_announce_item": logKey = `item|item:${name}`; break;
+              case "log_activate": logKey = `activate|${type}:${name}`; break;
+              case "log_block": logKey = `block|from:${type}:${name}`; break;
+              case "log_cant": logKey = `cant|from:${type}:${name}`; break;
+              case "log_immune": logKey = `immune|from:${type}:${name}`; break;
+              case "log_fail": logKey = `fail|from:${type}:${name}`; break;
+              case "log_prepare_move": logKey = `prepare|move:${name}`; break;
+              case "log_single_move": logKey = `singlemove|move:${name}`; break;
+              case "log_single_turn": logKey = `singleturn|${type}:${name}`; break;
+              case "log_start": logKey = `start|${type}:${name}`; break;
+              case "log_end": logKey = `end|${type}:${name}`; break;
+              case "log_field_start": logKey = `fieldstart|${type}:${name}`; break;
+              case "log_field_activate": logKey = `fieldactivate|${type}:${name}`; break;
+              case "log_field_end": logKey = `fieldend|${type}:${name}`; break;
+              case "log_side_start": logKey = `sidestart|${type}:${name}`; break;
+              case "log_side_end": logKey = `sideend|${type}:${name}`; break;
+              case "log_status": logKey = `status|status:${name}`; break;
+              case "log_weather": logKey = `weather|weather:${name}`; break;
+              case "log_fail_heal": logKey = `fail|from:${type}:${name}`; break;
+              case "log_fail_unboost": logKey = `fail|from:${type}:${name}`; break;
+              default:
+                  if (!rawLog.startsWith("log_")) {
+                      logKey = rawLog;
+                  }
+                  break;
+          }
+          if (logKey) {
+            fxlangLogs.add(logKey);
+          }
+      }
+  }
+
+  return fxlangLogs;
+}
+
 function generateMatrix() {
   const extracted = extractLogsFromRs();
+  const fxlangPatterns = extractLogsFromFxlang();
+  
+  for (const pattern of fxlangPatterns) {
+      extracted.patterns.add(pattern);
+  }
 
   const finalMatrix: string[] = [];
 
@@ -78,24 +233,10 @@ function generateMatrix() {
   const enTsPath = path.resolve(import.meta.dirname, "../locales/en.ts");
   let enTsContent = fs.readFileSync(enTsPath, "utf-8");
   
-  const logsRegex = /("logs": \{)([\s\S]*?)(\n  \})/m;
+  const logsRegex = /(logs: \{)([\s\S]*?)(\n  \})/m;
   const match = enTsContent.match(logsRegex);
   if (match) {
-      const lines = match[2].split('\n').filter(l => l.trim().length > 0);
-      const currentLogs: Record<string, string> = {};
-      for (const line of lines) {
-          const parts = line.split(':');
-          if (parts.length >= 2) {
-              const keyMatch = parts[0].match(/"([^"]+)"/);
-              if (keyMatch) {
-                  const key = keyMatch[1];
-                  const value = parts.slice(1).join(':').trim().replace(/,$/, '');
-                  currentLogs[key] = value;
-              }
-          }
-      }
-
-
+      const blockContent = match[2];
       let added = false;
       const requireFromOf = ['damage', 'heal', 'sethp', 'item', 'itemend', 'itemstart', 'ability', 'abilityend', 'abilitystart', 'cant', 'fail', 'immune', 'block'];
 
@@ -208,8 +349,20 @@ function generateMatrix() {
           'swapsidecondition': ['move', 'condition']
       };
 
+      const newKeys: string[] = [];
+
       for (const pattern of Array.from(extracted.patterns)) {
-          const safePattern = pattern.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
+          let p = pattern;
+          // Format pattern exactly like LogFormatter does
+          const pParts = p.split('|');
+          const pTitle = pParts.shift()!;
+          const pTags = pParts.filter(x => !x.startsWith('[') && !x.endsWith(']'));
+          const pFlags = pParts.filter(x => x.startsWith('[') && x.endsWith(']'));
+          pTags.sort();
+          pFlags.sort();
+          p = [pTitle, ...pTags, ...pFlags].join('|');
+
+          const safePattern = p.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
           const parts = safePattern.split('__');
           const title = parts[0];
           
@@ -235,17 +388,20 @@ function generateMatrix() {
           const allKeys = getFallbacks(targetKey);
           for (const k of allKeys) {
               if (k.includes('__silent')) continue;
-              if (!(k in currentLogs)) {
-                  currentLogs[k] = '"[UNHANDLED]"';
-                  added = true;
-                  console.log(`Auto-added missing log translation: ${k}`);
+              
+              if (!blockContent.includes(`"${k}":`) && !blockContent.includes(` ${k}:`)) {
+                  if (!newKeys.includes(k)) {
+                      newKeys.push(k);
+                      added = true;
+                      console.log(`Auto-added missing log translation: ${k}`);
+                  }
               }
           }
       }
 
       if (added) {
-          const newLines = Object.keys(currentLogs).sort((a,b) => a.localeCompare(b)).map(k => `    "${k}": ${currentLogs[k]},`);
-          const newBlock = `${match[1]}\n${newLines.join('\n')}${match[3]}`;
+          const newLines = newKeys.sort((a,b) => a.localeCompare(b)).map(k => `    "${k}": "[UNHANDLED]",`);
+          const newBlock = `${match[1]}${blockContent}\n${newLines.join('\n')}${match[3]}`;
           enTsContent = enTsContent.replace(logsRegex, newBlock);
           fs.writeFileSync(enTsPath, enTsContent);
           console.log("Updated locales/en.ts with missing [UNHANDLED] logs.");

@@ -154,7 +154,7 @@ const pushTag = (tag: string, source: string) => {
         if (tags.some(t => t.startsWith(`${keyName}:`))) continue;
         
         if (v !== undefined && v !== null) {
-            if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(keyName) && typeof v === 'string') {
+            if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile', 'from'].includes(keyName) && typeof v === 'string') {
                 tags.push(`${keyName}:${v}`);
             } else {
                 tags.push(`${keyName}:*`);
@@ -181,9 +181,13 @@ const pushTag = (tag: string, source: string) => {
     }
     if (data.effect.source_effect !== undefined) {
         if (typeof data.effect.source_effect === 'string') {
-           tags.push(`from:${data.effect.source_effect.toLowerCase()}:*`);
+           tags.push(`from:${data.effect.source_effect}:*`);
         } else if (data.effect.source_effect.effect_type) {
-           tags.push(`from:${data.effect.source_effect.effect_type.toLowerCase()}:*`);
+           const typeStr = data.effect.source_effect.effect_type.toLowerCase();
+           const valStr = data.effect.source_effect.name || '*';
+           tags.push(`from:${typeStr}:${valStr}`);
+        } else if (data.effect.source_effect.name) {
+           tags.push(`from:${data.effect.source_effect.name}`);
         } else {
            tags.push(`from:*`);
         }

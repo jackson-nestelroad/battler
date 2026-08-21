@@ -62,47 +62,81 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 
 exports[`Exhaustive Log Coverage > should parse and format log string: ability|mon:Zygarde,player-1,1|ability:Aura Break 1`] = `"[secondary] The opposing Zygarde reversed all other Mon's auras!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Aggron,player-2,1|ability:Heavy Metal|from:move:Gastro Acid|of:Aggron,player-1,1 1`] = `"[secondary] The opposing Aggron's Heavy Metal was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Aggron,player-2,1|ability:Heavy Metal|from:move:Gastro Acid|of:Aggron,player-1,1 1`] = `"[secondary] The opposing Aggron's Ability was suppressed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Banette,player-1,1|ability:No Ability|from:move:Role Play 1`] = `"[secondary] The opposing Banette's No Ability was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Banette,player-1,1|ability:No Ability|from:move:Role Play 1`] = `"[secondary] The opposing Banette copied {{FROM}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Budew,player-1,1|ability:Leaf Guard|from:move:Skill Swap 1`] = `"[secondary] The opposing Budew's Leaf Guard was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Budew,player-1,1|ability:Leaf Guard|from:move:Skill Swap 1`] = `"[secondary] The opposing Budew swapped Abilities with its target!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Budew,player-2,1|ability:No Ability|from:move:Skill Swap|of:Budew,player-1,1 1`] = `"[secondary] The opposing Budew's No Ability was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Budew,player-2,1|ability:No Ability|from:move:Skill Swap|of:Budew,player-1,1 1`] = `"[secondary] The opposing Budew swapped Abilities with its target!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Gastro Acid|of:Ditto,player-2,1 1`] = `"[secondary] The opposing Castform's Forecast was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Gastro Acid|of:Ditto,player-2,1 1`] = `"[secondary] The opposing Castform's Ability was suppressed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Worry Seed|of:Ditto,player-2,1 1`] = `"[secondary] The opposing Castform's Forecast was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Worry Seed|of:Ditto,player-2,1 1`] = `"[secondary] The opposing Castform acquired Insomnia!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Charizard,player-2,1|ability:Blaze|from:move:Skill Swap 1`] = `"[secondary] The opposing Charizard's Blaze was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Charizard,player-2,1|ability:Blaze|from:move:Skill Swap 1`] = `"[secondary] The opposing Charizard swapped Abilities with its target!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Conkeldurr,player-1,1|ability:Sheer Force|from:ability:Mummy|of:Conkeldurr,player-2,1 1`] = `"[secondary] The opposing Conkeldurr's Sheer Force was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Conkeldurr,player-1,1|ability:Sheer Force|from:ability:Mummy|of:Conkeldurr,player-2,1 1`] = `"[secondary] The opposing Conkeldurr's Ability became Mummy!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Darmanitan,player-1,1|ability:Gorilla Tactics|from:move:Gastro Acid|of:Darmanitan,player-2,1 1`] = `"[secondary] The opposing Darmanitan's Gorilla Tactics was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Darmanitan,player-1,1|ability:Gorilla Tactics|from:move:Gastro Acid|of:Darmanitan,player-2,1 1`] = `"[secondary] The opposing Darmanitan's Ability was suppressed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle 1`] = `"[secondary] The opposing Grafaiai's No Ability was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle 1`] = `"[secondary] The opposing Grafaiai captured the opposing Mon's Ability!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Grafaiai,player-1,2|ability:No Ability|from:move:Doodle|of:Grafaiai,player-1,1 1`] = `"[secondary] The opposing Grafaiai's No Ability was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Grafaiai,player-1,2|ability:No Ability|from:move:Doodle|of:Grafaiai,player-1,1 1`] = `"[secondary] The opposing Grafaiai captured the opposing Mon's Ability!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Leavanny,player-2,1|ability:Inner Focus|from:move:Entrainment|of:Leavanny,player-1,1 1`] = `"[secondary] The opposing Leavanny's Inner Focus was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Leavanny,player-2,1|ability:Inner Focus|from:move:Entrainment|of:Leavanny,player-1,1 1`] = `"[secondary] The opposing Leavanny acquired {{FROM}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Leavanny,player-2,1|ability:Wonder Guard|from:move:Entrainment|of:Leavanny,player-1,1 1`] = `"[secondary] The opposing Leavanny's Wonder Guard was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Leavanny,player-2,1|ability:Wonder Guard|from:move:Entrainment|of:Leavanny,player-1,1 1`] = `"[secondary] The opposing Leavanny acquired {{FROM}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Oinkologne,player-1,1|ability:Gluttony|from:ability:Lingering Aroma|of:Oinkologne,player-2,1 1`] = `"[secondary] The opposing Oinkologne's Gluttony was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Oinkologne,player-1,1|ability:Gluttony|from:ability:Lingering Aroma|of:Oinkologne,player-2,1 1`] = `"[secondary] A lingering aroma clung to the opposing Oinkologne!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Passimian,player-1,1|ability:Receiver|from:ability:Receiver 1`] = `"[secondary] The opposing Passimian's Receiver was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Passimian,player-1,1|ability:Receiver|from:ability:Receiver 1`] = `"[secondary] The opposing Passimian received {{FROM}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Ralts,player-1,1|ability:Trace|from:ability:Trace 1`] = `"[secondary] The opposing Ralts's Trace was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Ralts,player-1,1|ability:Trace|from:ability:Trace 1`] = `"[secondary] The opposing Ralts traced {{FROM}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed|of:Ralts,player-1,1 1`] = `"[secondary] The opposing Ralts's No Ability was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed|of:Ralts,player-1,1 1`] = `"[secondary] The opposing Ralts acquired Insomnia!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Runerigus,player-1,1|ability:Mold Breaker|from:ability:Wandering Spirit|of:Runerigus,player-2,1 1`] = `"[secondary] The opposing Runerigus's Mold Breaker was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Runerigus,player-1,1|ability:Mold Breaker|from:ability:Wandering Spirit|of:Runerigus,player-2,1 1`] = `"[secondary] The opposing Runerigus swapped Abilities with its target!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Runerigus,player-1,1|ability:Wandering Spirit|from:ability:Wandering Spirit 1`] = `"[secondary] The opposing Runerigus's Wandering Spirit was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Runerigus,player-1,1|ability:Wandering Spirit|from:ability:Wandering Spirit 1`] = `"[secondary] The opposing Runerigus swapped Abilities with its target!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Runerigus,player-2,1|ability:Mold Breaker|from:ability:Wandering Spirit|of:Runerigus,player-1,1 1`] = `"[secondary] The opposing Runerigus's Mold Breaker was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Runerigus,player-2,1|ability:Mold Breaker|from:ability:Wandering Spirit|of:Runerigus,player-1,1 1`] = `"[secondary] The opposing Runerigus swapped Abilities with its target!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Woobat,player-2,1|ability:Klutz|from:move:Simple Beam|of:Woobat,player-1,1 1`] = `"[secondary] The opposing Woobat's Klutz was replaced by {{FROM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: abilityend|mon:Woobat,player-2,1|ability:Klutz|from:move:Simple Beam|of:Woobat,player-1,1 1`] = `"[secondary] The opposing Woobat acquired Simple!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Banette,player-1,1|ability:Soundproof|from:move:Role Play 1`] = `"[secondary] The opposing Banette copied Soundproof!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Budew,player-1,1|ability:No Ability|from:move:Skill Swap 1`] = `"[secondary] The opposing Budew swapped Abilities with its target!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Budew,player-2,1|ability:Leaf Guard|from:move:Skill Swap|of:Budew,player-1,1 1`] = `"[secondary] The opposing Budew swapped Abilities with its target!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Castform,player-1,1|ability:Insomnia|from:move:Worry Seed|of:Ditto,player-2,1 1`] = `"[secondary] The opposing Castform acquired Insomnia!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Charizard,player-2,1|ability:Chlorophyll|from:move:Skill Swap 1`] = `"[secondary] The opposing Charizard swapped Abilities with its target!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Conkeldurr,player-1,1|ability:Mummy|from:ability:Mummy|of:Conkeldurr,player-2,1 1`] = `"[secondary] The opposing Conkeldurr's Ability became Mummy!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle 1`] = `"[secondary] The opposing Grafaiai captured the opposing Mon's Ability!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Grafaiai,player-1,2|ability:Speed Boost|from:move:Doodle|of:Grafaiai,player-1,1 1`] = `"[secondary] The opposing Grafaiai captured the opposing Mon's Ability!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Leavanny,player-2,1|ability:Swarm|from:move:Entrainment|of:Leavanny,player-1,1 1`] = `"[secondary] The opposing Leavanny acquired Swarm!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Oinkologne,player-1,1|ability:Lingering Aroma|from:ability:Lingering Aroma|of:Oinkologne,player-2,1 1`] = `"[secondary] A lingering aroma clung to the opposing Oinkologne!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Passimian,player-1,1|ability:Speed Boost|from:ability:Receiver 1`] = `"[secondary] The opposing Passimian received Speed Boost!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Ralts,player-1,1|ability:Insomnia|from:ability:Trace 1`] = `"[secondary] The opposing Ralts traced Insomnia!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1 1`] = `"[secondary] The opposing Ralts acquired Insomnia!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Runerigus,player-1,1|ability:Mold Breaker|from:ability:Wandering Spirit 1`] = `"[secondary] The opposing Runerigus swapped Abilities with its target!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Runerigus,player-1,1|ability:Wandering Spirit|from:ability:Wandering Spirit|of:Runerigus,player-2,1 1`] = `"[secondary] The opposing Runerigus swapped Abilities with its target!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Runerigus,player-2,1|ability:Mold Breaker|from:ability:Wandering Spirit 1`] = `"[secondary] The opposing Runerigus swapped Abilities with its target!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: abilitystart|mon:Woobat,player-2,1|ability:Simple|from:move:Simple Beam|of:Woobat,player-1,1 1`] = `"[secondary] The opposing Woobat acquired Simple!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Abra,player-1,1|ability:Synchronize 1`] = `"[secondary] The opposing Abra's Synchronize activated!"`;
 
@@ -232,7 +266,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Greninja,player-2,1|ability:Battle Bond 1`] = `"[secondary] The opposing Greninja became fully charged due to its bond with its Trainer!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Grumpig,player-1,1|ability:Magic Bounce 1`] = `"[secondary] The opposing Grumpig bounced the {{MOVE}} back!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Grumpig,player-1,1|ability:Magic Bounce 1`] = `"[secondary] The opposing Grumpig bounced the Magic Bounce back!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Grumpig,player-1,1|move:Magic Coat 1`] = `"[secondary] The opposing Grumpig shrouded itself with Magic Coat!"`;
 
@@ -414,7 +448,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Aromatherapy|of:Miltank,player-1,1 1`] = `"[secondary] A soothing aroma wafted through the area!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Court Change|of:Cinderace,player-1,2 1`] = `"[secondary] {{MON}} swapped the battle effects affecting each side of the field!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Court Change|of:Cinderace,player-1,2 1`] = `"[secondary] Mon swapped the battle effects affecting each side of the field!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Heal Bell|of:Miltank,player-1,1 1`] = `"[secondary] A bell chimed!"`;
 
@@ -432,33 +466,33 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
 
 exports[`Exhaustive Log Coverage > should parse and format log string: addedtype|mon:Falinks,player-1,1|type:Ghost 1`] = `"[secondary] The opposing Falinks's type changed to Ghost!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: appear|player:wild-0|position:1|name:Rattata|health:18/18|species:Rattata|level:5|gender:M 1`] = `"[primary] Rattata appeared!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: appear|player:wild-0|position:1|name:Rattata|health:18/18|species:Rattata|level:5|gender:M 1`] = `"[primary] Mon appeared!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: appear|player:wild-0|position:1|name:Rattata|health:100/100|species:Rattata|level:5|gender:M 1`] = `"[primary] Rattata appeared!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: appear|player:wild-0|position:1|name:Rattata|health:100/100|species:Rattata|level:5|gender:M 1`] = `"[primary] Mon appeared!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: appear|player:wild-1|position:2|name:Rattata|health:100/100|species:Rattata|level:5|gender:M 1`] = `"[primary] Rattata appeared!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: appear|player:wild-1|position:2|name:Rattata|health:100/100|species:Rattata|level:5|gender:M 1`] = `"[primary] Mon appeared!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Aromatisse,player-1,2|move:Taunt|from:ability:Aroma Veil 1`] = `"[secondary] The opposing Aromatisse's {{ABILITY}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Aromatisse,player-1,2|move:Taunt|from:ability:Aroma Veil 1`] = `"[secondary] The opposing Aromatisse's Aroma Veil protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Chespin,player-1,2|move:Thunder Wave|from:ability:Flower Veil 1`] = `"[secondary] The opposing Chespin's {{ABILITY}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Chespin,player-1,2|move:Thunder Wave|from:ability:Flower Veil 1`] = `"[secondary] The opposing Chespin's Flower Veil protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Chespin,player-1,2|move:Yawn|from:ability:Flower Veil 1`] = `"[secondary] The opposing Chespin's {{ABILITY}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Chespin,player-1,2|move:Yawn|from:ability:Flower Veil 1`] = `"[secondary] The opposing Chespin's Flower Veil protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Darmanitan,player-2,2|move:Toxic|from:ability:Pastel Veil|of:Rapidash,player-2,1 1`] = `"[secondary] The opposing Darmanitan's {{ABILITY}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Darmanitan,player-2,2|move:Toxic|from:ability:Pastel Veil|of:Rapidash,player-2,1 1`] = `"[secondary] The opposing Darmanitan's Pastel Veil protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Grafaiai,player-1,1|move:Doodle|from:item:Ability Shield 1`] = `"[secondary] The opposing Grafaiai's {{ITEM}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Grafaiai,player-1,1|move:Doodle|from:item:Ability Shield 1`] = `"[secondary] The opposing Grafaiai's Ability Shield protected its Ability!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Grafaiai,player-1,2|move:Doodle|from:item:Ability Shield 1`] = `"[secondary] The opposing Grafaiai's {{ITEM}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Grafaiai,player-1,2|move:Doodle|from:item:Ability Shield 1`] = `"[secondary] The opposing Grafaiai's Ability Shield protected its Ability!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Ralts,player-1,1|ability:Trace|from:item:Ability Shield 1`] = `"[secondary] The opposing Ralts's {{ITEM}} protected its Ability!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Ralts,player-1,1|ability:Trace|from:item:Ability Shield 1`] = `"[secondary] The opposing Ralts's Ability Shield protected its Ability!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Rampardos,player-1,1|move:Gastro Acid|from:item:Ability Shield 1`] = `"[secondary] The opposing Rampardos's {{ITEM}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Rampardos,player-1,1|move:Gastro Acid|from:item:Ability Shield 1`] = `"[secondary] The opposing Rampardos's Ability Shield protected its Ability!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Slurpuff,player-1,2|move:Rest|from:ability:Sweet Veil 1`] = `"[secondary] The opposing Slurpuff's {{ABILITY}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Slurpuff,player-1,2|move:Rest|from:ability:Sweet Veil 1`] = `"[secondary] The opposing Slurpuff's Sweet Veil protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Slurpuff,player-1,2|move:Yawn|from:ability:Sweet Veil 1`] = `"[secondary] The opposing Slurpuff's {{ABILITY}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Slurpuff,player-1,2|move:Yawn|from:ability:Sweet Veil 1`] = `"[secondary] The opposing Slurpuff's Sweet Veil protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Slurpuff,player-2,1|move:Sleep Powder|from:ability:Sweet Veil 1`] = `"[secondary] The opposing Slurpuff's {{ABILITY}} blocked the attack!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: block|mon:Slurpuff,player-2,1|move:Sleep Powder|from:ability:Sweet Veil 1`] = `"[secondary] The opposing Slurpuff's Sweet Veil protected it!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Aegislash,player-1,1|stat:atk|by:2 1`] = `"[secondary] The opposing Aegislash's atk rose!"`;
 
@@ -650,77 +684,89 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
 
 exports[`Exhaustive Log Coverage > should parse and format log string: cannotescape|player:protagonist 1`] = `"[primary] {{MON}} cannot escape!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Alakazam,player-2,1|from:status:Paralysis 1`] = `"[secondary] {{MON}} is affected by {{STATUS}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Alakazam,player-2,1|from:status:Paralysis 1`] = `"[secondary] The opposing Alakazam is paralyzed! It can't move!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Baltoy,player-2,1|from:move:Imprison 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Baltoy,player-2,1|from:move:Imprison 1`] = `"[secondary] The opposing Baltoy can't use its sealed {{MOVE}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Blacephalon,player-1,1|from:ability:Damp|of:Blacephalon,player-2,1 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevented the move!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Blacephalon,player-1,1|from:ability:Damp|of:Blacephalon,player-2,1 1`] = `"[secondary] The opposing Blacephalon cannot use {{MOVE}} because of Damp!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Charizard,player-1,1|from:status:Sleep 1`] = `"[secondary] {{MON}} is affected by {{STATUS}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Charizard,player-1,1|from:status:Sleep 1`] = `"[secondary] The opposing Charizard is fast asleep."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Charizard,player-2,1|from:status:Sleep 1`] = `"[secondary] {{MON}} is affected by {{STATUS}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Charizard,player-2,1|from:status:Sleep 1`] = `"[secondary] The opposing Charizard is fast asleep."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevented the move!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1 1`] = `"[secondary] The opposing Decidueye cannot use {{MOVE}} because of Dazzling!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-2,2|from:ability:Dazzling|of:Bruxish,player-1,1 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevented the move!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-2,1|from:Flinch 1`] = `"[secondary] The opposing Decidueye flinched and couldn't move!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Galvantula,player-2,1|from:status:Sleep 1`] = `"[secondary] {{MON}} is affected by {{STATUS}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-2,2|from:ability:Dazzling|of:Bruxish,player-1,1 1`] = `"[secondary] The opposing Decidueye cannot use {{MOVE}} because of Dazzling!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Guzzlord,player-2,1|from:move:Gravity 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Eternatus,player-1,1|from:Must Recharge 1`] = `"[secondary] The opposing Eternatus must recharge!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Incineroar,player-2,1|from:move:Throat Chop 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Galvantula,player-2,1|from:status:Sleep 1`] = `"[secondary] The opposing Galvantula is fast asleep."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Kecleon,player-2,1|from:move:Aura Wheel 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Grimer,player-2,1|from:Flinch 1`] = `"[secondary] The opposing Grimer flinched and couldn't move!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Mewtwo,player-2,1|from:status:Freeze 1`] = `"[secondary] {{MON}} is affected by {{STATUS}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Guzzlord,player-1,1|from:Must Recharge 1`] = `"[secondary] The opposing Guzzlord must recharge!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Ninjask,player-2,1|from:status:Paralysis 1`] = `"[secondary] {{MON}} is affected by {{STATUS}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Guzzlord,player-2,1|from:move:Gravity 1`] = `"[secondary] The opposing Guzzlord can't use {{MOVE}} because of gravity!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Oricorio,player-2,1|from:move:Petal Dance 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Incineroar,player-2,1|from:move:Throat Chop 1`] = `"[secondary] The opposing Incineroar can't use {{MOVE}} due to Throat Chop!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slaking,player-1,1|from:ability:Truant 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevented the move!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Kecleon,player-2,1|from:move:Aura Wheel 1`] = `"[secondary] The opposing Kecleon cannot use Aura Wheel!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slaking,player-2,1|from:ability:Truant 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevented the move!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Lucario,player-2,1|from:Flinch 1`] = `"[secondary] The opposing Lucario flinched and couldn't move!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slowbro,player-2,1|from:move:Disable 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Mew,player-1,1|from:Must Recharge 1`] = `"[secondary] The opposing Mew must recharge!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Squirtle,player-2,1|from:ability:Damp|of:Squirtle,player-1,1 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevented the move!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Mewtwo,player-2,1|from:status:Freeze 1`] = `"[secondary] The opposing Mewtwo is frozen solid!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Staraptor,player-2,1|from:move:Gravity 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Ninjask,player-2,1|from:status:Paralysis 1`] = `"[secondary] The opposing Ninjask is paralyzed! It can't move!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Treecko,player-2,1|from:move:Taunt 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Oricorio,player-2,1|from:move:Petal Dance 1`] = `"[secondary] The opposing Oricorio's Petal Dance is restricted!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Turtonator,player-1,2|from:move:Shell Trap 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slaking,player-1,1|from:ability:Truant 1`] = `"[secondary] The opposing Slaking is loafing around!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Vigoroth,player-1,1|from:move:Focus Punch 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slaking,player-2,1|from:ability:Truant 1`] = `"[secondary] The opposing Slaking is loafing around!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Wobbuffet,player-2,1|from:move:Attract 1`] = `"[secondary] {{MON}} cannot use {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slowbro,player-2,1|from:move:Disable 1`] = `"[secondary] The opposing Slowbro's {{MOVE}} is disabled!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Bidoof,wild,1|item:Heal Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Bidoof was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Squirtle,player-2,1|from:ability:Damp|of:Squirtle,player-1,1 1`] = `"[secondary] The opposing Squirtle cannot use {{MOVE}} because of Damp!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Bidoof,wild,1|item:Poké Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Bidoof was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Staraptor,player-2,1|from:move:Gravity 1`] = `"[secondary] The opposing Staraptor can't use {{MOVE}} because of gravity!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Blissey,wild,1|item:Master Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Blissey was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Treecko,player-2,1|from:move:Taunt 1`] = `"[secondary] The opposing Treecko can't use {{MOVE}} after the taunt!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Buzzwole,wild,1|item:Master Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Buzzwole was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Turtonator,player-1,2|from:move:Shell Trap 1`] = `"[secondary] The opposing Turtonator's shell trap didn't work!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Friend Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Graveler was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Vigoroth,player-1,1|from:move:Focus Punch 1`] = `"[secondary] The opposing Vigoroth lost its focus and couldn't move!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Graveler was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Wobbuffet,player-2,1|from:move:Attract 1`] = `"[secondary] The opposing Wobbuffet is immobilized by love!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical 1`] = `"[primary] Gotcha! the opposing Magikarp was caught! A critical capture!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Bidoof,wild,1|item:Heal Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Bidoof was caught!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1|critical 1`] = `"[primary] Gotcha! the opposing Magikarp was caught! A critical capture!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Bidoof,wild,1|item:Poké Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Bidoof was caught!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Magikarp was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Blissey,wild,1|item:Master Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Blissey was caught!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Ultra Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Magikarp was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Buzzwole,wild,1|item:Master Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Buzzwole was caught!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild-1,2|item:Great Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Magikarp was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Friend Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Graveler was caught!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical 1`] = `"[primary] Gotcha! the opposing Metagross was caught! A critical capture!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Graveler was caught!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:4 1`] = `"[primary] Gotcha! the opposing Metagross was caught!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical 1`] = `"[secondary] Gotcha! the opposing Magikarp was caught! A critical capture!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1|critical 1`] = `"[secondary] Gotcha! the opposing Magikarp was caught! A critical capture!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Magikarp was caught!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Ultra Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Magikarp was caught!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild-1,2|item:Great Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Magikarp was caught!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical 1`] = `"[secondary] Gotcha! the opposing Metagross was caught! A critical capture!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:4 1`] = `"[secondary] Gotcha! the opposing Metagross was caught!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:player-1|mon:Eternatus,player-2,1|item:Poké Ball|shakes:0 1`] = `"[secondary] Oh no! The Pokémon broke free!"`;
 
@@ -868,183 +914,205 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Whismur,player-2,1|status:Sleep|from:move:Uproar|of:Whismur,player-1,1 1`] = `"[secondary] The opposing Whismur woke up!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:95/100 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Alakazam,player-2,1|from:Confusion|health:83/100 1`] = `"[secondary] It hurt itself in its confusion!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:127/135 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Alakazam,player-2,1|from:Confusion|health:95/115 1`] = `"[secondary] It hurt itself in its confusion!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Ambipom,player-2,1|from:status:Bad Poison|health:107/135 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:95/100 1`] = `"[secondary] {{MON}} is hurt by poison!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Applin,player-2,1|from:item:Jaboca Berry|of:Applin,player-1,1|health:76/100 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:127/135 1`] = `"[secondary] {{MON}} is hurt by poison!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Bibarel,player-2,1|from:move:Stealth Rock|health:88/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Ambipom,player-2,1|from:status:Bad Poison|health:107/135 1`] = `"[secondary] {{MON}} is hurt by poison!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Bibarel,player-2,1|from:move:Stealth Rock|health:122/139 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Applin,player-2,1|from:item:Jaboca Berry|of:Applin,player-1,1|health:76/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Applin's Jaboca Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Hail|health:107/139 1`] = `"[secondary] {{MON}} is buffeted by the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Baltoy,player-2,1|from:Struggle Recoil|health:75/100 1`] = `"[secondary] {{MON}} is damaged by the recoil!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Hail|health:115/139 1`] = `"[secondary] {{MON}} is buffeted by the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Bibarel,player-2,1|from:move:Stealth Rock|health:88/100 1`] = `"[secondary] Pointed stones dug into {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Hail|health:123/139 1`] = `"[secondary] {{MON}} is buffeted by the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Bibarel,player-2,1|from:move:Stealth Rock|health:122/139 1`] = `"[secondary] Pointed stones dug into {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Sandstorm|health:107/139 1`] = `"[secondary] {{MON}} is buffeted by the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blacephalon,player-1,1|from:Recoil|health:50/100 1`] = `"[secondary] {{MON}} is damaged by the recoil!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Sandstorm|health:115/139 1`] = `"[secondary] {{MON}} is buffeted by the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blacephalon,player-1,1|from:Recoil|health:108/216 1`] = `"[secondary] {{MON}} is damaged by the recoil!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Sandstorm|health:119/139 1`] = `"[secondary] {{MON}} is buffeted by the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Hail|health:107/139 1`] = `"[secondary] {{MON}} is buffeted by the hail!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Charizard,player-2,1|from:status:Poison|health:64/100 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Hail|health:115/139 1`] = `"[secondary] {{MON}} is buffeted by the hail!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Charizard,player-2,1|from:status:Poison|health:104/138 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Hail|health:123/139 1`] = `"[secondary] {{MON}} is buffeted by the hail!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Charizard,player-2,1|from:status:Poison|health:121/138 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Sandstorm|health:107/139 1`] = `"[secondary] {{MON}} is buffeted by the sandstorm!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:88/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Sandstorm|health:115/139 1`] = `"[secondary] {{MON}} is buffeted by the sandstorm!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:251/286 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blastoise,player-2,1|from:weather:Sandstorm|health:119/139 1`] = `"[secondary] {{MON}} is buffeted by the sandstorm!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Conkeldurr,player-1,1|from:item:Life Orb|health:91/100 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blissey,player-1,1|from:Confusion|health:274/315 1`] = `"[secondary] It hurt itself in its confusion!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Conkeldurr,player-1,1|from:item:Life Orb|health:149/165 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blissey,player-1,1|from:Struggle Recoil|health:12/100 1`] = `"[secondary] {{MON}} is damaged by the recoil!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Cramorant,player-2,1|from:ability:Gulp Missile|of:Cramorant,player-1,1|health:0 1`] = `"[secondary] {{MON}} was hurt by the opposing Cramorant's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Blissey,player-1,1|from:Struggle Recoil|health:268/620 1`] = `"[secondary] {{MON}} is damaged by the recoil!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Cramorant,player-2,1|from:ability:Gulp Missile|of:Cramorant,player-1,1|health:139/250 1`] = `"[secondary] {{MON}} was hurt by the opposing Cramorant's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Charizard,player-2,1|from:status:Poison|health:64/100 1`] = `"[secondary] {{MON}} is hurt by poison!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Cramorant,player-2,1|from:ability:Gulp Missile|of:Cramorant,player-1,1|health:142/250 1`] = `"[secondary] {{MON}} was hurt by the opposing Cramorant's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Charizard,player-2,1|from:status:Poison|health:104/138 1`] = `"[secondary] {{MON}} is hurt by poison!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:88/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Darkrai's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Charizard,player-2,1|from:status:Poison|health:121/138 1`] = `"[secondary] {{MON}} is hurt by poison!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:114/130 1`] = `"[secondary] {{MON}} was hurt by the opposing Darkrai's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:88/100 1`] = `"[secondary] {{MON}} was hurt by the Spiky Shield!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Decidueye,player-1,1|from:move:Spikes|health:88/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Chesnaught,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:251/286 1`] = `"[secondary] {{MON}} was hurt by the Spiky Shield!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Decidueye,player-1,1|from:move:Spikes|health:121/138 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Conkeldurr,player-1,1|from:item:Life Orb|health:91/100 1`] = `"[secondary] {{MON}} lost some of its HP!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Decidueye,player-1,1|from:move:Stealth Rock|health:104/138 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Conkeldurr,player-1,1|from:item:Life Orb|health:149/165 1`] = `"[secondary] {{MON}} lost some of its HP!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Donphan,player-2,2|from:move:Spikes|health:132/150 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Cramorant,player-2,1|from:ability:Gulp Missile|of:Cramorant,player-1,1|health:0 1`] = `"[secondary] {{MON}} was hurt by the Gulp Missile!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Drifblim,player-2,1|from:ability:Aftermath|of:Drifblim,player-1,1|health:76/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Drifblim's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Cramorant,player-2,1|from:ability:Gulp Missile|of:Cramorant,player-1,1|health:139/250 1`] = `"[secondary] {{MON}} was hurt by the Gulp Missile!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Drifblim,player-2,1|from:ability:Aftermath|of:Drifblim,player-1,1|health:158/210 1`] = `"[secondary] {{MON}} was hurt by the opposing Drifblim's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Cramorant,player-2,1|from:ability:Gulp Missile|of:Cramorant,player-1,1|health:142/250 1`] = `"[secondary] {{MON}} was hurt by the Gulp Missile!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Curse|health:76/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:88/100 1`] = `"[secondary] {{MON}} is tormented by Bad Dreams!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Curse|health:87/115 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:114/130 1`] = `"[secondary] {{MON}} is tormented by Bad Dreams!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:51/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Decidueye,player-1,1|from:move:Spikes|health:88/100 1`] = `"[secondary] {{MON}} is hurt by the spikes!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:101/115 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Decidueye,player-1,1|from:move:Spikes|health:121/138 1`] = `"[secondary] {{MON}} is hurt by the spikes!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:122/240 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Decidueye,player-1,1|from:move:Stealth Rock|health:104/138 1`] = `"[secondary] Pointed stones dug into {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Entei,player-1,1|from:item:Life Orb|health:108/120 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Donphan,player-2,2|from:move:Spikes|health:132/150 1`] = `"[secondary] {{MON}} is hurt by the spikes!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Forretress,player-1,1|from:move:Bind|health:75/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Drifblim,player-2,1|from:ability:Aftermath|of:Drifblim,player-1,1|health:76/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Drifblim's Aftermath!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Forretress,player-1,1|from:move:Bind|health:101/135 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Drifblim,player-2,1|from:ability:Aftermath|of:Drifblim,player-1,1|health:158/210 1`] = `"[secondary] {{MON}} was hurt by the opposing Drifblim's Aftermath!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Forretress,player-2,1|from:move:Curse|health:102/135 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Curse|health:76/100 1`] = `"[secondary] {{MON}} is afflicted by the curse!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:56/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Garchomp's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Curse|health:87/115 1`] = `"[secondary] {{MON}} is afflicted by the curse!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:93/168 1`] = `"[secondary] {{MON}} was hurt by the opposing Garchomp's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:51/100 1`] = `"[secondary] {{MON}}'s health is sapped by Leech Seed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:56/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:101/115 1`] = `"[secondary] {{MON}}'s health is sapped by Leech Seed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:98/175 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:122/240 1`] = `"[secondary] {{MON}}'s health is sapped by Leech Seed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:move:Nightmare|health:25/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Electrode,player-1,1|from:Recoil|health:115/230 1`] = `"[secondary] {{MON}} is damaged by the recoil!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:move:Nightmare|health:30/120 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Entei,player-1,1|from:item:Life Orb|health:108/120 1`] = `"[secondary] {{MON}} lost some of its HP!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:move:Nightmare|health:50/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Forretress,player-1,1|from:move:Bind|health:75/100 1`] = `"[secondary] {{MON}} is hurt by Bind!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:status:Burn|health:30/100 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Forretress,player-1,1|from:move:Bind|health:101/135 1`] = `"[secondary] {{MON}} is hurt by Bind!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:status:Burn|health:106/120 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Forretress,player-2,1|from:move:Curse|health:102/135 1`] = `"[secondary] {{MON}} is afflicted by the curse!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:status:Burn|health:113/120 1`] = `"[secondary] {{MON}} was hurt by its status!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:56/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Garchomp's Rough Skin!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gholdengo,player-1,2|from:move:Salt Cure|health:68/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:93/168 1`] = `"[secondary] {{MON}} was hurt by the opposing Garchomp's Rough Skin!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Glalie,player-2,1|from:move:G-Max Steelsurge|health:75/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:56/100 1`] = `"[secondary] {{MON}} is hurt by Salt Cure!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Glalie,player-2,1|from:move:G-Max Steelsurge|health:105/140 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:98/175 1`] = `"[secondary] {{MON}} is hurt by Salt Cure!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Golisopod,player-1,1|from:ability:Rough Skin|of:Pikachu,player-2,1|health:40/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Golisopod's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:move:Nightmare|health:25/100 1`] = `"[secondary] {{MON}} is locked in a nightmare!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gyarados,player-2,1|from:move:Bind|health:106/155 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:move:Nightmare|health:30/120 1`] = `"[secondary] {{MON}} is locked in a nightmare!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Hitmonlee,player-1,1|from:move:Jump Kick|health:50/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:move:Nightmare|health:50/100 1`] = `"[secondary] {{MON}} is locked in a nightmare!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Hitmonlee,player-1,1|from:move:Jump Kick|health:55/110 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:status:Burn|health:30/100 1`] = `"[secondary] {{MON}} was hurt by its burn!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Incineroar,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:263/300 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:status:Burn|health:106/120 1`] = `"[secondary] {{MON}} was hurt by its burn!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Mimikyu,player-1,1|from:ability:Disguise|health:88/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Mimikyu's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gengar,player-2,1|from:status:Burn|health:113/120 1`] = `"[secondary] {{MON}} was hurt by its burn!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Mimikyu,player-1,1|from:ability:Disguise|health:193/220 1`] = `"[secondary] {{MON}} was hurt by the opposing Mimikyu's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gholdengo,player-1,2|from:move:Salt Cure|health:68/100 1`] = `"[secondary] {{MON}} is hurt by Salt Cure!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Mimikyu,player-2,1|from:ability:Disguise|health:193/220 1`] = `"[secondary] {{MON}} was hurt by the opposing Mimikyu's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Glalie,player-2,1|from:move:G-Max Steelsurge|health:75/100 1`] = `"[secondary] The sharp pieces of steel bit into {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Jaboca Berry|of:Oshawott,player-1,1|health:88/100 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Glalie,player-2,1|from:move:G-Max Steelsurge|health:105/140 1`] = `"[secondary] The sharp pieces of steel bit into {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Jaboca Berry|of:Oshawott,player-1,1|health:101/115 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Golisopod,player-1,1|from:ability:Rough Skin|of:Pikachu,player-2,1|health:40/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Golisopod's Rough Skin!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Rowap Berry|of:Oshawott,player-1,1|health:88/100 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Gyarados,player-2,1|from:move:Bind|health:106/155 1`] = `"[secondary] {{MON}} is hurt by Bind!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Rowap Berry|of:Oshawott,player-1,1|health:101/115 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Hitmonlee,player-1,1|from:move:Jump Kick|health:50/100 1`] = `"[secondary] {{MON}} kept going and crashed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pachirisu,player-1,1|from:item:Sticky Barb|health:88/100 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Hitmonlee,player-1,1|from:move:Jump Kick|health:55/110 1`] = `"[secondary] {{MON}} kept going and crashed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pachirisu,player-1,1|from:item:Sticky Barb|health:105/120 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Incineroar,player-2,1|from:move:Spiky Shield|of:Chesnaught,player-1,1|health:263/300 1`] = `"[secondary] {{MON}} was hurt by the Spiky Shield!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pachirisu,player-2,1|from:item:Sticky Barb|health:105/120 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Mimikyu,player-1,1|from:ability:Disguise|health:88/100 1`] = `"[secondary] {{MON}}'s disguise was busted!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pansear,player-1,1|from:move:Flame Burst|health:95/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Mimikyu,player-1,1|from:ability:Disguise|health:193/220 1`] = `"[secondary] {{MON}}'s disguise was busted!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pansear,player-1,1|from:move:Flame Burst|health:104/110 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Mimikyu,player-2,1|from:ability:Disguise|health:193/220 1`] = `"[secondary] {{MON}}'s disguise was busted!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pikachu,player-2,1|from:move:G-Max Steelsurge|health:90/95 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Jaboca Berry|of:Oshawott,player-1,1|health:88/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Oshawott's Jaboca Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pyukumuku,player-1,1|from:ability:Innards Out|of:Pyukumuku,player-2,1|health:0 1`] = `"[secondary] {{MON}} was hurt by the opposing Pyukumuku's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Jaboca Berry|of:Oshawott,player-1,1|health:101/115 1`] = `"[secondary] {{MON}} was hurt by the opposing Oshawott's Jaboca Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pyukumuku,player-1,1|from:ability:Innards Out|of:Pyukumuku,player-2,1|health:155/220 1`] = `"[secondary] {{MON}} was hurt by the opposing Pyukumuku's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Rowap Berry|of:Oshawott,player-1,1|health:88/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Oshawott's Rowap Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pyukumuku,player-1,1|from:ability:Innards Out|of:Pyukumuku,player-2,1|health:177/220 1`] = `"[secondary] {{MON}} was hurt by the opposing Pyukumuku's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Oshawott,player-2,1|from:item:Rowap Berry|of:Oshawott,player-1,1|health:101/115 1`] = `"[secondary] {{MON}} was hurt by the opposing Oshawott's Rowap Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:44/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pachirisu,player-1,1|from:item:Sticky Barb|health:88/100 1`] = `"[secondary] {{MON}} was hurt by its Sticky Barb!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:68/155 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pachirisu,player-1,1|from:item:Sticky Barb|health:105/120 1`] = `"[secondary] {{MON}} was hurt by its Sticky Barb!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Simisear,player-2,2|from:move:Flame Burst|of:Pansear,player-1,1|health:127/135 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pachirisu,player-2,1|from:item:Sticky Barb|health:105/120 1`] = `"[secondary] {{MON}} was hurt by its Sticky Barb!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:88/100 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pansear,player-1,1|from:move:Flame Burst|health:95/100 1`] = `"[secondary] The bursting flame hit {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:127/145 1`] = `"[secondary] {{MON}} was hurt by its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pansear,player-1,1|from:move:Flame Burst|health:104/110 1`] = `"[secondary] The bursting flame hit {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Swalot,player-1,1|from:ability:Liquid Ooze|of:Swalot,player-2,1|health:69/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Swalot's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pikachu,player-2,1|from:move:G-Max Steelsurge|health:90/95 1`] = `"[secondary] The sharp pieces of steel bit into {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Swalot,player-1,1|from:ability:Liquid Ooze|of:Swalot,player-2,1|health:109/160 1`] = `"[secondary] {{MON}} was hurt by the opposing Swalot's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pikachu,protagonist,1|from:Disobedience|health:75/100 1`] = `"[secondary] It hurt itself in its confusion!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:89/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Toxicroak's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pikachu,protagonist,1|from:Disobedience|health:135/180 1`] = `"[secondary] It hurt itself in its confusion!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:126/143 1`] = `"[secondary] {{MON}} was hurt by the opposing Toxicroak's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pyukumuku,player-1,1|from:ability:Innards Out|of:Pyukumuku,player-2,1|health:0 1`] = `"[secondary] {{MON}} was hurt by the opposing Pyukumuku's Innards Out!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:126/143 1`] = `"[secondary] {{MON}} was hurt by the opposing Toxicroak's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pyukumuku,player-1,1|from:ability:Innards Out|of:Pyukumuku,player-2,1|health:155/220 1`] = `"[secondary] {{MON}} was hurt by the opposing Pyukumuku's Innards Out!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:14/100 1`] = `"[secondary] {{MON}} was hurt by the opposing Tropius's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Pyukumuku,player-1,1|from:ability:Innards Out|of:Pyukumuku,player-2,1|health:177/220 1`] = `"[secondary] {{MON}} was hurt by the opposing Pyukumuku's Innards Out!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:21/159 1`] = `"[secondary] {{MON}} was hurt by the opposing Tropius's {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:44/100 1`] = `"[secondary] {{MON}} is hurt by the sea of fire!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:57/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:68/155 1`] = `"[secondary] {{MON}} is hurt by the sea of fire!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:79/140 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Simisear,player-2,2|from:move:Flame Burst|of:Pansear,player-1,1|health:127/135 1`] = `"[secondary] The bursting flame hit {{MON}}!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Vivillon,player-2,1|from:move:Powder|health:76/100 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:88/100 1`] = `"[secondary] {{MON}} was hurt by its Black Sludge!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Vivillon,player-2,1|from:move:Powder|health:203/270 1`] = `"[secondary] It was hurt by {{MOVE}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:127/145 1`] = `"[secondary] {{MON}} was hurt by its Black Sludge!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Swalot,player-1,1|from:ability:Liquid Ooze|of:Swalot,player-2,1|health:69/100 1`] = `"[secondary] {{MON}} sucked up the liquid ooze!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Swalot,player-1,1|from:ability:Liquid Ooze|of:Swalot,player-2,1|health:109/160 1`] = `"[secondary] {{MON}} sucked up the liquid ooze!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:89/100 1`] = `"[secondary] {{MON}} was hurt by its Dry Skin!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:126/143 1`] = `"[secondary] {{MON}} was hurt by its Dry Skin!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:126/143 1`] = `"[secondary] {{MON}} was hurt by its Dry Skin!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:14/100 1`] = `"[secondary] {{MON}} was hurt by its Solar Power!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:21/159 1`] = `"[secondary] {{MON}} was hurt by its Solar Power!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:57/100 1`] = `"[secondary] {{MON}} is hurt by G-Max Cannonade!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:79/140 1`] = `"[secondary] {{MON}} is hurt by G-Max Cannonade!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Vivillon,player-2,1|from:move:Powder|health:76/100 1`] = `"[secondary] The powder exploded!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Vivillon,player-2,1|from:move:Powder|health:203/270 1`] = `"[secondary] The powder exploded!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|mon:Misdreavus,player-2,1|move:Dark Pulse|by:4 1`] = `"[secondary] The opposing Misdreavus's PP was reduced!"`;
 
@@ -1054,19 +1122,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|
 
 exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|mon:Slowking,player-1,1|move:Swords Dance|by:3 1`] = `"[secondary] The opposing Slowking's PP was reduced!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1,1|move:Dark Pulse 1`] = `"[hint] The opposing Gastly did not learn Dark Pulse."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1,1|move:Dark Pulse 1`] = `"[secondary] The opposing Gastly did not learn {{MOVE}}."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1,1|move:Night Shade 1`] = `"[hint] The opposing Gastly did not learn Night Shade."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1,1|move:Night Shade 1`] = `"[secondary] The opposing Gastly did not learn {{MOVE}}."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1|move:Hex 1`] = `"[hint] The opposing Gastly did not learn Hex."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1|move:Hex 1`] = `"[secondary] The opposing Gastly did not learn {{MOVE}}."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1|move:Shadow Ball 1`] = `"[hint] The opposing Gastly did not learn Shadow Ball."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1|move:Shadow Ball 1`] = `"[secondary] The opposing Gastly did not learn {{MOVE}}."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: drag|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M 1`] = `"[primary] Bulbasaur was dragged out!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: drag|player:player-2|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:50|gender:M 1`] = `"[primary] Mon was dragged out!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: drag|player:player-2|position:1|name:Bulbasaur|health:105/105|species:Bulbasaur|level:50|gender:M 1`] = `"[primary] Bulbasaur was dragged out!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: drag|player:player-2|position:1|name:Bulbasaur|health:105/105|species:Bulbasaur|level:50|gender:M 1`] = `"[primary] Mon was dragged out!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: drag|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:50|gender:M 1`] = `"[primary] Charmander was dragged out!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: drag|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:50|gender:M 1`] = `"[primary] Mon was dragged out!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: dynamax|mon:Blastoise,player-1,1 1`] = `"[secondary] The opposing Blastoise dynamaxed!"`;
 
@@ -1156,12 +1224,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Z
 
 exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Zoroark,player-2,1|ability:Illusion 1`] = `"[secondary] The opposing Zoroark's illusion wore off!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: escaped|player:protagonist 1`] = `"[primary] PROTAGONIST escaped!"`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: escaped|player:wild 1`] = `"[primary] WILD escaped!"`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: escaped|player:wild-0 1`] = `"[primary] WILD-0 escaped!"`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Aegislash,player-1,1 1`] = `"[secondary] But it failed!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Alakazam,player-1,1 1`] = `"[secondary] But it failed!"`;
@@ -1172,29 +1234,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
 
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Basculegion,player-2,1|what:heal 1`] = `"[secondary] But it failed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Beldum,player-2,1|what:unboost|boosts:acc|from:ability:Clear Body 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevents stat loss!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Beldum,player-2,1|what:unboost|boosts:acc|from:ability:Clear Body 1`] = `"[secondary] The opposing Beldum's Clear Body prevents stat loss!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Beldum,player-2,1|what:unboost|boosts:atk|from:ability:Clear Body 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevents stat loss!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Beldum,player-2,1|what:unboost|boosts:atk|from:ability:Clear Body 1`] = `"[secondary] The opposing Beldum's Clear Body prevents stat loss!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Blastoise,player-2,1|from:weather:Extremely Harsh Sunlight 1`] = `"[secondary] But it failed because of the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Blastoise,player-2,1|from:weather:Extremely Harsh Sunlight 1`] = `"[secondary] The water-type attack evaporated in the harsh sunlight!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Charizard,player-1,1|what:heal 1`] = `"[secondary] But it failed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Charizard,player-2,1|from:weather:Heavy Rain 1`] = `"[secondary] But it failed because of the weather!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Charizard,player-2,1|from:weather:Heavy Rain 1`] = `"[secondary] The fire-type attack fizzled out in the heavy rain!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Hydrapple,player-1,1|what:unboost|from:move:Substitute 1`] = `"[secondary] But it failed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Hydrapple,player-1,1|what:unboost|from:move:Substitute 1`] = `"[secondary] But it failed! the opposing Hydrapple already has a substitute!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Mawile,player-2,1|what:unboost|boosts:atk|from:ability:Hyper Cutter 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevents stat loss!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Mawile,player-2,1|what:unboost|boosts:atk|from:ability:Hyper Cutter 1`] = `"[secondary] The opposing Mawile's Hyper Cutter prevents Attack loss!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Sableye,player-2,1|what:unboost|boosts:acc|from:ability:Keen Eye 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevents stat loss!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Sableye,player-2,1|what:unboost|boosts:acc|from:ability:Keen Eye 1`] = `"[secondary] The opposing Sableye's Keen Eye prevents accuracy loss!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevents stat loss!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo 1`] = `"[secondary] The opposing Spinda's Own Tempo prevents confusion!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Swampert,player-2,1|what:unboost|from:move:Substitute 1`] = `"[secondary] But it failed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Swampert,player-2,1|what:unboost|from:move:Substitute 1`] = `"[secondary] But it failed! the opposing Swampert already has a substitute!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Ursaluna,player-1,1|what:unboost|boosts:acc|from:ability:Mind's Eye 1`] = `"[secondary] {{MON}}'s {{ABILITY}} prevents stat loss!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Ursaluna,player-1,1|what:unboost|boosts:acc|from:ability:Mind's Eye 1`] = `"[secondary] The opposing Ursaluna's Mind's Eye prevents accuracy loss!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Whismur,player-1,1|what:status:Sleep|from:move:Uproar 1`] = `"[secondary] But it failed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Whismur,player-1,1|what:status:Sleep|from:move:Uproar 1`] = `"[secondary] But the opposing Whismur can't sleep in an uproar!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: faint|mon:Annihilape,player-1,1 1`] = `"[primary] {{MON}} fainted!"`;
 
@@ -1248,7 +1310,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fieldstar
 
 exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Psychic Terrain 1`] = `"[secondary] The battlefield got weird!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Trick Room 1`] = `"[secondary] {{MON}} twisted the dimensions!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Trick Room 1`] = `"[secondary] Mon twisted the dimensions!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Wonder Room|of:Cloyster,player-1,1 1`] = `"[secondary] It created a bizarre area in which Defense and Sp. Def stats are swapped!"`;
 
@@ -1258,253 +1320,267 @@ exports[`Exhaustive Log Coverage > should parse and format log string: forfeited
 
 exports[`Exhaustive Log Coverage > should parse and format log string: forfeited|player:player-3 1`] = `"[primary] PLAYER-3 forfeited."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Aegislash,player-1,1|species:Aegislash|from:ability:Stance Change 1`] = `"[primary] The opposing Aegislash transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Aegislash,player-1,1|species:Aegislash|from:ability:Stance Change 1`] = `"[secondary] The opposing Aegislash transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Aegislash,player-1,1|species:Aegislash-Blade|from:ability:Stance Change 1`] = `"[primary] The opposing Aegislash transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Aegislash,player-1,1|species:Aegislash-Blade|from:ability:Stance Change 1`] = `"[secondary] The opposing Aegislash transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Arceus,player-1,1|species:Arceus-Fire|from:ability:Multitype 1`] = `"[primary] The opposing Arceus transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Arceus,player-1,1|species:Arceus-Fire|from:ability:Multitype 1`] = `"[secondary] The opposing Arceus transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Arceus,player-2,1|species:Arceus-Water|from:ability:Multitype 1`] = `"[primary] The opposing Arceus transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Arceus,player-2,1|species:Arceus-Water|from:ability:Multitype 1`] = `"[secondary] The opposing Arceus transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast 1`] = `"[primary] The opposing Castform transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast 1`] = `"[secondary] The opposing Castform transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast 1`] = `"[primary] The opposing Castform transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast 1`] = `"[secondary] The opposing Castform transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Sunny|from:ability:Forecast 1`] = `"[primary] The opposing Castform transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Sunny|from:ability:Forecast 1`] = `"[secondary] The opposing Castform transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cherrim,player-1,1|species:Cherrim|from:ability:Flower Gift 1`] = `"[primary] The opposing Cherrim transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cherrim,player-1,1|species:Cherrim|from:ability:Flower Gift 1`] = `"[secondary] The opposing Cherrim transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cherrim,player-1,1|species:Cherrim-Sunshine|from:ability:Flower Gift 1`] = `"[primary] The opposing Cherrim transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cherrim,player-1,1|species:Cherrim-Sunshine|from:ability:Flower Gift 1`] = `"[secondary] The opposing Cherrim transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant|from:ability:Gulp Missile 1`] = `"[primary] The opposing Cramorant transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant|from:ability:Gulp Missile 1`] = `"[secondary] The opposing Cramorant transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant-Gorging|from:ability:Gulp Missile 1`] = `"[primary] The opposing Cramorant transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant-Gorging|from:ability:Gulp Missile 1`] = `"[secondary] The opposing Cramorant transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant-Gulping|from:ability:Gulp Missile 1`] = `"[primary] The opposing Cramorant transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant-Gulping|from:ability:Gulp Missile 1`] = `"[secondary] The opposing Cramorant transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar|from:ability:Zen Mode 1`] = `"[primary] The opposing Darmanitan transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar|from:ability:Zen Mode 1`] = `"[secondary] The opposing Darmanitan transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar-Zen|from:ability:Zen Mode 1`] = `"[primary] The opposing Darmanitan transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar-Zen|from:ability:Zen Mode 1`] = `"[secondary] The opposing Darmanitan transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Zen|from:ability:Zen Mode 1`] = `"[primary] The opposing Darmanitan transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Zen|from:ability:Zen Mode 1`] = `"[secondary] The opposing Darmanitan transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-1,1|species:Eiscue-Noice|from:ability:Ice Face 1`] = `"[primary] The opposing Eiscue transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-1,1|species:Eiscue-Noice|from:ability:Ice Face 1`] = `"[secondary] The opposing Eiscue transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-2,1|species:Eiscue|from:ability:Ice Face 1`] = `"[primary] The opposing Eiscue transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-2,1|species:Eiscue|from:ability:Ice Face 1`] = `"[secondary] The opposing Eiscue transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-2,1|species:Eiscue-Noice|from:ability:Ice Face 1`] = `"[primary] The opposing Eiscue transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-2,1|species:Eiscue-Noice|from:ability:Ice Face 1`] = `"[secondary] The opposing Eiscue transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Giratina,player-1,1|species:Giratina|from:species:Giratina-Origin 1`] = `"[primary] The opposing Giratina transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Giratina,player-1,1|species:Giratina|from:species:Giratina-Origin 1`] = `"[secondary] The opposing Giratina transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Giratina,player-1,1|species:Giratina-Origin|from:species:Giratina 1`] = `"[primary] The opposing Giratina transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Giratina,player-1,1|species:Giratina-Origin|from:species:Giratina 1`] = `"[secondary] The opposing Giratina transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-1,1|species:Greninja-Ash|from:ability:Battle Bond 1`] = `"[primary] The opposing Greninja transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-1,1|species:Greninja-Ash|from:ability:Battle Bond 1`] = `"[secondary] The opposing Greninja transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-1,1|species:Greninja-Battle-Bond|from:Faint 1`] = `"[primary] The opposing Greninja transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-1,1|species:Greninja-Battle-Bond|from:Faint 1`] = `"[secondary] The opposing Greninja transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-2,1|species:Greninja-Ash|from:ability:Battle Bond 1`] = `"[primary] The opposing Greninja transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-2,1|species:Greninja-Ash|from:ability:Battle Bond 1`] = `"[secondary] The opposing Greninja transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-1,1|species:Meloetta|from:move:Relic Song 1`] = `"[primary] The opposing Meloetta transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-1,1|species:Meloetta|from:move:Relic Song 1`] = `"[secondary] The opposing Meloetta transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-1,1|species:Meloetta-Pirouette|from:move:Relic Song 1`] = `"[primary] The opposing Meloetta transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-1,1|species:Meloetta-Pirouette|from:move:Relic Song 1`] = `"[secondary] The opposing Meloetta transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-2,2|species:Meloetta-Pirouette|from:move:Relic Song 1`] = `"[primary] The opposing Meloetta transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-2,2|species:Meloetta-Pirouette|from:move:Relic Song 1`] = `"[secondary] The opposing Meloetta transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-1,1|species:Mimikyu-Busted|from:ability:Disguise 1`] = `"[primary] The opposing Mimikyu transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-1,1|species:Mimikyu-Busted|from:ability:Disguise 1`] = `"[secondary] The opposing Mimikyu transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Busted|from:ability:Disguise 1`] = `"[primary] The opposing Mimikyu transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Busted|from:ability:Disguise 1`] = `"[secondary] The opposing Mimikyu transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Totem-Busted|from:ability:Disguise 1`] = `"[primary] The opposing Mimikyu transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Totem-Busted|from:ability:Disguise 1`] = `"[secondary] The opposing Mimikyu transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-1,1|species:Minior-Meteor|from:ability:Shields Down 1`] = `"[primary] The opposing Minior transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-1,1|species:Minior-Meteor|from:ability:Shields Down 1`] = `"[secondary] The opposing Minior transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-2,1|species:Minior-Green|from:ability:Shields Down 1`] = `"[primary] The opposing Minior transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-2,1|species:Minior-Green|from:ability:Shields Down 1`] = `"[secondary] The opposing Minior transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-2,1|species:Minior-Meteor|from:ability:Shields Down 1`] = `"[primary] The opposing Minior transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-2,1|species:Minior-Meteor|from:ability:Shields Down 1`] = `"[secondary] The opposing Minior transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch 1`] = `"[primary] The opposing Morpeko transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch 1`] = `"[secondary] The opposing Morpeko transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch 1`] = `"[primary] The opposing Morpeko transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch 1`] = `"[secondary] The opposing Morpeko transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Cornerstone-Mask-Tera|from:species:Ogerpon-Cornerstone-Mask 1`] = `"[primary] The opposing Ogerpon transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Cornerstone-Mask-Tera|from:species:Ogerpon-Cornerstone-Mask 1`] = `"[secondary] The opposing Ogerpon transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Hearthflame-Mask-Tera|from:species:Ogerpon-Hearthflame-Mask 1`] = `"[primary] The opposing Ogerpon transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Hearthflame-Mask-Tera|from:species:Ogerpon-Hearthflame-Mask 1`] = `"[secondary] The opposing Ogerpon transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Teal-Mask-Tera|from:species:Ogerpon 1`] = `"[primary] The opposing Ogerpon transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Teal-Mask-Tera|from:species:Ogerpon 1`] = `"[secondary] The opposing Ogerpon transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask 1`] = `"[primary] The opposing Ogerpon transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask 1`] = `"[secondary] The opposing Ogerpon transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-2,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask 1`] = `"[primary] The opposing Ogerpon transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-2,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask 1`] = `"[secondary] The opposing Ogerpon transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Palafin,player-1,1|species:Palafin-Hero|from:ability:Zero to Hero 1`] = `"[primary] The opposing Palafin transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Palafin,player-1,1|species:Palafin-Hero|from:ability:Zero to Hero 1`] = `"[secondary] The opposing Palafin transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Shaymin,player-2,1|species:Shaymin|from:species:Shaymin-Sky 1`] = `"[primary] The opposing Shaymin transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Shaymin,player-2,1|species:Shaymin|from:species:Shaymin-Sky 1`] = `"[secondary] The opposing Shaymin transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Silvally,player-1,1|species:Silvally-Fire|from:ability:RKS System 1`] = `"[primary] The opposing Silvally transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Silvally,player-1,1|species:Silvally-Fire|from:ability:RKS System 1`] = `"[secondary] The opposing Silvally transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Silvally,player-2,1|species:Silvally-Water|from:ability:RKS System 1`] = `"[primary] The opposing Silvally transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Silvally,player-2,1|species:Silvally-Water|from:ability:RKS System 1`] = `"[secondary] The opposing Silvally transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal 1`] = `"[primary] The opposing Terapagos transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal 1`] = `"[secondary] The opposing Terapagos transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-1,1|species:Terapagos-Terastal|from:ability:Tera Shift 1`] = `"[primary] The opposing Terapagos transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-1,1|species:Terapagos-Terastal|from:ability:Tera Shift 1`] = `"[secondary] The opposing Terapagos transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift 1`] = `"[primary] The opposing Terapagos transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift 1`] = `"[secondary] The opposing Terapagos transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-1,1|species:Wishiwashi-School|from:ability:Schooling 1`] = `"[primary] The opposing Wishiwashi transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-1,1|species:Wishiwashi-School|from:ability:Schooling 1`] = `"[secondary] The opposing Wishiwashi transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi|from:ability:Schooling 1`] = `"[primary] The opposing Wishiwashi transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi|from:ability:Schooling 1`] = `"[secondary] The opposing Wishiwashi transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi-School|from:ability:Schooling 1`] = `"[primary] The opposing Wishiwashi transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi-School|from:ability:Schooling 1`] = `"[secondary] The opposing Wishiwashi transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Xerneas,player-1,1|species:Xerneas|from:species:Xerneas-Neutral 1`] = `"[primary] The opposing Xerneas transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Xerneas,player-1,1|species:Xerneas|from:species:Xerneas-Neutral 1`] = `"[secondary] The opposing Xerneas transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Xerneas,player-2,1|species:Xerneas|from:species:Xerneas-Neutral 1`] = `"[primary] The opposing Xerneas transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Xerneas,player-2,1|species:Xerneas|from:species:Xerneas-Neutral 1`] = `"[secondary] The opposing Xerneas transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zacian,player-1,1|species:Zacian-Crowned|from:species:Zacian 1`] = `"[primary] The opposing Zacian transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zacian,player-1,1|species:Zacian-Crowned|from:species:Zacian 1`] = `"[secondary] The opposing Zacian transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zamazenta,player-2,1|species:Zamazenta-Crowned|from:species:Zamazenta 1`] = `"[primary] The opposing Zamazenta transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zamazenta,player-2,1|species:Zamazenta-Crowned|from:species:Zamazenta 1`] = `"[secondary] The opposing Zamazenta transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-1,1|species:Zygarde|from:Faint 1`] = `"[primary] The opposing Zygarde transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-1,1|species:Zygarde|from:Faint 1`] = `"[secondary] The opposing Zygarde transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-1,1|species:Zygarde-Complete|from:ability:Power Construct 1`] = `"[primary] The opposing Zygarde transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-1,1|species:Zygarde-Complete|from:ability:Power Construct 1`] = `"[secondary] The opposing Zygarde transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-2,1|species:Zygarde-Complete|from:ability:Power Construct 1`] = `"[primary] The opposing Zygarde transformed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-2,1|species:Zygarde-Complete|from:ability:Power Construct 1`] = `"[secondary] The opposing Zygarde transformed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: gigantamax|mon:Blastoise,player-1,1|species:Blastoise-Gmax 1`] = `"[primary] The opposing Blastoise gigantamaxed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: gigantamax|mon:Blastoise,player-1,1|species:Blastoise-Gmax 1`] = `"[secondary] The opposing Blastoise gigantamaxed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: gigantamax|mon:Copperajah,player-1,1|species:Copperajah-Gmax 1`] = `"[primary] The opposing Copperajah gigantamaxed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: gigantamax|mon:Copperajah,player-1,1|species:Copperajah-Gmax 1`] = `"[secondary] The opposing Copperajah gigantamaxed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: gigantamax|mon:Corviknight,player-1,1|species:Corviknight-Gmax 1`] = `"[primary] The opposing Corviknight gigantamaxed!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: gigantamax|mon:Corviknight,player-1,1|species:Corviknight-Gmax 1`] = `"[secondary] The opposing Corviknight gigantamaxed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Aggron,player-2,1|health:100/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Aggron,player-2,1|health:100/100 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Aggron,player-2,1|health:250/250 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Aggron,player-2,1|health:250/250 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Applin,player-1,1|from:item:Oran Berry|health:64/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Applin,player-1,1|from:item:Oran Berry|health:64/100 1`] = `"[secondary] Mon restored HP using its Oran Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Applin,player-1,1|from:item:Sitrus Berry|health:94/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Applin,player-1,1|from:item:Sitrus Berry|health:94/100 1`] = `"[secondary] Mon restored HP using its Sitrus Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:93/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:93/100 1`] = `"[secondary] Mon restored HP from the Grassy Terrain!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:127/138 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:127/138 1`] = `"[secondary] Mon restored HP from the Grassy Terrain!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Arboliva,player-2,1|from:move:Grassy Terrain|health:125/138 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Arboliva,player-2,1|from:move:Grassy Terrain|health:125/138 1`] = `"[secondary] Mon restored HP from the Grassy Terrain!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:19/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:19/100 1`] = `"[secondary] Mon restored HP using its Oran Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:49/260 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:49/260 1`] = `"[secondary] Mon restored HP using its Oran Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Audino,player-2,1|health:115/210 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Audino,player-2,1|health:115/210 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:46/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Bibarel,player-1,1|from:Drain|of:Bibarel,player-2,1|health:49/100 1`] = `"[secondary] Mon had its energy drained!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:107/140 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Bibarel,player-1,1|from:Drain|of:Bibarel,player-2,1|health:68/139 1`] = `"[secondary] Mon had its energy drained!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:124/140 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Bibarel,player-2,1|from:Drain|of:Bibarel,player-1,1|health:20/100 1`] = `"[secondary] Mon had its energy drained!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:move:Wish|health:86/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:46/100 1`] = `"[secondary] Mon restored HP using its Aguav Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:move:Wish|health:230/270 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:107/140 1`] = `"[secondary] Mon restored HP using its Aguav Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cloyster,player-2,1|from:item:Max Potion|health:100/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:124/140 1`] = `"[secondary] Mon restored HP using its Aguav Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cloyster,player-2,1|from:item:Max Potion|health:210/210 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:move:Wish|health:86/100 1`] = `"[secondary] Mon's wish came true!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:100/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Blaziken,player-1,1|from:move:Wish|health:230/270 1`] = `"[secondary] Mon's wish came true!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:180/180 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cloyster,player-2,1|from:item:Max Potion|health:100/100 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Diggersby,player-1,1|from:ability:Cheek Pouch|health:100/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cloyster,player-2,1|from:item:Max Potion|health:210/210 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Diggersby,player-1,1|from:ability:Cheek Pouch|health:280/280 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:100/100 1`] = `"[secondary] Mon became cloaked in mystical moonlight!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:176/266 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:180/180 1`] = `"[secondary] Mon became cloaked in mystical moonlight!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:188/266 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Diggersby,player-1,1|from:ability:Cheek Pouch|health:100/100 1`] = `"[secondary] Mon's HP was restored by its Cheek Pouch!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:89/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Diggersby,player-1,1|from:ability:Cheek Pouch|health:280/280 1`] = `"[secondary] Mon's HP was restored by its Cheek Pouch!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:108/122 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:176/266 1`] = `"[secondary] Mon restored HP using its Sitrus Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:54/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:188/266 1`] = `"[secondary] Mon restored HP using its Sitrus Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:61/115 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:89/100 1`] = `"[secondary] Mon restored a little HP using its Leftovers!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:66/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:108/122 1`] = `"[secondary] Mon restored a little HP using its Leftovers!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:92/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:54/100 1`] = `"[secondary] Mon's health is sapped by Leech Seed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:124/135 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:61/115 1`] = `"[secondary] Mon's health is sapped by Leech Seed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Gothitelle,player-1,1|from:item:Leftovers|health:54/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:66/100 1`] = `"[secondary] Mon's health is sapped by Leech Seed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Incineroar,player-1,1|from:ability:Hospitality|of:Sinistcha,player-1,2|health:62/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:92/100 1`] = `"[secondary] Mon's HP was restored by Poison Heal!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Incineroar,player-1,1|from:ability:Hospitality|of:Sinistcha,player-1,2|health:95/155 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:124/135 1`] = `"[secondary] Mon's HP was restored by Poison Heal!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:100/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Gothitelle,player-1,1|from:item:Leftovers|health:54/100 1`] = `"[secondary] Mon restored a little HP using its Leftovers!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:125/125 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Incineroar,player-1,1|from:ability:Hospitality|of:Sinistcha,player-1,2|health:62/100 1`] = `"[secondary] Mon drank down all the matcha!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Lotad,player-1,1|from:ability:Rain Dish|health:88/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Incineroar,player-1,1|from:ability:Hospitality|of:Sinistcha,player-1,2|health:95/155 1`] = `"[secondary] Mon drank down all the matcha!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:92/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:100/100 1`] = `"[secondary] The healing wish came true for Mon!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:96/105 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:125/125 1`] = `"[secondary] The healing wish came true for Mon!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mienshao,player-2,1|from:ability:Regenerator|health:37/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Lotad,player-1,1|from:ability:Rain Dish|health:88/100 1`] = `"[secondary] Mon's HP was restored by its Rain Dish!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mienshao,player-2,1|from:ability:Regenerator|health:46/125 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:92/100 1`] = `"[secondary] Mon restored HP using its Aqua Ring!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Orthworm,player-2,1|from:ability:Earth Eater|health:94/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:96/105 1`] = `"[secondary] Mon restored HP using its Aqua Ring!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Orthworm,player-2,1|from:ability:Earth Eater|health:122/130 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mienshao,player-2,1|from:ability:Regenerator|health:37/100 1`] = `"[secondary] Mon's HP was restored by Regenerator!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:95/95 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Mienshao,player-2,1|from:ability:Regenerator|health:46/125 1`] = `"[secondary] Mon's HP was restored by Regenerator!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:100/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Orthworm,player-2,1|from:ability:Earth Eater|health:94/100 1`] = `"[secondary] Mon's HP was restored by Earth Eater!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:item:Full Restore|health:95/95 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Orthworm,player-2,1|from:ability:Earth Eater|health:122/130 1`] = `"[secondary] Mon's HP was restored by Earth Eater!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:item:Full Restore|health:100/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:95/95 1`] = `"[secondary] Mon's HP was restored by Volt Absorb!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,protagonist,1|from:item:Potion|health:91/95 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:100/100 1`] = `"[secondary] Mon's HP was restored by Volt Absorb!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,protagonist,1|from:item:Potion|health:96/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:item:Full Restore|health:95/95 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,protagonist|from:item:Potion|health:91/95 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:item:Full Restore|health:100/100 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Roselia,player-1,1|from:move:Ingrain|health:55/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,protagonist,1|from:item:Potion|health:91/95 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/100 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,protagonist,1|from:item:Potion|health:96/100 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/110 1`] = `"[secondary] {{MON}}'s HP was restored."`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,protagonist|from:item:Potion|health:91/95 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Sceptile,player-1,1|from:item:Shell Bell|health:50/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Raichu,player-1,1|from:Heal Replacement|health:100/100 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Sceptile,player-1,1|from:item:Shell Bell|health:53/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Raichu,player-1,1|from:Heal Replacement|health:120/120 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Sceptile,player-1,1|from:item:Shell Bell|health:64/130 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Roselia,player-1,1|from:move:Ingrain|health:55/100 1`] = `"[secondary] Mon absorbed nutrients with its roots!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Seel,player-2,1|from:ability:Ice Body|health:63/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/100 1`] = `"[secondary] Mon absorbed nutrients with its roots!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Seel,player-2,1|from:ability:Ice Body|health:78/125 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/110 1`] = `"[secondary] Mon absorbed nutrients with its roots!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:53/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Sceptile,player-1,1|from:item:Shell Bell|health:50/100 1`] = `"[secondary] Mon restored a little HP using its Shell Bell!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:58/110 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Sceptile,player-1,1|from:item:Shell Bell|health:53/100 1`] = `"[secondary] Mon restored a little HP using its Shell Bell!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:100/100 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Sceptile,player-1,1|from:item:Shell Bell|health:64/130 1`] = `"[secondary] Mon restored a little HP using its Shell Bell!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:132/143 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Seel,player-2,1|from:ability:Ice Body|health:63/100 1`] = `"[secondary] Mon's HP was restored by its Ice Body!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:143/143 1`] = `"[secondary] {{MON}}'s HP was restored by its {{ABILITY}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Seel,player-2,1|from:ability:Ice Body|health:78/125 1`] = `"[secondary] Mon's HP was restored by its Ice Body!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:63/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Shiinotic,player-1,1|from:Heal|health:100/100 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:78/125 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Shiinotic,player-1,1|from:Heal|health:230/230 1`] = `"[secondary] Mon's HP was restored."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Zekrom,player-1,1|from:item:Max Potion|health:100/100 1`] = `"[secondary] {{MON}} restored HP using its {{ITEM}}!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:53/100 1`] = `"[secondary] Mon restored HP using its Berry Juice!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:58/110 1`] = `"[secondary] Mon restored HP using its Berry Juice!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:100/100 1`] = `"[secondary] Mon's HP was restored by its Dry Skin!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:132/143 1`] = `"[secondary] Mon's HP was restored by its Dry Skin!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:143/143 1`] = `"[secondary] Mon's HP was restored by its Dry Skin!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:63/100 1`] = `"[secondary] Mon restored HP using its Black Sludge!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:78/125 1`] = `"[secondary] Mon restored HP using its Black Sludge!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Zekrom,player-1,1|from:item:Max Potion|health:100/100 1`] = `"[secondary] Mon's HP was restored."`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:1 1`] = `"[secondary] Hit 1 time(s)!"`;
 
@@ -1512,11 +1588,11 @@ exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|
 
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:3 1`] = `"[secondary] Hit 3 time(s)!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Araquanid,player-1,1|from:ability:Water Bubble 1`] = `"[secondary] The opposing Araquanid's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Araquanid,player-1,1|from:ability:Water Bubble 1`] = `"[secondary] The opposing Araquanid's Water Bubble makes it immune!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Baxcalibur,player-2,1|from:ability:Thermal Exchange 1`] = `"[secondary] The opposing Baxcalibur's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Baxcalibur,player-2,1|from:ability:Thermal Exchange 1`] = `"[secondary] The opposing Baxcalibur's Thermal Exchange protects it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Budew,player-2,1|from:ability:Leaf Guard 1`] = `"[secondary] The opposing Budew's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Budew,player-2,1|from:ability:Leaf Guard 1`] = `"[secondary] The opposing Budew's Leaf Guard protected it from status problems!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Celesteela,player-1,2 1`] = `"[secondary] It doesn't affect the opposing Celesteela..."`;
 
@@ -1524,53 +1600,53 @@ exports[`Exhaustive Log Coverage > should parse and format log string: immune|mo
 
 exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Charizard,player-2,1 1`] = `"[secondary] It doesn't affect the opposing Charizard..."`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Chesnaught,player-2,1|from:ability:Bulletproof 1`] = `"[secondary] The opposing Chesnaught's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Chesnaught,player-2,1|from:ability:Bulletproof 1`] = `"[secondary] The opposing Chesnaught's Bulletproof makes it immune!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Drowzee,player-2,1|from:ability:Insomnia 1`] = `"[secondary] The opposing Drowzee's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Drowzee,player-2,1|from:ability:Insomnia 1`] = `"[secondary] The opposing Drowzee's Insomnia makes it immune to sleep!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Garganacl,player-2,1|from:ability:Purifying Salt 1`] = `"[secondary] The opposing Garganacl's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Garganacl,player-2,1|from:ability:Purifying Salt 1`] = `"[secondary] The opposing Garganacl's Purifying Salt protects it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Geodude,player-1,1|from:ability:Sturdy 1`] = `"[secondary] The opposing Geodude's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Geodude,player-1,1|from:ability:Sturdy 1`] = `"[secondary] The opposing Geodude's Sturdy makes it immune to one-hit KO moves!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Gholdengo,player-2,1|from:ability:Good as Gold 1`] = `"[secondary] The opposing Gholdengo's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Gholdengo,player-2,1|from:ability:Good as Gold 1`] = `"[secondary] The opposing Gholdengo's Good as Gold makes it immune!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Guzzlord,player-2,1|from:ability:Water Absorb 1`] = `"[secondary] The opposing Guzzlord's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Guzzlord,player-2,1|from:ability:Water Absorb 1`] = `"[secondary] The opposing Guzzlord's Water Absorb makes it immune!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minior,player-1,1|from:ability:Shields Down 1`] = `"[secondary] The opposing Minior's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minior,player-1,1|from:ability:Shields Down 1`] = `"[secondary] The opposing Minior's Shields Down protects it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minior,player-2,1|from:ability:Shields Down 1`] = `"[secondary] The opposing Minior's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minior,player-2,1|from:ability:Shields Down 1`] = `"[secondary] The opposing Minior's Shields Down protects it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minun,player-1,2|from:ability:Soundproof 1`] = `"[secondary] The opposing Minun's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minun,player-1,2|from:ability:Soundproof 1`] = `"[secondary] The opposing Minun's Soundproof makes it immune to sound-based moves!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Ninetales,player-1,1|from:ability:Flash Fire 1`] = `"[secondary] The opposing Ninetales's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Ninetales,player-1,1|from:ability:Flash Fire 1`] = `"[secondary] The opposing Ninetales's Flash Fire makes it immune!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Pikachu,player-1,1|from:ability:Volt Absorb 1`] = `"[secondary] The opposing Pikachu's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Pikachu,player-1,1|from:ability:Volt Absorb 1`] = `"[secondary] The opposing Pikachu's Volt Absorb makes it immune!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Ralts,player-1,1|from:ability:Insomnia 1`] = `"[secondary] The opposing Ralts's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Ralts,player-1,1|from:ability:Insomnia 1`] = `"[secondary] The opposing Ralts's Insomnia makes it immune to sleep!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Rapidash,player-2,1|from:ability:Pastel Veil 1`] = `"[secondary] The opposing Rapidash's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Rapidash,player-2,1|from:ability:Pastel Veil 1`] = `"[secondary] The opposing Rapidash is protected by a pastel veil!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Reuniclus,player-1,1|from:ability:Overcoat 1`] = `"[secondary] The opposing Reuniclus's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Reuniclus,player-1,1|from:ability:Overcoat 1`] = `"[secondary] The opposing Reuniclus's Overcoat protects it from the weather!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Shedinja,player-2,1|from:ability:Wonder Guard 1`] = `"[secondary] The opposing Shedinja's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Shedinja,player-2,1|from:ability:Wonder Guard 1`] = `"[secondary] The opposing Shedinja's Wonder Guard protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Shedinja,player-2,2|from:ability:Wonder Guard 1`] = `"[secondary] The opposing Shedinja's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Shedinja,player-2,2|from:ability:Wonder Guard 1`] = `"[secondary] The opposing Shedinja's Wonder Guard protected it!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Spinda,player-1,1|from:ability:Own Tempo 1`] = `"[secondary] The opposing Spinda's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Spinda,player-1,1|from:ability:Own Tempo 1`] = `"[secondary] The opposing Spinda's Own Tempo prevents confusion!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Sudowoodo,player-2,1|from:ability:Limber 1`] = `"[secondary] The opposing Sudowoodo's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Sudowoodo,player-2,1|from:ability:Limber 1`] = `"[secondary] The opposing Sudowoodo's Limber protects it from paralysis!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Toxicroak,player-2,1|from:ability:Dry Skin 1`] = `"[secondary] The opposing Toxicroak's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Toxicroak,player-2,1|from:ability:Dry Skin 1`] = `"[secondary] The opposing Toxicroak's Dry Skin makes it immune!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Wailmer,player-2,1|from:ability:Oblivious 1`] = `"[secondary] The opposing Wailmer's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Wailmer,player-2,1|from:ability:Oblivious 1`] = `"[secondary] The opposing Wailmer's Oblivious prevents it from being infatuated!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Whismur,player-1,1|from:ability:Soundproof 1`] = `"[secondary] The opposing Whismur's {{ABILITY}} makes it immune!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Whismur,player-1,1|from:ability:Soundproof 1`] = `"[secondary] The opposing Whismur's Soundproof makes it immune to sound-based moves!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: invertboosts|mon:Malamar,player-2,1|from:move:Topsy-Turvy|of:Malamar,player-1,1 1`] = `"[secondary] The opposing Malamar's stat changes were inverted!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Stantler,player-1,1|item:Cheri Berry|from:ability:Frisk|of:Stantler,player-2,1 1`] = `"[secondary] The opposing Stantler found one Cheri Berry!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Stantler,player-1,1|item:Cheri Berry|from:ability:Frisk|of:Stantler,player-2,1 1`] = `"[secondary] The opposing Stantler frisked its target and found one Cheri Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Tauros,player-1,2|item:Life Orb|from:ability:Frisk|of:Stantler,player-2,1 1`] = `"[secondary] The opposing Tauros found one Life Orb!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Tauros,player-1,2|item:Life Orb|from:ability:Frisk|of:Stantler,player-2,1 1`] = `"[secondary] The opposing Tauros frisked its target and found one Life Orb!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Abra,player-1,1|item:Cheri Berry|eat 1`] = `"[secondary] The opposing Abra ate its Cheri Berry!"`;
 
@@ -1772,33 +1848,85 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Weavile,player-1,1|item:Toxic Orb|from:ability:Pickpocket|of:Weavile,player-2,1 1`] = `"[secondary] The opposing Weavile's Toxic Orb was removed!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Curse|forgot:Payback 1`] = `"[primary] The opposing Gastly forgot Payback and learned Curse!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1 1`] = `"[secondary] The opposing Castform obtained one Utility Umbrella!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Hex|forgot:Lick 1`] = `"[primary] The opposing Gastly forgot Lick and learned Hex!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Cherrim,player-1,1|item:Utility Umbrella|from:move:Trick|of:Luxray,player-2,1 1`] = `"[secondary] The opposing Cherrim obtained one Utility Umbrella!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Mean Look 1`] = `"[primary] The opposing Gastly learned Mean Look!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Crobat,player-1,1|item:Safety Goggles|from:move:Thief 1`] = `"[secondary] The opposing Crobat obtained one Safety Goggles!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Payback 1`] = `"[primary] The opposing Gastly learned Payback!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Delphox,player-1,1|item:Cheri Berry|from:ability:Magician 1`] = `"[secondary] The opposing Delphox obtained one Cheri Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Shadow Ball|forgot:Hex 1`] = `"[primary] The opposing Gastly forgot Hex and learned Shadow Ball!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Delphox,player-1,1|item:Leppa Berry|from:ability:Magician 1`] = `"[secondary] The opposing Delphox obtained one Leppa Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Spite 1`] = `"[primary] The opposing Gastly learned Spite!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Delphox,player-1,1|item:Oran Berry|from:ability:Magician 1`] = `"[secondary] The opposing Delphox obtained one Oran Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Sucker Punch|forgot:Mean Look 1`] = `"[primary] The opposing Gastly forgot Mean Look and learned Sucker Punch!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|from:move:Thief 1`] = `"[secondary] The opposing Empoleon obtained one Griseous Orb!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Curse|forgot:Payback 1`] = `"[primary] The opposing Gastly forgot Payback and learned Curse!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Florges,player-2,2|item:Cheri Berry|from:ability:Symbiosis|of:Florges,player-2,1 1`] = `"[secondary] The opposing Florges obtained one Cheri Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Dark Pulse|forgot:Lick 1`] = `"[primary] The opposing Gastly forgot Lick and learned Dark Pulse!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|from:move:Bestow|of:Pikachu,player-2,2 1`] = `"[secondary] The opposing Golisopod received Sticky Barb!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Mean Look 1`] = `"[primary] The opposing Gastly learned Mean Look!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Linoone,player-1,1|item:Cheri Berry|from:ability:Pickup 1`] = `"[secondary] The opposing Linoone found one Cheri Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Night Shade|forgot:Mean Look 1`] = `"[primary] The opposing Gastly forgot Mean Look and learned Night Shade!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Linoone,player-2,1|item:Rawst Berry|from:ability:Pickup 1`] = `"[secondary] The opposing Linoone found one Rawst Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Payback 1`] = `"[primary] The opposing Gastly learned Payback!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Lopunny,player-1,1|item:Power Anklet|from:move:Trick 1`] = `"[secondary] The opposing Lopunny obtained one Power Anklet!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Spite 1`] = `"[primary] The opposing Gastly learned Spite!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Oshawott,player-1,1|item:Starf Berry|from:ability:Pickup 1`] = `"[secondary] The opposing Oshawott found one Starf Berry!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Sucker Punch|forgot:Dark Pulse 1`] = `"[primary] The opposing Gastly forgot Dark Pulse and learned Sucker Punch!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Oshawott,player-1,1|item:Starf Berry|from:move:Recycle 1`] = `"[secondary] The opposing Oshawott found one Starf Berry!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-1,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-2,1 1`] = `"[secondary] The Sticky Barb attached itself to the opposing Pachirisu!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-2,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-1,1 1`] = `"[secondary] The Sticky Barb attached itself to the opposing Pachirisu!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pidove,player-2,1|item:Sticky Barb|from:move:Bestow|of:Pidove,player-1,1 1`] = `"[secondary] The opposing Pidove received Sticky Barb!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|from:move:Thief 1`] = `"[secondary] The opposing Porygon-Z obtained one Cheri Berry!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Snorlax,player-1,1|item:Rawst Berry|from:move:Recycle 1`] = `"[secondary] The opposing Snorlax found one Rawst Berry!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Snorlax,player-1,2|item:Rawst Berry|from:move:G-Max Replenish|of:Snorlax,player-1,1 1`] = `"[secondary] The opposing Snorlax found one Rawst Berry!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Snorlax,player-1,3|item:Cheri Berry|from:move:G-Max Replenish|of:Snorlax,player-1,1 1`] = `"[secondary] The opposing Snorlax found one Cheri Berry!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-1,1|item:Choice Band|from:move:Switcheroo 1`] = `"[secondary] The opposing Torchic obtained one Choice Band!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-2,1|item:Safety Goggles|from:move:Switcheroo|of:Torchic,player-1,1 1`] = `"[secondary] The opposing Torchic obtained one Safety Goggles!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Tropius,player-2,1|item:Chilan Berry|from:ability:Harvest 1`] = `"[secondary] The opposing Tropius harvested one Chilan Berry!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Weavile,player-2,1|item:Toxic Orb|from:ability:Pickpocket 1`] = `"[secondary] The opposing Weavile obtained one Toxic Orb!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Yamper,player-1,1|item:Poké Ball|from:ability:Ball Fetch 1`] = `"[secondary] The opposing Yamper retrieved a Poké Ball!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Curse|forgot:Payback 1`] = `"[secondary] The opposing Gastly forgot Payback and learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Hex|forgot:Lick 1`] = `"[secondary] The opposing Gastly forgot Lick and learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Mean Look 1`] = `"[secondary] The opposing Gastly learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Payback 1`] = `"[secondary] The opposing Gastly learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Shadow Ball|forgot:Hex 1`] = `"[secondary] The opposing Gastly forgot Hex and learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Spite 1`] = `"[secondary] The opposing Gastly learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Sucker Punch|forgot:Mean Look 1`] = `"[secondary] The opposing Gastly forgot Mean Look and learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Curse|forgot:Payback 1`] = `"[secondary] The opposing Gastly forgot Payback and learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Dark Pulse|forgot:Lick 1`] = `"[secondary] The opposing Gastly forgot Lick and learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Mean Look 1`] = `"[secondary] The opposing Gastly learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Night Shade|forgot:Mean Look 1`] = `"[secondary] The opposing Gastly forgot Mean Look and learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Payback 1`] = `"[secondary] The opposing Gastly learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Spite 1`] = `"[secondary] The opposing Gastly learned {{MOVE}}!"`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Sucker Punch|forgot:Dark Pulse 1`] = `"[secondary] The opposing Gastly forgot Dark Pulse and learned {{MOVE}}!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: levelup|mon:Gastly,player-1,1|level:10|hp:26|atk:12|def:11|spa:25|spd:12|spe:21 1`] = `"[primary] The opposing Gastly grew to level 10!"`;
 
@@ -1992,17 +2120,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertter
 
 exports[`Exhaustive Log Coverage > should parse and format log string: revertultra|mon:Necrozma,player-1,1|species:Necrozma-Dawn-Wings|from:Faint 1`] = `"[primary] The opposing Necrozma returned to normal!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Basculin,player-1|from:move:Revival Blessing|of:Basculegion,player-1,1 1`] = `"[primary] Mon was revived!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Basculin,player-1|from:move:Revival Blessing|of:Basculegion,player-1,1 1`] = `"[primary] The opposing Basculin was revived!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Kyogre,player-1|from:item:Revive 1`] = `"[primary] Mon was revived!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Kyogre,player-1|from:item:Revive 1`] = `"[primary] The opposing Kyogre was revived!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Necrozma,player-1|from:item:Revive 1`] = `"[primary] Mon was revived!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Necrozma,player-1|from:item:Revive 1`] = `"[primary] The opposing Necrozma was revived!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Pikachu,player-1|from:item:Revive 1`] = `"[primary] Mon was revived!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Pikachu,player-1|from:item:Revive 1`] = `"[primary] The opposing Pikachu was revived!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Pikachu,protagonist|from:item:Max Revive 1`] = `"[primary] Mon was revived!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Pikachu,protagonist|from:item:Max Revive 1`] = `"[primary] The opposing Pikachu was revived!"`;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Quaxly,player-1|from:move:Revival Blessing|of:Pawmot,player-1,1 1`] = `"[primary] Mon was revived!"`;
+exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Quaxly,player-1|from:move:Revival Blessing|of:Pawmot,player-1,1 1`] = `"[primary] The opposing Quaxly was revived!"`;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1 1`] = `"[secondary] The opposing Misdreavus's Dark Pulse PP was changed to 0!"`;
 

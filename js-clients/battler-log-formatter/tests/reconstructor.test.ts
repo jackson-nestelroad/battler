@@ -30,6 +30,6 @@ describe('Pattern Reconstructor', () => {
         } as any
       }
     };
-    expect(getLogPatterns(entry)[0]).toBe('unboost|from:ability:*');
+    expect(getLogPatterns(entry)[0]).toBe('unboost|from:ability:Intimidate');
   });
 });

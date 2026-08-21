@@ -24,7 +24,9 @@ abilitystart|ability:*|from:move:Worry Seed
 ability|ability:Air Lock
 ability|ability:Anticipation
 ability|ability:As One
+ability|ability:Aura Ability Base
 ability|ability:Aura Break
+ability|ability:Beads of Ruin
 ability|ability:Cloud Nine
 ability|ability:Fairy Aura
 ability|ability:Gooey
@@ -36,21 +38,27 @@ ability|ability:Perish Body
 ability|ability:Pressure
 ability|ability:Supersweet Syrup
 ability|ability:Sword of Ruin
+ability|ability:Tablets of Ruin
+ability|ability:Tangling Hair
 ability|ability:Teraform Zero
 ability|ability:Unnerve
+ability|ability:Vessel of Ruin
 activate|ability:Battle Bond
 activate|ability:Commander
 activate|ability:Cotton Down
 activate|ability:Cud Chew
 activate|ability:Dancer
 activate|ability:Emergency Exit
+activate|ability:Forewarn
 activate|ability:Forewarn|move:*
+activate|ability:Hadron Engine
 activate|ability:Healer
 activate|ability:Hydration
 activate|ability:Intimidate
 activate|ability:Leaf Guard
 activate|ability:Lightning Rod
 activate|ability:Magic Bounce
+activate|ability:Oblivious
 activate|ability:Orichalcum Pulse
 activate|ability:Own Tempo
 activate|ability:Pastel Veil
@@ -59,6 +67,7 @@ activate|ability:Protosynthesis
 activate|ability:Protosynthesis|from:item:Booster Energy
 activate|ability:Quark Drive
 activate|ability:Quark Drive|from:item:Booster Energy
+activate|ability:Quick Draw
 activate|ability:Ripen
 activate|ability:Screen Cleaner
 activate|ability:Sticky Hold
@@ -76,13 +85,24 @@ activate|ability:Water Bubble
 activate|ability:Zero to Hero
 activate|clause:*
 activate|clause:*|sides:*
+activate|clause:Endless Battle Clause
+activate|clause:Sleep Clause
+activate|condition:Affection
 activate|condition:Affection|[tough]
+activate|condition:Break Protect
 activate|condition:Break Protect|[broken]
 activate|condition:Confusion
+activate|condition:Damage-Reducing Berry Item Base
 activate|condition:Disobedience
 activate|condition:Disobedience|[confusion]
+activate|condition:Heal Replacement
+activate|condition:Highlighting Sample
+activate|condition:Knock Down
 activate|condition:Must Recharge
+activate|condition:Protect Move Condition Base
+activate|condition:Swap Abilities
 activate|condition:Trapped
+activate|condition:Weaken Through Protection Move Base
 activate|hit:*|move:*
 activate|item:Cheri Berry|move:*
 activate|item:Chilan Berry|[weaken]
@@ -107,6 +127,7 @@ activate|magnitude:*|move:*
 activate|move:After You
 activate|move:Aromatherapy
 activate|move:Attract
+activate|move:Beat Up
 activate|move:Bide
 activate|move:Bind
 activate|move:Celebrate
@@ -116,18 +137,22 @@ activate|move:Destiny Bond
 activate|move:Electric Terrain
 activate|move:Endure
 activate|move:Fickle Beam
+activate|move:Fling
 activate|move:Gravity
 activate|move:Guard Split
+activate|move:Happy Hour
 activate|move:Heal Bell
 activate|move:Healing Wish
 activate|move:Ingrain
 activate|move:Lock-On
 activate|move:Lunar Dance
 activate|move:Magic Coat
+activate|move:Magnitude
 activate|move:Mat Block
 activate|move:Max Guard
 activate|move:Mist
 activate|move:Misty Terrain
+activate|move:Poltergeist
 activate|move:Powder
 activate|move:Power Split
 activate|move:Protect
@@ -144,8 +169,12 @@ activate|move:Spectral Thief
 activate|move:Speed Swap
 activate|move:Splash
 activate|move:Sticky Web
+activate|move:Substitute
 activate|move:Substitute|[damage]
 activate|move:Wide Guard
+activate|volatile:Must Recharge
+activate|volatile:Partially Trapped
+activate|volatile:Trapped
 addedtype|type:*
 addvolatile|from:Two Turn Move|volatile:*
 addvolatile|from:move:Fly|volatile:*
@@ -156,10 +185,16 @@ animatemove|[noanim]
 appear
 battlestart
 block|ability:*|from:item:Ability Shield
+block|from:ability:Aroma Veil
 block|from:ability:Aroma Veil|move:*
+block|from:ability:Flower Veil
 block|from:ability:Flower Veil|move:*
+block|from:ability:Pastel Veil
 block|from:ability:Pastel Veil|move:*
+block|from:ability:Sweet Veil
 block|from:ability:Sweet Veil|move:*
+block|from:condition:Dynamax
+block|from:item:Ability Shield
 block|from:item:Ability Shield|move:*
 boost
 boost|[max]
@@ -222,14 +257,18 @@ cant|from:move:Aura Wheel
 cant|from:move:Disable
 cant|from:move:Focus Punch
 cant|from:move:Gravity
+cant|from:move:Heal Block
 cant|from:move:Imprison
 cant|from:move:Petal Dance
 cant|from:move:Shell Trap
 cant|from:move:Taunt
+cant|from:move:Telekinesis
 cant|from:move:Throat Chop
 cant|from:status:Freeze
 cant|from:status:Paralysis
 cant|from:status:Sleep
+cant|from:volatile:Flinch
+cant|from:volatile:Must Recharge
 catchfailed|item:Beast Ball|shakes:*
 catchfailed|item:Dusk Ball|shakes:*
 catchfailed|item:Fast Ball|shakes:*
@@ -335,35 +374,53 @@ didnotlearnmove|move:Night Shade
 didnotlearnmove|move:Shadow Ball
 drag
 dynamax
+end|ability:Flash Fire
 end|ability:Flash Fire|[silent]
 end|ability:Illusion
 end|ability:Neutralizing Gas
 end|ability:Protosynthesis
 end|ability:Quark Drive
 end|ability:Slow Start
+end|ability:Supreme Overlord
 end|ability:Supreme Overlord|[silent]
 end|condition:Commanding
 end|condition:Confusion
+end|condition:Future Move
+end|condition:Highlighting Sample
+end|condition:Immobilized
+end|move:Attract
 end|move:Bide
 end|move:Bind
 end|move:Bind|[silent]
+end|move:Charge
 end|move:Charge|[silent]
 end|move:Disable
 end|move:Doom Desire
+end|move:Embargo
 end|move:Encore
 end|move:Future Sight
 end|move:Heal Block
+end|move:Laser Focus
 end|move:Laser Focus|[silent]
 end|move:Leech Seed
 end|move:Magnet Rise
+end|move:Octolock
 end|move:Octolock|[silent]
 end|move:Power Trick
+end|move:Salt Cure
 end|move:Sky Drop
 end|move:Stockpile
 end|move:Substitute
+end|move:Syrup Bomb
 end|move:Syrup Bomb|[silent]
+end|move:Taunt
 end|move:Telekinesis
+end|move:Throat Chop
+end|move:Torment
+end|move:Uproar
+end|move:Yawn
 end|move:Yawn|[silent]
+end|volatile:Partially Trapped
 escaped
 exp
 fail
@@ -372,8 +429,19 @@ fail|boosts:*|from:ability:Hyper Cutter|what:*
 fail|boosts:*|from:ability:Keen Eye|what:*
 fail|boosts:*|from:ability:Mind's Eye|what:*
 fail|boosts:*|from:ability:Own Tempo|what:*
+fail|from:ability:Clear Body
+fail|from:ability:Flower Veil
+fail|from:condition:Prevent Stat Drop Ability Base
+fail|from:condition:Resist Intimidate Ability Base
+fail|from:move:Corrosive Gas
+fail|from:move:Rest
+fail|from:move:Soak
+fail|from:move:Substitute
 fail|from:move:Substitute|what:*
+fail|from:move:Teatime
+fail|from:move:Uproar
 fail|from:move:Uproar|what:*
+fail|from:volatile:Choice Lock
 fail|from:weather:Extremely Harsh Sunlight
 fail|from:weather:Heavy Rain
 fail|what:*
@@ -385,10 +453,13 @@ fieldactivate|move:Teatime
 fieldactivate|weather:Strong Winds
 fieldend|move:Electric Terrain
 fieldend|move:Grassy Terrain
+fieldend|move:Gravity
 fieldend|move:Magic Room
 fieldend|move:Misty Terrain
 fieldend|move:Mud Sport
 fieldend|move:Psychic Terrain
+fieldend|move:Trick Room
+fieldend|move:Water Sport
 fieldend|move:Wonder Room
 fieldstart|condition:Stat Shuffle
 fieldstart|from:ability:Electric Surge|move:Electric Terrain
@@ -402,6 +473,7 @@ fieldstart|move:Misty Terrain
 fieldstart|move:Mud Sport
 fieldstart|move:Psychic Terrain
 fieldstart|move:Trick Room
+fieldstart|move:Water Sport
 fieldstart|move:Wonder Room
 forfeited
 formechange|from:Faint
@@ -468,24 +540,35 @@ hitcount|hits:*
 immune
 immune|from:ability:Bulletproof
 immune|from:ability:Dry Skin
+immune|from:ability:Earth Eater
 immune|from:ability:Flash Fire
 immune|from:ability:Good as Gold
+immune|from:ability:Immunity
 immune|from:ability:Insomnia
 immune|from:ability:Leaf Guard
+immune|from:ability:Lightning Rod
 immune|from:ability:Limber
+immune|from:ability:Motor Drive
 immune|from:ability:Oblivious
 immune|from:ability:Overcoat
 immune|from:ability:Own Tempo
 immune|from:ability:Pastel Veil
 immune|from:ability:Purifying Salt
+immune|from:ability:Sap Sipper
 immune|from:ability:Shields Down
 immune|from:ability:Soundproof
+immune|from:ability:Storm Drain
 immune|from:ability:Sturdy
 immune|from:ability:Thermal Exchange
+immune|from:ability:Vital Spirit
 immune|from:ability:Volt Absorb
 immune|from:ability:Water Absorb
 immune|from:ability:Water Bubble
+immune|from:ability:Water Veil
+immune|from:ability:Well-Baked Body
+immune|from:ability:Wind Rider
 immune|from:ability:Wonder Guard
+immune|from:move:Telekinesis
 info|battletype:*
 info|environment:*
 info|rule:*
@@ -581,6 +664,8 @@ itemstart|from:move:Thief|item:*
 itemstart|from:move:Trick|item:*
 item|from:ability:Frisk|item:Cheri Berry
 item|from:ability:Frisk|item:Life Orb
+item|item:Air Balloon
+item|item:Frisk
 learnedmove|forgot:*|move:Curse
 learnedmove|forgot:*|move:Dark Pulse
 learnedmove|forgot:*|move:Hex
@@ -633,6 +718,7 @@ move|from:move:Water Pledge
 move|spread:*
 ohko
 player
+prepare|move:Charge Move Base
 prepare|move:Chilly Reception
 prepare|move:Dig
 prepare|move:Dive
@@ -675,33 +761,52 @@ revive|from:move:Revival Blessing
 sethp
 setpp|from:move:Grudge|move:Dark Pulse|to:*
 side
+sideend|condition:Side Screen Move Base
 sideend|move:Aurora Veil
+sideend|move:Fire Pledge
+sideend|move:G-Max Cannonade
+sideend|move:G-Max Steelsurge
+sideend|move:G-Max Vine Lash
+sideend|move:G-Max Volcalith
+sideend|move:G-Max Wildfire
+sideend|move:Grass Pledge
 sideend|move:Light Screen
+sideend|move:Lucky Chant
 sideend|move:Mist
 sideend|move:Reflect
+sideend|move:Safeguard
 sideend|move:Spikes
 sideend|move:Stealth Rock
 sideend|move:Sticky Web
 sideend|move:Tailwind
 sideend|move:Toxic Spikes
+sideend|move:Water Pledge
+sidestart|condition:Side Screen Move Base
 sidestart|count:*|move:Spikes
 sidestart|count:*|move:Toxic Spikes
 sidestart|move:Aurora Veil
 sidestart|move:Fire Pledge
 sidestart|move:G-Max Cannonade
 sidestart|move:G-Max Steelsurge
+sidestart|move:G-Max Vine Lash
+sidestart|move:G-Max Volcalith
+sidestart|move:G-Max Wildfire
 sidestart|move:Grass Pledge
 sidestart|move:Light Screen
+sidestart|move:Lucky Chant
 sidestart|move:Mist
 sidestart|move:Reflect
 sidestart|move:Safeguard
+sidestart|move:Spikes
 sidestart|move:Stealth Rock
 sidestart|move:Sticky Web
 sidestart|move:Tailwind
+sidestart|move:Toxic Spikes
 sidestart|move:Water Pledge
 singlemove|move:Destiny Bond
 singlemove|move:Glaive Rush
 singlemove|move:Grudge
+singleturn|condition:Protect Move Condition Base
 singleturn|condition:Z-Power
 singleturn|move:Beak Blast
 singleturn|move:Crafty Shield
@@ -729,11 +834,15 @@ start|ability:Flash Fire
 start|ability:Flash Fire|[silent]
 start|ability:Protosynthesis
 start|ability:Quark Drive
+start|ability:Slow Start
+start|ability:Supreme Overlord
 start|ability:Supreme Overlord|fallen:*|[silent]
 start|condition:Commanding
 start|condition:Confusion
 start|condition:Confusion|[fatigue]
 start|condition:Confusion|from:ability:Poison Puppeteer
+start|condition:Future Move
+start|condition:Highlighting Sample
 start|count:*|move:G-Max Chi Strike
 start|count:*|move:Stockpile
 start|disabledmove:*|move:Disable
@@ -747,6 +856,7 @@ start|move:Autotomize
 start|move:Bide
 start|move:Charge
 start|move:Curse
+start|move:Disable
 start|move:Doom Desire
 start|move:Dragon Cheer
 start|move:Dragon Cheer|[silent]
@@ -756,25 +866,30 @@ start|move:Focus Energy
 start|move:Focus Energy|[silent]
 start|move:Foresight
 start|move:Future Sight
+start|move:G-Max Chi Strike
 start|move:Heal Block
 start|move:Imprison
 start|move:Ingrain
 start|move:Laser Focus
 start|move:Leech Seed
 start|move:Magnet Rise
+start|move:Mimic
 start|move:Miracle Eye
 start|move:Nightmare
 start|move:No Retreat
 start|move:Octolock
+start|move:Perish Song
 start|move:Perish Song|perish:*
 start|move:Power Trick
 start|move:Salt Cure
 start|move:Smack Down
+start|move:Stockpile
 start|move:Substitute
 start|move:Syrup Bomb
 start|move:Tar Shot
 start|move:Taunt
 start|move:Telekinesis
+start|move:Throat Chop
 start|move:Throat Chop|[silent]
 start|move:Torment
 start|move:Uproar
@@ -872,11 +987,13 @@ weather|from:ability:Primordial Sea|weather:Heavy Rain
 weather|from:ability:Sand Stream|weather:Sandstorm
 weather|from:ability:Snow Warning|weather:Hail
 weather|from:ability:Snow Warning|weather:Snow
+weather|weather:Extremely Harsh Sunlight
 weather|weather:Extremely Harsh Sunlight|[residual]
 weather|weather:Hail
 weather|weather:Hail|[residual]
 weather|weather:Harsh Sunlight
 weather|weather:Harsh Sunlight|[residual]
+weather|weather:Heavy Rain
 weather|weather:Heavy Rain|[residual]
 weather|weather:Rain
 weather|weather:Rain|[residual]
@@ -884,5 +1001,6 @@ weather|weather:Sandstorm
 weather|weather:Sandstorm|[residual]
 weather|weather:Snow
 weather|weather:Snow|[residual]
+weather|weather:Strong Winds
 weather|weather:Strong Winds|[residual]
 win
