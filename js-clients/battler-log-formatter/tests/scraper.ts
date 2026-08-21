@@ -116,12 +116,20 @@ function extractLogsFromFxlang(): Set<string> {
         
         const programStr = extractStrings(obj.program || obj);
         
-        effectRegistry.set(name, {
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        const entry = {
             type,
             name,
             program: programStr,
             delegates: obj.delegates || []
-        });
+        };
+
+        effectRegistry.set(name, entry);
+        effectRegistry.set(id, entry);
+        effectRegistry.set(`${type}:${id}`, entry);
+        // Also sometimes it's referenced as condition:id even if type is ability
+        effectRegistry.set(`condition:${id}`, entry);
     };
 
     if (Array.isArray(content)) {
@@ -163,7 +171,9 @@ function extractLogsFromFxlang(): Set<string> {
       return logs;
   }
 
-  for (const [name, effect] of effectRegistry.entries()) {
+  const uniqueEffects = new Set(effectRegistry.values());
+  for (const effect of uniqueEffects) {
+      const name = effect.name;
       const logs = getLogsForEffect(name, new Set());
       for (const rawLog of logs) {
           const type = effect.type;
@@ -248,8 +258,8 @@ function generateMatrix() {
           if (title === 'abilitystart' || title === 'itemstart') {
               baseParts = baseParts.map(p => {
                   const pSplit = p.split('_');
-                  if (pSplit[0] === 'ability' && pSplit.length > 1 && pSplit[1] !== 'ANY') return 'ability_ANY';
-                  if (pSplit[0] === 'item' && pSplit.length > 1 && pSplit[1] !== 'ANY') return 'item_ANY';
+                  if (pSplit[0] === 'ability' && pSplit.length > 1 && pSplit[1] !== 'any') return 'ability_any';
+                  if (pSplit[0] === 'item' && pSplit.length > 1 && pSplit[1] !== 'any') return 'item_any';
                   return p;
               });
           }
@@ -259,11 +269,11 @@ function generateMatrix() {
           if (title === 'ability' || title === 'item') {
               const hasName = baseParts.some(p => {
                   const pSplit = p.split('_');
-                  return pSplit[0] === title && pSplit.length > 1 && pSplit[1] !== 'ANY';
+                  return pSplit[0] === title && pSplit.length > 1 && pSplit[1] !== 'any';
               });
               const hasFrom = baseParts.some(p => {
                   const pSplit = p.split('_');
-                  return pSplit[0] === 'from' && pSplit.length > 1 && pSplit[pSplit.length - 1] !== 'ANY';
+                  return pSplit[0] === 'from' && pSplit.length > 1 && pSplit[pSplit.length - 1] !== 'any';
               });
               
               if (hasName && hasFrom) {
@@ -271,14 +281,14 @@ function generateMatrix() {
                   
                   const nameOnly = baseParts.map(p => {
                       const pSplit = p.split('_');
-                      if (pSplit[0] === 'from' && pSplit.length > 1 && pSplit[pSplit.length - 1] !== 'ANY') return `from_${pSplit[1]}_ANY`;
+                      if (pSplit[0] === 'from' && pSplit.length > 1 && pSplit[pSplit.length - 1] !== 'any') return `from_${pSplit[1]}_any`;
                       return p;
                   });
                   results.push(nameOnly.join('__'));
                   
                   const fromOnly = baseParts.map(p => {
                       const pSplit = p.split('_');
-                      if (pSplit[0] === title && pSplit.length > 1 && pSplit[1] !== 'ANY') return `${title}_ANY`;
+                      if (pSplit[0] === title && pSplit.length > 1 && pSplit[1] !== 'any') return `${title}_any`;
                       return p;
                   });
                   results.push(fromOnly.join('__'));
@@ -293,11 +303,11 @@ function generateMatrix() {
               const partsSplit = p.split('_');
               const k = partsSplit[0];
               const rest = partsSplit.slice(1);
-              if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(k) && rest.length > 0 && rest[0] !== 'ANY') {
-                  return `${k}_ANY`;
+              if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(k) && rest.length > 0 && rest[0] !== 'any') {
+                  return `${k}_any`;
               }
-              if (k === 'from' && rest.length > 1 && rest[rest.length - 1] !== 'ANY') {
-                  return `${k}_${rest[0]}_ANY`; // from_ability_ANY
+              if (k === 'from' && rest.length > 1 && rest[rest.length - 1] !== 'any') {
+                  return `${k}_${rest[0]}_any`; // from_ability_any
               }
               return p;
           });
@@ -362,7 +372,13 @@ function generateMatrix() {
           pFlags.sort();
           p = [pTitle, ...pTags, ...pFlags].join('|');
 
-          const safePattern = p.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
+          const safePattern = p
+            .replace(/\|/g, '__')
+            .replace(/:/g, '_')
+            .replace(/\*/g, 'any')
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, '');
+            
           const parts = safePattern.split('__');
           const title = parts[0];
           
@@ -377,8 +393,8 @@ function generateMatrix() {
               const toGenericize = forceGeneric[title];
               const genericizedParts = targetParts.map(p => {
                   const [k, ...v] = p.split('_');
-                  if (toGenericize.includes(k) && v.length > 0 && v[0] !== 'ANY') {
-                      return `${k}_ANY`;
+                  if (toGenericize.includes(k) && v.length > 0 && v[0] !== 'any') {
+                      return `${k}_any`;
                   }
                   return p;
               });

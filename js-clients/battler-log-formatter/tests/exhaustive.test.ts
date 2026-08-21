@@ -108,7 +108,7 @@ describe("Exhaustive Log Coverage", () => {
     if (!formatted) {
       const patterns = getLogPatterns(uiLogEntry);
       const isHandledByPattern = patterns.some(p => {
-        const safePattern = p.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
+        const safePattern = p.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'any').replace(/\[/g, '').replace(/\]/g, '');
         return Object.hasOwn(en.logs, safePattern);
       });
       

@@ -141,7 +141,12 @@ export class LogFormatter {
                 flags.sort();
                 p = [title, ...tags, ...flags].join('|');
                 
-                const safePattern = p.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
+                const safePattern = p
+                  .replace(/\|/g, '__')
+                  .replace(/:/g, '_')
+                  .replace(/\*/g, 'any')
+                  .toLowerCase()
+                  .replace(/[^a-z0-9_]/g, '');
                 if (i18next.exists(`logs.${safePattern}`)) {
                     templateKey = `logs.${safePattern}`;
                     found = true;

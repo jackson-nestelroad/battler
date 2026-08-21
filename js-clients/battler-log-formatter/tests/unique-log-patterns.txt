@@ -44,6 +44,7 @@ ability|ability:Teraform Zero
 ability|ability:Unnerve
 ability|ability:Vessel of Ruin
 activate|ability:Battle Bond
+activate|ability:Celebrate
 activate|ability:Commander
 activate|ability:Cotton Down
 activate|ability:Cud Chew
@@ -193,6 +194,7 @@ block|from:ability:Pastel Veil
 block|from:ability:Pastel Veil|move:*
 block|from:ability:Sweet Veil
 block|from:ability:Sweet Veil|move:*
+block|from:clause:Dynamax
 block|from:condition:Dynamax
 block|from:item:Ability Shield
 block|from:item:Ability Shield|move:*
