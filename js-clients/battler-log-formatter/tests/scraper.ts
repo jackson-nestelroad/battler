@@ -95,13 +95,151 @@ function generateMatrix() {
           }
       }
 
+
       let added = false;
+      const requireFromOf = ['damage', 'heal', 'sethp', 'item', 'itemend', 'itemstart', 'ability', 'abilityend', 'abilitystart', 'cant', 'fail', 'immune', 'block'];
+
+      function getFallbacks(key: string): string[] {
+          const parts = key.split('__');
+          const title = parts[0];
+          
+          let baseParts = parts;
+          if (title === 'abilitystart' || title === 'itemstart') {
+              baseParts = baseParts.map(p => {
+                  const pSplit = p.split('_');
+                  if (pSplit[0] === 'ability' && pSplit.length > 1 && pSplit[1] !== 'ANY') return 'ability_ANY';
+                  if (pSplit[0] === 'item' && pSplit.length > 1 && pSplit[1] !== 'ANY') return 'item_ANY';
+                  return p;
+              });
+          }
+
+          const results: string[] = [];
+
+          if (title === 'ability' || title === 'item') {
+              const hasName = baseParts.some(p => {
+                  const pSplit = p.split('_');
+                  return pSplit[0] === title && pSplit.length > 1 && pSplit[1] !== 'ANY';
+              });
+              const hasFrom = baseParts.some(p => {
+                  const pSplit = p.split('_');
+                  return pSplit[0] === 'from' && pSplit.length > 1 && pSplit[pSplit.length - 1] !== 'ANY';
+              });
+              
+              if (hasName && hasFrom) {
+                  results.push(baseParts.join('__'));
+                  
+                  const nameOnly = baseParts.map(p => {
+                      const pSplit = p.split('_');
+                      if (pSplit[0] === 'from' && pSplit.length > 1 && pSplit[pSplit.length - 1] !== 'ANY') return `from_${pSplit[1]}_ANY`;
+                      return p;
+                  });
+                  results.push(nameOnly.join('__'));
+                  
+                  const fromOnly = baseParts.map(p => {
+                      const pSplit = p.split('_');
+                      if (pSplit[0] === title && pSplit.length > 1 && pSplit[1] !== 'ANY') return `${title}_ANY`;
+                      return p;
+                  });
+                  results.push(fromOnly.join('__'));
+              } else {
+                  results.push(baseParts.join('__'));
+              }
+          } else {
+              results.push(baseParts.join('__'));
+          }
+
+          const genericParts = baseParts.map(p => {
+              const partsSplit = p.split('_');
+              const k = partsSplit[0];
+              const rest = partsSplit.slice(1);
+              if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(k) && rest.length > 0 && rest[0] !== 'ANY') {
+                  return `${k}_ANY`;
+              }
+              if (k === 'from' && rest.length > 1 && rest[rest.length - 1] !== 'ANY') {
+                  return `${k}_${rest[0]}_ANY`; // from_ability_ANY
+              }
+              return p;
+          });
+          const generic = genericParts.join('__');
+          if (!results.includes(generic)) results.push(generic);
+
+          const pureVars = ['by', 'exp', 'level', 'hp', 'atk', 'def', 'spa', 'spd', 'spe', 'stats', 'stat'];
+          
+          const finalResults: string[] = [];
+          for (const pattern of results) {
+              if (!finalResults.includes(pattern)) finalResults.push(pattern);
+              
+              const pParts = pattern.split('__');
+              const pTitle = pParts[0];
+              const pTags = pParts.slice(1); // Flags are also here but handled implicitly
+              
+              const noVarsParts = [pTitle, ...pTags.filter(t => !pureVars.includes(t.split('_')[0]))];
+              const noVars = noVarsParts.join('__');
+              if (!finalResults.includes(noVars)) finalResults.push(noVars);
+              
+              if (!requireFromOf.includes(pTitle)) {
+                  const noFromOfParts = pTags.filter(t => {
+                      const k = t.split('_')[0];
+                      return k !== 'from' && k !== 'of';
+                  });
+                  const noFromOf = [pTitle, ...noFromOfParts].join('__');
+                  if (!finalResults.includes(noFromOf)) finalResults.push(noFromOf);
+                  
+                  const noBothParts = noFromOfParts.filter(t => !pureVars.includes(t.split('_')[0]));
+                  const noBoth = [pTitle, ...noBothParts].join('__');
+                  if (!finalResults.includes(noBoth)) finalResults.push(noBoth);
+              }
+          }
+          
+          return finalResults;
+      }
+
+      const forceGeneric: Record<string, string[]> = {
+          'catch': ['item'],
+          'catchfailed': ['item'],
+          'deductpp': ['move'],
+          'didnotlearnmove': ['move'],
+          'item': ['item'],
+          'itemend': ['item'],
+          'learnedmove': ['move'],
+          'removevolatile': ['volatile'],
+          'restorepp': ['move'],
+          'setpp': ['move'],
+          'swapsidecondition': ['move', 'condition']
+      };
+
       for (const pattern of Array.from(extracted.patterns)) {
           const safePattern = pattern.replace(/\|/g, '__').replace(/:/g, '_').replace(/\*/g, 'ANY').replace(/\[/g, '').replace(/\]/g, '');
-          if (!(safePattern in currentLogs)) {
-              currentLogs[safePattern] = '"[UNHANDLED]"';
-              added = true;
-              console.log(`Auto-added missing log translation: ${safePattern}`);
+          const parts = safePattern.split('__');
+          const title = parts[0];
+          
+          let targetKey = safePattern;
+          if (!requireFromOf.includes(title)) {
+              const noFromOfParts = parts.filter((p, i) => i === 0 || !['from', 'of'].includes(p.split('_')[0]));
+              targetKey = noFromOfParts.join('__');
+          }
+
+          if (title in forceGeneric) {
+              const targetParts = targetKey.split('__');
+              const toGenericize = forceGeneric[title];
+              const genericizedParts = targetParts.map(p => {
+                  const [k, ...v] = p.split('_');
+                  if (toGenericize.includes(k) && v.length > 0 && v[0] !== 'ANY') {
+                      return `${k}_ANY`;
+                  }
+                  return p;
+              });
+              targetKey = genericizedParts.join('__');
+          }
+
+          const allKeys = getFallbacks(targetKey);
+          for (const k of allKeys) {
+              if (k.includes('__silent')) continue;
+              if (!(k in currentLogs)) {
+                  currentLogs[k] = '"[UNHANDLED]"';
+                  added = true;
+                  console.log(`Auto-added missing log translation: ${k}`);
+              }
           }
       }
 

@@ -9,7 +9,7 @@ const DOCUMENTED_TITLES = new Set([
   "addsidecondition", "removesidecondition", "swapsideconditions", "swapsidecondition",
   "addslotcondition", "removeslotcondition", "addpseudoweather", "removepseudoweather",
   "typechange", "resettypechange", "addedtype", "transform", "ability", "abilityend",
-  "item", "itemend", "move", "animatemove", "prepare", "hitcount", "boost", "unboost",
+  "abilitystart", "item", "itemend", "itemstart", "move", "animatemove", "prepare", "hitcount", "boost", "unboost",
   "swapboosts", "invertboosts", "copyboosts", "clearboosts", 
   "clearnegativeboosts", "clearpositiveboosts", "exp", "levelup", "cannotescape", 
   "escaped", "forfeited", "useitem", "uncatchable", "catchfailed", "catch", "swap", 
@@ -32,6 +32,13 @@ export function maskLog(line: string): string | null {
   
   const maskedParts = [title];
   
+  const excludeTags = [
+      'mon', 'of', 'player', 'side', 'slot', 'position', 'source',
+      'gender', 'health', 'level', 'name', 'species',
+      'stats', 'stat', 'by', 'exp', 'atk', 'def', 'spa', 'spd', 'spe', 'hp',
+      'target', 'anim', 'newmove', 'pick', 'size', 'length', 'id', 'time'
+  ];
+
   // Extract all tag parts
   const tags: string[] = [];
   const flags: string[] = [];
@@ -42,18 +49,36 @@ export function maskLog(line: string): string | null {
     
     if (p.includes(':')) {
       const splitIndex = p.indexOf(':');
-      const k = p.substring(0, splitIndex);
+      let k = p.substring(0, splitIndex);
       const v = p.substring(splitIndex + 1);
       
-      if (k === 'from' || k === 'of') {
-        // e.g. from:ability:Intimidate -> from:ability:*
-        if (v.includes(':')) {
-          const type = v.substring(0, v.indexOf(':'));
-          tags.push(`${k}:${type}:*`);
-        } else {
-          tags.push(`${k}:*`);
-        }
+      if (k === 'into_position') k = 'position';
+      if (k === 'item' && title === 'useitem') k = 'name';
+      
+      if (excludeTags.includes(k)) continue;
+      
+      let keepSpecific = false;
+      if (k === 'from') {
+          keepSpecific = true;
       } else if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(k)) {
+          keepSpecific = true;
+      }
+      
+      // Forced genericizations based on title
+      if (title === 'abilitystart' || title === 'itemstart' || title === 'abilityend') {
+          if (k === 'ability' || k === 'item') keepSpecific = false;
+      }
+      if (title === 'addvolatile' && k === 'volatile') keepSpecific = false;
+      if (title === 'block' && ['ability', 'move', 'item'].includes(k)) keepSpecific = false;
+      if (title === 'activate' && k === 'move') {
+          const hasPrimary = parts.some(part => {
+              const p = part.trim();
+              return p.startsWith('ability:') || p.startsWith('item:') || p.startsWith('hit:') || p.startsWith('magnitude:');
+          });
+          if (hasPrimary) keepSpecific = false;
+      }
+      
+      if (keepSpecific) {
         tags.push(`${k}:${v}`);
       } else {
         tags.push(`${k}:*`);

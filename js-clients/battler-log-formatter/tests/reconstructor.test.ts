@@ -14,7 +14,7 @@ describe('Pattern Reconstructor', () => {
         } as any
       }
     };
-    expect(getLogPatterns(entry)[0]).toBe('boost|by:*|mon:*|stat:*');
+    expect(getLogPatterns(entry)[0]).toBe('boost');
   });
 
   it('should reconstruct ability stat drop', () => {
@@ -30,6 +30,6 @@ describe('Pattern Reconstructor', () => {
         } as any
       }
     };
-    expect(getLogPatterns(entry)[0]).toBe('unboost|by:*|from:ability:*|mon:*|stat:*');
+    expect(getLogPatterns(entry)[0]).toBe('unboost|from:ability:*');
   });
 });

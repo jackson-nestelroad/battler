@@ -259,7 +259,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
         case "protectweaken":
           return { key: "PROTECT_WEAKEN", category: LogCategory.Secondary, context: { MON: mon } };
         case "restorepp":
-          return { key: "RESTORE_PP", category: LogCategory.Secondary, context: { MON: mon } };
+          return { key: "RESTORE_PP", category: LogCategory.Secondary, context: { MON: mon, MOVE: effectData.move || effectData.additional?.move || effectData.effect?.name || "" } };
         case "setpp":
           return { key: "SET_PP", category: LogCategory.Secondary, context: { MON: mon } };
         case "singlemove":
@@ -319,7 +319,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
     case "UpdateAppearance":
       return { key: "SPECIES_CHANGE", category: LogCategory.Primary, context: { MON: resolveMonContext(data.effect?.target, state, options) } };
     case "Revive":
-      return { key: "REVIVE", category: LogCategory.Primary, context: { TARGET: resolveMonContext(data.effect?.target, state, options) } };
+      return { key: "REVIVE", category: LogCategory.Primary, context: { MON: resolveMonContext(data.mon, state, options) } };
     case "SetHealth":
       return { key: "SET_HEALTH", category: LogCategory.Primary, context: { TARGET: resolveMonContext(data.effect?.target, state, options) } };
     case "Caught":

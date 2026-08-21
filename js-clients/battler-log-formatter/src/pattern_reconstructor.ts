@@ -148,7 +148,7 @@ const pushTag = (tag: string, source: string) => {
         if (k === 'effect' || k === 'title' || k === 'animate' || k === 'animate_only' || k === 'stats') continue;
         if (k === 'health' && (title === 'damage' || title === 'heal' || title === 'sethp' || title === 'appear')) continue;
         
-                const keyName = k === 'into_position' ? 'position' : (k === 'item' && title === 'useitem' ? 'name' : k);
+        const keyName = k === 'into_position' ? 'position' : (k === 'item' && title === 'useitem' ? 'name' : k);
         if (keyName === 'mon' && ['switch', 'replace', 'drag', 'appear', 'switchout'].includes(title)) continue;
         // Prevent duplicate tags
         if (tags.some(t => t.startsWith(`${keyName}:`))) continue;
@@ -213,44 +213,131 @@ const pushTag = (tag: string, source: string) => {
     }
   }
 
-  const uniqueTags = Array.from(new Set(tags)).sort();
+  const excludeTags = [
+      'mon', 'of', 'player', 'side', 'slot', 'position', 'source',
+      'gender', 'health', 'level', 'name', 'species',
+      'stats', 'stat', 'by', 'exp', 'atk', 'def', 'spa', 'spd', 'spe', 'hp',
+      'target', 'anim', 'newmove', 'pick', 'size', 'length', 'id', 'time'
+  ];
+
+  let baseTags = Array.from(new Set(tags))
+      .filter(t => !excludeTags.some(ex => t.startsWith(`${ex}:`)))
+      .sort();
   flags.sort();
-  
-  // 1. Exact match (matches scraper)
-  const exact = [title, ...uniqueTags, ...flags].join('|');
-  
-  const results: string[] = [exact];
-  
-  // 2. Generic names (replace specific effect/move names with *)
-  const genericTags = uniqueTags.map(t => {
+
+  // For specific logs, force specific attributes to ANY
+  if (title === 'abilitystart' || title === 'itemstart' || title === 'abilityend') {
+      baseTags = baseTags.map(t => {
+          if (t.startsWith('ability:') && t !== 'ability:*') return 'ability:*';
+          if (t.startsWith('item:') && t !== 'item:*') return 'item:*';
+          return t;
+      });
+  } else if (title === 'addvolatile') {
+      baseTags = baseTags.map(t => {
+          if (t.startsWith('volatile:') && t !== 'volatile:*') return 'volatile:*';
+          return t;
+      });
+  } else if (title === 'block') {
+      baseTags = baseTags.map(t => {
+          if (t.startsWith('ability:') && t !== 'ability:*') return 'ability:*';
+          if (t.startsWith('move:') && t !== 'move:*') return 'move:*';
+          if (t.startsWith('item:') && t !== 'item:*') return 'item:*';
+          return t;
+      });
+  } else if (title === 'activate') {
+      const hasPrimary = baseTags.some(t => t.startsWith('ability:') || t.startsWith('item:') || t.startsWith('hit:') || t.startsWith('magnitude:'));
+      if (hasPrimary) {
+          baseTags = baseTags.map(t => {
+              if (t.startsWith('move:') && t !== 'move:*') return 'move:*';
+              return t;
+          });
+      }
+  }
+
+  const buildPattern = (t: string[]) => [title, ...Array.from(new Set(t)).sort(), ...flags].join('|');
+  const results: string[] = [];
+
+  // 1. Core Permutations
+  if (title === 'ability' || title === 'item') {
+      const hasName = baseTags.some(t => (t.startsWith(`${title}:`) && t !== `${title}:*`));
+      const hasFrom = baseTags.some(t => t.startsWith('from:') && !t.endsWith(':*'));
+      
+      if (hasName && hasFrom) {
+          // Exact match (Both)
+          results.push(buildPattern(baseTags));
+          
+          // Name only (from genericized)
+          const nameOnly = baseTags.map(t => {
+              if (t.startsWith('from:') && !t.endsWith(':*')) {
+                  const parts = t.split(':');
+                  return `${parts[0]}:${parts[1]}:*`;
+              }
+              return t;
+          });
+          results.push(buildPattern(nameOnly));
+          
+          // From only (name genericized)
+          const fromOnly = baseTags.map(t => {
+              if (t.startsWith(`${title}:`) && t !== `${title}:*`) {
+                  return `${title}:*`;
+              }
+              return t;
+          });
+          results.push(buildPattern(fromOnly));
+      } else {
+          results.push(buildPattern(baseTags));
+      }
+  } else {
+      results.push(buildPattern(baseTags));
+  }
+
+  // 2. Fully Generic
+  const fullyGenericTags = baseTags.map(t => {
       const parts = t.split(':');
       if (parts.length === 2 && ['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(parts[0]) && parts[1] !== '*') {
           return `${parts[0]}:*`;
       }
+      if (parts.length === 3 && parts[0] === 'from' && parts[2] !== '*') {
+          return `${parts[0]}:${parts[1]}:*`;
+      }
       return t;
   });
-  const genericNames = [title, ...Array.from(new Set(genericTags)).sort(), ...flags].join('|');
-  if (genericNames !== exact) results.push(genericNames);
-  
-  // 3. Omit pure variables
+  const fullyGeneric = buildPattern(fullyGenericTags);
+  if (!results.includes(fullyGeneric)) results.push(fullyGeneric);
+
+  // 3. Apply Modifiers (pure vars & from/of)
+  const requireFromOf = ['damage', 'heal', 'sethp', 'item', 'itemend', 'itemstart', 'ability', 'abilitystart', 'cant', 'fail', 'immune', 'block'];
   const pureVars = ['by', 'exp', 'level', 'hp', 'atk', 'def', 'spa', 'spd', 'spe', 'stats', 'stat'];
-  const noVarsTags = genericTags.filter(t => {
-      const k = t.split(':')[0];
-      return !pureVars.includes(k);
-  });
-  const noVars = [title, ...Array.from(new Set(noVarsTags)).sort(), ...flags].join('|');
-  if (!results.includes(noVars)) results.push(noVars);
   
-  // 4. Omit from/of for "do not require" titles
-  const requireFromOf = ['damage', 'heal', 'sethp', 'item', 'itemend', 'ability', 'cant', 'fail', 'immune', 'block'];
-  if (!requireFromOf.includes(title)) {
-      const noFromOfTags = noVarsTags.filter(t => {
-          const k = t.split(':')[0];
-          return k !== 'from' && k !== 'of';
-      });
-      const noFromOf = [title, ...Array.from(new Set(noFromOfTags)).sort(), ...flags].join('|');
-      if (!results.includes(noFromOf)) results.push(noFromOf);
+  const finalResults: string[] = [];
+  for (const pattern of results) {
+      if (!finalResults.includes(pattern)) finalResults.push(pattern);
+      
+      const pParts = pattern.split('|');
+      const pTitle = pParts[0];
+      const pTags = pParts.slice(1).filter(x => !x.startsWith('[') && !x.endsWith(']'));
+      const pFlags = pParts.slice(1).filter(x => x.startsWith('[') && x.endsWith(']'));
+      
+      // Omit pure vars
+      const noVarsTags = pTags.filter(t => !pureVars.includes(t.split(':')[0]));
+      const noVarsPattern = [pTitle, ...noVarsTags, ...pFlags].join('|');
+      if (!finalResults.includes(noVarsPattern)) finalResults.push(noVarsPattern);
+      
+      // Omit from/of
+      if (!requireFromOf.includes(pTitle)) {
+          const noFromOfTags = pTags.filter(t => {
+              const k = t.split(':')[0];
+              return k !== 'from' && k !== 'of';
+          });
+          const noFromOfPattern = [pTitle, ...noFromOfTags, ...pFlags].join('|');
+          if (!finalResults.includes(noFromOfPattern)) finalResults.push(noFromOfPattern);
+          
+          // Omit both
+          const noBothTags = noFromOfTags.filter(t => !pureVars.includes(t.split(':')[0]));
+          const noBothPattern = [pTitle, ...noBothTags, ...pFlags].join('|');
+          if (!finalResults.includes(noBothPattern)) finalResults.push(noBothPattern);
+      }
   }
   
-  return results;
+  return finalResults;
 }

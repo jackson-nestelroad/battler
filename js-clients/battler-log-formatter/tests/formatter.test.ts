@@ -6,14 +6,14 @@ describe("LogFormatter", () => {
   it("should format string log correctly", () => {
     const formatter = new LogFormatter();
     // Simulate UiLogEntry enum using any
-    const entry: any = "TurnLimit";
+    const entry: any = "Tie";
     const result = formatter.format(entry);
     
     expect(result.length).toBeGreaterThan(0);
     const log = result[result.length - 1];
     expect(log.category).toBe(LogCategory.Primary);
     expect(log.tokens).toEqual([
-      { type: "text", value: "The turn limit has been reached." }
+      { type: "text", value: "The battle resulted in a tie!" }
     ]);
   });
 

@@ -16,33 +16,51 @@ describe("Exhaustive Log Coverage", () => {
   it.each(matrixLogs)("should parse and format log string: %s", (logString) => {
     // 1. Initialize Master Setup State to satisfy battler-state strict validation
     const state = newBattleState();
-    const setupLogs = [
+    
+    const players = new Set<string>();
+    const mons = new Map<string, string>(); // player -> species
+    
+    const parts = logString.split("|");
+    for (const part of parts) {
+      if (part.startsWith("player:")) {
+        players.add(part.split(":")[1]);
+      } else if (part.startsWith("mon:") || part.startsWith("of:") || part.startsWith("source:")) {
+        const [, val] = part.split(":");
+        const [species, player] = val.split(",");
+        if (player) {
+          players.add(player);
+          mons.set(player, species);
+        }
+      }
+    }
+    
+    players.add("p1");
+    players.add("p2");
+    mons.set("p1", "Pikachu");
+    mons.set("p2", "Gyarados");
+    
+    const setupLogs: string[] = [
       "info|battletype:Multi",
       "side|id:0|name:Side 0",
-      "side|id:1|name:Side 1",
-      "player|id:p1|name:P1|side:0|position:1",
-      "player|id:p2|name:P2|side:1|position:1",
-      "player|id:player-1|name:Player-1|side:0|position:2",
-      "player|id:player-2|name:Player-2|side:1|position:2",
-      "player|id:player-3|name:Player-3|side:0|position:3",
-      "player|id:player-4|name:Player-4|side:1|position:3",
-      "player|id:player-5|name:Player-5|side:0|position:4",
-      "player|id:protagonist|name:Protagonist|side:0|position:5",
-      "player|id:wild|name:Wild|side:1|position:4",
-      "player|id:wild-0|name:Wild-0|side:1|position:5",
-      "player|id:trainer|name:Trainer|side:1|position:6",
-      "mon|player:p1|species:Pikachu|level:100|gender:M",
-      "mon|player:player-1|species:Magnezone|level:100|gender:M",
-      "mon|player:p2|species:Gyarados|level:100|gender:M",
-      "mon|player:player-2|species:Mew|level:100|gender:M",
-      "teampreviewstart",
-      "battlestart",
-      "switch|player:p1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:100|gender:M",
-      "switch|player:player-1|position:1|name:Magnezone|health:100/100|species:Magnezone|level:100|gender:M",
-      "switch|player:p2|position:1|name:Gyarados|health:100/100|species:Gyarados|level:100|gender:M",
-      "switch|player:player-2|position:1|name:Mew|health:100/100|species:Mew|level:100|gender:M",
-      "turn|turn:1"
+      "side|id:1|name:Side 1"
     ];
+    
+    let side = 0;
+    for (const player of players) {
+      setupLogs.push(`player|id:${player}|name:${player.toUpperCase()}|side:${side % 2}|position:${side + 1}`);
+      const species = mons.get(player) || "Bulbasaur";
+      setupLogs.push(`mon|player:${player}|species:${species}|level:100|gender:M`);
+      side++;
+    }
+    
+    setupLogs.push("teampreviewstart");
+    setupLogs.push("battlestart");
+    
+    for (const player of players) {
+      const species = mons.get(player) || "Bulbasaur";
+      setupLogs.push(`switch|player:${player}|position:1|name:${species}|health:100/100|species:${species}|level:100|gender:M`);
+    }
+    setupLogs.push("turn|turn:1");
     
     // Some logs in the matrix ARE setup logs (like info|battletype:Single).
     // If the test log is a setup log, we shouldn't run the setup matrix first, as it would conflict.
@@ -87,8 +105,8 @@ describe("Exhaustive Log Coverage", () => {
 
     // 4. Assert mapping exists
     if (!formatted) {
-      console.log(`PATTERN IN VITEST: ${getLogPatterns(uiLogEntry).join(' OR ')}`);
-      console.log(`UNMAPPED LOG [${logString}]:`, JSON.stringify(uiLogEntry));
+      console.error(`PATTERN IN VITEST: ${getLogPatterns(uiLogEntry).join(' OR ')}`);
+      console.error(`UNMAPPED LOG [${logString}]:`, JSON.stringify(uiLogEntry));
     }
     expect(formatted).not.toBeNull();
     
