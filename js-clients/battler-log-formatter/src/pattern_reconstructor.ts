@@ -3,14 +3,15 @@ import type { UiLogEntry } from "battler-state";
 export function getLogPatterns(entry: UiLogEntry): string[] {
   if (typeof entry === 'string') return [entry.toLowerCase()];
   const key = Object.keys(entry)[0] as keyof UiLogEntry;
-  const data = (entry as any)[key];
+  const originalData = (entry as any)[key];
+  const data = typeof originalData === 'object' && originalData !== null ? JSON.parse(JSON.stringify(originalData)) : originalData;
   let title = '';
   const tags: string[] = [];
   
 const pushTag = (tag: string, source: string) => {
     // console.log(`Pushing ${tag} from ${source}`);
     tags.push(tag);
-};
+  };
 
   const flags: string[] = [];
   switch (key) {
@@ -125,6 +126,8 @@ const pushTag = (tag: string, source: string) => {
     default:
       if (data && data.title) {
          title = data.title;
+      } else if (key === 'Effect' && data.effect?.id) {
+         title = data.effect.id;
       } else {
          title = (key as string).toLowerCase();
          if (title === 'caught') title = 'catch';

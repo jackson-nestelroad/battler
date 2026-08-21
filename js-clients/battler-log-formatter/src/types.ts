@@ -31,16 +31,12 @@ export type RequiredContext<K extends LogTemplateKey> =
 
 import type { EffectData } from "battler-state";
 
-export interface MappedLogBase<K extends LogTemplateKey> {
-  key: K;
+export interface AnyMappedLog {
+  patterns: string[];
   category: LogCategory;
-  context: RequiredContext<K>;
+  context: LogContext;
   effect?: EffectData;
 }
-
-export type AnyMappedLog = {
-  [K in LogTemplateKey]: MappedLogBase<K>
-}[LogTemplateKey];
 
 export interface MapperOptions {
   localPlayerId?: string;

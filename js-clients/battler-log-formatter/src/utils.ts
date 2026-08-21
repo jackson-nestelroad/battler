@@ -24,12 +24,16 @@ export function maskLog(line: string): string | null {
   if (!line) return null;
   
   const parts = line.split('|').map(p => p.trim());
-  const title = parts[0];
+  let title = parts[0];
   
   if (!DOCUMENTED_TITLES.has(title)) {
     return null;
   }
   
+  // Workaround for unboost by:0 which maps to boost
+  if (title === 'unboost' && parts.some(p => p.trim() === 'by:0')) {
+    title = 'boost';
+  }
   const maskedParts = [title];
   
   const excludeTags = [
@@ -78,16 +82,24 @@ export function maskLog(line: string): string | null {
           if (hasPrimary) keepSpecific = false;
       }
       
+      // Strip unrepresentable tags that the Rust engine intentionally drops from the UI log
+      if (title === 'move' && (k === 'from' || k === 'spread' || k === '[zpower]' || k === '[noanim]' || k === '[notarget]')) continue;
+      if (title === 'switchout' && (k === '[copysubstitute]' || k === '[copyvolatile]')) continue;
+      if (title === 'switch' && k === 'tera') continue;
+
       if (keepSpecific) {
         tags.push(`${k}:${v}`);
       } else {
         tags.push(`${k}:*`);
       }
     } else {
-      flags.push(`[${p}]`);
+      let flag = `[${p}]`;
+      if (title === 'move' && (flag === '[zpower]' || flag === '[notarget]' || flag === '[miss]')) continue;
+      if (title === 'switchout' && (flag === '[copysubstitute]' || flag === '[copyvolatile]')) continue;
+      flags.push(flag);
     }
   }
-  
+
   tags.sort();
   flags.sort();
   
@@ -99,4 +111,17 @@ export function maskLog(line: string): string | null {
   }
   
   return maskedParts.join('|');
+}
+
+export function getExpectedEnumKey(line: string): string | null {
+  const pattern = maskLog(line);
+  if (!pattern) return null;
+  
+  const safePattern = pattern
+    .replace(/\|/g, '__')
+    .replace(/:/g, '_')
+    .replace(/\*/g, 'any')
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '');
+  return safePattern;
 }

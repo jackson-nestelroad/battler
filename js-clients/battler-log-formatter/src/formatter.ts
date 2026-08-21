@@ -1,4 +1,3 @@
-import { getLogPatterns } from './pattern_reconstructor.js';
 import type { UiLogEntry, BattleState } from "battler-state";
 import i18next from "./i18n.js";
 import { LogCategory } from "./types.js";
@@ -113,57 +112,41 @@ export class LogFormatter {
     const count = mapped.context.count;
     const templateArgs = count !== undefined ? { count } : undefined;
 
-    let templateKey = `logs.${mapped.key}`;
-    const patterns = getLogPatterns(entry);
+    let templateKey = `logs.${mapped.patterns[0]}`;
+    const patterns = mapped.patterns;
     
     if (patterns && patterns.length > 0) {
         let found = false;
         for (const pattern of patterns) {
-            const permutations = [pattern];
-            // If pattern has mon:*, try target:* and of:*
-            if (pattern.includes('mon:*')) {
-                permutations.push(pattern.replace('mon:*', 'target:*'));
-                permutations.push(pattern.replace('mon:*', 'of:*'));
-            } else if (pattern.includes('target:*')) {
-                permutations.push(pattern.replace('target:*', 'mon:*'));
-                permutations.push(pattern.replace('target:*', 'of:*'));
-            } else if (pattern.includes('of:*')) {
-                permutations.push(pattern.replace('of:*', 'mon:*'));
-                permutations.push(pattern.replace('of:*', 'target:*'));
-            }
+            let p = pattern;
+            const parts = p.split('|');
+            const title = parts.shift()!;
+            const tags = parts.filter(x => !x.startsWith('[') && !x.endsWith(']'));
+            const flags = parts.filter(x => x.startsWith('[') && x.endsWith(']'));
+            tags.sort();
+            flags.sort();
+            p = [title, ...tags, ...flags].join('|');
             
-            for (let p of permutations) {
-                const parts = p.split('|');
-                const title = parts.shift()!;
-                const tags = parts.filter(x => !x.startsWith('[') && !x.endsWith(']'));
-                const flags = parts.filter(x => x.startsWith('[') && x.endsWith(']'));
-                tags.sort();
-                flags.sort();
-                p = [title, ...tags, ...flags].join('|');
-                
-                const safePattern = p
-                  .replace(/\|/g, '__')
-                  .replace(/:/g, '_')
-                  .replace(/\*/g, 'any')
-                  .toLowerCase()
-                  .replace(/[^a-z0-9_]/g, '');
-                if (i18next.exists(`logs.${safePattern}`)) {
-                    templateKey = `logs.${safePattern}`;
-                    found = true;
-                    break;
-                }
+            const safePattern = p
+              .replace(/\|/g, '__')
+              .replace(/:/g, '_')
+              .replace(/\*/g, 'any')
+              .toLowerCase()
+              .replace(/[^a-z0-9_]/g, '');
+            if (i18next.exists(`logs.${safePattern}`)) {
+                templateKey = `logs.${safePattern}`;
+                found = true;
+                break;
             }
-            if (found) break;
         }
     }
-
 
     const template = i18next.t(templateKey, templateArgs);
     // If the template is literally empty string, or it doesn't exist (returns the key)
     if (!template || template === templateKey) return [];
     
     const result: FormattedUiLog = {
-      key: mapped.key,
+      key: templateKey.replace('logs.', ''),
       tokens: parseTemplateToTokens(template),
       category: mapped.category,
       context: mapped.context
