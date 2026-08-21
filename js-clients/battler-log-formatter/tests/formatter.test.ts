@@ -58,4 +58,80 @@ describe("LogFormatter", () => {
       { type: "text", value: "!" }
     ]);
   });
+
+  it("should handle battle type disambiguation for critical hits", () => {
+    const formatter = new LogFormatter();
+    const entry: any = {
+      Crit: {
+        mon: {
+          Active: { position: 0, name: "Pikachu", player: "p2" }
+        }
+      }
+    };
+    
+    // Singles State
+    const singlesState: any = {
+      settings: { battle_type: "Singles" },
+      field: {
+        sides: [
+          { players: { p1: { name: "Player 1" } } },
+          { players: { p2: { name: "Player 2" } } }
+        ]
+      }
+    };
+    
+    // Multi State
+    const multiState: any = {
+      settings: { battle_type: "Multi" },
+      field: {
+        sides: [
+          { players: { p1: { name: "Player 1" }, p3: { name: "Player 3" } } },
+          { players: { p2: { name: "Player 2" }, p4: { name: "Player 4" } } }
+        ]
+      }
+    };
+    
+    // Doubles State
+    const doublesState: any = {
+      settings: { battle_type: "Doubles" },
+      field: {
+        sides: [
+          { players: { p1: { name: "Player 1" } } },
+          { players: { p2: { name: "Player 2" } } }
+        ]
+      }
+    };
+
+    const singlesResult = formatter.format(entry, singlesState);
+    const doublesResult = formatter.format(entry, doublesState);
+    const multiResult = formatter.format(entry, multiState);
+
+    const singlesLog = singlesResult[singlesResult.length - 1];
+    const doublesLog = doublesResult[doublesResult.length - 1];
+    const multiLog = multiResult[multiResult.length - 1];
+
+    // Singles omitting the mon
+    expect(singlesLog.key).toBe("crit__battletype_singles");
+    expect(singlesLog.tokens).toEqual([
+      { type: "text", value: "A critical hit!" }
+    ]);
+    
+    // Doubles requiring the mon, but using "the opposing" since there's only one opponent
+    expect(doublesLog.key).toBe("crit");
+    expect(doublesLog.context.MON.text).toBe("the opposing Pikachu");
+    expect(doublesLog.tokens).toEqual([
+      { type: "text", value: "A critical hit on " },
+      { type: "variable", value: "MON" },
+      { type: "text", value: "!" }
+    ]);
+    
+    // Multi requiring the mon (since there are multiple opponents)
+    expect(multiLog.key).toBe("crit");
+    expect(multiLog.context.MON.text).toBe("Player 2's Pikachu");
+    expect(multiLog.tokens).toEqual([
+      { type: "text", value: "A critical hit on " },
+      { type: "variable", value: "MON" },
+      { type: "text", value: "!" }
+    ]);
+  });
 });

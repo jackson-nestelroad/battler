@@ -4,28 +4,110 @@ import i18next from "i18next";
 import { LogCategory } from "./types.js";
 import type { MapperOptions, AnyMappedLog, ContextVar } from "./types.js";
 
-function getPlayerName(state: BattleState | undefined, playerId: string | undefined): string {
-  if (!playerId) return "";
+
+export type Relationship = "self" | "ally" | "foe";
+
+export function getRelationship(state: BattleState | undefined, localPlayerId: string | undefined, targetPlayerId: string): Relationship {
+  if (!localPlayerId) return "foe";
+  if (localPlayerId === targetPlayerId) return "self";
+  
   if (state?.field?.sides) {
-    for (const side of state.field.sides) {
-      if (side?.players?.[playerId]) {
-        return side.players[playerId].name;
-      }
+    let localSideIndex = -1;
+    let targetSideIndex = -1;
+    
+    for (let i = 0; i < state.field.sides.length; i++) {
+      const side = state.field.sides[i];
+      if (side?.players?.[localPlayerId]) localSideIndex = i;
+      if (side?.players?.[targetPlayerId]) targetSideIndex = i;
+    }
+    
+    if (localSideIndex !== -1 && localSideIndex === targetSideIndex) {
+      return "ally";
     }
   }
-  return playerId;
+  
+  return "foe";
 }
 
-function getSideName(state: BattleState | undefined, sideIndex: number | undefined): string {
-  if (sideIndex == null) return "";
-  if (state?.field?.sides?.[sideIndex]) {
-    return state.field.sides[sideIndex].name;
+export function getSideRelationship(state: BattleState | undefined, localPlayerId: string | undefined, sideIndex: number): Relationship {
+    if (!localPlayerId) return "foe";
+    if (state?.field?.sides?.[sideIndex]?.players?.[localPlayerId]) {
+        return "self";
+    }
+    return "foe";
+}
+
+export function resolvePlayerContext(playerId: string | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar } {
+    let name = playerId || "Player";
+    if (playerId && state?.field?.sides) {
+        for (const side of state.field.sides) {
+            if (side?.players?.[playerId]) {
+                name = side.players[playerId].name;
+                break;
+            }
+        }
+    }
+
+    if (!playerId) {
+        return {
+            standard: { text: name },
+            possessive: { text: `${name}'s` }
+        };
+    }
+
+    const rel = getRelationship(state, options.localPlayerId, playerId);
+    
+    let text = "";
+    let possessiveText = "";
+    
+    if (rel === "self") {
+        text = i18next.t("player.self");
+        possessiveText = i18next.t("player.self_possessive");
+    } else if (rel === "ally") {
+        text = i18next.t("player.ally", { player: name });
+        possessiveText = i18next.t("player.ally_possessive", { player: name });
+    } else {
+        text = i18next.t("player.foe", { player: name });
+        possessiveText = i18next.t("player.foe_possessive", { player: name });
+    }
+
+    return {
+        standard: { text, noAutoCapitalize: rel === "self" },
+        possessive: { text: possessiveText, noAutoCapitalize: rel === "self" }
+    };
+}
+
+export function resolveSideContext(sideIndex: number | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar } {
+    if (sideIndex == null) return { standard: { text: "Side" }, possessive: { text: "Side's" } };
+    
+    let name = `Player ${sideIndex}`;
+    if (state?.field?.sides?.[sideIndex]) {
+        name = state.field.sides[sideIndex].name;
+    }
+
+    const rel = getSideRelationship(state, options.localPlayerId, sideIndex);
+    
+    let text = "";
+    let possessiveText = "";
+    
+    if (rel === "self") {
+        text = i18next.t("side.self");
+        possessiveText = i18next.t("side.self_possessive");
+    } else {
+        text = i18next.t("side.foe");
+        possessiveText = i18next.t("side.foe_possessive");
+    }
+
+    return {
+        standard: { text, noAutoCapitalize: true },
+        possessive: { text: possessiveText, noAutoCapitalize: true }
+    };
+}
+
+export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar } {
+  if (!monRef || typeof monRef !== 'object') {
+      return { standard: { text: "Mon" }, possessive: { text: "Mon's" } };
   }
-  return `Player ${sideIndex}`;
-}
-
-export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): ContextVar {
-  if (!monRef || typeof monRef !== 'object') return { text: "Mon" };
   
   let name = "Mon";
   let playerId = "";
@@ -48,31 +130,38 @@ export function resolveMonContext(monRef: UiMon | undefined, state: BattleState 
     if (monRef.Inactive.player) playerId = monRef.Inactive.player;
   }
 
-  const isAlly = options.localPlayerId === playerId;
-  const playerName = getPlayerName(state, playerId) || playerId;
-  let text = name;
-  let noAutoCapitalize = false;
+  const rel = playerId ? getRelationship(state, options.localPlayerId, playerId) : "foe";
+  const playerName = resolvePlayerContext(playerId, state, options).standard.text;
   
-  if (playerId && !isAlly) {
-    if (options.foeFormat === "possessive") {
-      text = i18next.t("mon.foe_possessive", { name, player: playerName });
-      noAutoCapitalize = true;
-    } else if (options.foeFormat === "withPlayer") {
-      text = i18next.t("mon.foe_with_player", { name, player: playerName });
-    } else {
-      text = i18next.t("mon.foe", { name });
-    }
-  } else {
-    if (options.allyFormat === "possessive") {
-      text = i18next.t("mon.ally_possessive", { name });
-    } else {
+  let text = name;
+  let possessiveText = `${name}'s`;
+  let noAutoCapitalize = false;
+  let possessiveNoAutoCapitalize = false;
+  
+  if (rel === "self") {
+      text = i18next.t("mon.self", { name });
+      possessiveText = i18next.t("mon.self_possessive", { name });
+  } else if (rel === "ally") {
       text = i18next.t("mon.ally", { name });
-    }
+      possessiveText = i18next.t("mon.ally_possessive", { name });
+  } else {
+      const isMulti = state?.settings?.battle_type === "Multi";
+      if (isMulti) {
+          text = i18next.t("mon.foe_multi", { name, player: playerName });
+          possessiveText = i18next.t("mon.foe_possessive_multi", { name, player: playerName });
+          noAutoCapitalize = true;
+          possessiveNoAutoCapitalize = true;
+      } else {
+          text = i18next.t("mon.foe_single", { name });
+          possessiveText = i18next.t("mon.foe_possessive_single", { name });
+      }
   }
 
-  return { text, id, noAutoCapitalize };
+  return { 
+      standard: { text, id, noAutoCapitalize },
+      possessive: { text: possessiveText, id, noAutoCapitalize: possessiveNoAutoCapitalize }
+  };
 }
-
 function buildPattern(title: string, tags: string[], flags: string[]): string {
     const sortedTags = [...tags].sort();
     const sortedFlags = [...flags].sort();
@@ -123,8 +212,19 @@ export function generateCombinatorics(title: string, baseTags: string[], flags: 
         }
     }
     
+    const withBattletypeDropped: string[] = [];
+    for (const pattern of finalResults) {
+        if (pattern.includes('battletype:')) {
+            const pParts = pattern.split('|');
+            const newTags = pParts.filter(x => !x.startsWith('battletype:'));
+            withBattletypeDropped.push(newTags.join('|'));
+        }
+    }
+    finalResults.push(...withBattletypeDropped);
+    
     return Array.from(new Set(finalResults)).sort((a, b) => b.length - a.length);
 }
+
 
 export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: MapperOptions = {}): AnyMappedLog | null {
   if (typeof entry === 'string') {
@@ -198,18 +298,26 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
 
           if (k === 'mon') {
               tags.push(`${k}:*`);
-              context[k.toUpperCase()] = resolveMonContext(v, state, options);
+              const resolved = resolveMonContext(v, state, options);
+              context[k.toUpperCase()] = resolved.standard;
+              context[`${k.toUpperCase()}_POSSESSIVE`] = resolved.possessive;
           } else if (k === 'target') {
               if (key === 'effect') {
                   tags.push(`mon:*`);
-                  context.MON = resolveMonContext(v, state, options);
+                  const resolved = resolveMonContext(v, state, options);
+                  context.MON = resolved.standard;
+                  context.MON_POSSESSIVE = resolved.possessive;
               } else {
                   tags.push(`target:*`);
-                  context.TARGET = resolveMonContext(v, state, options);
+                  const resolved = resolveMonContext(v, state, options);
+                  context.TARGET = resolved.standard;
+                  context.TARGET_POSSESSIVE = resolved.possessive;
               }
           } else if (k === 'source') {
               tags.push(`of:*`);
-              context.SOURCE = resolveMonContext(v, state, options);
+              const resolved = resolveMonContext(v, state, options);
+              context.SOURCE = resolved.standard;
+              context.SOURCE_POSSESSIVE = resolved.possessive;
           } else if (k === 'effect') {
               if (typeof v === 'object' && v !== null && v.name) {
                   if (v.effect_type) tags.push(`${v.effect_type}:${v.name}`);
@@ -238,7 +346,16 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
               }
           } else if (k === 'of' || k === 'player' || k === 'position') {
               tags.push(`${k}:*`);
-              if (k === 'player') context.PLAYER = { text: getPlayerName(state, v), noAutoCapitalize: true };
+              if (k === 'player') {
+                  const resolved = resolvePlayerContext(v, state, options);
+                  context.PLAYER = resolved.standard;
+                  context.PLAYER_POSSESSIVE = resolved.possessive;
+              }
+          } else if (k === 'side') {
+              tags.push(`side:*`);
+              const resolved = resolveSideContext(Number(v), state, options);
+              context.SIDE = resolved.standard;
+              context.SIDE_POSSESSIVE = resolved.possessive;
           } else if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
              if (v === true || v === "") {
                  flags.push(`[${k}]`);
@@ -269,8 +386,11 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
       if (['switch', 'drag', 'replace', 'appear'].includes(title)) {
           tags.length = 0;
           ['player', 'position', 'name', 'health', 'species', 'level', 'gender'].forEach(t => tags.push(`${t}:*`));
-          context.PLAYER = { text: getPlayerName(state, data.player), noAutoCapitalize: true };
+          const resolvedPlayer = resolvePlayerContext(data.player, state, options);
+          context.PLAYER = resolvedPlayer.standard;
+          context.PLAYER_POSSESSIVE = resolvedPlayer.possessive;
           context.MON = { text: data.name || "Mon" };
+          context.MON_POSSESSIVE = { text: `${data.name || "Mon"}'s` };
       } else if (title === 'switchout') {
           tags.length = 0;
           tags.push('mon:*');
@@ -288,6 +408,10 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
   ];
 
   const combinatoricTags = tags.filter(t => !excludeTags.includes(t.split(':')[0]));
+  
+  if (state?.settings?.battle_type) {
+      combinatoricTags.push(`battletype:${state.settings.battle_type.toLowerCase()}`);
+  }
 
   const patterns = generateCombinatorics(title, combinatoricTags, flags);
   

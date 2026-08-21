@@ -40,8 +40,6 @@ export interface AnyMappedLog {
 
 export interface MapperOptions {
   localPlayerId?: string;
-  foeFormat?: "standard" | "withPlayer" | "possessive";
-  allyFormat?: "standard" | "possessive";
   healthFormat?: "fraction" | "percentage";
   forceTemplateKey?: string;
 }
