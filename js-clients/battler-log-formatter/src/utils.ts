@@ -113,15 +113,3 @@ export function maskLog(line: string): string | null {
   return maskedParts.join('|');
 }
 
-export function getExpectedEnumKey(line: string): string | null {
-  const pattern = maskLog(line);
-  if (!pattern) return null;
-  
-  const safePattern = pattern
-    .replace(/\|/g, '__')
-    .replace(/:/g, '_')
-    .replace(/\*/g, 'any')
-    .toLowerCase()
-    .replace(/[^a-z0-9_]/g, '');
-  return safePattern;
-}

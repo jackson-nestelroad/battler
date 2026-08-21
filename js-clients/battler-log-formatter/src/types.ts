@@ -43,4 +43,5 @@ export interface MapperOptions {
   foeFormat?: "standard" | "withPlayer" | "possessive";
   allyFormat?: "standard" | "possessive";
   healthFormat?: "fraction" | "percentage";
+  forceTemplateKey?: string;
 }

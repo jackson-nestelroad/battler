@@ -1,9 +1,8 @@
+
 import type { UiLogEntry, BattleState, UiMon } from "battler-state";
-import { activeMonByPosition, monPhysicalAppearance } from "battler-state/state_selectors.js";
-import i18next from "./i18n.js";
+import i18next from "i18next";
 import { LogCategory } from "./types.js";
 import type { MapperOptions, AnyMappedLog, ContextVar } from "./types.js";
-
 
 function getPlayerName(state: BattleState | undefined, playerId: string | undefined): string {
   if (!playerId) return "";
@@ -25,31 +24,30 @@ function getSideName(state: BattleState | undefined, sideIndex: number | undefin
   return `Player ${sideIndex}`;
 }
 
-function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): ContextVar {
-  if (!monRef) return { text: "Mon" };
+export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): ContextVar {
+  if (!monRef || typeof monRef !== 'object') return { text: "Mon" };
   
   let name = "Mon";
   let playerId = "";
   let id = "";
 
   if ("Active" in monRef && monRef.Active) {
-    if (monRef.Active.name) {
-      name = monRef.Active.name;
-    }
-    if (monRef.Active.player) {
-      playerId = monRef.Active.player;
-    }
-    const { position } = monRef.Active;
-    if (playerId) {
-      id = `${playerId}-active-${position}`;
-    }
-
+    if (monRef.Active.name) name = monRef.Active.name;
+    if (monRef.Active.player) playerId = monRef.Active.player;
+    id = `${playerId}-active-${monRef.Active.position}`;
+  } else if ("Bench" in monRef && monRef.Bench) {
+    if (monRef.Bench.name) name = monRef.Bench.name;
+    if (monRef.Bench.player) playerId = monRef.Bench.player;
+    id = `${playerId}-bench-${monRef.Bench.position}`;
+  } else if ("Party" in monRef && monRef.Party) {
+    if (monRef.Party.name) name = monRef.Party.name;
+    if (monRef.Party.player) playerId = monRef.Party.player;
+    id = `${playerId}-party-${monRef.Party.index}`;
   } else if ("Inactive" in monRef && monRef.Inactive) {
-    name = monRef.Inactive.name || "Mon";
-    playerId = monRef.Inactive.player || "";
+    if (monRef.Inactive.name) name = monRef.Inactive.name;
+    if (monRef.Inactive.player) playerId = monRef.Inactive.player;
   }
 
-  // Determine perspective string
   const isAlly = options.localPlayerId === playerId;
   const playerName = getPlayerName(state, playerId) || playerId;
   let text = name;
@@ -58,7 +56,7 @@ function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undef
   if (playerId && !isAlly) {
     if (options.foeFormat === "possessive") {
       text = i18next.t("mon.foe_possessive", { name, player: playerName });
-      noAutoCapitalize = true; // Starts with player name
+      noAutoCapitalize = true;
     } else if (options.foeFormat === "withPlayer") {
       text = i18next.t("mon.foe_with_player", { name, player: playerName });
     } else {
@@ -71,532 +69,237 @@ function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undef
       text = i18next.t("mon.ally", { name });
     }
   }
-  
+
   return { text, id, noAutoCapitalize };
 }
 
-export function getLogPatterns(entry: UiLogEntry): string[] {
-  if (typeof entry === 'string') return [entry.toLowerCase()];
-  const key = Object.keys(entry)[0] as keyof UiLogEntry;
-  const originalData = (entry as any)[key];
-  const data = typeof originalData === 'object' && originalData !== null ? JSON.parse(JSON.stringify(originalData)) : originalData;
-  let title = '';
-  const tags: string[] = [];
-  
-const pushTag = (tag: string, source: string) => {
-    // console.log(`Pushing ${tag} from ${source}`);
-    tags.push(tag);
-  };
+function buildPattern(title: string, tags: string[], flags: string[]): string {
+    const sortedTags = [...tags].sort();
+    const sortedFlags = [...flags].sort();
+    return [title, ...sortedTags, ...sortedFlags].join('|');
+}
 
-  const flags: string[] = [];
-  switch (key) {
-        case 'AddedType':
-      title = 'addedtype';
-      if (data.mon !== undefined) tags.push('mon:*');
-      if (data.type !== undefined) tags.push('type:*');
-      break;
-    case 'Damage':
-      title = 'damage';
-      if (data.health !== undefined) tags.push('health:*');
-      break;
-    case 'Debug':
-      if (data.title) title = data.title;
-      else title = 'debug';
-      if (data.title !== undefined) tags.push('title:*');
-      break;
-    case 'Extension':
-      title = 'extension';
-      if (data.source !== undefined) tags.push('source:*');
-      if (data.title !== undefined) tags.push('title:*');
-      break;
-    case 'Heal':
-      title = 'heal';
-      if (data.health !== undefined) tags.push('health:*');
-      break;
-    case 'Leave':
-      if (data.title) title = data.title;
-      else title = 'leave';
-      if (data.player !== undefined) tags.push('player:*');
-      delete data.positions;
-      break;
-    case 'LevelUp':
-      title = 'levelup';
-      if (data.mon !== undefined) tags.push('mon:*');
-      if (data.level !== undefined) tags.push('level:*');
-      if (data.stats !== undefined) tags.push('atk:*', 'def:*', 'hp:*', 'spa:*', 'spd:*', 'spe:*');
-      break;
-    case 'Move':
-      title = data.animate_only ? 'animatemove' : 'move';
-      if (data.mon !== undefined) tags.push('mon:*');
-      if (data.name !== undefined) tags.push(`name:${data.name}`);
-      if (data.animate === false) flags.push('[noanim]');
-      break;
-    case 'MoveUpdate':
-      title = data.learned ? 'learnedmove' : 'didnotlearnmove';
-      if (data.mon !== undefined) tags.push('mon:*');
-      if (data.move_name !== undefined) tags.push(`move:${data.move_name}`);
-      delete data.move_name;
-      delete data.learned;
-      break;
-    case 'SetHealth':
-      title = 'sethp';
-      if (data.health !== undefined) tags.push('health:*');
-      break;
-    case 'StatBoost':
-      title = data.by < 0 ? 'unboost' : 'boost';
-      if (data.mon !== undefined) tags.push('mon:*');
-      if (data.stat !== undefined) tags.push('stat:*');
-      if (data.by !== undefined) tags.push('by:*');
-      break;
-    case 'Switch':
-      if (data.title) title = data.title;
-      else title = 'switch';
-      
-      // Since Switch strips all visual details (level, species, health), we just hardcode the known tag combinations from en.ts
-      if (title === 'switch' || title === 'drag' || title === 'replace' || title === 'appear') {
-          tags.push('player:*');
-          tags.push('position:*');
-          tags.push('name:*');
-          tags.push('health:*');
-          tags.push('species:*');
-          tags.push('level:*');
-          tags.push('gender:*');
-          if (title === 'switch' || title === 'drag') {
-              // Note: en.ts might have tera:* for switch, but permutations won't catch it. 
-              // We'll just push tera:* as a possible tag.
-              // Actually, we can return multiple patterns but getLogPattern returns one.
-          }
-      } else if (title === 'switchout') {
-          tags.push('mon:*');
-      }
-      break;
-    case 'UpdateAppearance':
-      if (data.title) title = data.title;
-      else title = 'updateappearance';
-      
-      // UpdateAppearance strips health, status, level, gender
-      if (title === 'specieschange') {
-          tags.push('player:*');
-          tags.push('position:*');
-          tags.push('name:*');
-          tags.push('health:*');
-          tags.push('species:*');
-          tags.push('level:*');
-          tags.push('gender:*');
-      } else if (title === 'formechange') {
-          tags.push('mon:*');
-          tags.push('species:*');
-      }
-      break;
+export function generateCombinatorics(title: string, baseTags: string[], flags: string[]): string[] {
+    const results: Set<string> = new Set();
     
-    case 'Experience':
-      title = 'exp';
-      break;
-    case 'SwitchOut':
-      title = 'switchout';
-      if (data.mon !== undefined) tags.push('mon:*');
-      break;
-    case 'UseItem':
-      title = 'useitem';
-      if (data.player !== undefined) tags.push('player:*');
-      if (data.item !== undefined) tags.push('name:*');
-      if (data.target !== undefined) tags.push('target:*');
-      break;
-    default:
-      if (data && data.title) {
-         title = data.title;
-      } else if (key === 'Effect' && data.effect?.id) {
-         title = data.effect.id;
-      } else {
-         title = (key as string).toLowerCase();
-         if (title === 'caught') title = 'catch';
-         else if (title === 'fainted') title = 'faint';
-         else if (title === 'statdrop') title = 'unboost';
-         else if (title === 'itemend') title = 'itemend';
-         else if (title === 'clearweather') title = 'clearweather';
-         else if (title === 'fieldstart') title = 'fieldstart';
-         else if (title === 'fieldend') title = 'fieldend';
-         else if (title === 'sidestart') title = 'sidestart';
-         else if (title === 'sideend') title = 'sideend';
-         else if (title === 'curestatus') title = 'curestatus';
-      }
-      
-      break;
-  }
-
-  // Auto-reconstruct fields for all variants
-  if (data) {
-      for (const [k, v] of Object.entries(data)) {
-        if (k === 'effect' || k === 'title' || k === 'animate' || k === 'animate_only' || k === 'stats' || k === 'noanim' || k === 'notarget' || k === 'missed' || k === 'zpower') continue;
-        if (k === 'health' && (title === 'damage' || title === 'heal' || title === 'sethp' || title === 'appear')) continue;
+    function recurse(index: number, currentTags: string[]) {
+        if (index === baseTags.length) {
+            results.add(buildPattern(title, currentTags, flags));
+            return;
+        }
         
-        const keyName = k === 'into_position' ? 'position' : (k === 'item' && title === 'useitem' ? 'name' : k);
-        if (keyName === 'mon' && ['switch', 'replace', 'drag', 'appear', 'switchout'].includes(title)) continue;
-        // Prevent duplicate tags
-        if (tags.some(t => t.startsWith(`${keyName}:`))) continue;
+        const tag = baseTags[index];
+        const parts = tag.split(':');
         
-        if (v !== undefined && v !== null) {
-            if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile', 'from'].includes(keyName) && typeof v === 'string') {
-                tags.push(`${keyName}:${v}`);
-            } else {
-                tags.push(`${keyName}:*`);
+        recurse(index + 1, [...currentTags, tag]);
+        
+        if (parts.length >= 2) {
+            const k = parts[0];
+            if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile', 'type', 'clause', 'species'].includes(k) && parts[1] !== '*') {
+                recurse(index + 1, [...currentTags, `${k}:*`]);
+            }
+            if (k === 'from' && parts.length === 3 && parts[2] !== '*') {
+                recurse(index + 1, [...currentTags, `${parts[0]}:${parts[1]}:*`]);
             }
         }
-     }
+    }
+    
+    recurse(0, []);
+    
+    const finalResults = Array.from(results);
+    const requireFromOf = ['damage', 'heal', 'sethp', 'item', 'itemend', 'itemstart', 'ability', 'abilitystart', 'cant', 'fail', 'immune', 'block'];
+    
+    if (!requireFromOf.includes(title)) {
+        for (const pattern of Array.from(results)) {
+            const pParts = pattern.split('|');
+            const pTags = pParts.slice(1).filter(x => !x.startsWith('[') && !x.endsWith(']'));
+            const pFlags = pParts.slice(1).filter(x => x.startsWith('[') && x.endsWith(']'));
+            
+            const noFromOfTags = pTags.filter(t => {
+                const k = t.split(':')[0];
+                return k !== 'from' && k !== 'of';
+            });
+            finalResults.push(buildPattern(title, noFromOfTags, pFlags));
+        }
+    }
+    
+    return Array.from(new Set(finalResults)).sort((a, b) => b.length - a.length);
+}
+
+export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: MapperOptions = {}): AnyMappedLog | null {
+  if (typeof entry === 'string') {
+      const lower = entry.toLowerCase();
+      let context = {};
+      return { patterns: [lower], category: LogCategory.Primary, context };
+  }
+  
+  const keyStr = Object.keys(entry)[0] as keyof UiLogEntry;
+  const key = keyStr.toLowerCase();
+  const data = (entry as Record<string, any>)[keyStr];
+  
+  let title = key;
+  
+  if (title === 'caught') title = 'catch';
+  else if (title === 'fainted') title = 'faint';
+  else if (title === 'statboost') title = data?.by < 0 ? 'unboost' : 'boost';
+  else if (title === 'itemend') title = 'itemend';
+  else if (title === 'experience') title = 'exp';
+  else if (title === 'sethealth') title = 'sethp';
+  else if (title === 'clearweather') title = 'clearweather';
+  else if (title === 'fieldstart') title = 'fieldstart';
+  else if (title === 'fieldend') title = 'fieldend';
+  else if (title === 'sidestart') title = 'sidestart';
+  else if (title === 'sideend') title = 'sideend';
+  else if (title === 'curestatus') title = 'curestatus';
+  else if (title === 'updateappearance') {
+      if (data && data.title === 'specieschange') title = 'specieschange';
+  } else if (title === 'effect') {
+      if (data && data.effect?.id) title = data.effect.id;
   }
 
-  if (data?.effect) {
-    if (data.effect.target !== undefined) {
-        if (!tags.some(t => t.startsWith('mon:'))) tags.push('mon:*');
-    }
-    if (data.effect.source !== undefined) {
-        tags.push('of:*');
-    }
-    if (data.effect.player !== undefined) {
-        tags.push('player:*');
-    }
-    if (data.effect.side !== undefined) {
-        tags.push('side:*');
-    }
-    if (data.effect.slot !== undefined) {
-        tags.push('slot:*');
-    }
-    if (data.effect.source_effect !== undefined) {
-        if (typeof data.effect.source_effect === 'string') {
-           tags.push(`from:${data.effect.source_effect}:*`);
-        } else if (data.effect.source_effect.effect_type) {
-           const typeStr = data.effect.source_effect.effect_type.toLowerCase();
-           const valStr = data.effect.source_effect.name || '*';
-           tags.push(`from:${typeStr}:${valStr}`);
-        } else if (data.effect.source_effect.name) {
-           tags.push(`from:${data.effect.source_effect.name}`);
-        } else {
-           tags.push(`from:*`);
-        }
-    }
-    if (data.effect.effect !== undefined) {
-        let typeStr = '';
-        let valStr = '*';
-        if (typeof data.effect.effect === 'string') {
-           typeStr = 'effect';
-           valStr = data.effect.effect;
-        } else if (data.effect.effect.effect_type) {
-           typeStr = data.effect.effect.effect_type.toLowerCase();
-           if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(typeStr)) {
-               valStr = data.effect.effect.name;
-           }
-        }
-        if (typeStr) tags.push(`${typeStr}:${valStr}`);
-    }
+  if (data && data.title) {
+      title = data.title;
+  }
 
-    if (data.effect.additional !== undefined) {
-      for (const [k, v] of Object.entries(data.effect.additional as Record<string, string>)) {
-        if (k === 'health' && (title === 'damage' || title === 'heal' || title === 'sethp' || title === 'appear')) continue;
-        if (v === "") flags.push(`[${k}]`);
-        else if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(k)) tags.push(`${k}:${v}`);
-        else tags.push(`${k}:*`);
+  const tags: string[] = [];
+  const flags: string[] = [];
+  const context: Record<string, ContextVar> = {};
+  
+  let category = LogCategory.Primary;
+  if (['debug', 'waiting', 'experience', 'moveupdate', 'addvolatile'].includes(key)) {
+      category = LogCategory.Hint;
+  }
+
+  if (data && typeof data === 'object') {
+      const processValue = (k: string, v: any) => {
+          if (v === undefined || v === null) return;
+          if (k === 'title') return;
+          
+          if (k === 'additional' && typeof v === 'object' && v !== null) {
+              for (const [ak, av] of Object.entries(v)) {
+                  processValue(ak, av);
+              }
+              return;
+          }
+
+          if (k === 'animate') {
+              if (v === false) flags.push('[noanim]');
+              return;
+          }
+          if (k === 'animate_only') {
+              if (v === true && title === 'move') title = 'animatemove';
+              return;
+          }
+          
+          if (k === 'learned' && key === 'moveupdate') {
+              title = v ? 'learnedmove' : 'didnotlearnmove';
+              return;
+          }
+
+          if (k === 'mon') {
+              tags.push(`${k}:*`);
+              context[k.toUpperCase()] = resolveMonContext(v, state, options);
+          } else if (k === 'target') {
+              if (key === 'effect') {
+                  tags.push(`mon:*`);
+                  context.MON = resolveMonContext(v, state, options);
+              } else {
+                  tags.push(`target:*`);
+                  context.TARGET = resolveMonContext(v, state, options);
+              }
+          } else if (k === 'source') {
+              tags.push(`of:*`);
+              context.SOURCE = resolveMonContext(v, state, options);
+          } else if (k === 'effect') {
+              if (typeof v === 'object' && v !== null && v.name) {
+                  if (v.effect_type) tags.push(`${v.effect_type}:${v.name}`);
+                  else tags.push(`effect:${v.name}`);
+              } else {
+                  tags.push(`effect:${typeof v === 'string' ? v : '*'}`);
+              }
+          } else if (k === 'source_effect') {
+              if (typeof v === 'object' && v !== null && v.name) {
+                  if (v.effect_type) tags.push(`from:${v.effect_type}:${v.name}`);
+                  else tags.push(`from:${v.name}`);
+              } else {
+                  tags.push(`from:*`);
+              }
+          } else if (k === 'move_name' && (title === 'learnedmove' || title === 'didnotlearnmove' || key === 'moveupdate')) {
+              tags.push(`move:${v}`);
+              context.MOVE = v;
+          } else if (k === 'name' && title === 'move') {
+              tags.push(`name:*`);
+              context.MOVE = v;
+          } else if (k === 'from') {
+              if (typeof v === 'object' && v.effect_type && v.name) {
+                  tags.push(`from:${v.effect_type}:${v.name}`);
+              } else {
+                  tags.push(`from:*`);
+              }
+          } else if (k === 'of' || k === 'player' || k === 'position') {
+              tags.push(`${k}:*`);
+              if (k === 'player') context.PLAYER = { text: getPlayerName(state, v), noAutoCapitalize: true };
+          } else if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+             if (v === true || v === "") {
+                 flags.push(`[${k}]`);
+             } else {
+                 if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile', 'from'].includes(k)) {
+                     tags.push(`${k}:${v}`);
+                 } else {
+                     tags.push(`${k}:*`);
+                 }
+             }
+          } else {
+             tags.push(`${k}:*`);
+          }
+      };
+
+      for (const [k, v] of Object.entries(data)) {
+          if (k === 'effect') {
+             if (typeof v === 'object' && v !== null) {
+                 for (const [ek, ev] of Object.entries(v as any)) {
+                     processValue(ek, ev);
+                 }
+             }
+          } else {
+             processValue(k, v);
+          }
       }
-    }
+      
+      if (['switch', 'drag', 'replace', 'appear'].includes(title)) {
+          tags.length = 0;
+          ['player', 'position', 'name', 'health', 'species', 'level', 'gender'].forEach(t => tags.push(`${t}:*`));
+          context.PLAYER = { text: getPlayerName(state, data.player), noAutoCapitalize: true };
+          context.MON = { text: data.name || "Mon" };
+      } else if (title === 'switchout') {
+          tags.length = 0;
+          tags.push('mon:*');
+      }
   }
+
+  if (title === 'leave' && data.title !== 'forfeited' && data.title !== 'escaped') return null;
+  if (title === 'extension') return null;
 
   const excludeTags = [
-      'mon', 'of', 'player', 'side', 'slot', 'position', 'source',
+      'mon', 'of', 'player', 'side', 'slot', 'position', 'positions', 'source',
       'gender', 'health', 'level', 'name', 'species',
       'stats', 'stat', 'by', 'exp', 'atk', 'def', 'spa', 'spd', 'spe', 'hp',
       'target', 'anim', 'newmove', 'pick', 'size', 'length', 'id', 'time'
   ];
 
-  let baseTags = Array.from(new Set(tags))
-      .filter(t => !excludeTags.some(ex => t.startsWith(`${ex}:`)))
-      .sort();
-  flags.sort();
+  const combinatoricTags = tags.filter(t => !excludeTags.includes(t.split(':')[0]));
 
-  // For specific logs, force specific attributes to ANY
-  if (title === 'abilitystart' || title === 'itemstart' || title === 'abilityend') {
-      baseTags = baseTags.map(t => {
-          if (t.startsWith('ability:') && t !== 'ability:*') return 'ability:*';
-          if (t.startsWith('item:') && t !== 'item:*') return 'item:*';
-          return t;
-      });
-  } else if (title === 'addvolatile') {
-      baseTags = baseTags.map(t => {
-          if (t.startsWith('volatile:') && t !== 'volatile:*') return 'volatile:*';
-          return t;
-      });
-  } else if (title === 'block') {
-      baseTags = baseTags.map(t => {
-          if (t.startsWith('ability:') && t !== 'ability:*') return 'ability:*';
-          if (t.startsWith('move:') && t !== 'move:*') return 'move:*';
-          if (t.startsWith('item:') && t !== 'item:*') return 'item:*';
-          return t;
-      });
-  } else if (title === 'activate') {
-      const hasPrimary = baseTags.some(t => t.startsWith('ability:') || t.startsWith('item:') || t.startsWith('hit:') || t.startsWith('magnitude:'));
-      if (hasPrimary) {
-          baseTags = baseTags.map(t => {
-              if (t.startsWith('move:') && t !== 'move:*') return 'move:*';
-              return t;
-          });
-      }
-  }
-
-  const buildPattern = (t: string[]) => [title, ...Array.from(new Set(t)).sort(), ...flags].join('|');
-  const results: string[] = [];
-
-  // 1. Core Permutations
-  if (title === 'ability' || title === 'item') {
-      const hasName = baseTags.some(t => (t.startsWith(`${title}:`) && t !== `${title}:*`));
-      const hasFrom = baseTags.some(t => t.startsWith('from:') && !t.endsWith(':*'));
-      
-      if (hasName && hasFrom) {
-          // Exact match (Both)
-          results.push(buildPattern(baseTags));
-          
-          // Name only (from genericized)
-          const nameOnly = baseTags.map(t => {
-              if (t.startsWith('from:') && !t.endsWith(':*')) {
-                  const parts = t.split(':');
-                  return `${parts[0]}:${parts[1]}:*`;
-              }
-              return t;
-          });
-          results.push(buildPattern(nameOnly));
-          
-          // From only (name genericized)
-          const fromOnly = baseTags.map(t => {
-              if (t.startsWith(`${title}:`) && t !== `${title}:*`) {
-                  return `${title}:*`;
-              }
-              return t;
-          });
-          results.push(buildPattern(fromOnly));
-      } else {
-          results.push(buildPattern(baseTags));
-      }
-  } else {
-      results.push(buildPattern(baseTags));
-  }
-
-  // 2. Fully Generic
-  const fullyGenericTags = baseTags.map(t => {
-      const parts = t.split(':');
-      if (parts.length === 2 && ['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile'].includes(parts[0]) && parts[1] !== '*') {
-          return `${parts[0]}:*`;
-      }
-      if (parts.length === 3 && parts[0] === 'from' && parts[2] !== '*') {
-          return `${parts[0]}:${parts[1]}:*`;
-      }
-      return t;
-  });
-  const fullyGeneric = buildPattern(fullyGenericTags);
-  if (!results.includes(fullyGeneric)) results.push(fullyGeneric);
-
-  // 3. Apply Modifiers (pure vars & from/of)
-  const requireFromOf = ['damage', 'heal', 'sethp', 'item', 'itemend', 'itemstart', 'ability', 'abilitystart', 'cant', 'fail', 'immune', 'block'];
-  const pureVars = ['by', 'exp', 'level', 'hp', 'atk', 'def', 'spa', 'spd', 'spe', 'stats', 'stat'];
+  const patterns = generateCombinatorics(title, combinatoricTags, flags);
   
-  const finalResults: string[] = [];
-  for (const pattern of results) {
-      if (!finalResults.includes(pattern)) finalResults.push(pattern);
-      
-      const pParts = pattern.split('|');
-      const pTitle = pParts[0];
-      const pTags = pParts.slice(1).filter(x => !x.startsWith('[') && !x.endsWith(']'));
-      const pFlags = pParts.slice(1).filter(x => x.startsWith('[') && x.endsWith(']'));
-      
-      // Omit pure vars
-      const noVarsTags = pTags.filter(t => !pureVars.includes(t.split(':')[0]));
-      const noVarsPattern = [pTitle, ...noVarsTags, ...pFlags].join('|');
-      if (!finalResults.includes(noVarsPattern)) finalResults.push(noVarsPattern);
-      
-      // Omit from/of
-      if (!requireFromOf.includes(pTitle)) {
-          const noFromOfTags = pTags.filter(t => {
-              const k = t.split(':')[0];
-              return k !== 'from' && k !== 'of';
-          });
-          const noFromOfPattern = [pTitle, ...noFromOfTags, ...pFlags].join('|');
-          if (!finalResults.includes(noFromOfPattern)) finalResults.push(noFromOfPattern);
-          
-          // Omit both
-          const noBothTags = noFromOfTags.filter(t => !pureVars.includes(t.split(':')[0]));
-          const noBothPattern = [pTitle, ...noBothTags, ...pFlags].join('|');
-          if (!finalResults.includes(noBothPattern)) finalResults.push(noBothPattern);
-      }
-  }
-  
-  return finalResults;
+  const mapped: AnyMappedLog = {
+      patterns,
+      category,
+      context,
+      ...(data.effect ? { effect: data.effect } : {})
+  };
+  return mapped;
 }
 
-export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: MapperOptions = {}): AnyMappedLog | null {
-  if (typeof entry === "string") {
-    switch (entry) {
-      case "TurnLimit": return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: {} };
-      case "Tie": return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: {} };
-      default: return null;
-    }
-  }
-
-  const keyStr = Object.keys(entry)[0];
-  const key = keyStr.toLowerCase();
-  const data = (entry as Record<string, any>)[keyStr];
-
-  const mapped = (() => {
-  switch (key) {
-    case "move": {
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Primary,
-        context: {
-          MON: resolveMonContext(data.mon, state, options),
-          MOVE: data.name
-        }
-      };
-    }
-    case "damage": {
-      const target = resolveMonContext(data.effect?.target, state, options);
-      const effectName = data.effect?.source_effect?.name;
-      if (effectName) {
-        return {
-          patterns: getLogPatterns(entry),
-          category: LogCategory.Secondary,
-          context: { TARGET: target, EFFECT: effectName }
-        };
-      }
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Secondary,
-        context: { TARGET: target }
-      };
-    }
-    case "heal": {
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Secondary,
-        context: { MON: resolveMonContext(data.mon, state, options) }
-      };
-    }
-    case "sethp": {
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Secondary,
-        context: { MON: resolveMonContext(data.mon, state, options) }
-      };
-    }
-    case "faint": {
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Primary,
-        context: { TARGET: resolveMonContext(data.effect?.target, state, options) }
-      };
-    }
-    case "statboost": {
-      const isDrop = (data.by || 0) < 0;
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Secondary,
-        context: {
-          MON: resolveMonContext(data.mon, state, options),
-          STAT: data.stat
-        }
-      };
-    }
-    case "switchin":
-    case "switch":
-    case "replace": {
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Primary,
-        context: { PLAYER: { text: getPlayerName(state, data.player), noAutoCapitalize: true }, MON: { text: data.name || "Mon" } }
-      };
-    }
-    case "switchout": {
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Primary,
-        context: { MON: resolveMonContext(data.mon, state, options) }
-      };
-    }
-    case "useitem": {
-      if (data.target) {
-        return {
-          patterns: getLogPatterns(entry),
-          category: LogCategory.Primary,
-          context: { PLAYER: { text: getPlayerName(state, data.player), noAutoCapitalize: true }, ITEM: data.item, TARGET: resolveMonContext(data.target, state, options) }
-        };
-      }
-      return {
-        patterns: getLogPatterns(entry),
-        category: LogCategory.Primary,
-        context: { PLAYER: { text: getPlayerName(state, data.player), noAutoCapitalize: true }, ITEM: data.item }
-      };
-    }
-    case "win": {
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { SIDE: { text: getSideName(state, data.side), noAutoCapitalize: true } } };
-    }
-    case "debug": {
-      return { patterns: getLogPatterns(entry), category: LogCategory.Hint, context: { TITLE: data.title || "Unknown" } };
-    }
-    case "waiting": {
-      return { patterns: getLogPatterns(entry), category: LogCategory.Hint, context: {} };
-    }
-    case "cannotescape":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { PLAYER: { text: getPlayerName(state, data.player), noAutoCapitalize: true } } };
-    case "leave": {
-      if (data.title === "forfeited" || data.title === "escaped") return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { PLAYER: { text: getPlayerName(state, data.player), noAutoCapitalize: true } } };
-      return null;
-    }
-    default: {
-      const effectData = data.effect || {};
-      const mon = resolveMonContext(effectData.target || data.mon, state, options);
-      const source = resolveMonContext(effectData.source, state, options);
-      const effectName = effectData.effect?.name || effectData.additional?.condition || effectData.source_effect?.name || data.item || data.ability;
-
-      const title = data.title || key;
-      const primaryEffects = ["learnedmove", "didnotlearnmove", "levelup", "mega", "primal", "ultra", "revertmega", "revertprimal", "revertultra", "revertgigantamax", "specieschange", "revive", "prepare", "status", "uncatchable", "tera", "cannot_escape", "forfeited"];
-      const category = primaryEffects.includes(title) ? LogCategory.Primary : LogCategory.Secondary;
-      
-      const context: Record<string, any> = { ...data, MON: mon, EFFECT: effectName };
-      if (data.move || effectData.additional?.move || effectData.effect?.name) context.MOVE = data.move || effectData.additional?.move || effectData.effect?.name;
-      if (effectData.additional?.status || effectData.effect?.name) context.STATUS = effectData.additional?.status || effectData.effect?.name;
-      if (effectData.additional?.types || effectData.effect?.name) context.TYPE = effectData.additional?.types || effectData.effect?.name;
-      if (effectData.additional?.hits) context.COUNT = effectData.additional?.hits;
-      if (data.ability) context.ABILITY = data.ability;
-      if (data.item) context.ITEM = data.item;
-      if (effectData.side !== undefined) context.SIDE = `Side ${effectData.side}`;
-      if (data.weather) context.WEATHER = data.weather;
-      if (data.level) context.LEVEL = data.level.toString();
-      if (data.exp) context.EXP = data.exp.toString();
-
-      return { patterns: getLogPatterns(entry), category, context };
-    }
-    case "Transform":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { SOURCE: resolveMonContext(data.target, state, options), TARGET: data.effect?.additional?.species || data.effect?.effect?.name || "Unknown" } };
-    case "UpdateAppearance":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { MON: resolveMonContext(data.effect?.target, state, options) } };
-    case "Revive":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { MON: resolveMonContext(data.mon, state, options) } };
-    case "SetHealth":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { TARGET: resolveMonContext(data.effect?.target, state, options) } };
-    case "Caught":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { MON: resolveMonContext(data.effect?.target, state, options) } };
-    case "Experience":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Hint, context: { MON: resolveMonContext(data.mon, state, options) || "Mon", EXP: data.exp.toString() } };
-    case "LevelUp":
-      return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { MON: resolveMonContext(data.mon, state, options) || "Mon", LEVEL: data.level.toString() } };
-    case "MoveUpdate":
-      if (data.learned) {
-        return { patterns: getLogPatterns(entry), category: LogCategory.Primary, context: { MON: resolveMonContext(data.mon, state, options) || "Mon", MOVE: data.move_name } };
-      }
-      return { patterns: getLogPatterns(entry), category: LogCategory.Hint, context: { MON: resolveMonContext(data.mon, state, options) || "Mon", MOVE: data.move_name } };
-    case "Extension": {
-      return null;
-    }
-  }
-  })() as import("./types.js").AnyMappedLog | null;
-
-  if (mapped && data.effect) {
-    mapped.effect = data.effect;
-  }
-  return mapped;
+export function getLogPatterns(entry: UiLogEntry): string[] {
+    return mapUiLogEntry(entry)?.patterns || [];
 }

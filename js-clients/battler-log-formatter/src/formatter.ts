@@ -115,7 +115,9 @@ export class LogFormatter {
     let templateKey = `logs.${mapped.patterns[0]}`;
     const patterns = mapped.patterns;
     
-    if (patterns && patterns.length > 0) {
+    if (this.options.forceTemplateKey) {
+        templateKey = `logs.${this.options.forceTemplateKey}`;
+    } else if (patterns && patterns.length > 0) {
         let found = false;
         for (const pattern of patterns) {
             let p = pattern;
