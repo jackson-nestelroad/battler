@@ -64,7 +64,7 @@ export const en = {
       "{{MON_POSSESSIVE}} {{ABILITY}} weakened the {{atk}} of all surrounding {{Mons}}!",
     ability__ability_tanglinghair: undefined,
     ability__ability_teraformzero: undefined,
-    ability__ability_unnerve: "The opposing team is too nervous to eat Berries!",
+    ability__ability_unnerve: "{{FOE_SIDE}} is too nervous to eat Berries!",
     ability__ability_vesselofruin: undefined,
     abilityend: undefined,
     abilityend__ability_any: undefined,

@@ -162,7 +162,8 @@ export function resolveMonContext(monRef: UiMon | undefined, state: BattleState 
       possessive: { text: possessiveText, monRef, noAutoCapitalize: possessiveNoAutoCapitalize },
       raw: name,
       raw_possessive: `${name}'s`,
-      ref: monRef
+      ref: monRef,
+      rel
   };
 }
 function buildPattern(title: string, tags: string[], flags: string[]): string {
@@ -299,18 +300,21 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
               const resolved = resolveMonContext(v, state, options);
               context[k.toUpperCase()] = resolved.standard;
               context[`${k.toUpperCase()}_POSSESSIVE`] = resolved.possessive;
+              context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
           } else if (k === 'target') {
               if (key === 'effect') {
                   tags.push(`mon:*`);
                   const resolved = resolveMonContext(v, state, options);
                   context.MON = resolved.standard;
                   context.MON_POSSESSIVE = resolved.possessive;
+                  context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
                   metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
               } else {
                   tags.push(`target:*`);
                   const resolved = resolveMonContext(v, state, options);
                   context.TARGET = resolved.standard;
                   context.TARGET_POSSESSIVE = resolved.possessive;
+                  context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
                   metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
               }
           } else if (k === 'source' || k === 'of') {
@@ -318,6 +322,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
               const resolved = resolveMonContext(v, state, options);
               context.SOURCE = resolved.standard;
               context.SOURCE_POSSESSIVE = resolved.possessive;
+              context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
               metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
           } else if (k === 'effect') {
               if (typeof v === 'object' && v !== null && v.name) {

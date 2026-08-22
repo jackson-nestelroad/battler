@@ -79,10 +79,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "rawLog": "ability|mon:Calyrex,player-1,1|ability:Unnerve",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "__CAPITALIZED_FOE_SIDE": "Your team",
+      },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing team is too nervous to eat Berries!",
+        "text": "Your team is too nervous to eat Berries!",
       },
       "key": "ability__ability_unnerve",
     },
@@ -153,10 +155,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "rawLog": "ability|mon:Calyrex,player-1,2|ability:Unnerve",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "__CAPITALIZED_FOE_SIDE": "Your team",
+      },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing team is too nervous to eat Berries!",
+        "text": "Your team is too nervous to eat Berries!",
       },
       "key": "ability__ability_unnerve",
     },
@@ -227,10 +231,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "rawLog": "ability|mon:Calyrex,player-2,1|ability:Unnerve",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "__CAPITALIZED_FOE_SIDE": "Your team",
+      },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing team is too nervous to eat Berries!",
+        "text": "Your team is too nervous to eat Berries!",
       },
       "key": "ability__ability_unnerve",
     },
