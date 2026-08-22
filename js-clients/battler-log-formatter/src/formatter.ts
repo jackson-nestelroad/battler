@@ -116,6 +116,16 @@ export class LogFormatter {
     // Inject global text replacements (only Titlecase to protect {{MON}})
     templateArgs.Mon = i18next.t('vocabulary.Mon');
     templateArgs.Mons = i18next.t('vocabulary.Mons');
+    
+    // Inject stats
+    templateArgs.hp = i18next.t('stats.hp');
+    templateArgs.atk = i18next.t('stats.atk');
+    templateArgs.def = i18next.t('stats.def');
+    templateArgs.spa = i18next.t('stats.spa');
+    templateArgs.spd = i18next.t('stats.spd');
+    templateArgs.spe = i18next.t('stats.spe');
+    templateArgs.eva = i18next.t('stats.eva');
+    templateArgs.acc = i18next.t('stats.acc');
 
     let templateKey = `logs.${mapped.patterns[0]}`;
     const patterns = mapped.patterns;

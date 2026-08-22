@@ -51,7 +51,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Calyrex has two abilities!",
+        "text": "The opposing Calyrex has two Abilities!",
       },
       "key": "ability__ability_asone",
     },
@@ -125,7 +125,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Calyrex has two abilities!",
+        "text": "The opposing Calyrex has two Abilities!",
       },
       "key": "ability__ability_asone",
     },
@@ -199,7 +199,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Calyrex has two abilities!",
+        "text": "The opposing Calyrex has two Abilities!",
       },
       "key": "ability__ability_asone",
     },
@@ -344,25 +344,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "rawLog": "ability|mon:Corviknight,player-1,1|ability:Mirror Armor",
   "result": {
     "message": {
-      "context": {
-        "ABILITY": "Mirror Armor",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Corviknight",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Corviknight",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Corviknight has the Mirror Armor ability.",
+        "text": "Mirror Armor",
       },
-      "key": "ability__ability_any",
+      "key": "ability|ability:Mirror Armor",
     },
     "notices": [
       {
@@ -388,25 +375,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "rawLog": "ability|mon:Cursola,player-2,1|ability:Perish Body",
   "result": {
     "message": {
-      "context": {
-        "ABILITY": "Perish Body",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Cursola",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Cursola",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Cursola has the Perish Body ability.",
+        "text": "Perish Body",
       },
-      "key": "ability__ability_any",
+      "key": "ability|ability:Perish Body",
     },
     "notices": [
       {
@@ -561,25 +535,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "rawLog": "ability|mon:Goomy,player-2,1|ability:Gooey",
   "result": {
     "message": {
-      "context": {
-        "ABILITY": "Gooey",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Goomy",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Goomy",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Goomy has the Gooey ability.",
+        "text": "Gooey",
       },
-      "key": "ability__ability_any",
+      "key": "ability|ability:Gooey",
     },
     "notices": [
       {
@@ -753,25 +714,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "rawLog": "ability|mon:Meganium,player-1,1|ability:Mega Sol",
   "result": {
     "message": {
-      "context": {
-        "ABILITY": "Mega Sol",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Meganium",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Meganium",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Meganium has the Mega Sol ability.",
+        "text": "Mega Sol",
       },
-      "key": "ability__ability_any",
+      "key": "ability|ability:Mega Sol",
     },
     "notices": [
       {
@@ -800,7 +748,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The effects of weather disapppeared.",
+        "text": "The effects of the weather disapppeared.",
       },
       "key": "ability__ability_cloudnine",
     },
@@ -831,7 +779,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The effects of weather disapppeared.",
+        "text": "The effects of the weather disapppeared.",
       },
       "key": "ability__ability_cloudnine",
     },
@@ -905,7 +853,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The effects of weather disappeared.",
+        "text": "The effects of the weather disappeared.",
       },
       "key": "ability__ability_airlock",
     },
@@ -1108,7 +1056,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Xerneas is radiating fairy aura!",
+        "text": "The opposing Xerneas is radiating a fairy aura!",
       },
       "key": "ability__ability_fairyaura",
     },
@@ -1151,7 +1099,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Xerneas is radiating fairy aura!",
+        "text": "The opposing Xerneas is radiating a fairy aura!",
       },
       "key": "ability__ability_fairyaura",
     },
@@ -2863,9 +2811,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "Endless Battle Clause|sides.*",
       },
-      "key": "activate__clause_any__sides_any",
+      "key": "activate|clause:Endless Battle Clause|sides:*",
     },
     "notices": [],
   },
@@ -2880,9 +2828,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "Sleep Clause",
       },
-      "key": "activate__clause_any",
+      "key": "activate|clause:Sleep Clause",
     },
     "notices": [],
   },
@@ -7205,9 +7153,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "*|move.Beat Up",
       },
-      "key": "activate__hit_any__move_any",
+      "key": "activate|hit:*|move:Beat Up",
     },
     "notices": [],
   },
@@ -7222,9 +7170,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "*|move.Beat Up",
       },
-      "key": "activate__hit_any__move_any",
+      "key": "activate|hit:*|move:Beat Up",
     },
     "notices": [],
   },
@@ -7239,9 +7187,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "*|move.Beat Up",
       },
-      "key": "activate__hit_any__move_any",
+      "key": "activate|hit:*|move:Beat Up",
     },
     "notices": [],
   },
@@ -7449,34 +7397,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
 exports[`Exhaustive Log Coverage > should parse and format log string: animatemove|mon:Mudkip,player-1,1|name:Arm Thrust|noanim 1`] = `
 {
   "rawLog": "animatemove|mon:Mudkip,player-1,1|name:Arm Thrust|noanim",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "animatemove__noanim",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: animatemove|mon:Pikachu,player-1,1|name:Triple Kick|noanim 1`] = `
 {
   "rawLog": "animatemove|mon:Pikachu,player-1,1|name:Triple Kick|noanim",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "animatemove__noanim",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -11696,17 +11624,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 exports[`Exhaustive Log Coverage > should parse and format log string: clearallboosts 1`] = `
 {
   "rawLog": "clearallboosts",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "clearallboosts",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -11887,17 +11805,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearposi
 exports[`Exhaustive Log Coverage > should parse and format log string: clearweather 1`] = `
 {
   "rawLog": "clearweather",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "clearweather",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -13251,51 +13159,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Aegislash,player-2,1|health:25/100 1`] = `
 {
   "rawLog": "damage|mon:Aegislash,player-2,1|health:25/100",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "damage",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Aegislash,player-2,1|health:56/230 1`] = `
 {
   "rawLog": "damage|mon:Aegislash,player-2,1|health:56/230",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "damage",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Aerodactyl,player-1,1|health:230/270 1`] = `
 {
   "rawLog": "damage|mon:Aerodactyl,player-1,1|health:230/270",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "damage",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -16699,51 +16577,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: escaped|p
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Bidoof,protagonist,1|exp:501 1`] = `
 {
   "rawLog": "exp|mon:Bidoof,protagonist,1|exp:501",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "exp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Bulbasaur,protagonist,1|exp:2571 1`] = `
 {
   "rawLog": "exp|mon:Bulbasaur,protagonist,1|exp:2571",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "exp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Empoleon,player-1,1|exp:69 1`] = `
 {
   "rawLog": "exp|mon:Empoleon,player-1,1|exp:69",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "exp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -16932,7 +16780,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The fire-type attack fizzled out in the heavy rain!",
+        "text": "The Fire-type attack fizzled out in the heavy rain!",
       },
       "key": "fail__from_weather_heavyrain",
     },
@@ -24571,51 +24419,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: protectwe
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:47/100|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:47/100|species:Zoroark|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "replace",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:100/100|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:100/100|species:Zoroark|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "replace",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:120/120|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:120/120|species:Zoroark|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "replace",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -25213,51 +25031,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revive|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Basculin,player-1|health:50/100 1`] = `
 {
   "rawLog": "sethp|mon:Basculin,player-1|health:50/100",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "sethp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Basculin,player-1|health:65/130 1`] = `
 {
   "rawLog": "sethp|mon:Basculin,player-1|health:65/130",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "sethp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Blastoise,player-1,1|health:100/100 1`] = `
 {
   "rawLog": "sethp|mon:Blastoise,player-1,1|health:100/100",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "sethp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -31225,102 +31013,42 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swapboost
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-1|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F 1`] = `
 {
   "rawLog": "switch|player:player-1|position:1|name:Bulbasaur F|health:100/100|species:Bulbasaur|level:100|gender:F",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-1|position:1|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F 1`] = `
 {
   "rawLog": "switch|player:player-1|position:1|name:Bulbasaur F|health:200/200|species:Bulbasaur|level:100|gender:F",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-1|position:1|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F 1`] = `
 {
   "rawLog": "switch|player:player-1|position:1|name:Charmander F|health:100/100|species:Charmander|level:100|gender:F",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Blacephalon,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Blacephalon,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Bulbasaur,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Bulbasaur,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Bulbasaur,player-2,2 1`] = `
 {
   "rawLog": "switchout|mon:Bulbasaur,player-2,2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -32699,9 +32427,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "-3|from.move.Stockpile",
       },
-      "key": "unboost",
+      "key": "unboost|by:-3|from:move:Stockpile",
     },
     "notices": [],
   },
@@ -32716,9 +32444,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "-3|from.move.Stockpile",
       },
-      "key": "unboost",
+      "key": "unboost|by:-3|from:move:Stockpile",
     },
     "notices": [],
   },
@@ -32883,9 +32611,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "-6|from.Drop Attack",
       },
-      "key": "unboost",
+      "key": "unboost|by:-6|from:Drop Attack",
     },
     "notices": [],
   },
@@ -33045,9 +32773,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: waiting|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "*",
       },
-      "key": "waiting__on_any",
+      "key": "waiting|on:*",
     },
     "notices": [],
   },
@@ -33062,9 +32790,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: waiting|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "*",
       },
-      "key": "waiting__on_any",
+      "key": "waiting|on:*",
     },
     "notices": [],
   },
@@ -33079,9 +32807,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: waiting|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "*",
       },
-      "key": "waiting__on_any",
+      "key": "waiting|on:*",
     },
     "notices": [],
   },
