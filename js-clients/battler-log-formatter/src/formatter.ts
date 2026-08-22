@@ -110,7 +110,12 @@ export class LogFormatter {
     }
     
     const count = mapped.context.count;
-    const templateArgs = count !== undefined ? { count } : undefined;
+    const templateArgs: Record<string, any> = {};
+    if (count !== undefined) templateArgs.count = count;
+    
+    // Inject global text replacements (only Titlecase to protect {{MON}})
+    templateArgs.Mon = i18next.t('vocabulary.Mon');
+    templateArgs.Mons = i18next.t('vocabulary.Mons');
 
     let templateKey = `logs.${mapped.patterns[0]}`;
     const patterns = mapped.patterns;

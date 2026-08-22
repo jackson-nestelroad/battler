@@ -1065,7 +1065,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Toxicroak shuddered in anticipation!",
+        "text": "The opposing Toxicroak shuddered!",
       },
       "key": "ability__ability_anticipation",
     },
@@ -11650,7 +11650,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
+        "text": "Oh no! The Mon broke free!",
       },
       "key": "catchfailed__item_any__shakes_any",
     },
@@ -11667,7 +11667,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
+        "text": "Oh no! The Mon broke free!",
       },
       "key": "catchfailed__item_any__shakes_any",
     },
@@ -11684,7 +11684,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
+        "text": "Oh no! The Mon broke free!",
       },
       "key": "catchfailed__item_any__shakes_any",
     },
@@ -17271,7 +17271,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fieldacti
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The mysterious air current protects Flying-type Pokémon!",
+        "text": "The mysterious air current protects Flying-type Mons!",
       },
       "key": "fieldactivate__weather_strongwinds",
     },
@@ -17526,7 +17526,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fieldstar
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "It created a bizarre area in which Pokémon's held items lose their effects!",
+        "text": "It created a bizarre area in which Mon's held items lose their effects!",
       },
       "key": "fieldstart__move_magicroom",
     },
@@ -32960,7 +32960,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: uncatchab
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "You can't catch another Trainer's Pokémon!",
+        "text": "You can't catch another Trainer's Mon!",
       },
       "key": "uncatchable__thief",
     },
@@ -32977,7 +32977,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: uncatchab
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "It dodged the thrown ball! This Pokémon can't be caught!",
+        "text": "It dodged the thrown ball! This Mon can't be caught!",
       },
       "key": "uncatchable",
     },
@@ -33555,7 +33555,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Mysterious strong winds are protecting Flying-type Pokémon!",
+        "text": "Mysterious strong winds are protecting Flying-type Mons!",
       },
       "key": "weather__weather_strongwinds",
     },
