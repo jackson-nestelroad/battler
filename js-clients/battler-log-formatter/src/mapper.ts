@@ -104,7 +104,7 @@ export function resolveSideContext(sideIndex: number | undefined, state: BattleS
     };
 }
 
-export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar, raw: string, raw_possessive: string } {
+export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar, raw: string, raw_possessive: string, ref?: UiMon } {
   if (!monRef || typeof monRef !== 'object') {
       return { standard: { text: "Mon" }, possessive: { text: "Mon's" }, raw: "Mon", raw_possessive: "Mon's" };
   }
@@ -158,10 +158,11 @@ export function resolveMonContext(monRef: UiMon | undefined, state: BattleState 
   }
 
   return { 
-      standard: { text, id, noAutoCapitalize },
-      possessive: { text: possessiveText, id, noAutoCapitalize: possessiveNoAutoCapitalize },
+      standard: { text, monRef, noAutoCapitalize },
+      possessive: { text: possessiveText, monRef, noAutoCapitalize: possessiveNoAutoCapitalize },
       raw: name,
-      raw_possessive: `${name}'s`
+      raw_possessive: `${name}'s`,
+      ref: monRef
   };
 }
 function buildPattern(title: string, tags: string[], flags: string[]): string {
@@ -240,6 +241,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
   const data = (entry as Record<string, any>)[keyStr];
   
   let title = key;
+  let metadata: any = {};
   
   if (title === 'caught') title = 'catch';
   else if (title === 'fainted') title = 'faint';
@@ -323,26 +325,20 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
                   const resolved = resolveMonContext(v, state, options);
                   context.MON = resolved.standard;
                   context.MON_POSSESSIVE = resolved.possessive;
-                  context.RAW_MON = resolved.raw;
-                  context.RAW_MON_POSSESSIVE = resolved.raw_possessive;
-                  context.RAW_MON_REF = v;
+                  metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
               } else {
                   tags.push(`target:*`);
                   const resolved = resolveMonContext(v, state, options);
                   context.TARGET = resolved.standard;
                   context.TARGET_POSSESSIVE = resolved.possessive;
-                  context.RAW_TARGET = resolved.raw;
-                  context.RAW_TARGET_POSSESSIVE = resolved.raw_possessive;
-                  context.RAW_TARGET_REF = v;
+                  metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
               }
           } else if (k === 'source' || k === 'of') {
               tags.push(`of:*`);
               const resolved = resolveMonContext(v, state, options);
               context.SOURCE = resolved.standard;
               context.SOURCE_POSSESSIVE = resolved.possessive;
-              context.RAW_SOURCE = resolved.raw;
-              context.RAW_SOURCE_POSSESSIVE = resolved.raw_possessive;
-              context.RAW_SOURCE_REF = v;
+              metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
           } else if (k === 'effect') {
               if (typeof v === 'object' && v !== null && v.name) {
                   if (v.effect_type) tags.push(`${v.effect_type}:${v.name}`);
@@ -423,10 +419,9 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
           context.PLAYER_POSSESSIVE = resolvedPlayer.possessive;
           context.MON = { text: data.name || "Mon" };
           context.MON_POSSESSIVE = { text: `${data.name || "Mon"}'s` };
-          context.RAW_MON = data.name || "Mon";
-          context.RAW_MON_POSSESSIVE = `${data.name || "Mon"}'s`;
+          metadata.mon = { raw: data.name || "Mon", raw_possessive: `${data.name || "Mon"}'s` };
           if (typeof data.mon === 'object') {
-              context.RAW_MON_REF = data.mon;
+              metadata.mon.ref = data.mon;
           }
       } else if (title === 'switchout') {
           tags.length = 0;
@@ -456,7 +451,8 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
       patterns,
       category,
       context,
-      ...(data.effect ? { effect: data.effect } : {})
+      effect: data?.effect ? (data.effect as EffectData) : undefined,
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined
   };
   return mapped;
 }

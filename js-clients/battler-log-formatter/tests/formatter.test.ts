@@ -45,7 +45,7 @@ describe("LogFormatter", () => {
     // Because localPlayerId is p1, and the mon belongs to p2, it should format as a foe.
     // wait, we mocked the state to have player id 'p2', which is not 'p1'.
     // so it should use mon.foe -> "The opposing Pikachu"
-    expect(log.context.MON).toEqual({ text: "the opposing Pikachu", id: "p2-active-0", noAutoCapitalize: false });
+    expect(log.context.__CAPITALIZED_MON).toEqual({ text: "The opposing Pikachu", monRef: { Active: { player: "p2", position: 0, name: "Pikachu", side: 0 } } });
     expect(log.context.MOVE).toBe("Thunderbolt");
     
     expect(stringifyLog(log)).toBe("The opposing Pikachu used Thunderbolt!");

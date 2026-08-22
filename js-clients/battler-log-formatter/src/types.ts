@@ -23,7 +23,7 @@ export interface FormattedLogEvent {
 
 export interface ContextVar {
   text: string;
-  id?: string; // used for tying UI elements to specific game entities
+  monRef?: UiMon; // used for tying UI elements to specific game entities
   noAutoCapitalize?: boolean;
 }
 
@@ -41,11 +41,18 @@ export type RequiredContext<K extends LogTemplateKey> =
     ? { count?: number }
     : Record<ExtractVariables<typeof en.logs[K]>, ContextValue> & { count?: number };
 
+export interface MappedLogMetadata {
+  mon?: { raw?: string, raw_possessive?: string, ref?: UiMon };
+  target?: { raw?: string, raw_possessive?: string, ref?: UiMon };
+  source?: { raw?: string, raw_possessive?: string, ref?: UiMon };
+}
+
 export interface AnyMappedLog {
   patterns: string[];
   category: LogCategory;
   context: LogContext;
   effect?: EffectData;
+  metadata?: MappedLogMetadata;
 }
 
 export interface MapperOptions {

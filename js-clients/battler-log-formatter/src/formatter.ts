@@ -149,11 +149,11 @@ export class LogFormatter {
     if (mapped.effect?.effect?.effect_type === "Ability" && mapped.effect.effect.name) {
       let monStr: string | undefined = undefined;
       let monRef: any = undefined;
-      if (mapped.context.RAW_MON_POSSESSIVE) {
-          monStr = String(mapped.context.RAW_MON_POSSESSIVE);
+      if (mapped.metadata?.mon?.raw_possessive) {
+          monStr = String(mapped.metadata.mon.raw_possessive);
       }
-      if (mapped.context.RAW_MON_REF) {
-          monRef = mapped.context.RAW_MON_REF;
+      if (mapped.metadata?.mon?.ref) {
+          monRef = mapped.metadata.mon.ref;
       }
       notices.push({
           type: "Ability",
@@ -169,11 +169,11 @@ export class LogFormatter {
     if (mapped.patterns[0]?.startsWith('ability') && mapped.context.ABILITY) {
       let monStr: string | undefined = undefined;
       let monRef: any = undefined;
-      if (mapped.context.RAW_MON_POSSESSIVE) {
-          monStr = String(mapped.context.RAW_MON_POSSESSIVE);
+      if (mapped.metadata?.mon?.raw_possessive) {
+          monStr = String(mapped.metadata.mon.raw_possessive);
       }
-      if (mapped.context.RAW_MON_REF) {
-          monRef = mapped.context.RAW_MON_REF;
+      if (mapped.metadata?.mon?.ref) {
+          monRef = mapped.metadata.mon.ref;
       }
       notices.push({
           type: "Ability",
@@ -229,6 +229,38 @@ export class LogFormatter {
     }
 
     if (!message && notices.length === 0) return null;
+
+    if (message) {
+      const usedKeys = new Set<string>();
+      for (const token of message.tokens) {
+          if (token.type === "variable") {
+              usedKeys.add(token.value);
+          }
+      }
+
+      const cleanContext: Record<string, any> = {};
+      for (const [k, v] of Object.entries(message.context)) {
+          if (!usedKeys.has(k)) continue;
+
+          if (typeof v === "object" && v !== null && "text" in v) {
+              const cleaned: any = { text: v.text };
+              if (v.monRef) cleaned.monRef = v.monRef;
+              cleanContext[k] = cleaned;
+          } else if (Array.isArray(v)) {
+              cleanContext[k] = v.map((item: any) => {
+                  if (typeof item === "object" && item !== null && "text" in item) {
+                      const cleaned: any = { text: item.text };
+                      if (item.monRef) cleaned.monRef = item.monRef;
+                      return cleaned;
+                  }
+                  return item;
+              });
+          } else {
+              cleanContext[k] = v;
+          }
+      }
+      message.context = cleanContext;
+    }
 
     return { message, notices };
   }
