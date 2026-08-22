@@ -7864,12 +7864,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Applin,player-1,1|stat:def|by:2|from:item:Kee Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Applin",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Applin's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Kee Berry",
+        "text": "The opposing Applin's Defense rose sharply!",
       },
-      "key": "boost|by:2|from:item:Kee Berry",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -7881,12 +7894,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Basculin,player-2,1|stat:spe|by:1|from:ability:Rattled",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Basculin",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Basculin's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Rattled",
+        "text": "The opposing Basculin's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Rattled",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -7898,12 +7924,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Baxcalibur,player-2,1|stat:atk|by:1|from:ability:Thermal Exchange",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Baxcalibur",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Baxcalibur's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Thermal Exchange",
+        "text": "The opposing Baxcalibur's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Thermal Exchange",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -7915,12 +7954,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Bibarel,player-1,1|stat:atk|by:2|from:ability:Moody",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bibarel",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bibarel's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Moody",
+        "text": "The opposing Bibarel's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Moody",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -7932,12 +7984,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Bibarel,player-2,1|stat:atk|by:2|from:ability:Moody",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bibarel",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bibarel's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Moody",
+        "text": "The opposing Bibarel's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Moody",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -7949,12 +8014,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Bibarel,player-2,1|stat:def|by:2|from:ability:Moody",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bibarel",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bibarel's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Moody",
+        "text": "The opposing Bibarel's Defense rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Moody",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -7966,12 +8044,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Bisharp,player-2,1|stat:atk|by:0|from:ability:Defiant",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bisharp",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bisharp's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "0|from.ability.Defiant",
+        "text": "The opposing Bisharp's Attack can't go any higher!",
       },
-      "key": "boost|by:0|from:ability:Defiant",
+      "key": "boost__by_0",
     },
     "notices": [],
   },
@@ -7983,12 +8074,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Bisharp,player-2,1|stat:atk|by:2|from:ability:Defiant",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bisharp",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bisharp's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Defiant",
+        "text": "The opposing Bisharp's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Defiant",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8030,12 +8134,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Brambleghast,player-1,1|stat:atk|by:1|from:ability:Wind Rider",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Brambleghast",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Brambleghast's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Wind Rider",
+        "text": "The opposing Brambleghast's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Wind Rider",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8047,12 +8164,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Brambleghast,player-2,1|stat:atk|by:1|from:ability:Wind Rider",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Brambleghast",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Brambleghast's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Wind Rider",
+        "text": "The opposing Brambleghast's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Wind Rider",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8064,12 +8194,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Bunnelby,player-2,1|stat:spd|by:1|from:item:Luminous Moss",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bunnelby",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bunnelby's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Luminous Moss",
+        "text": "The opposing Bunnelby's Sp. Def rose!",
       },
-      "key": "boost|by:1|from:item:Luminous Moss",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8081,12 +8224,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Buzzwole,player-1,1|stat:atk|by:1|from:ability:Beast Boost",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Buzzwole",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Buzzwole's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Beast Boost",
+        "text": "The opposing Buzzwole's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Beast Boost",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8098,12 +8254,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Buzzwole,player-1,1|stat:atk|by:3|from:ability:Beast Boost",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Buzzwole",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Buzzwole's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "3plus|from.ability.Beast Boost",
+        "text": "The opposing Buzzwole's Attack rose drastically!",
       },
-      "key": "boost|by:3plus|from:ability:Beast Boost",
+      "key": "boost__by_3plus",
     },
     "notices": [],
   },
@@ -8115,12 +8284,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Calyrex,player-1,1|stat:atk|by:1|from:ability:Chilling Neigh",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Calyrex",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Calyrex's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Chilling Neigh",
+        "text": "The opposing Calyrex's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Chilling Neigh",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8132,12 +8314,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Calyrex,player-1,1|stat:atk|by:2|from:ability:Chilling Neigh",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Calyrex",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Calyrex's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Chilling Neigh",
+        "text": "The opposing Calyrex's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Chilling Neigh",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8149,12 +8344,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Calyrex,player-1,2|stat:spa|by:1|from:ability:Grim Neigh",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Calyrex",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Calyrex's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Grim Neigh",
+        "text": "The opposing Calyrex's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Grim Neigh",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8166,12 +8374,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Dachsbun,player-2,1|stat:def|by:2|from:ability:Well-Baked Body",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Dachsbun",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Dachsbun's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Well-Baked Body",
+        "text": "The opposing Dachsbun's Defense rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Well-Baked Body",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8183,12 +8404,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Dondozo,player-1,1|stat:atk|by:2|from:ability:Commander|of:Tatsugiri,player-1,2",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Dondozo",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Dondozo's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Commander",
+        "text": "The opposing Dondozo's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Commander",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8200,12 +8434,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Dondozo,player-1,1|stat:def|by:2|from:ability:Commander|of:Tatsugiri,player-1,2",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Dondozo",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Dondozo's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Commander",
+        "text": "The opposing Dondozo's Defense rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Commander",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8217,12 +8464,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Dondozo,player-1,1|stat:spa|by:2|from:ability:Commander|of:Tatsugiri,player-1,2",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Dondozo",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Dondozo's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Commander",
+        "text": "The opposing Dondozo's Sp. Atk rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Commander",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8234,12 +8494,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Dragapult,player-2,1|stat:eva|by:6|from:Evasion Boost",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "evasiveness",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Dragapult",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Dragapult's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "3plus|from.Evasion Boost",
+        "text": "The opposing Dragapult's evasiveness rose drastically!",
       },
-      "key": "boost|by:3plus|from:Evasion Boost",
+      "key": "boost__by_3plus",
     },
     "notices": [],
   },
@@ -8251,12 +8524,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Drampa,player-2,1|stat:spa|by:1|from:ability:Berserk",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Drampa",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Drampa's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Berserk",
+        "text": "The opposing Drampa's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Berserk",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8268,12 +8554,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Eevee,player-2,1|stat:spd|by:1|from:Z-Power",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Eevee",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Eevee's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.Z-Power",
+        "text": "The opposing Eevee's Sp. Def rose!",
       },
-      "key": "boost|by:1|from:Z-Power",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8285,12 +8584,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Electivire,player-2,1|stat:spe|by:1|from:ability:Motor Drive",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Electivire",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Electivire's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Motor Drive",
+        "text": "The opposing Electivire's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Motor Drive",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8302,12 +8614,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Electrode,player-2,1|stat:atk|by:1|from:ability:Sap Sipper",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Electrode",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Electrode's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Sap Sipper",
+        "text": "The opposing Electrode's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Sap Sipper",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8349,12 +8674,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Emolga,player-2,1|stat:atk|by:1|from:item:Cell Battery",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Emolga",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Emolga's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Cell Battery",
+        "text": "The opposing Emolga's Attack rose!",
       },
-      "key": "boost|by:1|from:item:Cell Battery",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8366,12 +8704,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Espathra,player-1,1|stat:atk|by:2|from:ability:Opportunist",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Espathra",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Espathra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Opportunist",
+        "text": "The opposing Espathra's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Opportunist",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8383,12 +8734,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Espathra,player-1,1|stat:atk|by:2|from:item:Mirror Herb",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Espathra",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Espathra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Mirror Herb",
+        "text": "The opposing Espathra's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:item:Mirror Herb",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8400,12 +8764,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Espathra,player-1,1|stat:spa|by:1|from:item:Throat Spray",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Espathra",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Espathra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Throat Spray",
+        "text": "The opposing Espathra's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:item:Throat Spray",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8417,12 +8794,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Espathra,player-2,1|stat:atk|by:2|from:ability:Opportunist",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Espathra",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Espathra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Opportunist",
+        "text": "The opposing Espathra's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Opportunist",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8434,12 +8824,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Espathra,player-2,1|stat:atk|by:2|from:item:Mirror Herb",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Espathra",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Espathra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Mirror Herb",
+        "text": "The opposing Espathra's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:item:Mirror Herb",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8451,12 +8854,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Espathra,player-2,1|stat:spa|by:2|from:ability:Opportunist",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Espathra",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Espathra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Opportunist",
+        "text": "The opposing Espathra's Sp. Atk rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Opportunist",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8468,12 +8884,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Espathra,player-2,1|stat:spa|by:2|from:item:Mirror Herb",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Espathra",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Espathra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Mirror Herb",
+        "text": "The opposing Espathra's Sp. Atk rose sharply!",
       },
-      "key": "boost|by:2|from:item:Mirror Herb",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8485,12 +8914,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Garbodor,player-1,1|stat:spe|by:2|from:ability:Weak Armor",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Garbodor",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Garbodor's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Weak Armor",
+        "text": "The opposing Garbodor's Speed rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Weak Armor",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8502,12 +8944,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Gastrodon,player-2,1|stat:spa|by:1|from:ability:Storm Drain",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Gastrodon",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Gastrodon's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Storm Drain",
+        "text": "The opposing Gastrodon's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Storm Drain",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8549,12 +9004,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Goodra,player-2,1|stat:atk|by:2|from:item:Weakness Policy",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Goodra",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Goodra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Weakness Policy",
+        "text": "The opposing Goodra's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:item:Weakness Policy",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8566,12 +9034,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Goodra,player-2,1|stat:spa|by:2|from:item:Weakness Policy",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Goodra",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Goodra's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Weakness Policy",
+        "text": "The opposing Goodra's Sp. Atk rose sharply!",
       },
-      "key": "boost|by:2|from:item:Weakness Policy",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8583,12 +9064,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Grafaiai,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Grafaiai",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Grafaiai's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Speed Boost",
+        "text": "The opposing Grafaiai's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Speed Boost",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8600,12 +9094,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Grafaiai,player-1,2|stat:spe|by:1|from:ability:Speed Boost",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Grafaiai",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Grafaiai's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Speed Boost",
+        "text": "The opposing Grafaiai's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Speed Boost",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8617,12 +9124,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Grafaiai",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Grafaiai's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Speed Boost",
+        "text": "The opposing Grafaiai's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Speed Boost",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8634,12 +9154,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Greninja,player-1,1|stat:atk|by:1|from:ability:Battle Bond",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Greninja",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Greninja's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Battle Bond",
+        "text": "The opposing Greninja's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Battle Bond",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8651,12 +9184,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Greninja,player-1,1|stat:spa|by:1|from:ability:Battle Bond",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Greninja",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Greninja's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Battle Bond",
+        "text": "The opposing Greninja's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Battle Bond",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8668,12 +9214,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Greninja,player-1,1|stat:spe|by:1|from:ability:Battle Bond",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Greninja",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Greninja's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Battle Bond",
+        "text": "The opposing Greninja's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Battle Bond",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8685,12 +9244,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Gyarados,player-1,1|stat:atk|by:0|from:move:Rage",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Gyarados",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Gyarados's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "0|from.move.Rage",
+        "text": "The opposing Gyarados's Attack can't go any higher!",
       },
-      "key": "boost|by:0|from:move:Rage",
+      "key": "boost__by_0",
     },
     "notices": [],
   },
@@ -8702,12 +9274,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Gyarados,player-1,1|stat:atk|by:1|from:move:Rage",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Gyarados",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Gyarados's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.move.Rage",
+        "text": "The opposing Gyarados's Attack rose!",
       },
-      "key": "boost|by:1|from:move:Rage",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8719,12 +9304,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Incineroar,player-2,1|stat:def|by:1|from:Z-Power",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Incineroar",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Incineroar's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.Z-Power",
+        "text": "The opposing Incineroar's Defense rose!",
       },
-      "key": "boost|by:1|from:Z-Power",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8736,12 +9334,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Jigglypuff,player-2,1|stat:spa|by:2|from:ability:Competitive",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Jigglypuff",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Jigglypuff's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Competitive",
+        "text": "The opposing Jigglypuff's Sp. Atk rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Competitive",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8753,12 +9364,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Klawf,player-2,1|stat:atk|by:1|from:ability:Anger Shell",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Klawf",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Klawf's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Anger Shell",
+        "text": "The opposing Klawf's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Anger Shell",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8770,12 +9394,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Klawf,player-2,1|stat:spa|by:1|from:ability:Anger Shell",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Klawf",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Klawf's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Anger Shell",
+        "text": "The opposing Klawf's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Anger Shell",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8787,12 +9424,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Klawf,player-2,1|stat:spe|by:1|from:ability:Anger Shell",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Klawf",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Klawf's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Anger Shell",
+        "text": "The opposing Klawf's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Anger Shell",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8804,12 +9454,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Krookodile,player-1,1|stat:atk|by:1|from:ability:Moxie",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Krookodile",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Krookodile's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Moxie",
+        "text": "The opposing Krookodile's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Moxie",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8821,12 +9484,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Krookodile,player-1,1|stat:atk|by:2|from:ability:Moxie",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Krookodile",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Krookodile's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Moxie",
+        "text": "The opposing Krookodile's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Moxie",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8838,12 +9514,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Lucario,player-2,1|stat:spe|by:1|from:ability:Steadfast",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Lucario",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Lucario's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Steadfast",
+        "text": "The opposing Lucario's Speed rose!",
       },
-      "key": "boost|by:1|from:ability:Steadfast",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8855,12 +9544,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Magearna,player-1,1|stat:spa|by:1|from:ability:Soul-Heart",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Magearna",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Magearna's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Soul-Heart",
+        "text": "The opposing Magearna's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Soul-Heart",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8872,12 +9574,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Magikarp,player-2,2|stat:spa|by:1|from:condition:Stat Shuffle",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Magikarp",
+              "player": "player-2",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Magikarp's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.condition.Stat Shuffle",
+        "text": "The opposing Magikarp's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:condition:Stat Shuffle",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8889,12 +9604,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Nihilego,player-1,2|stat:spd|by:1|from:ability:Beast Boost",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Nihilego",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Nihilego's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Beast Boost",
+        "text": "The opposing Nihilego's Sp. Def rose!",
       },
-      "key": "boost|by:1|from:ability:Beast Boost",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8906,12 +9634,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Ogerpon,player-1,1|stat:atk|by:1|from:ability:Embody Aspect",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Ogerpon",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Ogerpon's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Embody Aspect",
+        "text": "The opposing Ogerpon's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Embody Aspect",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8923,12 +9664,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Ogerpon,player-1,1|stat:def|by:1|from:ability:Embody Aspect",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Ogerpon",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Ogerpon's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Embody Aspect",
+        "text": "The opposing Ogerpon's Defense rose!",
       },
-      "key": "boost|by:1|from:ability:Embody Aspect",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8940,12 +9694,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Ogerpon,player-1,1|stat:spd|by:1|from:ability:Embody Aspect",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Ogerpon",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Ogerpon's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Embody Aspect",
+        "text": "The opposing Ogerpon's Sp. Def rose!",
       },
-      "key": "boost|by:1|from:ability:Embody Aspect",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8957,12 +9724,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Oshawott,player-1,1|stat:atk|by:1|from:item:Liechi Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Oshawott",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Oshawott's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Liechi Berry",
+        "text": "The opposing Oshawott's Attack rose!",
       },
-      "key": "boost|by:1|from:item:Liechi Berry",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -8974,12 +9754,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Oshawott,player-1,1|stat:atk|by:2|from:item:Starf Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Oshawott",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Oshawott's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Starf Berry",
+        "text": "The opposing Oshawott's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:item:Starf Berry",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -8991,12 +9784,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Oshawott,player-1,1|stat:def|by:1|from:item:Ganlon Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Oshawott",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Oshawott's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Ganlon Berry",
+        "text": "The opposing Oshawott's Defense rose!",
       },
-      "key": "boost|by:1|from:item:Ganlon Berry",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9008,12 +9814,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Oshawott,player-1,1|stat:def|by:1|from:item:Kee Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Oshawott",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Oshawott's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Kee Berry",
+        "text": "The opposing Oshawott's Defense rose!",
       },
-      "key": "boost|by:1|from:item:Kee Berry",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9025,12 +9844,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Oshawott,player-1,1|stat:def|by:2|from:item:Starf Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Oshawott",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Oshawott's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Starf Berry",
+        "text": "The opposing Oshawott's Defense rose sharply!",
       },
-      "key": "boost|by:2|from:item:Starf Berry",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -9042,12 +9874,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Oshawott,player-1,1|stat:spa|by:2|from:item:Starf Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Oshawott",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Oshawott's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Starf Berry",
+        "text": "The opposing Oshawott's Sp. Atk rose sharply!",
       },
-      "key": "boost|by:2|from:item:Starf Berry",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -9059,12 +9904,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Oshawott,player-1,1|stat:spd|by:1|from:item:Maranga Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Oshawott",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Oshawott's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Maranga Berry",
+        "text": "The opposing Oshawott's Sp. Def rose!",
       },
-      "key": "boost|by:1|from:item:Maranga Berry",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9076,12 +9934,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pelipper,player-1,1|stat:def|by:1|from:move:Stockpile",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pelipper",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pelipper's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.move.Stockpile",
+        "text": "The opposing Pelipper's Defense rose!",
       },
-      "key": "boost|by:1|from:move:Stockpile",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9093,12 +9964,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pelipper,player-1,1|stat:spd|by:1|from:move:Stockpile",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pelipper",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pelipper's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.move.Stockpile",
+        "text": "The opposing Pelipper's Sp. Def rose!",
       },
-      "key": "boost|by:1|from:move:Stockpile",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9110,12 +9994,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pelipper,player-2,1|stat:def|by:1|from:move:Stockpile",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pelipper",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pelipper's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.move.Stockpile",
+        "text": "The opposing Pelipper's Defense rose!",
       },
-      "key": "boost|by:1|from:move:Stockpile",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9127,12 +10024,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pikachu,player-1,1|stat:atk|by:1|from:Z-Power",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.Z-Power",
+        "text": "The opposing Pikachu's Attack rose!",
       },
-      "key": "boost|by:1|from:Z-Power",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9144,12 +10054,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pikachu,player-1,1|stat:atk|by:1|from:item:Max Mushrooms",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Max Mushrooms",
+        "text": "The opposing Pikachu's Attack rose!",
       },
-      "key": "boost|by:1|from:item:Max Mushrooms",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9161,12 +10084,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pikachu,player-1,1|stat:atk|by:2|from:item:X Attack",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.X Attack",
+        "text": "The opposing Pikachu's Attack rose sharply!",
       },
-      "key": "boost|by:2|from:item:X Attack",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -9178,12 +10114,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pikachu,player-1,1|stat:def|by:1|from:item:Max Mushrooms",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Max Mushrooms",
+        "text": "The opposing Pikachu's Defense rose!",
       },
-      "key": "boost|by:1|from:item:Max Mushrooms",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9195,12 +10144,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pikachu,player-1,1|stat:spa|by:1|from:item:Max Mushrooms",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Max Mushrooms",
+        "text": "The opposing Pikachu's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:item:Max Mushrooms",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9212,12 +10174,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Pikachu,player-2,1|stat:spa|by:1|from:ability:Lightning Rod",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Lightning Rod",
+        "text": "The opposing Pikachu's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Lightning Rod",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9229,12 +10204,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Polteageist,player-1,2|stat:atk|by:1|from:item:Liechi Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Polteageist",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Polteageist's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Liechi Berry",
+        "text": "The opposing Polteageist's Attack rose!",
       },
-      "key": "boost|by:1|from:item:Liechi Berry",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9246,12 +10234,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Polteageist,player-2,2|stat:atk|by:1|from:item:Liechi Berry",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Polteageist",
+              "player": "player-2",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Polteageist's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Liechi Berry",
+        "text": "The opposing Polteageist's Attack rose!",
       },
-      "key": "boost|by:1|from:item:Liechi Berry",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9263,12 +10264,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Porygon-Z,player-1,1|stat:atk|by:1|from:ability:Download",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Porygon-Z",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Porygon-Z's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Download",
+        "text": "The opposing Porygon-Z's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Download",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9280,12 +10294,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Porygon-Z,player-1,1|stat:spa|by:1|from:ability:Download",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Porygon-Z",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Porygon-Z's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Download",
+        "text": "The opposing Porygon-Z's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:ability:Download",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9327,12 +10354,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Rillaboom,player-1,1|stat:spa|by:1|from:item:Throat Spray",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Rillaboom",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Rillaboom's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Throat Spray",
+        "text": "The opposing Rillaboom's Sp. Atk rose!",
       },
-      "key": "boost|by:1|from:item:Throat Spray",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9344,12 +10384,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Rillaboom,player-1,1|stat:spe|by:2|from:item:Blunder Policy",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Rillaboom",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Rillaboom's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.item.Blunder Policy",
+        "text": "The opposing Rillaboom's Speed rose sharply!",
       },
-      "key": "boost|by:2|from:item:Blunder Policy",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -9361,12 +10414,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Sceptile,player-1,2|stat:atk|by:1|from:ability:Sap Sipper",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Sceptile",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Sceptile's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Sap Sipper",
+        "text": "The opposing Sceptile's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Sap Sipper",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9378,12 +10444,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Tapu Koko,player-1,1|stat:def|by:1|from:item:Electric Seed",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Tapu Koko",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Tapu Koko's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Electric Seed",
+        "text": "The opposing Tapu Koko's Defense rose!",
       },
-      "key": "boost|by:1|from:item:Electric Seed",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9395,12 +10474,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Tapu Koko,player-2,1|stat:def|by:1|from:item:Electric Seed",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Tapu Koko",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Tapu Koko's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.item.Electric Seed",
+        "text": "The opposing Tapu Koko's Defense rose!",
       },
-      "key": "boost|by:1|from:item:Electric Seed",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9412,12 +10504,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Toedscruel,player-2,1|stat:def|by:2|from:ability:Well-Baked Body",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Toedscruel",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Toedscruel's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "2|from.ability.Well-Baked Body",
+        "text": "The opposing Toedscruel's Defense rose sharply!",
       },
-      "key": "boost|by:2|from:ability:Well-Baked Body",
+      "key": "boost__by_2",
     },
     "notices": [],
   },
@@ -9429,12 +10534,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Zacian,player-1,1|stat:atk|by:1|from:ability:Intrepid Sword",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Zacian",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Zacian's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Intrepid Sword",
+        "text": "The opposing Zacian's Attack rose!",
       },
-      "key": "boost|by:1|from:ability:Intrepid Sword",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -9446,12 +10564,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
   "rawLog": "boost|mon:Zamazenta,player-2,1|stat:def|by:1|from:ability:Dauntless Shield",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Zamazenta",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Zamazenta's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "1|from.ability.Dauntless Shield",
+        "text": "The opposing Zamazenta's Defense rose!",
       },
-      "key": "boost|by:1|from:ability:Dauntless Shield",
+      "key": "boost__by_1",
     },
     "notices": [],
   },
@@ -11062,6 +12193,35 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearposi
         "text": "The opposing Aggron's positive stat changes were removed!",
       },
       "key": "clearpositiveboosts",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: copyboosts|mon:Espeon,player-1,1|of:Espeon,player-2,1 1`] = `
+{
+  "rawLog": "copyboosts|mon:Espeon,player-1,1|of:Espeon,player-2,1",
+  "result": {
+    "message": {
+      "context": {
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Espeon",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Espeon",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Espeon copied {{TARGET_POSSESSIVE}} stat changes!",
+      },
+      "key": "copyboosts",
     },
     "notices": [],
   },
@@ -32885,40 +34045,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-1|position:1|name:Pikachu|health:95/95|tera:Electric|species:Pikachu|level:50|gender:U 1`] = `
-{
-  "rawLog": "switch|player:player-1|position:1|name:Pikachu|health:95/95|tera:Electric|species:Pikachu|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-1|position:1|name:Pikachu|health:100/100|tera:Electric|species:Pikachu|level:50|gender:U 1`] = `
-{
-  "rawLog": "switch|player:player-1|position:1|name:Pikachu|health:100/100|tera:Electric|species:Pikachu|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Blacephalon,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Blacephalon,player-1,1",
@@ -32973,68 +34099,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Cyclizar,player-1,1|copysubstitute 1`] = `
 {
   "rawLog": "switchout|mon:Cyclizar,player-1,1|copysubstitute",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-1,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-1,1|copyvolatile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-2,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-2,1|copyvolatile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Shedinja,player-2,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Shedinja,player-2,1|copyvolatile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "[UNHANDLED]",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -33512,12 +34598,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Aegislash,player-2,1|stat:atk|by:1|from:move:King's Shield|of:Aegislash,player-1,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Aegislash",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Aegislash's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.move.King's Shield",
+        "text": "{{player}}'s Aegislash's Attack fell!",
       },
-      "key": "unboost|by:-1|from:move:King's Shield",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33559,12 +34658,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Basculin,player-2,1|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Basculin",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Basculin's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Intimidate",
+        "text": "{{player}}'s Basculin's Attack fell!",
       },
-      "key": "unboost|by:-1|from:ability:Intimidate",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33576,12 +34688,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Bibarel,player-1,1|stat:def|by:1|from:ability:Moody",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bibarel",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bibarel's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Moody",
+        "text": "The opposing Bibarel's Defense fell!",
       },
-      "key": "unboost|by:-1|from:ability:Moody",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33593,12 +34718,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Bibarel,player-1,1|stat:spd|by:1|from:ability:Moody",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bibarel",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bibarel's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Moody",
+        "text": "The opposing Bibarel's Sp. Def fell!",
       },
-      "key": "unboost|by:-1|from:ability:Moody",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33610,42 +34748,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Bibarel,player-2,1|stat:atk|by:1|from:ability:Moody",
   "result": {
     "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "-1|from.ability.Moody",
-      },
-      "key": "unboost|by:-1|from:ability:Moody",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Bisharp,player-2,1|stat:def|by:0 1`] = `
-{
-  "rawLog": "unboost|mon:Bisharp,player-2,1|stat:def|by:0",
-  "result": {
-    "message": {
       "context": {
-        "STAT": "Defense",
+        "STAT": "Attack",
         "__CAPITALIZED_MON_POSSESSIVE": {
           "monRef": {
             "Active": {
-              "name": "Bisharp",
+              "name": "Bibarel",
               "player": "player-2",
               "position": 0,
               "side": 0,
             },
           },
-          "text": "The opposing Bisharp's",
+          "text": "The opposing Bibarel's",
         },
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Bisharp's Defense can't go any higher!",
+        "text": "The opposing Bibarel's Attack fell!",
       },
-      "key": "boost__by_0",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33682,17 +34803,60 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Blastoise,player-1,2|stat:atk|by:1 1`] = `
+{
+  "rawLog": "unboost|mon:Blastoise,player-1,2|stat:atk|by:1",
+  "result": {
+    "message": {
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Blastoise",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Blastoise's",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The opposing Blastoise's Attack fell!",
+      },
+      "key": "unboost__by_1",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Castform,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2 1`] = `
 {
   "rawLog": "unboost|mon:Castform,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Castform",
+              "player": "player-2",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Castform's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Intimidate",
+        "text": "{{player}}'s Castform's Attack fell!",
       },
-      "key": "unboost|by:-1|from:ability:Intimidate",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33704,12 +34868,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Cinderace,player-1,1|stat:spe|by:1|from:item:Room Service",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Cinderace",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Cinderace's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.item.Room Service",
+        "text": "The opposing Cinderace's Speed fell!",
       },
-      "key": "unboost|by:-1|from:item:Room Service",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33721,12 +34898,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Corviknight,player-2,1|stat:atk|by:1|from:ability:Mirror Armor|of:Corviknight,player-1,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Corviknight",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Corviknight's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Mirror Armor",
+        "text": "{{player}}'s Corviknight's Attack fell!",
       },
-      "key": "unboost|by:-1|from:ability:Mirror Armor",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33738,12 +34928,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Cramorant,player-2,1|stat:def|by:1|from:ability:Gulp Missile|of:Cramorant,player-1,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Cramorant",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Cramorant's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Gulp Missile",
+        "text": "{{player}}'s Cramorant's Defense fell!",
       },
-      "key": "unboost|by:-1|from:ability:Gulp Missile",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33755,12 +34958,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Dipplin,player-1,2|stat:eva|by:1|from:ability:Supersweet Syrup|of:Hydrapple,player-2,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "evasiveness",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Dipplin",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Dipplin's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Supersweet Syrup",
+        "text": "{{player}}'s Dipplin's evasiveness fell!",
       },
-      "key": "unboost|by:-1|from:ability:Supersweet Syrup",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33772,12 +34988,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Dipplin,player-2,2|stat:eva|by:1|from:ability:Supersweet Syrup|of:Hydrapple,player-1,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "evasiveness",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Dipplin",
+              "player": "player-2",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Dipplin's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Supersweet Syrup",
+        "text": "{{player}}'s Dipplin's evasiveness fell!",
       },
-      "key": "unboost|by:-1|from:ability:Supersweet Syrup",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33789,12 +35018,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Ditto,player-2,2|stat:atk|by:1|from:ability:Intimidate|of:Mightyena,player-1,2",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Ditto",
+              "player": "player-2",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Ditto's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Intimidate",
+        "text": "{{player}}'s Ditto's Attack fell!",
       },
-      "key": "unboost|by:-1|from:ability:Intimidate",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33806,12 +35048,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Eldegoss,player-1,1|stat:spe|by:1|from:ability:Cotton Down|of:Eldegoss,player-2,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Eldegoss",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Eldegoss's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Cotton Down",
+        "text": "{{player}}'s Eldegoss's Speed fell!",
       },
-      "key": "unboost|by:-1|from:ability:Cotton Down",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33823,12 +35078,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Eldegoss,player-1,2|stat:spe|by:1|from:ability:Cotton Down|of:Eldegoss,player-2,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Eldegoss",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Eldegoss's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Cotton Down",
+        "text": "{{player}}'s Eldegoss's Speed fell!",
       },
-      "key": "unboost|by:-1|from:ability:Cotton Down",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33840,12 +35108,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Eldegoss,player-2,2|stat:spe|by:1|from:ability:Cotton Down|of:Eldegoss,player-2,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Eldegoss",
+              "player": "player-2",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Eldegoss's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Cotton Down",
+        "text": "The opposing Eldegoss's Speed fell!",
       },
-      "key": "unboost|by:-1|from:ability:Cotton Down",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33887,12 +35168,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Garbodor,player-1,1|stat:def|by:1|from:ability:Weak Armor",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Garbodor",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Garbodor's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Weak Armor",
+        "text": "The opposing Garbodor's Defense fell!",
       },
-      "key": "unboost|by:-1|from:ability:Weak Armor",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33904,12 +35198,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Goomy,player-1,1|stat:spe|by:1|from:ability:Gooey|of:Goomy,player-2,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Goomy",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Goomy's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Gooey",
+        "text": "{{player}}'s Goomy's Speed fell!",
       },
-      "key": "unboost|by:-1|from:ability:Gooey",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33921,12 +35228,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Grapploct",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Grapploct's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.move.Octolock",
+        "text": "The opposing Grapploct's Defense fell!",
       },
-      "key": "unboost|by:-1|from:move:Octolock",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33938,12 +35258,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Grapploct,player-2,1|stat:spd|by:1|from:move:Octolock",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Grapploct",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Grapploct's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.move.Octolock",
+        "text": "The opposing Grapploct's Sp. Def fell!",
       },
-      "key": "unboost|by:-1|from:move:Octolock",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33955,12 +35288,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Hydrapple,player-1,1|stat:eva|by:1|from:ability:Supersweet Syrup|of:Hydrapple,player-2,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "evasiveness",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Hydrapple",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Hydrapple's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Supersweet Syrup",
+        "text": "{{player}}'s Hydrapple's evasiveness fell!",
       },
-      "key": "unboost|by:-1|from:ability:Supersweet Syrup",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33972,12 +35318,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Hydrapple,player-2,1|stat:spe|by:1|from:move:Syrup Bomb",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Hydrapple",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Hydrapple's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.move.Syrup Bomb",
+        "text": "The opposing Hydrapple's Speed fell!",
       },
-      "key": "unboost|by:-1|from:move:Syrup Bomb",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -33989,12 +35348,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Klawf,player-2,1|stat:def|by:1|from:ability:Anger Shell",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Klawf",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Klawf's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Anger Shell",
+        "text": "The opposing Klawf's Defense fell!",
       },
-      "key": "unboost|by:-1|from:ability:Anger Shell",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34006,12 +35378,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Klawf,player-2,1|stat:spd|by:1|from:ability:Anger Shell",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Klawf",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Klawf's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.ability.Anger Shell",
+        "text": "The opposing Klawf's Sp. Def fell!",
       },
-      "key": "unboost|by:-1|from:ability:Anger Shell",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34023,12 +35408,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Magikarp,player-1,2|stat:spa|by:1|from:condition:Stat Shuffle",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Atk",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Magikarp",
+              "player": "player-1",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Magikarp's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.condition.Stat Shuffle",
+        "text": "The opposing Magikarp's Sp. Atk fell!",
       },
-      "key": "unboost|by:-1|from:condition:Stat Shuffle",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34040,12 +35438,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Obstagoon,player-2,1|stat:def|by:2|from:move:Obstruct|of:Obstagoon,player-1,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Obstagoon",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Obstagoon's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-2|from.move.Obstruct",
+        "text": "{{player}}'s Obstagoon's Defense harshly fell!",
       },
-      "key": "unboost|by:-2|from:move:Obstruct",
+      "key": "unboost__by_2",
     },
     "notices": [],
   },
@@ -34060,9 +35471,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "-3|from.move.Stockpile",
+        "text": "[UNHANDLED]",
       },
-      "key": "unboost|by:-3|from:move:Stockpile",
+      "key": "unboost",
     },
     "notices": [],
   },
@@ -34077,9 +35488,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "-3|from.move.Stockpile",
+        "text": "[UNHANDLED]",
       },
-      "key": "unboost|by:-3|from:move:Stockpile",
+      "key": "unboost",
     },
     "notices": [],
   },
@@ -34091,12 +35502,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Pelipper,player-2,1|stat:def|by:1|from:move:Stockpile",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pelipper",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pelipper's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.move.Stockpile",
+        "text": "The opposing Pelipper's Defense fell!",
       },
-      "key": "unboost|by:-1|from:move:Stockpile",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34108,12 +35532,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Pikachu,player-1,1|stat:atk|by:1|from:condition:Stat Shuffle",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Attack",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.condition.Stat Shuffle",
+        "text": "The opposing Pikachu's Attack fell!",
       },
-      "key": "unboost|by:-1|from:condition:Stat Shuffle",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34125,12 +35562,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Pikachu,player-2,1|stat:spd|by:1|from:condition:Stat Shuffle",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Sp. Def",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Pikachu",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Pikachu's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.condition.Stat Shuffle",
+        "text": "The opposing Pikachu's Sp. Def fell!",
       },
-      "key": "unboost|by:-1|from:condition:Stat Shuffle",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34142,12 +35592,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Rillaboom,player-1,1|stat:spe|by:1|from:item:Room Service",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Rillaboom",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Rillaboom's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.item.Room Service",
+        "text": "The opposing Rillaboom's Speed fell!",
       },
-      "key": "unboost|by:-1|from:item:Room Service",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34159,12 +35622,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Rillaboom,player-2,1|stat:spe|by:1|from:item:Room Service",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Rillaboom",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Rillaboom's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.item.Room Service",
+        "text": "The opposing Rillaboom's Speed fell!",
       },
-      "key": "unboost|by:-1|from:item:Room Service",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34179,9 +35655,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "-6|from.Drop Attack",
+        "text": "[UNHANDLED]",
       },
-      "key": "unboost|by:-6|from:Drop Attack",
+      "key": "unboost",
     },
     "notices": [],
   },
@@ -34193,12 +35669,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Slurpuff,player-2,1|stat:spe|by:1|from:move:Sticky Web",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Slurpuff",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Slurpuff's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.move.Sticky Web",
+        "text": "The opposing Slurpuff's Speed fell!",
       },
-      "key": "unboost|by:-1|from:move:Sticky Web",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },
@@ -34210,12 +35699,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
   "rawLog": "unboost|mon:Spidops,player-2,1|stat:spe|by:1|from:move:Silk Trap|of:Spidops,player-1,1",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "STAT": "Speed",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Spidops",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Spidops's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "-1|from.move.Silk Trap",
+        "text": "{{player}}'s Spidops's Speed fell!",
       },
-      "key": "unboost|by:-1|from:move:Silk Trap",
+      "key": "unboost__by_1",
     },
     "notices": [],
   },

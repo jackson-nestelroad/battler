@@ -89,13 +89,13 @@ activate|clause:*|sides:*
 activate|clause:Endless Battle Clause
 activate|clause:Sleep Clause
 activate|condition:Affection
-activate|condition:Affection|[tough]
+activate|condition:Affection|tough
 activate|condition:Break Protect
-activate|condition:Break Protect|[broken]
+activate|condition:Break Protect|broken
 activate|condition:Confusion
 activate|condition:Damage-Reducing Berry Item Base
 activate|condition:Disobedience
-activate|condition:Disobedience|[confusion]
+activate|condition:Disobedience|confusion
 activate|condition:Heal Replacement
 activate|condition:Highlighting Sample
 activate|condition:Knock Down
@@ -106,17 +106,17 @@ activate|condition:Trapped
 activate|condition:Weaken Through Protection Move Base
 activate|hit:*|move:*
 activate|item:Cheri Berry|move:*
-activate|item:Chilan Berry|[weaken]
+activate|item:Chilan Berry|weaken
 activate|item:Custap Berry
-activate|item:Enigma Berry|[weaken]
+activate|item:Enigma Berry|weaken
 activate|item:Focus Band
-activate|item:Haban Berry|[weaken]
+activate|item:Haban Berry|weaken
 activate|item:Iron Ball|move:*
-activate|item:Kasib Berry|[weaken]
 activate|item:Kasib Berry|move:*
+activate|item:Kasib Berry|weaken
 activate|item:Mental Herb|move:*
-activate|item:Occa Berry|[weaken]
-activate|item:Passho Berry|[weaken]
+activate|item:Occa Berry|weaken
+activate|item:Passho Berry|weaken
 activate|item:Pecha Berry|move:*
 activate|item:Quick Claw
 activate|item:Smoke Ball
@@ -171,7 +171,7 @@ activate|move:Speed Swap
 activate|move:Splash
 activate|move:Sticky Web
 activate|move:Substitute
-activate|move:Substitute|[damage]
+activate|move:Substitute|damage
 activate|move:Wide Guard
 activate|volatile:Must Recharge
 activate|volatile:Partially Trapped
@@ -182,7 +182,7 @@ addvolatile|from:move:Fly|volatile:*
 addvolatile|from:move:Razor Wind|volatile:*
 addvolatile|from:move:Skull Bash|volatile:*
 animatemove
-animatemove|[noanim]
+animatemove|noanim
 appear
 battlestart
 block|ability:*|from:item:Ability Shield
@@ -199,10 +199,9 @@ block|from:condition:Dynamax
 block|from:item:Ability Shield
 block|from:item:Ability Shield|move:*
 boost
-boost|[max]
 boost|from:Evasion Boost
 boost|from:Z-Power
-boost|from:ability:Anger Point|[max]
+boost|from:ability:Anger Point|max
 boost|from:ability:Anger Shell
 boost|from:ability:Battle Bond
 boost|from:ability:Beast Boost
@@ -248,6 +247,7 @@ boost|from:item:Weakness Policy
 boost|from:item:X Attack
 boost|from:move:Rage
 boost|from:move:Stockpile
+boost|max
 cannotescape
 cant|from:Flinch
 cant|from:Must Recharge
@@ -289,9 +289,9 @@ catch|item:Great Ball|shakes:*
 catch|item:Heal Ball|shakes:*
 catch|item:Level Ball|shakes:*
 catch|item:Master Ball|shakes:*
-catch|item:Master Ball|shakes:*|[critical]
+catch|item:Master Ball|shakes:*|critical
 catch|item:Poké Ball|shakes:*
-catch|item:Poké Ball|shakes:*|[critical]
+catch|item:Poké Ball|shakes:*|critical
 catch|item:Ultra Ball|shakes:*
 clearboosts|from:ability:Curious Medicine
 clearboosts|from:move:Clear Smog
@@ -377,14 +377,14 @@ didnotlearnmove|move:Shadow Ball
 drag
 dynamax
 end|ability:Flash Fire
-end|ability:Flash Fire|[silent]
+end|ability:Flash Fire|silent
 end|ability:Illusion
 end|ability:Neutralizing Gas
 end|ability:Protosynthesis
 end|ability:Quark Drive
 end|ability:Slow Start
 end|ability:Supreme Overlord
-end|ability:Supreme Overlord|[silent]
+end|ability:Supreme Overlord|silent
 end|condition:Commanding
 end|condition:Confusion
 end|condition:Future Move
@@ -393,9 +393,9 @@ end|condition:Immobilized
 end|move:Attract
 end|move:Bide
 end|move:Bind
-end|move:Bind|[silent]
+end|move:Bind|silent
 end|move:Charge
-end|move:Charge|[silent]
+end|move:Charge|silent
 end|move:Disable
 end|move:Doom Desire
 end|move:Embargo
@@ -403,25 +403,25 @@ end|move:Encore
 end|move:Future Sight
 end|move:Heal Block
 end|move:Laser Focus
-end|move:Laser Focus|[silent]
+end|move:Laser Focus|silent
 end|move:Leech Seed
 end|move:Magnet Rise
 end|move:Octolock
-end|move:Octolock|[silent]
+end|move:Octolock|silent
 end|move:Power Trick
 end|move:Salt Cure
 end|move:Sky Drop
 end|move:Stockpile
 end|move:Substitute
 end|move:Syrup Bomb
-end|move:Syrup Bomb|[silent]
+end|move:Syrup Bomb|silent
 end|move:Taunt
 end|move:Telekinesis
 end|move:Throat Chop
 end|move:Torment
 end|move:Uproar
 end|move:Yawn
-end|move:Yawn|[silent]
+end|move:Yawn|silent
 end|volatile:Partially Trapped
 escaped
 exp
@@ -583,14 +583,14 @@ itemend|from:ability:Symbiosis|item:Cheri Berry
 itemend|from:item:Sticky Barb|item:Sticky Barb
 itemend|from:move:Bestow|item:Sticky Barb
 itemend|from:move:Corrosive Gas|item:Sitrus Berry
-itemend|from:move:Fling|item:Cheri Berry|[silent]
-itemend|from:move:Fling|item:Iron Ball|[silent]
-itemend|from:move:Fling|item:Mental Herb|[silent]
-itemend|from:move:Fling|item:Pecha Berry|[silent]
-itemend|from:move:Fling|item:Toxic Orb|[silent]
-itemend|from:move:Fling|item:Utility Umbrella|[silent]
-itemend|from:move:Fling|item:Venusaurite|[silent]
-itemend|from:move:Fling|item:White Herb|[silent]
+itemend|from:move:Fling|item:Cheri Berry|silent
+itemend|from:move:Fling|item:Iron Ball|silent
+itemend|from:move:Fling|item:Mental Herb|silent
+itemend|from:move:Fling|item:Pecha Berry|silent
+itemend|from:move:Fling|item:Toxic Orb|silent
+itemend|from:move:Fling|item:Utility Umbrella|silent
+itemend|from:move:Fling|item:Venusaurite|silent
+itemend|from:move:Fling|item:White Herb|silent
 itemend|from:move:Incinerate|item:Fire Gem
 itemend|from:move:Incinerate|item:Oran Berry
 itemend|from:move:Knock Off|item:Ability Shield
@@ -609,45 +609,45 @@ itemend|from:move:Trick|item:Power Anklet
 itemend|from:move:Trick|item:Safety Goggles
 itemend|from:move:Trick|item:Toxic Orb
 itemend|from:move:Trick|item:Utility Umbrella
-itemend|item:Aguav Berry|[eat]
+itemend|item:Aguav Berry|eat
 itemend|item:Air Balloon
 itemend|item:Berry Juice
 itemend|item:Blunder Policy
 itemend|item:Booster Energy
 itemend|item:Cell Battery
-itemend|item:Cheri Berry|[eat]
-itemend|item:Chilan Berry|[eat]
-itemend|item:Custap Berry|[eat]
+itemend|item:Cheri Berry|eat
+itemend|item:Chilan Berry|eat
+itemend|item:Custap Berry|eat
 itemend|item:Eject Button
 itemend|item:Eject Pack
 itemend|item:Electric Seed
-itemend|item:Enigma Berry|[eat]
+itemend|item:Enigma Berry|eat
 itemend|item:Fire Gem
 itemend|item:Focus Sash
-itemend|item:Ganlon Berry|[eat]
-itemend|item:Haban Berry|[eat]
-itemend|item:Jaboca Berry|[eat]
-itemend|item:Kasib Berry|[eat]
-itemend|item:Kee Berry|[eat]
-itemend|item:Leppa Berry|[eat]
-itemend|item:Liechi Berry|[eat]
-itemend|item:Lum Berry|[eat]
+itemend|item:Ganlon Berry|eat
+itemend|item:Haban Berry|eat
+itemend|item:Jaboca Berry|eat
+itemend|item:Kasib Berry|eat
+itemend|item:Kee Berry|eat
+itemend|item:Leppa Berry|eat
+itemend|item:Liechi Berry|eat
+itemend|item:Lum Berry|eat
 itemend|item:Luminous Moss
-itemend|item:Maranga Berry|[eat]
+itemend|item:Maranga Berry|eat
 itemend|item:Mental Herb
-itemend|item:Micle Berry|[eat]
+itemend|item:Micle Berry|eat
 itemend|item:Mirror Herb
 itemend|item:Normal Gem
-itemend|item:Occa Berry|[eat]
-itemend|item:Oran Berry|[eat]
-itemend|item:Passho Berry|[eat]
+itemend|item:Occa Berry|eat
+itemend|item:Oran Berry|eat
+itemend|item:Passho Berry|eat
 itemend|item:Power Herb
-itemend|item:Rawst Berry|[eat]
+itemend|item:Rawst Berry|eat
 itemend|item:Red Card
 itemend|item:Room Service
-itemend|item:Rowap Berry|[eat]
-itemend|item:Sitrus Berry|[eat]
-itemend|item:Starf Berry|[eat]
+itemend|item:Rowap Berry|eat
+itemend|item:Sitrus Berry|eat
+itemend|item:Starf Berry|eat
 itemend|item:Throat Spray
 itemend|item:Weakness Policy
 itemend|item:White Herb
@@ -693,31 +693,31 @@ mega|from:move:Dragon Ascent
 miss
 mon
 move
-move|[noanim]
-move|[noanim]|[zpower]
-move|[notarget]
-move|[zpower]
 move|from:ability:Dancer
 move|from:ability:Magic Bounce
 move|from:move:Assist
 move|from:move:Copycat
-move|from:move:Copycat|[noanim]
+move|from:move:Copycat|noanim
 move|from:move:Grass Pledge
 move|from:move:Instruct
 move|from:move:Magic Coat
 move|from:move:Magic Coat|spread:*
 move|from:move:Me First
 move|from:move:Metronome
-move|from:move:Metronome|[zpower]
 move|from:move:Metronome|spread:*
+move|from:move:Metronome|zpower
 move|from:move:Mirror Move
-move|from:move:Mirror Move|[noanim]
+move|from:move:Mirror Move|noanim
 move|from:move:Nature Power
 move|from:move:Round
 move|from:move:Sleep Talk
 move|from:move:Snatch
 move|from:move:Water Pledge
+move|noanim
+move|noanim|zpower
+move|notarget
 move|spread:*
+move|zpower
 ohko
 player
 prepare|move:Charge Move Base
@@ -833,15 +833,15 @@ specieschange
 specieschange|status:Freeze
 split
 start|ability:Flash Fire
-start|ability:Flash Fire|[silent]
+start|ability:Flash Fire|silent
 start|ability:Protosynthesis
 start|ability:Quark Drive
 start|ability:Slow Start
 start|ability:Supreme Overlord
-start|ability:Supreme Overlord|fallen:*|[silent]
+start|ability:Supreme Overlord|fallen:*|silent
 start|condition:Commanding
 start|condition:Confusion
-start|condition:Confusion|[fatigue]
+start|condition:Confusion|fatigue
 start|condition:Confusion|from:ability:Poison Puppeteer
 start|condition:Future Move
 start|condition:Highlighting Sample
@@ -861,11 +861,11 @@ start|move:Curse
 start|move:Disable
 start|move:Doom Desire
 start|move:Dragon Cheer
-start|move:Dragon Cheer|[silent]
+start|move:Dragon Cheer|silent
 start|move:Embargo
 start|move:Encore
 start|move:Focus Energy
-start|move:Focus Energy|[silent]
+start|move:Focus Energy|silent
 start|move:Foresight
 start|move:Future Sight
 start|move:G-Max Chi Strike
@@ -892,10 +892,10 @@ start|move:Tar Shot
 start|move:Taunt
 start|move:Telekinesis
 start|move:Throat Chop
-start|move:Throat Chop|[silent]
+start|move:Throat Chop|silent
 start|move:Torment
 start|move:Uproar
-start|move:Uproar|[residual]
+start|move:Uproar|residual
 start|move:Yawn
 status|from:Disobedience|status:Sleep
 status|from:Toxic Fumes|status:Bad Poison
@@ -934,9 +934,8 @@ swap|from:Player Choice
 swap|from:move:Ally Switch
 switch
 switchout
-switchout|[copysubstitute]
-switchout|[copyvolatile]
-switch|tera:*
+switchout|copysubstitute
+switchout|copyvolatile
 teampreview
 teampreviewstart
 teamsize
@@ -951,7 +950,6 @@ typechange|from:ability:Protean|types:*
 typechange|types:*
 ultra|from:item:Ultranecrozium Z
 unboost
-unboost|[min]
 unboost|from:Drop Attack
 unboost|from:ability:Anger Shell
 unboost|from:ability:Cotton Down
@@ -971,8 +969,9 @@ unboost|from:move:Silk Trap
 unboost|from:move:Sticky Web
 unboost|from:move:Stockpile
 unboost|from:move:Syrup Bomb
+unboost|min
 uncatchable
-uncatchable|[thief]
+uncatchable|thief
 useitem
 waiting|on:*
 weather|from:Start|weather:Hail
@@ -990,19 +989,19 @@ weather|from:ability:Sand Stream|weather:Sandstorm
 weather|from:ability:Snow Warning|weather:Hail
 weather|from:ability:Snow Warning|weather:Snow
 weather|weather:Extremely Harsh Sunlight
-weather|weather:Extremely Harsh Sunlight|[residual]
+weather|weather:Extremely Harsh Sunlight|residual
 weather|weather:Hail
-weather|weather:Hail|[residual]
+weather|weather:Hail|residual
 weather|weather:Harsh Sunlight
-weather|weather:Harsh Sunlight|[residual]
+weather|weather:Harsh Sunlight|residual
 weather|weather:Heavy Rain
-weather|weather:Heavy Rain|[residual]
+weather|weather:Heavy Rain|residual
 weather|weather:Rain
-weather|weather:Rain|[residual]
+weather|weather:Rain|residual
 weather|weather:Sandstorm
-weather|weather:Sandstorm|[residual]
+weather|weather:Sandstorm|residual
 weather|weather:Snow
-weather|weather:Snow|[residual]
+weather|weather:Snow|residual
 weather|weather:Strong Winds
-weather|weather:Strong Winds|[residual]
+weather|weather:Strong Winds|residual
 win

@@ -1075,6 +1075,8 @@ fn alter_battle_state_for_entry(
             let from: Option<EffectName> = entry.value("from");
             let animate = entry.value_ref("noanim").is_none();
             let animate_only = entry.title() == "animatemove";
+            let z_power = entry.value_ref("zpower").is_some();
+            let no_target = entry.value_ref("notarget").is_some();
 
             if used_directly && from.is_none() && name != "Struggle" {
                 apply_for_each_mon_reference(state, &mon, |state, mon_reference, ambiguity| {
@@ -1165,6 +1167,12 @@ fn alter_battle_state_for_entry(
                 },
                 animate,
                 animate_only,
+                z_power,
+                no_target,
+                from: from.map(|from| ui::EffectData {
+                    effect: Some(from.into()),
+                    ..Default::default()
+                }),
             })
         }
         "player" => {
@@ -1294,8 +1302,12 @@ fn alter_battle_state_for_entry(
         "switchout" => {
             // The switch out log is purely visual.
             let mon = entry.value_or_else("mon")?;
+            let copy_substitute = entry.value_ref("copysubstitute").is_some();
+            let copy_volatile = entry.value_ref("copyvolatile").is_some();
             ui_log.push(ui::UiLogEntry::SwitchOut {
                 mon: mon_name_to_mon_for_ui_log(state, &mon)?,
+                copy_substitute,
+                copy_volatile,
             });
         }
         "teampreviewstart" => {

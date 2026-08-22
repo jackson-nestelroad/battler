@@ -29,7 +29,6 @@ mod typescript_tests {
     #[test]
     fn export_types() {
         PlayerState::export().unwrap();
-        PlayerValidation::export().unwrap();
         Player::export().unwrap();
         Side::export().unwrap();
         BattleState::export().unwrap();

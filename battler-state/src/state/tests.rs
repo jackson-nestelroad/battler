@@ -152,7 +152,10 @@ mod state_test {
                         }
                     ))),
                     animate: true,
-                    animate_only: false
+                    animate_only: false,
+                    z_power: false,
+                    no_target: false,
+                    from: None,
                 },
                 ui::UiLogEntry::Damage {
                     health: (75, 100),
@@ -310,7 +313,10 @@ mod state_test {
                         }
                     ))),
                     animate: true,
-                    animate_only: false
+                    animate_only: false,
+                    z_power: false,
+                    no_target: false,
+                    from: None,
                 },
                 ui::UiLogEntry::Damage {
                     health: (80, 100),
@@ -3962,6 +3968,9 @@ mod state_test {
                 target: None,
                 animate: true,
                 animate_only: true,
+                z_power: false,
+                no_target: false,
+                from: None,
             }])
         );
     }
@@ -4034,6 +4043,8 @@ mod state_test {
                         name: "Squirtle".to_owned(),
                     }
                 }),
+                copy_substitute: false,
+                copy_volatile: false,
             }])
         );
     }

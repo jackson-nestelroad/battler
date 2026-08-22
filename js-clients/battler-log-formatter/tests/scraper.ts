@@ -366,8 +366,8 @@ function generateMatrix() {
           // Format pattern exactly like LogFormatter does
           const pParts = p.split('|');
           const pTitle = pParts.shift()!;
-          const pTags = pParts.filter(x => !x.startsWith('[') && !x.endsWith(']'));
-          const pFlags = pParts.filter(x => x.startsWith('[') && x.endsWith(']'));
+          const pTags = pParts.filter(x => x.includes(':'));
+          const pFlags = pParts.filter(x => !x.includes(':'));
           pTags.sort();
           pFlags.sort();
           p = [pTitle, ...pTags, ...pFlags].join('|');
@@ -416,11 +416,44 @@ function generateMatrix() {
       }
 
       if (added) {
-          const newLines = newKeys.sort((a,b) => a.localeCompare(b)).map(k => `    "${k}": "[UNHANDLED]",`);
-          const newBlock = `${match[1]}${blockContent}\n${newLines.join('\n')}${match[3]}`;
+          // Parse the existing block into entries
+          const entries = new Map<string, string>();
+          let currentKey = "";
+          let currentContent = "";
+          
+          const lines = blockContent.split('\n');
+          for (const line of lines) {
+              if (line.trim().length === 0) continue;
+              
+              // New key starts with exactly 4 spaces (or 4 spaces and a quote) followed by a word character
+              const match = line.match(/^ {4}["']?([a-zA-Z0-9_]+)["']?\s*:/);
+              if (match) {
+                  if (currentKey) {
+                      entries.set(currentKey, currentContent);
+                  }
+                  currentKey = match[1];
+                  currentContent = line;
+              } else {
+                  currentContent += '\n' + line;
+              }
+          }
+          if (currentKey) {
+              entries.set(currentKey, currentContent);
+          }
+
+          // Add new keys
+          for (const k of newKeys) {
+              entries.set(k, `    "${k}": "[UNHANDLED]",`);
+          }
+
+          // Sort alphabetically
+          const sortedKeys = Array.from(entries.keys()).sort((a, b) => a.localeCompare(b));
+          
+          const newLines = sortedKeys.map(k => entries.get(k)!);
+          const newBlock = `${match[1]}\n${newLines.join('\n')}${match[3]}`;
           enTsContent = enTsContent.replace(logsRegex, newBlock);
           fs.writeFileSync(enTsPath, enTsContent);
-          console.log("Updated locales/en.ts with missing [UNHANDLED] logs.");
+          console.log("Updated locales/en.ts with missing [UNHANDLED] logs (sorted).");
       }
   } else {
       console.error("Could not parse en.ts logs block");

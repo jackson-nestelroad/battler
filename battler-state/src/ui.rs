@@ -172,6 +172,9 @@ pub enum UiLogEntry {
         target: Option<MoveTarget>,
         animate: bool,
         animate_only: bool,
+        z_power: bool,
+        no_target: bool,
+        from: Option<EffectData>,
     },
     /// A Mon potentially learned a move.
     MoveUpdate {
@@ -204,7 +207,11 @@ pub enum UiLogEntry {
         into_position: FieldPosition,
     },
     /// A Mon switched out.
-    SwitchOut { mon: Mon },
+    SwitchOut {
+        mon: Mon,
+        copy_substitute: bool,
+        copy_volatile: bool,
+    },
     /// The battle resulted in a tie.
     Tie,
     /// A Mon transformed into another Mon.

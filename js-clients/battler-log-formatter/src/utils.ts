@@ -83,8 +83,6 @@ export function maskLog(line: string): string | null {
       }
       
       // Strip unrepresentable tags that the Rust engine intentionally drops from the UI log
-      if (title === 'move' && (k === 'from' || k === 'spread' || k === '[zpower]' || k === '[noanim]' || k === '[notarget]')) continue;
-      if (title === 'switchout' && (k === '[copysubstitute]' || k === '[copyvolatile]')) continue;
       if (title === 'switch' && k === 'tera') continue;
 
       if (keepSpecific) {
@@ -93,9 +91,7 @@ export function maskLog(line: string): string | null {
         tags.push(`${k}:*`);
       }
     } else {
-      let flag = `[${p}]`;
-      if (title === 'move' && (flag === '[zpower]' || flag === '[notarget]' || flag === '[miss]')) continue;
-      if (title === 'switchout' && (flag === '[copysubstitute]' || flag === '[copyvolatile]')) continue;
+      let flag = p;
       flags.push(flag);
     }
   }

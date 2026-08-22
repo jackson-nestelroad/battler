@@ -182,50 +182,30 @@ export function generateCombinatorics(title: string, baseTags: string[], flags: 
         
         const tag = baseTags[index];
         const parts = tag.split(':');
+        const k = parts[0];
         
+        // 1. Include specific tag
         recurse(index + 1, [...currentTags, tag]);
         
+        // 2. Include generic tag (if applicable)
         if (parts.length >= 2) {
-            const k = parts[0];
             if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile', 'type', 'clause', 'species'].includes(k) && parts[1] !== '*') {
                 recurse(index + 1, [...currentTags, `${k}:*`]);
             }
             if (k === 'from' && parts.length === 3 && parts[2] !== '*') {
                 recurse(index + 1, [...currentTags, `${parts[0]}:${parts[1]}:*`]);
             }
+            
+            // 3. Omit tag entirely
+            if (['from', 'of', 'by', 'source', 'battletype'].includes(k)) {
+                recurse(index + 1, currentTags);
+            }
         }
     }
     
     recurse(0, []);
     
-    const finalResults = Array.from(results);
-    const requireFromOf = ['damage', 'heal', 'sethp', 'item', 'itemend', 'itemstart', 'ability', 'abilitystart', 'cant', 'fail', 'immune', 'block'];
-    
-    if (!requireFromOf.includes(title)) {
-        for (const pattern of Array.from(results)) {
-            const pParts = pattern.split('|');
-            const pTags = pParts.slice(1).filter(x => !x.startsWith('[') && !x.endsWith(']'));
-            const pFlags = pParts.slice(1).filter(x => x.startsWith('[') && x.endsWith(']'));
-            
-            const noFromOfTags = pTags.filter(t => {
-                const k = t.split(':')[0];
-                return k !== 'from' && k !== 'of' && k !== 'by';
-            });
-            finalResults.push(buildPattern(title, noFromOfTags, pFlags));
-        }
-    }
-    
-    const withBattletypeDropped: string[] = [];
-    for (const pattern of finalResults) {
-        if (pattern.includes('battletype:')) {
-            const pParts = pattern.split('|');
-            const newTags = pParts.filter(x => !x.startsWith('battletype:'));
-            withBattletypeDropped.push(newTags.join('|'));
-        }
-    }
-    finalResults.push(...withBattletypeDropped);
-    
-    return Array.from(new Set(finalResults)).sort((a, b) => b.length - a.length);
+    return Array.from(results).sort((a, b) => b.length - a.length);
 }
 
 
@@ -301,7 +281,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
           }
 
           if (k === 'animate') {
-              if (v === false) flags.push('[noanim]');
+              if (v === false) flags.push('noanim');
               return;
           }
           if (k === 'animate_only') {
@@ -379,7 +359,9 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
               context.SIDE_POSSESSIVE = resolved.possessive;
           } else if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
              if (v === true || v === "") {
-                 flags.push(`[${k}]`);
+                 flags.push(k);
+             } else if (v === false) {
+                 // Do not push false booleans to tags, they represent the absence of a flag
              } else {
                  if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile', 'from'].includes(k)) {
                      tags.push(`${k}:${v}`);
@@ -445,7 +427,15 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
       combinatoricTags.push(`battletype:${state.settings.battle_type.toLowerCase()}`);
   }
 
-  const patterns = generateCombinatorics(title, combinatoricTags, flags);
+  let finalFlags = flags;
+  let finalTags = combinatoricTags;
+  
+  if (title === 'move') {
+      finalFlags = flags.filter(f => !['z_power', 'no_target'].includes(f));
+      finalTags = combinatoricTags.filter(t => !t.startsWith('from:') && !t.startsWith('animate:') && !t.startsWith('animate_only:'));
+  }
+
+  const patterns = generateCombinatorics(title, finalTags, finalFlags);
   
   const mapped: AnyMappedLog = {
       patterns,

@@ -123,8 +123,8 @@ export class LogFormatter {
             let p = pattern;
             const parts = p.split('|');
             const title = parts.shift()!;
-            const tags = parts.filter(x => !x.startsWith('[') && !x.endsWith(']'));
-            const flags = parts.filter(x => x.startsWith('[') && x.endsWith(']'));
+            const tags = parts.filter(x => x.includes(':'));
+            const flags = parts.filter(x => !x.includes(':'));
             tags.sort();
             flags.sort();
             p = [title, ...tags, ...flags].join('|');
