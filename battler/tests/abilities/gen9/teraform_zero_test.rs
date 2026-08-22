@@ -76,7 +76,7 @@ fn teraform_zero_removes_weather_and_terrain() {
                 ["specieschange", "player-1", "tera:Stellar", "species:Terapagos-Stellar"],
                 "formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal",
                 "ability|mon:Terapagos,player-1,1|ability:Teraform Zero",
-                "clearweather",
+                "clearweather|weather:Rain",
                 "fieldend|move:Electric Terrain",
                 "move|mon:Terapagos,player-1,1|name:Splash|target:Terapagos,player-1,1",
                 "activate|move:Splash",

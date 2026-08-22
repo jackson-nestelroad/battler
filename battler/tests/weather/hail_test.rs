@@ -205,7 +205,7 @@ fn sandstorm_lasts_for_five_turns() {
                 "turn|turn:5",
                 "continue",
                 "residual",
-                "clearweather",
+                "clearweather|weather:Hail",
                 "turn|turn:6"
             ]"#,
     )
@@ -292,7 +292,7 @@ fn hail_lasts_for_eight_turns_with_icy_rock() {
                 "turn|turn:8",
                 "continue",
                 "residual",
-                "clearweather",
+                "clearweather|weather:Hail",
                 "turn|turn:9"
             ]"#,
     )

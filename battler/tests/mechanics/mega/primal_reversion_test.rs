@@ -164,7 +164,7 @@ fn primal_reversion_reverted_on_faint_and_redone_on_revive() {
                 "damage|mon:Kyogre,player-1,1|health:0",
                 "damage|mon:Kyogre,player-1,1|health:0",
                 "faint|mon:Kyogre,player-1,1",
-                "clearweather",
+                "clearweather|weather:Heavy Rain",
                 "split|side:0",
                 ["specieschange", "player-1", "species:Kyogre"],
                 ["specieschange", "player-1", "species:Kyogre"],

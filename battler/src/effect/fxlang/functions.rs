@@ -1350,16 +1350,22 @@ fn log_status(mut context: FunctionContext) -> Result<()> {
 ///
 /// @param {[`ValueType::String`]} [weather] The weather ID.
 fn log_weather(mut context: FunctionContext) -> Result<()> {
-    let (title, mut additional) = match context.pop_front() {
-        Some(value) => (
-            "weather",
-            Vec::from_iter([format!(
-                "weather:{}",
-                value.string().wrap_error_with_message("invalid weather")?
-            )]),
-        ),
-        None => ("clearweather", Vec::default()),
-    };
+    let mut title = "weather";
+    let mut additional = Vec::new();
+
+    if let Some(value) = context.pop_front() {
+        additional.push(format!(
+            "weather:{}",
+            value.string().wrap_error_with_message("invalid weather")?
+        ));
+    } else {
+        title = "clearweather";
+    }
+
+    if context.has_flag("clear") {
+        title = "clearweather";
+    }
+
     if context.has_flag("residual") {
         additional.push("residual".to_owned());
     }

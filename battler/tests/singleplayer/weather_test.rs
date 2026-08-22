@@ -241,7 +241,7 @@ fn battle_goes_back_to_default_weather() {
                 "turn|turn:5",
                 "continue",
                 "residual",
-                "clearweather",
+                "clearweather|weather:Harsh Sunlight",
                 "weather|weather:Rain|from:Start",
                 "turn|turn:6"
             ]"#,

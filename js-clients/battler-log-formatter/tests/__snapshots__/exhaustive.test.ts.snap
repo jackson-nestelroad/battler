@@ -259,7 +259,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "result": {
     "message": {
       "context": {
-        "__CAPITALIZED_MON": {
+        "ABILITY": "Sword of Ruin",
+        "__CAPITALIZED_MON_POSSESSIVE": {
           "monRef": {
             "Active": {
               "name": "Chien-Pao",
@@ -268,12 +269,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
               "side": 0,
             },
           },
-          "text": "The opposing Chien-Pao",
+          "text": "The opposing Chien-Pao's",
         },
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Chien-Pao weakened the Defense of all surrounding Mons!",
+        "text": "The opposing Chien-Pao's Sword of Ruin weakened the Defense of all surrounding Mons!",
       },
       "key": "ability__ability_swordofruin",
     },
@@ -302,7 +303,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
   "result": {
     "message": {
       "context": {
-        "__CAPITALIZED_MON": {
+        "ABILITY": "Sword of Ruin",
+        "__CAPITALIZED_MON_POSSESSIVE": {
           "monRef": {
             "Active": {
               "name": "Chien-Pao",
@@ -311,12 +313,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
               "side": 0,
             },
           },
-          "text": "The opposing Chien-Pao",
+          "text": "The opposing Chien-Pao's",
         },
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Chien-Pao weakened the Defense of all surrounding Mons!",
+        "text": "The opposing Chien-Pao's Sword of Ruin weakened the Defense of all surrounding Mons!",
       },
       "key": "ability__ability_swordofruin",
     },
@@ -970,9 +972,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The effects of weather and terrain disappeared.",
+        "text": "Teraform Zero",
       },
-      "key": "ability__ability_teraformzero",
+      "key": "ability|ability:Teraform Zero",
     },
     "notices": [
       {

@@ -251,7 +251,7 @@ fn primordial_sea_stops_when_last_mon_with_ability_switches_out() {
                 "weather|weather:Heavy Rain|residual",
                 "turn|turn:3",
                 "continue",
-                "clearweather",
+                "clearweather|weather:Heavy Rain",
                 "split|side:1",
                 ["switch", "player-2", "Charizard"],
                 ["switch", "player-2", "Charizard"],

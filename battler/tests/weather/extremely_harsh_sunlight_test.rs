@@ -252,7 +252,7 @@ fn desolate_land_stops_when_last_mon_with_ability_switches_out() {
                 "weather|weather:Extremely Harsh Sunlight|residual",
                 "turn|turn:3",
                 "continue",
-                "clearweather",
+                "clearweather|weather:Extremely Harsh Sunlight",
                 "split|side:1",
                 ["switch", "player-2", "Blastoise"],
                 ["switch", "player-2", "Blastoise"],
