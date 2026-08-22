@@ -97,18 +97,18 @@ fn forecast_transforms_castform_in_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "move|mon:Ditto,player-2,1|name:Thunder Shock|target:Castform,player-1,1",
-            "supereffective|mon:Castform,player-1,1",
-            "split|side:0",
-            "damage|mon:Castform,player-1,1|health:104/130",
-            "damage|mon:Castform,player-1,1|health:80/100",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "move|mon:Ditto,player-2,1|name:Thunder Shock|target:Castform,player-1,1",
+                "supereffective|mon:Castform,player-1,1",
+                "split|side:0",
+                "damage|mon:Castform,player-1,1|health:104/130",
+                "damage|mon:Castform,player-1,1|health:80/100",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -124,18 +124,18 @@ fn forecast_transforms_castform_in_harsh_sunlight() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Sunny Day",
-            "weather|weather:Harsh Sunlight",
-            "formechange|mon:Castform,player-1,1|species:Castform-Sunny|from:ability:Forecast",
-            "move|mon:Ditto,player-2,1|name:Vine Whip|target:Castform,player-1,1",
-            "resisted|mon:Castform,player-1,1",
-            "split|side:0",
-            "damage|mon:Castform,player-1,1|health:123/130",
-            "damage|mon:Castform,player-1,1|health:95/100",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Sunny Day",
+                "weather|weather:Harsh Sunlight",
+                "formechange|mon:Castform,player-1,1|species:Castform-Sunny|from:ability:Forecast",
+                "move|mon:Ditto,player-2,1|name:Vine Whip|target:Castform,player-1,1",
+                "resisted|mon:Castform,player-1,1",
+                "split|side:0",
+                "damage|mon:Castform,player-1,1|health:123/130",
+                "damage|mon:Castform,player-1,1|health:95/100",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -151,21 +151,21 @@ fn forecast_transforms_castform_in_hail() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Hail",
-            "weather|weather:Hail",
-            "formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast",
-            "move|mon:Ditto,player-2,1|name:Aurora Beam|target:Castform,player-1,1",
-            "resisted|mon:Castform,player-1,1",
-            "split|side:0",
-            "damage|mon:Castform,player-1,1|health:120/130",
-            "damage|mon:Castform,player-1,1|health:93/100",
-            "weather|weather:Hail|residual",
-            "split|side:1",
-            "damage|mon:Ditto,player-2,1|from:weather:Hail|health:102/108",
-            "damage|mon:Ditto,player-2,1|from:weather:Hail|health:95/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Hail",
+                "weather|weather:Hail",
+                "formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast",
+                "move|mon:Ditto,player-2,1|name:Aurora Beam|target:Castform,player-1,1",
+                "resisted|mon:Castform,player-1,1",
+                "split|side:0",
+                "damage|mon:Castform,player-1,1|health:120/130",
+                "damage|mon:Castform,player-1,1|health:93/100",
+                "residual",
+                "weather|weather:Hail|residual",
+                "split|side:1",
+                "damage|mon:Ditto,player-2,1|from:weather:Hail|health:102/108",
+                "damage|mon:Ditto,player-2,1|from:weather:Hail|health:95/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -181,18 +181,18 @@ fn forecast_transforms_castform_in_snow() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Snowscape",
-            "weather|weather:Snow",
-            "formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast",
-            "move|mon:Ditto,player-2,1|name:Aurora Beam|target:Castform,player-1,1",
-            "resisted|mon:Castform,player-1,1",
-            "split|side:0",
-            "damage|mon:Castform,player-1,1|health:120/130",
-            "damage|mon:Castform,player-1,1|health:93/100",
-            "weather|weather:Snow|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Snowscape",
+                "weather|weather:Snow",
+                "formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast",
+                "move|mon:Ditto,player-2,1|name:Aurora Beam|target:Castform,player-1,1",
+                "resisted|mon:Castform,player-1,1",
+                "split|side:0",
+                "damage|mon:Castform,player-1,1|health:120/130",
+                "damage|mon:Castform,player-1,1|health:93/100",
+                "residual",
+                "weather|weather:Snow|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -210,18 +210,18 @@ fn forecast_fails_for_transformed_ditto() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ditto,player-2,1|name:Transform|target:Castform,player-1,1",
-            "transform|mon:Ditto,player-2,1|into:Castform,player-1,1|species:Castform",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Castform,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Ditto,player-2,1|name:Transform|target:Castform,player-1,1",
+                "transform|mon:Ditto,player-2,1|into:Castform,player-1,1|species:Castform",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Castform,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -241,29 +241,29 @@ fn forecast_reverts_due_to_suppressed_weather() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "split|side:1",
-            ["switch", "player-2", "Rayquaza"],
-            ["switch", "player-2", "Rayquaza"],
-            "ability|mon:Rayquaza,player-2,1|ability:Air Lock",
-            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "split|side:1",
-            ["switch", "player-2", "Ditto"],
-            ["switch", "player-2", "Ditto"],
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "split|side:1",
+                ["switch", "player-2", "Rayquaza"],
+                ["switch", "player-2", "Rayquaza"],
+                "ability|mon:Rayquaza,player-2,1|ability:Air Lock",
+                "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "split|side:1",
+                ["switch", "player-2", "Ditto"],
+                ["switch", "player-2", "Ditto"],
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -285,32 +285,32 @@ fn forecast_reverts_due_to_gaining_weather_suppressing_item() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Ditto,player-2,1|name:Trick|target:Castform,player-1,1",
-            "itemend|mon:Ditto,player-2,1|item:Utility Umbrella|from:move:Trick",
-            "itemstart|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1",
-            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "move|mon:Castform,player-1,1|name:Fling|target:Ditto,player-2,1",
-            "activate|mon:Castform,player-1,1|move:Fling|item:Utility Umbrella",
-            "split|side:1",
-            "damage|mon:Ditto,player-2,1|health:71/108",
-            "damage|mon:Ditto,player-2,1|health:66/100",
-            "itemend|mon:Castform,player-1,1|item:Utility Umbrella|silent|from:move:Fling",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Ditto,player-2,1|name:Trick|target:Castform,player-1,1",
+                "itemend|mon:Ditto,player-2,1|item:Utility Umbrella|from:move:Trick",
+                "itemstart|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1",
+                "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3",
+                "continue",
+                "move|mon:Castform,player-1,1|name:Fling|target:Ditto,player-2,1",
+                "activate|mon:Castform,player-1,1|move:Fling|item:Utility Umbrella",
+                "split|side:1",
+                "damage|mon:Ditto,player-2,1|health:71/108",
+                "damage|mon:Ditto,player-2,1|health:66/100",
+                "itemend|mon:Castform,player-1,1|item:Utility Umbrella|silent|from:move:Fling",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -332,28 +332,28 @@ fn forecast_activates_due_to_suppressing_weather_suppressing_item() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Ditto,player-2,1|name:Trick|target:Castform,player-1,1",
-            "itemend|mon:Ditto,player-2,1|item:Utility Umbrella|from:move:Trick",
-            "itemstart|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1",
-            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "move|mon:Ditto,player-2,1|name:Embargo|target:Castform,player-1,1",
-            "start|mon:Castform,player-1,1|move:Embargo",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Ditto,player-2,1|name:Trick|target:Castform,player-1,1",
+                "itemend|mon:Ditto,player-2,1|item:Utility Umbrella|from:move:Trick",
+                "itemstart|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1",
+                "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3",
+                "continue",
+                "move|mon:Ditto,player-2,1|name:Embargo|target:Castform,player-1,1",
+                "start|mon:Castform,player-1,1|move:Embargo",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -371,20 +371,20 @@ fn forecast_reverts_due_to_weather_suppressing_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Ditto,player-2,1|name:Gastro Acid|target:Castform,player-1,1",
-            "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Gastro Acid|of:Ditto,player-2,1",
-            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Ditto,player-2,1|name:Gastro Acid|target:Castform,player-1,1",
+                "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Gastro Acid|of:Ditto,player-2,1",
+                "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -402,21 +402,21 @@ fn forecast_reverts_due_to_losing_ability() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Castform,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Ditto,player-2,1|name:Worry Seed|target:Castform,player-1,1",
-            "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Worry Seed|of:Ditto,player-2,1",
-            "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
-            "abilitystart|mon:Castform,player-1,1|ability:Insomnia|from:move:Worry Seed|of:Ditto,player-2,1",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Castform,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Ditto,player-2,1|name:Worry Seed|target:Castform,player-1,1",
+                "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Worry Seed|of:Ditto,player-2,1",
+                "formechange|mon:Castform,player-1,1|species:Castform|from:ability:Forecast",
+                "abilitystart|mon:Castform,player-1,1|ability:Insomnia|from:move:Worry Seed|of:Ditto,player-2,1",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

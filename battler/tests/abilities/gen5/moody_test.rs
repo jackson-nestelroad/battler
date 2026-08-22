@@ -57,20 +57,20 @@ fn moody_boosts_and_drops_random_stats_each_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "boost|mon:Bibarel,player-1,1|stat:atk|by:2|from:ability:Moody",
-            "unboost|mon:Bibarel,player-1,1|stat:def|by:1|from:ability:Moody",
-            "unboost|mon:Bibarel,player-2,1|stat:atk|by:1|from:ability:Moody",
-            "boost|mon:Bibarel,player-2,1|stat:def|by:2|from:ability:Moody",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "boost|mon:Bibarel,player-1,1|stat:atk|by:2|from:ability:Moody",
-            "unboost|mon:Bibarel,player-1,1|stat:spd|by:1|from:ability:Moody",
-            "boost|mon:Bibarel,player-2,1|stat:atk|by:2|from:ability:Moody",
-            "unboost|mon:Bibarel,player-2,1|stat:spa|by:1|from:ability:Moody",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "residual",
+                "boost|mon:Bibarel,player-1,1|stat:atk|by:2|from:ability:Moody",
+                "unboost|mon:Bibarel,player-1,1|stat:def|by:1|from:ability:Moody",
+                "unboost|mon:Bibarel,player-2,1|stat:atk|by:1|from:ability:Moody",
+                "boost|mon:Bibarel,player-2,1|stat:def|by:2|from:ability:Moody",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "boost|mon:Bibarel,player-1,1|stat:atk|by:2|from:ability:Moody",
+                "unboost|mon:Bibarel,player-1,1|stat:spd|by:1|from:ability:Moody",
+                "boost|mon:Bibarel,player-2,1|stat:atk|by:2|from:ability:Moody",
+                "unboost|mon:Bibarel,player-2,1|stat:spa|by:1|from:ability:Moody",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

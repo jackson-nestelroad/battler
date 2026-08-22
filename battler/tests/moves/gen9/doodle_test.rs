@@ -70,17 +70,17 @@ fn doodle_copies_target_ability_to_user_and_allies() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Grafaiai,player-1,1|name:Doodle|target:Grafaiai,player-2,1",
-            "abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle",
-            "abilitystart|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
-            "abilityend|mon:Grafaiai,player-1,2|ability:No Ability|from:move:Doodle|of:Grafaiai,player-1,1",
-            "abilitystart|mon:Grafaiai,player-1,2|ability:Speed Boost|from:move:Doodle|of:Grafaiai,player-1,1",
-            "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
-            "boost|mon:Grafaiai,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
-            "boost|mon:Grafaiai,player-1,2|stat:spe|by:1|from:ability:Speed Boost",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Grafaiai,player-1,1|name:Doodle|target:Grafaiai,player-2,1",
+                "abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle",
+                "abilitystart|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
+                "abilityend|mon:Grafaiai,player-1,2|ability:No Ability|from:move:Doodle|of:Grafaiai,player-1,1",
+                "abilitystart|mon:Grafaiai,player-1,2|ability:Speed Boost|from:move:Doodle|of:Grafaiai,player-1,1",
+                "residual",
+                "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
+                "boost|mon:Grafaiai,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
+                "boost|mon:Grafaiai,player-1,2|stat:spe|by:1|from:ability:Speed Boost",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -103,14 +103,14 @@ fn doodle_does_not_overwrite_permanent_ability() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Grafaiai,player-1,1|name:Doodle|target:Grafaiai,player-2,1",
-            "abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle",
-            "abilitystart|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
-            "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
-            "boost|mon:Grafaiai,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Grafaiai,player-1,1|name:Doodle|target:Grafaiai,player-2,1",
+                "abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle",
+                "abilitystart|mon:Grafaiai,player-1,1|ability:Speed Boost|from:move:Doodle",
+                "residual",
+                "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
+                "boost|mon:Grafaiai,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -134,13 +134,13 @@ fn doodle_fails_if_abilities_cannot_be_set() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Grafaiai,player-1,1|name:Doodle|noanim",
-            "block|mon:Grafaiai,player-1,1|move:Doodle|from:item:Ability Shield",
-            "block|mon:Grafaiai,player-1,2|move:Doodle|from:item:Ability Shield",
-            "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Grafaiai,player-1,1|name:Doodle|noanim",
+                "block|mon:Grafaiai,player-1,1|move:Doodle|from:item:Ability Shield",
+                "block|mon:Grafaiai,player-1,2|move:Doodle|from:item:Ability Shield",
+                "residual",
+                "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -189,12 +189,12 @@ fn doodle_fails_if_all_ally_abilities_cannot_be_changed() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Grafaiai,player-1,1|name:Doodle|noanim",
-            "fail|mon:Grafaiai,player-1,1",
-            "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Grafaiai,player-1,1|name:Doodle|noanim",
+                "fail|mon:Grafaiai,player-1,1",
+                "residual",
+                "boost|mon:Grafaiai,player-2,1|stat:spe|by:1|from:ability:Speed Boost",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

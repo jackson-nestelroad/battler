@@ -61,14 +61,14 @@ fn bestow_transfers_held_item() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pidove,player-1,1|name:Bestow|target:Pidove,player-2,1",
-            "itemend|mon:Pidove,player-1,1|item:Sticky Barb|from:move:Bestow",
-            "itemstart|mon:Pidove,player-2,1|item:Sticky Barb|from:move:Bestow|of:Pidove,player-1,1",
-            "split|side:1",
-            "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:184/210",
-            "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:88/100",
-            "residual"
-        ]"#,
+                "move|mon:Pidove,player-1,1|name:Bestow|target:Pidove,player-2,1",
+                "itemend|mon:Pidove,player-1,1|item:Sticky Barb|from:move:Bestow",
+                "itemstart|mon:Pidove,player-2,1|item:Sticky Barb|from:move:Bestow|of:Pidove,player-1,1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:184/210",
+                "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:88/100"
+            ]"#,
     )
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);
@@ -86,14 +86,14 @@ fn bestow_fails_if_target_has_item() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pidove,player-1,1|name:Bestow|noanim",
-            "itemend|mon:Pidove,player-1,1|item:Sticky Barb|from:move:Bestow",
-            "fail|mon:Pidove,player-1,1",
-            "split|side:1",
-            "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:184/210",
-            "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:88/100",
-            "residual"
-        ]"#,
+                "move|mon:Pidove,player-1,1|name:Bestow|noanim",
+                "itemend|mon:Pidove,player-1,1|item:Sticky Barb|from:move:Bestow",
+                "fail|mon:Pidove,player-1,1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:184/210",
+                "damage|mon:Pidove,player-2,1|from:item:Sticky Barb|health:88/100"
+            ]"#,
     )
     .unwrap();
     assert_turn_logs_eq(&mut battle, 1, &expected_logs);

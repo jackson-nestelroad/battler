@@ -136,23 +136,23 @@ fn primordial_sea_starts_heavy_rain_on_switch_in() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["switch"],
-            ["switch"],
-            "split|side:1",
-            ["switch"],
-            ["switch"],
-            "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
-            "turn|turn:1",
-            "continue",
-            "weather|weather:Heavy Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "weather|weather:Heavy Rain|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "split|side:0",
+                ["switch"],
+                ["switch"],
+                "split|side:1",
+                ["switch"],
+                ["switch"],
+                "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
+                "turn|turn:1",
+                "continue",
+                "residual",
+                "weather|weather:Heavy Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "weather|weather:Heavy Rain|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_start_eq(&battle, &expected_logs);
@@ -168,21 +168,21 @@ fn primordial_sea_dissipates_fire_type_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["switch"],
-            ["switch"],
-            "split|side:1",
-            ["switch"],
-            ["switch"],
-            "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
-            "turn|turn:1",
-            "continue",
-            "move|mon:Charizard,player-2,1|name:Flamethrower|noanim",
-            "fail|mon:Charizard,player-2,1|from:weather:Heavy Rain",
-            "weather|weather:Heavy Rain|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "split|side:0",
+                ["switch"],
+                ["switch"],
+                "split|side:1",
+                ["switch"],
+                ["switch"],
+                "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
+                "turn|turn:1",
+                "continue",
+                "move|mon:Charizard,player-2,1|name:Flamethrower|noanim",
+                "fail|mon:Charizard,player-2,1|from:weather:Heavy Rain",
+                "residual",
+                "weather|weather:Heavy Rain|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_start_eq(&battle, &expected_logs);
@@ -198,21 +198,21 @@ fn normal_rain_cannot_override_primordial_sea() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["switch"],
-            ["switch"],
-            "split|side:1",
-            ["switch"],
-            ["switch"],
-            "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
-            "turn|turn:1",
-            "continue",
-            "move|mon:Blastoise,player-2,1|name:Rain Dance|noanim",
-            "fail|mon:Blastoise,player-2,1",
-            "weather|weather:Heavy Rain|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "split|side:0",
+                ["switch"],
+                ["switch"],
+                "split|side:1",
+                ["switch"],
+                ["switch"],
+                "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
+                "turn|turn:1",
+                "continue",
+                "move|mon:Blastoise,player-2,1|name:Rain Dance|noanim",
+                "fail|mon:Blastoise,player-2,1",
+                "residual",
+                "weather|weather:Heavy Rain|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_start_eq(&battle, &expected_logs);
@@ -233,36 +233,36 @@ fn primordial_sea_stops_when_last_mon_with_ability_switches_out() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["switch", "player-1", "Kyogre"],
-            ["switch", "player-1", "Kyogre"],
-            "split|side:1",
-            ["switch", "player-2", "Kyogre"],
-            ["switch", "player-2", "Kyogre"],
-            "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
-            "weather|weather:Heavy Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Charizard"],
-            ["switch", "player-1", "Charizard"],
-            "weather|weather:Heavy Rain|residual",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "clearweather",
-            "split|side:1",
-            ["switch", "player-2", "Charizard"],
-            ["switch", "player-2", "Charizard"],
-            "move|mon:Charizard,player-1,1|name:Flamethrower|target:Charizard,player-2,1",
-            "resisted|mon:Charizard,player-2,1",
-            "split|side:1",
-            "damage|mon:Charizard,player-2,1|health:101/138",
-            "damage|mon:Charizard,player-2,1|health:74/100",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "split|side:0",
+                ["switch", "player-1", "Kyogre"],
+                ["switch", "player-1", "Kyogre"],
+                "split|side:1",
+                ["switch", "player-2", "Kyogre"],
+                ["switch", "player-2", "Kyogre"],
+                "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
+                "residual",
+                "weather|weather:Heavy Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "split|side:0",
+                ["switch", "player-1", "Charizard"],
+                ["switch", "player-1", "Charizard"],
+                "residual",
+                "weather|weather:Heavy Rain|residual",
+                "turn|turn:3",
+                "continue",
+                "clearweather",
+                "split|side:1",
+                ["switch", "player-2", "Charizard"],
+                ["switch", "player-2", "Charizard"],
+                "move|mon:Charizard,player-1,1|name:Flamethrower|target:Charizard,player-2,1",
+                "resisted|mon:Charizard,player-2,1",
+                "split|side:1",
+                "damage|mon:Charizard,player-2,1|health:101/138",
+                "damage|mon:Charizard,player-2,1|health:74/100",
+                "residual",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

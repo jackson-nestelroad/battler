@@ -81,17 +81,17 @@ fn effect_spore_randomly_inflicts_status_to_attacker_on_contact() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Mudkip,player-1,1|name:Tackle|target:Shroomish,player-2,1",
-            "split|side:1",
-            "damage|mon:Shroomish,player-2,1|health:99/120",
-            "damage|mon:Shroomish,player-2,1|health:83/100",
-            "status|mon:Mudkip,player-1,1|status:Poison|from:ability:Effect Spore|of:Shroomish,player-2,1",
-            "split|side:0",
-            "damage|mon:Mudkip,player-1,1|from:status:Poison|health:97/110",
-            "damage|mon:Mudkip,player-1,1|from:status:Poison|health:89/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Mudkip,player-1,1|name:Tackle|target:Shroomish,player-2,1",
+                "split|side:1",
+                "damage|mon:Shroomish,player-2,1|health:99/120",
+                "damage|mon:Shroomish,player-2,1|health:83/100",
+                "status|mon:Mudkip,player-1,1|status:Poison|from:ability:Effect Spore|of:Shroomish,player-2,1",
+                "residual",
+                "split|side:0",
+                "damage|mon:Mudkip,player-1,1|from:status:Poison|health:97/110",
+                "damage|mon:Mudkip,player-1,1|from:status:Poison|health:89/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

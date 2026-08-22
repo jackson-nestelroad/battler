@@ -105,29 +105,29 @@ fn outside_effects_trigger_immediately_at_start_of_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "status|mon:Pikachu,player-1,1|status:Bad Poison|from:Toxic Fumes",
-            "status|mon:Magikarp,player-1,2|status:Bad Poison|from:Toxic Fumes",
-            "status|mon:Magikarp,player-2,2|status:Bad Poison|from:Toxic Fumes",
-            "split|side:0",
-            ["switch", "player-1", "Eevee"],
-            ["switch", "player-1", "Eevee"],
-            "move|mon:Pikachu,player-2,1|name:Tackle|target:Eevee,player-1,1",
-            "split|side:0",
-            "damage|mon:Eevee,player-1,1|health:96/115",
-            "damage|mon:Eevee,player-1,1|health:84/100",
-            "move|mon:Magikarp,player-1,2|name:Splash|target:Magikarp,player-1,2",
-            "activate|move:Splash",
-            "move|mon:Magikarp,player-2,2|name:Splash|target:Magikarp,player-2,2",
-            "activate|move:Splash",
-            "split|side:0",
-            "damage|mon:Magikarp,player-1,2|from:status:Bad Poison|health:75/80",
-            "damage|mon:Magikarp,player-1,2|from:status:Bad Poison|health:94/100",
-            "split|side:1",
-            "damage|mon:Magikarp,player-2,2|from:status:Bad Poison|health:75/80",
-            "damage|mon:Magikarp,player-2,2|from:status:Bad Poison|health:94/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "status|mon:Pikachu,player-1,1|status:Bad Poison|from:Toxic Fumes",
+                "status|mon:Magikarp,player-1,2|status:Bad Poison|from:Toxic Fumes",
+                "status|mon:Magikarp,player-2,2|status:Bad Poison|from:Toxic Fumes",
+                "split|side:0",
+                ["switch", "player-1", "Eevee"],
+                ["switch", "player-1", "Eevee"],
+                "move|mon:Pikachu,player-2,1|name:Tackle|target:Eevee,player-1,1",
+                "split|side:0",
+                "damage|mon:Eevee,player-1,1|health:96/115",
+                "damage|mon:Eevee,player-1,1|health:84/100",
+                "move|mon:Magikarp,player-1,2|name:Splash|target:Magikarp,player-1,2",
+                "activate|move:Splash",
+                "move|mon:Magikarp,player-2,2|name:Splash|target:Magikarp,player-2,2",
+                "activate|move:Splash",
+                "residual",
+                "split|side:0",
+                "damage|mon:Magikarp,player-1,2|from:status:Bad Poison|health:75/80",
+                "damage|mon:Magikarp,player-1,2|from:status:Bad Poison|health:94/100",
+                "split|side:1",
+                "damage|mon:Magikarp,player-2,2|from:status:Bad Poison|health:75/80",
+                "damage|mon:Magikarp,player-2,2|from:status:Bad Poison|health:94/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -237,15 +237,15 @@ fn outside_conditions_can_be_applied_by_outside_effect() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "fieldstart|condition:Stat Shuffle",
-            "fieldactivate|condition:Stat Shuffle",
-            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1|from:condition:Stat Shuffle",
-            "unboost|mon:Pikachu,player-2,1|stat:spd|by:1|from:condition:Stat Shuffle",
-            "unboost|mon:Magikarp,player-1,2|stat:spa|by:1|from:condition:Stat Shuffle",
-            "boost|mon:Magikarp,player-2,2|stat:spa|by:1|from:condition:Stat Shuffle",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "fieldstart|condition:Stat Shuffle",
+                "residual",
+                "fieldactivate|condition:Stat Shuffle",
+                "unboost|mon:Pikachu,player-1,1|stat:atk|by:1|from:condition:Stat Shuffle",
+                "unboost|mon:Pikachu,player-2,1|stat:spd|by:1|from:condition:Stat Shuffle",
+                "unboost|mon:Magikarp,player-1,2|stat:spa|by:1|from:condition:Stat Shuffle",
+                "boost|mon:Magikarp,player-2,2|stat:spa|by:1|from:condition:Stat Shuffle",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

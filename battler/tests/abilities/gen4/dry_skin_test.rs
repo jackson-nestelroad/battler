@@ -106,15 +106,15 @@ fn dry_skin_heals_in_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Toxicroak,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "weather|weather:Rain|residual",
-            "split|side:1",
-            "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:132/143",
-            "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:93/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Toxicroak,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "residual",
+                "weather|weather:Rain|residual",
+                "split|side:1",
+                "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:132/143",
+                "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:93/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);
@@ -130,18 +130,18 @@ fn dry_skin_damages_in_sun() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Toxicroak,player-1,1|name:Sunny Day",
-            "weather|weather:Harsh Sunlight",
-            "weather|weather:Harsh Sunlight|residual",
-            "split|side:0",
-            "damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:126/143",
-            "damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:89/100",
-            "split|side:1",
-            "damage|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:126/143",
-            "damage|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:89/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Toxicroak,player-1,1|name:Sunny Day",
+                "weather|weather:Harsh Sunlight",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "split|side:0",
+                "damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:126/143",
+                "damage|mon:Toxicroak,player-1,1|from:ability:Dry Skin|health:89/100",
+                "split|side:1",
+                "damage|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:126/143",
+                "damage|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:89/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

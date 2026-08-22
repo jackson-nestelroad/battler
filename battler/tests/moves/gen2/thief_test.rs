@@ -81,26 +81,26 @@ fn thief_steals_target_item() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "weather|weather:Sandstorm|residual",
-            "split|side:0",
-            "damage|mon:Crobat,player-1,1|from:weather:Sandstorm|health:136/145",
-            "damage|mon:Crobat,player-1,1|from:weather:Sandstorm|health:94/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Crobat,player-1,1|name:Thief|target:Crobat,player-2,1",
-            "split|side:1",
-            "damage|mon:Crobat,player-2,1|health:115/145",
-            "damage|mon:Crobat,player-2,1|health:80/100",
-            "itemend|mon:Crobat,player-2,1|item:Safety Goggles|from:move:Thief|of:Crobat,player-1,1",
-            "itemstart|mon:Crobat,player-1,1|item:Safety Goggles|from:move:Thief",
-            "weather|weather:Sandstorm|residual",
-            "split|side:1",
-            "damage|mon:Crobat,player-2,1|from:weather:Sandstorm|health:106/145",
-            "damage|mon:Crobat,player-2,1|from:weather:Sandstorm|health:74/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "residual",
+                "weather|weather:Sandstorm|residual",
+                "split|side:0",
+                "damage|mon:Crobat,player-1,1|from:weather:Sandstorm|health:136/145",
+                "damage|mon:Crobat,player-1,1|from:weather:Sandstorm|health:94/100",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Crobat,player-1,1|name:Thief|target:Crobat,player-2,1",
+                "split|side:1",
+                "damage|mon:Crobat,player-2,1|health:115/145",
+                "damage|mon:Crobat,player-2,1|health:80/100",
+                "itemend|mon:Crobat,player-2,1|item:Safety Goggles|from:move:Thief|of:Crobat,player-1,1",
+                "itemstart|mon:Crobat,player-1,1|item:Safety Goggles|from:move:Thief",
+                "residual",
+                "weather|weather:Sandstorm|residual",
+                "split|side:1",
+                "damage|mon:Crobat,player-2,1|from:weather:Sandstorm|health:106/145",
+                "damage|mon:Crobat,player-2,1|from:weather:Sandstorm|health:74/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

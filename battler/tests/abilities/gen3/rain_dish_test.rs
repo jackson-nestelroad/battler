@@ -58,19 +58,19 @@ fn rain_dish_heals_in_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Lotad,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "move|mon:Lotad,player-2,1|name:Tackle|target:Lotad,player-1,1",
-            "split|side:0",
-            "damage|mon:Lotad,player-1,1|health:82/100",
-            "damage|mon:Lotad,player-1,1|health:82/100",
-            "weather|weather:Rain|residual",
-            "split|side:0",
-            "heal|mon:Lotad,player-1,1|from:ability:Rain Dish|health:88/100",
-            "heal|mon:Lotad,player-1,1|from:ability:Rain Dish|health:88/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Lotad,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "move|mon:Lotad,player-2,1|name:Tackle|target:Lotad,player-1,1",
+                "split|side:0",
+                "damage|mon:Lotad,player-1,1|health:82/100",
+                "damage|mon:Lotad,player-1,1|health:82/100",
+                "residual",
+                "weather|weather:Rain|residual",
+                "split|side:0",
+                "heal|mon:Lotad,player-1,1|from:ability:Rain Dish|health:88/100",
+                "heal|mon:Lotad,player-1,1|from:ability:Rain Dish|health:88/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -88,16 +88,16 @@ fn rain_dish_suppressed_by_utility_umbrella() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Lotad,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "move|mon:Lotad,player-2,1|name:Tackle|target:Lotad,player-1,1",
-            "split|side:0",
-            "damage|mon:Lotad,player-1,1|health:82/100",
-            "damage|mon:Lotad,player-1,1|health:82/100",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Lotad,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "move|mon:Lotad,player-2,1|name:Tackle|target:Lotad,player-1,1",
+                "split|side:0",
+                "damage|mon:Lotad,player-1,1|health:82/100",
+                "damage|mon:Lotad,player-1,1|health:82/100",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

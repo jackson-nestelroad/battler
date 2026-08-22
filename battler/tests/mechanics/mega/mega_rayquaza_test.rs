@@ -72,17 +72,17 @@ fn rayquaza_mega_evolves_when_knowing_dragon_ascent() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["specieschange", "player-1", "species:Rayquaza-Mega"],
-            ["specieschange", "player-1", "species:Rayquaza-Mega"],
-            "mega|mon:Rayquaza,player-1,1|species:Rayquaza-Mega|from:move:Dragon Ascent",
-            "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",
-            "move|mon:Rayquaza,player-1,1|name:Splash|target:Rayquaza,player-1,1",
-            "activate|move:Splash",
-            "weather|weather:Strong Winds|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "split|side:0",
+                ["specieschange", "player-1", "species:Rayquaza-Mega"],
+                ["specieschange", "player-1", "species:Rayquaza-Mega"],
+                "mega|mon:Rayquaza,player-1,1|species:Rayquaza-Mega|from:move:Dragon Ascent",
+                "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",
+                "move|mon:Rayquaza,player-1,1|name:Splash|target:Rayquaza,player-1,1",
+                "activate|move:Splash",
+                "residual",
+                "weather|weather:Strong Winds|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

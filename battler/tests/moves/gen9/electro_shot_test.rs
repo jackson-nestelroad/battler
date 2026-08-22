@@ -89,20 +89,20 @@ fn electro_shot_skips_charge_turn_in_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Archaludon,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "move|mon:Archaludon,player-2,1|name:Electro Shot|noanim",
-            "prepare|mon:Archaludon,player-2,1|move:Electro Shot",
-            "boost|mon:Archaludon,player-2,1|stat:spa|by:1",
-            "animatemove|mon:Archaludon,player-2,1|name:Electro Shot|target:Archaludon,player-1,1",
-            "resisted|mon:Archaludon,player-1,1",
-            "split|side:0",
-            "damage|mon:Archaludon,player-1,1|health:140/290",
-            "damage|mon:Archaludon,player-1,1|health:49/100",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Archaludon,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "move|mon:Archaludon,player-2,1|name:Electro Shot|noanim",
+                "prepare|mon:Archaludon,player-2,1|move:Electro Shot",
+                "boost|mon:Archaludon,player-2,1|stat:spa|by:1",
+                "animatemove|mon:Archaludon,player-2,1|name:Electro Shot|target:Archaludon,player-1,1",
+                "resisted|mon:Archaludon,player-1,1",
+                "split|side:0",
+                "damage|mon:Archaludon,player-1,1|health:140/290",
+                "damage|mon:Archaludon,player-1,1|health:49/100",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -116,13 +116,13 @@ fn berry_juice_is_not_used_during_heal_block() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "end|mon:Totodile,player-1,1|move:Heal Block",
-            "residual",
-            "itemend|mon:Totodile,player-1,1|item:Berry Juice",
-            "split|side:0",
-            "heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:58/110",
-            "heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:53/100"
-        ]"#,
+                "residual",
+                "end|mon:Totodile,player-1,1|move:Heal Block",
+                "itemend|mon:Totodile,player-1,1|item:Berry Juice",
+                "split|side:0",
+                "heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:58/110",
+                "heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:53/100"
+            ]"#,
     )
     .unwrap();
     assert_turn_logs_eq(&battle, 5, &expected_logs);

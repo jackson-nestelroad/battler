@@ -69,27 +69,27 @@ fn syrup_bomb_lowers_target_speed_until_user_switches_out() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Hydrapple,player-1,1|name:Syrup Bomb|target:Hydrapple,player-2,1",
-            "resisted|mon:Hydrapple,player-2,1",
-            "split|side:1",
-            "damage|mon:Hydrapple,player-2,1|health:295/322",
-            "damage|mon:Hydrapple,player-2,1|health:92/100",
-            "start|mon:Hydrapple,player-2,1|move:Syrup Bomb",
-            "unboost|mon:Hydrapple,player-2,1|stat:spe|by:1|from:move:Syrup Bomb",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "unboost|mon:Hydrapple,player-2,1|stat:spe|by:1|from:move:Syrup Bomb",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Dipplin"],
-            ["switch", "player-1", "Dipplin"],
-            "end|mon:Hydrapple,player-2,1|move:Syrup Bomb|silent",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Hydrapple,player-1,1|name:Syrup Bomb|target:Hydrapple,player-2,1",
+                "resisted|mon:Hydrapple,player-2,1",
+                "split|side:1",
+                "damage|mon:Hydrapple,player-2,1|health:295/322",
+                "damage|mon:Hydrapple,player-2,1|health:92/100",
+                "start|mon:Hydrapple,player-2,1|move:Syrup Bomb",
+                "residual",
+                "unboost|mon:Hydrapple,player-2,1|stat:spe|by:1|from:move:Syrup Bomb",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "unboost|mon:Hydrapple,player-2,1|stat:spe|by:1|from:move:Syrup Bomb",
+                "turn|turn:3",
+                "continue",
+                "split|side:0",
+                ["switch", "player-1", "Dipplin"],
+                ["switch", "player-1", "Dipplin"],
+                "end|mon:Hydrapple,player-2,1|move:Syrup Bomb|silent",
+                "residual",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

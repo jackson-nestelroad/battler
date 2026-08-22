@@ -60,16 +60,16 @@ fn pluck_does_not_consume_non_berry() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Starly,player-1,1|name:Pluck|target:Starly,player-2,1",
-            "split|side:1",
-            "damage|mon:Starly,player-2,1|health:33/100",
-            "damage|mon:Starly,player-2,1|health:33/100",
-            "split|side:1",
-            "heal|mon:Starly,player-2,1|from:item:Leftovers|health:39/100",
-            "heal|mon:Starly,player-2,1|from:item:Leftovers|health:39/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Starly,player-1,1|name:Pluck|target:Starly,player-2,1",
+                "split|side:1",
+                "damage|mon:Starly,player-2,1|health:33/100",
+                "damage|mon:Starly,player-2,1|health:33/100",
+                "residual",
+                "split|side:1",
+                "heal|mon:Starly,player-2,1|from:item:Leftovers|health:39/100",
+                "heal|mon:Starly,player-2,1|from:item:Leftovers|health:39/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

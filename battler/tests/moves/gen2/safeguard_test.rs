@@ -123,18 +123,18 @@ fn safeguard_does_not_protect_previous_yawn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ledian,player-2,1|name:Yawn|target:Ledian,player-1,1",
-            "start|mon:Ledian,player-1,1|move:Yawn|of:Ledian,player-2,1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Ledian,player-1,1|name:Safeguard",
-            "sidestart|side:0|move:Safeguard",
-            "end|mon:Ledian,player-1,1|move:Yawn|silent",
-            "status|mon:Ledian,player-1,1|status:Sleep|from:move:Yawn",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Ledian,player-2,1|name:Yawn|target:Ledian,player-1,1",
+                "start|mon:Ledian,player-1,1|move:Yawn|of:Ledian,player-2,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Ledian,player-1,1|name:Safeguard",
+                "sidestart|side:0|move:Safeguard",
+                "residual",
+                "end|mon:Ledian,player-1,1|move:Yawn|silent",
+                "status|mon:Ledian,player-1,1|status:Sleep|from:move:Yawn",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

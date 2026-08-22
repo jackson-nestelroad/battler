@@ -62,12 +62,12 @@ fn shed_skin_has_chance_to_cure_status() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Seviper,player-1,1|name:Thunder Wave|target:Seviper,player-2,1",
-            "status|mon:Seviper,player-2,1|status:Paralysis",
-            "curestatus|mon:Seviper,player-2,1|status:Paralysis|from:ability:Shed Skin",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Seviper,player-1,1|name:Thunder Wave|target:Seviper,player-2,1",
+                "status|mon:Seviper,player-2,1|status:Paralysis",
+                "residual",
+                "curestatus|mon:Seviper,player-2,1|status:Paralysis|from:ability:Shed Skin",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

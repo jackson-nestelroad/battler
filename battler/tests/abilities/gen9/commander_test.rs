@@ -425,24 +425,24 @@ fn tatsugiri_can_faint_inside_dondozo() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            "damage|mon:Tatsugiri,player-1,1|from:status:Bad Poison|health:0",
-            "damage|mon:Tatsugiri,player-1,1|from:status:Bad Poison|health:0",
-            "residual",
-            "faint|mon:Tatsugiri,player-1,1",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Tatsugiri"],
-            ["switch", "player-1", "Tatsugiri"],
-            "activate|mon:Tatsugiri,player-1,1|ability:Commander",
-            "start|mon:Tatsugiri,player-1,1|condition:Commanding|of:Dondozo,player-1,2",
-            "boost|mon:Dondozo,player-1,2|stat:atk|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
-            "boost|mon:Dondozo,player-1,2|stat:def|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
-            "boost|mon:Dondozo,player-1,2|stat:spa|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
-            "boost|mon:Dondozo,player-1,2|stat:spd|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
-            "boost|mon:Dondozo,player-1,2|stat:spe|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
-            "turn|turn:8"
-        ]"#,
+                "residual",
+                "split|side:0",
+                "damage|mon:Tatsugiri,player-1,1|from:status:Bad Poison|health:0",
+                "damage|mon:Tatsugiri,player-1,1|from:status:Bad Poison|health:0",
+                "faint|mon:Tatsugiri,player-1,1",
+                "continue",
+                "split|side:0",
+                ["switch", "player-1", "Tatsugiri"],
+                ["switch", "player-1", "Tatsugiri"],
+                "activate|mon:Tatsugiri,player-1,1|ability:Commander",
+                "start|mon:Tatsugiri,player-1,1|condition:Commanding|of:Dondozo,player-1,2",
+                "boost|mon:Dondozo,player-1,2|stat:atk|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
+                "boost|mon:Dondozo,player-1,2|stat:def|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
+                "boost|mon:Dondozo,player-1,2|stat:spa|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
+                "boost|mon:Dondozo,player-1,2|stat:spd|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
+                "boost|mon:Dondozo,player-1,2|stat:spe|by:2|from:ability:Commander|of:Tatsugiri,player-1,1",
+                "turn|turn:8"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 7, &expected_logs);

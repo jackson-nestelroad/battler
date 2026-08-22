@@ -584,22 +584,22 @@ fn z_move_changes_based_on_move_with_dynamic_type() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
-            "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|noanim",
-            "move|mon:Pikachu,player-1,1|name:Hydro Vortex|target:Eevee,player-2,1",
-            "split|side:1",
-            "damage|mon:Eevee,player-2,1|health:61/115",
-            "damage|mon:Eevee,player-2,1|health:54/100",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Pikachu,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+                "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|noanim",
+                "move|mon:Pikachu,player-1,1|name:Hydro Vortex|target:Eevee,player-2,1",
+                "split|side:1",
+                "damage|mon:Eevee,player-2,1|health:61/115",
+                "damage|mon:Eevee,player-2,1|health:54/100",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -811,21 +811,21 @@ fn curse_applies_heal_for_ghost_user() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Mimikyu,player-1,1|condition:Z-Power",
-            "move|mon:Mimikyu,player-1,1|name:Curse|target:Eevee,player-2,1|zpower",
-            "split|side:0",
-            "heal|mon:Mimikyu,player-1,1|health:115/115",
-            "heal|mon:Mimikyu,player-1,1|health:100/100",
-            "start|mon:Eevee,player-2,1|move:Curse",
-            "split|side:0",
-            "damage|mon:Mimikyu,player-1,1|health:58/115",
-            "damage|mon:Mimikyu,player-1,1|health:51/100",
-            "split|side:1",
-            "damage|mon:Eevee,player-2,1|from:move:Curse|health:87/115",
-            "damage|mon:Eevee,player-2,1|from:move:Curse|health:76/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "singleturn|mon:Mimikyu,player-1,1|condition:Z-Power",
+                "move|mon:Mimikyu,player-1,1|name:Curse|target:Eevee,player-2,1|zpower",
+                "split|side:0",
+                "heal|mon:Mimikyu,player-1,1|health:115/115",
+                "heal|mon:Mimikyu,player-1,1|health:100/100",
+                "start|mon:Eevee,player-2,1|move:Curse",
+                "split|side:0",
+                "damage|mon:Mimikyu,player-1,1|health:58/115",
+                "damage|mon:Mimikyu,player-1,1|health:51/100",
+                "residual",
+                "split|side:1",
+                "damage|mon:Eevee,player-2,1|from:move:Curse|health:87/115",
+                "damage|mon:Eevee,player-2,1|from:move:Curse|health:76/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);

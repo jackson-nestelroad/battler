@@ -132,17 +132,17 @@ fn incinerate_does_not_destroy_other_items() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pansear,player-1,1|name:Incinerate",
-            "resisted|mon:Ducklett,player-2,1",
-            "split|side:1",
-            "damage|mon:Ducklett,player-2,1|health:101/122",
-            "damage|mon:Ducklett,player-2,1|health:83/100",
-            "split|side:1",
-            "heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:108/122",
-            "heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:89/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Pansear,player-1,1|name:Incinerate",
+                "resisted|mon:Ducklett,player-2,1",
+                "split|side:1",
+                "damage|mon:Ducklett,player-2,1|health:101/122",
+                "damage|mon:Ducklett,player-2,1|health:83/100",
+                "residual",
+                "split|side:1",
+                "heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:108/122",
+                "heal|mon:Ducklett,player-2,1|from:item:Leftovers|health:89/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

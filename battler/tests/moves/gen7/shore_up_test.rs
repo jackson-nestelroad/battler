@@ -63,23 +63,23 @@ fn shore_up_heals_health_based_on_sandstorm() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Palossand,player-1,1|name:Shore Up|target:Palossand,player-1,1",
-            "split|side:0",
-            "heal|mon:Palossand,player-1,1|health:141/280",
-            "heal|mon:Palossand,player-1,1|health:51/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Palossand,player-1,1|name:Sandstorm",
-            "weather|weather:Sandstorm",
-            "move|mon:Palossand,player-2,1|name:Shore Up|target:Palossand,player-2,1",
-            "split|side:1",
-            "heal|mon:Palossand,player-2,1|health:187/280",
-            "heal|mon:Palossand,player-2,1|health:67/100",
-            "weather|weather:Sandstorm|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Palossand,player-1,1|name:Shore Up|target:Palossand,player-1,1",
+                "split|side:0",
+                "heal|mon:Palossand,player-1,1|health:141/280",
+                "heal|mon:Palossand,player-1,1|health:51/100",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Palossand,player-1,1|name:Sandstorm",
+                "weather|weather:Sandstorm",
+                "move|mon:Palossand,player-2,1|name:Shore Up|target:Palossand,player-2,1",
+                "split|side:1",
+                "heal|mon:Palossand,player-2,1|health:187/280",
+                "heal|mon:Palossand,player-2,1|health:67/100",
+                "residual",
+                "weather|weather:Sandstorm|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

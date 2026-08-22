@@ -78,26 +78,26 @@ fn octolock_traps_tsarget_and_lowers_defenses_each_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Grapploct,player-1,1|name:Octolock|target:Grapploct,player-2,1",
-            "activate|mon:Grapploct,player-2,1|condition:Trapped",
-            "start|mon:Grapploct,player-2,1|move:Octolock",
-            "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
-            "unboost|mon:Grapploct,player-2,1|stat:spd|by:1|from:move:Octolock",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
-            "unboost|mon:Grapploct,player-2,1|stat:spd|by:1|from:move:Octolock",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "end|mon:Grapploct,player-2,1|move:Octolock|silent",
-            "split|side:0",
-            "switch|player:player-1|position:1|name:Grapploct|health:270/270|species:Grapploct|level:100|gender:U",
-            "switch|player:player-1|position:1|name:Grapploct|health:100/100|species:Grapploct|level:100|gender:U",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Grapploct,player-1,1|name:Octolock|target:Grapploct,player-2,1",
+                "activate|mon:Grapploct,player-2,1|condition:Trapped",
+                "start|mon:Grapploct,player-2,1|move:Octolock",
+                "residual",
+                "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
+                "unboost|mon:Grapploct,player-2,1|stat:spd|by:1|from:move:Octolock",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
+                "unboost|mon:Grapploct,player-2,1|stat:spd|by:1|from:move:Octolock",
+                "turn|turn:3",
+                "continue",
+                "end|mon:Grapploct,player-2,1|move:Octolock|silent",
+                "split|side:0",
+                "switch|player:player-1|position:1|name:Grapploct|health:270/270|species:Grapploct|level:100|gender:U",
+                "switch|player:player-1|position:1|name:Grapploct|health:100/100|species:Grapploct|level:100|gender:U",
+                "residual",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

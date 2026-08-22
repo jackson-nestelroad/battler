@@ -58,17 +58,17 @@ fn burning_bulwark_burns_on_contact() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Hydrapple,player-1,1|name:Burning Bulwark|target:Hydrapple,player-1,1",
-            "singleturn|mon:Hydrapple,player-1,1|move:Protect",
-            "move|mon:Hydrapple,player-2,1|name:Tackle|noanim",
-            "activate|mon:Hydrapple,player-1,1|move:Protect",
-            "status|mon:Hydrapple,player-2,1|status:Burn|from:move:Burning Bulwark|of:Hydrapple,player-1,1",
-            "split|side:1",
-            "damage|mon:Hydrapple,player-2,1|from:status:Burn|health:302/322",
-            "damage|mon:Hydrapple,player-2,1|from:status:Burn|health:94/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Hydrapple,player-1,1|name:Burning Bulwark|target:Hydrapple,player-1,1",
+                "singleturn|mon:Hydrapple,player-1,1|move:Protect",
+                "move|mon:Hydrapple,player-2,1|name:Tackle|noanim",
+                "activate|mon:Hydrapple,player-1,1|move:Protect",
+                "status|mon:Hydrapple,player-2,1|status:Burn|from:move:Burning Bulwark|of:Hydrapple,player-1,1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Hydrapple,player-2,1|from:status:Burn|health:302/322",
+                "damage|mon:Hydrapple,player-2,1|from:status:Burn|health:94/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

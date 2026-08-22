@@ -79,26 +79,26 @@ fn aura_wheel_changes_type_based_on_morpeko_forme() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Morpeko,player-1,1|name:Aura Wheel|target:Kecleon,player-2,1",
-            "split|side:1",
-            "damage|mon:Kecleon,player-2,1|health:181/230",
-            "damage|mon:Kecleon,player-2,1|health:79/100",
-            "boost|mon:Kecleon,player-2,1|stat:spe|by:1",
-            "typechange|mon:Kecleon,player-2,1|types:Electric|from:ability:Color Change",
-            "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Morpeko,player-1,1|name:Aura Wheel|target:Kecleon,player-2,1",
-            "split|side:1",
-            "damage|mon:Kecleon,player-2,1|health:135/230",
-            "damage|mon:Kecleon,player-2,1|health:59/100",
-            "boost|mon:Kecleon,player-2,1|stat:spe|by:1",
-            "typechange|mon:Kecleon,player-2,1|types:Dark|from:ability:Color Change",
-            "formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Morpeko,player-1,1|name:Aura Wheel|target:Kecleon,player-2,1",
+                "split|side:1",
+                "damage|mon:Kecleon,player-2,1|health:181/230",
+                "damage|mon:Kecleon,player-2,1|health:79/100",
+                "boost|mon:Kecleon,player-2,1|stat:spe|by:1",
+                "typechange|mon:Kecleon,player-2,1|types:Electric|from:ability:Color Change",
+                "residual",
+                "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Morpeko,player-1,1|name:Aura Wheel|target:Kecleon,player-2,1",
+                "split|side:1",
+                "damage|mon:Kecleon,player-2,1|health:135/230",
+                "damage|mon:Kecleon,player-2,1|health:59/100",
+                "boost|mon:Kecleon,player-2,1|stat:spe|by:1",
+                "typechange|mon:Kecleon,player-2,1|types:Dark|from:ability:Color Change",
+                "residual",
+                "formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -114,12 +114,12 @@ fn aura_wheel_cannot_be_used_by_non_morpeko() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Kecleon,player-2,1|name:Aura Wheel|noanim",
-            "cant|mon:Kecleon,player-2,1|from:move:Aura Wheel",
-            "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Kecleon,player-2,1|name:Aura Wheel|noanim",
+                "cant|mon:Kecleon,player-2,1|from:move:Aura Wheel",
+                "residual",
+                "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

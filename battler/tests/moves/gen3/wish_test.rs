@@ -68,24 +68,24 @@ fn wish_heals_slot_on_next_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Gardevoir,player-1,1|name:Wish|target:Gardevoir,player-1,1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Blaziken"],
-            ["switch", "player-1", "Blaziken"],
-            "move|mon:Gardevoir,player-2,1|name:Psychic|target:Blaziken,player-1,1",
-            "supereffective|mon:Blaziken,player-1,1",
-            "split|side:0",
-            "damage|mon:Blaziken,player-1,1|health:166/270",
-            "damage|mon:Blaziken,player-1,1|health:62/100",
-            "split|side:0",
-            "heal|mon:Blaziken,player-1,1|from:move:Wish|health:230/270",
-            "heal|mon:Blaziken,player-1,1|from:move:Wish|health:86/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Gardevoir,player-1,1|name:Wish|target:Gardevoir,player-1,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "split|side:0",
+                ["switch", "player-1", "Blaziken"],
+                ["switch", "player-1", "Blaziken"],
+                "move|mon:Gardevoir,player-2,1|name:Psychic|target:Blaziken,player-1,1",
+                "supereffective|mon:Blaziken,player-1,1",
+                "split|side:0",
+                "damage|mon:Blaziken,player-1,1|health:166/270",
+                "damage|mon:Blaziken,player-1,1|health:62/100",
+                "residual",
+                "split|side:0",
+                "heal|mon:Blaziken,player-1,1|from:move:Wish|health:230/270",
+                "heal|mon:Blaziken,player-1,1|from:move:Wish|health:86/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

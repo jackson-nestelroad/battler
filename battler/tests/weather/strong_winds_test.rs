@@ -87,27 +87,27 @@ fn strong_winds_negate_flying_type_super_effectiveness() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["switch"],
-            ["switch"],
-            "split|side:0",
-            ["switch"],
-            ["switch"],
-            "split|side:1",
-            ["switch"],
-            ["switch"],
-            "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",
-            "turn|turn:1",
-            "continue",
-            "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pidgeot,player-1,2",
-            "fieldactivate|weather:Strong Winds",
-            "split|side:0",
-            "damage|mon:Pidgeot,player-1,2|health:98/143",
-            "damage|mon:Pidgeot,player-1,2|health:69/100",
-            "weather|weather:Strong Winds|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "split|side:0",
+                ["switch"],
+                ["switch"],
+                "split|side:0",
+                ["switch"],
+                ["switch"],
+                "split|side:1",
+                ["switch"],
+                ["switch"],
+                "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",
+                "turn|turn:1",
+                "continue",
+                "move|mon:Pikachu,player-2,1|name:Thunderbolt|target:Pidgeot,player-1,2",
+                "fieldactivate|weather:Strong Winds",
+                "split|side:0",
+                "damage|mon:Pidgeot,player-1,2|health:98/143",
+                "damage|mon:Pidgeot,player-1,2|health:69/100",
+                "residual",
+                "weather|weather:Strong Winds|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_start_eq(&battle, &expected_logs);

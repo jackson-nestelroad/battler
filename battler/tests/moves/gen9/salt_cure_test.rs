@@ -71,27 +71,27 @@ fn salt_cure_deals_residual_damage() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Garganacl,player-1,1|name:Salt Cure|target:Garganacl,player-2,1",
-            "supereffective|mon:Garganacl,player-2,1",
-            "split|side:1",
-            "damage|mon:Garganacl,player-2,1|health:119/175",
-            "damage|mon:Garganacl,player-2,1|health:68/100",
-            "start|mon:Garganacl,player-2,1|move:Salt Cure",
-            "move|mon:Garganacl,player-2,1|name:Salt Cure|target:Gholdengo,player-1,2",
-            "resisted|mon:Gholdengo,player-1,2",
-            "split|side:0",
-            "damage|mon:Gholdengo,player-1,2|health:135/147",
-            "damage|mon:Gholdengo,player-1,2|health:92/100",
-            "start|mon:Gholdengo,player-1,2|move:Salt Cure",
-            "split|side:1",
-            "damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:98/175",
-            "damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:56/100",
-            "split|side:0",
-            "damage|mon:Gholdengo,player-1,2|from:move:Salt Cure|health:99/147",
-            "damage|mon:Gholdengo,player-1,2|from:move:Salt Cure|health:68/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Garganacl,player-1,1|name:Salt Cure|target:Garganacl,player-2,1",
+                "supereffective|mon:Garganacl,player-2,1",
+                "split|side:1",
+                "damage|mon:Garganacl,player-2,1|health:119/175",
+                "damage|mon:Garganacl,player-2,1|health:68/100",
+                "start|mon:Garganacl,player-2,1|move:Salt Cure",
+                "move|mon:Garganacl,player-2,1|name:Salt Cure|target:Gholdengo,player-1,2",
+                "resisted|mon:Gholdengo,player-1,2",
+                "split|side:0",
+                "damage|mon:Gholdengo,player-1,2|health:135/147",
+                "damage|mon:Gholdengo,player-1,2|health:92/100",
+                "start|mon:Gholdengo,player-1,2|move:Salt Cure",
+                "residual",
+                "split|side:1",
+                "damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:98/175",
+                "damage|mon:Garganacl,player-2,1|from:move:Salt Cure|health:56/100",
+                "split|side:0",
+                "damage|mon:Gholdengo,player-1,2|from:move:Salt Cure|health:99/147",
+                "damage|mon:Gholdengo,player-1,2|from:move:Salt Cure|health:68/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

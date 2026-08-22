@@ -75,25 +75,25 @@ fn doom_desire_attacks_slot_three_turns_later() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Jirachi,player-1,1|name:Doom Desire|noanim",
-            "start|move:Doom Desire|of:Jirachi,player-1,1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Jirachi,player-1,1|name:Doom Desire|noanim",
-            "fail|mon:Jirachi,player-1,1",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "end|mon:Blaziken,player-2,2|move:Doom Desire|of:Jirachi,player-1,1",
-            "animatemove|mon:Jirachi,player-1,1|name:Doom Desire|target:Blaziken,player-2,2",
-            "resisted|mon:Blaziken,player-2,2",
-            "split|side:1",
-            "damage|mon:Blaziken,player-2,2|health:77/140",
-            "damage|mon:Blaziken,player-2,2|health:55/100",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Jirachi,player-1,1|name:Doom Desire|noanim",
+                "start|move:Doom Desire|of:Jirachi,player-1,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Jirachi,player-1,1|name:Doom Desire|noanim",
+                "fail|mon:Jirachi,player-1,1",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "residual",
+                "end|mon:Blaziken,player-2,2|move:Doom Desire|of:Jirachi,player-1,1",
+                "animatemove|mon:Jirachi,player-1,1|name:Doom Desire|target:Blaziken,player-2,2",
+                "resisted|mon:Blaziken,player-2,2",
+                "split|side:1",
+                "damage|mon:Blaziken,player-2,2|health:77/140",
+                "damage|mon:Blaziken,player-2,2|health:55/100",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

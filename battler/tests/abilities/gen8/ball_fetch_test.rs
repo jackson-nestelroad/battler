@@ -79,12 +79,12 @@ fn ball_fetch_receives_first_used_ball() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "useitem|player:player-1|name:Poké Ball|target:Eternatus,player-2,1",
-            "catchfailed|player:player-1|mon:Eternatus,player-2,1|item:Poké Ball|shakes:0",
-            "itemstart|mon:Yamper,player-1,1|item:Poké Ball|from:ability:Ball Fetch",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "useitem|player:player-1|name:Pok\u00e9 Ball|target:Eternatus,player-2,1",
+                "catchfailed|player:player-1|mon:Eternatus,player-2,1|item:Pok\u00e9 Ball|shakes:0",
+                "residual",
+                "itemstart|mon:Yamper,player-1,1|item:Pok\u00e9 Ball|from:ability:Ball Fetch",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

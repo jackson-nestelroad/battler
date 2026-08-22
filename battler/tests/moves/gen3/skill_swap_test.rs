@@ -77,22 +77,22 @@ fn skill_swap_swaps_abilities() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Plusle,player-1,1|name:Skill Swap|target:Plusle,player-2,1",
-            "activate|mon:Plusle,player-2,1|move:Skill Swap|of:Plusle,player-1,1",
-            "abilityend|mon:Plusle,player-1,1|ability:Soundproof|from:move:Skill Swap",
-            "abilitystart|mon:Plusle,player-1,1|ability:Drizzle|from:move:Skill Swap",
-            "abilityend|mon:Plusle,player-2,1|ability:Drizzle|from:move:Skill Swap|of:Plusle,player-1,1",
-            "abilitystart|mon:Plusle,player-2,1|ability:Soundproof|from:move:Skill Swap|of:Plusle,player-1,1",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Plusle,player-2,1|name:Growl",
-            "unboost|mon:Plusle,player-1,1|stat:atk|by:1",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Plusle,player-1,1|name:Skill Swap|target:Plusle,player-2,1",
+                "activate|mon:Plusle,player-2,1|move:Skill Swap|of:Plusle,player-1,1",
+                "abilityend|mon:Plusle,player-1,1|ability:Soundproof|from:move:Skill Swap",
+                "abilitystart|mon:Plusle,player-1,1|ability:Drizzle|from:move:Skill Swap",
+                "abilityend|mon:Plusle,player-2,1|ability:Drizzle|from:move:Skill Swap|of:Plusle,player-1,1",
+                "abilitystart|mon:Plusle,player-2,1|ability:Soundproof|from:move:Skill Swap|of:Plusle,player-1,1",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Plusle,player-2,1|name:Growl",
+                "unboost|mon:Plusle,player-1,1|stat:atk|by:1",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

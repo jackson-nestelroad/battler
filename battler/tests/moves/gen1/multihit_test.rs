@@ -265,27 +265,27 @@ fn second_hit_can_apply_secondary_effect() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:1",
-            ["switch", "player-2", "Charmander"],
-            ["switch", "player-2", "Charmander"],
-            "move|mon:Bulbasaur,player-1,1|name:Twineedle|target:Charmander,player-2,1",
-            "resisted|mon:Charmander,player-2,1",
-            "split|side:1",
-            "damage|mon:Charmander,player-2,1|health:94/99",
-            "damage|mon:Charmander,player-2,1|health:95/100",
-            "animatemove|mon:Bulbasaur,player-1,1|name:Twineedle|target:Charmander,player-2,1",
-            "resisted|mon:Charmander,player-2,1",
-            "split|side:1",
-            "damage|mon:Charmander,player-2,1|health:88/99",
-            "damage|mon:Charmander,player-2,1|health:89/100",
-            "status|mon:Charmander,player-2,1|status:Poison",
-            "hitcount|hits:2",
-            "split|side:1",
-            "damage|mon:Charmander,player-2,1|from:status:Poison|health:76/99",
-            "damage|mon:Charmander,player-2,1|from:status:Poison|health:77/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "split|side:1",
+                ["switch", "player-2", "Charmander"],
+                ["switch", "player-2", "Charmander"],
+                "move|mon:Bulbasaur,player-1,1|name:Twineedle|target:Charmander,player-2,1",
+                "resisted|mon:Charmander,player-2,1",
+                "split|side:1",
+                "damage|mon:Charmander,player-2,1|health:94/99",
+                "damage|mon:Charmander,player-2,1|health:95/100",
+                "animatemove|mon:Bulbasaur,player-1,1|name:Twineedle|target:Charmander,player-2,1",
+                "resisted|mon:Charmander,player-2,1",
+                "split|side:1",
+                "damage|mon:Charmander,player-2,1|health:88/99",
+                "damage|mon:Charmander,player-2,1|health:89/100",
+                "status|mon:Charmander,player-2,1|status:Poison",
+                "hitcount|hits:2",
+                "residual",
+                "split|side:1",
+                "damage|mon:Charmander,player-2,1|from:status:Poison|health:76/99",
+                "damage|mon:Charmander,player-2,1|from:status:Poison|health:77/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -58,14 +58,14 @@ fn overcoat_resists_sandstorm_and_powder() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Reuniclus,player-1,1|name:Sandstorm",
-            "weather|weather:Sandstorm",
-            "move|mon:Reuniclus,player-2,1|name:Sleep Powder|noanim",
-            "immune|mon:Reuniclus,player-1,1|from:ability:Overcoat",
-            "weather|weather:Sandstorm|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Reuniclus,player-1,1|name:Sandstorm",
+                "weather|weather:Sandstorm",
+                "move|mon:Reuniclus,player-2,1|name:Sleep Powder|noanim",
+                "immune|mon:Reuniclus,player-1,1|from:ability:Overcoat",
+                "residual",
+                "weather|weather:Sandstorm|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -80,17 +80,17 @@ fn poison_touch_adds_chance_to_poison_on_contact() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Toxicroak,player-1,1|name:Tackle|target:Vivillon,player-2,1",
-            "split|side:1",
-            "damage|mon:Vivillon,player-2,1|health:105/140",
-            "damage|mon:Vivillon,player-2,1|health:75/100",
-            "status|mon:Vivillon,player-2,1|status:Poison|from:ability:Poison Touch|of:Toxicroak,player-1,1",
-            "split|side:1",
-            "damage|mon:Vivillon,player-2,1|from:status:Poison|health:88/140",
-            "damage|mon:Vivillon,player-2,1|from:status:Poison|health:63/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Toxicroak,player-1,1|name:Tackle|target:Vivillon,player-2,1",
+                "split|side:1",
+                "damage|mon:Vivillon,player-2,1|health:105/140",
+                "damage|mon:Vivillon,player-2,1|health:75/100",
+                "status|mon:Vivillon,player-2,1|status:Poison|from:ability:Poison Touch|of:Toxicroak,player-1,1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Vivillon,player-2,1|from:status:Poison|health:88/140",
+                "damage|mon:Vivillon,player-2,1|from:status:Poison|health:63/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

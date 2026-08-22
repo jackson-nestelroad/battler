@@ -62,12 +62,12 @@ fn leaf_guard_prevents_status_in_sun() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Budew,player-1,1|name:Thunder Wave|noanim",
-            "immune|mon:Budew,player-2,1|from:ability:Leaf Guard",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Budew,player-1,1|name:Thunder Wave|noanim",
+                "immune|mon:Budew,player-2,1|from:ability:Leaf Guard",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);
@@ -85,12 +85,12 @@ fn leaf_guard_prevents_yawn_in_sun() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Budew,player-1,1|name:Yawn|noanim",
-            "activate|mon:Budew,player-2,1|ability:Leaf Guard",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Budew,player-1,1|name:Yawn|noanim",
+                "activate|mon:Budew,player-2,1|ability:Leaf Guard",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);
@@ -112,23 +112,23 @@ fn leaf_guard_prevents_previous_yawn_in_sun() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Budew,player-1,1|name:Yawn|target:Budew,player-2,1",
-            "start|mon:Budew,player-2,1|move:Yawn|of:Budew,player-1,1",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "move|mon:Budew,player-1,1|name:Skill Swap|target:Budew,player-2,1",
-            "activate|mon:Budew,player-2,1|move:Skill Swap|of:Budew,player-1,1",
-            "abilityend|mon:Budew,player-1,1|ability:Leaf Guard|from:move:Skill Swap",
-            "abilitystart|mon:Budew,player-1,1|ability:No Ability|from:move:Skill Swap",
-            "abilityend|mon:Budew,player-2,1|ability:No Ability|from:move:Skill Swap|of:Budew,player-1,1",
-            "abilitystart|mon:Budew,player-2,1|ability:Leaf Guard|from:move:Skill Swap|of:Budew,player-1,1",
-            "weather|weather:Harsh Sunlight|residual",
-            "end|mon:Budew,player-2,1|move:Yawn|silent",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Budew,player-1,1|name:Yawn|target:Budew,player-2,1",
+                "start|mon:Budew,player-2,1|move:Yawn|of:Budew,player-1,1",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:3",
+                "continue",
+                "move|mon:Budew,player-1,1|name:Skill Swap|target:Budew,player-2,1",
+                "activate|mon:Budew,player-2,1|move:Skill Swap|of:Budew,player-1,1",
+                "abilityend|mon:Budew,player-1,1|ability:Leaf Guard|from:move:Skill Swap",
+                "abilitystart|mon:Budew,player-1,1|ability:No Ability|from:move:Skill Swap",
+                "abilityend|mon:Budew,player-2,1|ability:No Ability|from:move:Skill Swap|of:Budew,player-1,1",
+                "abilitystart|mon:Budew,player-2,1|ability:Leaf Guard|from:move:Skill Swap|of:Budew,player-1,1",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "end|mon:Budew,player-2,1|move:Yawn|silent",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);

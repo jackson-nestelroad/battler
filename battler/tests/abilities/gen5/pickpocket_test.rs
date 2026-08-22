@@ -59,16 +59,16 @@ fn pickpocket_steals_attacker_item_on_contact() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Weavile,player-1,1|name:Tackle|target:Weavile,player-2,1",
-            "split|side:1",
-            "damage|mon:Weavile,player-2,1|health:98/130",
-            "damage|mon:Weavile,player-2,1|health:76/100",
-            "itemend|mon:Weavile,player-1,1|item:Toxic Orb|from:ability:Pickpocket|of:Weavile,player-2,1",
-            "itemstart|mon:Weavile,player-2,1|item:Toxic Orb|from:ability:Pickpocket",
-            "status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Weavile,player-1,1|name:Tackle|target:Weavile,player-2,1",
+                "split|side:1",
+                "damage|mon:Weavile,player-2,1|health:98/130",
+                "damage|mon:Weavile,player-2,1|health:76/100",
+                "itemend|mon:Weavile,player-1,1|item:Toxic Orb|from:ability:Pickpocket|of:Weavile,player-2,1",
+                "itemstart|mon:Weavile,player-2,1|item:Toxic Orb|from:ability:Pickpocket",
+                "residual",
+                "status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

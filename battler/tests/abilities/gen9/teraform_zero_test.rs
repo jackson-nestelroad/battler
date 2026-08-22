@@ -62,27 +62,27 @@ fn teraform_zero_removes_weather_and_terrain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Terapagos,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "move|mon:Terapagos,player-2,1|name:Electric Terrain",
-            "fieldstart|move:Electric Terrain",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "tera|mon:Terapagos,player-1,1|type:Stellar",
-            "split|side:0",
-            ["specieschange", "player-1", "tera:Stellar", "species:Terapagos-Stellar"],
-            ["specieschange", "player-1", "tera:Stellar", "species:Terapagos-Stellar"],
-            "formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal",
-            "ability|mon:Terapagos,player-1,1|ability:Teraform Zero",
-            "clearweather",
-            "fieldend|move:Electric Terrain",
-            "move|mon:Terapagos,player-1,1|name:Splash|target:Terapagos,player-1,1",
-            "activate|move:Splash",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Terapagos,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "move|mon:Terapagos,player-2,1|name:Electric Terrain",
+                "fieldstart|move:Electric Terrain",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "tera|mon:Terapagos,player-1,1|type:Stellar",
+                "split|side:0",
+                ["specieschange", "player-1", "tera:Stellar", "species:Terapagos-Stellar"],
+                ["specieschange", "player-1", "tera:Stellar", "species:Terapagos-Stellar"],
+                "formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal",
+                "ability|mon:Terapagos,player-1,1|ability:Teraform Zero",
+                "clearweather",
+                "fieldend|move:Electric Terrain",
+                "move|mon:Terapagos,player-1,1|name:Splash|target:Terapagos,player-1,1",
+                "activate|move:Splash",
+                "residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

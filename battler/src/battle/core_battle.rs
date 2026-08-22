@@ -1559,6 +1559,7 @@ impl<'d> CoreBattle<'d> {
                 }
             }
             Action::Residual => {
+                context.battle_mut().log(battle_log_entry!("residual"));
                 context.battle_mut().in_residual = true;
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
@@ -1571,7 +1572,6 @@ impl<'d> CoreBattle<'d> {
                         ..Default::default()
                     },
                 );
-                context.battle_mut().log(battle_log_entry!("residual"));
                 context.battle_mut().in_residual = false;
             }
             Action::Experience(action) => {

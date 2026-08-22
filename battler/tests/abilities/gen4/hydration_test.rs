@@ -58,16 +58,16 @@ fn hydration_cures_status_in_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Manaphy,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "move|mon:Manaphy,player-2,1|name:Thunder Wave|target:Manaphy,player-1,1",
-            "status|mon:Manaphy,player-1,1|status:Paralysis",
-            "weather|weather:Rain|residual",
-            "activate|mon:Manaphy,player-1,1|ability:Hydration",
-            "curestatus|mon:Manaphy,player-1,1|status:Paralysis|from:ability:Hydration",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Manaphy,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "move|mon:Manaphy,player-2,1|name:Thunder Wave|target:Manaphy,player-1,1",
+                "status|mon:Manaphy,player-1,1|status:Paralysis",
+                "residual",
+                "weather|weather:Rain|residual",
+                "activate|mon:Manaphy,player-1,1|ability:Hydration",
+                "curestatus|mon:Manaphy,player-1,1|status:Paralysis|from:ability:Hydration",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -85,14 +85,14 @@ fn hydration_does_not_activate_if_weather_is_suppressed() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Manaphy,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "move|mon:Manaphy,player-2,1|name:Thunder Wave|target:Manaphy,player-1,1",
-            "status|mon:Manaphy,player-1,1|status:Paralysis",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Manaphy,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "move|mon:Manaphy,player-2,1|name:Thunder Wave|target:Manaphy,player-1,1",
+                "status|mon:Manaphy,player-1,1|status:Paralysis",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

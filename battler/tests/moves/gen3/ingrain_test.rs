@@ -90,27 +90,27 @@ fn ingrain_heals_user_each_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Taillow,player-2,1|name:Peck|target:Roselia,player-1,1",
-            "supereffective|mon:Roselia,player-1,1",
-            "split|side:0",
-            "damage|mon:Roselia,player-1,1|health:54/110",
-            "damage|mon:Roselia,player-1,1|health:50/100",
-            "move|mon:Roselia,player-1,1|name:Ingrain|target:Roselia,player-1,1",
-            "start|mon:Roselia,player-1,1|move:Ingrain",
-            "split|side:0",
-            "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/110",
-            "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:55/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Roselia,player-1,1|name:Ingrain|noanim",
-            "fail|mon:Roselia,player-1,1",
-            "split|side:0",
-            "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:66/110",
-            "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Taillow,player-2,1|name:Peck|target:Roselia,player-1,1",
+                "supereffective|mon:Roselia,player-1,1",
+                "split|side:0",
+                "damage|mon:Roselia,player-1,1|health:54/110",
+                "damage|mon:Roselia,player-1,1|health:50/100",
+                "move|mon:Roselia,player-1,1|name:Ingrain|target:Roselia,player-1,1",
+                "start|mon:Roselia,player-1,1|move:Ingrain",
+                "residual",
+                "split|side:0",
+                "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/110",
+                "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:55/100",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Roselia,player-1,1|name:Ingrain|noanim",
+                "fail|mon:Roselia,player-1,1",
+                "residual",
+                "split|side:0",
+                "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:66/110",
+                "heal|mon:Roselia,player-1,1|from:move:Ingrain|health:60/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -150,21 +150,21 @@ fn ingrain_grounds_user() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Taillow,player-2,1|name:Ingrain|target:Taillow,player-2,1",
-            "start|mon:Taillow,player-2,1|move:Ingrain",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Roselia,player-1,1|name:Earthquake",
-            "split|side:1",
-            "damage|mon:Taillow,player-2,1|health:20/100",
-            "damage|mon:Taillow,player-2,1|health:20/100",
-            "split|side:1",
-            "heal|mon:Taillow,player-2,1|from:move:Ingrain|health:26/100",
-            "heal|mon:Taillow,player-2,1|from:move:Ingrain|health:26/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Taillow,player-2,1|name:Ingrain|target:Taillow,player-2,1",
+                "start|mon:Taillow,player-2,1|move:Ingrain",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Roselia,player-1,1|name:Earthquake",
+                "split|side:1",
+                "damage|mon:Taillow,player-2,1|health:20/100",
+                "damage|mon:Taillow,player-2,1|health:20/100",
+                "residual",
+                "split|side:1",
+                "heal|mon:Taillow,player-2,1|from:move:Ingrain|health:26/100",
+                "heal|mon:Taillow,player-2,1|from:move:Ingrain|health:26/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
