@@ -343,7 +343,27 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Corviknight,player-1,1|ability:Mirror Armor",
   "result": {
-    "message": undefined,
+    "message": {
+      "context": {
+        "ABILITY": "Mirror Armor",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Corviknight",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Corviknight",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The opposing Corviknight has the Mirror Armor ability.",
+      },
+      "key": "ability__ability_any",
+    },
     "notices": [
       {
         "mon": "Corviknight's",
@@ -367,7 +387,27 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Cursola,player-2,1|ability:Perish Body",
   "result": {
-    "message": undefined,
+    "message": {
+      "context": {
+        "ABILITY": "Perish Body",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Cursola",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Cursola",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The opposing Cursola has the Perish Body ability.",
+      },
+      "key": "ability__ability_any",
+    },
     "notices": [
       {
         "mon": "Cursola's",
@@ -520,7 +560,27 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Goomy,player-2,1|ability:Gooey",
   "result": {
-    "message": undefined,
+    "message": {
+      "context": {
+        "ABILITY": "Gooey",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Goomy",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Goomy",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The opposing Goomy has the Gooey ability.",
+      },
+      "key": "ability__ability_any",
+    },
     "notices": [
       {
         "mon": "Goomy's",
@@ -692,7 +752,27 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Meganium,player-1,1|ability:Mega Sol",
   "result": {
-    "message": undefined,
+    "message": {
+      "context": {
+        "ABILITY": "Mega Sol",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Meganium",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Meganium",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The opposing Meganium has the Mega Sol ability.",
+      },
+      "key": "ability__ability_any",
+    },
     "notices": [
       {
         "mon": "Meganium's",
@@ -2802,7 +2882,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         "category": "secondary",
         "text": "[UNHANDLED]",
       },
-      "key": "activate__clause_sleepclause",
+      "key": "activate__clause_any",
     },
     "notices": [],
   },
@@ -3967,12 +4047,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "rawLog": "activate|mon:Excadrill,player-1,1|ability:Piercing Drill",
   "result": {
     "message": {
-      "context": {},
+      "context": {
+        "ABILITY": "Piercing Drill",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Excadrill",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Excadrill's",
+        },
+      },
       "formatted": {
         "category": "secondary",
-        "text": "[UNHANDLED]",
+        "text": "The opposing Excadrill's Piercing Drill activated!",
       },
-      "key": "activate__ability_piercingdrill",
+      "key": "activate__ability_any",
     },
     "notices": [],
   },
@@ -11498,57 +11591,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Buzzwole,wild,1|item:Master Ball|shakes:4 1`] = `
-{
-  "rawLog": "catch|player:protagonist|mon:Buzzwole,wild,1|item:Master Ball|shakes:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
-      },
-      "key": "catch__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Friend Ball|shakes:4 1`] = `
-{
-  "rawLog": "catch|player:protagonist|mon:Graveler,wild,1|item:Friend Ball|shakes:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
-      },
-      "key": "catch__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:4 1`] = `
-{
-  "rawLog": "catch|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
-      },
-      "key": "catch__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical",
@@ -11583,57 +11625,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:4 1`] = `
-{
-  "rawLog": "catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
-      },
-      "key": "catch__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Ultra Ball|shakes:4 1`] = `
-{
-  "rawLog": "catch|player:protagonist|mon:Magikarp,wild,1|item:Ultra Ball|shakes:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
-      },
-      "key": "catch__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild-1,2|item:Great Ball|shakes:4 1`] = `
-{
-  "rawLog": "catch|player:protagonist|mon:Magikarp,wild-1,2|item:Great Ball|shakes:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
-      },
-      "key": "catch__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical",
@@ -11645,23 +11636,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
         "text": "Gotcha! {{MON}} was caught! A critical capture!",
       },
       "key": "catch__item_any__shakes_any__critical",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:4 1`] = `
-{
-  "rawLog": "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
-      },
-      "key": "catch__item_any__shakes_any",
     },
     "notices": [],
   },
@@ -11719,306 +11693,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Love Ball|shakes:3 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: clearallboosts 1`] = `
 {
-  "rawLog": "catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Love Ball|shakes:3",
+  "rawLog": "clearallboosts",
   "result": {
     "message": {
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
+        "text": "[UNHANDLED]",
       },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Buzzwole,wild,1|item:Beast Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Buzzwole,wild,1|item:Beast Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Buzzwole,wild,1|item:Poké Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Buzzwole,wild,1|item:Poké Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Buzzwole,wild,1|item:Ultra Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Buzzwole,wild,1|item:Ultra Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Clefairy,wild,1|item:Moon Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Clefairy,wild,1|item:Moon Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Cleffa,wild,1|item:Moon Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Cleffa,wild,1|item:Moon Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Crustle,wild,1|item:Heavy Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Crustle,wild,1|item:Heavy Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:1 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Quick Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Quick Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:1 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Timer Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Timer Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Gyarados,wild,1|item:Lure Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Gyarados,wild,1|item:Lure Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Venusaur,wild,1|item:Heavy Ball|shakes:3 1`] = `
-{
-  "rawLog": "catchfailed|player:protagonist|mon:Venusaur,wild,1|item:Heavy Ball|shakes:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "Oh no! The Pokémon broke free!",
-      },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "clearallboosts",
     },
     "notices": [],
   },
@@ -12193,6 +11878,23 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearposi
         "text": "The opposing Aggron's positive stat changes were removed!",
       },
       "key": "clearpositiveboosts",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: clearweather 1`] = `
+{
+  "rawLog": "clearweather",
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "clearweather",
     },
     "notices": [],
   },
@@ -15540,35 +15242,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|mon:Slowking,player-1,1|move:Swords Dance|by:3 1`] = `
-{
-  "rawLog": "deductpp|mon:Slowking,player-1,1|move:Swords Dance|by:3",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Slowking",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Slowking's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Slowking's PP was reduced!",
-      },
-      "key": "deductpp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1,1|move:Dark Pulse 1`] = `
 {
   "rawLog": "didnotlearnmove|mon:Gastly,player-1,1|move:Dark Pulse",
@@ -15649,34 +15322,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: didnotlea
       "formatted": {
         "category": "secondary",
         "text": "The opposing Gastly did not learn Hex.",
-      },
-      "key": "didnotlearnmove__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: didnotlearnmove|mon:Gastly,player-1|move:Shadow Ball 1`] = `
-{
-  "rawLog": "didnotlearnmove|mon:Gastly,player-1|move:Shadow Ball",
-  "result": {
-    "message": {
-      "context": {
-        "MOVE": "Shadow Ball",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly did not learn Shadow Ball.",
       },
       "key": "didnotlearnmove__move_any",
     },
@@ -21338,126 +20983,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Kee Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Applin,player-1,1|item:Kee Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Kee Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Applin",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Applin",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Applin ate its Kee Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Leppa Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Applin,player-1,1|item:Leppa Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Leppa Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Applin",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Applin",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Applin ate its Leppa Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Oran Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Applin,player-1,1|item:Oran Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Oran Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Applin",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Applin",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Applin ate its Oran Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Sitrus Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Applin,player-1,1|item:Sitrus Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Sitrus Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Applin",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Applin",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Applin ate its Sitrus Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Archeops,player-1,1|item:Oran Berry|from:move:Knock Off|of:Archeops,player-2,1 1`] = `
 {
   "rawLog": "itemend|mon:Archeops,player-1,1|item:Oran Berry|from:move:Knock Off|of:Archeops,player-2,1",
@@ -21482,66 +21007,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Archeops knocked off {{TARGET_POSSESSIVE}} Oran Berry!",
       },
       "key": "itemend__from_move_knockoff__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Archeops,player-2,1|item:Oran Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Archeops,player-2,1|item:Oran Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Oran Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Archeops",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Archeops",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Archeops ate its Oran Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Blaziken,player-1,1|item:Aguav Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Blaziken,player-1,1|item:Aguav Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Aguav Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Blaziken",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Blaziken",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Blaziken ate its Aguav Berry!",
-      },
-      "key": "itemend__item_any__eat",
     },
     "notices": [],
   },
@@ -21578,36 +21043,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Charmander,protagonist,1|item:Cheri Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Charmander,protagonist,1|item:Cheri Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Cheri Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Charmander",
-              "player": "protagonist",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Charmander",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Charmander ate its Cheri Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Chesnaught,player-2,2|item:Oran Berry|from:ability:Magician|of:Delphox,player-1,1 1`] = `
 {
   "rawLog": "itemend|mon:Chesnaught,player-2,2|item:Oran Berry|from:ability:Magician|of:Delphox,player-1,1",
@@ -21638,66 +21073,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Cinderace,player-1,1|item:Room Service 1`] = `
-{
-  "rawLog": "itemend|mon:Cinderace,player-1,1|item:Room Service",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Room Service",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Cinderace",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Cinderace's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Cinderace's Room Service was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Crobat,player-1,1|item:Lum Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Crobat,player-1,1|item:Lum Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Lum Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Crobat",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Crobat",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Crobat ate its Lum Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Crobat,player-2,1|item:Safety Goggles|from:move:Thief|of:Crobat,player-1,1 1`] = `
 {
   "rawLog": "itemend|mon:Crobat,player-2,1|item:Safety Goggles|from:move:Thief|of:Crobat,player-1,1",
@@ -21722,36 +21097,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Crobat stole {{TARGET_POSSESSIVE}} Safety Goggles!",
       },
       "key": "itemend__from_move_thief__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Cryogonal,player-1,1|item:Micle Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Cryogonal,player-1,1|item:Micle Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Micle Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Cryogonal",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Cryogonal",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Cryogonal ate its Micle Berry!",
-      },
-      "key": "itemend__item_any__eat",
     },
     "notices": [],
   },
@@ -21818,36 +21163,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Diggersby,player-1,1|item:Lum Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Diggersby,player-1,1|item:Lum Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Lum Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Diggersby",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Diggersby",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Diggersby ate its Lum Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Diggersby,player-2,1|item:Lum Berry|from:move:Pluck|of:Diggersby,player-1,1 1`] = `
 {
   "rawLog": "itemend|mon:Diggersby,player-2,1|item:Lum Berry|from:move:Pluck|of:Diggersby,player-1,1",
@@ -21908,66 +21223,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Sitrus Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Drampa",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Drampa",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Drampa ate its Sitrus Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Drifblim,player-1,1|item:Cheri Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Drifblim,player-1,1|item:Cheri Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Cheri Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Drifblim",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Drifblim",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Drifblim ate its Cheri Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Drifblim,player-1,1|item:Cheri Berry|from:move:Thief|of:Porygon-Z,player-2,1 1`] = `
 {
   "rawLog": "itemend|mon:Drifblim,player-1,1|item:Cheri Berry|from:move:Thief|of:Porygon-Z,player-2,1",
@@ -21992,36 +21247,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Drifblim stole {{TARGET_POSSESSIVE}} Cheri Berry!",
       },
       "key": "itemend__from_move_thief__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Druddigon,player-2,2|item:Eject Button 1`] = `
-{
-  "rawLog": "itemend|mon:Druddigon,player-2,2|item:Eject Button",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Eject Button",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Druddigon",
-              "player": "player-2",
-              "position": 1,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Druddigon's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Druddigon's Eject Button was removed!",
-      },
-      "key": "itemend__item_any",
     },
     "notices": [],
   },
@@ -22088,66 +21313,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Emboar,player-1,1|item:Fire Gem 1`] = `
-{
-  "rawLog": "itemend|mon:Emboar,player-1,1|item:Fire Gem",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Fire Gem",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Emboar",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Emboar's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Emboar's Fire Gem was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Emolga,player-2,1|item:Cell Battery 1`] = `
-{
-  "rawLog": "itemend|mon:Emolga,player-2,1|item:Cell Battery",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Cell Battery",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Emolga",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Emolga's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Emolga's Cell Battery was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Empoleon,player-1,1|item:Griseous Orb|from:move:Thief|of:Empoleon,player-2,1 1`] = `
 {
   "rawLog": "itemend|mon:Empoleon,player-1,1|item:Griseous Orb|from:move:Thief|of:Empoleon,player-2,1",
@@ -22172,126 +21337,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Empoleon stole {{TARGET_POSSESSIVE}} Griseous Orb!",
       },
       "key": "itemend__from_move_thief__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-1,1|item:Mirror Herb 1`] = `
-{
-  "rawLog": "itemend|mon:Espathra,player-1,1|item:Mirror Herb",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Mirror Herb",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Espathra",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Espathra's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Espathra's Mirror Herb was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-1,1|item:Throat Spray 1`] = `
-{
-  "rawLog": "itemend|mon:Espathra,player-1,1|item:Throat Spray",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Throat Spray",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Espathra",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Espathra's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Espathra's Throat Spray was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-2,1|item:Mirror Herb 1`] = `
-{
-  "rawLog": "itemend|mon:Espathra,player-2,1|item:Mirror Herb",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Mirror Herb",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Espathra",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Espathra's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Espathra's Mirror Herb was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Farigiraf,player-2,1|item:Sitrus Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Farigiraf,player-2,1|item:Sitrus Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Sitrus Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Farigiraf",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Farigiraf",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Farigiraf ate its Sitrus Berry!",
-      },
-      "key": "itemend__item_any__eat",
     },
     "notices": [],
   },
@@ -22328,186 +21373,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Florges,player-2,2|item:Lum Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Florges,player-2,2|item:Lum Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Lum Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Florges",
-              "player": "player-2",
-              "position": 1,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Florges",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Florges ate its Lum Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Gigalith,player-1,1|item:Air Balloon 1`] = `
-{
-  "rawLog": "itemend|mon:Gigalith,player-1,1|item:Air Balloon",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Air Balloon",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Gigalith",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Gigalith's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gigalith's Air Balloon was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Gigalith,player-2,1|item:Air Balloon 1`] = `
-{
-  "rawLog": "itemend|mon:Gigalith,player-2,1|item:Air Balloon",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Air Balloon",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Gigalith",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Gigalith's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gigalith's Air Balloon was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Golisopod,player-1,1|item:Eject Button 1`] = `
-{
-  "rawLog": "itemend|mon:Golisopod,player-1,1|item:Eject Button",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Eject Button",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Golisopod",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Golisopod's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Golisopod's Eject Button was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Goodra,player-2,1|item:Weakness Policy 1`] = `
-{
-  "rawLog": "itemend|mon:Goodra,player-2,1|item:Weakness Policy",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Weakness Policy",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Goodra",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Goodra's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Goodra's Weakness Policy was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Great Tusk,player-1,1|item:Booster Energy 1`] = `
-{
-  "rawLog": "itemend|mon:Great Tusk,player-1,1|item:Booster Energy",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Booster Energy",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Great Tusk",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Great Tusk's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Great Tusk's Booster Energy was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Greninja,player-2,3|item:Cheri Berry|from:ability:Magician|of:Delphox,player-1,1 1`] = `
 {
   "rawLog": "itemend|mon:Greninja,player-2,3|item:Cheri Berry|from:ability:Magician|of:Delphox,player-1,1",
@@ -22532,126 +21397,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Greninja stole {{TARGET_POSSESSIVE}} Cheri Berry!",
       },
       "key": "itemend__from_ability_magician__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Haxorus,player-2,1|item:Eject Button 1`] = `
-{
-  "rawLog": "itemend|mon:Haxorus,player-2,1|item:Eject Button",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Eject Button",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Haxorus",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Haxorus's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Haxorus's Eject Button was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Iron Treads,player-1,1|item:Booster Energy 1`] = `
-{
-  "rawLog": "itemend|mon:Iron Treads,player-1,1|item:Booster Energy",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Booster Energy",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Iron Treads",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Iron Treads's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Iron Treads's Booster Energy was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-1,1|item:Rawst Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Linoone,player-1,1|item:Rawst Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Rawst Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Linoone",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Linoone",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Linoone ate its Rawst Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-2,1|item:Rawst Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Linoone,player-2,1|item:Rawst Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Rawst Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Linoone",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Linoone",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Linoone ate its Rawst Berry!",
-      },
-      "key": "itemend__item_any__eat",
     },
     "notices": [],
   },
@@ -22718,426 +21463,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Lopunny,player-2,1|item:Power Anklet|from:move:Trick|of:Lopunny,player-1,1 1`] = `
-{
-  "rawLog": "itemend|mon:Lopunny,player-2,1|item:Power Anklet|from:move:Trick|of:Lopunny,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Power Anklet",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Lopunny",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Lopunny",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Lopunny obtained one Power Anklet!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Lopunny,player-2,1|item:Toxic Orb|from:move:Trick|of:Lopunny,player-1,1 1`] = `
-{
-  "rawLog": "itemend|mon:Lopunny,player-2,1|item:Toxic Orb|from:move:Trick|of:Lopunny,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Toxic Orb",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Lopunny",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Lopunny",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Lopunny obtained one Toxic Orb!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Luxray,player-2,1|item:Utility Umbrella|from:move:Trick 1`] = `
-{
-  "rawLog": "itemend|mon:Luxray,player-2,1|item:Utility Umbrella|from:move:Trick",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Utility Umbrella",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Luxray",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Luxray",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Luxray obtained one Utility Umbrella!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Meloetta,player-1,1|item:Fire Gem 1`] = `
-{
-  "rawLog": "itemend|mon:Meloetta,player-1,1|item:Fire Gem",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Fire Gem",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Meloetta",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Meloetta's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Meloetta's Fire Gem was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Mudkip,player-1,1|item:Mental Herb 1`] = `
-{
-  "rawLog": "itemend|mon:Mudkip,player-1,1|item:Mental Herb",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Mental Herb",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Mudkip",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Mudkip's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Mudkip's Mental Herb was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Mudkip,player-1,1|item:White Herb 1`] = `
-{
-  "rawLog": "itemend|mon:Mudkip,player-1,1|item:White Herb",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "White Herb",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Mudkip",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Mudkip's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Mudkip's White Herb was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Enigma Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Enigma Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Enigma Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Enigma Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Ganlon Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Ganlon Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Ganlon Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Ganlon Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Jaboca Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Jaboca Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Jaboca Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Jaboca Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Kee Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Kee Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Kee Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Kee Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Liechi Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Liechi Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Liechi Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Liechi Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Maranga Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Maranga Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Maranga Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Maranga Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Rowap Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Rowap Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Rowap Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Rowap Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Starf Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Oshawott",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Oshawott",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Oshawott ate its Starf Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Pachirisu,player-1,1|item:Sticky Barb|from:item:Sticky Barb 1`] = `
 {
   "rawLog": "itemend|mon:Pachirisu,player-1,1|item:Sticky Barb|from:item:Sticky Barb",
@@ -23196,36 +21521,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Pawmot,player-1,1|item:Leppa Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Pawmot,player-1,1|item:Leppa Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Leppa Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Pawmot",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pawmot",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Pawmot ate its Leppa Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Pidove,player-1,1|item:Sticky Barb|from:move:Bestow 1`] = `
 {
   "rawLog": "itemend|mon:Pidove,player-1,1|item:Sticky Barb|from:move:Bestow",
@@ -23250,36 +21545,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "The opposing Pidove received Sticky Barb!",
       },
       "key": "itemend__from_move_bestow__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Pikachu,player-1,1|item:Focus Sash 1`] = `
-{
-  "rawLog": "itemend|mon:Pikachu,player-1,1|item:Focus Sash",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Focus Sash",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Pikachu",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pikachu's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Pikachu's Focus Sash was removed!",
-      },
-      "key": "itemend__item_any",
     },
     "notices": [],
   },
@@ -23316,126 +21581,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-1,2|item:Liechi Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Polteageist,player-1,2|item:Liechi Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Liechi Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Polteageist",
-              "player": "player-1",
-              "position": 1,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Polteageist",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Polteageist ate its Liechi Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-2,1|item:Kasib Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Polteageist,player-2,1|item:Kasib Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Kasib Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Polteageist",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Polteageist",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Polteageist ate its Kasib Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-2,2|item:Liechi Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Polteageist,player-2,2|item:Liechi Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Liechi Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Polteageist",
-              "player": "player-2",
-              "position": 1,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Polteageist",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Polteageist ate its Liechi Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Primeape,player-2,1|item:Leppa Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Primeape,player-2,1|item:Leppa Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Leppa Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Primeape",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Primeape",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Primeape ate its Leppa Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Ralts,player-1,1|item:Ability Shield|from:move:Knock Off|of:Ralts,player-2,1 1`] = `
 {
   "rawLog": "itemend|mon:Ralts,player-1,1|item:Ability Shield|from:move:Knock Off|of:Ralts,player-2,1",
@@ -23460,336 +21605,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Ralts knocked off {{TARGET_POSSESSIVE}} Ability Shield!",
       },
       "key": "itemend__from_move_knockoff__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Blunder Policy 1`] = `
-{
-  "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Blunder Policy",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Blunder Policy",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Rillaboom",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Rillaboom's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Rillaboom's Blunder Policy was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Eject Pack 1`] = `
-{
-  "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Eject Pack",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Eject Pack",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Rillaboom",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Rillaboom's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Rillaboom's Eject Pack was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Room Service 1`] = `
-{
-  "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Room Service",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Room Service",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Rillaboom",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Rillaboom's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Rillaboom's Room Service was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Throat Spray 1`] = `
-{
-  "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Throat Spray",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Throat Spray",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Rillaboom",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Rillaboom's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Rillaboom's Throat Spray was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-2,1|item:Room Service 1`] = `
-{
-  "rawLog": "itemend|mon:Rillaboom,player-2,1|item:Room Service",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Room Service",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Rillaboom",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Rillaboom's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Rillaboom's Room Service was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Sableye,player-2,1|item:Rawst Berry|from:move:Knock Off|of:Sableye,player-1,1 1`] = `
-{
-  "rawLog": "itemend|mon:Sableye,player-2,1|item:Rawst Berry|from:move:Knock Off|of:Sableye,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Rawst Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Sableye",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Sableye",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Sableye knocked off {{TARGET_POSSESSIVE}} Rawst Berry!",
-      },
-      "key": "itemend__from_move_knockoff__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snivy,player-1,1|item:Occa Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Snivy,player-1,1|item:Occa Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Occa Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Snivy",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Snivy",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Snivy ate its Occa Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snivy,player-2,1|item:Red Card 1`] = `
-{
-  "rawLog": "itemend|mon:Snivy,player-2,1|item:Red Card",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Red Card",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Snivy",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Snivy's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Snivy's Red Card was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snorlax,player-1,1|item:Custap Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Snorlax,player-1,1|item:Custap Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Custap Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Snorlax",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Snorlax",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Snorlax ate its Custap Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snorlax,player-1,1|item:Rawst Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Snorlax,player-1,1|item:Rawst Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Rawst Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Snorlax",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Snorlax",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Snorlax ate its Rawst Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Staraptor,player-1,1|item:Power Herb 1`] = `
-{
-  "rawLog": "itemend|mon:Staraptor,player-1,1|item:Power Herb",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Power Herb",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Staraptor",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Staraptor's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Staraptor's Power Herb was removed!",
-      },
-      "key": "itemend__item_any",
     },
     "notices": [],
   },
@@ -23826,126 +21641,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tapu Koko,player-1,1|item:Electric Seed 1`] = `
-{
-  "rawLog": "itemend|mon:Tapu Koko,player-1,1|item:Electric Seed",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Electric Seed",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Tapu Koko",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Tapu Koko's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Tapu Koko's Electric Seed was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tapu Koko,player-2,1|item:Electric Seed 1`] = `
-{
-  "rawLog": "itemend|mon:Tapu Koko,player-2,1|item:Electric Seed",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Electric Seed",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Tapu Koko",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Tapu Koko's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Tapu Koko's Electric Seed was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tepig,player-1,1|item:Passho Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Tepig,player-1,1|item:Passho Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Passho Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Tepig",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Tepig",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Tepig ate its Passho Berry!",
-      },
-      "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tepig,player-1,1|item:Red Card 1`] = `
-{
-  "rawLog": "itemend|mon:Tepig,player-1,1|item:Red Card",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Red Card",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Tepig",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Tepig's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Tepig's Red Card was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Torchic,player-1,1|item:Safety Goggles|from:move:Switcheroo 1`] = `
 {
   "rawLog": "itemend|mon:Torchic,player-1,1|item:Safety Goggles|from:move:Switcheroo",
@@ -23976,36 +21671,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Torchic,player-1,1|item:Safety Goggles|from:move:Trick 1`] = `
-{
-  "rawLog": "itemend|mon:Torchic,player-1,1|item:Safety Goggles|from:move:Trick",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Safety Goggles",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Torchic",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Torchic",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Torchic obtained one Safety Goggles!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Switcheroo|of:Torchic,player-1,1 1`] = `
 {
   "rawLog": "itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Switcheroo|of:Torchic,player-1,1",
@@ -24030,96 +21695,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Torchic obtained one Choice Band!",
       },
       "key": "itemend__from_move_switcheroo__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Trick|of:Torchic,player-1,1 1`] = `
-{
-  "rawLog": "itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Trick|of:Torchic,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Choice Band",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Torchic",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Torchic",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Torchic obtained one Choice Band!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Totodile,player-1,1|item:Berry Juice 1`] = `
-{
-  "rawLog": "itemend|mon:Totodile,player-1,1|item:Berry Juice",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Berry Juice",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Totodile",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Totodile's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Totodile's Berry Juice was removed!",
-      },
-      "key": "itemend__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tropius,player-2,1|item:Chilan Berry|eat 1`] = `
-{
-  "rawLog": "itemend|mon:Tropius,player-2,1|item:Chilan Berry|eat",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Chilan Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Tropius",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Tropius",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Tropius ate its Chilan Berry!",
-      },
-      "key": "itemend__item_any__eat",
     },
     "notices": [],
   },
@@ -25140,237 +22715,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: learnedmo
         "text": "The opposing Gastly learned Spite!",
       },
       "key": "learnedmove__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1,1|move:Sucker Punch|forgot:Mean Look 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1,1|move:Sucker Punch|forgot:Mean Look",
-  "result": {
-    "message": {
-      "context": {
-        "FORGOT": "Mean Look",
-        "MOVE": "Sucker Punch",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Gastly",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly forgot Mean Look and learned Sucker Punch!",
-      },
-      "key": "learnedmove__forgot_any__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Curse|forgot:Payback 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1|move:Curse|forgot:Payback",
-  "result": {
-    "message": {
-      "context": {
-        "FORGOT": "Payback",
-        "MOVE": "Curse",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly forgot Payback and learned Curse!",
-      },
-      "key": "learnedmove__forgot_any__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Dark Pulse|forgot:Lick 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1|move:Dark Pulse|forgot:Lick",
-  "result": {
-    "message": {
-      "context": {
-        "FORGOT": "Lick",
-        "MOVE": "Dark Pulse",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly forgot Lick and learned Dark Pulse!",
-      },
-      "key": "learnedmove__forgot_any__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Mean Look 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1|move:Mean Look",
-  "result": {
-    "message": {
-      "context": {
-        "MOVE": "Mean Look",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly learned Mean Look!",
-      },
-      "key": "learnedmove__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Night Shade|forgot:Mean Look 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1|move:Night Shade|forgot:Mean Look",
-  "result": {
-    "message": {
-      "context": {
-        "FORGOT": "Mean Look",
-        "MOVE": "Night Shade",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly forgot Mean Look and learned Night Shade!",
-      },
-      "key": "learnedmove__forgot_any__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Payback 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1|move:Payback",
-  "result": {
-    "message": {
-      "context": {
-        "MOVE": "Payback",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly learned Payback!",
-      },
-      "key": "learnedmove__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Spite 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1|move:Spite",
-  "result": {
-    "message": {
-      "context": {
-        "MOVE": "Spite",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly learned Spite!",
-      },
-      "key": "learnedmove__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: learnedmove|mon:Gastly,player-1|move:Sucker Punch|forgot:Dark Pulse 1`] = `
-{
-  "rawLog": "learnedmove|mon:Gastly,player-1|move:Sucker Punch|forgot:Dark Pulse",
-  "result": {
-    "message": {
-      "context": {
-        "FORGOT": "Dark Pulse",
-        "MOVE": "Sucker Punch",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Inactive": {
-              "name": "Gastly",
-              "player": "player-1",
-            },
-          },
-          "text": "The opposing Gastly",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Gastly forgot Dark Pulse and learned Sucker Punch!",
-      },
-      "key": "learnedmove__forgot_any__move_any",
     },
     "notices": [],
   },
@@ -27492,122 +24836,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: restorepp
       "formatted": {
         "category": "secondary",
         "text": "The opposing Primeape's PP was restored.",
-      },
-      "key": "restorepp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Slowbro,player-1,1|move:Slack Off|by:5|from:item:Leppa Berry 1`] = `
-{
-  "rawLog": "restorepp|mon:Slowbro,player-1,1|move:Slack Off|by:5|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Slowbro",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Slowbro's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Slowbro's PP was restored.",
-      },
-      "key": "restorepp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:1|from:item:Leppa Berry 1`] = `
-{
-  "rawLog": "restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:1|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Smeargle",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Smeargle's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Smeargle's PP was restored.",
-      },
-      "key": "restorepp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry 1`] = `
-{
-  "rawLog": "restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Smeargle",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Smeargle's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Smeargle's PP was restored.",
-      },
-      "key": "restorepp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Smeargle,player-1,1|move:Sketch|by:1|from:item:Leppa Berry 1`] = `
-{
-  "rawLog": "restorepp|mon:Smeargle,player-1,1|move:Sketch|by:1|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Smeargle",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Smeargle's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Smeargle's PP was restored.",
       },
       "key": "restorepp__move_any",
     },
@@ -34773,6 +32001,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Bisharp,player-2,1|stat:def|by:0 1`] = `
+{
+  "rawLog": "unboost|mon:Bisharp,player-2,1|stat:def|by:0",
+  "result": {
+    "message": {
+      "context": {
+        "STAT": "Defense",
+        "__CAPITALIZED_MON_POSSESSIVE": {
+          "monRef": {
+            "Active": {
+              "name": "Bisharp",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Bisharp's",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The opposing Bisharp's Defense can't go any higher!",
+      },
+      "key": "boost__by_0",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Bisharp,player-2,1|stat:def|by:2 1`] = `
 {
   "rawLog": "unboost|mon:Bisharp,player-2,1|stat:def|by:2",
@@ -34797,36 +32055,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "text": "The opposing Bisharp's Defense harshly fell!",
       },
       "key": "unboost__by_2",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Blastoise,player-1,2|stat:atk|by:1 1`] = `
-{
-  "rawLog": "unboost|mon:Blastoise,player-1,2|stat:atk|by:1",
-  "result": {
-    "message": {
-      "context": {
-        "STAT": "Attack",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Blastoise",
-              "player": "player-1",
-              "position": 1,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Blastoise's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Blastoise's Attack fell!",
-      },
-      "key": "unboost__by_1",
     },
     "notices": [],
   },

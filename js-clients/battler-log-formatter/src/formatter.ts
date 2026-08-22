@@ -135,8 +135,17 @@ export class LogFormatter {
               .replace(/\*/g, 'any')
               .toLowerCase()
               .replace(/[^a-z0-9_]/g, '');
-            if (i18next.exists(`logs.${safePattern}`)) {
-                templateKey = `logs.${safePattern}`;
+              
+            const fullKey = `logs.${safePattern}`;
+            if (i18next.exists(fullKey)) {
+                const translation = i18next.t(fullKey);
+                if (translation === "[UNHANDLED]") {
+                    // Keep track of the most specific UNHANDLED key in case nothing matches
+                    if (!found) templateKey = fullKey;
+                    continue;
+                }
+                
+                templateKey = fullKey;
                 found = true;
                 break;
             }

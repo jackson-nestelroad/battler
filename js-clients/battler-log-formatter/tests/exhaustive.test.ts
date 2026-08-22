@@ -5,9 +5,7 @@ import { describe, it, expect } from "vitest";
 import { LogFormatter, FormattedUiLog, stringifyLog } from "../src/formatter.js";
 import { alterBattleState, newBattleState } from "battler-state";
 import { en } from "../locales/en.js";
-
-const logsPath = path.resolve(".", "tests/logs-matrix.json");
-const matrixLogs: string[] = JSON.parse(fs.readFileSync(logsPath, "utf-8"));
+import matrixLogs from "./data/logs-matrix.json";
 
 describe("Exhaustive Log Coverage", () => {
   const formatter = new LogFormatter({ localPlayerId: "p1" });
