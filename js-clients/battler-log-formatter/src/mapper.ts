@@ -104,9 +104,9 @@ export function resolveSideContext(sideIndex: number | undefined, state: BattleS
     };
 }
 
-export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar } {
+export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar, raw: string, raw_possessive: string } {
   if (!monRef || typeof monRef !== 'object') {
-      return { standard: { text: "Mon" }, possessive: { text: "Mon's" } };
+      return { standard: { text: "Mon" }, possessive: { text: "Mon's" }, raw: "Mon", raw_possessive: "Mon's" };
   }
   
   let name = "Mon";
@@ -159,7 +159,9 @@ export function resolveMonContext(monRef: UiMon | undefined, state: BattleState 
 
   return { 
       standard: { text, id, noAutoCapitalize },
-      possessive: { text: possessiveText, id, noAutoCapitalize: possessiveNoAutoCapitalize }
+      possessive: { text: possessiveText, id, noAutoCapitalize: possessiveNoAutoCapitalize },
+      raw: name,
+      raw_possessive: `${name}'s`
   };
 }
 function buildPattern(title: string, tags: string[], flags: string[]): string {
@@ -265,8 +267,22 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
   const flags: string[] = [];
   const context: Record<string, ContextVar> = {};
   
-  let category = LogCategory.Primary;
-  if (['debug', 'waiting', 'experience', 'moveupdate', 'addvolatile'].includes(key)) {
+  const PRIMARY_KEYS = [
+      'move', 'switch', 'drag', 'faint', 
+      'mega', 'primal', 'burst', 'zpower', 'dynamax', 'gigantamax', 'tera', 'terastallize', 
+      'turn', 'win', 'tie', 'useitem', 'residual'
+  ];
+
+  const HINT_KEYS = [
+      'addvolatile', 'animatemove', 'battlestart', 'debug', 'info', 
+      'maxsidelength', 'mon', 'player', 'removevolatile', 'split', 
+      'teampreview', 'teampreviewstart', 'teamsize', 'time'
+  ];
+
+  let category = LogCategory.Secondary;
+  if (PRIMARY_KEYS.includes(key) || PRIMARY_KEYS.includes(title)) {
+      category = LogCategory.Primary;
+  } else if (HINT_KEYS.includes(key) || HINT_KEYS.includes(title)) {
       category = LogCategory.Hint;
   }
 
@@ -307,17 +323,26 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
                   const resolved = resolveMonContext(v, state, options);
                   context.MON = resolved.standard;
                   context.MON_POSSESSIVE = resolved.possessive;
+                  context.RAW_MON = resolved.raw;
+                  context.RAW_MON_POSSESSIVE = resolved.raw_possessive;
+                  context.RAW_MON_REF = v;
               } else {
                   tags.push(`target:*`);
                   const resolved = resolveMonContext(v, state, options);
                   context.TARGET = resolved.standard;
                   context.TARGET_POSSESSIVE = resolved.possessive;
+                  context.RAW_TARGET = resolved.raw;
+                  context.RAW_TARGET_POSSESSIVE = resolved.raw_possessive;
+                  context.RAW_TARGET_REF = v;
               }
-          } else if (k === 'source') {
+          } else if (k === 'source' || k === 'of') {
               tags.push(`of:*`);
               const resolved = resolveMonContext(v, state, options);
               context.SOURCE = resolved.standard;
               context.SOURCE_POSSESSIVE = resolved.possessive;
+              context.RAW_SOURCE = resolved.raw;
+              context.RAW_SOURCE_POSSESSIVE = resolved.raw_possessive;
+              context.RAW_SOURCE_REF = v;
           } else if (k === 'effect') {
               if (typeof v === 'object' && v !== null && v.name) {
                   if (v.effect_type) tags.push(`${v.effect_type}:${v.name}`);
@@ -398,6 +423,11 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
           context.PLAYER_POSSESSIVE = resolvedPlayer.possessive;
           context.MON = { text: data.name || "Mon" };
           context.MON_POSSESSIVE = { text: `${data.name || "Mon"}'s` };
+          context.RAW_MON = data.name || "Mon";
+          context.RAW_MON_POSSESSIVE = `${data.name || "Mon"}'s`;
+          if (typeof data.mon === 'object') {
+              context.RAW_MON_REF = data.mon;
+          }
       } else if (title === 'switchout') {
           tags.length = 0;
           tags.push('mon:*');

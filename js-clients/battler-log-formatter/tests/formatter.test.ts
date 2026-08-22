@@ -8,9 +8,8 @@ describe("LogFormatter", () => {
     // Simulate UiLogEntry enum using any
     const entry: any = "Tie";
     const result = formatter.format(entry);
-    
-    expect(result.length).toBeGreaterThan(0);
-    const log = result[result.length - 1];
+    expect(result).not.toBeNull();
+    const log = result!.message!;
     expect(log.category).toBe(LogCategory.Primary);
     expect(stringifyLog(log)).toBe("The battle resulted in a tie!");
   });
@@ -39,8 +38,8 @@ describe("LogFormatter", () => {
     };
     
     const result = formatter.format(entry, state);
-    expect(result.length).toBeGreaterThan(0);
-    const log = result[result.length - 1];
+    expect(result).not.toBeNull();
+    const log = result!.message!;
     expect(log.category).toBe(LogCategory.Primary);
     
     // Because localPlayerId is p1, and the mon belongs to p2, it should format as a foe.
@@ -99,9 +98,9 @@ describe("LogFormatter", () => {
     const doublesResult = formatter.format(entry, doublesState);
     const multiResult = formatter.format(entry, multiState);
 
-    const singlesLog = singlesResult[singlesResult.length - 1];
-    const doublesLog = doublesResult[doublesResult.length - 1];
-    const multiLog = multiResult[multiResult.length - 1];
+    const singlesLog = singlesResult!.message!;
+    const doublesLog = doublesResult!.message!;
+    const multiLog = multiResult!.message!;
 
     // Singles omitting the mon
     expect(singlesLog.key).toBe("crit__battletype_singles");
@@ -138,7 +137,7 @@ describe("LogFormatter", () => {
       };
       if (max) entry.Boost.max = true;
       const result = formatter.format(entry, mockState);
-      return stringifyLog(result[result.length - 1]);
+      return stringifyLog(result!.message!);
     };
 
     expect(getBoostLog(0)).toBe("Snorlax's Attack can't go any higher!");
@@ -171,7 +170,7 @@ describe("LogFormatter", () => {
       };
       if (min) entry.Unboost.min = true;
       const result = formatter.format(entry, mockState);
-      return stringifyLog(result[result.length - 1]);
+      return stringifyLog(result!.message!);
     };
 
     expect(getUnboostLog(0)).toBe("Snorlax's Defense won't go any lower!");

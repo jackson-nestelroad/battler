@@ -1,7 +1,7 @@
 import type { UiLogEntry, BattleState } from "battler-state";
 import i18next from "./i18n.js";
 import { LogCategory } from "./types.js";
-import type { LogContext, MapperOptions, ContextValue, ContextVar } from "./types.js";
+import type { LogContext, MapperOptions, ContextValue, ContextVar, FormattedLogEvent, UiNotice } from "./types.js";
 import { parseTemplateToTokens } from "./engine.js";
 import type { LogToken } from "./engine.js";
 import { mapUiLogEntry } from "./mapper.js";
@@ -39,12 +39,12 @@ export class LogFormatter {
   constructor(options: MapperOptions = {}) {
     this.options = options;
   }
-  public format(entry: UiLogEntry, state?: BattleState): FormattedUiLog[] {
+  public format(entry: UiLogEntry, state?: BattleState): FormattedLogEvent | null {
     const mapped = mapUiLogEntry(entry, state, this.options);
-    if (!mapped) return [];
+    if (!mapped) return null;
     
     if (mapped.effect?.additional?.silent !== undefined) {
-      return [];
+      return null;
     }
     
     // Auto-augment context with raw variables so fallback translations always have them
@@ -143,53 +143,94 @@ export class LogFormatter {
         }
     }
 
-    const template = i18next.t(templateKey, templateArgs);
-    // If the template is literally empty string, or it doesn't exist (returns the key)
-    if (!template || template === templateKey) return [];
+    const notices: UiNotice[] = [];
     
-    const result: FormattedUiLog = {
-      key: templateKey.replace('logs.', ''),
-      tokens: parseTemplateToTokens(template),
-      category: mapped.category,
-      context: mapped.context
-    };
+    // Inject synthetic Ability notice if this log was triggered by an ability
+    if (mapped.effect?.effect?.effect_type === "Ability" && mapped.effect.effect.name) {
+      let monStr: string | undefined = undefined;
+      let monRef: any = undefined;
+      if (mapped.context.RAW_MON_POSSESSIVE) {
+          monStr = String(mapped.context.RAW_MON_POSSESSIVE);
+      }
+      if (mapped.context.RAW_MON_REF) {
+          monRef = mapped.context.RAW_MON_REF;
+      }
+      notices.push({
+          type: "Ability",
+          name: mapped.effect.effect.name,
+          mon: monStr,
+          monRef
+      });
+    }
 
-    if (result.tokens.length > 0) {
-      const firstToken = result.tokens[0];
-      if (firstToken.type === "text" && firstToken.value.length > 0) {
-        result.tokens = [...result.tokens];
-        result.tokens[0] = { 
-          ...firstToken, 
-          value: firstToken.value.charAt(0).toUpperCase() + firstToken.value.slice(1) 
-        };
-      } else if (firstToken.type === "variable") {
-        const val = result.context[firstToken.value];
-        const capitalizedVal = capitalizeContextValue(val);
-        if (capitalizedVal !== val) {
-          result.tokens = [...result.tokens];
-          result.context = { ...result.context };
-          const newKey = `__CAPITALIZED_${firstToken.value}`;
-          result.context[newKey] = capitalizedVal;
-          result.tokens[0] = { ...firstToken, value: newKey };
-        }
+    let template = i18next.t(templateKey, templateArgs);
+    
+    // Check if the primary event itself is just an ability announcement (e.g. ability|mon:X|ability:Intimidate)
+    if (mapped.patterns[0]?.startsWith('ability') && mapped.context.ABILITY) {
+      let monStr: string | undefined = undefined;
+      let monRef: any = undefined;
+      if (mapped.context.RAW_MON_POSSESSIVE) {
+          monStr = String(mapped.context.RAW_MON_POSSESSIVE);
+      }
+      if (mapped.context.RAW_MON_REF) {
+          monRef = mapped.context.RAW_MON_REF;
+      }
+      notices.push({
+          type: "Ability",
+          name: String(mapped.context.ABILITY),
+          mon: monStr,
+          monRef
+      });
+      // We don't want to emit an [UNHANDLED] text message for pure ability announcements
+      // but we DO want to emit legitimate ability messages!
+      if (template === "[UNHANDLED]") {
+        template = ""; 
       }
     }
 
-    const logs: FormattedUiLog[] = [];
-    
-    // Inject synthetic Ability log if this log was triggered by an ability
-    if (mapped.effect?.effect?.effect_type === "Ability" && mapped.effect.effect.name) {
-      // Create a synthetic ability log
-      const abilityLog: FormattedUiLog = {
-        tokens: parseTemplateToTokens(`[${mapped.effect.effect.name}]`),
-        category: LogCategory.Ability,
-        context: {}
+    let message: FormattedUiLog | undefined = undefined;
+
+    // Check for explicit empty/silent structural primary logs
+    if (mapped.patterns.includes('residual')) {
+      message = {
+          key: "residual",
+          tokens: [],
+          category: mapped.category,
+          context: mapped.context
       };
-      logs.push(abilityLog);
+    } else if (template && template !== templateKey) {
+        message = {
+          key: templateKey.replace('logs.', ''),
+          tokens: parseTemplateToTokens(template),
+          category: mapped.category,
+          context: mapped.context
+        };
+
+        if (message.tokens.length > 0) {
+          const firstToken = message.tokens[0];
+          if (firstToken.type === "text" && firstToken.value.length > 0) {
+            message.tokens = [...message.tokens];
+            message.tokens[0] = { 
+              ...firstToken, 
+              value: firstToken.value.charAt(0).toUpperCase() + firstToken.value.slice(1) 
+            };
+          } else if (firstToken.type === "variable") {
+            const val = message.context[firstToken.value];
+            const capitalizedVal = capitalizeContextValue(val);
+            if (capitalizedVal !== val) {
+              message.tokens = [...message.tokens];
+              message.context = { ...message.context };
+              const newKey = `__CAPITALIZED_${firstToken.value}`;
+              message.context[newKey] = capitalizedVal;
+              message.tokens[0] = { ...firstToken, value: newKey };
+            }
+          }
+        }
     }
-    
-    logs.push(result);
-    return logs;
+
+    if (!message && notices.length === 0) return null;
+
+    return { message, notices };
   }
 
 }

@@ -1,4 +1,5 @@
 import { en } from "../locales/en.js";
+import type { UiMon, EffectData } from "battler-state";
 
 export type LogTemplateKey = keyof typeof en.logs;
 
@@ -6,7 +7,18 @@ export enum LogCategory {
   Primary = "primary",     // Main actions (Moves, Switches, Faints)
   Secondary = "secondary", // Modifiers to primary actions (Critical hit, Super effective)
   Hint = "hint",           // Side-effects, abilities, weather, etc.
-  Ability = "ability",     // Standalone ability activations
+}
+
+export interface UiNotice {
+  type: string;
+  name: string;
+  mon?: string;
+  monRef?: UiMon;
+}
+
+export interface FormattedLogEvent {
+  message?: FormattedUiLog;
+  notices: UiNotice[];
 }
 
 export interface ContextVar {
@@ -28,8 +40,6 @@ export type RequiredContext<K extends LogTemplateKey> =
   ExtractVariables<typeof en.logs[K]> extends never
     ? { count?: number }
     : Record<ExtractVariables<typeof en.logs[K]>, ContextValue> & { count?: number };
-
-import type { EffectData } from "battler-state";
 
 export interface AnyMappedLog {
   patterns: string[];

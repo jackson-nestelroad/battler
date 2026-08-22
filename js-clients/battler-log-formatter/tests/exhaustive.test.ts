@@ -85,26 +85,28 @@ describe("Exhaustive Log Coverage", () => {
     const rawMapped = Object.values(uiLogEntry)[0] as any;
     if (rawMapped?.effect?.additional?.silent !== undefined) {
       const emptyFormatted = formatter.format(uiLogEntry, alteredState);
-      expect(emptyFormatted.length).toBe(0);
+      expect(emptyFormatted).toBeNull();
       return;
     }
 
     // 1. Format the string to get the final resolved key and context
-    const formattedArray = formatter.format(uiLogEntry, alteredState);
+    const event = formatter.format(uiLogEntry, alteredState);
     
     // 2. Extract just the enum key, the message string, and context vars
-    const results = formattedArray.map(log => {
-        return {
-            key: log.key,
-            context: log.context,
-            formatted: {
-                category: log.category,
-                message: stringifyLog(log)
-            }
+    let primaryResult = null;
+    if (event) {
+        primaryResult = {
+            notices: event.notices,
+            message: event.message ? {
+                key: event.message.key,
+                context: event.message.context,
+                formatted: {
+                    category: event.message.category,
+                    text: stringifyLog(event.message)
+                }
+            } : undefined
         };
-    });
-    
-    const primaryResult = results.length > 0 ? results[results.length - 1] : null;
+    }
 
     // 3. Snapshot the result
     expect({
