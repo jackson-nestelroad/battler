@@ -206,7 +206,7 @@ export function generateCombinatorics(title: string, baseTags: string[], flags: 
             
             const noFromOfTags = pTags.filter(t => {
                 const k = t.split(':')[0];
-                return k !== 'from' && k !== 'of';
+                return k !== 'from' && k !== 'of' && k !== 'by';
             });
             finalResults.push(buildPattern(title, noFromOfTags, pFlags));
         }
@@ -362,6 +362,13 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
              } else {
                  if (['ability', 'item', 'move', 'effect', 'condition', 'weather', 'status', 'volatile', 'from'].includes(k)) {
                      tags.push(`${k}:${v}`);
+                 } else if (k === 'by') {
+                     const num = Number(v);
+                     if (!isNaN(num) && num >= 3) tags.push('by:3plus');
+                     else tags.push(`by:${v}`);
+                 } else if (k === 'stat') {
+                     context.STAT = i18next.t(`stats.${v}`);
+                     tags.push(`${k}:*`);
                  } else {
                      tags.push(`${k}:*`);
                  }
@@ -403,7 +410,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
   const excludeTags = [
       'mon', 'of', 'player', 'side', 'slot', 'position', 'positions', 'source',
       'gender', 'health', 'level', 'name', 'species',
-      'stats', 'stat', 'by', 'exp', 'atk', 'def', 'spa', 'spd', 'spe', 'hp',
+      'stats', 'stat', 'exp', 'atk', 'def', 'spa', 'spd', 'spe', 'hp',
       'target', 'anim', 'newmove', 'pick', 'size', 'length', 'id', 'time'
   ];
 

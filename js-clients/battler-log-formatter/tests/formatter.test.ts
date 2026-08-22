@@ -115,4 +115,70 @@ describe("LogFormatter", () => {
     expect(multiLog.key).toBe("crit");
     expect(stringifyLog(multiLog)).toBe("A critical hit on Player 2's Pikachu!");
   });
+
+  it("should format boost magnitudes correctly", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const mockState: any = {
+      settings: { battle_type: "Singles" },
+      field: {
+        sides: [
+          { players: { p1: { name: "Player 1" } } },
+          { players: { p2: { name: "Player 2" } } }
+        ]
+      }
+    };
+    
+    const getBoostLog = (by: number, max?: boolean) => {
+      const entry: any = {
+        Boost: {
+          mon: { Active: { position: 0, name: "Snorlax", player: "p1" } },
+          stat: "atk",
+          by: by
+        }
+      };
+      if (max) entry.Boost.max = true;
+      const result = formatter.format(entry, mockState);
+      return stringifyLog(result[result.length - 1]);
+    };
+
+    expect(getBoostLog(0)).toBe("Snorlax's Attack can't go any higher!");
+    expect(getBoostLog(1)).toBe("Snorlax's Attack rose!");
+    expect(getBoostLog(2)).toBe("Snorlax's Attack rose sharply!");
+    expect(getBoostLog(3)).toBe("Snorlax's Attack rose drastically!");
+    expect(getBoostLog(12)).toBe("Snorlax's Attack rose drastically!");
+    expect(getBoostLog(12, true)).toBe("Snorlax maximized its Attack!");
+  });
+
+  it("should format unboost magnitudes correctly", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const mockState: any = {
+      settings: { battle_type: "Singles" },
+      field: {
+        sides: [
+          { players: { p1: { name: "Player 1" } } },
+          { players: { p2: { name: "Player 2" } } }
+        ]
+      }
+    };
+    
+    const getUnboostLog = (by: number, min?: boolean) => {
+      const entry: any = {
+        Unboost: {
+          mon: { Active: { position: 0, name: "Snorlax", player: "p1" } },
+          stat: "def",
+          by: by
+        }
+      };
+      if (min) entry.Unboost.min = true;
+      const result = formatter.format(entry, mockState);
+      return stringifyLog(result[result.length - 1]);
+    };
+
+    expect(getUnboostLog(0)).toBe("Snorlax's Defense won't go any lower!");
+    expect(getUnboostLog(1)).toBe("Snorlax's Defense fell!");
+    expect(getUnboostLog(2)).toBe("Snorlax's Defense harshly fell!");
+    expect(getUnboostLog(3)).toBe("Snorlax's Defense severely fell!");
+    expect(getUnboostLog(4)).toBe("Snorlax's Defense severely fell!");
+    expect(getUnboostLog(12, true)).toBe("Snorlax minimized its Defense!");
+  });
 });

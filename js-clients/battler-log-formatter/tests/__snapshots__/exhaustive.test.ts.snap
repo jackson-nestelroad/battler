@@ -8020,7 +8020,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Aegislash's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8039,9 +8039,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Aegislash's atk rose!",
+      "message": "The opposing Aegislash's Attack rose sharply!",
     },
-    "key": "boost",
+    "key": "boost__by_2",
   },
 }
 `;
@@ -8062,7 +8062,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Aggron's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8081,9 +8081,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Aggron's atk rose!",
+      "message": "The opposing Aggron's Attack rose sharply!",
     },
-    "key": "boost",
+    "key": "boost__by_2",
   },
 }
 `;
@@ -8104,7 +8104,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Amoonguss's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8123,9 +8123,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Amoonguss's spa rose!",
+      "message": "The opposing Amoonguss's Sp. Atk rose sharply!",
     },
-    "key": "boost",
+    "key": "boost__by_2",
   },
 }
 `;
@@ -8147,7 +8147,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Applin's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8158,17 +8158,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Applin's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Applin's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Applin's def rose!",
+      "message": "2|from.item.Kee Berry",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Kee Berry",
   },
 }
 `;
@@ -8190,7 +8185,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Basculin's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8201,17 +8196,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Basculin's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Basculin's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Basculin's spe rose!",
+      "message": "1|from.ability.Rattled",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Rattled",
   },
 }
 `;
@@ -8233,7 +8223,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Baxcalibur's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8244,17 +8234,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Baxcalibur's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Baxcalibur's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Baxcalibur's atk rose!",
+      "message": "1|from.ability.Thermal Exchange",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Thermal Exchange",
   },
 }
 `;
@@ -8276,7 +8261,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8287,17 +8272,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bibarel's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bibarel's atk rose!",
+      "message": "2|from.ability.Moody",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Moody",
   },
 }
 `;
@@ -8319,7 +8299,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8330,17 +8310,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bibarel's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bibarel's atk rose!",
+      "message": "2|from.ability.Moody",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Moody",
   },
 }
 `;
@@ -8362,7 +8337,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8373,17 +8348,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bibarel's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bibarel's def rose!",
+      "message": "2|from.ability.Moody",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Moody",
   },
 }
 `;
@@ -8405,7 +8375,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bisharp's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8416,17 +8386,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bisharp's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bisharp's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bisharp's atk rose!",
+      "message": "0|from.ability.Defiant",
     },
-    "key": "boost",
+    "key": "boost|by:0|from:ability:Defiant",
   },
 }
 `;
@@ -8448,7 +8413,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bisharp's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8459,17 +8424,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bisharp's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bisharp's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bisharp's atk rose!",
+      "message": "2|from.ability.Defiant",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Defiant",
   },
 }
 `;
@@ -8491,7 +8451,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Blissey's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "wild-active-0",
         "noAutoCapitalize": false,
@@ -8502,15 +8462,15 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Blissey's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
+      "__CAPITALIZED_MON": {
         "id": "wild-active-0",
         "noAutoCapitalize": false,
-        "text": "The opposing Blissey's",
+        "text": "The opposing Blissey",
       },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Blissey's atk rose drastically!",
+      "message": "The opposing Blissey maximized its Attack!",
     },
     "key": "boost__max",
   },
@@ -8534,7 +8494,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Brambleghast's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8545,17 +8505,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Brambleghast's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Brambleghast's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Brambleghast's atk rose!",
+      "message": "1|from.ability.Wind Rider",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Wind Rider",
   },
 }
 `;
@@ -8577,7 +8532,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Brambleghast's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8588,17 +8543,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Brambleghast's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Brambleghast's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Brambleghast's atk rose!",
+      "message": "1|from.ability.Wind Rider",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Wind Rider",
   },
 }
 `;
@@ -8620,7 +8570,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bunnelby's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8631,17 +8581,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Bunnelby's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bunnelby's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bunnelby's spd rose!",
+      "message": "1|from.item.Luminous Moss",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Luminous Moss",
   },
 }
 `;
@@ -8663,7 +8608,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Buzzwole's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8674,17 +8619,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Buzzwole's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Buzzwole's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Buzzwole's atk rose!",
+      "message": "1|from.ability.Beast Boost",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Beast Boost",
   },
 }
 `;
@@ -8706,7 +8646,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Buzzwole's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8717,17 +8657,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Buzzwole's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Buzzwole's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Buzzwole's atk rose!",
+      "message": "3plus|from.ability.Beast Boost",
     },
-    "key": "boost",
+    "key": "boost|by:3plus|from:ability:Beast Boost",
   },
 }
 `;
@@ -8749,7 +8684,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Calyrex's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8760,17 +8695,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Calyrex's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Calyrex's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Calyrex's atk rose!",
+      "message": "1|from.ability.Chilling Neigh",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Chilling Neigh",
   },
 }
 `;
@@ -8792,7 +8722,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Calyrex's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8803,17 +8733,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Calyrex's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Calyrex's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Calyrex's atk rose!",
+      "message": "2|from.ability.Chilling Neigh",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Chilling Neigh",
   },
 }
 `;
@@ -8835,7 +8760,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Calyrex's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -8846,17 +8771,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Calyrex's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Calyrex's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Calyrex's spa rose!",
+      "message": "1|from.ability.Grim Neigh",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Grim Neigh",
   },
 }
 `;
@@ -8878,7 +8798,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Dachsbun's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -8889,17 +8809,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Dachsbun's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Dachsbun's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Dachsbun's def rose!",
+      "message": "2|from.ability.Well-Baked Body",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Well-Baked Body",
   },
 }
 `;
@@ -8931,7 +8846,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Tatsugiri's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8942,17 +8857,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Dondozo's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Dondozo's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Dondozo's atk rose!",
+      "message": "2|from.ability.Commander",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Commander",
   },
 }
 `;
@@ -8984,7 +8894,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Tatsugiri's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -8995,17 +8905,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Dondozo's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Dondozo's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Dondozo's def rose!",
+      "message": "2|from.ability.Commander",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Commander",
   },
 }
 `;
@@ -9037,7 +8942,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Tatsugiri's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9048,17 +8953,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Dondozo's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Dondozo's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Dondozo's spa rose!",
+      "message": "2|from.ability.Commander",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Commander",
   },
 }
 `;
@@ -9079,7 +8979,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Dragapult's",
       },
-      "STAT": "eva",
+      "STAT": "evasiveness",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9090,17 +8990,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Dragapult's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Dragapult's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Dragapult's eva rose!",
+      "message": "3plus|from.Evasion Boost",
     },
-    "key": "boost",
+    "key": "boost|by:3plus|from:Evasion Boost",
   },
 }
 `;
@@ -9122,7 +9017,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Drampa's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9133,17 +9028,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Drampa's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Drampa's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Drampa's spa rose!",
+      "message": "1|from.ability.Berserk",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Berserk",
   },
 }
 `;
@@ -9164,7 +9054,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Eevee's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9175,17 +9065,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Eevee's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Eevee's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Eevee's spd rose!",
+      "message": "1|from.Z-Power",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:Z-Power",
   },
 }
 `;
@@ -9207,7 +9092,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Electivire's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9218,17 +9103,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Electivire's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Electivire's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Electivire's spe rose!",
+      "message": "1|from.ability.Motor Drive",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Motor Drive",
   },
 }
 `;
@@ -9250,7 +9130,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Electrode's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9261,17 +9141,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Electrode's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Electrode's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Electrode's atk rose!",
+      "message": "1|from.ability.Sap Sipper",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Sap Sipper",
   },
 }
 `;
@@ -9293,7 +9168,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Emolga's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9304,15 +9179,15 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Emolga's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
+      "__CAPITALIZED_MON": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
-        "text": "The opposing Emolga's",
+        "text": "The opposing Emolga",
       },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Emolga's atk rose drastically!",
+      "message": "The opposing Emolga maximized its Attack!",
     },
     "key": "boost__max",
   },
@@ -9336,7 +9211,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Emolga's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9347,17 +9222,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Emolga's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Emolga's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Emolga's atk rose!",
+      "message": "1|from.item.Cell Battery",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Cell Battery",
   },
 }
 `;
@@ -9379,7 +9249,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9390,17 +9260,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Espathra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Espathra's atk rose!",
+      "message": "2|from.ability.Opportunist",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Opportunist",
   },
 }
 `;
@@ -9422,7 +9287,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9433,17 +9298,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Espathra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Espathra's atk rose!",
+      "message": "2|from.item.Mirror Herb",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Mirror Herb",
   },
 }
 `;
@@ -9465,7 +9325,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9476,17 +9336,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Espathra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Espathra's spa rose!",
+      "message": "1|from.item.Throat Spray",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Throat Spray",
   },
 }
 `;
@@ -9508,7 +9363,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9519,17 +9374,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Espathra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Espathra's atk rose!",
+      "message": "2|from.ability.Opportunist",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Opportunist",
   },
 }
 `;
@@ -9551,7 +9401,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9562,17 +9412,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Espathra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Espathra's atk rose!",
+      "message": "2|from.item.Mirror Herb",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Mirror Herb",
   },
 }
 `;
@@ -9594,7 +9439,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9605,17 +9450,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Espathra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Espathra's spa rose!",
+      "message": "2|from.ability.Opportunist",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Opportunist",
   },
 }
 `;
@@ -9637,7 +9477,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9648,17 +9488,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Espathra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Espathra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Espathra's spa rose!",
+      "message": "2|from.item.Mirror Herb",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Mirror Herb",
   },
 }
 `;
@@ -9680,7 +9515,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Garbodor's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9691,17 +9526,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Garbodor's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Garbodor's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Garbodor's spe rose!",
+      "message": "2|from.ability.Weak Armor",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Weak Armor",
   },
 }
 `;
@@ -9723,7 +9553,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Gastrodon's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9734,17 +9564,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Gastrodon's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Gastrodon's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Gastrodon's spa rose!",
+      "message": "1|from.ability.Storm Drain",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Storm Drain",
   },
 }
 `;
@@ -9766,7 +9591,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Golisopod's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9777,15 +9602,15 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Golisopod's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
+      "__CAPITALIZED_MON": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
-        "text": "The opposing Golisopod's",
+        "text": "The opposing Golisopod",
       },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Golisopod's atk rose drastically!",
+      "message": "The opposing Golisopod maximized its Attack!",
     },
     "key": "boost__max",
   },
@@ -9809,7 +9634,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Goodra's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9820,17 +9645,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Goodra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Goodra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Goodra's atk rose!",
+      "message": "2|from.item.Weakness Policy",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Weakness Policy",
   },
 }
 `;
@@ -9852,7 +9672,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Goodra's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9863,17 +9683,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Goodra's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Goodra's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Goodra's spa rose!",
+      "message": "2|from.item.Weakness Policy",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Weakness Policy",
   },
 }
 `;
@@ -9895,7 +9710,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Grafaiai's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -9906,17 +9721,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Grafaiai's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Grafaiai's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Grafaiai's spe rose!",
+      "message": "1|from.ability.Speed Boost",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Speed Boost",
   },
 }
 `;
@@ -9938,7 +9748,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Grafaiai's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -9949,17 +9759,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Grafaiai's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Grafaiai's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Grafaiai's spe rose!",
+      "message": "1|from.ability.Speed Boost",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Speed Boost",
   },
 }
 `;
@@ -9981,7 +9786,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Grafaiai's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -9992,17 +9797,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Grafaiai's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Grafaiai's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Grafaiai's spe rose!",
+      "message": "1|from.ability.Speed Boost",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Speed Boost",
   },
 }
 `;
@@ -10024,7 +9824,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Greninja's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10035,17 +9835,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Greninja's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Greninja's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Greninja's atk rose!",
+      "message": "1|from.ability.Battle Bond",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Battle Bond",
   },
 }
 `;
@@ -10067,7 +9862,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Greninja's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10078,17 +9873,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Greninja's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Greninja's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Greninja's spa rose!",
+      "message": "1|from.ability.Battle Bond",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Battle Bond",
   },
 }
 `;
@@ -10110,7 +9900,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Greninja's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10121,17 +9911,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Greninja's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Greninja's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Greninja's spe rose!",
+      "message": "1|from.ability.Battle Bond",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Battle Bond",
   },
 }
 `;
@@ -10153,7 +9938,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Gyarados's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10164,17 +9949,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Gyarados's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Gyarados's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Gyarados's atk rose!",
+      "message": "0|from.move.Rage",
     },
-    "key": "boost",
+    "key": "boost|by:0|from:move:Rage",
   },
 }
 `;
@@ -10196,7 +9976,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Gyarados's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10207,17 +9987,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Gyarados's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Gyarados's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Gyarados's atk rose!",
+      "message": "1|from.move.Rage",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:move:Rage",
   },
 }
 `;
@@ -10238,7 +10013,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Incineroar's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -10249,17 +10024,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Incineroar's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Incineroar's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Incineroar's def rose!",
+      "message": "1|from.Z-Power",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:Z-Power",
   },
 }
 `;
@@ -10281,7 +10051,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Jigglypuff's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -10292,17 +10062,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Jigglypuff's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Jigglypuff's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Jigglypuff's spa rose!",
+      "message": "2|from.ability.Competitive",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Competitive",
   },
 }
 `;
@@ -10324,7 +10089,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -10335,17 +10100,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Klawf's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Klawf's atk rose!",
+      "message": "1|from.ability.Anger Shell",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Anger Shell",
   },
 }
 `;
@@ -10367,7 +10127,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -10378,17 +10138,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Klawf's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Klawf's spa rose!",
+      "message": "1|from.ability.Anger Shell",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Anger Shell",
   },
 }
 `;
@@ -10410,7 +10165,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -10421,17 +10176,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Klawf's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Klawf's spe rose!",
+      "message": "1|from.ability.Anger Shell",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Anger Shell",
   },
 }
 `;
@@ -10453,7 +10203,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Krookodile's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10464,17 +10214,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Krookodile's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Krookodile's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Krookodile's atk rose!",
+      "message": "1|from.ability.Moxie",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Moxie",
   },
 }
 `;
@@ -10496,7 +10241,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Krookodile's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10507,17 +10252,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Krookodile's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Krookodile's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Krookodile's atk rose!",
+      "message": "2|from.ability.Moxie",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Moxie",
   },
 }
 `;
@@ -10539,7 +10279,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Lucario's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -10550,17 +10290,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Lucario's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Lucario's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Lucario's spe rose!",
+      "message": "1|from.ability.Steadfast",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Steadfast",
   },
 }
 `;
@@ -10582,7 +10317,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Magearna's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10593,17 +10328,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Magearna's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Magearna's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Magearna's spa rose!",
+      "message": "1|from.ability.Soul-Heart",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Soul-Heart",
   },
 }
 `;
@@ -10625,7 +10355,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Magikarp's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-1",
         "noAutoCapitalize": false,
@@ -10636,17 +10366,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Magikarp's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Magikarp's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Magikarp's spa rose!",
+      "message": "1|from.condition.Stat Shuffle",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:condition:Stat Shuffle",
   },
 }
 `;
@@ -10668,7 +10393,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Nihilego's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -10679,17 +10404,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Nihilego's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Nihilego's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Nihilego's spd rose!",
+      "message": "1|from.ability.Beast Boost",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Beast Boost",
   },
 }
 `;
@@ -10711,7 +10431,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Ogerpon's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10722,17 +10442,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Ogerpon's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Ogerpon's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Ogerpon's atk rose!",
+      "message": "1|from.ability.Embody Aspect",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Embody Aspect",
   },
 }
 `;
@@ -10754,7 +10469,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Ogerpon's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10765,17 +10480,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Ogerpon's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Ogerpon's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Ogerpon's def rose!",
+      "message": "1|from.ability.Embody Aspect",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Embody Aspect",
   },
 }
 `;
@@ -10797,7 +10507,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Ogerpon's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10808,17 +10518,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Ogerpon's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Ogerpon's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Ogerpon's spd rose!",
+      "message": "1|from.ability.Embody Aspect",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Embody Aspect",
   },
 }
 `;
@@ -10840,7 +10545,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10851,17 +10556,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Oshawott's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Oshawott's atk rose!",
+      "message": "1|from.item.Liechi Berry",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Liechi Berry",
   },
 }
 `;
@@ -10883,7 +10583,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10894,17 +10594,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Oshawott's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Oshawott's atk rose!",
+      "message": "2|from.item.Starf Berry",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Starf Berry",
   },
 }
 `;
@@ -10926,7 +10621,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10937,17 +10632,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Oshawott's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Oshawott's def rose!",
+      "message": "1|from.item.Ganlon Berry",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Ganlon Berry",
   },
 }
 `;
@@ -10969,7 +10659,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -10980,17 +10670,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Oshawott's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Oshawott's def rose!",
+      "message": "1|from.item.Kee Berry",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Kee Berry",
   },
 }
 `;
@@ -11012,7 +10697,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11023,17 +10708,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Oshawott's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Oshawott's def rose!",
+      "message": "2|from.item.Starf Berry",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Starf Berry",
   },
 }
 `;
@@ -11055,7 +10735,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11066,17 +10746,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Oshawott's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Oshawott's spa rose!",
+      "message": "2|from.item.Starf Berry",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Starf Berry",
   },
 }
 `;
@@ -11098,7 +10773,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11109,17 +10784,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Oshawott's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Oshawott's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Oshawott's spd rose!",
+      "message": "1|from.item.Maranga Berry",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Maranga Berry",
   },
 }
 `;
@@ -11141,7 +10811,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11152,17 +10822,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pelipper's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pelipper's def rose!",
+      "message": "1|from.move.Stockpile",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:move:Stockpile",
   },
 }
 `;
@@ -11184,7 +10849,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11195,17 +10860,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pelipper's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pelipper's spd rose!",
+      "message": "1|from.move.Stockpile",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:move:Stockpile",
   },
 }
 `;
@@ -11227,7 +10887,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -11238,17 +10898,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pelipper's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pelipper's def rose!",
+      "message": "1|from.move.Stockpile",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:move:Stockpile",
   },
 }
 `;
@@ -11269,7 +10924,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11280,17 +10935,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's atk rose!",
+      "message": "1|from.Z-Power",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:Z-Power",
   },
 }
 `;
@@ -11312,7 +10962,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11323,17 +10973,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's atk rose!",
+      "message": "1|from.item.Max Mushrooms",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Max Mushrooms",
   },
 }
 `;
@@ -11355,7 +11000,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11366,17 +11011,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's atk rose!",
+      "message": "2|from.item.X Attack",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:X Attack",
   },
 }
 `;
@@ -11398,7 +11038,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11409,17 +11049,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's def rose!",
+      "message": "1|from.item.Max Mushrooms",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Max Mushrooms",
   },
 }
 `;
@@ -11441,7 +11076,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11452,17 +11087,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's spa rose!",
+      "message": "1|from.item.Max Mushrooms",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Max Mushrooms",
   },
 }
 `;
@@ -11484,7 +11114,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -11495,17 +11125,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's spa rose!",
+      "message": "1|from.ability.Lightning Rod",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Lightning Rod",
   },
 }
 `;
@@ -11527,7 +11152,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Polteageist's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -11538,17 +11163,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Polteageist's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Polteageist's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Polteageist's atk rose!",
+      "message": "1|from.item.Liechi Berry",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Liechi Berry",
   },
 }
 `;
@@ -11570,7 +11190,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Polteageist's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-1",
         "noAutoCapitalize": false,
@@ -11581,17 +11201,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Polteageist's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Polteageist's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Polteageist's atk rose!",
+      "message": "1|from.item.Liechi Berry",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Liechi Berry",
   },
 }
 `;
@@ -11613,7 +11228,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Porygon-Z's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11624,17 +11239,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Porygon-Z's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Porygon-Z's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Porygon-Z's atk rose!",
+      "message": "1|from.ability.Download",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Download",
   },
 }
 `;
@@ -11656,7 +11266,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Porygon-Z's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11667,17 +11277,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Porygon-Z's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Porygon-Z's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Porygon-Z's spa rose!",
+      "message": "1|from.ability.Download",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Download",
   },
 }
 `;
@@ -11700,7 +11305,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Primeape's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -11711,15 +11316,15 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Primeape's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
+      "__CAPITALIZED_MON": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
-        "text": "The opposing Primeape's",
+        "text": "The opposing Primeape",
       },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Primeape's atk rose drastically!",
+      "message": "The opposing Primeape maximized its Attack!",
     },
     "key": "boost__max",
   },
@@ -11743,7 +11348,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11754,17 +11359,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Rillaboom's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Rillaboom's spa rose!",
+      "message": "1|from.item.Throat Spray",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Throat Spray",
   },
 }
 `;
@@ -11786,7 +11386,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11797,17 +11397,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Rillaboom's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Rillaboom's spe rose!",
+      "message": "2|from.item.Blunder Policy",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:item:Blunder Policy",
   },
 }
 `;
@@ -11829,7 +11424,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Sceptile's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -11840,17 +11435,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Sceptile's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Sceptile's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Sceptile's atk rose!",
+      "message": "1|from.ability.Sap Sipper",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Sap Sipper",
   },
 }
 `;
@@ -11872,7 +11462,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Tapu Koko's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -11883,17 +11473,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Tapu Koko's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Tapu Koko's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Tapu Koko's def rose!",
+      "message": "1|from.item.Electric Seed",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Electric Seed",
   },
 }
 `;
@@ -11915,7 +11500,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Tapu Koko's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -11926,17 +11511,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Tapu Koko's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Tapu Koko's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Tapu Koko's def rose!",
+      "message": "1|from.item.Electric Seed",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:item:Electric Seed",
   },
 }
 `;
@@ -11958,7 +11538,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Toedscruel's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -11969,17 +11549,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Toedscruel's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Toedscruel's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Toedscruel's def rose!",
+      "message": "2|from.ability.Well-Baked Body",
     },
-    "key": "boost",
+    "key": "boost|by:2|from:ability:Well-Baked Body",
   },
 }
 `;
@@ -12001,7 +11576,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Zacian's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -12012,17 +11587,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Zacian's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Zacian's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Zacian's atk rose!",
+      "message": "1|from.ability.Intrepid Sword",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Intrepid Sword",
   },
 }
 `;
@@ -12044,7 +11614,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Zamazenta's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -12055,17 +11625,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
         "noAutoCapitalize": false,
         "text": "the opposing Zamazenta's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Zamazenta's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Zamazenta's def rose!",
+      "message": "1|from.ability.Dauntless Shield",
     },
-    "key": "boost",
+    "key": "boost|by:1|from:ability:Dauntless Shield",
   },
 }
 `;
@@ -38285,7 +37850,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
         "noAutoCapitalize": false,
         "text": "the opposing Great Tusk's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "__CAPITALIZED_MON_POSSESSIVE": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -38317,7 +37882,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
         "noAutoCapitalize": false,
         "text": "the opposing Great Tusk's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "__CAPITALIZED_MON_POSSESSIVE": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -38483,7 +38048,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
         "noAutoCapitalize": false,
         "text": "the opposing Iron Treads's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "__CAPITALIZED_MON_POSSESSIVE": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -38515,7 +38080,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
         "noAutoCapitalize": false,
         "text": "the opposing Iron Treads's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "__CAPITALIZED_MON_POSSESSIVE": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42242,7 +41807,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Aegislash's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42253,17 +41818,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Aegislash's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Aegislash's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Aegislash's atk fell!",
+      "message": "-1|from.move.King's Shield",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:move:King's Shield",
   },
 }
 `;
@@ -42284,7 +41844,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Amoonguss's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42303,9 +41863,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Amoonguss's atk fell!",
+      "message": "The opposing Amoonguss's Attack harshly fell!",
     },
-    "key": "unboost",
+    "key": "unboost__by_2",
   },
 }
 `;
@@ -42337,7 +41897,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Mightyena's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42348,17 +41908,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Basculin's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Basculin's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Basculin's atk fell!",
+      "message": "-1|from.ability.Intimidate",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Intimidate",
   },
 }
 `;
@@ -42380,7 +41935,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -42391,17 +41946,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bibarel's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bibarel's def fell!",
+      "message": "-1|from.ability.Moody",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Moody",
   },
 }
 `;
@@ -42423,7 +41973,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -42434,17 +41984,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bibarel's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bibarel's spd fell!",
+      "message": "-1|from.ability.Moody",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Moody",
   },
 }
 `;
@@ -42466,7 +42011,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42477,17 +42022,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bibarel's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Bibarel's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bibarel's atk fell!",
+      "message": "-1|from.ability.Moody",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Moody",
   },
 }
 `;
@@ -42508,7 +42048,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bisharp's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42527,9 +42067,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bisharp's def rose!",
+      "message": "The opposing Bisharp's Defense can't go any higher!",
     },
-    "key": "boost",
+    "key": "boost__by_0",
   },
 }
 `;
@@ -42550,7 +42090,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Bisharp's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42569,9 +42109,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Bisharp's def fell!",
+      "message": "The opposing Bisharp's Defense harshly fell!",
     },
-    "key": "unboost",
+    "key": "unboost__by_2",
   },
 }
 `;
@@ -42603,7 +42143,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Mightyena's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-1",
         "noAutoCapitalize": false,
@@ -42614,17 +42154,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Castform's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-1",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Castform's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Castform's atk fell!",
+      "message": "-1|from.ability.Intimidate",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Intimidate",
   },
 }
 `;
@@ -42646,7 +42181,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Cinderace's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -42657,17 +42192,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Cinderace's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Cinderace's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Cinderace's spe fell!",
+      "message": "-1|from.item.Room Service",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:item:Room Service",
   },
 }
 `;
@@ -42699,7 +42229,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Corviknight's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42710,17 +42240,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Corviknight's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Corviknight's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Corviknight's atk fell!",
+      "message": "-1|from.ability.Mirror Armor",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Mirror Armor",
   },
 }
 `;
@@ -42752,7 +42277,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Cramorant's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -42763,17 +42288,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Cramorant's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Cramorant's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Cramorant's def fell!",
+      "message": "-1|from.ability.Gulp Missile",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Gulp Missile",
   },
 }
 `;
@@ -42805,7 +42325,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Hydrapple's",
       },
-      "STAT": "eva",
+      "STAT": "evasiveness",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -42816,17 +42336,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Dipplin's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Dipplin's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Dipplin's eva fell!",
+      "message": "-1|from.ability.Supersweet Syrup",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Supersweet Syrup",
   },
 }
 `;
@@ -42858,7 +42373,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Hydrapple's",
       },
-      "STAT": "eva",
+      "STAT": "evasiveness",
       "TARGET": {
         "id": "player-2-active-1",
         "noAutoCapitalize": false,
@@ -42869,17 +42384,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Dipplin's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-1",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Dipplin's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Dipplin's eva fell!",
+      "message": "-1|from.ability.Supersweet Syrup",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Supersweet Syrup",
   },
 }
 `;
@@ -42911,7 +42421,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Mightyena's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-1",
         "noAutoCapitalize": false,
@@ -42922,17 +42432,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Ditto's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-1",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Ditto's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Ditto's atk fell!",
+      "message": "-1|from.ability.Intimidate",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Intimidate",
   },
 }
 `;
@@ -42964,7 +42469,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Eldegoss's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -42975,17 +42480,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Eldegoss's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Eldegoss's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Eldegoss's spe fell!",
+      "message": "-1|from.ability.Cotton Down",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Cotton Down",
   },
 }
 `;
@@ -43017,7 +42517,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Eldegoss's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -43028,17 +42528,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Eldegoss's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Eldegoss's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Eldegoss's spe fell!",
+      "message": "-1|from.ability.Cotton Down",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Cotton Down",
   },
 }
 `;
@@ -43070,7 +42565,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Eldegoss's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-1",
         "noAutoCapitalize": false,
@@ -43081,17 +42576,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Eldegoss's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Eldegoss's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Eldegoss's spe fell!",
+      "message": "-1|from.ability.Cotton Down",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Cotton Down",
   },
 }
 `;
@@ -43113,7 +42603,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Emolga's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43124,15 +42614,15 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Emolga's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
+      "__CAPITALIZED_MON": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
-        "text": "The opposing Emolga's",
+        "text": "The opposing Emolga",
       },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Emolga's atk fell severely!",
+      "message": "The opposing Emolga minimized its Attack!",
     },
     "key": "unboost__min",
   },
@@ -43156,7 +42646,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Garbodor's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43167,17 +42657,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Garbodor's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Garbodor's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Garbodor's def fell!",
+      "message": "-1|from.ability.Weak Armor",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Weak Armor",
   },
 }
 `;
@@ -43209,7 +42694,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Goomy's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43220,17 +42705,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Goomy's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Goomy's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Goomy's spe fell!",
+      "message": "-1|from.ability.Gooey",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Gooey",
   },
 }
 `;
@@ -43252,7 +42732,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Grapploct's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43263,17 +42743,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Grapploct's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Grapploct's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Grapploct's def fell!",
+      "message": "-1|from.move.Octolock",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:move:Octolock",
   },
 }
 `;
@@ -43295,7 +42770,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Grapploct's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43306,17 +42781,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Grapploct's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Grapploct's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Grapploct's spd fell!",
+      "message": "-1|from.move.Octolock",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:move:Octolock",
   },
 }
 `;
@@ -43348,7 +42818,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Hydrapple's",
       },
-      "STAT": "eva",
+      "STAT": "evasiveness",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43359,17 +42829,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Hydrapple's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Hydrapple's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Hydrapple's eva fell!",
+      "message": "-1|from.ability.Supersweet Syrup",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Supersweet Syrup",
   },
 }
 `;
@@ -43391,7 +42856,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Hydrapple's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43402,17 +42867,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Hydrapple's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Hydrapple's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Hydrapple's spe fell!",
+      "message": "-1|from.move.Syrup Bomb",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:move:Syrup Bomb",
   },
 }
 `;
@@ -43434,7 +42894,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43445,17 +42905,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Klawf's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Klawf's def fell!",
+      "message": "-1|from.ability.Anger Shell",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Anger Shell",
   },
 }
 `;
@@ -43477,7 +42932,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43488,17 +42943,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Klawf's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Klawf's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Klawf's spd fell!",
+      "message": "-1|from.ability.Anger Shell",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:ability:Anger Shell",
   },
 }
 `;
@@ -43520,7 +42970,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Magikarp's",
       },
-      "STAT": "spa",
+      "STAT": "Sp. Atk",
       "TARGET": {
         "id": "player-1-active-1",
         "noAutoCapitalize": false,
@@ -43531,17 +42981,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Magikarp's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-1",
-        "noAutoCapitalize": false,
-        "text": "The opposing Magikarp's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Magikarp's spa fell!",
+      "message": "-1|from.condition.Stat Shuffle",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:condition:Stat Shuffle",
   },
 }
 `;
@@ -43573,7 +43018,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Obstagoon's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43584,17 +43029,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Obstagoon's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Obstagoon's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Obstagoon's def fell!",
+      "message": "-2|from.move.Obstruct",
     },
-    "key": "unboost",
+    "key": "unboost|by:-2|from:move:Obstruct",
   },
 }
 `;
@@ -43616,7 +43056,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43627,17 +43067,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pelipper's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pelipper's def fell!",
+      "message": "-3|from.move.Stockpile",
     },
-    "key": "unboost",
+    "key": "unboost|by:-3|from:move:Stockpile",
   },
 }
 `;
@@ -43659,7 +43094,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43670,17 +43105,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pelipper's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pelipper's spd fell!",
+      "message": "-3|from.move.Stockpile",
     },
-    "key": "unboost",
+    "key": "unboost|by:-3|from:move:Stockpile",
   },
 }
 `;
@@ -43702,7 +43132,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "STAT": "def",
+      "STAT": "Defense",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43713,17 +43143,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pelipper's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pelipper's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pelipper's def fell!",
+      "message": "-1|from.move.Stockpile",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:move:Stockpile",
   },
 }
 `;
@@ -43745,7 +43170,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43756,17 +43181,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's atk fell!",
+      "message": "-1|from.condition.Stat Shuffle",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:condition:Stat Shuffle",
   },
 }
 `;
@@ -43788,7 +43208,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "STAT": "spd",
+      "STAT": "Sp. Def",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43799,17 +43219,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Pikachu's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Pikachu's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Pikachu's spd fell!",
+      "message": "-1|from.condition.Stat Shuffle",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:condition:Stat Shuffle",
   },
 }
 `;
@@ -43831,7 +43246,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-1-active-0",
         "noAutoCapitalize": false,
@@ -43842,17 +43257,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-1-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Rillaboom's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Rillaboom's spe fell!",
+      "message": "-1|from.item.Room Service",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:item:Room Service",
   },
 }
 `;
@@ -43874,7 +43284,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43885,17 +43295,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Rillaboom's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Rillaboom's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Rillaboom's spe fell!",
+      "message": "-1|from.item.Room Service",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:item:Room Service",
   },
 }
 `;
@@ -43916,7 +43321,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Shiinotic's",
       },
-      "STAT": "atk",
+      "STAT": "Attack",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43927,17 +43332,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Shiinotic's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Shiinotic's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Shiinotic's atk fell!",
+      "message": "-6|from.Drop Attack",
     },
-    "key": "unboost",
+    "key": "unboost|by:-6|from:Drop Attack",
   },
 }
 `;
@@ -43959,7 +43359,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Slurpuff's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -43970,17 +43370,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Slurpuff's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "The opposing Slurpuff's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "The opposing Slurpuff's spe fell!",
+      "message": "-1|from.move.Sticky Web",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:move:Sticky Web",
   },
 }
 `;
@@ -44012,7 +43407,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "the opposing Spidops's",
       },
-      "STAT": "spe",
+      "STAT": "Speed",
       "TARGET": {
         "id": "player-2-active-0",
         "noAutoCapitalize": false,
@@ -44023,17 +43418,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
         "noAutoCapitalize": false,
         "text": "{{player}}'s Spidops's",
       },
-      "__CAPITALIZED_MON_POSSESSIVE": {
-        "id": "player-2-active-0",
-        "noAutoCapitalize": false,
-        "text": "{{player}}'s Spidops's",
-      },
     },
     "formatted": {
       "category": "primary",
-      "message": "{{player}}'s Spidops's spe fell!",
+      "message": "-1|from.move.Silk Trap",
     },
-    "key": "unboost",
+    "key": "unboost|by:-1|from:move:Silk Trap",
   },
 }
 `;
