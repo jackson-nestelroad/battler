@@ -193,3 +193,15 @@ export class LogFormatter {
   }
 
 }
+
+export function stringifyLog(log: FormattedUiLog): string {
+    return log.tokens.map((token) => {
+        if (token.type === "text") return token.value;
+        const ctxVal = log.context[token.value];
+        if (typeof ctxVal === "string") return ctxVal;
+        if (typeof ctxVal === "number") return ctxVal.toString();
+        if (Array.isArray(ctxVal)) return ctxVal.map(v => typeof v === "string" ? v : (v as any).text).join(", ");
+        if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) return ctxVal.text;
+        return `{{${token.value}}}`;
+    }).join("");
+}

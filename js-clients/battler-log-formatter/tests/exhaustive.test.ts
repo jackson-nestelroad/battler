@@ -2,7 +2,7 @@ import { mapUiLogEntry } from "../src/mapper.js";
 import fs from "fs";
 import path from "path";
 import { describe, it, expect } from "vitest";
-import { LogFormatter, FormattedUiLog } from "../src/formatter.js";
+import { LogFormatter, FormattedUiLog, stringifyLog } from "../src/formatter.js";
 import { alterBattleState, newBattleState } from "battler-state";
 import { en } from "../locales/en.js";
 
@@ -94,21 +94,12 @@ describe("Exhaustive Log Coverage", () => {
     
     // 2. Extract just the enum key, the message string, and context vars
     const results = formattedArray.map(log => {
-        const message = log.tokens.map((token: any) => {
-            if (token.type === "text") return token.value;
-            const ctxVal = log.context[token.value];
-            if (typeof ctxVal === "string") return ctxVal;
-            if (Array.isArray(ctxVal)) return ctxVal.map((v: any) => typeof v === "string" ? v : v.text).join(", ");
-            if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) return ctxVal.text;
-            return `{{${token.value}}}`;
-        }).join("");
-
         return {
             key: log.key,
             context: log.context,
             formatted: {
                 category: log.category,
-                message: message
+                message: stringifyLog(log)
             }
         };
     });
