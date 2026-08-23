@@ -4696,10 +4696,13 @@ fn set_ability(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing ability")?
         .ability_id()
         .wrap_error_with_message("invalid ability")?;
-    let ability_source = context
-        .pop_front()
-        .map(|val| val.mon_handle().ok())
-        .flatten();
+    let ability_source = match context.front() {
+        Some(val) if val.value_type() == ValueType::Mon => context
+            .pop_front()
+            .map(|val| val.mon_handle().ok())
+            .flatten(),
+        _ => None,
+    };
     core_battle_actions::set_ability(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &ability_id,

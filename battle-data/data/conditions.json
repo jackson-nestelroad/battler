@@ -1270,13 +1270,13 @@
           "$allies = func_call(is_ally: $target $source)",
           "if $allies:",
           [
-            "set_ability: $source $target_ability use_source_effect no_forward silent",
-            "set_ability: $target $source_ability use_source_effect no_forward silent"
+            "set_ability: $source $target_ability $target use_source_effect no_forward silent",
+            "set_ability: $target $source_ability $source use_source_effect no_forward silent"
           ],
           "else:",
           [
-            "set_ability: $source $target_ability use_source_effect no_forward",
-            "set_ability: $target $source_ability use_source_effect no_forward"
+            "set_ability: $source $target_ability $target use_source_effect no_forward",
+            "set_ability: $target $source_ability $source use_source_effect no_forward"
           ]
         ]
       }

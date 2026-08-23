@@ -95,9 +95,9 @@ fn magma_armor_prevents_freeze() {
             "move|mon:Magcargo,player-1,1|name:Skill Swap|target:Linoone,player-2,1",
             "activate|mon:Linoone,player-2,1|move:Skill Swap|of:Magcargo,player-1,1",
             "abilityend|mon:Magcargo,player-1,1|ability:Magma Armor|from:move:Skill Swap",
-            "abilitystart|mon:Magcargo,player-1,1|ability:No Ability|from:move:Skill Swap",
+            "abilitystart|mon:Magcargo,player-1,1|ability:No Ability|source:Linoone,player-2,1|from:move:Skill Swap",
             "abilityend|mon:Linoone,player-2,1|ability:No Ability|from:move:Skill Swap|of:Magcargo,player-1,1",
-            "abilitystart|mon:Linoone,player-2,1|ability:Magma Armor|from:move:Skill Swap|of:Magcargo,player-1,1",
+            "abilitystart|mon:Linoone,player-2,1|ability:Magma Armor|source:Magcargo,player-1,1|from:move:Skill Swap|of:Magcargo,player-1,1",
             "curestatus|mon:Linoone,player-2,1|status:Freeze|from:ability:Magma Armor",
             "residual",
             "turn|turn:3"
