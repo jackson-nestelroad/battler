@@ -625,7 +625,7 @@
           "require !func_call(ability_has_flag: $source.ability permanent)",
           "require !func_call(ability_has_flag: $target.ability noroleplay)"
         ],
-        "on_hit": ["return func_call(set_ability: $source $target.ability)"]
+        "on_hit": ["return func_call(set_ability: $source $target.ability $target)"]
       }
     }
   },

@@ -551,7 +551,7 @@
           ],
           "require !$targets.is_empty else return",
           "$target = func_call(sample: $targets)",
-          "set_ability: $mon $target.ability"
+          "set_ability: $mon $target.ability $target"
         ]
       }
     }
