@@ -75,7 +75,7 @@ fn receiver_takes_ally_ability_on_faint() {
                 "unboost|mon:Passimian,player-2,1|stat:spa|by:2",
                 "faint|mon:Oranguru,player-1,2",
                 "abilityend|mon:Passimian,player-1,1|ability:Receiver|from:ability:Receiver",
-                "abilitystart|mon:Passimian,player-1,1|ability:Speed Boost|from:ability:Receiver",
+                "abilitystart|mon:Passimian,player-1,1|ability:Speed Boost|source:Oranguru,player-1,2|from:ability:Receiver",
                 "residual",
                 "boost|mon:Passimian,player-1,1|stat:spe|by:1|from:ability:Speed Boost",
                 "turn|turn:2"

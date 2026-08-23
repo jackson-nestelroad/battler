@@ -534,7 +534,7 @@
         "on_ally_faint": [
           "require $effect_state.target.hp != 0 else return",
           "require !func_call(ability_has_flag: $target.ability noreceiver) else return",
-          "set_ability: $effect_state.target $target.ability"
+          "set_ability: $effect_state.target $target.ability $target"
         ]
       }
     }

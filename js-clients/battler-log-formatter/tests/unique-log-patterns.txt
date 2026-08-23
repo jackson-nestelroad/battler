@@ -201,11 +201,11 @@ clearnegativeboosts|from:item:White Herb
 clearpositiveboosts
 clearweather|weather:Extremely Harsh Sunlight
 clearweather|weather:Hail
+clearweather|weather:Harsh Sunlight
 clearweather|weather:Heavy Rain
 clearweather|weather:Rain
 clearweather|weather:Sandstorm
 clearweather|weather:Snow
-clearweather|weather:Sun
 combine
 continue
 copyboosts

@@ -4748,6 +4748,12 @@
           "type": "String | Effect",
           "description": "The new ability ID.",
           "optional": false
+        },
+        {
+          "name": "source",
+          "type": "Mon",
+          "description": "The source of the copied ability.",
+          "optional": true
         }
       ],
       "flags": [

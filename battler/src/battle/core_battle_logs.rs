@@ -926,7 +926,10 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
     )
 }
 
-pub fn ability_start(context: &mut ApplyingEffectContext) -> Result<()> {
+pub fn ability_start(
+    context: &mut ApplyingEffectContext,
+    ability_source: Option<MonHandle>,
+) -> Result<()> {
     let ability = context
         .battle()
         .dex
@@ -935,11 +938,20 @@ pub fn ability_start(context: &mut ApplyingEffectContext) -> Result<()> {
         .data
         .name
         .clone();
+    let mut additional = vec![format!("ability:{ability}")];
+    if let Some(ability_source) = ability_source {
+        let source_str = Mon::position_details(
+            &context
+                .as_battle_context_mut()
+                .mon_context(ability_source)?,
+        )?;
+        additional.push(format!("source:{source_str}"));
+    }
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: Vec::from_iter([format!("ability:{ability}")]),
+        additional,
         ..Default::default()
     };
     effect_activation(

@@ -326,6 +326,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
             None,
             None,
         )?,
+        None,
         true,
     )?;
     start_item(
@@ -5162,7 +5163,11 @@ pub fn end_ability_even_if_exiting(
 }
 
 /// Starts the target Mon's ability, if it is not already started.
-pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+pub fn start_ability(
+    context: &mut ApplyingEffectContext,
+    ability_source: Option<MonHandle>,
+    silent: bool,
+) -> Result<()> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
@@ -5180,7 +5185,7 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
     }
 
     if !silent {
-        core_battle_logs::ability_start(context)?;
+        core_battle_logs::ability_start(context, ability_source)?;
     }
 
     core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
@@ -5201,6 +5206,7 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
 pub fn set_ability(
     context: &mut ApplyingEffectContext,
     ability: &Id,
+    ability_source: Option<MonHandle>,
     dry_run: bool,
     force: bool,
     silent: bool,
@@ -5263,7 +5269,7 @@ pub fn set_ability(
         )?,
     };
 
-    start_ability(context, silent)?;
+    start_ability(context, ability_source, silent)?;
 
     core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
         context,
@@ -6574,7 +6580,7 @@ pub fn transform_into(
         false,
         RecalculateStatsHpPolicy::DoNotUpdate,
     )?;
-    set_ability(context, &ability_id, false, true, true)?;
+    set_ability(context, &ability_id, None, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;
     context.target_mut().volatile_state.times_attacked = times_attacked;
 
@@ -6702,7 +6708,7 @@ pub fn forme_change(
     if (old_ability != new_ability || forme_change_type.set_ability_even_if_unchanged())
         && context.target().hp != 0
     {
-        set_ability(context, &new_ability, false, true, true)?;
+        set_ability(context, &new_ability, None, false, true, true)?;
     }
 
     if let FormeChangeType::Permanent {
