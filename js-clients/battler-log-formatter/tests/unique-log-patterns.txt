@@ -1,5 +1,6 @@
 abilityend|ability:*|from:ability:Lingering Aroma
 abilityend|ability:*|from:ability:Mummy
+abilityend|ability:*|from:ability:Power of Alchemy
 abilityend|ability:*|from:ability:Receiver
 abilityend|ability:*|from:ability:Trace
 abilityend|ability:*|from:ability:Wandering Spirit
@@ -12,6 +13,7 @@ abilityend|ability:*|from:move:Skill Swap
 abilityend|ability:*|from:move:Worry Seed
 abilitystart|ability:*|from:ability:Lingering Aroma
 abilitystart|ability:*|from:ability:Mummy
+abilitystart|ability:*|from:ability:Power of Alchemy
 abilitystart|ability:*|from:ability:Receiver
 abilitystart|ability:*|from:ability:Trace
 abilitystart|ability:*|from:ability:Wandering Spirit
@@ -25,7 +27,9 @@ ability|ability:Air Lock
 ability|ability:Anticipation
 ability|ability:As One
 ability|ability:Aura Break
+ability|ability:Beads of Ruin
 ability|ability:Cloud Nine
+ability|ability:Dark Aura
 ability|ability:Fairy Aura
 ability|ability:Gooey
 ability|ability:Mega Sol
@@ -36,21 +40,30 @@ ability|ability:Perish Body
 ability|ability:Pressure
 ability|ability:Supersweet Syrup
 ability|ability:Sword of Ruin
+ability|ability:Tablets of Ruin
+ability|ability:Tangling Hair
 ability|ability:Teraform Zero
+ability|ability:Teravolt
+ability|ability:Turboblaze
 ability|ability:Unnerve
+ability|ability:Vessel of Ruin
 activate|ability:Battle Bond
 activate|ability:Commander
 activate|ability:Cotton Down
 activate|ability:Cud Chew
 activate|ability:Dancer
 activate|ability:Emergency Exit
+activate|ability:Forewarn
 activate|ability:Forewarn|move:*
+activate|ability:Guard Dog
+activate|ability:Hadron Engine
 activate|ability:Healer
 activate|ability:Hydration
 activate|ability:Intimidate
 activate|ability:Leaf Guard
 activate|ability:Lightning Rod
 activate|ability:Magic Bounce
+activate|ability:Oblivious
 activate|ability:Orichalcum Pulse
 activate|ability:Own Tempo
 activate|ability:Pastel Veil
@@ -59,6 +72,7 @@ activate|ability:Protosynthesis
 activate|ability:Protosynthesis|from:item:Booster Energy
 activate|ability:Quark Drive
 activate|ability:Quark Drive|from:item:Booster Energy
+activate|ability:Quick Draw
 activate|ability:Ripen
 activate|ability:Screen Cleaner
 activate|ability:Sticky Hold
@@ -73,39 +87,110 @@ activate|ability:Tera Shift
 activate|ability:Toxic Debris
 activate|ability:Wandering Spirit
 activate|ability:Water Bubble
+activate|ability:Wimp Out
 activate|ability:Zero to Hero
-activate|clause:*
-activate|clause:*|sides:*
+activate|clause:Endless Battle Clause
+activate|clause:Sleep Clause
+activate|condition:Affection
 activate|condition:Affection|tough
+activate|condition:Break Protect
 activate|condition:Break Protect|broken
 activate|condition:Confusion
+activate|condition:Damage-Reducing Berry Item Base
 activate|condition:Disobedience
 activate|condition:Disobedience|confusion
+activate|condition:Heal Replacement
+activate|condition:Highlighting Sample
+activate|condition:Knock Down
 activate|condition:Must Recharge
+activate|condition:Protect Move Condition Base
+activate|condition:Swap Abilities
 activate|condition:Trapped
+activate|condition:Weaken Through Protection Move Base
+activate|item:Babiri Berry
+activate|item:Charti Berry
+activate|item:Chilan Berry
 activate|item:Chilan Berry|weaken
+activate|item:Chople Berry
+activate|item:Coba Berry
+activate|item:Colbur Berry
 activate|item:Custap Berry
+activate|item:Enigma Berry
 activate|item:Enigma Berry|weaken
 activate|item:Focus Band
+activate|item:Haban Berry
 activate|item:Haban Berry|weaken
+activate|item:Kasib Berry
 activate|item:Kasib Berry|weaken
+activate|item:Kebia Berry
+activate|item:Occa Berry
 activate|item:Occa Berry|weaken
+activate|item:Passho Berry
 activate|item:Passho Berry|weaken
+activate|item:Payapa Berry
 activate|item:Quick Claw
+activate|item:Rindo Berry
+activate|item:Roseli Berry
+activate|item:Shuca Berry
 activate|item:Smoke Ball
-activate|move:*
-activate|move:*|damage
-activate|move:*|hit:*
-activate|move:*|item:Cheri Berry
-activate|move:*|item:Iron Ball
-activate|move:*|item:Kasib Berry
-activate|move:*|item:Mental Herb
-activate|move:*|item:Pecha Berry
-activate|move:*|item:Toxic Orb
-activate|move:*|item:Utility Umbrella
-activate|move:*|item:Venusaurite
-activate|move:*|item:White Herb
-activate|move:*|magnitude:*
+activate|item:Tanga Berry
+activate|item:Wacan Berry
+activate|item:Yache Berry
+activate|move:After You
+activate|move:Aromatherapy
+activate|move:Attract
+activate|move:Beat Up
+activate|move:Bide
+activate|move:Bind
+activate|move:Celebrate
+activate|move:Court Change
+activate|move:Crafty Shield
+activate|move:Destiny Bond
+activate|move:Detect
+activate|move:Electric Terrain
+activate|move:Endure
+activate|move:Fickle Beam
+activate|move:Fling
+activate|move:Fling|item:*
+activate|move:Gravity
+activate|move:Guard Split
+activate|move:Happy Hour
+activate|move:Heal Bell
+activate|move:Healing Wish
+activate|move:Ingrain
+activate|move:Lock-On
+activate|move:Lunar Dance
+activate|move:Magic Coat
+activate|move:Magnitude
+activate|move:Magnitude|magnitude:4
+activate|move:Magnitude|magnitude:6
+activate|move:Magnitude|magnitude:7
+activate|move:Magnitude|magnitude:8
+activate|move:Mat Block
+activate|move:Max Guard
+activate|move:Mist
+activate|move:Misty Terrain
+activate|move:Poltergeist
+activate|move:Poltergeist|item:*
+activate|move:Powder
+activate|move:Power Split
+activate|move:Protect
+activate|move:Psychic Terrain
+activate|move:Pursuit
+activate|move:Quash
+activate|move:Quick Guard
+activate|move:Safeguard
+activate|move:Sketch
+activate|move:Skill Swap
+activate|move:Smack Down
+activate|move:Snatch
+activate|move:Spectral Thief
+activate|move:Speed Swap
+activate|move:Splash
+activate|move:Sticky Web
+activate|move:Substitute
+activate|move:Substitute|damage
+activate|move:Wide Guard
 addedtype|type:*
 addvolatile|volatile:*|from:Two Turn Move
 addvolatile|volatile:*|from:move:Fly
@@ -121,78 +206,42 @@ block|move:*|from:ability:Flower Veil
 block|move:*|from:ability:Pastel Veil
 block|move:*|from:ability:Sweet Veil
 block|move:*|from:item:Ability Shield
-boost
-boost|from:Evasion Boost
-boost|from:Z-Power
-boost|from:ability:Anger Point|max
-boost|from:ability:Anger Shell
-boost|from:ability:Battle Bond
-boost|from:ability:Beast Boost
-boost|from:ability:Berserk
-boost|from:ability:Chilling Neigh
-boost|from:ability:Commander
-boost|from:ability:Competitive
-boost|from:ability:Dauntless Shield
-boost|from:ability:Defiant
-boost|from:ability:Download
-boost|from:ability:Embody Aspect
-boost|from:ability:Grim Neigh
-boost|from:ability:Intrepid Sword
-boost|from:ability:Lightning Rod
-boost|from:ability:Moody
-boost|from:ability:Motor Drive
-boost|from:ability:Moxie
-boost|from:ability:Opportunist
-boost|from:ability:Rattled
-boost|from:ability:Sap Sipper
-boost|from:ability:Soul-Heart
-boost|from:ability:Speed Boost
-boost|from:ability:Steadfast
-boost|from:ability:Storm Drain
-boost|from:ability:Thermal Exchange
-boost|from:ability:Weak Armor
-boost|from:ability:Well-Baked Body
-boost|from:ability:Wind Rider
-boost|from:condition:Stat Shuffle
-boost|from:item:Blunder Policy
-boost|from:item:Cell Battery
-boost|from:item:Electric Seed
-boost|from:item:Ganlon Berry
-boost|from:item:Kee Berry
-boost|from:item:Liechi Berry
-boost|from:item:Luminous Moss
-boost|from:item:Maranga Berry
-boost|from:item:Max Mushrooms
-boost|from:item:Mirror Herb
-boost|from:item:Starf Berry
-boost|from:item:Throat Spray
-boost|from:item:Weakness Policy
-boost|from:item:X Attack
-boost|from:move:Rage
-boost|from:move:Stockpile
-boost|max
+boost|by:0
+boost|by:0|from:*
+boost|by:1
+boost|by:1|from:*
+boost|by:2
+boost|by:2|from:*
+boost|by:3plus
+boost|by:3plus|from:*
+boost|by:3plus|from:*|max
+boost|by:3plus|max
 cannotescape
 cant|from:Flinch
 cant|from:Must Recharge
+cant|from:ability:Armor Tail
 cant|from:ability:Damp
 cant|from:ability:Dazzling
+cant|from:ability:Queenly Majesty
 cant|from:ability:Truant
 cant|from:move:Attract
 cant|from:move:Aura Wheel
 cant|from:move:Disable
 cant|from:move:Focus Punch
 cant|from:move:Gravity
+cant|from:move:Heal Block
 cant|from:move:Imprison
 cant|from:move:Petal Dance
 cant|from:move:Shell Trap
 cant|from:move:Taunt
+cant|from:move:Telekinesis
 cant|from:move:Throat Chop
 cant|from:status:Freeze
 cant|from:status:Paralysis
 cant|from:status:Sleep
-catchfailed|item:*|shakes:*
-catch|item:*|shakes:*
-catch|item:*|shakes:*|critical
+catchfailed|item:*
+catch|item:*
+catch|item:*|critical
 clearallboosts
 clearboosts|from:ability:Curious Medicine
 clearboosts|from:move:Clear Smog
@@ -257,12 +306,14 @@ damage|from:item:Jaboca Berry
 damage|from:item:Life Orb
 damage|from:item:Rowap Berry
 damage|from:item:Sticky Barb
+damage|from:move:Axe Kick
 damage|from:move:Bind
 damage|from:move:Curse
 damage|from:move:Fire Pledge
 damage|from:move:Flame Burst
 damage|from:move:G-Max Cannonade
 damage|from:move:G-Max Steelsurge
+damage|from:move:High Jump Kick
 damage|from:move:Jump Kick
 damage|from:move:Leech Seed
 damage|from:move:Nightmare
@@ -271,57 +322,84 @@ damage|from:move:Salt Cure
 damage|from:move:Spikes
 damage|from:move:Spiky Shield
 damage|from:move:Stealth Rock
+damage|from:move:Supercell Slam
 damage|from:status:Bad Poison
 damage|from:status:Burn
 damage|from:status:Poison
 damage|from:weather:Hail
 damage|from:weather:Sandstorm
-deductpp|move:*
+deductpp|move:*|by:3plus
 didnotlearnmove|move:*
 drag
 dynamax
+end|ability:Flash Fire
 end|ability:Flash Fire|silent
 end|ability:Illusion
 end|ability:Neutralizing Gas
 end|ability:Protosynthesis
 end|ability:Quark Drive
 end|ability:Slow Start
+end|ability:Supreme Overlord
 end|ability:Supreme Overlord|silent
 end|condition:Commanding
 end|condition:Confusion
+end|condition:Future Move
+end|condition:Highlighting Sample
+end|condition:Immobilized
+end|move:Attract
 end|move:Bide
 end|move:Bind
 end|move:Bind|silent
+end|move:Charge
 end|move:Charge|silent
 end|move:Disable
 end|move:Doom Desire
+end|move:Embargo
 end|move:Encore
 end|move:Future Sight
 end|move:Heal Block
+end|move:Laser Focus
 end|move:Laser Focus|silent
 end|move:Leech Seed
 end|move:Magnet Rise
+end|move:Octolock
 end|move:Octolock|silent
 end|move:Power Trick
+end|move:Salt Cure
 end|move:Sky Drop
 end|move:Stockpile
 end|move:Substitute
+end|move:Syrup Bomb
 end|move:Syrup Bomb|silent
+end|move:Taunt
 end|move:Telekinesis
+end|move:Throat Chop
+end|move:Torment
+end|move:Uproar
+end|move:Yawn
 end|move:Yawn|silent
 escaped
 exp
 fail
 fail|from:weather:Extremely Harsh Sunlight
 fail|from:weather:Heavy Rain
-fail|what:*
-fail|what:*|boosts:*|from:ability:Clear Body
-fail|what:*|boosts:*|from:ability:Hyper Cutter
-fail|what:*|boosts:*|from:ability:Keen Eye
-fail|what:*|boosts:*|from:ability:Mind's Eye
-fail|what:*|boosts:*|from:ability:Own Tempo
-fail|what:*|from:move:Substitute
-fail|what:*|from:move:Uproar
+fail|what:heal
+fail|what:move:Corrosive Gas
+fail|what:move:Soak
+fail|what:move:Teatime
+fail|what:status:Sleep|from:move:Uproar
+fail|what:unboost|boosts:acc|from:ability:Clear Body
+fail|what:unboost|boosts:acc|from:ability:Full Metal Body
+fail|what:unboost|boosts:acc|from:ability:Illuminate
+fail|what:unboost|boosts:acc|from:ability:Keen Eye
+fail|what:unboost|boosts:acc|from:ability:Mind's Eye
+fail|what:unboost|boosts:acc|from:ability:White Smoke
+fail|what:unboost|boosts:atk|from:ability:Clear Body
+fail|what:unboost|boosts:atk|from:ability:Full Metal Body
+fail|what:unboost|boosts:atk|from:ability:Hyper Cutter
+fail|what:unboost|boosts:atk|from:ability:Own Tempo
+fail|what:unboost|boosts:atk|from:ability:White Smoke
+fail|what:unboost|from:move:Substitute
 faint
 fieldactivate|condition:Stat Shuffle
 fieldactivate|move:Fairy Lock
@@ -330,10 +408,13 @@ fieldactivate|move:Teatime
 fieldactivate|weather:Strong Winds
 fieldend|move:Electric Terrain
 fieldend|move:Grassy Terrain
+fieldend|move:Gravity
 fieldend|move:Magic Room
 fieldend|move:Misty Terrain
 fieldend|move:Mud Sport
 fieldend|move:Psychic Terrain
+fieldend|move:Trick Room
+fieldend|move:Water Sport
 fieldend|move:Wonder Room
 fieldstart|condition:Stat Shuffle
 fieldstart|move:Electric Terrain
@@ -347,6 +428,7 @@ fieldstart|move:Misty Terrain
 fieldstart|move:Mud Sport
 fieldstart|move:Psychic Terrain
 fieldstart|move:Trick Room
+fieldstart|move:Water Sport
 fieldstart|move:Wonder Room
 forfeited
 formechange|from:Faint
@@ -402,6 +484,7 @@ heal|from:item:Oran Berry
 heal|from:item:Potion
 heal|from:item:Shell Bell
 heal|from:item:Sitrus Berry
+heal|from:item:Sweet Heart
 heal|from:move:Aqua Ring
 heal|from:move:Grassy Terrain
 heal|from:move:Healing Wish
@@ -409,47 +492,127 @@ heal|from:move:Ingrain
 heal|from:move:Leech Seed
 heal|from:move:Lunar Dance
 heal|from:move:Wish
-hitcount|hits:*
+hitcount
 immune
 immune|from:ability:Bulletproof
 immune|from:ability:Dry Skin
+immune|from:ability:Earth Eater
 immune|from:ability:Flash Fire
 immune|from:ability:Good as Gold
+immune|from:ability:Immunity
 immune|from:ability:Insomnia
 immune|from:ability:Leaf Guard
+immune|from:ability:Lightning Rod
 immune|from:ability:Limber
+immune|from:ability:Motor Drive
 immune|from:ability:Oblivious
 immune|from:ability:Overcoat
 immune|from:ability:Own Tempo
 immune|from:ability:Pastel Veil
 immune|from:ability:Purifying Salt
+immune|from:ability:Sap Sipper
 immune|from:ability:Shields Down
 immune|from:ability:Soundproof
+immune|from:ability:Storm Drain
 immune|from:ability:Sturdy
 immune|from:ability:Thermal Exchange
+immune|from:ability:Vital Spirit
 immune|from:ability:Volt Absorb
 immune|from:ability:Water Absorb
 immune|from:ability:Water Bubble
+immune|from:ability:Water Veil
+immune|from:ability:Well-Baked Body
+immune|from:ability:Wind Rider
 immune|from:ability:Wonder Guard
 info|battletype:*
 info|environment:*
 info|rule:*
 invertboosts|from:move:Topsy-Turvy
-itemend|item:*
-itemend|item:*|eat
-itemend|item:*|from:ability:Magician
-itemend|item:*|from:ability:Pickpocket
-itemend|item:*|from:ability:Symbiosis
-itemend|item:*|from:item:Sticky Barb
-itemend|item:*|from:move:Bestow
-itemend|item:*|from:move:Corrosive Gas
-itemend|item:*|from:move:Fling|silent
-itemend|item:*|from:move:Incinerate
-itemend|item:*|from:move:Knock Off
-itemend|item:*|from:move:Pluck
-itemend|item:*|from:move:Switcheroo
-itemend|item:*|from:move:Thief
-itemend|item:*|from:move:Trick
+itemend|item:Ability Shield|from:move:Knock Off
+itemend|item:Aguav Berry|eat
+itemend|item:Air Balloon
+itemend|item:Berry Juice
+itemend|item:Blunder Policy
+itemend|item:Booster Energy
+itemend|item:Cell Battery
+itemend|item:Cheri Berry|eat
+itemend|item:Cheri Berry|from:ability:Magician
+itemend|item:Cheri Berry|from:ability:Symbiosis
+itemend|item:Cheri Berry|from:move:Covet
+itemend|item:Cheri Berry|from:move:Fling|silent
+itemend|item:Cheri Berry|from:move:Thief
+itemend|item:Chilan Berry|eat
+itemend|item:Choice Band|from:move:Knock Off
+itemend|item:Choice Band|from:move:Switcheroo
+itemend|item:Choice Band|from:move:Trick
+itemend|item:Custap Berry|eat
+itemend|item:Eject Button
+itemend|item:Eject Pack
+itemend|item:Electric Seed
+itemend|item:Enigma Berry|eat
+itemend|item:Fire Gem
+itemend|item:Fire Gem|from:move:Incinerate
+itemend|item:Focus Sash
+itemend|item:Ganlon Berry|eat
+itemend|item:Griseous Core|from:move:Thief
+itemend|item:Griseous Orb|from:move:Covet
+itemend|item:Griseous Orb|from:move:Thief
+itemend|item:Haban Berry|eat
+itemend|item:Iron Ball|from:move:Fling|silent
+itemend|item:Jaboca Berry|eat
+itemend|item:Kasib Berry|eat
+itemend|item:Kee Berry|eat
+itemend|item:Leppa Berry|eat
+itemend|item:Leppa Berry|from:ability:Magician
+itemend|item:Liechi Berry|eat
+itemend|item:Lum Berry|eat
+itemend|item:Lum Berry|from:move:Bug Bite
+itemend|item:Lum Berry|from:move:Pluck
+itemend|item:Luminous Moss
+itemend|item:Maranga Berry|eat
+itemend|item:Mental Herb
+itemend|item:Mental Herb|from:move:Fling|silent
+itemend|item:Micle Berry|eat
+itemend|item:Mirror Herb
+itemend|item:Normal Gem
+itemend|item:Occa Berry|eat
+itemend|item:Oran Berry|eat
+itemend|item:Oran Berry|from:ability:Magician
+itemend|item:Oran Berry|from:move:Incinerate
+itemend|item:Oran Berry|from:move:Knock Off
+itemend|item:Passho Berry|eat
+itemend|item:Pecha Berry|from:move:Bug Bite
+itemend|item:Pecha Berry|from:move:Fling|silent
+itemend|item:Pecha Berry|from:move:Pluck
+itemend|item:Power Anklet|from:move:Switcheroo
+itemend|item:Power Anklet|from:move:Trick
+itemend|item:Power Herb
+itemend|item:Rawst Berry|eat
+itemend|item:Rawst Berry|from:move:Knock Off
+itemend|item:Red Card
+itemend|item:Room Service
+itemend|item:Rowap Berry|eat
+itemend|item:Safety Goggles|from:move:Covet
+itemend|item:Safety Goggles|from:move:Switcheroo
+itemend|item:Safety Goggles|from:move:Thief
+itemend|item:Safety Goggles|from:move:Trick
+itemend|item:Sitrus Berry|eat
+itemend|item:Sitrus Berry|from:move:Corrosive Gas
+itemend|item:Starf Berry|eat
+itemend|item:Sticky Barb|from:item:Sticky Barb
+itemend|item:Sticky Barb|from:move:Bestow
+itemend|item:Throat Spray
+itemend|item:Toxic Orb|from:ability:Pickpocket
+itemend|item:Toxic Orb|from:move:Fling|silent
+itemend|item:Toxic Orb|from:move:Switcheroo
+itemend|item:Toxic Orb|from:move:Trick
+itemend|item:Utility Umbrella|from:move:Fling|silent
+itemend|item:Utility Umbrella|from:move:Switcheroo
+itemend|item:Utility Umbrella|from:move:Trick
+itemend|item:Venusaurite|from:move:Fling|silent
+itemend|item:Weakness Policy
+itemend|item:White Herb
+itemend|item:White Herb|from:move:Fling|silent
 itemstart|item:*|from:ability:Ball Fetch
 itemstart|item:*|from:ability:Harvest
 itemstart|item:*|from:ability:Magician
@@ -458,12 +621,14 @@ itemstart|item:*|from:ability:Pickup
 itemstart|item:*|from:ability:Symbiosis
 itemstart|item:*|from:item:Sticky Barb
 itemstart|item:*|from:move:Bestow
+itemstart|item:*|from:move:Covet
 itemstart|item:*|from:move:G-Max Replenish
 itemstart|item:*|from:move:Recycle
 itemstart|item:*|from:move:Switcheroo
 itemstart|item:*|from:move:Thief
 itemstart|item:*|from:move:Trick
-item|item:*|from:ability:Frisk
+item|item:Cheri Berry|from:ability:Frisk
+item|item:Life Orb|from:ability:Frisk
 learnedmove|move:*
 learnedmove|move:*|forgot:*
 levelup
@@ -490,10 +655,8 @@ move|from:move:Copycat|noanim
 move|from:move:Grass Pledge
 move|from:move:Instruct
 move|from:move:Magic Coat
-move|from:move:Magic Coat|spread:*
 move|from:move:Me First
 move|from:move:Metronome
-move|from:move:Metronome|spread:*
 move|from:move:Metronome|zpower
 move|from:move:Mirror Move
 move|from:move:Mirror Move|noanim
@@ -504,7 +667,6 @@ move|from:move:Snatch
 move|from:move:Water Pledge
 move|noanim
 move|notarget
-move|spread:*
 move|zpower
 move|zpower|noanim
 ohko
@@ -520,6 +682,7 @@ prepare|move:Shadow Force
 prepare|move:Skull Bash
 prepare|move:Sky Drop
 prepare|move:Solar Beam
+prepare|move:Solar Blade
 primal|from:item:Blue Orb
 primal|from:item:Red Orb
 protectweaken
@@ -531,49 +694,77 @@ resettypechange|from:ability:Mimicry
 residual
 resisted
 resisted|battletype:singles
-restorepp|move:*|from:item:Leppa Berry
+restorepp|move:*|by:1|from:item:Leppa Berry
+restorepp|move:*|by:3plus|from:item:Leppa Berry
 revertdynamax
 revertgigantamax
 revertmega|from:Faint
 revertprimal|from:Faint
 reverttera
 revertultra|from:Faint
+revive|from:item:Max Honey
 revive|from:item:Max Revive
 revive|from:item:Revive
 revive|from:move:Revival Blessing
 sethp
-setpp|move:*|to:*|from:move:Grudge
+setpp|move:*|from:move:Grudge
 side
 sideend|move:Aurora Veil
+sideend|move:Brick Break
+sideend|move:Defog
+sideend|move:Fire Pledge
+sideend|move:G-Max Cannonade
+sideend|move:G-Max Steelsurge
+sideend|move:G-Max Vine Lash
+sideend|move:G-Max Volcalith
+sideend|move:G-Max Wildfire
+sideend|move:Grass Pledge
 sideend|move:Light Screen
+sideend|move:Lucky Chant
 sideend|move:Mist
+sideend|move:Mortal Spin
+sideend|move:Psychic Fangs
+sideend|move:Raging Bull
+sideend|move:Rapid Spin
 sideend|move:Reflect
+sideend|move:Safeguard
 sideend|move:Spikes
 sideend|move:Stealth Rock
 sideend|move:Sticky Web
 sideend|move:Tailwind
+sideend|move:Tidy Up
 sideend|move:Toxic Spikes
+sideend|move:Water Pledge
 sidestart|move:Aurora Veil
 sidestart|move:Fire Pledge
 sidestart|move:G-Max Cannonade
+sidestart|move:G-Max Resonance
 sidestart|move:G-Max Steelsurge
+sidestart|move:G-Max Stonesurge
+sidestart|move:G-Max Vine Lash
+sidestart|move:G-Max Volcalith
+sidestart|move:G-Max Wildfire
 sidestart|move:Grass Pledge
 sidestart|move:Light Screen
+sidestart|move:Lucky Chant
 sidestart|move:Mist
+sidestart|move:Pursuit
 sidestart|move:Reflect
 sidestart|move:Safeguard
-sidestart|move:Spikes|count:*
+sidestart|move:Spikes
 sidestart|move:Stealth Rock
 sidestart|move:Sticky Web
 sidestart|move:Tailwind
-sidestart|move:Toxic Spikes|count:*
+sidestart|move:Toxic Spikes
 sidestart|move:Water Pledge
 singlemove|move:Destiny Bond
 singlemove|move:Glaive Rush
 singlemove|move:Grudge
+singleturn|condition:Protect Move Condition Base
 singleturn|condition:Z-Power
 singleturn|move:Beak Blast
 singleturn|move:Crafty Shield
+singleturn|move:Detect
 singleturn|move:Electrify
 singleturn|move:Endure
 singleturn|move:Focus Punch
@@ -598,11 +789,15 @@ start|ability:Flash Fire
 start|ability:Flash Fire|silent
 start|ability:Protosynthesis
 start|ability:Quark Drive
-start|ability:Supreme Overlord|fallen:*|silent
+start|ability:Slow Start
+start|ability:Supreme Overlord
+start|ability:Supreme Overlord|silent
 start|condition:Commanding
 start|condition:Confusion
 start|condition:Confusion|fatigue
 start|condition:Confusion|from:ability:Poison Puppeteer
+start|condition:Future Move
+start|condition:Highlighting Sample
 start|move:Aqua Ring
 start|move:Attract
 start|move:Attract|from:ability:Cute Charm
@@ -612,6 +807,7 @@ start|move:Bide
 start|move:Charge
 start|move:Charge|from:ability:Wind Power
 start|move:Curse
+start|move:Disable
 start|move:Disable|disabledmove:*
 start|move:Doom Desire
 start|move:Dragon Cheer
@@ -622,28 +818,30 @@ start|move:Focus Energy
 start|move:Focus Energy|silent
 start|move:Foresight
 start|move:Future Sight
-start|move:G-Max Chi Strike|count:*
+start|move:G-Max Chi Strike
 start|move:Heal Block
 start|move:Imprison
 start|move:Ingrain
 start|move:Laser Focus
 start|move:Leech Seed
 start|move:Magnet Rise
+start|move:Mimic
 start|move:Mimic|mimic:*
 start|move:Miracle Eye
 start|move:Nightmare
 start|move:No Retreat
 start|move:Octolock
-start|move:Perish Song|perish:*
+start|move:Perish Song
 start|move:Power Trick
 start|move:Salt Cure
 start|move:Smack Down
-start|move:Stockpile|count:*
+start|move:Stockpile
 start|move:Substitute
 start|move:Syrup Bomb
 start|move:Tar Shot
 start|move:Taunt
 start|move:Telekinesis
+start|move:Throat Chop
 start|move:Throat Chop|silent
 start|move:Torment
 start|move:Uproar
@@ -675,7 +873,7 @@ supereffective|battletype:singles
 swapboosts|from:move:Heart Swap
 swapboosts|from:move:Power Swap
 swapplayer
-swapsideconditions|with:*|from:move:Court Change
+swapsideconditions|from:move:Court Change
 swapsidecondition|condition:*|from:move:Court Change
 swap|from:Auto-Shift
 swap|from:Player Choice
@@ -689,39 +887,27 @@ teampreviewstart
 teamsize
 tera|type:*
 tie
-transform|into:*
-transform|into:*|from:ability:Imposter
-turn|turn:*
+transform
+transform|from:ability:Imposter
+turn
 typechange|types:*
 typechange|types:*|from:ability:Color Change
+typechange|types:*|from:ability:Libero
 typechange|types:*|from:ability:Mimicry
 typechange|types:*|from:ability:Protean
 ultra|from:item:Ultranecrozium Z
-unboost
-unboost|from:Drop Attack
-unboost|from:ability:Anger Shell
-unboost|from:ability:Cotton Down
-unboost|from:ability:Gooey
-unboost|from:ability:Gulp Missile
-unboost|from:ability:Intimidate
-unboost|from:ability:Mirror Armor
-unboost|from:ability:Moody
-unboost|from:ability:Supersweet Syrup
-unboost|from:ability:Weak Armor
-unboost|from:condition:Stat Shuffle
-unboost|from:item:Room Service
-unboost|from:move:King's Shield
-unboost|from:move:Obstruct
-unboost|from:move:Octolock
-unboost|from:move:Silk Trap
-unboost|from:move:Sticky Web
-unboost|from:move:Stockpile
-unboost|from:move:Syrup Bomb
-unboost|min
+unboost|by:0
+unboost|by:1
+unboost|by:1|from:*
+unboost|by:2
+unboost|by:2|from:*
+unboost|by:3plus|from:*
+unboost|by:3plus|min
 uncatchable
 uncatchable|thief
 useitem
-waiting|on:*
+waiting
+weather|weather:Extremely Harsh Sunlight
 weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land
 weather|weather:Extremely Harsh Sunlight|residual
 weather|weather:Hail
@@ -733,6 +919,7 @@ weather|weather:Harsh Sunlight|from:Start
 weather|weather:Harsh Sunlight|from:ability:Drought
 weather|weather:Harsh Sunlight|from:ability:Orichalcum Pulse
 weather|weather:Harsh Sunlight|residual
+weather|weather:Heavy Rain
 weather|weather:Heavy Rain|from:ability:Primordial Sea
 weather|weather:Heavy Rain|residual
 weather|weather:Rain
@@ -747,6 +934,7 @@ weather|weather:Snow
 weather|weather:Snow|from:Start
 weather|weather:Snow|from:ability:Snow Warning
 weather|weather:Snow|residual
+weather|weather:Strong Winds
 weather|weather:Strong Winds|from:ability:Delta Stream
 weather|weather:Strong Winds|residual
 win

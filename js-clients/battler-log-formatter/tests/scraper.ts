@@ -25,23 +25,38 @@ export function maskLog(line: string): string[] {
       
       if (scraperConfig.excludeTags.includes(k)) continue;
       
-      let keepSpecific = false;
-      if (scraperConfig.keepSpecificTags.includes(k)) {
-          keepSpecific = true;
+      if (k === 'by') {
+          const num = Number(v);
+          if (!isNaN(num) && num >= 3) {
+              tags.push(`${k}:3plus`);
+              continue;
+          }
       }
-      
-      if (keepSpecific) {
-        tags.push(`${k}:${v}`);
-      } else {
-        tags.push(`${k}:*`);
-      }
+
+      tags.push(`${k}:${v}`);
     } else {
       flags.push(p);
     }
   }
 
   for (const rule of scraperConfig.collapseDimensions || []) {
-      if (title === rule.match.title) {
+      let isMatch = true;
+      for (const [matchK, matchV] of Object.entries(rule.match)) {
+          if (matchK === 'title') {
+              if (title !== matchV) {
+                  isMatch = false;
+                  break;
+              }
+          } else {
+              const hasTag = tags.some(t => t === `${matchK}:${matchV}`);
+              if (!hasTag) {
+                  isMatch = false;
+                  break;
+              }
+          }
+      }
+
+      if (isMatch) {
           for (let i = 0; i < tags.length; i++) {
               const [k] = tags[i].split(':');
               if (rule.collapse.includes(k)) {
@@ -55,7 +70,23 @@ export function maskLog(line: string): string[] {
   const results = [basePattern];
 
   for (const rule of scraperConfig.injectDimensions || []) {
-      if (title === rule.match.title) {
+      let isMatch = true;
+      for (const [matchK, matchV] of Object.entries(rule.match)) {
+          if (matchK === 'title') {
+              if (title !== matchV) {
+                  isMatch = false;
+                  break;
+              }
+          } else {
+              const hasTag = tags.some(t => t === `${matchK}:${matchV}`);
+              if (!hasTag) {
+                  isMatch = false;
+                  break;
+              }
+          }
+      }
+
+      if (isMatch) {
           for (const injected of rule.inject) {
               results.push([title, ...tags, injected, ...flags].join('|'));
           }
@@ -115,34 +146,172 @@ function extractLogsFromRs(): { raw: string[], patterns: Set<string> } {
   return { raw: Array.from(allLogs), patterns: allPatterns };
 }
 
-function extractLogsFromFxlang(): string[] {
-  const FXLANG_TESTS_DIR = path.resolve(import.meta.dirname, "../../../battler/tests/data");
-  
-  let files: string[] = [];
-  try {
-      files = fs.readdirSync(FXLANG_TESTS_DIR)
-          .filter(f => f.endsWith(".txt"))
-          .map(f => path.resolve(FXLANG_TESTS_DIR, f));
-  } catch (e) {
-      return [];
+interface EffectEntry { type: string, name: string, program: string, delegates: string[] }
+let effectRegistry: Map<string, EffectEntry> | null = null;
+
+function buildEffectRegistry(): Map<string, EffectEntry> {
+    if (effectRegistry) return effectRegistry;
+    effectRegistry = new Map<string, EffectEntry>();
+    const BATTLE_DATA_DIR = path.resolve(import.meta.dirname, "../../../battle-data/data");
+
+    function getTypeFromCondition(condType?: string): string {
+      if (!condType) return "condition";
+      const lower = condType.toLowerCase();
+      if (lower === "status" || lower === "weather" || lower === "volatile") return lower;
+      return "condition";
+    }
+
+    function extractStrings(obj: any): string {
+        if (typeof obj === 'string') return obj;
+        if (Array.isArray(obj)) return obj.map(extractStrings).join('\n');
+        if (obj && typeof obj === 'object') {
+            return Object.values(obj).map(extractStrings).join('\n');
+        }
+        return '';
+    }
+
+    function readAllJsonFiles(dir: string): string[] {
+      let results: string[] = [];
+      const list = fs.readdirSync(dir);
+      for (const file of list) {
+        const fullPath = path.resolve(dir, file);
+        const stat = fs.statSync(fullPath);
+        if (stat && stat.isDirectory()) {
+          results = results.concat(readAllJsonFiles(fullPath));
+        } else if (fullPath.endsWith(".json")) {
+          results.push(fullPath);
+        }
+      }
+      return results;
+    }
+
+    const jsonFiles = readAllJsonFiles(BATTLE_DATA_DIR);
+    for (const file of jsonFiles) {
+      const relPath = path.relative(BATTLE_DATA_DIR, file);
+      let defaultType = "effect";
+      if (relPath.startsWith("abilities")) defaultType = "ability";
+      else if (relPath.startsWith("items")) defaultType = "item";
+      else if (relPath.startsWith("moves")) defaultType = "move";
+      else if (relPath.startsWith("clauses")) defaultType = "clause";
+
+      const content = JSON.parse(fs.readFileSync(file, "utf-8"));
+      
+      const processObj = (key: string, obj: any, typeOverride?: string) => {
+          if (!obj || typeof obj !== 'object') return;
+          const name = obj.name || key;
+          const type = typeOverride || (obj.condition_type ? getTypeFromCondition(obj.condition_type) : defaultType);
+          
+          const programStr = extractStrings(obj.program || obj);
+          
+          const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+          const delegates = obj.delegates || obj.effect?.delegates || obj.condition?.delegates || [];
+
+          const entry = {
+              type,
+              name,
+              program: programStr,
+              delegates: delegates
+          };
+
+          effectRegistry!.set(name, entry);
+          effectRegistry!.set(id, entry);
+          effectRegistry!.set(`${type}:${id}`, entry);
+          // Also sometimes it's referenced as condition:id even if type is ability
+          effectRegistry!.set(`condition:${id}`, entry);
+      };
+
+      if (Array.isArray(content)) {
+          for (const val of content) processObj(val.name || "Unknown", val);
+      } else {
+          for (const [key, val] of Object.entries(content)) {
+              if (val && typeof val === 'object') {
+                  processObj(key, val);
+              }
+          }
+      }
+    }
+    
+    return effectRegistry;
+}
+
+function extractLogsFromFxlang(): Set<string> {
+  const fxlangLogs = new Set<string>();
+  const registry = buildEffectRegistry();
+
+  function getLogsForEffect(effect: any, visited: Set<any>): { logType: string, fromEffect: boolean }[] {
+      if (visited.has(effect)) return [];
+      visited.add(effect);
+      
+      const logs: { logType: string, fromEffect: boolean }[] = [];
+      const regex = /log_([a-z_]+)(?:\:\s*([^"'\n\]]+))?/g;
+      let match;
+      while ((match = regex.exec(effect.program)) !== null) {
+          const logType = match[1];
+          const customArg = match[2];
+          
+          if (logType === "custom_effect" && customArg) {
+              logs.push({ logType: customArg, fromEffect: false });
+          } else {
+              logs.push({ logType, fromEffect: customArg && customArg.includes("from_effect") });
+          }
+      }
+      
+      const sideAddRegex = /add_side_condition/g;
+      if (sideAddRegex.test(effect.program)) {
+          logs.push({ logType: "sidestart", fromEffect: false });
+      }
+      const sideRemoveRegex = /remove_side_condition/g;
+      if (sideRemoveRegex.test(effect.program)) {
+          logs.push({ logType: "sideend", fromEffect: false });
+      }
+      
+      for (const delegateId of (effect.delegates || [])) {
+          const delegateEffect = registry.get(delegateId);
+          if (delegateEffect) {
+              logs.push(...getLogsForEffect(delegateEffect, visited));
+          }
+      }
+      
+      return logs;
   }
 
-  const fxlangLogs: string[] = [];
-
-  for (const file of files) {
-      const content = fs.readFileSync(file, "utf-8");
-      const lines = content.split('\n');
-      let inLogs = false;
-      for (const line of lines) {
-          if (line.trim() === 'LOGS:') {
-              inLogs = true;
-              continue;
+  const uniqueEffects = new Set(registry.values());
+  for (const effect of uniqueEffects) {
+      const name = effect.name;
+      const logs = getLogsForEffect(effect, new Set());
+      for (const rawLog of logs) {
+          const type = effect.type;
+          let logName = rawLog.logType.replace(/_/g, '');
+          
+          if (rawLog.logType === "fail_unboost") {
+              logName = "fail_unboost";
+          } else if (rawLog.logType === "fail_heal") {
+              logName = "fail_heal";
           }
-          if (inLogs && line.trim() && !line.startsWith('>>') && !line.startsWith('=')) {
-              fxlangLogs.push(line.trim());
-          }
-          if (line.trim() === '') {
-              inLogs = false;
+          
+          const ALWAYS_FROM_EFFECT = new Set(scraperConfig.alwaysFromEffectLogs || []);
+          
+          const isFrom = rawLog.fromEffect || ALWAYS_FROM_EFFECT.has(logName);
+          
+          if (logName === "fail") {
+              if (isFrom) {
+                  fxlangLogs.add(`fail|from:${type}:${name}`);
+              } else {
+                  fxlangLogs.add(`fail|what:${type}:${name}`);
+              }
+          } else if (logName === "fail_unboost") {
+              if (isFrom) {
+                  fxlangLogs.add(`fail|what:unboost|from:${type}:${name}`);
+              } else {
+                  fxlangLogs.add(`fail|what:unboost|${type}:${name}`);
+              }
+          } else if (logName === "fail_heal") {
+              fxlangLogs.add(`fail|what:heal|${type}:${name}`);
+          } else if (isFrom) {
+              fxlangLogs.add(`${logName}|from:${type}:${name}`);
+          } else {
+              fxlangLogs.add(`${logName}|${type}:${name}`);
           }
       }
   }
@@ -152,12 +321,101 @@ function extractLogsFromFxlang(): string[] {
 
 function generateMatrix() {
   const extracted = extractLogsFromRs();
+  const validTemplates = new Set<string>();
+  
+  function getTemplate(pattern: string): string {
+      const parts = pattern.split('|');
+      const title = parts[0];
+      const tempParts = [title];
+      for (let i = 1; i < parts.length; i++) {
+          if (!parts[i].includes(':')) {
+              tempParts.push(parts[i]);
+          } else {
+              const firstColon = parts[i].indexOf(':');
+              const k = parts[i].substring(0, firstColon);
+              const v = parts[i].substring(firstColon + 1);
+              if (v.includes(':')) {
+                  const secondColon = v.indexOf(':');
+                  const type = v.substring(0, secondColon);
+                  tempParts.push(`${k}:${type}:*`);
+              } else {
+                  tempParts.push(`${k}:*`);
+              }
+          }
+      }
+      return tempParts.join('|');
+  }
+
+  for (const pattern of extracted.patterns) {
+      validTemplates.add(getTemplate(pattern));
+  }
+
   const fxlangPatterns = extractLogsFromFxlang();
   
   for (const pattern of fxlangPatterns) {
       const maskedList = maskLog(pattern);
       for (const masked of maskedList) {
-          extracted.patterns.add(masked);
+          const tpl = getTemplate(masked);
+          if (!validTemplates.has(tpl)) {
+              console.warn(`[WARNING] Dropping illegal pattern not seen in tests: ${masked} (template: ${tpl})`);
+          } else {
+              extracted.patterns.add(masked);
+          }
+      }
+  }
+
+  const registry = buildEffectRegistry();
+  const uniqueEffects = new Set(registry.values());
+  const newClonedPatterns = new Set<string>();
+
+  for (const effect of uniqueEffects) {
+      if (!effect.delegates || effect.delegates.length === 0) continue;
+      
+      const allDelegates = new Set<string>();
+      const queue = [...effect.delegates];
+      const visited = new Set<string>();
+      
+      while(queue.length > 0) {
+          const dId = queue.shift()!;
+          if (visited.has(dId)) continue;
+          visited.add(dId);
+          
+          const dEffect = registry.get(dId);
+          if (dEffect) {
+              allDelegates.add(`${dEffect.type}:${dEffect.name}`);
+              if (dEffect.delegates) queue.push(...dEffect.delegates);
+          }
+      }
+
+      if (allDelegates.size === 0) continue;
+
+      const eSig = `${effect.type}:${effect.name}`;
+
+      for (const pattern of extracted.patterns) {
+          for (const dSig of allDelegates) {
+              // Ensure we only replace complete tags by surrounding with |
+              // But tags can be preceded by | and followed by | or end of line.
+              // Also consider they might be prefixed with `from:`
+              if (pattern.includes(`|${dSig}|`) || pattern.endsWith(`|${dSig}`)) {
+                  const clonedPattern = pattern.split(`|${dSig}|`).join(`|${eSig}|`);
+                  const finalCloned = clonedPattern.endsWith(`|${dSig}`) ? clonedPattern.slice(0, -`|${dSig}`.length) + `|${eSig}` : clonedPattern;
+                  newClonedPatterns.add(finalCloned);
+              }
+              if (pattern.includes(`|from:${dSig}|`) || pattern.endsWith(`|from:${dSig}`)) {
+                  const clonedPattern = pattern.split(`|from:${dSig}|`).join(`|from:${eSig}|`);
+                  const finalCloned = clonedPattern.endsWith(`|from:${dSig}`) ? clonedPattern.slice(0, -`|from:${dSig}`.length) + `|from:${eSig}` : clonedPattern;
+                  newClonedPatterns.add(finalCloned);
+              }
+          }
+      }
+  }
+
+  for (const cloned of newClonedPatterns) {
+      const tpl = getTemplate(cloned);
+      if (!validTemplates.has(tpl)) {
+          // Do nothing, drop it
+      } else {
+          extracted.patterns.add(cloned);
       }
   }
 
@@ -266,33 +524,7 @@ function generateMatrix() {
           if (match) {
               const k = match[1];
               if (!allGeneratedFallbacks.has(k)) {
-                  let isProtected = false;
-                  
-                  const parts = k.split('__');
-                  for (let i = 1; i < parts.length; i++) {
-                      const prefix = parts.slice(0, i).join('__');
-                      if (undefinedKeys.has(prefix)) {
-                          isProtected = true;
-                          break;
-                      }
-                  }
-                  
-                  if (!isProtected && parts.length > 1) {
-                      const lastPart = parts[parts.length - 1];
-                      if (lastPart.includes('_')) {
-                          const tagParts = lastPart.split('_');
-                          tagParts[tagParts.length - 1] = 'any';
-                          const wildcardLast = tagParts.join('_');
-                          const wildcardKey = [...parts.slice(0, -1), wildcardLast].join('__');
-                          if (undefinedKeys.has(wildcardKey)) {
-                              isProtected = true;
-                          }
-                      }
-                  }
-
-                  if (!isProtected) {
-                      staleKeys.push(k);
-                  }
+                  staleKeys.push(k);
               }
           }
       }
