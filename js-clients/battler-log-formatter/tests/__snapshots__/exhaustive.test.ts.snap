@@ -351,14 +351,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Corviknight,player-1,1|ability:Mirror Armor",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "ability__ability_mirrorarmor",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Corviknight's",
@@ -382,14 +375,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Cursola,player-2,1|ability:Perish Body",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "ability__ability_perishbody",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Cursola's",
@@ -542,14 +528,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Goomy,player-2,1|ability:Gooey",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "ability__ability_gooey",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Goomy's",
@@ -659,14 +638,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Meganium,player-1,1|ability:Mega Sol",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "ability__ability_megasol",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Meganium's",
@@ -943,14 +915,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
 {
   "rawLog": "ability|mon:Terapagos,player-1,1|ability:Teraform Zero",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "ability__ability_teraformzero",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Terapagos's",
@@ -1177,14 +1142,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Banette,player-1,1|ability:No Ability|from:move:Role Play",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_roleplay",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Banette's",
@@ -1208,14 +1166,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Budew,player-1,1|ability:Leaf Guard|from:move:Skill Swap",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_skillswap",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Budew's",
@@ -1282,14 +1233,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Castform,player-1,1|ability:Forecast|from:move:Worry Seed|of:Ditto,player-2,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_worryseed",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Castform's",
@@ -1313,14 +1257,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Conkeldurr,player-1,1|ability:Sheer Force|from:ability:Mummy|of:Conkeldurr,player-2,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_ability_mummy",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Conkeldurr's",
@@ -1344,14 +1281,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Grafaiai,player-1,1|ability:No Ability|from:move:Doodle",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_doodle",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Grafaiai's",
@@ -1375,14 +1305,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Grafaiai,player-1,2|ability:No Ability|from:move:Doodle|of:Grafaiai,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_doodle",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Grafaiai's",
@@ -1406,14 +1329,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Leavanny,player-2,1|ability:Inner Focus|from:move:Entrainment|of:Leavanny,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_entrainment",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Leavanny's",
@@ -1437,14 +1353,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Leavanny,player-2,1|ability:Wonder Guard|from:move:Entrainment|of:Leavanny,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_entrainment",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Leavanny's",
@@ -1468,14 +1377,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Linoone,player-2,1|ability:No Ability|from:move:Skill Swap|of:Magcargo,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_skillswap",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Linoone's",
@@ -1499,14 +1401,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Magcargo,player-1,1|ability:Magma Armor|from:move:Skill Swap",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_skillswap",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Magcargo's",
@@ -1573,14 +1468,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Oinkologne,player-1,1|ability:Gluttony|from:ability:Lingering Aroma|of:Oinkologne,player-2,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_ability_lingeringaroma",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Oinkologne's",
@@ -1604,14 +1492,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Passimian,player-1,1|ability:Receiver|from:ability:Receiver",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_ability_receiver",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Passimian's",
@@ -1635,14 +1516,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Ralts,player-1,1|ability:Trace|from:ability:Trace",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_ability_trace",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Ralts's",
@@ -1666,14 +1540,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Ralts,player-2,1|ability:No Ability|from:move:Worry Seed|of:Ralts,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_worryseed",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Ralts's",
@@ -1740,14 +1607,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Runerigus,player-1,1|ability:Mold Breaker|from:ability:Wandering Spirit|of:Runerigus,player-2,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_ability_wanderingspirit",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Runerigus's",
@@ -1771,14 +1631,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Runerigus,player-1,1|ability:Wandering Spirit|from:ability:Wandering Spirit",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_ability_wanderingspirit",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Runerigus's",
@@ -1802,14 +1655,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Runerigus,player-2,1|ability:Wandering Spirit|from:ability:Wandering Spirit",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_ability_wanderingspirit",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Runerigus's",
@@ -1833,14 +1679,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
 {
   "rawLog": "abilityend|mon:Woobat,player-2,1|ability:Klutz|from:move:Simple Beam|of:Woobat,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilityend__ability_any__from_move_simplebeam",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Woobat's",
@@ -1954,14 +1793,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Castform,player-1,1|ability:Insomnia|from:move:Worry Seed|of:Ditto,player-2,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilitystart__ability_any__from_move_worryseed",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Castform's",
@@ -2123,14 +1955,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Leavanny,player-2,1|ability:Swarm|from:move:Entrainment|of:Leavanny,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilitystart__ability_any__from_move_entrainment",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Leavanny's",
@@ -2366,14 +2191,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Ralts,player-2,1|ability:Insomnia|from:move:Worry Seed|of:Ralts,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilitystart__ability_any__from_move_worryseed",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Ralts's",
@@ -2526,14 +2344,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Woobat,player-2,1|ability:Simple|from:move:Simple Beam|of:Woobat,player-1,1",
   "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "abilitystart__ability_any__from_move_simplebeam",
-    },
+    "message": undefined,
     "notices": [
       {
         "mon": "Woobat's",
@@ -2556,34 +2367,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|clause:Endless Battle Clause|sides:0 1`] = `
 {
   "rawLog": "activate|clause:Endless Battle Clause|sides:0",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__clause_endlessbattleclause",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|clause:Sleep Clause 1`] = `
 {
   "rawLog": "activate|clause:Sleep Clause",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__clause_sleepclause",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -3421,17 +3212,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Excadrill,player-1,1|ability:Piercing Drill 1`] = `
 {
   "rawLog": "activate|mon:Excadrill,player-1,1|ability:Piercing Drill",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__ability_piercingdrill",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -3826,17 +3607,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Great Tusk,player-1,1|ability:Protosynthesis|from:item:Booster Energy 1`] = `
 {
   "rawLog": "activate|mon:Great Tusk,player-1,1|ability:Protosynthesis|from:item:Booster Energy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__ability_protosynthesis__from_item_boosterenergy",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -4399,17 +4170,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Iron Treads,player-1,1|ability:Quark Drive|from:item:Booster Energy 1`] = `
 {
   "rawLog": "activate|mon:Iron Treads,player-1,1|ability:Quark Drive|from:item:Booster Energy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__ability_quarkdrive__from_item_boosterenergy",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -5671,17 +5432,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Polteageist,player-2,1|move:Poltergeist|item:Kasib Berry 1`] = `
 {
   "rawLog": "activate|mon:Polteageist,player-2,1|move:Poltergeist|item:Kasib Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_poltergeist",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -6707,51 +6458,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Beat Up|hit:Feraligatr 1`] = `
 {
   "rawLog": "activate|move:Beat Up|hit:Feraligatr",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_beatup",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Beat Up|hit:Lugia 1`] = `
 {
   "rawLog": "activate|move:Beat Up|hit:Lugia",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_beatup",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Beat Up|hit:Sneasel 1`] = `
 {
   "rawLog": "activate|move:Beat Up|hit:Sneasel",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_beatup",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -6792,68 +6513,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:4 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:4",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_magnitude",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:6 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:6",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_magnitude",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:7 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:7",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_magnitude",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:8 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:8",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "activate__move_magnitude",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -6967,34 +6648,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
 exports[`Exhaustive Log Coverage > should parse and format log string: animatemove|mon:Mudkip,player-1,1|name:Arm Thrust|noanim 1`] = `
 {
   "rawLog": "animatemove|mon:Mudkip,player-1,1|name:Arm Thrust|noanim",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "animatemove__noanim",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: animatemove|mon:Pikachu,player-1,1|name:Triple Kick|noanim 1`] = `
 {
   "rawLog": "animatemove|mon:Pikachu,player-1,1|name:Triple Kick|noanim",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "animatemove__noanim",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -9212,85 +8873,35 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 exports[`Exhaustive Log Coverage > should parse and format log string: clearallboosts 1`] = `
 {
   "rawLog": "clearallboosts",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "clearallboosts",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: clearboosts|mon:Amoonguss,player-2,1|from:move:Clear Smog|of:Amoonguss,player-1,1 1`] = `
 {
   "rawLog": "clearboosts|mon:Amoonguss,player-2,1|from:move:Clear Smog|of:Amoonguss,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "clearboosts__from_move_clearsmog",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: clearboosts|mon:Slowking,player-2,2|from:ability:Curious Medicine|of:Slowking,player-2,1 1`] = `
 {
   "rawLog": "clearboosts|mon:Slowking,player-2,2|from:ability:Curious Medicine|of:Slowking,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "clearboosts__from_ability_curiousmedicine",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: clearnegativeboosts|mon:Ambipom,player-2,1|from:item:White Herb 1`] = `
 {
   "rawLog": "clearnegativeboosts|mon:Ambipom,player-2,1|from:item:White Herb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "clearnegativeboosts__from_item_whiteherb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: clearnegativeboosts|mon:Mudkip,player-1,1|from:item:White Herb 1`] = `
 {
   "rawLog": "clearnegativeboosts|mon:Mudkip,player-1,1|from:item:White Herb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "clearnegativeboosts__from_item_whiteherb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -9688,119 +9299,49 @@ exports[`Exhaustive Log Coverage > should parse and format log string: crit|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Abra,player-1,1|status:Paralysis|from:item:Cheri Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Abra,player-1,1|status:Paralysis|from:item:Cheri Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_cheriberry__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Alomomola,player-1,1|status:Sleep|from:ability:Healer|of:Alomomola,player-1,2 1`] = `
 {
   "rawLog": "curestatus|mon:Alomomola,player-1,1|status:Sleep|from:ability:Healer|of:Alomomola,player-1,2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_healer__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Ambipom,player-2,1|status:Bad Poison|from:item:Pecha Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Ambipom,player-2,1|status:Bad Poison|from:item:Pecha Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_pechaberry__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Araquanid,player-1,1|status:Burn|from:ability:Water Bubble 1`] = `
 {
   "rawLog": "curestatus|mon:Araquanid,player-1,1|status:Burn|from:ability:Water Bubble",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_waterbubble__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Baxcalibur,player-1,1|status:Burn|from:ability:Thermal Exchange 1`] = `
 {
   "rawLog": "curestatus|mon:Baxcalibur,player-1,1|status:Burn|from:ability:Thermal Exchange",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_thermalexchange__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Blaziken,player-1|status:Sleep|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Blaziken,player-1|status:Sleep|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Bulbasaur,player-1|status:Paralysis|from:move:Aromatherapy|of:Eevee,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Bulbasaur,player-1|status:Paralysis|from:move:Aromatherapy|of:Eevee,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -9836,102 +9377,42 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Charmander,player-1|status:Sleep|from:move:Aromatherapy|of:Eevee,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Charmander,player-1|status:Sleep|from:move:Aromatherapy|of:Eevee,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Cresselia,player-1,1|status:Sleep|from:move:Lunar Dance 1`] = `
 {
   "rawLog": "curestatus|mon:Cresselia,player-1,1|status:Sleep|from:move:Lunar Dance",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_lunardance__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Crobat,player-1,1|status:Paralysis|from:item:Lum Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Crobat,player-1,1|status:Paralysis|from:item:Lum Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_lumberry__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Darmanitan,player-2,2|status:Bad Poison|from:ability:Pastel Veil|of:Rapidash,player-2,1 1`] = `
 {
   "rawLog": "curestatus|mon:Darmanitan,player-2,2|status:Bad Poison|from:ability:Pastel Veil|of:Rapidash,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_pastelveil__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Diggersby,player-1,1|status:Bad Poison|from:item:Lum Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Diggersby,player-1,1|status:Bad Poison|from:item:Lum Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_lumberry__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Eevee,player-1,1|status:Bad Poison|from:move:Aromatherapy 1`] = `
 {
   "rawLog": "curestatus|mon:Eevee,player-1,1|status:Bad Poison|from:move:Aromatherapy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -9965,17 +9446,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Florges,player-2,2|status:Bad Poison|from:item:Lum Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Florges,player-2,2|status:Bad Poison|from:item:Lum Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_lumberry__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -10011,119 +9482,49 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Linoone,player-1,1|status:Burn|from:item:Rawst Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Linoone,player-1,1|status:Burn|from:item:Rawst Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_rawstberry__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Linoone,player-1,1|status:Paralysis|from:item:Cheri Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Linoone,player-1,1|status:Paralysis|from:item:Cheri Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_cheriberry__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Linoone,player-2,1|status:Burn|from:item:Rawst Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Linoone,player-2,1|status:Burn|from:item:Rawst Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_rawstberry__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Linoone,player-2,1|status:Freeze|from:ability:Magma Armor 1`] = `
 {
   "rawLog": "curestatus|mon:Linoone,player-2,1|status:Freeze|from:ability:Magma Armor",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_magmaarmor__status_freeze",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Linoone,player-2,1|status:Paralysis|from:item:Cheri Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Linoone,player-2,1|status:Paralysis|from:item:Cheri Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_cheriberry__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Lopunny,player-1,1|status:Sleep|from:move:Healing Wish 1`] = `
 {
   "rawLog": "curestatus|mon:Lopunny,player-1,1|status:Sleep|from:move:Healing Wish",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_healingwish__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Manaphy,player-1,1|status:Paralysis|from:ability:Hydration 1`] = `
 {
   "rawLog": "curestatus|mon:Manaphy,player-1,1|status:Paralysis|from:ability:Hydration",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_hydration__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -10215,34 +9616,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Miltank,player-1,1|status:Bad Poison|from:move:Aromatherapy 1`] = `
 {
   "rawLog": "curestatus|mon:Miltank,player-1,1|status:Bad Poison|from:move:Aromatherapy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Pikachu,protagonist,1|status:Bad Poison|from:Affection 1`] = `
 {
   "rawLog": "curestatus|mon:Pikachu,protagonist,1|status:Bad Poison|from:Affection",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_affection__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -10278,85 +9659,35 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Rapidash,player-2,1|status:Bad Poison|from:ability:Pastel Veil 1`] = `
 {
   "rawLog": "curestatus|mon:Rapidash,player-2,1|status:Bad Poison|from:ability:Pastel Veil",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_pastelveil__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Roselia,player-1,1|status:Burn|from:ability:Natural Cure 1`] = `
 {
   "rawLog": "curestatus|mon:Roselia,player-1,1|status:Burn|from:ability:Natural Cure",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_naturalcure__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Roselia,player-1,1|status:Paralysis|from:ability:Natural Cure 1`] = `
 {
   "rawLog": "curestatus|mon:Roselia,player-1,1|status:Paralysis|from:ability:Natural Cure",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_naturalcure__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Sceptile,player-1,2|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Sceptile,player-1,2|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Sceptile,player-1|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Sceptile,player-1|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -10421,51 +9752,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Seviper,player-2,1|status:Paralysis|from:ability:Shed Skin 1`] = `
 {
   "rawLog": "curestatus|mon:Seviper,player-2,1|status:Paralysis|from:ability:Shed Skin",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_ability_shedskin__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Snorlax,player-1,2|status:Burn|from:item:Rawst Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Snorlax,player-1,2|status:Burn|from:item:Rawst Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_rawstberry__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Starly,player-1,1|status:Bad Poison|from:item:Pecha Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Starly,player-1,1|status:Bad Poison|from:item:Pecha Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_item_pechaberry__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -10501,34 +9802,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Swampert,player-1|status:Bad Poison|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Swampert,player-1|status:Bad Poison|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_aromatherapy__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Whismur,player-2,1|status:Sleep|from:move:Uproar|of:Whismur,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Whismur,player-2,1|status:Sleep|from:move:Uproar|of:Whismur,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "curestatus__from_move_uproar__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -11484,51 +10765,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Kecleon,player-2,1|health:92/100 1`] = `
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:92/100",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "damage",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Kecleon,player-2,1|health:105/120 1`] = `
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:105/120",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "damage",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Kecleon,player-2,1|health:110/120 1`] = `
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:110/120",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "damage",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -13983,51 +13234,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: escaped|p
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Bidoof,protagonist,1|exp:501 1`] = `
 {
   "rawLog": "exp|mon:Bidoof,protagonist,1|exp:501",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "exp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Empoleon,player-1,1|exp:69 1`] = `
 {
   "rawLog": "exp|mon:Empoleon,player-1,1|exp:69",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "exp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Graveler,protagonist,1|exp:1371 1`] = `
 {
   "rawLog": "exp|mon:Graveler,protagonist,1|exp:1371",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "exp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -14675,17 +13896,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fieldstar
 exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Electric Terrain|from:ability:Electric Surge|of:Tapu Koko,player-1,1 1`] = `
 {
   "rawLog": "fieldstart|move:Electric Terrain|from:ability:Electric Surge|of:Tapu Koko,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "fieldstart__from_ability_electricsurge__move_electricterrain",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -14709,17 +13920,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fieldstar
 exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Grassy Terrain|from:ability:Seed Sower|of:Arboliva,player-2,1 1`] = `
 {
   "rawLog": "fieldstart|move:Grassy Terrain|from:ability:Seed Sower|of:Arboliva,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "fieldstart__from_ability_seedsower__move_grassyterrain",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -14925,952 +14126,392 @@ exports[`Exhaustive Log Coverage > should parse and format log string: forfeited
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Aegislash,player-1,1|species:Aegislash|from:ability:Stance Change 1`] = `
 {
   "rawLog": "formechange|mon:Aegislash,player-1,1|species:Aegislash|from:ability:Stance Change",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_stancechange",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Aegislash,player-1,1|species:Aegislash-Blade|from:ability:Stance Change 1`] = `
 {
   "rawLog": "formechange|mon:Aegislash,player-1,1|species:Aegislash-Blade|from:ability:Stance Change",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_stancechange",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Arceus,player-1,1|species:Arceus-Fire|from:ability:Multitype 1`] = `
 {
   "rawLog": "formechange|mon:Arceus,player-1,1|species:Arceus-Fire|from:ability:Multitype",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_multitype",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Arceus,player-2,1|species:Arceus-Water|from:ability:Multitype 1`] = `
 {
   "rawLog": "formechange|mon:Arceus,player-2,1|species:Arceus-Water|from:ability:Multitype",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_multitype",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast 1`] = `
 {
   "rawLog": "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_forecast",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast 1`] = `
 {
   "rawLog": "formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_forecast",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Castform,player-1,1|species:Castform-Sunny|from:ability:Forecast 1`] = `
 {
   "rawLog": "formechange|mon:Castform,player-1,1|species:Castform-Sunny|from:ability:Forecast",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_forecast",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cherrim,player-1,1|species:Cherrim|from:ability:Flower Gift 1`] = `
 {
   "rawLog": "formechange|mon:Cherrim,player-1,1|species:Cherrim|from:ability:Flower Gift",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_flowergift",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cherrim,player-1,1|species:Cherrim-Sunshine|from:ability:Flower Gift 1`] = `
 {
   "rawLog": "formechange|mon:Cherrim,player-1,1|species:Cherrim-Sunshine|from:ability:Flower Gift",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_flowergift",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant|from:ability:Gulp Missile 1`] = `
 {
   "rawLog": "formechange|mon:Cramorant,player-1,1|species:Cramorant|from:ability:Gulp Missile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_gulpmissile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant-Gorging|from:ability:Gulp Missile 1`] = `
 {
   "rawLog": "formechange|mon:Cramorant,player-1,1|species:Cramorant-Gorging|from:ability:Gulp Missile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_gulpmissile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Cramorant,player-1,1|species:Cramorant-Gulping|from:ability:Gulp Missile 1`] = `
 {
   "rawLog": "formechange|mon:Cramorant,player-1,1|species:Cramorant-Gulping|from:ability:Gulp Missile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_gulpmissile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan|from:ability:Zen Mode 1`] = `
 {
   "rawLog": "formechange|mon:Darmanitan,player-2,1|species:Darmanitan|from:ability:Zen Mode",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_zenmode",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar-Zen|from:ability:Zen Mode 1`] = `
 {
   "rawLog": "formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar-Zen|from:ability:Zen Mode",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_zenmode",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Zen|from:ability:Zen Mode 1`] = `
 {
   "rawLog": "formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Zen|from:ability:Zen Mode",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_zenmode",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-1,1|species:Eiscue-Noice|from:ability:Ice Face 1`] = `
 {
   "rawLog": "formechange|mon:Eiscue,player-1,1|species:Eiscue-Noice|from:ability:Ice Face",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_iceface",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-2,1|species:Eiscue|from:ability:Ice Face 1`] = `
 {
   "rawLog": "formechange|mon:Eiscue,player-2,1|species:Eiscue|from:ability:Ice Face",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_iceface",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Eiscue,player-2,1|species:Eiscue-Noice|from:ability:Ice Face 1`] = `
 {
   "rawLog": "formechange|mon:Eiscue,player-2,1|species:Eiscue-Noice|from:ability:Ice Face",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_iceface",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Giratina,player-1,1|species:Giratina|from:species:Giratina-Origin 1`] = `
 {
   "rawLog": "formechange|mon:Giratina,player-1,1|species:Giratina|from:species:Giratina-Origin",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_giratinaorigin",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Giratina,player-1,1|species:Giratina-Origin|from:species:Giratina 1`] = `
 {
   "rawLog": "formechange|mon:Giratina,player-1,1|species:Giratina-Origin|from:species:Giratina",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_giratina",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-1,1|species:Greninja-Ash|from:ability:Battle Bond 1`] = `
 {
   "rawLog": "formechange|mon:Greninja,player-1,1|species:Greninja-Ash|from:ability:Battle Bond",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_battlebond",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-1,1|species:Greninja-Battle-Bond|from:Faint 1`] = `
 {
   "rawLog": "formechange|mon:Greninja,player-1,1|species:Greninja-Battle-Bond|from:Faint",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_faint",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Greninja,player-2,1|species:Greninja-Ash|from:ability:Battle Bond 1`] = `
 {
   "rawLog": "formechange|mon:Greninja,player-2,1|species:Greninja-Ash|from:ability:Battle Bond",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_battlebond",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-1,1|species:Meloetta|from:move:Relic Song 1`] = `
 {
   "rawLog": "formechange|mon:Meloetta,player-1,1|species:Meloetta|from:move:Relic Song",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_move_relicsong",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-1,1|species:Meloetta-Pirouette|from:move:Relic Song 1`] = `
 {
   "rawLog": "formechange|mon:Meloetta,player-1,1|species:Meloetta-Pirouette|from:move:Relic Song",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_move_relicsong",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Meloetta,player-2,2|species:Meloetta-Pirouette|from:move:Relic Song 1`] = `
 {
   "rawLog": "formechange|mon:Meloetta,player-2,2|species:Meloetta-Pirouette|from:move:Relic Song",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_move_relicsong",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-1,1|species:Mimikyu-Busted|from:ability:Disguise 1`] = `
 {
   "rawLog": "formechange|mon:Mimikyu,player-1,1|species:Mimikyu-Busted|from:ability:Disguise",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_disguise",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Busted|from:ability:Disguise 1`] = `
 {
   "rawLog": "formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Busted|from:ability:Disguise",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_disguise",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Totem-Busted|from:ability:Disguise 1`] = `
 {
   "rawLog": "formechange|mon:Mimikyu,player-2,1|species:Mimikyu-Totem-Busted|from:ability:Disguise",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_disguise",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-1,1|species:Minior-Meteor|from:ability:Shields Down 1`] = `
 {
   "rawLog": "formechange|mon:Minior,player-1,1|species:Minior-Meteor|from:ability:Shields Down",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_shieldsdown",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-2,1|species:Minior-Green|from:ability:Shields Down 1`] = `
 {
   "rawLog": "formechange|mon:Minior,player-2,1|species:Minior-Green|from:ability:Shields Down",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_shieldsdown",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Minior,player-2,1|species:Minior-Meteor|from:ability:Shields Down 1`] = `
 {
   "rawLog": "formechange|mon:Minior,player-2,1|species:Minior-Meteor|from:ability:Shields Down",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_shieldsdown",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch 1`] = `
 {
   "rawLog": "formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_hungerswitch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch 1`] = `
 {
   "rawLog": "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_hungerswitch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Cornerstone-Mask-Tera|from:species:Ogerpon-Cornerstone-Mask 1`] = `
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Cornerstone-Mask-Tera|from:species:Ogerpon-Cornerstone-Mask",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_ogerponcornerstonemask",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Hearthflame-Mask-Tera|from:species:Ogerpon-Hearthflame-Mask 1`] = `
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Hearthflame-Mask-Tera|from:species:Ogerpon-Hearthflame-Mask",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_ogerponhearthflamemask",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Teal-Mask-Tera|from:species:Ogerpon 1`] = `
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Teal-Mask-Tera|from:species:Ogerpon",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_ogerpon",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask 1`] = `
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_ogerponwellspringmask",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Ogerpon,player-2,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask 1`] = `
 {
   "rawLog": "formechange|mon:Ogerpon,player-2,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_ogerponwellspringmask",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Palafin,player-1,1|species:Palafin-Hero|from:ability:Zero to Hero 1`] = `
 {
   "rawLog": "formechange|mon:Palafin,player-1,1|species:Palafin-Hero|from:ability:Zero to Hero",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_zerotohero",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Shaymin,player-2,1|species:Shaymin|from:species:Shaymin-Sky 1`] = `
 {
   "rawLog": "formechange|mon:Shaymin,player-2,1|species:Shaymin|from:species:Shaymin-Sky",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_shayminsky",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Silvally,player-1,1|species:Silvally-Fire|from:ability:RKS System 1`] = `
 {
   "rawLog": "formechange|mon:Silvally,player-1,1|species:Silvally-Fire|from:ability:RKS System",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_rkssystem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Silvally,player-2,1|species:Silvally-Water|from:ability:RKS System 1`] = `
 {
   "rawLog": "formechange|mon:Silvally,player-2,1|species:Silvally-Water|from:ability:RKS System",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_rkssystem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal 1`] = `
 {
   "rawLog": "formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_terapagosterastal",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-1,1|species:Terapagos-Terastal|from:ability:Tera Shift 1`] = `
 {
   "rawLog": "formechange|mon:Terapagos,player-1,1|species:Terapagos-Terastal|from:ability:Tera Shift",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_terashift",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift 1`] = `
 {
   "rawLog": "formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_terashift",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-1,1|species:Wishiwashi-School|from:ability:Schooling 1`] = `
 {
   "rawLog": "formechange|mon:Wishiwashi,player-1,1|species:Wishiwashi-School|from:ability:Schooling",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_schooling",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi|from:ability:Schooling 1`] = `
 {
   "rawLog": "formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi|from:ability:Schooling",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_schooling",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi-School|from:ability:Schooling 1`] = `
 {
   "rawLog": "formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi-School|from:ability:Schooling",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_schooling",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Xerneas,player-1,1|species:Xerneas|from:species:Xerneas-Neutral 1`] = `
 {
   "rawLog": "formechange|mon:Xerneas,player-1,1|species:Xerneas|from:species:Xerneas-Neutral",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_xerneasneutral",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Xerneas,player-2,1|species:Xerneas|from:species:Xerneas-Neutral 1`] = `
 {
   "rawLog": "formechange|mon:Xerneas,player-2,1|species:Xerneas|from:species:Xerneas-Neutral",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_xerneasneutral",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zacian,player-1,1|species:Zacian-Crowned|from:species:Zacian 1`] = `
 {
   "rawLog": "formechange|mon:Zacian,player-1,1|species:Zacian-Crowned|from:species:Zacian",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_zacian",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zamazenta,player-2,1|species:Zamazenta-Crowned|from:species:Zamazenta 1`] = `
 {
   "rawLog": "formechange|mon:Zamazenta,player-2,1|species:Zamazenta-Crowned|from:species:Zamazenta",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_species_zamazenta",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-1,1|species:Zygarde|from:Faint 1`] = `
 {
   "rawLog": "formechange|mon:Zygarde,player-1,1|species:Zygarde|from:Faint",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_faint",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-1,1|species:Zygarde-Complete|from:ability:Power Construct 1`] = `
 {
   "rawLog": "formechange|mon:Zygarde,player-1,1|species:Zygarde-Complete|from:ability:Power Construct",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_powerconstruct",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: formechange|mon:Zygarde,player-2,1|species:Zygarde-Complete|from:ability:Power Construct 1`] = `
 {
   "rawLog": "formechange|mon:Zygarde,player-2,1|species:Zygarde-Complete|from:ability:Power Construct",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "formechange__from_ability_powerconstruct",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -17152,51 +15793,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:1 1`] = `
 {
   "rawLog": "hitcount|hits:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "hitcount",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:3 1`] = `
 {
   "rawLog": "hitcount|hits:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "hitcount",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:5 1`] = `
 {
   "rawLog": "hitcount|hits:5",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "hitcount",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -17986,255 +16597,105 @@ exports[`Exhaustive Log Coverage > should parse and format log string: immune|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: invertboosts|mon:Malamar,player-2,1|from:move:Topsy-Turvy|of:Malamar,player-1,1 1`] = `
 {
   "rawLog": "invertboosts|mon:Malamar,player-2,1|from:move:Topsy-Turvy|of:Malamar,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "invertboosts__from_move_topsyturvy",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Stantler,player-1,1|item:Cheri Berry|from:ability:Frisk|of:Stantler,player-2,1 1`] = `
 {
   "rawLog": "item|mon:Stantler,player-1,1|item:Cheri Berry|from:ability:Frisk|of:Stantler,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "item__from_ability_frisk__item_cheriberry",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Tauros,player-1,2|item:Life Orb|from:ability:Frisk|of:Stantler,player-2,1 1`] = `
 {
   "rawLog": "item|mon:Tauros,player-1,2|item:Life Orb|from:ability:Frisk|of:Stantler,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "item__from_ability_frisk__item_lifeorb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Abra,player-1,1|item:Cheri Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Abra,player-1,1|item:Cheri Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_cheriberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Ambipom,player-1,1|item:Normal Gem 1`] = `
 {
   "rawLog": "itemend|mon:Ambipom,player-1,1|item:Normal Gem",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_normalgem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Ambipom,player-2,1|item:Normal Gem 1`] = `
 {
   "rawLog": "itemend|mon:Ambipom,player-2,1|item:Normal Gem",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_normalgem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Haban Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Haban Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_habanberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Jaboca Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Jaboca Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_jabocaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Kee Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Kee Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_keeberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Leppa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Leppa Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_leppaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Oran Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Oran Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_oranberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Sitrus Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Sitrus Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_sitrusberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Archeops,player-2,1|item:Oran Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Archeops,player-2,1|item:Oran Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_oranberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Blaziken,player-1,1|item:Aguav Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Blaziken,player-1,1|item:Aguav Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_aguavberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Bunnelby,player-2,1|item:Luminous Moss 1`] = `
 {
   "rawLog": "itemend|mon:Bunnelby,player-2,1|item:Luminous Moss",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_luminousmoss",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18271,34 +16732,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Cinderace,player-1,1|item:Room Service 1`] = `
 {
   "rawLog": "itemend|mon:Cinderace,player-1,1|item:Room Service",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_roomservice",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Crobat,player-1,1|item:Lum Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Crobat,player-1,1|item:Lum Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_lumberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18335,17 +16776,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Cryogonal,player-1,1|item:Micle Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Cryogonal,player-1,1|item:Micle Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_micleberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18412,17 +16843,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Diggersby,player-1,1|item:Lum Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Diggersby,player-1,1|item:Lum Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_lumberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18489,17 +16910,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_sitrusberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18596,34 +17007,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Emboar,player-1,1|item:Fire Gem 1`] = `
 {
   "rawLog": "itemend|mon:Emboar,player-1,1|item:Fire Gem",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_firegem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Emolga,player-2,1|item:Cell Battery 1`] = `
 {
   "rawLog": "itemend|mon:Emolga,player-2,1|item:Cell Battery",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_cellbattery",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18660,51 +17051,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-1,1|item:Mirror Herb 1`] = `
 {
   "rawLog": "itemend|mon:Espathra,player-1,1|item:Mirror Herb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_mirrorherb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-1,1|item:Throat Spray 1`] = `
 {
   "rawLog": "itemend|mon:Espathra,player-1,1|item:Throat Spray",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_throatspray",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-2,1|item:Mirror Herb 1`] = `
 {
   "rawLog": "itemend|mon:Espathra,player-2,1|item:Mirror Herb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_mirrorherb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18741,119 +17102,49 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Florges,player-2,2|item:Lum Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Florges,player-2,2|item:Lum Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_lumberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Gigalith,player-1,1|item:Air Balloon 1`] = `
 {
   "rawLog": "itemend|mon:Gigalith,player-1,1|item:Air Balloon",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_airballoon",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Gigalith,player-2,1|item:Air Balloon 1`] = `
 {
   "rawLog": "itemend|mon:Gigalith,player-2,1|item:Air Balloon",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_airballoon",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Golisopod,player-1,1|item:Eject Button 1`] = `
 {
   "rawLog": "itemend|mon:Golisopod,player-1,1|item:Eject Button",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_ejectbutton",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Golisopod,player-1,1|item:Sitrus Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Golisopod,player-1,1|item:Sitrus Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_sitrusberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Goodra,player-2,1|item:Weakness Policy 1`] = `
 {
   "rawLog": "itemend|mon:Goodra,player-2,1|item:Weakness Policy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_weaknesspolicy",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Great Tusk,player-1,1|item:Booster Energy 1`] = `
 {
   "rawLog": "itemend|mon:Great Tusk,player-1,1|item:Booster Energy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_boosterenergy",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -18890,102 +17181,42 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Haxorus,player-2,1|item:Eject Button 1`] = `
 {
   "rawLog": "itemend|mon:Haxorus,player-2,1|item:Eject Button",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_ejectbutton",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Iron Treads,player-1,1|item:Booster Energy 1`] = `
 {
   "rawLog": "itemend|mon:Iron Treads,player-1,1|item:Booster Energy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_boosterenergy",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-1,1|item:Cheri Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-1,1|item:Cheri Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_cheriberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-1,1|item:Rawst Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-1,1|item:Rawst Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_rawstberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-2,1|item:Cheri Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-2,1|item:Cheri Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_cheriberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-2,1|item:Rawst Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-2,1|item:Rawst Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_rawstberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -19052,204 +17283,84 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Meloetta,player-1,1|item:Fire Gem 1`] = `
 {
   "rawLog": "itemend|mon:Meloetta,player-1,1|item:Fire Gem",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_firegem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Mudkip,player-1,1|item:Mental Herb 1`] = `
 {
   "rawLog": "itemend|mon:Mudkip,player-1,1|item:Mental Herb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_mentalherb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Mudkip,player-1,1|item:White Herb 1`] = `
 {
   "rawLog": "itemend|mon:Mudkip,player-1,1|item:White Herb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_whiteherb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oricorio,player-1,1|item:Eject Button 1`] = `
 {
   "rawLog": "itemend|mon:Oricorio,player-1,1|item:Eject Button",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_ejectbutton",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Enigma Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Enigma Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_enigmaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Ganlon Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Ganlon Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_ganlonberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Jaboca Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Jaboca Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_jabocaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Kee Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Kee Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_keeberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Liechi Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Liechi Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_liechiberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Maranga Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Maranga Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_marangaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Rowap Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Rowap Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_rowapberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_starfberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -19344,17 +17455,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Pikachu,player-1,1|item:Focus Sash 1`] = `
 {
   "rawLog": "itemend|mon:Pikachu,player-1,1|item:Focus Sash",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_focussash",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -19391,51 +17492,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-1,2|item:Liechi Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Polteageist,player-1,2|item:Liechi Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_liechiberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-2,1|item:Kasib Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Polteageist,player-2,1|item:Kasib Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_kasibberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-2,2|item:Liechi Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Polteageist,player-2,2|item:Liechi Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_liechiberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -19472,85 +17543,35 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Blunder Policy 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Blunder Policy",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_blunderpolicy",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Eject Pack 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Eject Pack",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_ejectpack",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Room Service 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Room Service",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_roomservice",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Throat Spray 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Throat Spray",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_throatspray",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-2,1|item:Room Service 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-2,1|item:Room Service",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_roomservice",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -19587,119 +17608,49 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Slowbro,player-1,1|item:Leppa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Slowbro,player-1,1|item:Leppa Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_leppaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Smeargle,player-1,1|item:Leppa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Smeargle,player-1,1|item:Leppa Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_leppaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snivy,player-1,1|item:Occa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Snivy,player-1,1|item:Occa Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_occaberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snivy,player-2,1|item:Red Card 1`] = `
 {
   "rawLog": "itemend|mon:Snivy,player-2,1|item:Red Card",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_redcard",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snorlax,player-1,1|item:Custap Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Snorlax,player-1,1|item:Custap Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_custapberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snorlax,player-1,2|item:Rawst Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Snorlax,player-1,2|item:Rawst Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_rawstberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Staraptor,player-1,1|item:Power Herb 1`] = `
 {
   "rawLog": "itemend|mon:Staraptor,player-1,1|item:Power Herb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_powerherb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -19736,68 +17687,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tapu Koko,player-1,1|item:Electric Seed 1`] = `
 {
   "rawLog": "itemend|mon:Tapu Koko,player-1,1|item:Electric Seed",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_electricseed",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tapu Koko,player-2,1|item:Electric Seed 1`] = `
 {
   "rawLog": "itemend|mon:Tapu Koko,player-2,1|item:Electric Seed",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_electricseed",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tepig,player-1,1|item:Passho Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Tepig,player-1,1|item:Passho Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_passhoberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tepig,player-1,1|item:Red Card 1`] = `
 {
   "rawLog": "itemend|mon:Tepig,player-1,1|item:Red Card",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_redcard",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -19864,34 +17775,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Totodile,player-1,1|item:Berry Juice 1`] = `
 {
   "rawLog": "itemend|mon:Totodile,player-1,1|item:Berry Juice",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_berryjuice",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tropius,player-2,1|item:Chilan Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Tropius,player-2,1|item:Chilan Berry|eat",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "itemend__item_chilanberry__eat",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -21042,17 +18933,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Rayquaza,player-1,1|species:Rayquaza-Mega|from:move:Dragon Ascent 1`] = `
 {
   "rawLog": "mega|mon:Rayquaza,player-1,1|species:Rayquaza-Mega|from:move:Dragon Ascent",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "mega__from_move_dragonascent",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -22551,34 +20432,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: prepare|m
 exports[`Exhaustive Log Coverage > should parse and format log string: primal|mon:Groudon,player-1,1|species:Groudon-Primal|from:item:Red Orb 1`] = `
 {
   "rawLog": "primal|mon:Groudon,player-1,1|species:Groudon-Primal|from:item:Red Orb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "primal__from_item_redorb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: primal|mon:Kyogre,player-1,1|species:Kyogre-Primal|from:item:Blue Orb 1`] = `
 {
   "rawLog": "primal|mon:Kyogre,player-1,1|species:Kyogre-Primal|from:item:Blue Orb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "primal__from_item_blueorb",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -22672,102 +20533,42 @@ exports[`Exhaustive Log Coverage > should parse and format log string: protectwe
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:47/100|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:47/100|species:Zoroark|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "replace",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:56/120|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:56/120|species:Zoroark|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "replace",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:74/120|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:74/120|species:Zoroark|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "replace",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: resettypechange|mon:Ditto,player-2,1|from:ability:Mimicry 1`] = `
 {
   "rawLog": "resettypechange|mon:Ditto,player-2,1|from:ability:Mimicry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "resettypechange__from_ability_mimicry",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: resettypechange|mon:Stunfisk,player-1,1|from:ability:Mimicry 1`] = `
 {
   "rawLog": "resettypechange|mon:Stunfisk,player-1,1|from:ability:Mimicry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "resettypechange__from_ability_mimicry",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: resettypechange|mon:Stunfisk,player-2,1|from:ability:Mimicry 1`] = `
 {
   "rawLog": "resettypechange|mon:Stunfisk,player-2,1|from:ability:Mimicry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "resettypechange__from_ability_mimicry",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -22876,51 +20677,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: resisted|
 exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Applin,player-1,1|move:Splash|by:20|from:item:Leppa Berry 1`] = `
 {
   "rawLog": "restorepp|mon:Applin,player-1,1|move:Splash|by:20|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "restorepp__from_item_leppaberry__move_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Slowbro,player-1,1|move:Slack Off|by:5|from:item:Leppa Berry 1`] = `
 {
   "rawLog": "restorepp|mon:Slowbro,player-1,1|move:Slack Off|by:5|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "restorepp__from_item_leppaberry__move_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry 1`] = `
 {
   "rawLog": "restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "restorepp__from_item_leppaberry__move_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -23065,51 +20836,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertgig
 exports[`Exhaustive Log Coverage > should parse and format log string: revertmega|mon:Venusaur,player-1,1|species:Venusaur|from:Faint 1`] = `
 {
   "rawLog": "revertmega|mon:Venusaur,player-1,1|species:Venusaur|from:Faint",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "revertmega__from_faint",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: revertmega|mon:Zygarde,player-1,1|species:Zygarde|from:Faint 1`] = `
 {
   "rawLog": "revertmega|mon:Zygarde,player-1,1|species:Zygarde|from:Faint",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "revertmega__from_faint",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: revertprimal|mon:Kyogre,player-1,1|species:Kyogre|from:Faint 1`] = `
 {
   "rawLog": "revertprimal|mon:Kyogre,player-1,1|species:Kyogre|from:Faint",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "revertprimal__from_faint",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -23174,34 +20915,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertter
 exports[`Exhaustive Log Coverage > should parse and format log string: revertultra|mon:Necrozma,player-1,1|species:Necrozma-Dawn-Wings|from:Faint 1`] = `
 {
   "rawLog": "revertultra|mon:Necrozma,player-1,1|species:Necrozma-Dawn-Wings|from:Faint",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "revertultra__from_faint",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Basculin,player-1|from:move:Revival Blessing|of:Basculegion,player-1,1 1`] = `
 {
   "rawLog": "revive|mon:Basculin,player-1|from:move:Revival Blessing|of:Basculegion,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "revive__from_move_revivalblessing",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -23242,17 +20963,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revive|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Quaxly,player-1|from:move:Revival Blessing|of:Pawmot,player-1,1 1`] = `
 {
   "rawLog": "revive|mon:Quaxly,player-1|from:move:Revival Blessing|of:Pawmot,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "revive__from_move_revivalblessing",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -23276,68 +20987,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revive|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Pyukumuku,player-2,1|health:100/100 1`] = `
 {
   "rawLog": "sethp|mon:Pyukumuku,player-2,1|health:100/100",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sethp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Pyukumuku,player-2,1|health:156/156 1`] = `
 {
   "rawLog": "sethp|mon:Pyukumuku,player-2,1|health:156/156",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sethp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Zygarde,player-1|health:163/326 1`] = `
 {
   "rawLog": "sethp|mon:Zygarde,player-1|health:163/326",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sethp",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1 1`] = `
 {
   "rawLog": "setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "setpp__move_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -23743,17 +21414,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:0|move:Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:0|move:Spikes|count:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sidestart__move_spikes",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -23823,34 +21484,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:0|move:Toxic Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:0|move:Toxic Spikes|count:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sidestart__move_toxicspikes",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:0|move:Toxic Spikes|count:2 1`] = `
 {
   "rawLog": "sidestart|side:0|move:Toxic Spikes|count:2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sidestart__move_toxicspikes",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -24025,34 +21666,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:1|move:Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:1|move:Spikes|count:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sidestart__move_spikes",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:1|move:Spikes|count:2 1`] = `
 {
   "rawLog": "sidestart|side:1|move:Spikes|count:2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sidestart__move_spikes",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -24122,17 +21743,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:1|move:Toxic Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:1|move:Toxic Spikes|count:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "sidestart__move_toxicspikes",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -25709,34 +23320,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Cursola,player-1,1|move:Perish Song|perish:3 1`] = `
 {
   "rawLog": "start|mon:Cursola,player-1,1|move:Perish Song|perish:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_perishsong",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Cursola,player-2,1|move:Perish Song|perish:3 1`] = `
 {
   "rawLog": "start|mon:Cursola,player-2,1|move:Perish Song|perish:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_perishsong",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -25888,17 +23479,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Espeon,player-1,1|move:Perish Song|perish:3 1`] = `
 {
   "rawLog": "start|mon:Espeon,player-1,1|move:Perish Song|perish:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_perishsong",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -26517,34 +24098,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Kilowattrel,player-1,1|move:Charge|from:ability:Wind Power 1`] = `
 {
   "rawLog": "start|mon:Kilowattrel,player-1,1|move:Charge|from:ability:Wind Power",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__from_ability_windpower__move_charge",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Kilowattrel,player-2,1|move:Charge|from:ability:Wind Power 1`] = `
 {
   "rawLog": "start|mon:Kilowattrel,player-2,1|move:Charge|from:ability:Wind Power",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__from_ability_windpower__move_charge",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -26580,51 +24141,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:1 1`] = `
 {
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_gmaxchistrike",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:2 1`] = `
 {
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_gmaxchistrike",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:3 1`] = `
 {
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:3",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_gmaxchistrike",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -26921,51 +24452,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Pelipper,player-1,1|move:Stockpile|count:1 1`] = `
 {
   "rawLog": "start|mon:Pelipper,player-1,1|move:Stockpile|count:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_stockpile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Pelipper,player-1,1|move:Stockpile|count:2 1`] = `
 {
   "rawLog": "start|mon:Pelipper,player-1,1|move:Stockpile|count:2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_stockpile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Pelipper,player-2,1|move:Stockpile|count:1 1`] = `
 {
   "rawLog": "start|mon:Pelipper,player-2,1|move:Stockpile|count:1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__move_stockpile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -27320,17 +24821,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Skitty,player-1,1|move:Attract|from:ability:Cute Charm|of:Skitty,player-2,1 1`] = `
 {
   "rawLog": "start|mon:Skitty,player-1,1|move:Attract|from:ability:Cute Charm|of:Skitty,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__from_ability_cutecharm__move_attract",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -27541,17 +25032,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Terapagos,player-2,1|condition:Confusion|from:ability:Poison Puppeteer|of:Pecharunt,player-1,1 1`] = `
 {
   "rawLog": "start|mon:Terapagos,player-2,1|condition:Confusion|from:ability:Poison Puppeteer|of:Pecharunt,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__condition_confusion__from_ability_poisonpuppeteer",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -27761,17 +25242,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Wobbuffet,player-1,1|move:Attract|from:item:Destiny Knot|of:Wobbuffet,player-2,1 1`] = `
 {
   "rawLog": "start|mon:Wobbuffet,player-1,1|move:Attract|from:item:Destiny Knot|of:Wobbuffet,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "start__from_item_destinyknot__move_attract",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -27865,17 +25336,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Abra,player-1,1|status:Paralysis|from:ability:Synchronize|of:Abra,player-2,1 1`] = `
 {
   "rawLog": "status|mon:Abra,player-1,1|status:Paralysis|from:ability:Synchronize|of:Abra,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_ability_synchronize__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -27969,34 +25430,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Chespin,player-1,2|status:Sleep|from:move:Yawn 1`] = `
 {
   "rawLog": "status|mon:Chespin,player-1,2|status:Sleep|from:move:Yawn",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_move_yawn__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Cramorant,player-2,1|status:Paralysis|from:ability:Gulp Missile|of:Cramorant,player-1,1 1`] = `
 {
   "rawLog": "status|mon:Cramorant,player-2,1|status:Paralysis|from:ability:Gulp Missile|of:Cramorant,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_ability_gulpmissile__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -28090,51 +25531,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Gliscor,player-1,1|status:Bad Poison|from:item:Toxic Orb 1`] = `
 {
   "rawLog": "status|mon:Gliscor,player-1,1|status:Bad Poison|from:item:Toxic Orb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_item_toxicorb__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Gliscor,player-2,1|status:Bad Poison|from:item:Toxic Orb 1`] = `
 {
   "rawLog": "status|mon:Gliscor,player-2,1|status:Bad Poison|from:item:Toxic Orb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_item_toxicorb__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Hydrapple,player-2,1|status:Burn|from:move:Burning Bulwark|of:Hydrapple,player-1,1 1`] = `
 {
   "rawLog": "status|mon:Hydrapple,player-2,1|status:Burn|from:move:Burning Bulwark|of:Hydrapple,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_move_burningbulwark__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -28170,34 +25581,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Incineroar,player-2,1|status:Poison|from:move:Baneful Bunker|of:Toxapex,player-1,1 1`] = `
 {
   "rawLog": "status|mon:Incineroar,player-2,1|status:Poison|from:move:Baneful Bunker|of:Toxapex,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_move_banefulbunker__status_poison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Infernape,player-2,2|status:Poison|from:move:Toxic Spikes 1`] = `
 {
   "rawLog": "status|mon:Infernape,player-2,2|status:Poison|from:move:Toxic Spikes",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_move_toxicspikes__status_poison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -28233,17 +25624,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Ledian,player-1,1|status:Sleep|from:move:Yawn 1`] = `
 {
   "rawLog": "status|mon:Ledian,player-1,1|status:Sleep|from:move:Yawn",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_move_yawn__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -28366,119 +25747,49 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Magikarp,player-1,2|status:Bad Poison|from:Toxic Fumes 1`] = `
 {
   "rawLog": "status|mon:Magikarp,player-1,2|status:Bad Poison|from:Toxic Fumes",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_toxicfumes__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Magikarp,player-2,2|status:Bad Poison|from:Toxic Fumes 1`] = `
 {
   "rawLog": "status|mon:Magikarp,player-2,2|status:Bad Poison|from:Toxic Fumes",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_toxicfumes__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Mudkip,player-1,1|status:Poison|from:ability:Effect Spore|of:Shroomish,player-2,1 1`] = `
 {
   "rawLog": "status|mon:Mudkip,player-1,1|status:Poison|from:ability:Effect Spore|of:Shroomish,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_ability_effectspore__status_poison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Mudkip,player-1,1|status:Sleep|from:ability:Effect Spore|of:Shroomish,player-2,1 1`] = `
 {
   "rawLog": "status|mon:Mudkip,player-1,1|status:Sleep|from:ability:Effect Spore|of:Shroomish,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_ability_effectspore__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Pikachu,player-1,1|status:Bad Poison|from:Toxic Fumes 1`] = `
 {
   "rawLog": "status|mon:Pikachu,player-1,1|status:Bad Poison|from:Toxic Fumes",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_toxicfumes__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Pikachu,protagonist,1|status:Sleep|from:Disobedience 1`] = `
 {
   "rawLog": "status|mon:Pikachu,protagonist,1|status:Sleep|from:Disobedience",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_disobedience__status_sleep",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Poochyena,player-1,1|status:Paralysis|from:ability:Static|of:Poochyena,player-2,1 1`] = `
 {
   "rawLog": "status|mon:Poochyena,player-1,1|status:Paralysis|from:ability:Static|of:Poochyena,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_ability_static__status_paralysis",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -28659,68 +25970,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Torterra,player-2,1|status:Bad Poison|from:move:Toxic Spikes 1`] = `
 {
   "rawLog": "status|mon:Torterra,player-2,1|status:Bad Poison|from:move:Toxic Spikes",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_move_toxicspikes__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Toucannon,player-2,1|status:Burn|from:move:Beak Blast|of:Toucannon,player-1,1 1`] = `
 {
   "rawLog": "status|mon:Toucannon,player-2,1|status:Burn|from:move:Beak Blast|of:Toucannon,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_move_beakblast__status_burn",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Vivillon,player-2,1|status:Poison|from:ability:Poison Touch|of:Toxicroak,player-1,1 1`] = `
 {
   "rawLog": "status|mon:Vivillon,player-2,1|status:Poison|from:ability:Poison Touch|of:Toxicroak,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_ability_poisontouch__status_poison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb 1`] = `
 {
   "rawLog": "status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "status__from_item_toxicorb__status_badpoison",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -28829,204 +26100,84 @@ exports[`Exhaustive Log Coverage > should parse and format log string: supereffe
 exports[`Exhaustive Log Coverage > should parse and format log string: swapboosts|mon:Cresselia,player-1,1|from:move:Heart Swap|of:Cresselia,player-2,1 1`] = `
 {
   "rawLog": "swapboosts|mon:Cresselia,player-1,1|from:move:Heart Swap|of:Cresselia,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "swapboosts__from_move_heartswap",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: swapboosts|mon:Cresselia,player-1,1|stats:atk,spa|from:move:Power Swap|of:Cresselia,player-2,1 1`] = `
 {
   "rawLog": "swapboosts|mon:Cresselia,player-1,1|stats:atk,spa|from:move:Power Swap|of:Cresselia,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "swapboosts__from_move_powerswap",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-2|position:1|name:Entei|health:100/100|species:Entei|level:50|gender:U 1`] = `
 {
   "rawLog": "switch|player:player-2|position:1|name:Entei|health:100/100|species:Entei|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-2|position:1|name:Entei|health:120/120|species:Entei|level:50|gender:U 1`] = `
 {
   "rawLog": "switch|player:player-2|position:1|name:Entei|health:120/120|species:Entei|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-2|position:1|name:Shedinja|health:1/1|species:Shedinja|level:50|gender:U 1`] = `
 {
   "rawLog": "switch|player:player-2|position:1|name:Shedinja|health:1/1|species:Shedinja|level:50|gender:U",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "switch",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Cyclizar,player-1,1|copysubstitute 1`] = `
 {
   "rawLog": "switchout|mon:Cyclizar,player-1,1|copysubstitute",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "switchout__copysubstitute",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-1,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-1,1|copyvolatile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "switchout__copyvolatile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-2,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-2,1|copyvolatile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "switchout__copyvolatile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Golisopod,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Golisopod,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Oricorio,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Oricorio,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Palafin,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Palafin,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "switchout",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Trapinch,player-1,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Trapinch,player-1,1|copyvolatile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "switchout__copyvolatile",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -29166,102 +26317,42 @@ exports[`Exhaustive Log Coverage > should parse and format log string: typechang
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean 1`] = `
 {
   "rawLog": "typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_protean__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Greninja,player-1,1|types:Normal|from:ability:Protean 1`] = `
 {
   "rawLog": "typechange|mon:Greninja,player-1,1|types:Normal|from:ability:Protean",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_protean__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Greninja,player-2,1|types:Water|from:ability:Protean 1`] = `
 {
   "rawLog": "typechange|mon:Greninja,player-2,1|types:Water|from:ability:Protean",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_protean__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Kecleon,player-2,1|types:Fire|from:ability:Color Change 1`] = `
 {
   "rawLog": "typechange|mon:Kecleon,player-2,1|types:Fire|from:ability:Color Change",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_colorchange__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Kecleon,player-2,1|types:Water|from:ability:Color Change 1`] = `
 {
   "rawLog": "typechange|mon:Kecleon,player-2,1|types:Water|from:ability:Color Change",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_colorchange__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Pikachu,player-1,1|types:Normal|from:ability:Color Change 1`] = `
 {
   "rawLog": "typechange|mon:Pikachu,player-1,1|types:Normal|from:ability:Color Change",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_colorchange__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -29326,68 +26417,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: typechang
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Stunfisk,player-1,1|types:Electric|from:ability:Mimicry 1`] = `
 {
   "rawLog": "typechange|mon:Stunfisk,player-1,1|types:Electric|from:ability:Mimicry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_mimicry__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Stunfisk,player-1,1|types:Grass|from:ability:Mimicry 1`] = `
 {
   "rawLog": "typechange|mon:Stunfisk,player-1,1|types:Grass|from:ability:Mimicry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_mimicry__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Stunfisk,player-2,1|types:Electric|from:ability:Mimicry 1`] = `
 {
   "rawLog": "typechange|mon:Stunfisk,player-2,1|types:Electric|from:ability:Mimicry",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "typechange__from_ability_mimicry__types_any",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: ultra|mon:Necrozma,player-1,1|species:Necrozma-Ultra|from:item:Ultranecrozium Z 1`] = `
 {
   "rawLog": "ultra|mon:Necrozma,player-1,1|species:Necrozma-Ultra|from:item:Ultranecrozium Z",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "ultra__from_item_ultranecroziumz",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -29634,34 +26685,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
 exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Pelipper,player-1,1|stat:def|by:3|from:move:Stockpile 1`] = `
 {
   "rawLog": "unboost|mon:Pelipper,player-1,1|stat:def|by:3|from:move:Stockpile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "unboost",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Pelipper,player-1,1|stat:spd|by:3|from:move:Stockpile 1`] = `
 {
   "rawLog": "unboost|mon:Pelipper,player-1,1|stat:spd|by:3|from:move:Stockpile",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "unboost",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -29698,17 +26729,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
 exports[`Exhaustive Log Coverage > should parse and format log string: unboost|mon:Shiinotic,player-2,1|stat:atk|by:6|from:Drop Attack 1`] = `
 {
   "rawLog": "unboost|mon:Shiinotic,player-2,1|stat:atk|by:6|from:Drop Attack",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "unboost",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -29899,102 +26920,42 @@ exports[`Exhaustive Log Coverage > should parse and format log string: uncatchab
 exports[`Exhaustive Log Coverage > should parse and format log string: useitem|player:player-1|name:Revive|target:Zygarde,player-1 1`] = `
 {
   "rawLog": "useitem|player:player-1|name:Revive|target:Zygarde,player-1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "useitem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: useitem|player:player-1|name:Self-Destruct Button|target:Pikachu,player-1,2 1`] = `
 {
   "rawLog": "useitem|player:player-1|name:Self-Destruct Button|target:Pikachu,player-1,2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "",
-      },
-      "key": "useitem",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: waiting|mon:Samurott,player-1,1|on:Emboar,player-1,2 1`] = `
 {
   "rawLog": "waiting|mon:Samurott,player-1,1|on:Emboar,player-1,2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "waiting",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: waiting|mon:Serperior,player-1,1|on:Samurott,player-1,2 1`] = `
 {
   "rawLog": "waiting|mon:Serperior,player-1,1|on:Samurott,player-1,2",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "waiting",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: waiting|mon:Serperior,player-1,2|on:Emboar,player-1,1 1`] = `
 {
   "rawLog": "waiting|mon:Serperior,player-1,2|on:Emboar,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "waiting",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land|of:Groudon,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_desolateland__weather_extremelyharshsunlight",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -30035,34 +26996,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Hail|from:Start 1`] = `
 {
   "rawLog": "weather|weather:Hail|from:Start",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_start__weather_hail",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Hail|from:ability:Snow Warning|of:Dewgong,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Hail|from:ability:Snow Warning|of:Dewgong,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_snowwarning__weather_hail",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -30103,68 +27044,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Harsh Sunlight|from:Start 1`] = `
 {
   "rawLog": "weather|weather:Harsh Sunlight|from:Start",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_start__weather_harshsunlight",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_drought__weather_harshsunlight",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-2,1 1`] = `
 {
   "rawLog": "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_drought__weather_harshsunlight",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Harsh Sunlight|from:ability:Orichalcum Pulse|of:Koraidon,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Harsh Sunlight|from:ability:Orichalcum Pulse|of:Koraidon,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_orichalcumpulse__weather_harshsunlight",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -30188,17 +27089,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Heavy Rain|from:ability:Primordial Sea|of:Kyogre,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_primordialsea__weather_heavyrain",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -30239,51 +27130,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Rain|from:Start 1`] = `
 {
   "rawLog": "weather|weather:Rain|from:Start",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_start__weather_rain",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Rain|from:ability:Drizzle|of:Blastoise,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Rain|from:ability:Drizzle|of:Blastoise,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_drizzle__weather_rain",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Rain|from:ability:Drizzle|of:Kyogre,player-2,1 1`] = `
 {
   "rawLog": "weather|weather:Rain|from:ability:Drizzle|of:Kyogre,player-2,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_drizzle__weather_rain",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -30324,34 +27185,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Sandstorm|from:Start 1`] = `
 {
   "rawLog": "weather|weather:Sandstorm|from:Start",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_start__weather_sandstorm",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Sandstorm|from:ability:Sand Stream|of:Golem,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Sandstorm|from:ability:Sand Stream|of:Golem,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_sandstream__weather_sandstorm",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -30392,34 +27233,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Snow|from:Start 1`] = `
 {
   "rawLog": "weather|weather:Snow|from:Start",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_start__weather_snow",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Snow|from:ability:Snow Warning|of:Dewgong,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Snow|from:ability:Snow Warning|of:Dewgong,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_snowwarning__weather_snow",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 
@@ -30443,17 +27264,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Strong Winds|from:ability:Delta Stream|of:Rayquaza,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "",
-      },
-      "key": "weather__from_ability_deltastream__weather_strongwinds",
-    },
-    "notices": [],
-  },
+  "result": null,
 }
 `;
 

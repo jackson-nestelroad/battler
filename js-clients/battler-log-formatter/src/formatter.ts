@@ -257,6 +257,10 @@ export class LogFormatter {
         }
     }
 
+    if (message && message.tokens.length === 0) {
+        message = undefined;
+    }
+
     if (!message && notices.length === 0) return null;
 
     if (message) {
