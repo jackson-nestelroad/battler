@@ -13,7 +13,7 @@
           "require !$source.needs_switch else return",
           "require func_call(set_item: $target $source.item dry_run) else return",
           "require !!assign($item = func_call(take_item: $source)) else return",
-          "set_item: $target $item"
+          "set_item: $target $item $source"
         ]
       }
     }

@@ -64,7 +64,7 @@ fn pickpocket_steals_attacker_item_on_contact() {
                 "damage|mon:Weavile,player-2,1|health:98/130",
                 "damage|mon:Weavile,player-2,1|health:76/100",
                 "itemend|mon:Weavile,player-1,1|item:Toxic Orb|from:ability:Pickpocket|of:Weavile,player-2,1",
-                "itemstart|mon:Weavile,player-2,1|item:Toxic Orb|from:ability:Pickpocket",
+                "itemstart|mon:Weavile,player-2,1|item:Toxic Orb|source:Weavile,player-1,1|from:ability:Pickpocket",
                 "residual",
                 "status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb",
                 "turn|turn:2"

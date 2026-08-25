@@ -112,7 +112,7 @@
             "$item = func_call(take_item: $mon)",
             "if !$item:",
             ["continue"],
-            "set_item: $user $item",
+            "set_item: $user $item $target",
             "break"
           ]
         ]
@@ -257,7 +257,7 @@
           "$source = $effect_state.target",
           "require !!assign($ally_item = func_call(take_item: $source dry_run)) and func_call(set_item: $target $ally_item dry_run) else return",
           "require !!assign($ally_item = func_call(take_item: $source)) else return",
-          "set_item: $target $ally_item"
+          "set_item: $target $ally_item $source"
         ]
       }
     }

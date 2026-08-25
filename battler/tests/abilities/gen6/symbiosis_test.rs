@@ -81,7 +81,7 @@ fn symbiosis_passes_item_to_ally_after_using_item() {
             "itemend|mon:Florges,player-2,2|item:Lum Berry|eat",
             "curestatus|mon:Florges,player-2,2|status:Bad Poison|from:item:Lum Berry",
             "itemend|mon:Florges,player-2,1|item:Cheri Berry|from:ability:Symbiosis",
-            "itemstart|mon:Florges,player-2,2|item:Cheri Berry|from:ability:Symbiosis|of:Florges,player-2,1",
+            "itemstart|mon:Florges,player-2,2|item:Cheri Berry|source:Florges,player-2,1|from:ability:Symbiosis|of:Florges,player-2,1",
             "residual",
             "turn|turn:2",
             "continue",

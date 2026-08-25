@@ -4548,11 +4548,19 @@ fn set_item(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing item")?
         .item_id()
         .wrap_error_with_message("invalid item")?;
+    let item_source = match context.front() {
+        Some(val) if val.value_type() == ValueType::Mon => context
+            .pop_front()
+            .map(|val| val.mon_handle().ok())
+            .flatten(),
+        _ => None,
+    };
     let dry_run = context.has_flag("dry_run");
 
     core_battle_actions::set_item(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &item,
+        item_source,
         dry_run,
     )
     .map(|val| Value::EventResult(val))
@@ -5354,8 +5362,16 @@ fn end_ability(mut context: FunctionContext) -> Result<()> {
 fn start_item(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
     let silent = context.silent();
+    let item_source = match context.front() {
+        Some(val) if val.value_type() == ValueType::Mon => context
+            .pop_front()
+            .map(|val| val.mon_handle().ok())
+            .flatten(),
+        _ => None,
+    };
     core_battle_actions::start_item(
         &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        item_source,
         silent,
     )
 }

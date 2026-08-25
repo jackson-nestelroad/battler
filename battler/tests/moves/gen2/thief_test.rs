@@ -93,7 +93,7 @@ fn thief_steals_target_item() {
                 "damage|mon:Crobat,player-2,1|health:115/145",
                 "damage|mon:Crobat,player-2,1|health:80/100",
                 "itemend|mon:Crobat,player-2,1|item:Safety Goggles|from:move:Thief|of:Crobat,player-1,1",
-                "itemstart|mon:Crobat,player-1,1|item:Safety Goggles|from:move:Thief",
+                "itemstart|mon:Crobat,player-1,1|item:Safety Goggles|source:Crobat,player-2,1|from:move:Thief",
                 "residual",
                 "weather|weather:Sandstorm|residual",
                 "split|side:1",

@@ -86,7 +86,7 @@ fn magician_steals_target_item_after_damage() {
             "damage|mon:Delphox,player-2,1|health:228/260",
             "damage|mon:Delphox,player-2,1|health:88/100",
             "itemend|mon:Delphox,player-2,1|item:Leppa Berry|from:ability:Magician|of:Delphox,player-1,1",
-            "itemstart|mon:Delphox,player-1,1|item:Leppa Berry|from:ability:Magician",
+            "itemstart|mon:Delphox,player-1,1|item:Leppa Berry|source:Delphox,player-2,1|from:ability:Magician",
             "residual",
             "turn|turn:2"
         ]"#,

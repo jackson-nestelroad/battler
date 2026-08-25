@@ -596,9 +596,9 @@
           "$source_item = func_call(take_item: $source)",
           "$success = false",
           "if $target_item.is_true:",
-          ["set_item: $source $target_item", "$success = true"],
+          ["set_item: $source $target_item $target", "$success = true"],
           "if $source_item.is_true:",
-          ["set_item: $target $source_item", "$success = true"],
+          ["set_item: $target $source_item $source", "$success = true"],
           "return $success"
         ]
       }

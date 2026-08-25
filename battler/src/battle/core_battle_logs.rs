@@ -1012,7 +1012,10 @@ pub fn item(context: &mut ApplyingEffectContext) -> Result<()> {
     )
 }
 
-pub fn item_start(context: &mut ApplyingEffectContext) -> Result<()> {
+pub fn item_start(
+    context: &mut ApplyingEffectContext,
+    item_source: Option<MonHandle>,
+) -> Result<()> {
     let item = match context.target().item.clone() {
         Some(item) => item,
         None => return Err(general_error("target has no item")),
@@ -1026,11 +1029,18 @@ pub fn item_start(context: &mut ApplyingEffectContext) -> Result<()> {
         .name
         .clone();
 
+    let mut additional = Vec::from_iter([format!("item:{item}")]);
+    if let Some(item_source) = item_source {
+        let source_str =
+            Mon::position_details(&context.as_battle_context_mut().mon_context(item_source)?)?;
+        additional.push(format!("source:{source_str}"));
+    }
+
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
-        additional: Vec::from_iter([format!("item:{item}")]),
+        additional,
         ..Default::default()
     };
     effect_activation(

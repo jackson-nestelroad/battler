@@ -1134,7 +1134,7 @@
         ],
         "on_hit": [
           "require !!assign($item = func_call(take_item: $source))",
-          "return func_call(set_item: $target $item)"
+          "return func_call(set_item: $target $item $source)"
         ]
       }
     }

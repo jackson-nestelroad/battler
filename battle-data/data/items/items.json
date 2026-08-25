@@ -1257,7 +1257,7 @@
           "# Make sure we can set the item first.",
           "require func_call(set_item: $source $target.item dry_run) else return",
           "require !!assign($item = func_call(take_item: $target)) else return",
-          "set_item: $source $item"
+          "set_item: $source $item $target"
         ]
       }
     }

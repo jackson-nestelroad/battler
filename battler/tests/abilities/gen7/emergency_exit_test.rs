@@ -944,7 +944,7 @@ fn emergency_exit_activates_between_residuals() {
                 "start|mon:Incineroar,player-1,2|move:Leech Seed",
                 "move|mon:Pikachu,player-2,2|name:Bestow|target:Golisopod,player-1,1",
                 "itemend|mon:Pikachu,player-2,2|item:Sticky Barb|from:move:Bestow",
-                "itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|from:move:Bestow|of:Pikachu,player-2,2",
+                "itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|source:Pikachu,player-2,2|from:move:Bestow|of:Pikachu,player-2,2",
                 "residual",
                 "weather|weather:Sandstorm|residual",
                 "split|side:1",

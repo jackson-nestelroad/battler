@@ -335,6 +335,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
             None,
             None,
         )?,
+        None,
         true,
     )?;
 
@@ -5599,7 +5600,11 @@ pub fn end_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()>
 /// Starts the target Mon's item, if it is not already started.
 ///
 /// The Mon still has the item, but it is not considered active.
-pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+pub fn start_item(
+    context: &mut ApplyingEffectContext,
+    item_source: Option<MonHandle>,
+    silent: bool,
+) -> Result<()> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
@@ -5616,7 +5621,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
     }
 
     if !silent {
-        core_battle_logs::item_start(context)?;
+        core_battle_logs::item_start(context, item_source)?;
     }
 
     core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(
@@ -5637,6 +5642,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
 pub fn set_item(
     context: &mut ApplyingEffectContext,
     item: &Id,
+    item_source: Option<MonHandle>,
     dry_run: bool,
 ) -> Result<EventResult> {
     let context = &mut scopeguard::guard(context, |context| {
@@ -5687,7 +5693,7 @@ pub fn set_item(
         source_handle,
     )?;
 
-    start_item(context, false)?;
+    start_item(context, item_source, false)?;
 
     core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
         context,

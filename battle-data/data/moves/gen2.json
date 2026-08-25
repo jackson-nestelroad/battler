@@ -84,7 +84,7 @@
         "on_after_hit": [
           "require !$source.item else return",
           "require !!assign($item = func_call(take_item: $target)) else return",
-          "require func_call(set_item: $source $item) else return"
+          "require func_call(set_item: $source $item $target) else return"
         ]
       }
     }
