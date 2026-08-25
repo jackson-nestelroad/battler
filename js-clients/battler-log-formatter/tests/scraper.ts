@@ -466,8 +466,8 @@ function generateMatrix() {
     finalMatrix.push(...matching.slice(0, 3));
   }
 
-  fs.writeFileSync(path.resolve(import.meta.dirname, "logs-matrix.json"), JSON.stringify(finalMatrix, null, 2));
-  fs.writeFileSync(path.resolve(import.meta.dirname, "unique-log-patterns.txt"), Array.from(extracted.patterns).sort().join("\n"));
+  fs.writeFileSync(path.resolve(import.meta.dirname, "data/logs-matrix.json"), JSON.stringify(finalMatrix, null, 2));
+  fs.writeFileSync(path.resolve(import.meta.dirname, "data/unique-log-patterns.txt"), Array.from(extracted.patterns).sort().join("\n"));
   
   console.log(`Generated ${extracted.patterns.size} unique patterns in unique-log-patterns.txt`);
   console.log(`Generated ${finalMatrix.length} raw examples in logs-matrix.json`);
