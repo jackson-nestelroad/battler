@@ -1,8 +1,7 @@
-
-import type { UiLogEntry, BattleState, UiMon } from "battler-state";
+import type { BattleState, UiLogEntry, UiMon, EffectData } from "battler-state";
 import i18next from "i18next";
 import { LogCategory } from "./types.js";
-import type { MapperOptions, AnyMappedLog, ContextVar } from "./types.js";
+import type { MapperOptions, AnyMappedLog, ContextVar, LogContext } from "./types.js";
 
 
 export type Relationship = "self" | "ally" | "foe";
@@ -104,27 +103,17 @@ export function resolveSideContext(sideIndex: number | undefined, state: BattleS
     };
 }
 
-export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar, raw: string, raw_possessive: string, ref?: UiMon } {
+export function resolveMonContext(monRef: UiMon | undefined, state: BattleState | undefined, options: MapperOptions): { standard: ContextVar, possessive: ContextVar, raw: string, raw_possessive: string, ref?: UiMon, rel: Relationship } {
   if (!monRef || typeof monRef !== 'object') {
-      return { standard: { text: "Mon" }, possessive: { text: "Mon's" }, raw: "Mon", raw_possessive: "Mon's" };
+      return { standard: { text: "Mon" }, possessive: { text: "Mon's" }, raw: "Mon", raw_possessive: "Mon's", rel: "foe" };
   }
   
   let name = "Mon";
   let playerId = "";
-  let id = "";
 
   if ("Active" in monRef && monRef.Active) {
     if (monRef.Active.name) name = monRef.Active.name;
     if (monRef.Active.player) playerId = monRef.Active.player;
-    id = `${playerId}-active-${monRef.Active.position}`;
-  } else if ("Bench" in monRef && monRef.Bench) {
-    if (monRef.Bench.name) name = monRef.Bench.name;
-    if (monRef.Bench.player) playerId = monRef.Bench.player;
-    id = `${playerId}-bench-${monRef.Bench.position}`;
-  } else if ("Party" in monRef && monRef.Party) {
-    if (monRef.Party.name) name = monRef.Party.name;
-    if (monRef.Party.player) playerId = monRef.Party.player;
-    id = `${playerId}-party-${monRef.Party.index}`;
   } else if ("Inactive" in monRef && monRef.Inactive) {
     if (monRef.Inactive.name) name = monRef.Inactive.name;
     if (monRef.Inactive.player) playerId = monRef.Inactive.player;
@@ -145,7 +134,7 @@ export function resolveMonContext(monRef: UiMon | undefined, state: BattleState 
       text = i18next.t("mon.ally", { name });
       possessiveText = i18next.t("mon.ally_possessive", { name });
   } else {
-      const isMulti = state?.settings?.battle_type === "Multi";
+      const isMulti = state?.battle_type === "Multi";
       if (isMulti) {
           text = i18next.t("mon.foe_multi", { name, player: playerName });
           possessiveText = i18next.t("mon.foe_possessive_multi", { name, player: playerName });
@@ -158,8 +147,8 @@ export function resolveMonContext(monRef: UiMon | undefined, state: BattleState 
   }
 
   return { 
-      standard: { text, monRef, noAutoCapitalize },
-      possessive: { text: possessiveText, monRef, noAutoCapitalize: possessiveNoAutoCapitalize },
+      standard: { text, noAutoCapitalize },
+      possessive: { text: possessiveText, noAutoCapitalize: possessiveNoAutoCapitalize },
       raw: name,
       raw_possessive: `${name}'s`,
       ref: monRef,
@@ -217,7 +206,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
       return { patterns: [lower], category: LogCategory.Primary, context };
   }
   
-  const keyStr = Object.keys(entry)[0] as keyof UiLogEntry;
+  const keyStr = Object.keys(entry)[0];
   const key = keyStr.toLowerCase();
   const data = (entry as Record<string, any>)[keyStr];
   
@@ -248,7 +237,7 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
 
   const tags: string[] = [];
   const flags: string[] = [];
-  const context: Record<string, ContextVar> = {};
+  const context: LogContext = {};
   
   const PRIMARY_KEYS = [
       'move', 'switch', 'drag', 'faint', 
@@ -428,8 +417,8 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
 
   const combinatoricTags = tags.filter(t => !excludeTags.includes(t.split(':')[0]));
   
-  if (state?.settings?.battle_type) {
-      combinatoricTags.push(`battletype:${state.settings.battle_type.toLowerCase()}`);
+  if (state?.battle_type) {
+      combinatoricTags.push(`battletype:${state.battle_type.toLowerCase()}`);
   }
 
   let finalFlags = flags;

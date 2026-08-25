@@ -187,7 +187,7 @@ export class LogFormatter {
       });
     }
 
-    let template = i18next.t(templateKey, templateArgs);
+    let template = i18next.t(templateKey, templateArgs) as string;
     
     // Check if the primary event itself is just an ability announcement (e.g. ability|mon:X|ability:Intimidate)
     if (mapped.patterns[0]?.startsWith('ability') && mapped.context.ABILITY) {

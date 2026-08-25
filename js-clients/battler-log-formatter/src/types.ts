@@ -1,5 +1,6 @@
 import { en } from "../locales/en.js";
 import type { UiMon, EffectData } from "battler-state";
+import type { FormattedUiLog } from "./formatter.js";
 
 export type LogTemplateKey = keyof typeof en.logs;
 
@@ -37,9 +38,9 @@ export type ExtractVariables<T extends string> =
     : never;
 
 export type RequiredContext<K extends LogTemplateKey> = 
-  ExtractVariables<typeof en.logs[K]> extends never
+  ExtractVariables<NonNullable<typeof en.logs[K]>> extends never
     ? { count?: number }
-    : Record<ExtractVariables<typeof en.logs[K]>, ContextValue> & { count?: number };
+    : Record<ExtractVariables<NonNullable<typeof en.logs[K]>>, ContextValue> & { count?: number };
 
 export interface MappedLogMetadata {
   mon?: { raw?: string, raw_possessive?: string, ref?: UiMon };
