@@ -103,6 +103,7 @@ activate|condition:Heal Replacement
 activate|condition:Highlighting Sample
 activate|condition:Knock Down
 activate|condition:Must Recharge
+activate|condition:Partially Trapped
 activate|condition:Protect Move Condition Base
 activate|condition:Swap Abilities
 activate|condition:Trapped
@@ -200,7 +201,13 @@ animatemove
 animatemove|noanim
 appear
 battlestart
+block|ability:*|from:Dynamax
+block|ability:*|from:ability:Aroma Veil
+block|ability:*|from:ability:Flower Veil
+block|ability:*|from:ability:Pastel Veil
+block|ability:*|from:ability:Sweet Veil
 block|ability:*|from:item:Ability Shield
+block|move:*|from:Dynamax
 block|move:*|from:ability:Aroma Veil
 block|move:*|from:ability:Flower Veil
 block|move:*|from:ability:Pastel Veil
@@ -346,6 +353,7 @@ end|condition:Confusion
 end|condition:Future Move
 end|condition:Highlighting Sample
 end|condition:Immobilized
+end|condition:Partially Trapped
 end|move:Attract
 end|move:Bide
 end|move:Bind
@@ -381,8 +389,10 @@ end|move:Yawn|silent
 escaped
 exp
 fail
+fail|from:Choice Lock
 fail|from:weather:Extremely Harsh Sunlight
 fail|from:weather:Heavy Rain
+fail|what:*|from:move:Uproar
 fail|what:heal
 fail|what:move:Corrosive Gas
 fail|what:move:Soak
@@ -394,11 +404,28 @@ fail|what:unboost|boosts:acc|from:ability:Illuminate
 fail|what:unboost|boosts:acc|from:ability:Keen Eye
 fail|what:unboost|boosts:acc|from:ability:Mind's Eye
 fail|what:unboost|boosts:acc|from:ability:White Smoke
+fail|what:unboost|boosts:acc|from:item:Clear Amulet
 fail|what:unboost|boosts:atk|from:ability:Clear Body
 fail|what:unboost|boosts:atk|from:ability:Full Metal Body
 fail|what:unboost|boosts:atk|from:ability:Hyper Cutter
 fail|what:unboost|boosts:atk|from:ability:Own Tempo
 fail|what:unboost|boosts:atk|from:ability:White Smoke
+fail|what:unboost|boosts:atk|from:item:Clear Amulet
+fail|what:unboost|from:ability:Big Pecks
+fail|what:unboost|from:ability:Clear Body
+fail|what:unboost|from:ability:Flower Veil
+fail|what:unboost|from:ability:Full Metal Body
+fail|what:unboost|from:ability:Guard Dog
+fail|what:unboost|from:ability:Hyper Cutter
+fail|what:unboost|from:ability:Illuminate
+fail|what:unboost|from:ability:Inner Focus
+fail|what:unboost|from:ability:Keen Eye
+fail|what:unboost|from:ability:Mind's Eye
+fail|what:unboost|from:ability:Oblivious
+fail|what:unboost|from:ability:Own Tempo
+fail|what:unboost|from:ability:Scrappy
+fail|what:unboost|from:ability:White Smoke
+fail|what:unboost|from:item:Clear Amulet
 fail|what:unboost|from:move:Substitute
 faint
 fieldactivate|condition:Stat Shuffle
@@ -528,6 +555,12 @@ info|battletype:*
 info|environment:*
 info|rule:*
 invertboosts|from:move:Topsy-Turvy
+itemend|ability:Gorilla Tactics|from:move:Knock Off
+itemend|ability:Gorilla Tactics|from:move:Switcheroo
+itemend|ability:Gorilla Tactics|from:move:Trick
+itemend|ability:Overcoat|from:move:Switcheroo
+itemend|ability:Overcoat|from:move:Thief
+itemend|ability:Overcoat|from:move:Trick
 itemend|item:Ability Shield|from:move:Knock Off
 itemend|item:Aguav Berry|eat
 itemend|item:Air Balloon
@@ -627,6 +660,7 @@ itemstart|item:*|from:move:Recycle
 itemstart|item:*|from:move:Switcheroo
 itemstart|item:*|from:move:Thief
 itemstart|item:*|from:move:Trick
+item|item:Air Balloon
 item|item:Cheri Berry|from:ability:Frisk
 item|item:Life Orb|from:ability:Frisk
 learnedmove|move:*
@@ -671,15 +705,21 @@ move|zpower
 move|zpower|noanim
 ohko
 player
+prepare|move:Bounce
 prepare|move:Chilly Reception
 prepare|move:Dig
 prepare|move:Dive
 prepare|move:Electro Shot
 prepare|move:Fly
+prepare|move:Freeze Shock
 prepare|move:Geomancy
+prepare|move:Ice Burn
+prepare|move:Meteor Beam
+prepare|move:Phantom Force
 prepare|move:Razor Wind
 prepare|move:Shadow Force
 prepare|move:Skull Bash
+prepare|move:Sky Attack
 prepare|move:Sky Drop
 prepare|move:Solar Beam
 prepare|move:Solar Blade

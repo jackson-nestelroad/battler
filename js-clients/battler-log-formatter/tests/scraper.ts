@@ -157,7 +157,7 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
     function getTypeFromCondition(condType?: string): string {
       if (!condType) return "condition";
       const lower = condType.toLowerCase();
-      if (lower === "status" || lower === "weather" || lower === "volatile") return lower;
+      if (lower === "status" || lower === "weather" || lower === "volatile" || lower === "built-in") return lower;
       return "condition";
     }
 
@@ -209,6 +209,7 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
 
           const entry = {
               type,
+              condition_type: obj.condition_type,
               name,
               program: programStr,
               delegates: delegates
@@ -251,7 +252,7 @@ function extractLogsFromFxlang(): Set<string> {
           const customArg = match[2];
           
           if (logType === "custom_effect" && customArg) {
-              logs.push({ logType: customArg, fromEffect: false });
+              logs.push({ logType: customArg.split(' ')[0], fromEffect: false });
           } else {
               logs.push({ logType, fromEffect: customArg && customArg.includes("from_effect") });
           }
@@ -276,6 +277,7 @@ function extractLogsFromFxlang(): Set<string> {
       return logs;
   }
 
+  const IGNORE_KEYS = new Set(scraperConfig.ignoreKeys || []);
   const uniqueEffects = new Set(registry.values());
   for (const effect of uniqueEffects) {
       const name = effect.name;
@@ -283,6 +285,7 @@ function extractLogsFromFxlang(): Set<string> {
       for (const rawLog of logs) {
           const type = effect.type;
           let logName = rawLog.logType.replace(/_/g, '');
+          if (logName === "announceitem") logName = "item";
           
           if (rawLog.logType === "fail_unboost") {
               logName = "fail_unboost";
@@ -291,28 +294,61 @@ function extractLogsFromFxlang(): Set<string> {
           }
           
           const ALWAYS_FROM_EFFECT = new Set(scraperConfig.alwaysFromEffectLogs || []);
-          
           const isFrom = rawLog.fromEffect || ALWAYS_FROM_EFFECT.has(logName);
           
+          let prefix = type;
+          if ((effect as any).condition_type) {
+              const lower = (effect as any).condition_type.toLowerCase();
+              if (lower === "built-in" || lower === "volatile") {
+                  prefix = isFrom ? "" : "condition";
+              } else if (lower === "status" || lower === "weather" || lower === "zpower") {
+                  prefix = lower;
+              } else {
+                  prefix = "condition";
+              }
+          }
+          const typePrefix = prefix ? prefix + ":" : "";
+
+          if (logName === "preparemove") logName = "prepare";
+          if (logName === "usemove") logName = "move";
+          
+          const ALWAYS_NO_TAG = new Set(scraperConfig.alwaysNoTagLogs || []);
+          const NO_TAG_UNLESS_FROM = new Set(scraperConfig.noTagUnlessFromLogs || []);
+          const PREPEND_WILDCARDS = new Set(scraperConfig.prependWildcardTagLogs || []);
+          const noTag = ALWAYS_NO_TAG.has(logName);
+
           if (logName === "fail") {
               if (isFrom) {
-                  fxlangLogs.add(`fail|from:${type}:${name}`);
+                  fxlangLogs.add(`fail|from:${typePrefix}${name}`);
+                  fxlangLogs.add(`fail|what:*|from:${typePrefix}${name}`);
               } else {
-                  fxlangLogs.add(`fail|what:${type}:${name}`);
+                  fxlangLogs.add(`fail|what:${typePrefix}${name}`);
               }
           } else if (logName === "fail_unboost") {
               if (isFrom) {
-                  fxlangLogs.add(`fail|what:unboost|from:${type}:${name}`);
+                  fxlangLogs.add(`fail|what:unboost|from:${typePrefix}${name}`);
               } else {
-                  fxlangLogs.add(`fail|what:unboost|${type}:${name}`);
+                  fxlangLogs.add(`fail|what:unboost|${typePrefix}${name}`);
               }
           } else if (logName === "fail_heal") {
-              fxlangLogs.add(`fail|what:heal|${type}:${name}`);
+              fxlangLogs.add(`fail|what:heal`);
+          } else if (noTag || (NO_TAG_UNLESS_FROM.has(logName) && !isFrom)) {
+              fxlangLogs.add(logName);
+          } else if (PREPEND_WILDCARDS.has(logName)) {
+              fxlangLogs.add(`${logName}|ability:*|from:${typePrefix}${name}`);
+              fxlangLogs.add(`${logName}|move:*|from:${typePrefix}${name}`);
           } else if (isFrom) {
-              fxlangLogs.add(`${logName}|from:${type}:${name}`);
+              fxlangLogs.add(`${logName}|from:${typePrefix}${name}`);
           } else {
-              fxlangLogs.add(`${logName}|${type}:${name}`);
+              fxlangLogs.add(`${logName}|${typePrefix}${name}`);
           }
+      }
+  }
+
+  // Apply ignores across all added logs
+  for (const log of fxlangLogs) {
+      if (IGNORE_KEYS.has(log)) {
+          fxlangLogs.delete(log);
       }
   }
 
@@ -351,13 +387,18 @@ function generateMatrix() {
   }
 
   const fxlangPatterns = extractLogsFromFxlang();
+  const ALLOW_KEYS = new Set(scraperConfig.allowKeys || []);
   
   for (const pattern of fxlangPatterns) {
       const maskedList = maskLog(pattern);
       for (const masked of maskedList) {
           const tpl = getTemplate(masked);
           if (!validTemplates.has(tpl)) {
-              console.warn(`[WARNING] Dropping illegal pattern not seen in tests: ${masked} (template: ${tpl})`);
+              if (!ALLOW_KEYS.has(masked)) {
+                  console.warn(`[WARNING] Dropping illegal pattern not seen in tests: ${masked} (template: ${tpl})`);
+              } else {
+                  extracted.patterns.add(masked);
+              }
           } else {
               extracted.patterns.add(masked);
           }
@@ -413,10 +454,9 @@ function generateMatrix() {
   for (const cloned of newClonedPatterns) {
       const tpl = getTemplate(cloned);
       if (!validTemplates.has(tpl)) {
-          // Do nothing, drop it
-      } else {
-          extracted.patterns.add(cloned);
+          // Do nothing
       }
+      extracted.patterns.add(cloned);
   }
 
   const finalMatrix: string[] = [];

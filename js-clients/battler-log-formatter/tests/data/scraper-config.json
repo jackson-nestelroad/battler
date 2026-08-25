@@ -50,19 +50,25 @@
       "match": {
         "title": "crit"
       },
-      "inject": ["battletype:singles"]
+      "inject": [
+        "battletype:singles"
+      ]
     },
     {
       "match": {
         "title": "supereffective"
       },
-      "inject": ["battletype:singles"]
+      "inject": [
+        "battletype:singles"
+      ]
     },
     {
       "match": {
         "title": "resisted"
       },
-      "inject": ["battletype:singles"]
+      "inject": [
+        "battletype:singles"
+      ]
     }
   ],
   "collapseDimensions": [
@@ -70,106 +76,143 @@
       "match": {
         "title": "abilitystart"
       },
-      "collapse": ["ability"]
+      "collapse": [
+        "ability"
+      ]
     },
     {
       "match": {
         "title": "itemstart"
       },
-      "collapse": ["item"]
+      "collapse": [
+        "item"
+      ]
     },
     {
       "match": {
         "title": "abilityend"
       },
-      "collapse": ["ability"]
+      "collapse": [
+        "ability"
+      ]
     },
     {
       "match": {
         "title": "addvolatile"
       },
-      "collapse": ["volatile"]
+      "collapse": [
+        "volatile"
+      ]
     },
     {
       "match": {
         "title": "block"
       },
-      "collapse": ["ability", "move", "item"]
+      "collapse": [
+        "ability",
+        "move",
+        "item"
+      ]
     },
     {
       "match": {
         "title": "catch"
       },
-      "collapse": ["item"]
+      "collapse": [
+        "item"
+      ]
     },
     {
       "match": {
         "title": "catchfailed"
       },
-      "collapse": ["item"]
+      "collapse": [
+        "item"
+      ]
     },
     {
       "match": {
         "title": "deductpp"
       },
-      "collapse": ["move"]
+      "collapse": [
+        "move"
+      ]
     },
     {
       "match": {
         "title": "didnotlearnmove"
       },
-      "collapse": ["move"]
+      "collapse": [
+        "move"
+      ]
     },
     {
       "match": {
         "title": "learnedmove"
       },
-      "collapse": ["move"]
+      "collapse": [
+        "move"
+      ]
     },
     {
       "match": {
         "title": "removevolatile"
       },
-      "collapse": ["volatile"]
+      "collapse": [
+        "volatile"
+      ]
     },
     {
       "match": {
         "title": "restorepp"
       },
-      "collapse": ["move"]
+      "collapse": [
+        "move"
+      ]
     },
     {
       "match": {
         "title": "setpp"
       },
-      "collapse": ["move"]
+      "collapse": [
+        "move"
+      ]
     },
     {
       "match": {
         "title": "swapsidecondition"
       },
-      "collapse": ["move", "condition"]
+      "collapse": [
+        "move",
+        "condition"
+      ]
     },
     {
       "match": {
         "title": "activate",
         "ability": "Forewarn"
       },
-      "collapse": ["move"]
+      "collapse": [
+        "move"
+      ]
     },
     {
       "match": {
         "title": "activate",
         "move": "Fling"
       },
-      "collapse": ["item"]
+      "collapse": [
+        "item"
+      ]
     },
     {
       "match": {
         "title": "activate",
         "move": "Poltergeist"
       },
-      "collapse": ["item"]
+      "collapse": [
+        "item"
+      ]
     },
     {
       "match": {},
@@ -188,13 +231,17 @@
       "match": {
         "title": "boost"
       },
-      "collapse": ["from"]
+      "collapse": [
+        "from"
+      ]
     },
     {
       "match": {
         "title": "unboost"
       },
-      "collapse": ["from"]
+      "collapse": [
+        "from"
+      ]
     }
   ],
   "alwaysFromEffectLogs": [
@@ -211,6 +258,64 @@
     "clearnegativeboosts",
     "clearpositiveboosts",
     "swap",
-    "transform"
+    "transform",
+    "block"
+  ],
+  "alwaysNoTagLogs": [
+    "ohko",
+    "waiting",
+    "animatemove",
+    "protectweaken",
+    "copyboosts"
+  ],
+  "noTagUnlessFromLogs": [
+    "immune",
+    "move"
+  ],
+  "prependWildcardTagLogs": [
+    "block"
+  ],
+  "ignoreKeys": [
+    "item|ability:Frisk",
+    "sideend|ability:Screen Cleaner",
+    "sidestart|ability:Toxic Debris",
+    "fail|what:unboost|from:Resist Intimidate Ability Base",
+    "fail|what:unboost|from:Prevent Stat Drop Ability Base",
+    "ability|condition:Aura Ability Base",
+    "fail|what:*|from:Choice Lock",
+    "fail|what:*|from:weather:Heavy Rain",
+    "fail|what:*|from:weather:Extremely Harsh Sunlight",
+    "sideend|condition:Break Protect",
+    "sidestart|item:Guard Spec.",
+    "prepare|condition:Charge Move Base",
+    "sideend|condition:Defog Move Base",
+    "sidestart|condition:Side Screen Move Base",
+    "sideend|condition:Side Screen Move Base",
+    "fail|from:move:Uproar"
+  ],
+  "allowKeys": [
+    "fail|what:unboost|from:ability:Oblivious",
+    "fail|what:unboost|from:ability:Own Tempo",
+    "fail|what:unboost|from:ability:Clear Body",
+    "fail|what:unboost|from:ability:Illuminate",
+    "fail|what:unboost|from:ability:Inner Focus",
+    "fail|what:unboost|from:ability:Keen Eye",
+    "fail|what:unboost|from:ability:Hyper Cutter",
+    "fail|what:unboost|from:ability:White Smoke",
+    "fail|what:unboost|from:ability:Scrappy",
+    "fail|what:unboost|from:ability:Big Pecks",
+    "block|ability:*|from:ability:Aroma Veil",
+    "fail|what:unboost|from:ability:Flower Veil",
+    "block|ability:*|from:ability:Flower Veil",
+    "block|ability:*|from:ability:Sweet Veil",
+    "fail|what:unboost|from:ability:Full Metal Body",
+    "block|ability:*|from:ability:Pastel Veil",
+    "fail|what:unboost|from:ability:Guard Dog",
+    "fail|what:unboost|from:ability:Mind's Eye",
+    "block|ability:*|from:Dynamax",
+    "block|move:*|from:Dynamax",
+    "fail|from:Choice Lock",
+    "item|item:Air Balloon",
+    "fail|what:unboost|from:item:Clear Amulet"
   ]
 }

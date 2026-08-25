@@ -442,7 +442,7 @@
   },
   "partiallytrapped": {
     "name": "Partially Trapped",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "callbacks": {
         "on_duration": ["return func_call(random: 5 7)"],
@@ -496,7 +496,7 @@
   },
   "flinch": {
     "name": "Flinch",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "duration": 1,
       "callbacks": {
@@ -509,7 +509,7 @@
   },
   "mustrecharge": {
     "name": "Must Recharge",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "duration": 2,
       "callbacks": {
@@ -524,7 +524,7 @@
   },
   "trapped": {
     "name": "Trapped",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "no_copy": true,
       "callbacks": {
@@ -853,7 +853,7 @@
   },
   "choicelock": {
     "name": "Choice Lock",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "callbacks": {
         "on_start": [

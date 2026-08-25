@@ -938,7 +938,7 @@ pub fn ability_start(
         .data
         .name
         .clone();
-    let mut additional = vec![format!("ability:{ability}")];
+    let mut additional = Vec::from_iter([format!("ability:{ability}")]);
     if let Some(ability_source) = ability_source {
         let source_str = Mon::position_details(
             &context
