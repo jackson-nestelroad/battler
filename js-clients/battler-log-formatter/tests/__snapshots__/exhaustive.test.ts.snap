@@ -21405,9 +21405,69 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Castform,player-1,1|item:Utility Umbrella|source:Ditto,player-2,1|from:move:Trick|of:Ditto,player-2,1 1`] = `
+{
+  "rawLog": "itemstart|mon:Castform,player-1,1|item:Utility Umbrella|source:Ditto,player-2,1|from:move:Trick|of:Ditto,player-2,1",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Utility Umbrella",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Castform",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Castform",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Castform obtained one Utility Umbrella!",
+      },
+      "key": "itemstart__from_move_trick__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Cherrim,player-1,1|item:Utility Umbrella|from:move:Trick|of:Luxray,player-2,1 1`] = `
 {
   "rawLog": "itemstart|mon:Cherrim,player-1,1|item:Utility Umbrella|from:move:Trick|of:Luxray,player-2,1",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Utility Umbrella",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Cherrim",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Cherrim",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Cherrim obtained one Utility Umbrella!",
+      },
+      "key": "itemstart__from_move_trick__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Cherrim,player-1,1|item:Utility Umbrella|source:Luxray,player-2,1|from:move:Trick|of:Luxray,player-2,1 1`] = `
+{
+  "rawLog": "itemstart|mon:Cherrim,player-1,1|item:Utility Umbrella|source:Luxray,player-2,1|from:move:Trick|of:Luxray,player-2,1",
   "result": {
     "message": {
       "context": {
@@ -21457,6 +21517,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       "formatted": {
         "category": "secondary",
         "text": "The opposing Crobat obtained one Safety Goggles!",
+      },
+      "key": "itemstart__from_move_thief__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Crobat,player-1,1|item:Safety Goggles|source:Crobat,player-2,1|from:move:Thief 1`] = `
+{
+  "rawLog": "itemstart|mon:Crobat,player-1,1|item:Safety Goggles|source:Crobat,player-2,1|from:move:Thief",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Safety Goggles",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Crobat",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Crobat",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Crobat obtained one Safety Goggles!",
       },
       "key": "itemstart__from_move_thief__item_any",
     },
@@ -21525,6 +21615,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Delphox,player-1,1|item:Leppa Berry|source:Delphox,player-2,1|from:ability:Magician 1`] = `
+{
+  "rawLog": "itemstart|mon:Delphox,player-1,1|item:Leppa Berry|source:Delphox,player-2,1|from:ability:Magician",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Leppa Berry",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Delphox",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Delphox",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Delphox obtained one Leppa Berry!",
+      },
+      "key": "itemstart__from_ability_magician__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Delphox,player-1,1|item:Oran Berry|from:ability:Magician 1`] = `
 {
   "rawLog": "itemstart|mon:Delphox,player-1,1|item:Oran Berry|from:ability:Magician",
@@ -21585,6 +21705,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|source:Empoleon,player-1,1|from:move:Thief 1`] = `
+{
+  "rawLog": "itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|source:Empoleon,player-1,1|from:move:Thief",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Griseous Orb",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Empoleon",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Empoleon",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Empoleon obtained one Griseous Orb!",
+      },
+      "key": "itemstart__from_move_thief__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Florges,player-2,2|item:Cheri Berry|from:ability:Symbiosis|of:Florges,player-2,1 1`] = `
 {
   "rawLog": "itemstart|mon:Florges,player-2,2|item:Cheri Berry|from:ability:Symbiosis|of:Florges,player-2,1",
@@ -21615,9 +21765,69 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Florges,player-2,2|item:Cheri Berry|source:Florges,player-2,1|from:ability:Symbiosis|of:Florges,player-2,1 1`] = `
+{
+  "rawLog": "itemstart|mon:Florges,player-2,2|item:Cheri Berry|source:Florges,player-2,1|from:ability:Symbiosis|of:Florges,player-2,1",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Cheri Berry",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Florges",
+              "player": "player-2",
+              "position": 1,
+              "side": 0,
+            },
+          },
+          "text": "The opposing Florges",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The opposing Florges obtained one Cheri Berry!",
+      },
+      "key": "itemstart__from_ability_symbiosis__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|from:move:Bestow|of:Pikachu,player-2,2 1`] = `
 {
   "rawLog": "itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|from:move:Bestow|of:Pikachu,player-2,2",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Sticky Barb",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Golisopod",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Golisopod",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Golisopod received Sticky Barb!",
+      },
+      "key": "itemstart__from_move_bestow__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|source:Pikachu,player-2,2|from:move:Bestow|of:Pikachu,player-2,2 1`] = `
+{
+  "rawLog": "itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|source:Pikachu,player-2,2|from:move:Bestow|of:Pikachu,player-2,2",
   "result": {
     "message": {
       "context": {
@@ -21735,6 +21945,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Lopunny,player-1,1|item:Toxic Orb|source:Lopunny,player-2,1|from:move:Trick 1`] = `
+{
+  "rawLog": "itemstart|mon:Lopunny,player-1,1|item:Toxic Orb|source:Lopunny,player-2,1|from:move:Trick",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Toxic Orb",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Lopunny",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Lopunny",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Lopunny obtained one Toxic Orb!",
+      },
+      "key": "itemstart__from_move_trick__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Oshawott,player-1,1|item:Starf Berry|from:ability:Pickup 1`] = `
 {
   "rawLog": "itemstart|mon:Oshawott,player-1,1|item:Starf Berry|from:ability:Pickup",
@@ -21824,9 +22064,67 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-1,1|item:Sticky Barb|source:Pachirisu,player-2,1|from:item:Sticky Barb|of:Pachirisu,player-2,1 1`] = `
+{
+  "rawLog": "itemstart|mon:Pachirisu,player-1,1|item:Sticky Barb|source:Pachirisu,player-2,1|from:item:Sticky Barb|of:Pachirisu,player-2,1",
+  "result": {
+    "message": {
+      "context": {
+        "MON": {
+          "monRef": {
+            "Active": {
+              "name": "Pachirisu",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Pachirisu",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The Sticky Barb attached itself to {{player}}'s Pachirisu!",
+      },
+      "key": "itemstart__from_item_stickybarb__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-2,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-1,1 1`] = `
 {
   "rawLog": "itemstart|mon:Pachirisu,player-2,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-1,1",
+  "result": {
+    "message": {
+      "context": {
+        "MON": {
+          "monRef": {
+            "Active": {
+              "name": "Pachirisu",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Pachirisu",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "The Sticky Barb attached itself to {{player}}'s Pachirisu!",
+      },
+      "key": "itemstart__from_item_stickybarb__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-2,1|item:Sticky Barb|source:Pachirisu,player-1,1|from:item:Sticky Barb|of:Pachirisu,player-1,1 1`] = `
+{
+  "rawLog": "itemstart|mon:Pachirisu,player-2,1|item:Sticky Barb|source:Pachirisu,player-1,1|from:item:Sticky Barb|of:Pachirisu,player-1,1",
   "result": {
     "message": {
       "context": {
@@ -21883,6 +22181,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pidove,player-2,1|item:Sticky Barb|source:Pidove,player-1,1|from:move:Bestow|of:Pidove,player-1,1 1`] = `
+{
+  "rawLog": "itemstart|mon:Pidove,player-2,1|item:Sticky Barb|source:Pidove,player-1,1|from:move:Bestow|of:Pidove,player-1,1",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Sticky Barb",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Pidove",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Pidove",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Pidove received Sticky Barb!",
+      },
+      "key": "itemstart__from_move_bestow__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|from:move:Thief 1`] = `
 {
   "rawLog": "itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|from:move:Thief",
@@ -21905,6 +22233,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       "formatted": {
         "category": "secondary",
         "text": "The opposing Porygon-Z obtained one Cheri Berry!",
+      },
+      "key": "itemstart__from_move_thief__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|source:Drifblim,player-1,1|from:move:Thief 1`] = `
+{
+  "rawLog": "itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|source:Drifblim,player-1,1|from:move:Thief",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Cheri Berry",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Porygon-Z",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Porygon-Z",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Porygon-Z obtained one Cheri Berry!",
       },
       "key": "itemstart__from_move_thief__item_any",
     },
@@ -22033,9 +22391,69 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-1,1|item:Choice Band|source:Torchic,player-2,1|from:move:Switcheroo 1`] = `
+{
+  "rawLog": "itemstart|mon:Torchic,player-1,1|item:Choice Band|source:Torchic,player-2,1|from:move:Switcheroo",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Choice Band",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Torchic",
+              "player": "player-1",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Torchic",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Torchic obtained one Choice Band!",
+      },
+      "key": "itemstart__from_move_switcheroo__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-2,1|item:Safety Goggles|from:move:Switcheroo|of:Torchic,player-1,1 1`] = `
 {
   "rawLog": "itemstart|mon:Torchic,player-2,1|item:Safety Goggles|from:move:Switcheroo|of:Torchic,player-1,1",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Safety Goggles",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Torchic",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Torchic",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Torchic obtained one Safety Goggles!",
+      },
+      "key": "itemstart__from_move_switcheroo__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-2,1|item:Safety Goggles|source:Torchic,player-1,1|from:move:Switcheroo|of:Torchic,player-1,1 1`] = `
+{
+  "rawLog": "itemstart|mon:Torchic,player-2,1|item:Safety Goggles|source:Torchic,player-1,1|from:move:Switcheroo|of:Torchic,player-1,1",
   "result": {
     "message": {
       "context": {
@@ -22115,6 +22533,36 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       "formatted": {
         "category": "secondary",
         "text": "The opposing Weavile obtained one Toxic Orb!",
+      },
+      "key": "itemstart__from_ability_pickpocket__item_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Weavile,player-2,1|item:Toxic Orb|source:Weavile,player-1,1|from:ability:Pickpocket 1`] = `
+{
+  "rawLog": "itemstart|mon:Weavile,player-2,1|item:Toxic Orb|source:Weavile,player-1,1|from:ability:Pickpocket",
+  "result": {
+    "message": {
+      "context": {
+        "ITEM": "Toxic Orb",
+        "__CAPITALIZED_MON": {
+          "monRef": {
+            "Active": {
+              "name": "Weavile",
+              "player": "player-2",
+              "position": 0,
+              "side": 0,
+            },
+          },
+          "text": "{{player}}'s Weavile",
+        },
+      },
+      "formatted": {
+        "category": "secondary",
+        "text": "{{player}}'s Weavile obtained one Toxic Orb!",
       },
       "key": "itemstart__from_ability_pickpocket__item_any",
     },
