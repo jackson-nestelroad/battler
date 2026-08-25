@@ -1,4 +1,4 @@
-import type { UiLogEntry, BattleState } from "battler-state";
+import type { UiLogEntry, BattleState, UiMon } from "battler-state";
 import i18next from "./i18n.js";
 import { LogCategory } from "./types.js";
 import type { LogContext, MapperOptions, ContextValue, ContextVar, FormattedLogEvent, UiNotice } from "./types.js";
@@ -81,7 +81,7 @@ export class LogFormatter {
     }
     
     // Also auto-augment from any other raw top-level fields (e.g. exp in Experience, stats in LevelUp)
-    const rawData = typeof entry === 'string' ? null : Object.values(entry)[0] as any;
+    const rawData = typeof entry === 'string' ? null : Object.values(entry)[0] as Record<string, unknown>;
     if (rawData && typeof rawData === 'object') {
         for (const [k, v] of Object.entries(rawData)) {
             // Skip large domain objects that are explicitly mapped
@@ -110,7 +110,7 @@ export class LogFormatter {
     }
     
     const count = mapped.context.count;
-    const templateArgs: Record<string, any> = {};
+    const templateArgs: Record<string, unknown> = {};
     if (count !== undefined) templateArgs.count = count;
     
     // Inject global text replacements (only Titlecase to protect {{MON}})
@@ -172,7 +172,7 @@ export class LogFormatter {
     // Inject synthetic Ability notice if this log was triggered by an ability
     if (mapped.effect?.effect?.effect_type === "Ability" && mapped.effect.effect.name) {
       let monStr: string | undefined = undefined;
-      let monRef: any = undefined;
+      let monRef: UiMon | undefined = undefined;
       if (mapped.metadata?.mon?.raw_possessive) {
           monStr = String(mapped.metadata.mon.raw_possessive);
       }
@@ -192,7 +192,7 @@ export class LogFormatter {
     // Check if the primary event itself is just an ability announcement (e.g. ability|mon:X|ability:Intimidate)
     if (mapped.patterns[0]?.startsWith('ability') && mapped.context.ABILITY) {
       let monStr: string | undefined = undefined;
-      let monRef: any = undefined;
+      let monRef: UiMon | undefined = undefined;
       if (mapped.metadata?.mon?.raw_possessive) {
           monStr = String(mapped.metadata.mon.raw_possessive);
       }
@@ -262,22 +262,22 @@ export class LogFormatter {
           }
       }
 
-      const cleanContext: Record<string, any> = {};
+      const cleanContext: Record<string, ContextValue> = {};
       for (const [k, v] of Object.entries(message.context)) {
           if (!usedKeys.has(k)) continue;
 
           if (typeof v === "object" && v !== null && "text" in v) {
-              const cleaned: any = { text: v.text };
+              const cleaned: ContextVar = { text: v.text };
               if (v.monRef) cleaned.monRef = v.monRef;
               cleanContext[k] = cleaned;
           } else if (Array.isArray(v)) {
-              cleanContext[k] = v.map((item: any) => {
-                  if (typeof item === "object" && item !== null && "text" in item) {
-                      const cleaned: any = { text: item.text };
+              cleanContext[k] = (v as ContextValue[]).map((item: ContextValue) => {
+                  if (typeof item === 'object' && item !== null && "text" in item) {
+                      const cleaned: ContextVar = { text: item.text as string };
                       if (item.monRef) cleaned.monRef = item.monRef;
                       return cleaned;
                   }
-                  return item;
+                  return item as string | ContextVar;
               });
           } else {
               cleanContext[k] = v;
@@ -297,7 +297,7 @@ export function stringifyLog(log: FormattedUiLog): string {
         const ctxVal = log.context[token.value];
         if (typeof ctxVal === "string") return ctxVal;
         if (typeof ctxVal === "number") return ctxVal.toString();
-        if (Array.isArray(ctxVal)) return ctxVal.map(v => typeof v === "string" ? v : (v as any).text).join(", ");
+        if (Array.isArray(ctxVal)) return ctxVal.map(v => typeof v === "string" ? v : (v as ContextVar).text).join(", ");
         if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) return ctxVal.text;
         return `{{${token.value}}}`;
     }).join("");

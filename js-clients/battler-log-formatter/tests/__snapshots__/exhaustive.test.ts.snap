@@ -355,9 +355,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Mirror Armor",
+        "text": "Mirror Armor|battletype.multi",
       },
-      "key": "ability|ability:Mirror Armor",
+      "key": "ability|ability:Mirror Armor|battletype:multi",
     },
     "notices": [
       {
@@ -386,9 +386,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Perish Body",
+        "text": "Perish Body|battletype.multi",
       },
-      "key": "ability|ability:Perish Body",
+      "key": "ability|ability:Perish Body|battletype:multi",
     },
     "notices": [
       {
@@ -546,9 +546,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gooey",
+        "text": "Gooey|battletype.multi",
       },
-      "key": "ability|ability:Gooey",
+      "key": "ability|ability:Gooey|battletype:multi",
     },
     "notices": [
       {
@@ -663,9 +663,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Mega Sol",
+        "text": "Mega Sol|battletype.multi",
       },
-      "key": "ability|ability:Mega Sol",
+      "key": "ability|ability:Mega Sol|battletype:multi",
     },
     "notices": [
       {
@@ -947,9 +947,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ability|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Teraform Zero",
+        "text": "Teraform Zero|battletype.multi",
       },
-      "key": "ability|ability:Teraform Zero",
+      "key": "ability|ability:Teraform Zero|battletype:multi",
     },
     "notices": [
       {
@@ -1181,9 +1181,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "No Ability|from.move.Role Play",
+        "text": "No Ability|battletype.multi|from.move.Role Play",
       },
-      "key": "abilityend|ability:No Ability|from:move:Role Play",
+      "key": "abilityend|ability:No Ability|battletype:multi|from:move:Role Play",
     },
     "notices": [
       {
@@ -1212,9 +1212,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Leaf Guard|from.move.Skill Swap",
+        "text": "Leaf Guard|battletype.multi|from.move.Skill Swap",
       },
-      "key": "abilityend|ability:Leaf Guard|from:move:Skill Swap",
+      "key": "abilityend|ability:Leaf Guard|battletype:multi|from:move:Skill Swap",
     },
     "notices": [
       {
@@ -1286,9 +1286,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Forecast|from.move.Worry Seed",
+        "text": "Forecast|battletype.multi|from.move.Worry Seed",
       },
-      "key": "abilityend|ability:Forecast|from:move:Worry Seed",
+      "key": "abilityend|ability:Forecast|battletype:multi|from:move:Worry Seed",
     },
     "notices": [
       {
@@ -1317,9 +1317,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Sheer Force|from.ability.Mummy",
+        "text": "Sheer Force|battletype.multi|from.ability.Mummy",
       },
-      "key": "abilityend|ability:Sheer Force|from:ability:Mummy",
+      "key": "abilityend|ability:Sheer Force|battletype:multi|from:ability:Mummy",
     },
     "notices": [
       {
@@ -1348,9 +1348,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "No Ability|from.move.Doodle",
+        "text": "No Ability|battletype.multi|from.move.Doodle",
       },
-      "key": "abilityend|ability:No Ability|from:move:Doodle",
+      "key": "abilityend|ability:No Ability|battletype:multi|from:move:Doodle",
     },
     "notices": [
       {
@@ -1379,9 +1379,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "No Ability|from.move.Doodle",
+        "text": "No Ability|battletype.multi|from.move.Doodle",
       },
-      "key": "abilityend|ability:No Ability|from:move:Doodle",
+      "key": "abilityend|ability:No Ability|battletype:multi|from:move:Doodle",
     },
     "notices": [
       {
@@ -1410,9 +1410,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Inner Focus|from.move.Entrainment",
+        "text": "Inner Focus|battletype.multi|from.move.Entrainment",
       },
-      "key": "abilityend|ability:Inner Focus|from:move:Entrainment",
+      "key": "abilityend|ability:Inner Focus|battletype:multi|from:move:Entrainment",
     },
     "notices": [
       {
@@ -1441,9 +1441,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Wonder Guard|from.move.Entrainment",
+        "text": "Wonder Guard|battletype.multi|from.move.Entrainment",
       },
-      "key": "abilityend|ability:Wonder Guard|from:move:Entrainment",
+      "key": "abilityend|ability:Wonder Guard|battletype:multi|from:move:Entrainment",
     },
     "notices": [
       {
@@ -1472,9 +1472,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "No Ability|from.move.Skill Swap",
+        "text": "No Ability|battletype.multi|from.move.Skill Swap",
       },
-      "key": "abilityend|ability:No Ability|from:move:Skill Swap",
+      "key": "abilityend|ability:No Ability|battletype:multi|from:move:Skill Swap",
     },
     "notices": [
       {
@@ -1503,9 +1503,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Magma Armor|from.move.Skill Swap",
+        "text": "Magma Armor|battletype.multi|from.move.Skill Swap",
       },
-      "key": "abilityend|ability:Magma Armor|from:move:Skill Swap",
+      "key": "abilityend|ability:Magma Armor|battletype:multi|from:move:Skill Swap",
     },
     "notices": [
       {
@@ -1577,9 +1577,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gluttony|from.ability.Lingering Aroma",
+        "text": "Gluttony|battletype.multi|from.ability.Lingering Aroma",
       },
-      "key": "abilityend|ability:Gluttony|from:ability:Lingering Aroma",
+      "key": "abilityend|ability:Gluttony|battletype:multi|from:ability:Lingering Aroma",
     },
     "notices": [
       {
@@ -1608,9 +1608,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Receiver|from.ability.Receiver",
+        "text": "Receiver|battletype.multi|from.ability.Receiver",
       },
-      "key": "abilityend|ability:Receiver|from:ability:Receiver",
+      "key": "abilityend|ability:Receiver|battletype:multi|from:ability:Receiver",
     },
     "notices": [
       {
@@ -1639,9 +1639,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Trace|from.ability.Trace",
+        "text": "Trace|battletype.multi|from.ability.Trace",
       },
-      "key": "abilityend|ability:Trace|from:ability:Trace",
+      "key": "abilityend|ability:Trace|battletype:multi|from:ability:Trace",
     },
     "notices": [
       {
@@ -1670,9 +1670,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "No Ability|from.move.Worry Seed",
+        "text": "No Ability|battletype.multi|from.move.Worry Seed",
       },
-      "key": "abilityend|ability:No Ability|from:move:Worry Seed",
+      "key": "abilityend|ability:No Ability|battletype:multi|from:move:Worry Seed",
     },
     "notices": [
       {
@@ -1744,9 +1744,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Mold Breaker|from.ability.Wandering Spirit",
+        "text": "Mold Breaker|battletype.multi|from.ability.Wandering Spirit",
       },
-      "key": "abilityend|ability:Mold Breaker|from:ability:Wandering Spirit",
+      "key": "abilityend|ability:Mold Breaker|battletype:multi|from:ability:Wandering Spirit",
     },
     "notices": [
       {
@@ -1775,9 +1775,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Wandering Spirit|from.ability.Wandering Spirit",
+        "text": "Wandering Spirit|battletype.multi|from.ability.Wandering Spirit",
       },
-      "key": "abilityend|ability:Wandering Spirit|from:ability:Wandering Spirit",
+      "key": "abilityend|ability:Wandering Spirit|battletype:multi|from:ability:Wandering Spirit",
     },
     "notices": [
       {
@@ -1806,9 +1806,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Wandering Spirit|from.ability.Wandering Spirit",
+        "text": "Wandering Spirit|battletype.multi|from.ability.Wandering Spirit",
       },
-      "key": "abilityend|ability:Wandering Spirit|from:ability:Wandering Spirit",
+      "key": "abilityend|ability:Wandering Spirit|battletype:multi|from:ability:Wandering Spirit",
     },
     "notices": [
       {
@@ -1837,9 +1837,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityen
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Klutz|from.move.Simple Beam",
+        "text": "Klutz|battletype.multi|from.move.Simple Beam",
       },
-      "key": "abilityend|ability:Klutz|from:move:Simple Beam",
+      "key": "abilityend|ability:Klutz|battletype:multi|from:move:Simple Beam",
     },
     "notices": [
       {
@@ -1958,9 +1958,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Insomnia|from.move.Worry Seed",
+        "text": "Insomnia|battletype.multi|from.move.Worry Seed",
       },
-      "key": "abilitystart|ability:Insomnia|from:move:Worry Seed",
+      "key": "abilitystart|ability:Insomnia|battletype:multi|from:move:Worry Seed",
     },
     "notices": [
       {
@@ -2127,9 +2127,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Swarm|from.move.Entrainment",
+        "text": "Swarm|battletype.multi|from.move.Entrainment",
       },
-      "key": "abilitystart|ability:Swarm|from:move:Entrainment",
+      "key": "abilitystart|ability:Swarm|battletype:multi|from:move:Entrainment",
     },
     "notices": [
       {
@@ -2370,9 +2370,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Insomnia|from.move.Worry Seed",
+        "text": "Insomnia|battletype.multi|from.move.Worry Seed",
       },
-      "key": "abilitystart|ability:Insomnia|from:move:Worry Seed",
+      "key": "abilitystart|ability:Insomnia|battletype:multi|from:move:Worry Seed",
     },
     "notices": [
       {
@@ -2530,9 +2530,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Simple|from.move.Simple Beam",
+        "text": "Simple|battletype.multi|from.move.Simple Beam",
       },
-      "key": "abilitystart|ability:Simple|from:move:Simple Beam",
+      "key": "abilitystart|ability:Simple|battletype:multi|from:move:Simple Beam",
     },
     "notices": [
       {
@@ -2561,9 +2561,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Endless Battle Clause|sides.*",
+        "text": "Multi|clause.Endless Battle Clause|sides.*",
       },
-      "key": "activate|clause:Endless Battle Clause|sides:*",
+      "key": "activate|battletype:multi|clause:Endless Battle Clause|sides:*",
     },
     "notices": [],
   },
@@ -2578,9 +2578,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Sleep Clause",
+        "text": "Multi|clause.Sleep Clause",
       },
-      "key": "activate|clause:Sleep Clause",
+      "key": "activate|battletype:multi|clause:Sleep Clause",
     },
     "notices": [],
   },
@@ -3045,7 +3045,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "message": {
       "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
+        "ITEM": "Utility Umbrella",
+        "__CAPITALIZED_MON": {
           "monRef": {
             "Active": {
               "name": "Castform",
@@ -3054,14 +3055,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
               "side": 0,
             },
           },
-          "text": "The opposing Castform's",
+          "text": "The opposing Castform",
         },
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Castform's Utility Umbrella activated!",
+        "text": "The opposing Castform used its Utility Umbrella!",
       },
-      "key": "activate__item_utilityumbrella__move_any",
+      "key": "activate__item_any__move_any",
     },
     "notices": [],
   },
@@ -3277,7 +3278,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "message": {
       "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
+        "ITEM": "Cheri Berry",
+        "__CAPITALIZED_MON": {
           "monRef": {
             "Active": {
               "name": "Drifblim",
@@ -3286,14 +3288,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
               "side": 0,
             },
           },
-          "text": "The opposing Drifblim's",
+          "text": "The opposing Drifblim",
         },
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Drifblim's Cheri Berry cured paralysis!",
+        "text": "The opposing Drifblim used its Cheri Berry!",
       },
-      "key": "activate__item_cheriberry__move_any",
+      "key": "activate__item_any__move_any",
     },
     "notices": [],
   },
@@ -3424,9 +3426,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Piercing Drill",
+        "text": "Piercing Drill|battletype.multi",
       },
-      "key": "activate|ability:Piercing Drill",
+      "key": "activate|ability:Piercing Drill|battletype:multi",
     },
     "notices": [],
   },
@@ -3577,7 +3579,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "message": {
       "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
+        "ITEM": "Venusaurite",
+        "__CAPITALIZED_MON": {
           "monRef": {
             "Active": {
               "name": "Gengar",
@@ -3586,14 +3589,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
               "side": 0,
             },
           },
-          "text": "The opposing Gengar's",
+          "text": "The opposing Gengar",
         },
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Gengar's Venusaurite reacted!",
+        "text": "The opposing Gengar used its Venusaurite!",
       },
-      "key": "activate__item_venusaurite__move_any",
+      "key": "activate__item_any__move_any",
     },
     "notices": [],
   },
@@ -5699,7 +5702,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "message": {
       "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
+        "ITEM": "Kasib Berry",
+        "__CAPITALIZED_MON": {
           "monRef": {
             "Active": {
               "name": "Polteageist",
@@ -5708,14 +5712,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
               "side": 0,
             },
           },
-          "text": "The opposing Polteageist's",
+          "text": "The opposing Polteageist",
         },
       },
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Polteageist's Kasib Berry activated!",
+        "text": "The opposing Polteageist used its Kasib Berry!",
       },
-      "key": "activate__item_kasibberry__move_any",
+      "key": "activate__item_any__move_any",
     },
     "notices": [],
   },
@@ -6749,9 +6753,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "*|move.Beat Up",
+        "text": "Multi|hit.*|move.Beat Up",
       },
-      "key": "activate|hit:*|move:Beat Up",
+      "key": "activate|battletype:multi|hit:*|move:Beat Up",
     },
     "notices": [],
   },
@@ -6766,9 +6770,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "*|move.Beat Up",
+        "text": "Multi|hit.*|move.Beat Up",
       },
-      "key": "activate|hit:*|move:Beat Up",
+      "key": "activate|battletype:multi|hit:*|move:Beat Up",
     },
     "notices": [],
   },
@@ -6783,9 +6787,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "*|move.Beat Up",
+        "text": "Multi|hit.*|move.Beat Up",
       },
-      "key": "activate|hit:*|move:Beat Up",
+      "key": "activate|battletype:multi|hit:*|move:Beat Up",
     },
     "notices": [],
   },
@@ -6831,14 +6835,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "rawLog": "activate|move:Magnitude|magnitude:4",
   "result": {
     "message": {
-      "context": {
-        "MAGNITUDE": "4",
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Magnitude 4!",
+        "text": "Multi|magnitude.*|move.Magnitude",
       },
-      "key": "activate__magnitude_any__move_any",
+      "key": "activate|battletype:multi|magnitude:*|move:Magnitude",
     },
     "notices": [],
   },
@@ -6850,14 +6852,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "rawLog": "activate|move:Magnitude|magnitude:6",
   "result": {
     "message": {
-      "context": {
-        "MAGNITUDE": "6",
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Magnitude 6!",
+        "text": "Multi|magnitude.*|move.Magnitude",
       },
-      "key": "activate__magnitude_any__move_any",
+      "key": "activate|battletype:multi|magnitude:*|move:Magnitude",
     },
     "notices": [],
   },
@@ -6869,14 +6869,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "rawLog": "activate|move:Magnitude|magnitude:7",
   "result": {
     "message": {
-      "context": {
-        "MAGNITUDE": "7",
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Magnitude 7!",
+        "text": "Multi|magnitude.*|move.Magnitude",
       },
-      "key": "activate__magnitude_any__move_any",
+      "key": "activate|battletype:multi|magnitude:*|move:Magnitude",
     },
     "notices": [],
   },
@@ -6888,14 +6886,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "rawLog": "activate|move:Magnitude|magnitude:8",
   "result": {
     "message": {
-      "context": {
-        "MAGNITUDE": "8",
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Magnitude 8!",
+        "text": "Multi|magnitude.*|move.Magnitude",
       },
-      "key": "activate__magnitude_any__move_any",
+      "key": "activate|battletype:multi|magnitude:*|move:Magnitude",
     },
     "notices": [],
   },
@@ -7012,14 +7008,34 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
 exports[`Exhaustive Log Coverage > should parse and format log string: animatemove|mon:Mudkip,player-1,1|name:Arm Thrust|noanim 1`] = `
 {
   "rawLog": "animatemove|mon:Mudkip,player-1,1|name:Arm Thrust|noanim",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi|noanim",
+      },
+      "key": "animatemove|battletype:multi|noanim",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: animatemove|mon:Pikachu,player-1,1|name:Triple Kick|noanim 1`] = `
 {
   "rawLog": "animatemove|mon:Pikachu,player-1,1|name:Triple Kick|noanim",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi|noanim",
+      },
+      "key": "animatemove|battletype:multi|noanim",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -9021,9 +9037,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
+        "text": "Multi|item.Poké Ball|shakes.*",
       },
-      "key": "catch__item_any__shakes_any",
+      "key": "catch|battletype:multi|item:Poké Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9038,9 +9054,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
+        "text": "Multi|item.Friend Ball|shakes.*",
       },
-      "key": "catch__item_any__shakes_any",
+      "key": "catch|battletype:multi|item:Friend Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9055,9 +9071,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught!",
+        "text": "Multi|item.Level Ball|shakes.*",
       },
-      "key": "catch__item_any__shakes_any",
+      "key": "catch|battletype:multi|item:Level Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9072,9 +9088,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught! A critical capture!",
+        "text": "Multi|item.Master Ball|shakes.*|critical",
       },
-      "key": "catch__item_any__shakes_any__critical",
+      "key": "catch|battletype:multi|item:Master Ball|shakes:*|critical",
     },
     "notices": [],
   },
@@ -9089,9 +9105,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught! A critical capture!",
+        "text": "Multi|item.Poké Ball|shakes.*|critical",
       },
-      "key": "catch__item_any__shakes_any__critical",
+      "key": "catch|battletype:multi|item:Poké Ball|shakes:*|critical",
     },
     "notices": [],
   },
@@ -9106,9 +9122,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Gotcha! {{MON}} was caught! A critical capture!",
+        "text": "Multi|item.Master Ball|shakes.*|critical",
       },
-      "key": "catch__item_any__shakes_any__critical",
+      "key": "catch|battletype:multi|item:Master Ball|shakes:*|critical",
     },
     "notices": [],
   },
@@ -9123,9 +9139,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Mon broke free!",
+        "text": "Multi|item.Poké Ball|shakes.*",
       },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "catchfailed|battletype:multi|item:Poké Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9140,9 +9156,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Mon broke free!",
+        "text": "Multi|item.Poké Ball|shakes.*",
       },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "catchfailed|battletype:multi|item:Poké Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9157,9 +9173,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Mon broke free!",
+        "text": "Multi|item.Fast Ball|shakes.*",
       },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "catchfailed|battletype:multi|item:Fast Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9174,9 +9190,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Mon broke free!",
+        "text": "Multi|item.Poké Ball|shakes.*",
       },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "catchfailed|battletype:multi|item:Poké Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9191,9 +9207,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Mon broke free!",
+        "text": "Multi|item.Dusk Ball|shakes.*",
       },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "catchfailed|battletype:multi|item:Dusk Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9208,9 +9224,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Mon broke free!",
+        "text": "Multi|item.Repeat Ball|shakes.*",
       },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "catchfailed|battletype:multi|item:Repeat Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9225,9 +9241,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Oh no! The Mon broke free!",
+        "text": "Multi|item.Poké Ball|shakes.*",
       },
-      "key": "catchfailed__item_any__shakes_any",
+      "key": "catchfailed|battletype:multi|item:Poké Ball|shakes:*",
     },
     "notices": [],
   },
@@ -9237,7 +9253,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 exports[`Exhaustive Log Coverage > should parse and format log string: clearallboosts 1`] = `
 {
   "rawLog": "clearallboosts",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "clearallboosts|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -11933,21 +11959,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Kecleon,player-2,1|health:92/100 1`] = `
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:92/100",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "damage|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Kecleon,player-2,1|health:105/120 1`] = `
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:105/120",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "damage|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: damage|mon:Kecleon,player-2,1|health:110/120 1`] = `
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:110/120",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "damage|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -14402,21 +14458,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: escaped|p
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Bidoof,protagonist,1|exp:501 1`] = `
 {
   "rawLog": "exp|mon:Bidoof,protagonist,1|exp:501",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "exp|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Empoleon,player-1,1|exp:69 1`] = `
 {
   "rawLog": "exp|mon:Empoleon,player-1,1|exp:69",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "exp|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: exp|mon:Graveler,protagonist,1|exp:1371 1`] = `
 {
   "rawLog": "exp|mon:Graveler,protagonist,1|exp:1371",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "exp|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -14459,24 +14545,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Beldum,player-2,1|what:unboost|boosts:acc|from:ability:Clear Body",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Beldum",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Beldum's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Beldum's Clear Body prevents stat loss!",
+        "text": "Multi|boosts.*|from.ability.Clear Body|what.*",
       },
-      "key": "fail__boosts_any__from_ability_clearbody__what_any",
+      "key": "fail|battletype:multi|boosts:*|from:ability:Clear Body|what:*",
     },
     "notices": [],
   },
@@ -14488,24 +14562,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Beldum,player-2,1|what:unboost|boosts:atk|from:ability:Clear Body",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Beldum",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Beldum's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Beldum's Clear Body prevents stat loss!",
+        "text": "Multi|boosts.*|from.ability.Clear Body|what.*",
       },
-      "key": "fail__boosts_any__from_ability_clearbody__what_any",
+      "key": "fail|battletype:multi|boosts:*|from:ability:Clear Body|what:*",
     },
     "notices": [],
   },
@@ -14568,24 +14630,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Hydrapple,player-1,1|what:unboost|from:move:Substitute",
   "result": {
     "message": {
-      "context": {
-        "MON": {
-          "monRef": {
-            "Active": {
-              "name": "Hydrapple",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "the opposing Hydrapple",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "But it failed! the opposing Hydrapple already has a substitute!",
+        "text": "But it failed!",
       },
-      "key": "fail__from_move_substitute__what_any",
+      "key": "fail__from_move_any__what_any",
     },
     "notices": [],
   },
@@ -14614,24 +14664,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Mawile,player-2,1|what:unboost|boosts:atk|from:ability:Hyper Cutter",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Mawile",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Mawile's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Mawile's Hyper Cutter prevents Attack loss!",
+        "text": "Multi|boosts.*|from.ability.Hyper Cutter|what.*",
       },
-      "key": "fail__boosts_any__from_ability_hypercutter__what_any",
+      "key": "fail|battletype:multi|boosts:*|from:ability:Hyper Cutter|what:*",
     },
     "notices": [],
   },
@@ -14660,24 +14698,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Sableye,player-2,1|what:unboost|boosts:acc|from:ability:Keen Eye",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Sableye",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Sableye's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Sableye's Keen Eye prevents accuracy loss!",
+        "text": "Multi|boosts.*|from.ability.Keen Eye|what.*",
       },
-      "key": "fail__boosts_any__from_ability_keeneye__what_any",
+      "key": "fail|battletype:multi|boosts:*|from:ability:Keen Eye|what:*",
     },
     "notices": [],
   },
@@ -14723,24 +14749,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Spinda",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Spinda's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Spinda's Own Tempo prevents confusion!",
+        "text": "Multi|boosts.*|from.ability.Own Tempo|what.*",
       },
-      "key": "fail__boosts_any__from_ability_owntempo__what_any",
+      "key": "fail|battletype:multi|boosts:*|from:ability:Own Tempo|what:*",
     },
     "notices": [],
   },
@@ -14769,24 +14783,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Swampert,player-2,1|what:unboost|from:move:Substitute",
   "result": {
     "message": {
-      "context": {
-        "MON": {
-          "monRef": {
-            "Active": {
-              "name": "Swampert",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "the opposing Swampert",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "But it failed! the opposing Swampert already has a substitute!",
+        "text": "But it failed!",
       },
-      "key": "fail__from_move_substitute__what_any",
+      "key": "fail__from_move_any__what_any",
     },
     "notices": [],
   },
@@ -14798,24 +14800,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
   "rawLog": "fail|mon:Ursaluna,player-1,1|what:unboost|boosts:acc|from:ability:Mind's Eye",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Ursaluna",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Ursaluna's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Ursaluna's Mind's Eye prevents accuracy loss!",
+        "text": "Multi|boosts.*|from.ability.Mind's Eye|what.*",
       },
-      "key": "fail__boosts_any__from_ability_mindseye__what_any",
+      "key": "fail|battletype:multi|boosts:*|from:ability:Mind's Eye|what:*",
     },
     "notices": [],
   },
@@ -17642,9 +17632,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Hit {{COUNT}} time(s)!",
+        "text": "Multi|hits.*",
       },
-      "key": "hitcount__hits_any",
+      "key": "hitcount|battletype:multi|hits:*",
     },
     "notices": [],
   },
@@ -17659,9 +17649,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Hit {{COUNT}} time(s)!",
+        "text": "Multi|hits.*",
       },
-      "key": "hitcount__hits_any",
+      "key": "hitcount|battletype:multi|hits:*",
     },
     "notices": [],
   },
@@ -17676,9 +17666,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Hit {{COUNT}} time(s)!",
+        "text": "Multi|hits.*",
       },
-      "key": "hitcount__hits_any",
+      "key": "hitcount|battletype:multi|hits:*",
     },
     "notices": [],
   },
@@ -21375,36 +21365,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1 1`] = `
-{
-  "rawLog": "itemstart|mon:Castform,player-1,1|item:Utility Umbrella|from:move:Trick|of:Ditto,player-2,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Utility Umbrella",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Castform",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Castform",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Castform obtained one Utility Umbrella!",
-      },
-      "key": "itemstart__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Castform,player-1,1|item:Utility Umbrella|source:Ditto,player-2,1|from:move:Trick|of:Ditto,player-2,1 1`] = `
 {
   "rawLog": "itemstart|mon:Castform,player-1,1|item:Utility Umbrella|source:Ditto,player-2,1|from:move:Trick|of:Ditto,player-2,1",
@@ -21427,36 +21387,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       "formatted": {
         "category": "secondary",
         "text": "{{player}}'s Castform obtained one Utility Umbrella!",
-      },
-      "key": "itemstart__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Cherrim,player-1,1|item:Utility Umbrella|from:move:Trick|of:Luxray,player-2,1 1`] = `
-{
-  "rawLog": "itemstart|mon:Cherrim,player-1,1|item:Utility Umbrella|from:move:Trick|of:Luxray,player-2,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Utility Umbrella",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Cherrim",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Cherrim",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Cherrim obtained one Utility Umbrella!",
       },
       "key": "itemstart__from_move_trick__item_any",
     },
@@ -21489,36 +21419,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "text": "{{player}}'s Cherrim obtained one Utility Umbrella!",
       },
       "key": "itemstart__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Crobat,player-1,1|item:Safety Goggles|from:move:Thief 1`] = `
-{
-  "rawLog": "itemstart|mon:Crobat,player-1,1|item:Safety Goggles|from:move:Thief",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Safety Goggles",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Crobat",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Crobat",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Crobat obtained one Safety Goggles!",
-      },
-      "key": "itemstart__from_move_thief__item_any",
     },
     "notices": [],
   },
@@ -21577,36 +21477,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       "formatted": {
         "category": "secondary",
         "text": "The opposing Delphox obtained one Cheri Berry!",
-      },
-      "key": "itemstart__from_ability_magician__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Delphox,player-1,1|item:Leppa Berry|from:ability:Magician 1`] = `
-{
-  "rawLog": "itemstart|mon:Delphox,player-1,1|item:Leppa Berry|from:ability:Magician",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Leppa Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Delphox",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Delphox",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Delphox obtained one Leppa Berry!",
       },
       "key": "itemstart__from_ability_magician__item_any",
     },
@@ -21675,36 +21545,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|from:move:Thief 1`] = `
-{
-  "rawLog": "itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|from:move:Thief",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Griseous Orb",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Empoleon",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Empoleon",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Empoleon obtained one Griseous Orb!",
-      },
-      "key": "itemstart__from_move_thief__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|source:Empoleon,player-1,1|from:move:Thief 1`] = `
 {
   "rawLog": "itemstart|mon:Empoleon,player-2,1|item:Griseous Orb|source:Empoleon,player-1,1|from:move:Thief",
@@ -21735,36 +21575,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Florges,player-2,2|item:Cheri Berry|from:ability:Symbiosis|of:Florges,player-2,1 1`] = `
-{
-  "rawLog": "itemstart|mon:Florges,player-2,2|item:Cheri Berry|from:ability:Symbiosis|of:Florges,player-2,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Cheri Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Florges",
-              "player": "player-2",
-              "position": 1,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Florges",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Florges obtained one Cheri Berry!",
-      },
-      "key": "itemstart__from_ability_symbiosis__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Florges,player-2,2|item:Cheri Berry|source:Florges,player-2,1|from:ability:Symbiosis|of:Florges,player-2,1 1`] = `
 {
   "rawLog": "itemstart|mon:Florges,player-2,2|item:Cheri Berry|source:Florges,player-2,1|from:ability:Symbiosis|of:Florges,player-2,1",
@@ -21789,36 +21599,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "text": "The opposing Florges obtained one Cheri Berry!",
       },
       "key": "itemstart__from_ability_symbiosis__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|from:move:Bestow|of:Pikachu,player-2,2 1`] = `
-{
-  "rawLog": "itemstart|mon:Golisopod,player-1,1|item:Sticky Barb|from:move:Bestow|of:Pikachu,player-2,2",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Sticky Barb",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Golisopod",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Golisopod",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Golisopod received Sticky Barb!",
-      },
-      "key": "itemstart__from_move_bestow__item_any",
     },
     "notices": [],
   },
@@ -21915,36 +21695,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Lopunny,player-1,1|item:Toxic Orb|from:move:Trick 1`] = `
-{
-  "rawLog": "itemstart|mon:Lopunny,player-1,1|item:Toxic Orb|from:move:Trick",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Toxic Orb",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Lopunny",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Lopunny",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Lopunny obtained one Toxic Orb!",
-      },
-      "key": "itemstart__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Lopunny,player-1,1|item:Toxic Orb|source:Lopunny,player-2,1|from:move:Trick 1`] = `
 {
   "rawLog": "itemstart|mon:Lopunny,player-1,1|item:Toxic Orb|source:Lopunny,player-2,1|from:move:Trick",
@@ -22035,35 +21785,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-1,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-2,1 1`] = `
-{
-  "rawLog": "itemstart|mon:Pachirisu,player-1,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-2,1",
-  "result": {
-    "message": {
-      "context": {
-        "MON": {
-          "monRef": {
-            "Active": {
-              "name": "Pachirisu",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Pachirisu",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The Sticky Barb attached itself to {{player}}'s Pachirisu!",
-      },
-      "key": "itemstart__from_item_stickybarb__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-1,1|item:Sticky Barb|source:Pachirisu,player-2,1|from:item:Sticky Barb|of:Pachirisu,player-2,1 1`] = `
 {
   "rawLog": "itemstart|mon:Pachirisu,player-1,1|item:Sticky Barb|source:Pachirisu,player-2,1|from:item:Sticky Barb|of:Pachirisu,player-2,1",
@@ -22075,35 +21796,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
             "Active": {
               "name": "Pachirisu",
               "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Pachirisu",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The Sticky Barb attached itself to {{player}}'s Pachirisu!",
-      },
-      "key": "itemstart__from_item_stickybarb__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pachirisu,player-2,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-1,1 1`] = `
-{
-  "rawLog": "itemstart|mon:Pachirisu,player-2,1|item:Sticky Barb|from:item:Sticky Barb|of:Pachirisu,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "MON": {
-          "monRef": {
-            "Active": {
-              "name": "Pachirisu",
-              "player": "player-2",
               "position": 0,
               "side": 0,
             },
@@ -22151,36 +21843,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pidove,player-2,1|item:Sticky Barb|from:move:Bestow|of:Pidove,player-1,1 1`] = `
-{
-  "rawLog": "itemstart|mon:Pidove,player-2,1|item:Sticky Barb|from:move:Bestow|of:Pidove,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Sticky Barb",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Pidove",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Pidove",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Pidove received Sticky Barb!",
-      },
-      "key": "itemstart__from_move_bestow__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Pidove,player-2,1|item:Sticky Barb|source:Pidove,player-1,1|from:move:Bestow|of:Pidove,player-1,1 1`] = `
 {
   "rawLog": "itemstart|mon:Pidove,player-2,1|item:Sticky Barb|source:Pidove,player-1,1|from:move:Bestow|of:Pidove,player-1,1",
@@ -22205,36 +21867,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "text": "{{player}}'s Pidove received Sticky Barb!",
       },
       "key": "itemstart__from_move_bestow__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|from:move:Thief 1`] = `
-{
-  "rawLog": "itemstart|mon:Porygon-Z,player-2,1|item:Cheri Berry|from:move:Thief",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Cheri Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Porygon-Z",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Porygon-Z",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Porygon-Z obtained one Cheri Berry!",
-      },
-      "key": "itemstart__from_move_thief__item_any",
     },
     "notices": [],
   },
@@ -22361,36 +21993,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-1,1|item:Choice Band|from:move:Switcheroo 1`] = `
-{
-  "rawLog": "itemstart|mon:Torchic,player-1,1|item:Choice Band|from:move:Switcheroo",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Choice Band",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Torchic",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Torchic",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Torchic obtained one Choice Band!",
-      },
-      "key": "itemstart__from_move_switcheroo__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-1,1|item:Choice Band|source:Torchic,player-2,1|from:move:Switcheroo 1`] = `
 {
   "rawLog": "itemstart|mon:Torchic,player-1,1|item:Choice Band|source:Torchic,player-2,1|from:move:Switcheroo",
@@ -22413,36 +22015,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       "formatted": {
         "category": "secondary",
         "text": "{{player}}'s Torchic obtained one Choice Band!",
-      },
-      "key": "itemstart__from_move_switcheroo__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Torchic,player-2,1|item:Safety Goggles|from:move:Switcheroo|of:Torchic,player-1,1 1`] = `
-{
-  "rawLog": "itemstart|mon:Torchic,player-2,1|item:Safety Goggles|from:move:Switcheroo|of:Torchic,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Safety Goggles",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Torchic",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Torchic",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Torchic obtained one Safety Goggles!",
       },
       "key": "itemstart__from_move_switcheroo__item_any",
     },
@@ -22505,36 +22077,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "text": "The opposing Tropius harvested one Chilan Berry!",
       },
       "key": "itemstart__from_ability_harvest__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemstart|mon:Weavile,player-2,1|item:Toxic Orb|from:ability:Pickpocket 1`] = `
-{
-  "rawLog": "itemstart|mon:Weavile,player-2,1|item:Toxic Orb|from:ability:Pickpocket",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Toxic Orb",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Weavile",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Weavile",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Weavile obtained one Toxic Orb!",
-      },
-      "key": "itemstart__from_ability_pickpocket__item_any",
     },
     "notices": [],
   },
@@ -24540,21 +24082,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: protectwe
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:47/100|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:47/100|species:Zoroark|level:50|gender:U",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi",
+      },
+      "key": "replace|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:56/120|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:56/120|species:Zoroark|level:50|gender:U",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi",
+      },
+      "key": "replace|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: replace|player:player-2|position:1|name:Zoroark|health:74/120|species:Zoroark|level:50|gender:U 1`] = `
 {
   "rawLog": "replace|player:player-2|position:1|name:Zoroark|health:74/120|species:Zoroark|level:50|gender:U",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi",
+      },
+      "key": "replace|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -25186,21 +24758,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revive|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Pyukumuku,player-2,1|health:100/100 1`] = `
 {
   "rawLog": "sethp|mon:Pyukumuku,player-2,1|health:100/100",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "sethp|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Pyukumuku,player-2,1|health:156/156 1`] = `
 {
   "rawLog": "sethp|mon:Pyukumuku,player-2,1|health:156/156",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "sethp|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon:Zygarde,player-1|health:163/326 1`] = `
 {
   "rawLog": "sethp|mon:Zygarde,player-1|health:163/326",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "sethp|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -25209,26 +24811,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: setpp|mon
   "rawLog": "setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1",
   "result": {
     "message": {
-      "context": {
-        "MOVE": "Dark Pulse",
-        "TO": "0",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Misdreavus",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Misdreavus's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "{{player}}'s Misdreavus's Dark Pulse PP was changed to 0!",
+        "text": "Multi|from.move.Grudge|move.Dark Pulse|to.*",
       },
-      "key": "setpp__move_any__to_any",
+      "key": "setpp|battletype:multi|from:move:Grudge|move:Dark Pulse|to:*",
     },
     "notices": [],
   },
@@ -25639,16 +25227,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
   "rawLog": "sidestart|side:0|move:Spikes|count:1",
   "result": {
     "message": {
-      "context": {
-        "SIDE": {
-          "text": "your team",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Spikes were scattered on the ground all around your team!",
+        "text": "Multi|count.*|move.Spikes",
       },
-      "key": "sidestart__count_any__move_spikes",
+      "key": "sidestart|battletype:multi|count:*|move:Spikes",
     },
     "notices": [],
   },
@@ -25723,16 +25307,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
   "rawLog": "sidestart|side:0|move:Toxic Spikes|count:1",
   "result": {
     "message": {
-      "context": {
-        "SIDE": {
-          "text": "your team",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Poison spikes were scattered on the ground all around your team!",
+        "text": "Multi|count.*|move.Toxic Spikes",
       },
-      "key": "sidestart__count_any__move_toxicspikes",
+      "key": "sidestart|battletype:multi|count:*|move:Toxic Spikes",
     },
     "notices": [],
   },
@@ -25744,16 +25324,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
   "rawLog": "sidestart|side:0|move:Toxic Spikes|count:2",
   "result": {
     "message": {
-      "context": {
-        "SIDE": {
-          "text": "your team",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Poison spikes were scattered on the ground all around your team!",
+        "text": "Multi|count.*|move.Toxic Spikes",
       },
-      "key": "sidestart__count_any__move_toxicspikes",
+      "key": "sidestart|battletype:multi|count:*|move:Toxic Spikes",
     },
     "notices": [],
   },
@@ -25933,16 +25509,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
   "rawLog": "sidestart|side:1|move:Spikes|count:1",
   "result": {
     "message": {
-      "context": {
-        "SIDE": {
-          "text": "the opposing team",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Spikes were scattered on the ground all around the opposing team!",
+        "text": "Multi|count.*|move.Spikes",
       },
-      "key": "sidestart__count_any__move_spikes",
+      "key": "sidestart|battletype:multi|count:*|move:Spikes",
     },
     "notices": [],
   },
@@ -25954,16 +25526,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
   "rawLog": "sidestart|side:1|move:Spikes|count:2",
   "result": {
     "message": {
-      "context": {
-        "SIDE": {
-          "text": "the opposing team",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Spikes were scattered on the ground all around the opposing team!",
+        "text": "Multi|count.*|move.Spikes",
       },
-      "key": "sidestart__count_any__move_spikes",
+      "key": "sidestart|battletype:multi|count:*|move:Spikes",
     },
     "notices": [],
   },
@@ -26038,16 +25606,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
   "rawLog": "sidestart|side:1|move:Toxic Spikes|count:1",
   "result": {
     "message": {
-      "context": {
-        "SIDE": {
-          "text": "the opposing team",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "Poison spikes were scattered on the ground all around the opposing team!",
+        "text": "Multi|count.*|move.Toxic Spikes",
       },
-      "key": "sidestart__count_any__move_toxicspikes",
+      "key": "sidestart|battletype:multi|count:*|move:Toxic Spikes",
     },
     "notices": [],
   },
@@ -27629,25 +27193,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Cursola,player-1,1|move:Perish Song|perish:3",
   "result": {
     "message": {
-      "context": {
-        "PERISH": "3",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Cursola",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Cursola's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Cursola's perish count fell to 3!",
+        "text": "Multi|move.Perish Song|perish.*",
       },
-      "key": "start__move_perishsong__perish_any",
+      "key": "start|battletype:multi|move:Perish Song|perish:*",
     },
     "notices": [],
   },
@@ -27659,25 +27210,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Cursola,player-2,1|move:Perish Song|perish:3",
   "result": {
     "message": {
-      "context": {
-        "PERISH": "3",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Cursola",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Cursola's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Cursola's perish count fell to 3!",
+        "text": "Multi|move.Perish Song|perish.*",
       },
-      "key": "start__move_perishsong__perish_any",
+      "key": "start|battletype:multi|move:Perish Song|perish:*",
     },
     "notices": [],
   },
@@ -27834,25 +27372,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Espeon,player-1,1|move:Perish Song|perish:3",
   "result": {
     "message": {
-      "context": {
-        "PERISH": "3",
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Espeon",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Espeon's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Espeon's perish count fell to 3!",
+        "text": "Multi|move.Perish Song|perish.*",
       },
-      "key": "start__move_perishsong__perish_any",
+      "key": "start|battletype:multi|move:Perish Song|perish:*",
     },
     "notices": [],
   },
@@ -28563,24 +28088,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:1",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Machamp",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Machamp",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Machamp is gathering chi!",
+        "text": "Multi|count.*|move.G-Max Chi Strike",
       },
-      "key": "start__count_any__move_gmaxchistrike",
+      "key": "start|battletype:multi|count:*|move:G-Max Chi Strike",
     },
     "notices": [],
   },
@@ -28592,24 +28105,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:2",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Machamp",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Machamp",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Machamp is gathering chi!",
+        "text": "Multi|count.*|move.G-Max Chi Strike",
       },
-      "key": "start__count_any__move_gmaxchistrike",
+      "key": "start|battletype:multi|count:*|move:G-Max Chi Strike",
     },
     "notices": [],
   },
@@ -28621,24 +28122,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:3",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Machamp",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Machamp",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Machamp is gathering chi!",
+        "text": "Multi|count.*|move.G-Max Chi Strike",
       },
-      "key": "start__count_any__move_gmaxchistrike",
+      "key": "start|battletype:multi|count:*|move:G-Max Chi Strike",
     },
     "notices": [],
   },
@@ -28940,25 +28429,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Pelipper,player-1,1|move:Stockpile|count:1",
   "result": {
     "message": {
-      "context": {
-        "COUNT": "1",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Pelipper",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pelipper",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Pelipper stockpiled 1!",
+        "text": "Multi|count.*|move.Stockpile",
       },
-      "key": "start__count_any__move_stockpile",
+      "key": "start|battletype:multi|count:*|move:Stockpile",
     },
     "notices": [],
   },
@@ -28970,25 +28446,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Pelipper,player-1,1|move:Stockpile|count:2",
   "result": {
     "message": {
-      "context": {
-        "COUNT": "2",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Pelipper",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pelipper",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Pelipper stockpiled 2!",
+        "text": "Multi|count.*|move.Stockpile",
       },
-      "key": "start__count_any__move_stockpile",
+      "key": "start|battletype:multi|count:*|move:Stockpile",
     },
     "notices": [],
   },
@@ -29000,25 +28463,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
   "rawLog": "start|mon:Pelipper,player-2,1|move:Stockpile|count:1",
   "result": {
     "message": {
-      "context": {
-        "COUNT": "1",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Pelipper",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pelipper",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Pelipper stockpiled 1!",
+        "text": "Multi|count.*|move.Stockpile",
       },
-      "key": "start__count_any__move_stockpile",
+      "key": "start|battletype:multi|count:*|move:Stockpile",
     },
     "notices": [],
   },
@@ -31219,70 +30669,170 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swapboost
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-2|position:1|name:Entei|health:100/100|species:Entei|level:50|gender:U 1`] = `
 {
   "rawLog": "switch|player:player-2|position:1|name:Entei|health:100/100|species:Entei|level:50|gender:U",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi",
+      },
+      "key": "switch|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-2|position:1|name:Entei|health:120/120|species:Entei|level:50|gender:U 1`] = `
 {
   "rawLog": "switch|player:player-2|position:1|name:Entei|health:120/120|species:Entei|level:50|gender:U",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi",
+      },
+      "key": "switch|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switch|player:player-2|position:1|name:Shedinja|health:1/1|species:Shedinja|level:50|gender:U 1`] = `
 {
   "rawLog": "switch|player:player-2|position:1|name:Shedinja|health:1/1|species:Shedinja|level:50|gender:U",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "Multi",
+      },
+      "key": "switch|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Cyclizar,player-1,1|copysubstitute 1`] = `
 {
   "rawLog": "switchout|mon:Cyclizar,player-1,1|copysubstitute",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi|copy_substitute",
+      },
+      "key": "switchout|battletype:multi|copy_substitute",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-1,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-1,1|copyvolatile",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi|copy_volatile",
+      },
+      "key": "switchout|battletype:multi|copy_volatile",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-2,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-2,1|copyvolatile",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi|copy_volatile",
+      },
+      "key": "switchout|battletype:multi|copy_volatile",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Golisopod,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Golisopod,player-1,1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "switchout|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Oricorio,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Oricorio,player-1,1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "switchout|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Palafin,player-1,1 1`] = `
 {
   "rawLog": "switchout|mon:Palafin,player-1,1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi",
+      },
+      "key": "switchout|battletype:multi",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Trapinch,player-1,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Trapinch,player-1,1|copyvolatile",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Multi|copy_volatile",
+      },
+      "key": "switchout|battletype:multi|copy_volatile",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -32003,9 +31553,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "-3|from.move.Stockpile",
+        "text": "Multi|by.-3|from.move.Stockpile",
       },
-      "key": "unboost|by:-3|from:move:Stockpile",
+      "key": "unboost|battletype:multi|by:-3|from:move:Stockpile",
     },
     "notices": [],
   },
@@ -32020,9 +31570,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "-3|from.move.Stockpile",
+        "text": "Multi|by.-3|from.move.Stockpile",
       },
-      "key": "unboost|by:-3|from:move:Stockpile",
+      "key": "unboost|battletype:multi|by:-3|from:move:Stockpile",
     },
     "notices": [],
   },
@@ -32067,9 +31617,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: unboost|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "-6|from.Drop Attack",
+        "text": "Multi|by.-6|from.Drop Attack",
       },
-      "key": "unboost|by:-6|from:Drop Attack",
+      "key": "unboost|battletype:multi|by:-6|from:Drop Attack",
     },
     "notices": [],
   },
@@ -32268,9 +31818,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: useitem|p
       "context": {},
       "formatted": {
         "category": "primary",
-        "text": "Revive",
+        "text": "Multi|item.Revive",
       },
-      "key": "useitem|item:Revive",
+      "key": "useitem|battletype:multi|item:Revive",
     },
     "notices": [],
   },
@@ -32285,9 +31835,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: useitem|p
       "context": {},
       "formatted": {
         "category": "primary",
-        "text": "Self-Destruct Button",
+        "text": "Multi|item.Self-Destruct Button",
       },
-      "key": "useitem|item:Self-Destruct Button",
+      "key": "useitem|battletype:multi|item:Self-Destruct Button",
     },
     "notices": [],
   },
@@ -32302,9 +31852,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: waiting|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "*",
+        "text": "Multi|on.*",
       },
-      "key": "waiting|on:*",
+      "key": "waiting|battletype:multi|on:*",
     },
     "notices": [],
   },
@@ -32319,9 +31869,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: waiting|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "*",
+        "text": "Multi|on.*",
       },
-      "key": "waiting|on:*",
+      "key": "waiting|battletype:multi|on:*",
     },
     "notices": [],
   },
@@ -32336,9 +31886,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: waiting|m
       "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "*",
+        "text": "Multi|on.*",
       },
-      "key": "waiting|on:*",
+      "key": "waiting|battletype:multi|on:*",
     },
     "notices": [],
   },

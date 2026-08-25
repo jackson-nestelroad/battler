@@ -1,8 +1,10 @@
 import fs from "fs";
 import path from "path";
 import { generateCombinatorics } from '../src/mapper.js';
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const scraperConfig = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, "data/scraper-config.json"), "utf-8"));
+const scraperConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, "data/scraper-config.json"), "utf-8"));
 
 export function maskLog(line: string): string[] {
   line = line.trim();
@@ -49,12 +51,12 @@ export function maskLog(line: string): string[] {
               }
           } else {
               const hasTag = tags.some(t => {
-                  if (matchV === '*') {
+                  if ((matchV as string) === '*') {
                       return t.startsWith(`${matchK}:`);
-                  } else if (matchV.endsWith('*')) {
-                      return t.startsWith(`${matchK}:${matchV.slice(0, -1)}`);
+                  } else if ((matchV as string).endsWith('*')) {
+                      return t.startsWith(`${matchK}:${(matchV as string).slice(0, -1)}`);
                   } else {
-                      return t === `${matchK}:${matchV}`;
+                      return t === `${matchK}:${matchV as string}`;
                   }
               });
               if (!hasTag) {
@@ -87,12 +89,12 @@ export function maskLog(line: string): string[] {
               }
           } else {
               const hasTag = tags.some(t => {
-                  if (matchV === '*') {
+                  if ((matchV as string) === '*') {
                       return t.startsWith(`${matchK}:`);
-                  } else if (matchV.endsWith('*')) {
-                      return t.startsWith(`${matchK}:${matchV.slice(0, -1)}`);
+                  } else if ((matchV as string).endsWith('*')) {
+                      return t.startsWith(`${matchK}:${(matchV as string).slice(0, -1)}`);
                   } else {
-                      return t === `${matchK}:${matchV}`;
+                      return t === `${matchK}:${matchV as string}`;
                   }
               });
               if (!hasTag) {
@@ -112,7 +114,7 @@ export function maskLog(line: string): string[] {
   return results;
 }
 
-const RUST_TESTS_DIR = path.resolve(import.meta.dirname, "../../../battler/tests");
+const RUST_TESTS_DIR = path.resolve(__dirname, "../../../battler/tests");
 
 function readAllRsFiles(dir: string): string[] {
   let results: string[] = [];
@@ -162,13 +164,13 @@ function extractLogsFromRs(): { raw: string[], patterns: Set<string> } {
   return { raw: Array.from(allLogs), patterns: allPatterns };
 }
 
-interface EffectEntry { type: string, name: string, program: string, delegates: string[] }
+interface EffectEntry { type: string, name: string, program: string, delegates: string[], condition_type?: string }
 let effectRegistry: Map<string, EffectEntry> | null = null;
 
 function buildEffectRegistry(): Map<string, EffectEntry> {
     if (effectRegistry) return effectRegistry;
     effectRegistry = new Map<string, EffectEntry>();
-    const BATTLE_DATA_DIR = path.resolve(import.meta.dirname, "../../../battle-data/data");
+    const BATTLE_DATA_DIR = path.resolve(__dirname, "../../../battle-data/data");
 
     function getTypeFromCondition(condType?: string): string {
       if (!condType) return "condition";
@@ -177,7 +179,7 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
       return "condition";
     }
 
-    function extractStrings(obj: any): string {
+    function extractStrings(obj: unknown): string {
         if (typeof obj === 'string') return obj;
         if (Array.isArray(obj)) return obj.map(extractStrings).join('\n');
         if (obj && typeof obj === 'object') {
@@ -212,20 +214,20 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
 
       const content = JSON.parse(fs.readFileSync(file, "utf-8"));
       
-      const processObj = (key: string, obj: any, typeOverride?: string) => {
+      const processObj = (key: string, obj: Record<string, unknown>, typeOverride?: string) => {
           if (!obj || typeof obj !== 'object') return;
-          const name = obj.name || key;
-          const type = typeOverride || (obj.condition_type ? getTypeFromCondition(obj.condition_type) : defaultType);
+          const name = (obj.name as string) || key;
+          const type = typeOverride || (obj.condition_type ? getTypeFromCondition(obj.condition_type as string) : defaultType);
           
-          const programStr = extractStrings(obj.program || obj);
+          const programStr = extractStrings((obj.program as Record<string, unknown>) || obj);
           
-          const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const id = (name as string).toLowerCase().replace(/[^a-z0-9]/g, '');
 
-          const delegates = obj.delegates || obj.effect?.delegates || obj.condition?.delegates || [];
+          const delegates = (obj.delegates as string[]) || (obj.effect as Record<string, unknown>)?.delegates || (obj.condition as Record<string, unknown>)?.delegates || [];
 
           const entry = {
               type,
-              condition_type: obj.condition_type,
+              condition_type: obj.condition_type as string | undefined,
               name,
               program: programStr,
               delegates: delegates
@@ -243,7 +245,7 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
       } else {
           for (const [key, val] of Object.entries(content)) {
               if (val && typeof val === 'object') {
-                  processObj(key, val);
+                  processObj(key, val as Record<string, unknown>);
               }
           }
       }
@@ -256,7 +258,7 @@ function extractLogsFromFxlang(): Set<string> {
   const fxlangLogs = new Set<string>();
   const registry = buildEffectRegistry();
 
-  function getLogsForEffect(effect: any, visited: Set<any>): { logType: string, fromEffect: boolean }[] {
+  function getLogsForEffect(effect: EffectEntry, visited: Set<EffectEntry>): { logType: string, fromEffect: boolean }[] {
       if (visited.has(effect)) return [];
       visited.add(effect);
       
@@ -270,7 +272,7 @@ function extractLogsFromFxlang(): Set<string> {
           if (logType === "custom_effect" && customArg) {
               logs.push({ logType: customArg.split(' ')[0], fromEffect: false });
           } else {
-              logs.push({ logType, fromEffect: customArg && customArg.includes("from_effect") });
+              logs.push({ logType, fromEffect: Boolean(customArg && customArg.includes("from_effect")) });
           }
       }
       
@@ -313,8 +315,8 @@ function extractLogsFromFxlang(): Set<string> {
           const isFrom = rawLog.fromEffect || ALWAYS_FROM_EFFECT.has(logName);
           
           let prefix = type;
-          if ((effect as any).condition_type) {
-              const lower = (effect as any).condition_type.toLowerCase();
+          if (effect.condition_type) {
+              const lower = effect.condition_type.toLowerCase();
               if (lower === "built-in" || lower === "volatile") {
                   prefix = isFrom ? "" : "condition";
               } else if (lower === "status" || lower === "weather" || lower === "zpower") {
@@ -482,13 +484,13 @@ function generateMatrix() {
     finalMatrix.push(...matching.slice(0, 3));
   }
 
-  fs.writeFileSync(path.resolve(import.meta.dirname, "data/logs-matrix.json"), JSON.stringify(finalMatrix, null, 2));
-  fs.writeFileSync(path.resolve(import.meta.dirname, "data/unique-log-patterns.txt"), Array.from(extracted.patterns).sort().join("\n"));
+  fs.writeFileSync(path.resolve(__dirname, "data/logs-matrix.json"), JSON.stringify(finalMatrix, null, 2));
+  fs.writeFileSync(path.resolve(__dirname, "data/unique-log-patterns.txt"), Array.from(extracted.patterns).sort().join("\n"));
   
   console.log(`Generated ${extracted.patterns.size} unique patterns in unique-log-patterns.txt`);
   console.log(`Generated ${finalMatrix.length} raw examples in logs-matrix.json`);
 
-  const enTsPath = path.resolve(import.meta.dirname, "../locales/en.ts");
+  const enTsPath = path.resolve(__dirname, "../locales/en.ts");
   let enTsContent = fs.readFileSync(enTsPath, "utf-8");
   
   const logsRegex = /(logs: \{)([\s\S]*?)(\n  \})/m;
@@ -586,10 +588,10 @@ function generateMatrix() {
       }
       
       if (staleKeys.length > 0) {
-          fs.writeFileSync(path.resolve(import.meta.dirname, "data/stale-keys.txt"), staleKeys.join('\n'));
+          fs.writeFileSync(path.resolve(__dirname, "data/stale-keys.txt"), staleKeys.join('\n'));
           console.log(`Found ${staleKeys.length} stale keys. Wrote to data/stale-keys.txt`);
       } else {
-          fs.writeFileSync(path.resolve(import.meta.dirname, "data/stale-keys.txt"), "");
+          fs.writeFileSync(path.resolve(__dirname, "data/stale-keys.txt"), "");
           console.log("No stale keys found.");
       }
       

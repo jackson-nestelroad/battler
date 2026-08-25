@@ -5,7 +5,7 @@ import { describe, it, expect } from "vitest";
 import { LogFormatter, FormattedUiLog, stringifyLog } from "../src/formatter.js";
 import { alterBattleState, newBattleState } from "battler-state";
 import { en } from "../locales/en.js";
-import matrixLogs from "./data/logs-matrix.json";
+import matrixLogs from "./data/logs-matrix.json" with { type: "json" };
 
 describe("Exhaustive Log Coverage", () => {
   const formatter = new LogFormatter({ localPlayerId: "p1" });
@@ -80,7 +80,7 @@ describe("Exhaustive Log Coverage", () => {
     const uiLogEntry = lastTurnLogs[lastTurnLogs.length - 1];
     
     // If it's a silent log, formatting should produce empty
-    const rawMapped = Object.values(uiLogEntry)[0] as any;
+    const rawMapped = Object.values(uiLogEntry)[0] as { effect?: { additional?: { silent?: boolean } } };
     if (rawMapped?.effect?.additional?.silent !== undefined) {
       const emptyFormatted = formatter.format(uiLogEntry, alteredState);
       expect(emptyFormatted).toBeNull();

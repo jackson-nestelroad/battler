@@ -14,7 +14,8 @@
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
-    "extract-logs": "tsx tests/scraper.ts"
+    "extract-logs": "tsx tests/scraper.ts",
+    "lint": "tsc -b && tsc -p tsconfig.test.json --noEmit"
   },
   "keywords": [],
   "author": "",

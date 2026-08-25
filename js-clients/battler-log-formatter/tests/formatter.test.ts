@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { LogFormatter, stringifyLog } from "../src/formatter.js";
+import { BattleState, UiLogEntry } from "battler-state";
 import { LogCategory } from "../src/types.js";
 
 describe("LogFormatter", () => {
   it("should format string log correctly", () => {
     const formatter = new LogFormatter();
     // Simulate UiLogEntry enum using any
-    const entry: any = "Tie";
+    const entry = "Tie";
     const result = formatter.format(entry);
     expect(result).not.toBeNull();
     const log = result!.message!;
@@ -16,7 +17,7 @@ describe("LogFormatter", () => {
 
   it("should format complex Move log", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const entry: any = {
+    const entry = {
       Move: {
         name: "Thunderbolt",
         mon: {
@@ -26,7 +27,7 @@ describe("LogFormatter", () => {
     };
     
     // Mock state
-    const state: any = {
+    const state = {
       field: {
         sides: [
           {
@@ -37,7 +38,7 @@ describe("LogFormatter", () => {
       }
     };
     
-    const result = formatter.format(entry, state);
+    const result = formatter.format(entry as unknown as UiLogEntry, state as unknown as BattleState);
     expect(result).not.toBeNull();
     const log = result!.message!;
     expect(log.category).toBe(LogCategory.Primary);
@@ -53,7 +54,7 @@ describe("LogFormatter", () => {
 
   it("should handle battle type disambiguation for critical hits", () => {
     const formatter = new LogFormatter();
-    const entry: any = {
+    const entry = {
       Crit: {
         mon: {
           Active: { position: 0, name: "Pikachu", player: "p2" }
@@ -62,8 +63,8 @@ describe("LogFormatter", () => {
     };
     
     // Singles State
-    const singlesState: any = {
-      settings: { battle_type: "Singles" },
+    const singlesState = {
+      battle_type: "Singles",
       field: {
         sides: [
           { players: { p1: { name: "Player 1" } } },
@@ -73,8 +74,8 @@ describe("LogFormatter", () => {
     };
     
     // Multi State
-    const multiState: any = {
-      settings: { battle_type: "Multi" },
+    const multiState = {
+      battle_type: "Multi",
       field: {
         sides: [
           { players: { p1: { name: "Player 1" }, p3: { name: "Player 3" } } },
@@ -84,8 +85,8 @@ describe("LogFormatter", () => {
     };
     
     // Doubles State
-    const doublesState: any = {
-      settings: { battle_type: "Doubles" },
+    const doublesState = {
+      battle_type: "Doubles",
       field: {
         sides: [
           { players: { p1: { name: "Player 1" } } },
@@ -94,9 +95,9 @@ describe("LogFormatter", () => {
       }
     };
 
-    const singlesResult = formatter.format(entry, singlesState);
-    const doublesResult = formatter.format(entry, doublesState);
-    const multiResult = formatter.format(entry, multiState);
+    const singlesResult = formatter.format(entry as unknown as UiLogEntry, singlesState as unknown as BattleState);
+    const doublesResult = formatter.format(entry as unknown as UiLogEntry, doublesState as unknown as BattleState);
+    const multiResult = formatter.format(entry as unknown as UiLogEntry, multiState as unknown as BattleState);
 
     const singlesLog = singlesResult!.message!;
     const doublesLog = doublesResult!.message!;
@@ -117,8 +118,8 @@ describe("LogFormatter", () => {
 
   it("should format boost magnitudes correctly", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const mockState: any = {
-      settings: { battle_type: "Singles" },
+    const mockState = {
+      battle_type: "Singles",
       field: {
         sides: [
           { players: { p1: { name: "Player 1" } } },
@@ -128,15 +129,15 @@ describe("LogFormatter", () => {
     };
     
     const getBoostLog = (by: number, max?: boolean) => {
-      const entry: any = {
+      const entry = {
         Boost: {
           mon: { Active: { position: 0, name: "Snorlax", player: "p1" } },
           stat: "atk",
           by: by
         }
       };
-      if (max) entry.Boost.max = true;
-      const result = formatter.format(entry, mockState);
+      if (max) (entry.Boost as Record<string, unknown>).max = true;
+      const result = formatter.format(entry as unknown as UiLogEntry, mockState as unknown as BattleState);
       return stringifyLog(result!.message!);
     };
 
@@ -150,8 +151,8 @@ describe("LogFormatter", () => {
 
   it("should format unboost magnitudes correctly", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const mockState: any = {
-      settings: { battle_type: "Singles" },
+    const mockState = {
+      battle_type: "Singles",
       field: {
         sides: [
           { players: { p1: { name: "Player 1" } } },
@@ -161,15 +162,15 @@ describe("LogFormatter", () => {
     };
     
     const getUnboostLog = (by: number, min?: boolean) => {
-      const entry: any = {
+      const entry = {
         Unboost: {
           mon: { Active: { position: 0, name: "Snorlax", player: "p1" } },
           stat: "def",
           by: by
         }
       };
-      if (min) entry.Unboost.min = true;
-      const result = formatter.format(entry, mockState);
+      if (min) (entry.Unboost as Record<string, unknown>).min = true;
+      const result = formatter.format(entry as unknown as UiLogEntry, mockState as unknown as BattleState);
       return stringifyLog(result!.message!);
     };
 
