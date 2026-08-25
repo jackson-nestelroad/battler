@@ -2556,7 +2556,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|clause:Endless Battle Clause|sides:0 1`] = `
 {
   "rawLog": "activate|clause:Endless Battle Clause|sides:0",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__clause_endlessbattleclause",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -5663,25 +5673,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "rawLog": "activate|mon:Polteageist,player-2,1|move:Poltergeist|item:Kasib Berry",
   "result": {
     "message": {
-      "context": {
-        "ITEM": "Kasib Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Polteageist",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Polteageist",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Polteageist used its Kasib Berry!",
+        "text": "",
       },
-      "key": "activate__item_any__move_any",
+      "key": "activate__move_poltergeist",
     },
     "notices": [],
   },
@@ -6710,21 +6707,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Beat Up|hit:Feraligatr 1`] = `
 {
   "rawLog": "activate|move:Beat Up|hit:Feraligatr",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__move_beatup",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Beat Up|hit:Lugia 1`] = `
 {
   "rawLog": "activate|move:Beat Up|hit:Lugia",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__move_beatup",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Beat Up|hit:Sneasel 1`] = `
 {
   "rawLog": "activate|move:Beat Up|hit:Sneasel",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__move_beatup",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -6765,28 +6792,68 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:4 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:4",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__move_magnitude",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:6 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:6",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__move_magnitude",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:7 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:7",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__move_magnitude",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|move:Magnitude|magnitude:8 1`] = `
 {
   "rawLog": "activate|move:Magnitude|magnitude:8",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "activate__move_magnitude",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -8924,91 +8991,221 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Bidoof,wild,1|item:Poké Ball|shakes:4 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Bidoof,wild,1|item:Poké Ball|shakes:4",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catch__item_any__shakes_4",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Friend Ball|shakes:4 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Graveler,wild,1|item:Friend Ball|shakes:4",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catch__item_any__shakes_4",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:4 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:4",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catch__item_any__shakes_4",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catch__item_any__shakes_1__critical",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1|critical 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1|critical",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catch__item_any__shakes_1__critical",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical 1`] = `
 {
   "rawLog": "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catch__item_any__shakes_1__critical",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:player-1|mon:Eternatus,player-2,1|item:Poké Ball|shakes:0 1`] = `
 {
   "rawLog": "catchfailed|player:player-1|mon:Eternatus,player-2,1|item:Poké Ball|shakes:0",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catchfailed__item_any__shakes_0",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catchfailed__item_any__shakes_3",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catchfailed__item_any__shakes_3",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Electrode,wild,1|item:Poké Ball|shakes:3 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Poké Ball|shakes:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catchfailed__item_any__shakes_3",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:1 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catchfailed__item_any__shakes_1",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:1 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catchfailed__item_any__shakes_1",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "[UNHANDLED]",
+      },
+      "key": "catchfailed__item_any__shakes_1",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -13871,14 +14068,34 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Beldum,player-2,1|what:unboost|boosts:acc|from:ability:Clear Body 1`] = `
 {
   "rawLog": "fail|mon:Beldum,player-2,1|what:unboost|boosts:acc|from:ability:Clear Body",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "But it failed!",
+      },
+      "key": "fail__what_any",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Beldum,player-2,1|what:unboost|boosts:atk|from:ability:Clear Body 1`] = `
 {
   "rawLog": "fail|mon:Beldum,player-2,1|what:unboost|boosts:atk|from:ability:Clear Body",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "But it failed!",
+      },
+      "key": "fail__what_any",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -13970,7 +14187,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Mawile,player-2,1|what:unboost|boosts:atk|from:ability:Hyper Cutter 1`] = `
 {
   "rawLog": "fail|mon:Mawile,player-2,1|what:unboost|boosts:atk|from:ability:Hyper Cutter",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "But it failed!",
+      },
+      "key": "fail__what_any",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -13994,7 +14221,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Sableye,player-2,1|what:unboost|boosts:acc|from:ability:Keen Eye 1`] = `
 {
   "rawLog": "fail|mon:Sableye,player-2,1|what:unboost|boosts:acc|from:ability:Keen Eye",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "But it failed!",
+      },
+      "key": "fail__what_any",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -14035,7 +14272,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo 1`] = `
 {
   "rawLog": "fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "But it failed!",
+      },
+      "key": "fail__what_any",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -14076,7 +14323,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Ursaluna,player-1,1|what:unboost|boosts:acc|from:ability:Mind's Eye 1`] = `
 {
   "rawLog": "fail|mon:Ursaluna,player-1,1|what:unboost|boosts:acc|from:ability:Mind's Eye",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "But it failed!",
+      },
+      "key": "fail__what_any",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -16895,21 +17152,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:1 1`] = `
 {
   "rawLog": "hitcount|hits:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "hitcount",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:3 1`] = `
 {
   "rawLog": "hitcount|hits:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "hitcount",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|hits:5 1`] = `
 {
   "rawLog": "hitcount|hits:5",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "hitcount",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -23040,7 +23327,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sethp|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1 1`] = `
 {
   "rawLog": "setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "setpp__move_any",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -23446,7 +23743,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:0|move:Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:0|move:Spikes|count:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "sidestart__move_spikes",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -23516,14 +23823,34 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:0|move:Toxic Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:0|move:Toxic Spikes|count:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "sidestart__move_toxicspikes",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:0|move:Toxic Spikes|count:2 1`] = `
 {
   "rawLog": "sidestart|side:0|move:Toxic Spikes|count:2",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "sidestart__move_toxicspikes",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -23698,14 +24025,34 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:1|move:Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:1|move:Spikes|count:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "sidestart__move_spikes",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:1|move:Spikes|count:2 1`] = `
 {
   "rawLog": "sidestart|side:1|move:Spikes|count:2",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "sidestart__move_spikes",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -23775,7 +24122,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
 exports[`Exhaustive Log Coverage > should parse and format log string: sidestart|side:1|move:Toxic Spikes|count:1 1`] = `
 {
   "rawLog": "sidestart|side:1|move:Toxic Spikes|count:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "sidestart__move_toxicspikes",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -25352,14 +25709,34 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Cursola,player-1,1|move:Perish Song|perish:3 1`] = `
 {
   "rawLog": "start|mon:Cursola,player-1,1|move:Perish Song|perish:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_perishsong",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Cursola,player-2,1|move:Perish Song|perish:3 1`] = `
 {
   "rawLog": "start|mon:Cursola,player-2,1|move:Perish Song|perish:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_perishsong",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -25511,7 +25888,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Espeon,player-1,1|move:Perish Song|perish:3 1`] = `
 {
   "rawLog": "start|mon:Espeon,player-1,1|move:Perish Song|perish:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_perishsong",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -26193,21 +26580,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:1 1`] = `
 {
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_gmaxchistrike",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:2 1`] = `
 {
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:2",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_gmaxchistrike",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:3 1`] = `
 {
   "rawLog": "start|mon:Machamp,player-1,1|move:G-Max Chi Strike|count:3",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_gmaxchistrike",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -26504,21 +26921,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Pelipper,player-1,1|move:Stockpile|count:1 1`] = `
 {
   "rawLog": "start|mon:Pelipper,player-1,1|move:Stockpile|count:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_stockpile",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Pelipper,player-1,1|move:Stockpile|count:2 1`] = `
 {
   "rawLog": "start|mon:Pelipper,player-1,1|move:Stockpile|count:2",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_stockpile",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Pelipper,player-2,1|move:Stockpile|count:1 1`] = `
 {
   "rawLog": "start|mon:Pelipper,player-2,1|move:Stockpile|count:1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "start__move_stockpile",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -28467,21 +28914,51 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Cyclizar,player-1,1|copysubstitute 1`] = `
 {
   "rawLog": "switchout|mon:Cyclizar,player-1,1|copysubstitute",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "switchout__copysubstitute",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-1,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-1,1|copyvolatile",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "switchout__copyvolatile",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Espeon,player-2,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Espeon,player-2,1|copyvolatile",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "switchout__copyvolatile",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -28539,7 +29016,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
 exports[`Exhaustive Log Coverage > should parse and format log string: switchout|mon:Trapinch,player-1,1|copyvolatile 1`] = `
 {
   "rawLog": "switchout|mon:Trapinch,player-1,1|copyvolatile",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "switchout__copyvolatile",
+    },
+    "notices": [],
+  },
 }
 `;
 
@@ -29412,35 +29899,85 @@ exports[`Exhaustive Log Coverage > should parse and format log string: uncatchab
 exports[`Exhaustive Log Coverage > should parse and format log string: useitem|player:player-1|name:Revive|target:Zygarde,player-1 1`] = `
 {
   "rawLog": "useitem|player:player-1|name:Revive|target:Zygarde,player-1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "",
+      },
+      "key": "useitem",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: useitem|player:player-1|name:Self-Destruct Button|target:Pikachu,player-1,2 1`] = `
 {
   "rawLog": "useitem|player:player-1|name:Self-Destruct Button|target:Pikachu,player-1,2",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "primary",
+        "text": "",
+      },
+      "key": "useitem",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: waiting|mon:Samurott,player-1,1|on:Emboar,player-1,2 1`] = `
 {
   "rawLog": "waiting|mon:Samurott,player-1,1|on:Emboar,player-1,2",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "waiting",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: waiting|mon:Serperior,player-1,1|on:Samurott,player-1,2 1`] = `
 {
   "rawLog": "waiting|mon:Serperior,player-1,1|on:Samurott,player-1,2",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "waiting",
+    },
+    "notices": [],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: waiting|mon:Serperior,player-1,2|on:Emboar,player-1,1 1`] = `
 {
   "rawLog": "waiting|mon:Serperior,player-1,2|on:Emboar,player-1,1",
-  "result": null,
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "",
+      },
+      "key": "waiting",
+    },
+    "notices": [],
+  },
 }
 `;
 
