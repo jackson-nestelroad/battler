@@ -127,13 +127,13 @@ export class LogFormatter {
     templateArgs.eva = i18next.t('stats.eva');
     templateArgs.acc = i18next.t('stats.acc');
 
-    let templateKey = `logs.${mapped.patterns[0]}`;
+    let templateKey: string | undefined = undefined;
     const patterns = mapped.patterns;
     
     if (this.options.forceTemplateKey) {
         templateKey = `logs.${this.options.forceTemplateKey}`;
     } else if (patterns && patterns.length > 0) {
-        let found = false;
+        let unhandledKey: string | undefined = undefined;
         for (const pattern of patterns) {
             let p = pattern;
             const parts = p.split('|');
@@ -156,14 +156,16 @@ export class LogFormatter {
                 const translation = i18next.t(fullKey);
                 if (translation === "[UNHANDLED]") {
                     // Keep track of the most specific UNHANDLED key in case nothing matches
-                    if (!found) templateKey = fullKey;
+                    if (!unhandledKey) unhandledKey = fullKey;
                     continue;
                 }
                 
                 templateKey = fullKey;
-                found = true;
                 break;
             }
+        }
+        if (!templateKey && unhandledKey) {
+            templateKey = unhandledKey;
         }
     }
 
@@ -187,7 +189,10 @@ export class LogFormatter {
       });
     }
 
-    let template = i18next.t(templateKey, templateArgs) as string;
+    let template: string | undefined = undefined;
+    if (templateKey && i18next.exists(templateKey)) {
+        template = i18next.t(templateKey, templateArgs) as string;
+    }
     
     // Check if the primary event itself is just an ability announcement (e.g. ability|mon:X|ability:Intimidate)
     if (mapped.patterns[0]?.startsWith('ability') && mapped.context.ABILITY) {
@@ -222,9 +227,9 @@ export class LogFormatter {
           category: mapped.category,
           context: mapped.context
       };
-    } else if (template && template !== templateKey) {
+    } else if (template !== undefined) {
         message = {
-          key: templateKey.replace('logs.', ''),
+          key: templateKey!.replace('logs.', ''),
           tokens: parseTemplateToTokens(template),
           category: mapped.category,
           context: mapped.context
