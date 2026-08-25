@@ -9132,6 +9132,23 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3 1`] = `
+{
+  "rawLog": "catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3",
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Oh no! The Mon broke free!",
+      },
+      "key": "catchfailed__item_any__shakes_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3",
@@ -9152,6 +9169,57 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Electrode,wild,1|item:Poké Ball|shakes:3 1`] = `
 {
   "rawLog": "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Poké Ball|shakes:3",
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Oh no! The Mon broke free!",
+      },
+      "key": "catchfailed__item_any__shakes_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:1 1`] = `
+{
+  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:1",
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Oh no! The Mon broke free!",
+      },
+      "key": "catchfailed__item_any__shakes_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:1 1`] = `
+{
+  "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:1",
+  "result": {
+    "message": {
+      "context": {},
+      "formatted": {
+        "category": "secondary",
+        "text": "Oh no! The Mon broke free!",
+      },
+      "key": "catchfailed__item_any__shakes_any",
+    },
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: catchfailed|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1 1`] = `
+{
+  "rawLog": "catchfailed|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1",
   "result": {
     "message": {
       "context": {},
@@ -18759,36 +18827,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Archeops,player-1,1|item:Oran Berry|from:move:Knock Off|of:Archeops,player-2,1 1`] = `
-{
-  "rawLog": "itemend|mon:Archeops,player-1,1|item:Oran Berry|from:move:Knock Off|of:Archeops,player-2,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Oran Berry",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Archeops",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Archeops",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Archeops knocked off {{TARGET_POSSESSIVE}} Oran Berry!",
-      },
-      "key": "itemend__from_move_knockoff__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Archeops,player-2,1|item:Oran Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Archeops,player-2,1|item:Oran Berry|eat",
@@ -19923,96 +19961,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "The opposing Linoone ate its Rawst Berry!",
       },
       "key": "itemend__item_any__eat",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Lopunny,player-1,1|item:Power Anklet|from:move:Trick 1`] = `
-{
-  "rawLog": "itemend|mon:Lopunny,player-1,1|item:Power Anklet|from:move:Trick",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Power Anklet",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Lopunny",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Lopunny",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Lopunny obtained one Power Anklet!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Lopunny,player-1,1|item:Toxic Orb|from:move:Trick 1`] = `
-{
-  "rawLog": "itemend|mon:Lopunny,player-1,1|item:Toxic Orb|from:move:Trick",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Toxic Orb",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Lopunny",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Lopunny",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Lopunny obtained one Toxic Orb!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Lopunny,player-2,1|item:Power Anklet|from:move:Trick|of:Lopunny,player-1,1 1`] = `
-{
-  "rawLog": "itemend|mon:Lopunny,player-2,1|item:Power Anklet|from:move:Trick|of:Lopunny,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Power Anklet",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Lopunny",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Lopunny",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Lopunny obtained one Power Anklet!",
-      },
-      "key": "itemend__from_move_trick__item_any",
     },
     "notices": [],
   },
@@ -21277,36 +21225,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Torchic,player-1,1|item:Safety Goggles|from:move:Trick 1`] = `
-{
-  "rawLog": "itemend|mon:Torchic,player-1,1|item:Safety Goggles|from:move:Trick",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Safety Goggles",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Torchic",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Torchic",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Torchic obtained one Safety Goggles!",
-      },
-      "key": "itemend__from_move_trick__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Switcheroo|of:Torchic,player-1,1 1`] = `
 {
   "rawLog": "itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Switcheroo|of:Torchic,player-1,1",
@@ -21331,36 +21249,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
         "text": "{{player}}'s Torchic obtained one Choice Band!",
       },
       "key": "itemend__from_move_switcheroo__item_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Trick|of:Torchic,player-1,1 1`] = `
-{
-  "rawLog": "itemend|mon:Torchic,player-2,1|item:Choice Band|from:move:Trick|of:Torchic,player-1,1",
-  "result": {
-    "message": {
-      "context": {
-        "ITEM": "Choice Band",
-        "__CAPITALIZED_MON": {
-          "monRef": {
-            "Active": {
-              "name": "Torchic",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "{{player}}'s Torchic",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "{{player}}'s Torchic obtained one Choice Band!",
-      },
-      "key": "itemend__from_move_trick__item_any",
     },
     "notices": [],
   },
@@ -22537,128 +22425,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: levelup|m
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Aerodactyl,player-2,1|species:Aerodactyl-Mega|from:item:Aerodactylite 1`] = `
-{
-  "rawLog": "mega|mon:Aerodactyl,player-2,1|species:Aerodactyl-Mega|from:item:Aerodactylite",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Blastoise,player-1,1|species:Blastoise-Mega|from:item:Blastoisinite 1`] = `
-{
-  "rawLog": "mega|mon:Blastoise,player-1,1|species:Blastoise-Mega|from:item:Blastoisinite",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Charizard,player-1,1|species:Charizard-Mega-X|from:item:Charizardite X 1`] = `
-{
-  "rawLog": "mega|mon:Charizard,player-1,1|species:Charizard-Mega-X|from:item:Charizardite X",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Charizard,player-2,1|species:Charizard-Mega-X|from:item:Charizardite X 1`] = `
-{
-  "rawLog": "mega|mon:Charizard,player-2,1|species:Charizard-Mega-X|from:item:Charizardite X",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Charizard,player-2,1|species:Charizard-Mega-Y|from:item:Charizardite Y 1`] = `
-{
-  "rawLog": "mega|mon:Charizard,player-2,1|species:Charizard-Mega-Y|from:item:Charizardite Y",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Excadrill,player-1,1|species:Excadrill-Mega|from:item:Excadrite 1`] = `
 {
   "rawLog": "mega|mon:Excadrill,player-1,1|species:Excadrill-Mega|from:item:Excadrite",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Gengar,player-1,1|species:Gengar-Mega|from:item:Gengarite 1`] = `
-{
-  "rawLog": "mega|mon:Gengar,player-1,1|species:Gengar-Mega|from:item:Gengarite",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Gengar,player-2,1|species:Gengar-Mega|from:item:Gengarite 1`] = `
-{
-  "rawLog": "mega|mon:Gengar,player-2,1|species:Gengar-Mega|from:item:Gengarite",
   "result": {
     "message": {
       "context": {},
@@ -22690,43 +22459,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Kangaskhan,player-1,1|species:Kangaskhan-Mega|from:item:Kangaskhanite 1`] = `
-{
-  "rawLog": "mega|mon:Kangaskhan,player-1,1|species:Kangaskhan-Mega|from:item:Kangaskhanite",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Rayquaza,player-1,1|species:Rayquaza-Mega|from:move:Dragon Ascent 1`] = `
 {
   "rawLog": "mega|mon:Rayquaza,player-1,1|species:Rayquaza-Mega|from:move:Dragon Ascent",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "primary",
-        "text": "{{MON}} Mega Evolved!",
-      },
-      "key": "mega",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:Venusaur,player-1,1|species:Venusaur-Mega|from:item:Venusaurite 1`] = `
-{
-  "rawLog": "mega|mon:Venusaur,player-1,1|species:Venusaur-Mega|from:item:Venusaurite",
   "result": {
     "message": {
       "context": {},
@@ -24593,35 +24328,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: restorepp
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Pawmot,player-1,1|move:Revival Blessing|by:1|from:item:Leppa Berry 1`] = `
-{
-  "rawLog": "restorepp|mon:Pawmot,player-1,1|move:Revival Blessing|by:1|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Pawmot",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pawmot's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Pawmot's PP was restored.",
-      },
-      "key": "restorepp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Slowbro,player-1,1|move:Slack Off|by:5|from:item:Leppa Berry 1`] = `
 {
   "rawLog": "restorepp|mon:Slowbro,player-1,1|move:Slack Off|by:5|from:item:Leppa Berry",
@@ -24651,67 +24357,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: restorepp
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:1|from:item:Leppa Berry 1`] = `
-{
-  "rawLog": "restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:1|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Smeargle",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Smeargle's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Smeargle's PP was restored.",
-      },
-      "key": "restorepp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry 1`] = `
 {
   "rawLog": "restorepp|mon:Smeargle,player-1,1|move:Draco Meteor|by:5|from:item:Leppa Berry",
-  "result": {
-    "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Smeargle",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Smeargle's",
-        },
-      },
-      "formatted": {
-        "category": "secondary",
-        "text": "The opposing Smeargle's PP was restored.",
-      },
-      "key": "restorepp__move_any",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: restorepp|mon:Smeargle,player-1,1|move:Sketch|by:1|from:item:Leppa Berry 1`] = `
-{
-  "rawLog": "restorepp|mon:Smeargle,player-1,1|move:Sketch|by:1|from:item:Leppa Berry",
   "result": {
     "message": {
       "context": {
@@ -25056,23 +24704,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revive|mo
 exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Quaxly,player-1|from:move:Revival Blessing|of:Pawmot,player-1,1 1`] = `
 {
   "rawLog": "revive|mon:Quaxly,player-1|from:move:Revival Blessing|of:Pawmot,player-1,1",
-  "result": {
-    "message": {
-      "context": {},
-      "formatted": {
-        "category": "secondary",
-        "text": "{{MON}} was revived!",
-      },
-      "key": "revive",
-    },
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: revive|mon:Venusaur,player-1|from:item:Revive 1`] = `
-{
-  "rawLog": "revive|mon:Venusaur,player-1|from:item:Revive",
   "result": {
     "message": {
       "context": {},

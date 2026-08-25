@@ -48,7 +48,15 @@ export function maskLog(line: string): string[] {
                   break;
               }
           } else {
-              const hasTag = tags.some(t => t === `${matchK}:${matchV}`);
+              const hasTag = tags.some(t => {
+                  if (matchV === '*') {
+                      return t.startsWith(`${matchK}:`);
+                  } else if (matchV.endsWith('*')) {
+                      return t.startsWith(`${matchK}:${matchV.slice(0, -1)}`);
+                  } else {
+                      return t === `${matchK}:${matchV}`;
+                  }
+              });
               if (!hasTag) {
                   isMatch = false;
                   break;
@@ -78,7 +86,15 @@ export function maskLog(line: string): string[] {
                   break;
               }
           } else {
-              const hasTag = tags.some(t => t === `${matchK}:${matchV}`);
+              const hasTag = tags.some(t => {
+                  if (matchV === '*') {
+                      return t.startsWith(`${matchK}:`);
+                  } else if (matchV.endsWith('*')) {
+                      return t.startsWith(`${matchK}:${matchV.slice(0, -1)}`);
+                  } else {
+                      return t === `${matchK}:${matchV}`;
+                  }
+              });
               if (!hasTag) {
                   isMatch = false;
                   break;

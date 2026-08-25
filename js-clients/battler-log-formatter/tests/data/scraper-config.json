@@ -36,7 +36,6 @@
     "count",
     "fallen",
     "perish",
-    "shakes",
     "sides",
     "spread",
     "turn",
@@ -238,6 +237,60 @@
     {
       "match": {
         "title": "unboost"
+      },
+      "collapse": [
+        "from"
+      ]
+    },
+    {
+      "match": {
+        "title": "deductpp"
+      },
+      "collapse": [
+        "move",
+        "by"
+      ]
+    },
+    {
+      "match": {
+        "title": "restorepp"
+      },
+      "collapse": [
+        "move",
+        "by"
+      ]
+    },
+    {
+      "match": {
+        "title": "fail",
+        "what": "unboost"
+      },
+      "collapse": [
+        "boosts"
+      ]
+    },
+    {
+      "match": {
+        "title": "itemend",
+        "from": "*"
+      },
+      "collapse": [
+        "item"
+      ]
+    },
+    {
+      "match": {
+        "title": "mega",
+        "from": "item:*"
+      },
+      "collapse": [
+        "from"
+      ]
+    },
+    {
+      "match": {
+        "title": "revive",
+        "from": "item:*"
       },
       "collapse": [
         "from"

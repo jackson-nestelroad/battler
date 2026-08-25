@@ -246,9 +246,11 @@ cant|from:move:Throat Chop
 cant|from:status:Freeze
 cant|from:status:Paralysis
 cant|from:status:Sleep
-catchfailed|item:*
-catch|item:*
-catch|item:*|critical
+catchfailed|item:*|shakes:0
+catchfailed|item:*|shakes:1
+catchfailed|item:*|shakes:3
+catch|item:*|shakes:1|critical
+catch|item:*|shakes:4
 clearallboosts
 clearboosts|from:ability:Curious Medicine
 clearboosts|from:move:Clear Smog
@@ -335,7 +337,7 @@ damage|from:status:Burn
 damage|from:status:Poison
 damage|from:weather:Hail
 damage|from:weather:Sandstorm
-deductpp|move:*|by:3plus
+deductpp|move:*|by:*
 didnotlearnmove|move:*
 drag
 dynamax
@@ -398,19 +400,15 @@ fail|what:move:Corrosive Gas
 fail|what:move:Soak
 fail|what:move:Teatime
 fail|what:status:Sleep|from:move:Uproar
-fail|what:unboost|boosts:acc|from:ability:Clear Body
-fail|what:unboost|boosts:acc|from:ability:Full Metal Body
-fail|what:unboost|boosts:acc|from:ability:Illuminate
-fail|what:unboost|boosts:acc|from:ability:Keen Eye
-fail|what:unboost|boosts:acc|from:ability:Mind's Eye
-fail|what:unboost|boosts:acc|from:ability:White Smoke
-fail|what:unboost|boosts:acc|from:item:Clear Amulet
-fail|what:unboost|boosts:atk|from:ability:Clear Body
-fail|what:unboost|boosts:atk|from:ability:Full Metal Body
-fail|what:unboost|boosts:atk|from:ability:Hyper Cutter
-fail|what:unboost|boosts:atk|from:ability:Own Tempo
-fail|what:unboost|boosts:atk|from:ability:White Smoke
-fail|what:unboost|boosts:atk|from:item:Clear Amulet
+fail|what:unboost|boosts:*|from:ability:Clear Body
+fail|what:unboost|boosts:*|from:ability:Full Metal Body
+fail|what:unboost|boosts:*|from:ability:Hyper Cutter
+fail|what:unboost|boosts:*|from:ability:Illuminate
+fail|what:unboost|boosts:*|from:ability:Keen Eye
+fail|what:unboost|boosts:*|from:ability:Mind's Eye
+fail|what:unboost|boosts:*|from:ability:Own Tempo
+fail|what:unboost|boosts:*|from:ability:White Smoke
+fail|what:unboost|boosts:*|from:item:Clear Amulet
 fail|what:unboost|from:ability:Big Pecks
 fail|what:unboost|from:ability:Clear Body
 fail|what:unboost|from:ability:Flower Veil
@@ -555,13 +553,21 @@ info|battletype:*
 info|environment:*
 info|rule:*
 invertboosts|from:move:Topsy-Turvy
-itemend|ability:Gorilla Tactics|from:move:Knock Off
-itemend|ability:Gorilla Tactics|from:move:Switcheroo
-itemend|ability:Gorilla Tactics|from:move:Trick
-itemend|ability:Overcoat|from:move:Switcheroo
-itemend|ability:Overcoat|from:move:Thief
-itemend|ability:Overcoat|from:move:Trick
-itemend|item:Ability Shield|from:move:Knock Off
+itemend|item:*|from:ability:Magician
+itemend|item:*|from:ability:Pickpocket
+itemend|item:*|from:ability:Symbiosis
+itemend|item:*|from:item:Sticky Barb
+itemend|item:*|from:move:Bestow
+itemend|item:*|from:move:Bug Bite
+itemend|item:*|from:move:Corrosive Gas
+itemend|item:*|from:move:Covet
+itemend|item:*|from:move:Fling|silent
+itemend|item:*|from:move:Incinerate
+itemend|item:*|from:move:Knock Off
+itemend|item:*|from:move:Pluck
+itemend|item:*|from:move:Switcheroo
+itemend|item:*|from:move:Thief
+itemend|item:*|from:move:Trick
 itemend|item:Aguav Berry|eat
 itemend|item:Air Balloon
 itemend|item:Berry Juice
@@ -569,83 +575,41 @@ itemend|item:Blunder Policy
 itemend|item:Booster Energy
 itemend|item:Cell Battery
 itemend|item:Cheri Berry|eat
-itemend|item:Cheri Berry|from:ability:Magician
-itemend|item:Cheri Berry|from:ability:Symbiosis
-itemend|item:Cheri Berry|from:move:Covet
-itemend|item:Cheri Berry|from:move:Fling|silent
-itemend|item:Cheri Berry|from:move:Thief
 itemend|item:Chilan Berry|eat
-itemend|item:Choice Band|from:move:Knock Off
-itemend|item:Choice Band|from:move:Switcheroo
-itemend|item:Choice Band|from:move:Trick
 itemend|item:Custap Berry|eat
 itemend|item:Eject Button
 itemend|item:Eject Pack
 itemend|item:Electric Seed
 itemend|item:Enigma Berry|eat
 itemend|item:Fire Gem
-itemend|item:Fire Gem|from:move:Incinerate
 itemend|item:Focus Sash
 itemend|item:Ganlon Berry|eat
-itemend|item:Griseous Core|from:move:Thief
-itemend|item:Griseous Orb|from:move:Covet
-itemend|item:Griseous Orb|from:move:Thief
 itemend|item:Haban Berry|eat
-itemend|item:Iron Ball|from:move:Fling|silent
 itemend|item:Jaboca Berry|eat
 itemend|item:Kasib Berry|eat
 itemend|item:Kee Berry|eat
 itemend|item:Leppa Berry|eat
-itemend|item:Leppa Berry|from:ability:Magician
 itemend|item:Liechi Berry|eat
 itemend|item:Lum Berry|eat
-itemend|item:Lum Berry|from:move:Bug Bite
-itemend|item:Lum Berry|from:move:Pluck
 itemend|item:Luminous Moss
 itemend|item:Maranga Berry|eat
 itemend|item:Mental Herb
-itemend|item:Mental Herb|from:move:Fling|silent
 itemend|item:Micle Berry|eat
 itemend|item:Mirror Herb
 itemend|item:Normal Gem
 itemend|item:Occa Berry|eat
 itemend|item:Oran Berry|eat
-itemend|item:Oran Berry|from:ability:Magician
-itemend|item:Oran Berry|from:move:Incinerate
-itemend|item:Oran Berry|from:move:Knock Off
 itemend|item:Passho Berry|eat
-itemend|item:Pecha Berry|from:move:Bug Bite
-itemend|item:Pecha Berry|from:move:Fling|silent
-itemend|item:Pecha Berry|from:move:Pluck
-itemend|item:Power Anklet|from:move:Switcheroo
-itemend|item:Power Anklet|from:move:Trick
 itemend|item:Power Herb
 itemend|item:Rawst Berry|eat
-itemend|item:Rawst Berry|from:move:Knock Off
 itemend|item:Red Card
 itemend|item:Room Service
 itemend|item:Rowap Berry|eat
-itemend|item:Safety Goggles|from:move:Covet
-itemend|item:Safety Goggles|from:move:Switcheroo
-itemend|item:Safety Goggles|from:move:Thief
-itemend|item:Safety Goggles|from:move:Trick
 itemend|item:Sitrus Berry|eat
-itemend|item:Sitrus Berry|from:move:Corrosive Gas
 itemend|item:Starf Berry|eat
-itemend|item:Sticky Barb|from:item:Sticky Barb
-itemend|item:Sticky Barb|from:move:Bestow
 itemend|item:Throat Spray
-itemend|item:Toxic Orb|from:ability:Pickpocket
-itemend|item:Toxic Orb|from:move:Fling|silent
-itemend|item:Toxic Orb|from:move:Switcheroo
-itemend|item:Toxic Orb|from:move:Trick
-itemend|item:Utility Umbrella|from:move:Fling|silent
-itemend|item:Utility Umbrella|from:move:Switcheroo
-itemend|item:Utility Umbrella|from:move:Trick
-itemend|item:Venusaurite|from:move:Fling|silent
 itemend|item:Weakness Policy
 itemend|item:White Herb
-itemend|item:White Herb|from:move:Fling|silent
 itemstart|item:*|from:ability:Ball Fetch
 itemstart|item:*|from:ability:Harvest
 itemstart|item:*|from:ability:Magician
@@ -667,16 +631,7 @@ learnedmove|move:*
 learnedmove|move:*|forgot:*
 levelup
 maxsidelength
-mega|from:item:Aerodactylite
-mega|from:item:Blastoisinite
-mega|from:item:Charizardite X
-mega|from:item:Charizardite Y
-mega|from:item:Excadrite
-mega|from:item:Gengarite
-mega|from:item:Greninjite
-mega|from:item:Kangaskhanite
-mega|from:item:Venusaurite
-mega|from:item:Zygardite
+mega|from:*
 mega|from:move:Dragon Ascent
 miss
 mon
@@ -734,17 +689,14 @@ resettypechange|from:ability:Mimicry
 residual
 resisted
 resisted|battletype:singles
-restorepp|move:*|by:1|from:item:Leppa Berry
-restorepp|move:*|by:3plus|from:item:Leppa Berry
+restorepp|move:*|by:*|from:item:Leppa Berry
 revertdynamax
 revertgigantamax
 revertmega|from:Faint
 revertprimal|from:Faint
 reverttera
 revertultra|from:Faint
-revive|from:item:Max Honey
-revive|from:item:Max Revive
-revive|from:item:Revive
+revive|from:*
 revive|from:move:Revival Blessing
 sethp
 setpp|move:*|from:move:Grudge
