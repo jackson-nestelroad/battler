@@ -11,39 +11,7 @@ import type {
 } from "./types.js";
 import { LogCategory } from "./types.js";
 
-export const ALLOWED_CONTEXT_VARS = [
-  "MON",
-  "MON_POSSESSIVE",
-  "TARGET",
-  "TARGET_POSSESSIVE",
-  "SOURCE",
-  "SOURCE_POSSESSIVE",
-  "FOE_SIDE",
-  "PLAYER",
-  "PLAYER_POSSESSIVE",
-  "SIDE",
-  "SIDE_POSSESSIVE",
-  "STAT",
-  "MOVE",
-  "ABILITY",
-  "ITEM",
-  "VOLATILE",
-  "STATUS",
-  "CONDITION",
-  "WEATHER",
-  "FIELD",
-  "BATTLETYPE",
-  "ENVIRONMENT",
-  "RULE",
-  "FORGOT",
-  "TYPE",
-  "TYPES",
-  "LEVEL",
-  "COUNT",
-  "FROM_ITEM",
-  "FROM_MOVE",
-  "FROM_ABILITY",
-];
+export const ALLOWED_CONTEXT_VARS = rules.allowedContextVars;
 
 export type Relationship = "self" | "ally" | "foe";
 
@@ -238,45 +206,50 @@ function buildPattern(title: string, tags: string[], flags: string[]): string {
 export function generateCombinatorics(
   title: string,
   baseTags: string[],
-  flags: string[],
+  baseFlags: string[],
 ): string[] {
   const results: Set<string> = new Set();
+  const allDimensions = [...baseTags, ...baseFlags];
 
-  function recurse(index: number, currentTags: string[]) {
-    if (index === baseTags.length) {
-      results.add(buildPattern(title, currentTags, flags));
+  function recurse(index: number, currentDimensions: string[]) {
+    if (index === allDimensions.length) {
+      const tags = currentDimensions.filter((d) => d.includes(":"));
+      const flags = currentDimensions.filter((d) => !d.includes(":"));
+      results.add(buildPattern(title, tags, flags));
       return;
     }
 
-    const tag = baseTags[index];
-    const parts = tag.split(":");
-    const k = parts[0];
+    const dim = allDimensions[index];
+    
+    // 1. Include specific dimension
+    recurse(index + 1, [...currentDimensions, dim]);
 
-    // 1. Include specific tag
-    recurse(index + 1, [...currentTags, tag]);
+    let k = dim;
+    if (dim.includes(":")) {
+      const parts = dim.split(":");
+      k = parts[0];
 
-    // 2. Include generic tag (if applicable)
-    if (parts.length >= 2) {
+      // 2. Include generic tag (if applicable)
       if (rules.wildcardableTags.includes(k) && parts[1] !== "*") {
-        recurse(index + 1, [...currentTags, `${k}:*`]);
+        recurse(index + 1, [...currentDimensions, `${k}:*`]);
       }
       if (k === "from" && parts.length === 3 && parts[2] !== "*") {
-        recurse(index + 1, [...currentTags, `${parts[0]}:${parts[1]}:*`]);
+        recurse(index + 1, [...currentDimensions, `${parts[0]}:${parts[1]}:*`]);
       }
+    }
 
-      // 3. Omit tag entirely
-      let canOmit = rules.omittableTags.always.includes(k);
+    // 3. Omit dimension entirely
+    let canOmit = rules.omittableTags.always.includes(k);
 
-      const condRule = (
-        rules.omittableTags.conditional as Record<string, { excludeTitles: string[] }>
-      )[k];
-      if (condRule && !condRule.excludeTitles.includes(title)) {
-        canOmit = true;
-      }
+    const condRule = (
+      rules.omittableTags.conditional as Record<string, { excludeTitles: string[] }>
+    )[k];
+    if (condRule && !condRule.excludeTitles.includes(title)) {
+      canOmit = true;
+    }
 
-      if (canOmit) {
-        recurse(index + 1, currentTags);
-      }
+    if (canOmit) {
+      recurse(index + 1, currentDimensions);
     }
   }
 
