@@ -10,13 +10,31 @@
   },
   {
     "condition": {
-      "patternStartsWith": "ability",
+      "titleIn": ["ability", "abilitystart", "abilityend"],
       "hasContext": "ABILITY"
     },
     "notice": {
       "type": "Ability",
-      "nameFromContext": "ABILITY",
-      "clearUnhandledTemplate": true
+      "nameFromContext": "ABILITY"
+    }
+  },
+  {
+    "condition": {
+      "hasEffectType": "Item"
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromPath": "effect.effect.name"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["item", "itemstart", "itemend"],
+      "hasContext": "ITEM"
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromContext": "ITEM"
     }
   }
 ]

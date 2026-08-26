@@ -182,8 +182,11 @@ export class LogFormatter {
         if (rule.condition.hasEffectType && mapped.effect?.effect?.effect_type !== rule.condition.hasEffectType) {
             match = false;
         }
-        if (rule.condition.patternStartsWith && !mapped.patterns[0]?.startsWith(rule.condition.patternStartsWith)) {
-            match = false;
+        if (rule.condition.titleIn) {
+            const title = mapped.patterns[0]?.split('|')[0];
+            if (!title || !rule.condition.titleIn.includes(title)) {
+                match = false;
+            }
         }
         if (rule.condition.hasContext && !mapped.context[rule.condition.hasContext]) {
             match = false;
@@ -212,10 +215,6 @@ export class LogFormatter {
                 mon: monStr,
                 monRef
             });
-            
-            if (rule.notice.clearUnhandledTemplate && template === "[UNHANDLED]") {
-                template = "";
-            }
         }
     }
 

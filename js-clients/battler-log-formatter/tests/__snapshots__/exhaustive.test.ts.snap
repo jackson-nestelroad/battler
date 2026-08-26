@@ -16604,98 +16604,336 @@ exports[`Exhaustive Log Coverage > should parse and format log string: invertboo
 exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Stantler,player-1,1|item:Cheri Berry|from:ability:Frisk|of:Stantler,player-2,1 1`] = `
 {
   "rawLog": "item|mon:Stantler,player-1,1|item:Cheri Berry|from:ability:Frisk|of:Stantler,player-2,1",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Stantler's",
+        "monRef": {
+          "Active": {
+            "name": "Stantler",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: item|mon:Tauros,player-1,2|item:Life Orb|from:ability:Frisk|of:Stantler,player-2,1 1`] = `
 {
   "rawLog": "item|mon:Tauros,player-1,2|item:Life Orb|from:ability:Frisk|of:Stantler,player-2,1",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Tauros's",
+        "monRef": {
+          "Active": {
+            "name": "Tauros",
+            "player": "player-1",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Life Orb",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Abra,player-1,1|item:Cheri Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Abra,player-1,1|item:Cheri Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Abra's",
+        "monRef": {
+          "Active": {
+            "name": "Abra",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Ambipom,player-1,1|item:Normal Gem 1`] = `
 {
   "rawLog": "itemend|mon:Ambipom,player-1,1|item:Normal Gem",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Ambipom's",
+        "monRef": {
+          "Active": {
+            "name": "Ambipom",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Normal Gem",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Ambipom,player-2,1|item:Normal Gem 1`] = `
 {
   "rawLog": "itemend|mon:Ambipom,player-2,1|item:Normal Gem",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Ambipom's",
+        "monRef": {
+          "Active": {
+            "name": "Ambipom",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Normal Gem",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Haban Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Haban Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Applin's",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Haban Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Jaboca Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Jaboca Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Applin's",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Jaboca Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Kee Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Kee Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Applin's",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Kee Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Leppa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Leppa Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Applin's",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Leppa Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Oran Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Oran Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Applin's",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Oran Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Applin,player-1,1|item:Sitrus Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Applin,player-1,1|item:Sitrus Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Applin's",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sitrus Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Archeops,player-2,1|item:Oran Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Archeops,player-2,1|item:Oran Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Archeops's",
+        "monRef": {
+          "Active": {
+            "name": "Archeops",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Oran Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Blaziken,player-1,1|item:Aguav Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Blaziken,player-1,1|item:Aguav Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Blaziken's",
+        "monRef": {
+          "Active": {
+            "name": "Blaziken",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Aguav Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Bunnelby,player-2,1|item:Luminous Moss 1`] = `
 {
   "rawLog": "itemend|mon:Bunnelby,player-2,1|item:Luminous Moss",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Bunnelby's",
+        "monRef": {
+          "Active": {
+            "name": "Bunnelby",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Luminous Moss",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -16724,7 +16962,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_ability_magician__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Chesnaught's",
+        "monRef": {
+          "Active": {
+            "name": "Chesnaught",
+            "player": "player-2",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Oran Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16732,14 +16984,48 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Cinderace,player-1,1|item:Room Service 1`] = `
 {
   "rawLog": "itemend|mon:Cinderace,player-1,1|item:Room Service",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Cinderace's",
+        "monRef": {
+          "Active": {
+            "name": "Cinderace",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Room Service",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Crobat,player-1,1|item:Lum Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Crobat,player-1,1|item:Lum Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Crobat's",
+        "monRef": {
+          "Active": {
+            "name": "Crobat",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Lum Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -16768,7 +17054,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_thief__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Crobat's",
+        "monRef": {
+          "Active": {
+            "name": "Crobat",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Safety Goggles",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16776,7 +17076,24 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Cryogonal,player-1,1|item:Micle Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Cryogonal,player-1,1|item:Micle Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Cryogonal's",
+        "monRef": {
+          "Active": {
+            "name": "Cryogonal",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Micle Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -16805,7 +17122,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_knockoff__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Darmanitan's",
+        "monRef": {
+          "Active": {
+            "name": "Darmanitan",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Choice Band",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16835,7 +17166,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_ability_magician__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Delphox's",
+        "monRef": {
+          "Active": {
+            "name": "Delphox",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Leppa Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16843,7 +17188,24 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Diggersby,player-1,1|item:Lum Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Diggersby,player-1,1|item:Lum Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Diggersby's",
+        "monRef": {
+          "Active": {
+            "name": "Diggersby",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Lum Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -16872,7 +17234,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_pluck__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Diggersby's",
+        "monRef": {
+          "Active": {
+            "name": "Diggersby",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Lum Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16902,7 +17278,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_trick__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Ditto's",
+        "monRef": {
+          "Active": {
+            "name": "Ditto",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Utility Umbrella",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16910,7 +17300,24 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Drampa's",
+        "monRef": {
+          "Active": {
+            "name": "Drampa",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sitrus Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -16939,7 +17346,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_thief__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Drifblim's",
+        "monRef": {
+          "Active": {
+            "name": "Drifblim",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16969,7 +17390,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_incinerate__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Ducklett's",
+        "monRef": {
+          "Active": {
+            "name": "Ducklett",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Fire Gem",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -16999,7 +17434,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_incinerate__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Ducklett's",
+        "monRef": {
+          "Active": {
+            "name": "Ducklett",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Oran Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17007,14 +17456,48 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Emboar,player-1,1|item:Fire Gem 1`] = `
 {
   "rawLog": "itemend|mon:Emboar,player-1,1|item:Fire Gem",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Emboar's",
+        "monRef": {
+          "Active": {
+            "name": "Emboar",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Fire Gem",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Emolga,player-2,1|item:Cell Battery 1`] = `
 {
   "rawLog": "itemend|mon:Emolga,player-2,1|item:Cell Battery",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Emolga's",
+        "monRef": {
+          "Active": {
+            "name": "Emolga",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cell Battery",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17043,7 +17526,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_thief__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Empoleon's",
+        "monRef": {
+          "Active": {
+            "name": "Empoleon",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Griseous Orb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17051,21 +17548,72 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-1,1|item:Mirror Herb 1`] = `
 {
   "rawLog": "itemend|mon:Espathra,player-1,1|item:Mirror Herb",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Espathra's",
+        "monRef": {
+          "Active": {
+            "name": "Espathra",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Mirror Herb",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-1,1|item:Throat Spray 1`] = `
 {
   "rawLog": "itemend|mon:Espathra,player-1,1|item:Throat Spray",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Espathra's",
+        "monRef": {
+          "Active": {
+            "name": "Espathra",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Throat Spray",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Espathra,player-2,1|item:Mirror Herb 1`] = `
 {
   "rawLog": "itemend|mon:Espathra,player-2,1|item:Mirror Herb",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Espathra's",
+        "monRef": {
+          "Active": {
+            "name": "Espathra",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Mirror Herb",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17094,7 +17642,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_ability_symbiosis__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Florges's",
+        "monRef": {
+          "Active": {
+            "name": "Florges",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17102,49 +17664,168 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Florges,player-2,2|item:Lum Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Florges,player-2,2|item:Lum Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Florges's",
+        "monRef": {
+          "Active": {
+            "name": "Florges",
+            "player": "player-2",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Lum Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Gigalith,player-1,1|item:Air Balloon 1`] = `
 {
   "rawLog": "itemend|mon:Gigalith,player-1,1|item:Air Balloon",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Gigalith's",
+        "monRef": {
+          "Active": {
+            "name": "Gigalith",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Air Balloon",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Gigalith,player-2,1|item:Air Balloon 1`] = `
 {
   "rawLog": "itemend|mon:Gigalith,player-2,1|item:Air Balloon",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Gigalith's",
+        "monRef": {
+          "Active": {
+            "name": "Gigalith",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Air Balloon",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Golisopod,player-1,1|item:Eject Button 1`] = `
 {
   "rawLog": "itemend|mon:Golisopod,player-1,1|item:Eject Button",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Golisopod's",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Eject Button",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Golisopod,player-1,1|item:Sitrus Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Golisopod,player-1,1|item:Sitrus Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Golisopod's",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sitrus Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Goodra,player-2,1|item:Weakness Policy 1`] = `
 {
   "rawLog": "itemend|mon:Goodra,player-2,1|item:Weakness Policy",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Goodra's",
+        "monRef": {
+          "Active": {
+            "name": "Goodra",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Weakness Policy",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Great Tusk,player-1,1|item:Booster Energy 1`] = `
 {
   "rawLog": "itemend|mon:Great Tusk,player-1,1|item:Booster Energy",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Great Tusk's",
+        "monRef": {
+          "Active": {
+            "name": "Great Tusk",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Booster Energy",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17173,7 +17854,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_ability_magician__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Greninja's",
+        "monRef": {
+          "Active": {
+            "name": "Greninja",
+            "player": "player-2",
+            "position": 2,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17181,42 +17876,144 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Haxorus,player-2,1|item:Eject Button 1`] = `
 {
   "rawLog": "itemend|mon:Haxorus,player-2,1|item:Eject Button",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Haxorus's",
+        "monRef": {
+          "Active": {
+            "name": "Haxorus",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Eject Button",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Iron Treads,player-1,1|item:Booster Energy 1`] = `
 {
   "rawLog": "itemend|mon:Iron Treads,player-1,1|item:Booster Energy",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Iron Treads's",
+        "monRef": {
+          "Active": {
+            "name": "Iron Treads",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Booster Energy",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-1,1|item:Cheri Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-1,1|item:Cheri Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Linoone's",
+        "monRef": {
+          "Active": {
+            "name": "Linoone",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-1,1|item:Rawst Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-1,1|item:Rawst Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Linoone's",
+        "monRef": {
+          "Active": {
+            "name": "Linoone",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Rawst Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-2,1|item:Cheri Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-2,1|item:Cheri Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Linoone's",
+        "monRef": {
+          "Active": {
+            "name": "Linoone",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Linoone,player-2,1|item:Rawst Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Linoone,player-2,1|item:Rawst Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Linoone's",
+        "monRef": {
+          "Active": {
+            "name": "Linoone",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Rawst Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17245,7 +18042,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_trick__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Lopunny's",
+        "monRef": {
+          "Active": {
+            "name": "Lopunny",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Toxic Orb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17275,7 +18086,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_trick__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Luxray's",
+        "monRef": {
+          "Active": {
+            "name": "Luxray",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Utility Umbrella",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17283,84 +18108,288 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Meloetta,player-1,1|item:Fire Gem 1`] = `
 {
   "rawLog": "itemend|mon:Meloetta,player-1,1|item:Fire Gem",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Meloetta's",
+        "monRef": {
+          "Active": {
+            "name": "Meloetta",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Fire Gem",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Mudkip,player-1,1|item:Mental Herb 1`] = `
 {
   "rawLog": "itemend|mon:Mudkip,player-1,1|item:Mental Herb",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Mudkip's",
+        "monRef": {
+          "Active": {
+            "name": "Mudkip",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Mental Herb",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Mudkip,player-1,1|item:White Herb 1`] = `
 {
   "rawLog": "itemend|mon:Mudkip,player-1,1|item:White Herb",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Mudkip's",
+        "monRef": {
+          "Active": {
+            "name": "Mudkip",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "White Herb",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oricorio,player-1,1|item:Eject Button 1`] = `
 {
   "rawLog": "itemend|mon:Oricorio,player-1,1|item:Eject Button",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oricorio's",
+        "monRef": {
+          "Active": {
+            "name": "Oricorio",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Eject Button",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Enigma Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Enigma Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Enigma Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Ganlon Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Ganlon Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Ganlon Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Jaboca Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Jaboca Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Jaboca Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Kee Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Kee Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Kee Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Liechi Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Liechi Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Liechi Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Maranga Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Maranga Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Maranga Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Rowap Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Rowap Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Rowap Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Oshawott,player-1,1|item:Starf Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Starf Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17388,7 +18417,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_item_stickybarb__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Pachirisu's",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17417,7 +18460,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_item_stickybarb__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Pachirisu's",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17447,7 +18504,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_bestow__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Pidove's",
+        "monRef": {
+          "Active": {
+            "name": "Pidove",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17455,7 +18526,24 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Pikachu,player-1,1|item:Focus Sash 1`] = `
 {
   "rawLog": "itemend|mon:Pikachu,player-1,1|item:Focus Sash",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Pikachu's",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Focus Sash",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17484,7 +18572,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_bestow__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Pikachu's",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-2",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17492,21 +18594,72 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-1,2|item:Liechi Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Polteageist,player-1,2|item:Liechi Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Polteageist's",
+        "monRef": {
+          "Active": {
+            "name": "Polteageist",
+            "player": "player-1",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Liechi Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-2,1|item:Kasib Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Polteageist,player-2,1|item:Kasib Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Polteageist's",
+        "monRef": {
+          "Active": {
+            "name": "Polteageist",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Kasib Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Polteageist,player-2,2|item:Liechi Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Polteageist,player-2,2|item:Liechi Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Polteageist's",
+        "monRef": {
+          "Active": {
+            "name": "Polteageist",
+            "player": "player-2",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Liechi Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17535,7 +18688,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_knockoff__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Ralts's",
+        "monRef": {
+          "Active": {
+            "name": "Ralts",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Ability Shield",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17543,35 +18710,120 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Blunder Policy 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Blunder Policy",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Rillaboom's",
+        "monRef": {
+          "Active": {
+            "name": "Rillaboom",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Blunder Policy",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Eject Pack 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Eject Pack",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Rillaboom's",
+        "monRef": {
+          "Active": {
+            "name": "Rillaboom",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Eject Pack",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Room Service 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Room Service",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Rillaboom's",
+        "monRef": {
+          "Active": {
+            "name": "Rillaboom",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Room Service",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-1,1|item:Throat Spray 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-1,1|item:Throat Spray",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Rillaboom's",
+        "monRef": {
+          "Active": {
+            "name": "Rillaboom",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Throat Spray",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Rillaboom,player-2,1|item:Room Service 1`] = `
 {
   "rawLog": "itemend|mon:Rillaboom,player-2,1|item:Room Service",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Rillaboom's",
+        "monRef": {
+          "Active": {
+            "name": "Rillaboom",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Room Service",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17600,7 +18852,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_knockoff__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Sableye's",
+        "monRef": {
+          "Active": {
+            "name": "Sableye",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Rawst Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17608,49 +18874,168 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Slowbro,player-1,1|item:Leppa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Slowbro,player-1,1|item:Leppa Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Slowbro's",
+        "monRef": {
+          "Active": {
+            "name": "Slowbro",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Leppa Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Smeargle,player-1,1|item:Leppa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Smeargle,player-1,1|item:Leppa Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Smeargle's",
+        "monRef": {
+          "Active": {
+            "name": "Smeargle",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Leppa Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snivy,player-1,1|item:Occa Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Snivy,player-1,1|item:Occa Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Snivy's",
+        "monRef": {
+          "Active": {
+            "name": "Snivy",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Occa Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snivy,player-2,1|item:Red Card 1`] = `
 {
   "rawLog": "itemend|mon:Snivy,player-2,1|item:Red Card",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Snivy's",
+        "monRef": {
+          "Active": {
+            "name": "Snivy",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Red Card",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snorlax,player-1,1|item:Custap Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Snorlax,player-1,1|item:Custap Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Snorlax's",
+        "monRef": {
+          "Active": {
+            "name": "Snorlax",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Custap Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Snorlax,player-1,2|item:Rawst Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Snorlax,player-1,2|item:Rawst Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Snorlax's",
+        "monRef": {
+          "Active": {
+            "name": "Snorlax",
+            "player": "player-1",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Rawst Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Staraptor,player-1,1|item:Power Herb 1`] = `
 {
   "rawLog": "itemend|mon:Staraptor,player-1,1|item:Power Herb",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Staraptor's",
+        "monRef": {
+          "Active": {
+            "name": "Staraptor",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Power Herb",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17679,7 +19064,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_pluck__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Starly's",
+        "monRef": {
+          "Active": {
+            "name": "Starly",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Pecha Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17687,28 +19086,96 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tapu Koko,player-1,1|item:Electric Seed 1`] = `
 {
   "rawLog": "itemend|mon:Tapu Koko,player-1,1|item:Electric Seed",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Tapu Koko's",
+        "monRef": {
+          "Active": {
+            "name": "Tapu Koko",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Electric Seed",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tapu Koko,player-2,1|item:Electric Seed 1`] = `
 {
   "rawLog": "itemend|mon:Tapu Koko,player-2,1|item:Electric Seed",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Tapu Koko's",
+        "monRef": {
+          "Active": {
+            "name": "Tapu Koko",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Electric Seed",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tepig,player-1,1|item:Passho Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Tepig,player-1,1|item:Passho Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Tepig's",
+        "monRef": {
+          "Active": {
+            "name": "Tepig",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Passho Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tepig,player-1,1|item:Red Card 1`] = `
 {
   "rawLog": "itemend|mon:Tepig,player-1,1|item:Red Card",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Tepig's",
+        "monRef": {
+          "Active": {
+            "name": "Tepig",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Red Card",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17737,7 +19204,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_switcheroo__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Torchic's",
+        "monRef": {
+          "Active": {
+            "name": "Torchic",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Safety Goggles",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17767,7 +19248,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_switcheroo__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Torchic's",
+        "monRef": {
+          "Active": {
+            "name": "Torchic",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Choice Band",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17775,14 +19270,48 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Totodile,player-1,1|item:Berry Juice 1`] = `
 {
   "rawLog": "itemend|mon:Totodile,player-1,1|item:Berry Juice",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Totodile's",
+        "monRef": {
+          "Active": {
+            "name": "Totodile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Berry Juice",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
 exports[`Exhaustive Log Coverage > should parse and format log string: itemend|mon:Tropius,player-2,1|item:Chilan Berry|eat 1`] = `
 {
   "rawLog": "itemend|mon:Tropius,player-2,1|item:Chilan Berry|eat",
-  "result": null,
+  "result": {
+    "message": undefined,
+    "notices": [
+      {
+        "mon": "Tropius's",
+        "monRef": {
+          "Active": {
+            "name": "Tropius",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Chilan Berry",
+        "type": "Item",
+      },
+    ],
+  },
 }
 `;
 
@@ -17811,7 +19340,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_move_corrosivegas__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Vileplume's",
+        "monRef": {
+          "Active": {
+            "name": "Vileplume",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sitrus Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17841,7 +19384,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
       },
       "key": "itemend__from_ability_pickpocket__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Weavile's",
+        "monRef": {
+          "Active": {
+            "name": "Weavile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Toxic Orb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17871,7 +19428,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_trick__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Castform's",
+        "monRef": {
+          "Active": {
+            "name": "Castform",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Utility Umbrella",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17901,7 +19472,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_trick__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Cherrim's",
+        "monRef": {
+          "Active": {
+            "name": "Cherrim",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Utility Umbrella",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17931,7 +19516,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_thief__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Crobat's",
+        "monRef": {
+          "Active": {
+            "name": "Crobat",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Safety Goggles",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17961,7 +19560,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_magician__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Delphox's",
+        "monRef": {
+          "Active": {
+            "name": "Delphox",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -17991,7 +19604,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_magician__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Delphox's",
+        "monRef": {
+          "Active": {
+            "name": "Delphox",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Leppa Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18021,7 +19648,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_magician__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Delphox's",
+        "monRef": {
+          "Active": {
+            "name": "Delphox",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Oran Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18051,7 +19692,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_thief__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Empoleon's",
+        "monRef": {
+          "Active": {
+            "name": "Empoleon",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Griseous Orb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18081,7 +19736,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_symbiosis__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Florges's",
+        "monRef": {
+          "Active": {
+            "name": "Florges",
+            "player": "player-2",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18111,7 +19780,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_bestow__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Golisopod's",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18141,7 +19824,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_pickup__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Linoone's",
+        "monRef": {
+          "Active": {
+            "name": "Linoone",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18171,7 +19868,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_pickup__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Linoone's",
+        "monRef": {
+          "Active": {
+            "name": "Linoone",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Rawst Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18201,7 +19912,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_trick__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Lopunny's",
+        "monRef": {
+          "Active": {
+            "name": "Lopunny",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Toxic Orb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18231,7 +19956,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_pickup__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Starf Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18261,7 +20000,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_recycle__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Oshawott's",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Starf Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18290,7 +20043,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_item_stickybarb__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Pachirisu's",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18319,7 +20086,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_item_stickybarb__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Pachirisu's",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18349,7 +20130,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_bestow__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Pidove's",
+        "monRef": {
+          "Active": {
+            "name": "Pidove",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18379,7 +20174,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_thief__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Porygon-Z's",
+        "monRef": {
+          "Active": {
+            "name": "Porygon-Z",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18409,7 +20218,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_recycle__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Snorlax's",
+        "monRef": {
+          "Active": {
+            "name": "Snorlax",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Rawst Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18439,7 +20262,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_gmaxreplenish__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Snorlax's",
+        "monRef": {
+          "Active": {
+            "name": "Snorlax",
+            "player": "player-1",
+            "position": 1,
+            "side": 0,
+          },
+        },
+        "name": "Rawst Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18469,7 +20306,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_gmaxreplenish__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Snorlax's",
+        "monRef": {
+          "Active": {
+            "name": "Snorlax",
+            "player": "player-1",
+            "position": 2,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18499,7 +20350,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_switcheroo__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Torchic's",
+        "monRef": {
+          "Active": {
+            "name": "Torchic",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Choice Band",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18529,7 +20394,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_move_switcheroo__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Torchic's",
+        "monRef": {
+          "Active": {
+            "name": "Torchic",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Safety Goggles",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18559,7 +20438,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_harvest__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Tropius's",
+        "monRef": {
+          "Active": {
+            "name": "Tropius",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Chilan Berry",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18589,7 +20482,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_pickpocket__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Weavile's",
+        "monRef": {
+          "Active": {
+            "name": "Weavile",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Toxic Orb",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -18618,7 +20525,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
       "key": "itemstart__from_ability_ballfetch__item_any",
     },
-    "notices": [],
+    "notices": [
+      {
+        "mon": "Yamper's",
+        "monRef": {
+          "Active": {
+            "name": "Yamper",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Poké Ball",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
