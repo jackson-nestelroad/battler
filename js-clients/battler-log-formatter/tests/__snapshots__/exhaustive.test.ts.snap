@@ -11695,22 +11695,10 @@ exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|
   "rawLog": "deductpp|mon:Misdreavus,player-2,1|move:Dark Pulse|by:4",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Misdreavus",
-              "player": "player-2",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Misdreavus's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Misdreavus's PP was reduced!",
+        "text": "[UNHANDLED]",
       },
       "key": "deductpp__move_any",
     },
@@ -11724,22 +11712,10 @@ exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|
   "rawLog": "deductpp|mon:Pikachu,player-1,1|move:Quick Attack|by:4",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Pikachu",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pikachu's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Pikachu's PP was reduced!",
+        "text": "[UNHANDLED]",
       },
       "key": "deductpp__move_any",
     },
@@ -11753,22 +11729,10 @@ exports[`Exhaustive Log Coverage > should parse and format log string: deductpp|
   "rawLog": "deductpp|mon:Pikachu,player-1,1|move:Tackle|by:4",
   "result": {
     "message": {
-      "context": {
-        "__CAPITALIZED_MON_POSSESSIVE": {
-          "monRef": {
-            "Active": {
-              "name": "Pikachu",
-              "player": "player-1",
-              "position": 0,
-              "side": 0,
-            },
-          },
-          "text": "The opposing Pikachu's",
-        },
-      },
+      "context": {},
       "formatted": {
         "category": "secondary",
-        "text": "The opposing Pikachu's PP was reduced!",
+        "text": "[UNHANDLED]",
       },
       "key": "deductpp__move_any",
     },

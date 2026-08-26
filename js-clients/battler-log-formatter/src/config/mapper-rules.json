@@ -6,5 +6,128 @@
       "suffix": "plus",
       "titles": ["boost", "unboost"]
     }
-  ]
+  ],
+  "omittableTags": {
+    "always": [
+      "from",
+      "of",
+      "by",
+      "source",
+      "battletype",
+      "boosts",
+      "forgot",
+      "disabledmove",
+      "magnitude"
+    ],
+    "conditional": {
+      "item": { "excludeTitles": ["item", "itemstart", "itemend", "catch", "catchfailed"] },
+      "ability": { "excludeTitles": ["ability", "abilitystart", "abilityend"] },
+      "move": {
+        "excludeTitles": [
+          "move",
+          "prepare",
+          "cant",
+          "deductpp",
+          "restorepp",
+          "setpp",
+          "learnedmove",
+          "didnotlearnmove"
+        ]
+      }
+    }
+  },
+  "primaryKeys": [
+    "move",
+    "switch",
+    "drag",
+    "faint",
+    "mega",
+    "primal",
+    "burst",
+    "zpower",
+    "dynamax",
+    "gigantamax",
+    "tera",
+    "terastallize",
+    "turn",
+    "win",
+    "tie",
+    "useitem",
+    "residual"
+  ],
+  "hintKeys": [
+    "addvolatile",
+    "animatemove",
+    "battlestart",
+    "debug",
+    "info",
+    "maxsidelength",
+    "mon",
+    "player",
+    "removevolatile",
+    "split",
+    "teampreview",
+    "teampreviewstart",
+    "teamsize",
+    "time"
+  ],
+  "excludeTags": [
+    "mon",
+    "of",
+    "player",
+    "side",
+    "slot",
+    "position",
+    "positions",
+    "source",
+    "gender",
+    "health",
+    "level",
+    "name",
+    "species",
+    "stats",
+    "stat",
+    "exp",
+    "atk",
+    "def",
+    "spa",
+    "spd",
+    "spe",
+    "hp",
+    "target",
+    "anim",
+    "newmove",
+    "pick",
+    "size",
+    "length",
+    "id",
+    "time"
+  ],
+  "wildcardableTags": [
+    "ability",
+    "item",
+    "move",
+    "effect",
+    "condition",
+    "weather",
+    "status",
+    "volatile",
+    "type",
+    "types",
+    "clause",
+    "species",
+    "mimic",
+    "what",
+    "boosts",
+    "forgot",
+    "disabledmove"
+  ],
+  "aliases": {
+    "caught": "catch",
+    "fainted": "faint",
+    "experience": "exp",
+    "sethealth": "sethp",
+    "drag": "switch",
+    "replace": "switch"
+  }
 }
