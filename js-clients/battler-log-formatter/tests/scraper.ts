@@ -4,7 +4,8 @@ import { generateCombinatorics } from '../src/mapper.js';
 import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const scraperConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, "data/scraper-config.json"), "utf-8"));
+import scraperConfig from './data/scraper-config.json' with { type: "json" };
+import mapperRules from '../src/config/mapper-rules.json' with { type: "json" };
 
 export function maskLog(line: string): string[] {
   line = line.trim();
@@ -27,15 +28,22 @@ export function maskLog(line: string): string[] {
       
       if (scraperConfig.excludeTags.includes(k)) continue;
       
-      if (k === 'by') {
-          const num = Number(v);
-          if (!isNaN(num) && num >= 3) {
-              tags.push(`${k}:3plus`);
-              continue;
+      let appliedBucket = false;
+      const normalizedTitle = title.replace(/^-/, '').toLowerCase();
+      for (const bucket of mapperRules.numericBuckets) {
+          if (bucket.tag === k && bucket.titles.includes(normalizedTitle)) {
+              const num = Number(v);
+              if (!isNaN(num) && num >= bucket.min) {
+                  tags.push(`${k}:${bucket.min}${bucket.suffix}`);
+                  appliedBucket = true;
+                  break;
+              }
           }
       }
-
-      tags.push(`${k}:${v}`);
+      
+      if (!appliedBucket) {
+          tags.push(`${k}:${v}`);
+      }
     } else {
       flags.push(p);
     }

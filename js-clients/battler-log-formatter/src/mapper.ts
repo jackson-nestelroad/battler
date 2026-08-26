@@ -2,7 +2,18 @@ import type { BattleState, UiLogEntry, UiMon, EffectData } from "battler-state";
 import i18next from "i18next";
 import { LogCategory } from "./types.js";
 import type { MapperOptions, AnyMappedLog, ContextVar, LogContext, MappedLogMetadata, ContextValue } from "./types.js";
+import rules from "./config/mapper-rules.json" with { type: "json" };
 
+export const ALLOWED_CONTEXT_VARS = [
+    'MON', 'MON_POSSESSIVE',
+    'TARGET', 'TARGET_POSSESSIVE',
+    'SOURCE', 'SOURCE_POSSESSIVE',
+    'FOE_SIDE', 'PLAYER', 'PLAYER_POSSESSIVE',
+    'SIDE', 'SIDE_POSSESSIVE',
+    'STAT', 'MOVE', 'ABILITY', 'ITEM', 'VOLATILE', 'STATUS',
+    'CONDITION', 'WEATHER', 'FIELD', 'BATTLETYPE', 'ENVIRONMENT',
+    'RULE', 'FORGOT', 'TYPE', 'TYPES', 'LEVEL', 'COUNT', 'FROM_ITEM', 'FROM_MOVE', 'FROM_ABILITY'
+];
 
 export type Relationship = "self" | "ally" | "foe";
 
@@ -368,8 +379,19 @@ export function mapUiLogEntry(entry: UiLogEntry, state?: BattleState, options: M
                      tags.push(`${k}:${v}`);
                  } else if (k === 'by') {
                      const num = Number(v);
-                     if (!isNaN(num) && num >= 3) tags.push('by:3plus');
-                     else tags.push(`by:${v}`);
+                     let appliedBucket = false;
+                     if (!isNaN(num)) {
+                         for (const bucket of rules.numericBuckets) {
+                             if (bucket.tag === k && bucket.titles.includes(title) && num >= bucket.min) {
+                                 tags.push(`${k}:${bucket.min}${bucket.suffix}`);
+                                 appliedBucket = true;
+                                 break;
+                             }
+                         }
+                     }
+                     if (!appliedBucket) {
+                         tags.push(`by:${v}`);
+                     }
                  } else if (k === 'stat') {
                      context.STAT = i18next.t(`stats.${v}`);
                      tags.push(`${k}:*`);

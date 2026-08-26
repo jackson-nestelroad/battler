@@ -1,0 +1,10 @@
+{
+  "numericBuckets": [
+    {
+      "tag": "by",
+      "min": 3,
+      "suffix": "plus",
+      "titles": ["boost", "unboost"]
+    }
+  ]
+}

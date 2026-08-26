@@ -1,7 +1,8 @@
 import type { UiLogEntry, BattleState, UiMon } from "battler-state";
 import i18next from "./i18n.js";
 import { LogCategory } from "./types.js";
-import type { LogContext, MapperOptions, ContextValue, ContextVar, FormattedLogEvent, UiNotice } from "./types.js";
+import type { LogContext, MapperOptions, ContextValue, ContextVar, FormattedLogEvent, UiNotice, UiToken } from "./types.js";
+import noticeRules from "./config/notice-rules.json" with { type: "json" };
 import { parseTemplateToTokens } from "./engine.js";
 import type { LogToken } from "./engine.js";
 import { mapUiLogEntry } from "./mapper.js";
@@ -171,50 +172,51 @@ export class LogFormatter {
 
     const notices: UiNotice[] = [];
     
-    // Inject synthetic Ability notice if this log was triggered by an ability
-    if (mapped.effect?.effect?.effect_type === "Ability" && mapped.effect.effect.name) {
-      let monStr: string | undefined = undefined;
-      let monRef: UiMon | undefined = undefined;
-      if (mapped.metadata?.mon?.raw_possessive) {
-          monStr = String(mapped.metadata.mon.raw_possessive);
-      }
-      if (mapped.metadata?.mon?.ref) {
-          monRef = mapped.metadata.mon.ref;
-      }
-      notices.push({
-          type: "Ability",
-          name: mapped.effect.effect.name,
-          mon: monStr,
-          monRef
-      });
-    }
-
     let template: string | undefined = undefined;
     if (templateKey && i18next.exists(templateKey)) {
         template = i18next.t(templateKey, templateArgs) as string;
     }
     
-    // Check if the primary event itself is just an ability announcement (e.g. ability|mon:X|ability:Intimidate)
-    if (mapped.patterns[0]?.startsWith('ability') && mapped.context.ABILITY) {
-      let monStr: string | undefined = undefined;
-      let monRef: UiMon | undefined = undefined;
-      if (mapped.metadata?.mon?.raw_possessive) {
-          monStr = String(mapped.metadata.mon.raw_possessive);
-      }
-      if (mapped.metadata?.mon?.ref) {
-          monRef = mapped.metadata.mon.ref;
-      }
-      notices.push({
-          type: "Ability",
-          name: String(mapped.context.ABILITY),
-          mon: monStr,
-          monRef
-      });
-      // We don't want to emit an [UNHANDLED] text message for pure ability announcements
-      // but we DO want to emit legitimate ability messages!
-      if (template === "[UNHANDLED]") {
-        template = ""; 
-      }
+    for (const rule of noticeRules) {
+        let match = true;
+        if (rule.condition.hasEffectType && mapped.effect?.effect?.effect_type !== rule.condition.hasEffectType) {
+            match = false;
+        }
+        if (rule.condition.patternStartsWith && !mapped.patterns[0]?.startsWith(rule.condition.patternStartsWith)) {
+            match = false;
+        }
+        if (rule.condition.hasContext && !mapped.context[rule.condition.hasContext]) {
+            match = false;
+        }
+        
+        if (match) {
+            let monStr: string | undefined = undefined;
+            let monRef: UiMon | undefined = undefined;
+            if (mapped.metadata?.mon?.raw_possessive) {
+                monStr = String(mapped.metadata.mon.raw_possessive);
+            }
+            if (mapped.metadata?.mon?.ref) {
+                monRef = mapped.metadata.mon.ref;
+            }
+            
+            let name = "";
+            if (rule.notice.nameFromPath === "effect.effect.name" && mapped.effect?.effect?.name) {
+                name = mapped.effect.effect.name;
+            } else if (rule.notice.nameFromContext && mapped.context[rule.notice.nameFromContext]) {
+                name = String(mapped.context[rule.notice.nameFromContext]);
+            }
+            
+            notices.push({
+                type: rule.notice.type as "Ability",
+                name,
+                mon: monStr,
+                monRef
+            });
+            
+            if (rule.notice.clearUnhandledTemplate && template === "[UNHANDLED]") {
+                template = "";
+            }
+        }
     }
 
     let message: FormattedUiLog | undefined = undefined;

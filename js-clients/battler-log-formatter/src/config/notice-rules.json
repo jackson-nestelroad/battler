@@ -1,0 +1,22 @@
+[
+  {
+    "condition": {
+      "hasEffectType": "Ability"
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromPath": "effect.effect.name"
+    }
+  },
+  {
+    "condition": {
+      "patternStartsWith": "ability",
+      "hasContext": "ABILITY"
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromContext": "ABILITY",
+      "clearUnhandledTemplate": true
+    }
+  }
+]
