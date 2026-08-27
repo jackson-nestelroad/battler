@@ -44,33 +44,81 @@
     "into",
     "with"
   ],
-  "injectDimensions": [
-    {
-      "match": {
-        "title": "crit"
-      },
-      "inject": [
-        "battletype:singles"
-      ]
-    },
-    {
-      "match": {
-        "title": "supereffective"
-      },
-      "inject": [
-        "battletype:singles"
-      ]
-    },
-    {
-      "match": {
-        "title": "resisted"
-      },
-      "inject": [
-        "battletype:singles"
-      ]
-    }
+  "alwaysFromEffectLogs": [
+    "cant",
+    "sethp",
+    "boost",
+    "invertboosts",
+    "copyboosts",
+    "unboost",
+    "deductpp",
+    "restorepp",
+    "setpp",
+    "clearboosts",
+    "clearnegativeboosts",
+    "clearpositiveboosts",
+    "swap",
+    "transform",
+    "block"
   ],
-  "collapseDimensions": [
+  "alwaysNoTagLogs": [
+    "ohko",
+    "waiting",
+    "animatemove",
+    "protectweaken",
+    "copyboosts"
+  ],
+  "noTagUnlessFromLogs": [
+    "immune",
+    "move"
+  ],
+  "prependWildcardTagLogs": [
+    "block"
+  ],
+  "ignoreKeys": [
+    "item|ability:Frisk",
+    "sideend|ability:Screen Cleaner",
+    "sidestart|ability:Toxic Debris",
+    "fail|what:unboost|from:Resist Intimidate Ability Base",
+    "fail|what:unboost|from:Prevent Stat Drop Ability Base",
+    "ability|condition:Aura Ability Base",
+    "fail|what:*|from:Choice Lock",
+    "fail|what:*|from:weather:Heavy Rain",
+    "fail|what:*|from:weather:Extremely Harsh Sunlight",
+    "sideend|condition:Break Protect",
+    "sidestart|item:Guard Spec.",
+    "prepare|condition:Charge Move Base",
+    "sideend|condition:Defog Move Base",
+    "sidestart|condition:Side Screen Move Base",
+    "sideend|condition:Side Screen Move Base",
+    "fail|from:move:Uproar"
+  ],
+  "allowKeys": [
+    "fail|what:unboost|from:ability:Oblivious",
+    "fail|what:unboost|from:ability:Own Tempo",
+    "fail|what:unboost|from:ability:Clear Body",
+    "fail|what:unboost|from:ability:Illuminate",
+    "fail|what:unboost|from:ability:Inner Focus",
+    "fail|what:unboost|from:ability:Keen Eye",
+    "fail|what:unboost|from:ability:Hyper Cutter",
+    "fail|what:unboost|from:ability:White Smoke",
+    "fail|what:unboost|from:ability:Scrappy",
+    "fail|what:unboost|from:ability:Big Pecks",
+    "block|ability:*|from:ability:Aroma Veil",
+    "fail|what:unboost|from:ability:Flower Veil",
+    "block|ability:*|from:ability:Flower Veil",
+    "block|ability:*|from:ability:Sweet Veil",
+    "fail|what:unboost|from:ability:Full Metal Body",
+    "block|ability:*|from:ability:Pastel Veil",
+    "fail|what:unboost|from:ability:Guard Dog",
+    "fail|what:unboost|from:ability:Mind's Eye",
+    "block|ability:*|from:Dynamax",
+    "block|move:*|from:Dynamax",
+    "fail|from:Choice Lock",
+    "item|item:Air Balloon",
+    "fail|what:unboost|from:item:Clear Amulet"
+  ],
+  "rules": [
     {
       "match": {
         "title": "abilitystart"
@@ -134,7 +182,8 @@
         "title": "deductpp"
       },
       "collapse": [
-        "move"
+        "move",
+        "by"
       ]
     },
     {
@@ -166,7 +215,8 @@
         "title": "restorepp"
       },
       "collapse": [
-        "move"
+        "move",
+        "by"
       ]
     },
     {
@@ -244,24 +294,6 @@
     },
     {
       "match": {
-        "title": "deductpp"
-      },
-      "collapse": [
-        "move",
-        "by"
-      ]
-    },
-    {
-      "match": {
-        "title": "restorepp"
-      },
-      "collapse": [
-        "move",
-        "by"
-      ]
-    },
-    {
-      "match": {
         "title": "fail",
         "what": "unboost"
       },
@@ -295,80 +327,30 @@
       "collapse": [
         "from"
       ]
+    },
+    {
+      "match": {
+        "title": "crit"
+      },
+      "inject": [
+        "battletype:singles"
+      ]
+    },
+    {
+      "match": {
+        "title": "supereffective"
+      },
+      "inject": [
+        "battletype:singles"
+      ]
+    },
+    {
+      "match": {
+        "title": "resisted"
+      },
+      "inject": [
+        "battletype:singles"
+      ]
     }
-  ],
-  "alwaysFromEffectLogs": [
-    "cant",
-    "sethp",
-    "boost",
-    "invertboosts",
-    "copyboosts",
-    "unboost",
-    "deductpp",
-    "restorepp",
-    "setpp",
-    "clearboosts",
-    "clearnegativeboosts",
-    "clearpositiveboosts",
-    "swap",
-    "transform",
-    "block"
-  ],
-  "alwaysNoTagLogs": [
-    "ohko",
-    "waiting",
-    "animatemove",
-    "protectweaken",
-    "copyboosts"
-  ],
-  "noTagUnlessFromLogs": [
-    "immune",
-    "move"
-  ],
-  "prependWildcardTagLogs": [
-    "block"
-  ],
-  "ignoreKeys": [
-    "item|ability:Frisk",
-    "sideend|ability:Screen Cleaner",
-    "sidestart|ability:Toxic Debris",
-    "fail|what:unboost|from:Resist Intimidate Ability Base",
-    "fail|what:unboost|from:Prevent Stat Drop Ability Base",
-    "ability|condition:Aura Ability Base",
-    "fail|what:*|from:Choice Lock",
-    "fail|what:*|from:weather:Heavy Rain",
-    "fail|what:*|from:weather:Extremely Harsh Sunlight",
-    "sideend|condition:Break Protect",
-    "sidestart|item:Guard Spec.",
-    "prepare|condition:Charge Move Base",
-    "sideend|condition:Defog Move Base",
-    "sidestart|condition:Side Screen Move Base",
-    "sideend|condition:Side Screen Move Base",
-    "fail|from:move:Uproar"
-  ],
-  "allowKeys": [
-    "fail|what:unboost|from:ability:Oblivious",
-    "fail|what:unboost|from:ability:Own Tempo",
-    "fail|what:unboost|from:ability:Clear Body",
-    "fail|what:unboost|from:ability:Illuminate",
-    "fail|what:unboost|from:ability:Inner Focus",
-    "fail|what:unboost|from:ability:Keen Eye",
-    "fail|what:unboost|from:ability:Hyper Cutter",
-    "fail|what:unboost|from:ability:White Smoke",
-    "fail|what:unboost|from:ability:Scrappy",
-    "fail|what:unboost|from:ability:Big Pecks",
-    "block|ability:*|from:ability:Aroma Veil",
-    "fail|what:unboost|from:ability:Flower Veil",
-    "block|ability:*|from:ability:Flower Veil",
-    "block|ability:*|from:ability:Sweet Veil",
-    "fail|what:unboost|from:ability:Full Metal Body",
-    "block|ability:*|from:ability:Pastel Veil",
-    "fail|what:unboost|from:ability:Guard Dog",
-    "fail|what:unboost|from:ability:Mind's Eye",
-    "block|ability:*|from:Dynamax",
-    "block|move:*|from:Dynamax",
-    "fail|from:Choice Lock",
-    "item|item:Air Balloon",
-    "fail|what:unboost|from:item:Clear Amulet"
   ]
 }

@@ -49,7 +49,12 @@ export function maskLog(line: string): string[] {
     }
   }
 
-  for (const rule of scraperConfig.collapseDimensions || []) {
+  let finalTags = [...tags];
+  let finalFlags = [...flags];
+
+  // Phase 1: Strip
+  for (const rule of scraperConfig.rules || []) {
+    if (!rule.strip) continue;
     let isMatch = true;
     for (const [matchK, matchV] of Object.entries(rule.match)) {
       if (matchK === "title") {
@@ -75,19 +80,54 @@ export function maskLog(line: string): string[] {
     }
 
     if (isMatch) {
-      for (let i = 0; i < tags.length; i++) {
-        const [k] = tags[i].split(":");
+      finalTags = finalTags.filter((t) => !rule.strip.includes(t.split(":")[0]));
+      finalFlags = finalFlags.filter((f) => !rule.strip.includes(f));
+    }
+  }
+
+  // Phase 2: Collapse
+  for (const rule of scraperConfig.rules || []) {
+    if (!rule.collapse) continue;
+    let isMatch = true;
+    for (const [matchK, matchV] of Object.entries(rule.match)) {
+      if (matchK === "title") {
+        if (title !== matchV) {
+          isMatch = false;
+          break;
+        }
+      } else {
+        const hasTag = tags.some((t) => {
+          if ((matchV as string) === "*") {
+            return t.startsWith(`${matchK}:`);
+          } else if ((matchV as string).endsWith("*")) {
+            return t.startsWith(`${matchK}:${(matchV as string).slice(0, -1)}`);
+          } else {
+            return t === `${matchK}:${matchV as string}`;
+          }
+        });
+        if (!hasTag) {
+          isMatch = false;
+          break;
+        }
+      }
+    }
+
+    if (isMatch) {
+      for (let i = 0; i < finalTags.length; i++) {
+        const [k] = finalTags[i].split(":");
         if (rule.collapse.includes(k)) {
-          tags[i] = `${k}:*`;
+          finalTags[i] = `${k}:*`;
         }
       }
     }
   }
 
-  const basePattern = [title, ...tags, ...flags].join("|");
+  const basePattern = [title, ...finalTags, ...finalFlags].join("|");
   const results = [basePattern];
 
-  for (const rule of scraperConfig.injectDimensions || []) {
+  // Phase 3: Inject
+  for (const rule of scraperConfig.rules || []) {
+    if (!rule.inject) continue;
     let isMatch = true;
     for (const [matchK, matchV] of Object.entries(rule.match)) {
       if (matchK === "title") {
@@ -114,7 +154,7 @@ export function maskLog(line: string): string[] {
 
     if (isMatch) {
       for (const injected of rule.inject) {
-        results.push([title, ...tags, injected, ...flags].join("|"));
+        results.push([title, ...finalTags, injected, ...finalFlags].join("|"));
       }
     }
   }
