@@ -529,7 +529,7 @@
       "no_copy": true,
       "callbacks": {
         "on_trap_mon": ["return true"],
-        "on_start": ["log_activate: with_target"],
+        "on_start": ["log_activate: with_target use_effect_state_source_as_source with_source"],
         "on_any_exit": [
           "if $mon == $effect_state.source:",
           ["remove_volatile: $effect_state.target $this.id"]
