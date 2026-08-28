@@ -79,7 +79,7 @@ fn octolock_traps_tsarget_and_lowers_defenses_each_turn() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
                 "move|mon:Grapploct,player-1,1|name:Octolock|target:Grapploct,player-2,1",
-                "activate|mon:Grapploct,player-2,1|condition:Trapped",
+                "activate|mon:Grapploct,player-2,1|condition:Trapped|of:Grapploct,player-1,1",
                 "start|mon:Grapploct,player-2,1|move:Octolock",
                 "residual",
                 "unboost|mon:Grapploct,player-2,1|stat:def|by:1|from:move:Octolock",
