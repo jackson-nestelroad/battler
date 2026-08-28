@@ -198,7 +198,6 @@ addsidecondition|condition:*
 addslotcondition|condition:*
 addvolatile|volatile:*
 animatemove
-animatemove|noanim
 appear
 battlestart
 block|ability:*|from:ability:Aroma Veil
@@ -856,6 +855,7 @@ tie
 transform
 transform|from:ability:Imposter
 turn
+turnlimit
 typechange|types:*
 typechange|types:*|from:ability:Color Change
 typechange|types:*|from:ability:Libero
