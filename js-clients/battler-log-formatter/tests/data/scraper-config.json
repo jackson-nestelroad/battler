@@ -154,7 +154,8 @@
       "match": {
         "title": "deductpp"
       },
-      "collapse": ["move", "by"]
+      "strip": ["by"],
+      "collapse": ["move"]
     },
     {
       "match": {
@@ -172,13 +173,15 @@
       "match": {
         "title": "removevolatile"
       },
+      "strip": ["from"],
       "collapse": ["volatile"]
     },
     {
       "match": {
         "title": "restorepp"
       },
-      "collapse": ["move", "by"]
+      "strip": ["by", "from"],
+      "collapse": ["move"]
     },
     {
       "match": {
@@ -230,20 +233,20 @@
       "match": {
         "title": "boost"
       },
-      "collapse": ["from"]
+      "strip": ["from"]
     },
     {
       "match": {
         "title": "unboost"
       },
-      "collapse": ["from"]
+      "strip": ["from"]
     },
     {
       "match": {
         "title": "fail",
         "what": "unboost"
       },
-      "collapse": ["boosts"]
+      "strip": ["boosts"]
     },
     {
       "match": {
@@ -257,7 +260,14 @@
         "title": "mega",
         "from": "item:*"
       },
-      "collapse": ["from"]
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "primal",
+        "from": "item:*"
+      },
+      "strip": ["from"]
     },
     {
       "match": {
@@ -283,6 +293,19 @@
         "title": "resisted"
       },
       "inject": ["battletype:singles"]
+    },
+    {
+      "match": {
+        "title": "curestatus",
+        "from": "item:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "move"
+      },
+      "strip": ["zpower", "noanim"]
     }
   ]
 }

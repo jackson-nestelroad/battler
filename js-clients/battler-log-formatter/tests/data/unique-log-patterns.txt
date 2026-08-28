@@ -210,14 +210,9 @@ block|move:*|from:ability:Pastel Veil
 block|move:*|from:ability:Sweet Veil
 block|move:*|from:item:Ability Shield
 boost|by:0
-boost|by:0|from:*
 boost|by:1
-boost|by:1|from:*
 boost|by:2
-boost|by:2|from:*
 boost|by:3plus
-boost|by:3plus|from:*
-boost|by:3plus|from:*|max
 boost|by:3plus|max
 cannotescape
 cant|from:Flinch
@@ -269,22 +264,17 @@ crit|battletype:singles
 curestatus|status:Bad Poison
 curestatus|status:Bad Poison|from:Affection
 curestatus|status:Bad Poison|from:ability:Pastel Veil
-curestatus|status:Bad Poison|from:item:Lum Berry
-curestatus|status:Bad Poison|from:item:Pecha Berry
 curestatus|status:Bad Poison|from:move:Aromatherapy
 curestatus|status:Burn
 curestatus|status:Burn|from:ability:Natural Cure
 curestatus|status:Burn|from:ability:Thermal Exchange
 curestatus|status:Burn|from:ability:Water Bubble
-curestatus|status:Burn|from:item:Rawst Berry
 curestatus|status:Freeze
 curestatus|status:Freeze|from:ability:Magma Armor
 curestatus|status:Paralysis
 curestatus|status:Paralysis|from:ability:Hydration
 curestatus|status:Paralysis|from:ability:Natural Cure
 curestatus|status:Paralysis|from:ability:Shed Skin
-curestatus|status:Paralysis|from:item:Cheri Berry
-curestatus|status:Paralysis|from:item:Lum Berry
 curestatus|status:Paralysis|from:move:Aromatherapy
 curestatus|status:Sleep
 curestatus|status:Sleep|from:ability:Healer
@@ -333,7 +323,7 @@ damage|from:status:Burn
 damage|from:status:Poison
 damage|from:weather:Hail
 damage|from:weather:Sandstorm
-deductpp|move:*|by:*
+deductpp|move:*
 didnotlearnmove|move:*
 drag
 dynamax
@@ -396,15 +386,6 @@ fail|what:move:Corrosive Gas
 fail|what:move:Soak
 fail|what:move:Teatime
 fail|what:status:Sleep|from:move:Uproar
-fail|what:unboost|boosts:*|from:ability:Clear Body
-fail|what:unboost|boosts:*|from:ability:Full Metal Body
-fail|what:unboost|boosts:*|from:ability:Hyper Cutter
-fail|what:unboost|boosts:*|from:ability:Illuminate
-fail|what:unboost|boosts:*|from:ability:Keen Eye
-fail|what:unboost|boosts:*|from:ability:Mind's Eye
-fail|what:unboost|boosts:*|from:ability:Own Tempo
-fail|what:unboost|boosts:*|from:ability:White Smoke
-fail|what:unboost|boosts:*|from:item:Clear Amulet
 fail|what:unboost|from:ability:Big Pecks
 fail|what:unboost|from:ability:Clear Body
 fail|what:unboost|from:ability:Flower Veil
@@ -627,7 +608,7 @@ learnedmove|move:*
 learnedmove|move:*|forgot:*
 levelup
 maxsidelength
-mega|from:*
+mega
 mega|from:move:Dragon Ascent
 miss
 mon
@@ -636,24 +617,18 @@ move|from:ability:Dancer
 move|from:ability:Magic Bounce
 move|from:move:Assist
 move|from:move:Copycat
-move|from:move:Copycat|noanim
 move|from:move:Grass Pledge
 move|from:move:Instruct
 move|from:move:Magic Coat
 move|from:move:Me First
 move|from:move:Metronome
-move|from:move:Metronome|zpower
 move|from:move:Mirror Move
-move|from:move:Mirror Move|noanim
 move|from:move:Nature Power
 move|from:move:Round
 move|from:move:Sleep Talk
 move|from:move:Snatch
 move|from:move:Water Pledge
-move|noanim
 move|notarget
-move|zpower
-move|zpower|noanim
 ohko
 player
 prepare|move:Bounce
@@ -674,18 +649,15 @@ prepare|move:Sky Attack
 prepare|move:Sky Drop
 prepare|move:Solar Beam
 prepare|move:Solar Blade
-primal|from:item:Blue Orb
-primal|from:item:Red Orb
+primal
 protectweaken
-removevolatile|volatile:*|from:move:Fly
-removevolatile|volatile:*|from:move:Razor Wind
-removevolatile|volatile:*|from:move:Skull Bash
+removevolatile|volatile:*
 replace
 resettypechange|from:ability:Mimicry
 residual
 resisted
 resisted|battletype:singles
-restorepp|move:*|by:*|from:item:Leppa Berry
+restorepp|move:*
 revertdynamax
 revertgigantamax
 revertmega|from:Faint
@@ -886,10 +858,8 @@ typechange|types:*|from:ability:Protean
 ultra|from:item:Ultranecrozium Z
 unboost|by:0
 unboost|by:1
-unboost|by:1|from:*
 unboost|by:2
-unboost|by:2|from:*
-unboost|by:3plus|from:*
+unboost|by:3plus
 unboost|by:3plus|min
 uncatchable
 uncatchable|thief
