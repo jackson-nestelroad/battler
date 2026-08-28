@@ -1,4 +1,12 @@
 {
+  "manualLogs": [
+    "addsidecondition|side:0|condition:Condition|from:Effect",
+    "removesidecondition|side:0|condition:Condition|from:Effect",
+    "addslotcondition|side:0|slot:0|condition:Condition|from:Effect",
+    "removeslotcondition|side:0|slot:0|condition:Condition|from:Effect",
+    "addpseudoweather|condition:Condition|from:Effect",
+    "removepseudoweather|condition:Condition|from:Effect"
+  ],
   "excludeTags": [
     "mon",
     "of",
@@ -306,6 +314,48 @@
         "title": "move"
       },
       "strip": ["zpower", "noanim"]
+    },
+    {
+      "match": {
+        "title": "addsidecondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "removesidecondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "addslotcondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "removeslotcondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "addpseudoweather"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "removepseudoweather"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
     }
   ]
 }

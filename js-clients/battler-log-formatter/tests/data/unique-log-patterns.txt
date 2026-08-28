@@ -193,6 +193,9 @@ activate|move:Substitute
 activate|move:Substitute|damage
 activate|move:Wide Guard
 addedtype|type:*
+addpseudoweather|condition:*
+addsidecondition|condition:*
+addslotcondition|condition:*
 addvolatile|volatile:*
 animatemove
 animatemove|noanim
@@ -651,6 +654,9 @@ prepare|move:Solar Beam
 prepare|move:Solar Blade
 primal
 protectweaken
+removepseudoweather|condition:*
+removesidecondition|condition:*
+removeslotcondition|condition:*
 removevolatile|volatile:*
 replace
 resettypechange|from:ability:Mimicry

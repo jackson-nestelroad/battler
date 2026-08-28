@@ -488,6 +488,14 @@ function generateMatrix() {
     }
   }
 
+  const manualLogs = (scraperConfig as any).manualLogs || [];
+  for (const pattern of manualLogs) {
+    const maskedList = maskLog(pattern);
+    for (const masked of maskedList) {
+      extracted.patterns.add(masked);
+    }
+  }
+
   const registry = buildEffectRegistry();
   const uniqueEffects = new Set(registry.values());
   const newClonedPatterns = new Set<string>();
