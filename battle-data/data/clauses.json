@@ -308,7 +308,7 @@
             "$status_state = func_call(status_effect_state: $mon)",
             "if !$status_state or !$status_state.source or func_call(is_ally: $status_state.source $mon):",
             ["continue"],
-            "log_activate",
+            "log_activate: with_target",
             "return stopfail"
           ]
         ]
