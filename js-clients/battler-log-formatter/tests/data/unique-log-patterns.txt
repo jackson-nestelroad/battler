@@ -193,15 +193,11 @@ activate|move:Substitute
 activate|move:Substitute|damage
 activate|move:Wide Guard
 addedtype|type:*
-addvolatile|volatile:*|from:Two Turn Move
-addvolatile|volatile:*|from:move:Fly
-addvolatile|volatile:*|from:move:Razor Wind
-addvolatile|volatile:*|from:move:Skull Bash
+addvolatile|volatile:*
 animatemove
 animatemove|noanim
 appear
 battlestart
-block|ability:*|from:Dynamax
 block|ability:*|from:ability:Aroma Veil
 block|ability:*|from:ability:Flower Veil
 block|ability:*|from:ability:Pastel Veil

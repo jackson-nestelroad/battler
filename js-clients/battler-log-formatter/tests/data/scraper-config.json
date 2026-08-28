@@ -61,20 +61,9 @@
     "transform",
     "block"
   ],
-  "alwaysNoTagLogs": [
-    "ohko",
-    "waiting",
-    "animatemove",
-    "protectweaken",
-    "copyboosts"
-  ],
-  "noTagUnlessFromLogs": [
-    "immune",
-    "move"
-  ],
-  "prependWildcardTagLogs": [
-    "block"
-  ],
+  "alwaysNoTagLogs": ["ohko", "waiting", "animatemove", "protectweaken", "copyboosts"],
+  "noTagUnlessFromLogs": ["immune", "move"],
+  "prependWildcardTagLogs": ["block"],
   "ignoreKeys": [
     "item|ability:Frisk",
     "sideend|ability:Screen Cleaner",
@@ -112,7 +101,6 @@
     "block|ability:*|from:ability:Pastel Veil",
     "fail|what:unboost|from:ability:Guard Dog",
     "fail|what:unboost|from:ability:Mind's Eye",
-    "block|ability:*|from:Dynamax",
     "block|move:*|from:Dynamax",
     "fail|from:Choice Lock",
     "item|item:Air Balloon",
@@ -123,145 +111,107 @@
       "match": {
         "title": "abilitystart"
       },
-      "collapse": [
-        "ability"
-      ]
+      "collapse": ["ability"]
     },
     {
       "match": {
         "title": "itemstart"
       },
-      "collapse": [
-        "item"
-      ]
+      "collapse": ["item"]
     },
     {
       "match": {
         "title": "abilityend"
       },
-      "collapse": [
-        "ability"
-      ]
+      "collapse": ["ability"]
     },
     {
       "match": {
         "title": "addvolatile"
       },
-      "collapse": [
-        "volatile"
-      ]
+      "strip": ["from"],
+      "collapse": ["volatile"]
     },
     {
       "match": {
         "title": "block"
       },
-      "collapse": [
-        "ability",
-        "move",
-        "item"
-      ]
+      "collapse": ["ability", "move", "item"]
     },
     {
       "match": {
         "title": "catch"
       },
-      "collapse": [
-        "item"
-      ]
+      "collapse": ["item"]
     },
     {
       "match": {
         "title": "catchfailed"
       },
-      "collapse": [
-        "item"
-      ]
+      "collapse": ["item"]
     },
     {
       "match": {
         "title": "deductpp"
       },
-      "collapse": [
-        "move",
-        "by"
-      ]
+      "collapse": ["move", "by"]
     },
     {
       "match": {
         "title": "didnotlearnmove"
       },
-      "collapse": [
-        "move"
-      ]
+      "collapse": ["move"]
     },
     {
       "match": {
         "title": "learnedmove"
       },
-      "collapse": [
-        "move"
-      ]
+      "collapse": ["move"]
     },
     {
       "match": {
         "title": "removevolatile"
       },
-      "collapse": [
-        "volatile"
-      ]
+      "collapse": ["volatile"]
     },
     {
       "match": {
         "title": "restorepp"
       },
-      "collapse": [
-        "move",
-        "by"
-      ]
+      "collapse": ["move", "by"]
     },
     {
       "match": {
         "title": "setpp"
       },
-      "collapse": [
-        "move"
-      ]
+      "collapse": ["move"]
     },
     {
       "match": {
         "title": "swapsidecondition"
       },
-      "collapse": [
-        "move",
-        "condition"
-      ]
+      "collapse": ["move", "condition"]
     },
     {
       "match": {
         "title": "activate",
         "ability": "Forewarn"
       },
-      "collapse": [
-        "move"
-      ]
+      "collapse": ["move"]
     },
     {
       "match": {
         "title": "activate",
         "move": "Fling"
       },
-      "collapse": [
-        "item"
-      ]
+      "collapse": ["item"]
     },
     {
       "match": {
         "title": "activate",
         "move": "Poltergeist"
       },
-      "collapse": [
-        "item"
-      ]
+      "collapse": ["item"]
     },
     {
       "match": {},
@@ -280,77 +230,59 @@
       "match": {
         "title": "boost"
       },
-      "collapse": [
-        "from"
-      ]
+      "collapse": ["from"]
     },
     {
       "match": {
         "title": "unboost"
       },
-      "collapse": [
-        "from"
-      ]
+      "collapse": ["from"]
     },
     {
       "match": {
         "title": "fail",
         "what": "unboost"
       },
-      "collapse": [
-        "boosts"
-      ]
+      "collapse": ["boosts"]
     },
     {
       "match": {
         "title": "itemend",
         "from": "*"
       },
-      "collapse": [
-        "item"
-      ]
+      "collapse": ["item"]
     },
     {
       "match": {
         "title": "mega",
         "from": "item:*"
       },
-      "collapse": [
-        "from"
-      ]
+      "collapse": ["from"]
     },
     {
       "match": {
         "title": "revive",
         "from": "item:*"
       },
-      "collapse": [
-        "from"
-      ]
+      "collapse": ["from"]
     },
     {
       "match": {
         "title": "crit"
       },
-      "inject": [
-        "battletype:singles"
-      ]
+      "inject": ["battletype:singles"]
     },
     {
       "match": {
         "title": "supereffective"
       },
-      "inject": [
-        "battletype:singles"
-      ]
+      "inject": ["battletype:singles"]
     },
     {
       "match": {
         "title": "resisted"
       },
-      "inject": [
-        "battletype:singles"
-      ]
+      "inject": ["battletype:singles"]
     }
   ]
 }
